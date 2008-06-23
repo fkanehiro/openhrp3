@@ -1,0 +1,58 @@
+# -*- Makefile -*-
+
+TARGET = ModelLoader.jar
+
+OBJS = 	$(PACKAGE_DIR)/VrmlSceneEx.class \
+	$(PACKAGE_DIR)/SensorInfo_impl.class \
+	$(PACKAGE_DIR)/ProtoFieldGettor.class \
+	$(PACKAGE_DIR)/SensorInfoFactory.class \
+	$(PACKAGE_DIR)/AccelerationSensorInfoFactory.class \
+	$(PACKAGE_DIR)/VisionSensorInfoFactory.class \
+	$(PACKAGE_DIR)/LinkInfo_impl.class \
+	$(PACKAGE_DIR)/BodyStruct.class \
+	$(PACKAGE_DIR)/ForceSensorInfoFactory.class \
+	$(PACKAGE_DIR)/TorqueSensorInfoFactory.class \
+	$(PACKAGE_DIR)/GyroSensorInfoFactory.class \
+	$(PACKAGE_DIR)/HumanoidInfo.class \
+	$(PACKAGE_DIR)/PressureSensorInfoFactory.class \
+	$(PACKAGE_DIR)/PhotoInterrupterSensorInfoFactory.class \
+	$(PACKAGE_DIR)/ObjectStruct.class \
+	$(PACKAGE_DIR)/VrmlLoaderEx.class \
+	$(PACKAGE_DIR)/CharacterInfo_impl.class \
+	$(PACKAGE_DIR)/ModelInfo_impl.class \
+	$(PACKAGE_DIR)/ModelLoader_impl.class \
+	$(PACKAGE_DIR)/Server.class
+
+#
+# *.java -> *.class create rule
+#
+$(OBJS):
+	$(JAVAC) $(JAVAC_FLAGS) $(*F).java
+
+#
+# Server classes
+#
+mljar: 
+	$(JAVAC) $(JAVAC_FLAGS) *.java
+	$(JAR) cfm $(TARGET) manifest jp
+
+#
+# Delete all objects
+#
+clean: del_generic
+	-$(RM) $(TARGET)
+	-$(RMDIR) jp
+
+$(PACKAGE_DIR)/VrmlSceneEx.class: VrmlSceneEx.java
+$(PACKAGE_DIR)/Server.class: Server.java
+$(PACKAGE_DIR)/ModelLoader_impl.class: ModelLoader_impl.java
+$(PACKAGE_DIR)/ModelInfo_impl.class: ModelInfo_impl.java
+$(PACKAGE_DIR)/ObjectStruct.class: ObjectStruct.java
+$(PACKAGE_DIR)/VrmlLoaderEx.class: VrmlLoaderEx.java
+$(PACKAGE_DIR)/VisionSensorInfoFactory.class: VisionSensorInfoFactory.java
+$(PACKAGE_DIR)/TorqueSensorInfoFactory.class: TorqueSensorInfoFactory.java
+$(PACKAGE_DIR)/LinkInfo_impl.class: LinkInfo_impl.java
+$(PACKAGE_DIR)/SensorInfo_impl.class: SensorInfo_impl.java
+$(PACKAGE_DIR)/SensorInfoFactory.class: SensorInfoFactory.java
+$(PACKAGE_DIR)/BodyStruct.class: BodyStruct.java
+

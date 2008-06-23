@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/kawasumi/jython-2.1/jython.jar"/>
+	<classpathentry kind="lib" path="/home/grxuser/src/OpenHRP3/Common/corba/openhrpstubskel.jar"/>
+	<classpathentry kind="lib" path="/home/kawasumi/src/OpenHRP3P/Controller/IOserver/corba/IOserverStubskel.jar"/>
+	<classpathentry kind="lib" path="/usr/share/lg3d-jdk/jre/lib/ext/j3dcore.jar"/>
+	<classpathentry kind="lib" path="/usr/share/lg3d-jdk/jre/lib/ext/j3dutils.jar"/>
+	<classpathentry kind="lib" path="/usr/share/lg3d-jdk/jre/lib/ext/vecmath.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/JMF-2.1.1e/lib/jmf.jar"/>
+	<classpathentry kind="output" path=""/>
+</classpath>
