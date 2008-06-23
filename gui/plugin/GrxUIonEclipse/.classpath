@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="OpenRTM-aist-0.4.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="commons-cli-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="vrml97.jar"/>
+	<classpathentry exported="true" kind="lib" path="jython.jar"/>
+	<classpathentry exported="true" kind="lib" path="openhrpstubskel.jar" sourcepath="D:/kobayashi/OpenHRP-3.0.0-RC3/Common/corba"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

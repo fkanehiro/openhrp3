@@ -1,0 +1,28 @@
+SRCS = \
+	lcp.cpp \
+	dims_clapack.cpp \
+	chain.cpp \
+	fLineVec.cpp \
+	fMatrix4.cpp \
+	init.cpp \
+	joint.cpp \
+	schedule.cpp \
+	edit.cpp \
+	fMatrix.cpp \
+	fk.cpp \
+	integ.cpp \
+	update.cpp \
+	fEulerPara.cpp \
+	fMatrix3.cpp \
+	id.cpp \
+	jacobi.cpp \
+	psim.cpp \
+	vary.cpp \
+	dp.cpp \
+	sdcontact.cpp \
+
+OBJS = $(SRCS:.cpp=.o)
+
+clean: 
+	$(RM) $(TARGET)
+	$(RM) *.o
