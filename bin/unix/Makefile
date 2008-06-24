@@ -59,7 +59,7 @@ else
 endif
 endif
 	echo -n :$$ >> config.sh
-	echo -n OPENHRPHOME/bin >> config.sh
+	echo -n OPENHRPHOME/lib >> config.sh
 #	echo -n :$$ >> config.sh
 #	echo -n OPENHRPHOME/PatternGenerator/server >> config.sh
 	echo -n :$$ >> config.sh
