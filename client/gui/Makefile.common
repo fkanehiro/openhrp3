@@ -2,7 +2,7 @@ targets: grxui
 plugins: ioplugin
 
 #### Core System ####
-CLASSPATH = $(OPENHRPHOME)/java/openhrpstubskel.jar$(CPSEP)$(OPENHRPHOME)/java/vrml97.jar$(CPSEP)$(JYTHON_DIR)/jython.jar
+CLASSPATH = $(TOP)java/openhrpstubskel.jar$(CPSEP)$(TOP)java/vrml97.jar$(CPSEP)$(JYTHON_DIR)/jython.jar
 SRCS = \
   	com/generalrobotix/ui/*.java \
   	com/generalrobotix/ui/util/*.java \
