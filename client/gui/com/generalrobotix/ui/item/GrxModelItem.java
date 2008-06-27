@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxModelItem.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -6,7 +15,6 @@
  *
  *  @author Yuichiro Kawasumi (General Robotix, Inc.)
  */
-
 
 package com.generalrobotix.ui.item;
 
@@ -20,6 +28,9 @@ import javax.swing.*;
 import javax.vecmath.*;
 import javax.media.j3d.*;
 
+import com.sun.j3d.loaders.vrml97.VrmlLoader;
+import com.sun.j3d.loaders.vrml97.VrmlScene;
+import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.geometry.*;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -42,7 +53,7 @@ import jp.go.aist.hrp.simulator.PixelFormat;
 @SuppressWarnings("unchecked")
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	public static final String TITLE = "Model";
-	public static final String DEFAULT_DIR = "script";
+	public static final String DEFAULT_DIR = "../../etc";
 	public static final String FILE_EXTENSION = "wrl";
 
 	private boolean isRobot_ = true;
@@ -169,10 +180,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	}
 
 	private void _setupMarks() {
-		double radious = getDbl("markRadious", DEFAULT_RADIOUS);
-		if (switchCom_ == null || radious != DEFAULT_RADIOUS) {
-			switchCom_ = createBall(radious, new Color3f(1.0f, 1.0f, 0.0f));
-			switchComZ0_= createBall(radious, new Color3f(0.0f, 1.0f, 0.0f)); 
+		double radius = getDbl("markRadius", DEFAULT_RADIOUS);
+		if (switchCom_ == null || radius != DEFAULT_RADIOUS) {
+			switchCom_ = createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
+			switchComZ0_= createBall(radius, new Color3f(0.0f, 1.0f, 0.0f)); 
 			tgCom_ = (TransformGroup)switchCom_.getChild(0);
 			tgComZ0_ = (TransformGroup)switchComZ0_.getChild(0);
 			lInfo_[0].tg.addChild(switchCom_);
@@ -258,11 +269,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			jointToLink_ = new int[jointCount];
 			for (int i=0; i<jointCount; i++) {
 				for (int j=0; j<lInfo_.length; j++) {
-					if (lInfo_[j].jointId == i)
+					if (lInfo_[j].jointId == i) {
 						jointToLink_[i] = j;
+					}
 				}
 			}
-		
+			
 			Iterator<List<SensorInfoLocal>> it = sensorMap_.values().iterator();
 			while (it.hasNext()) {
 				Collections.sort(it.next());
@@ -447,18 +459,20 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			userData.put("jointName", info.name);
 			Vector3d jointAxis = new Vector3d(info.jointAxis);
 			LinkInfoLocal itmp = info;
-			while (itmp.jointId == -1 && itmp.mother != -1)
-			{
+			while (itmp.jointId == -1 && itmp.mother != -1) {
 				itmp = lInfo_[itmp.mother];
 			}
 			userData.put("controllableJoint", itmp.name);
+			 
 			TransformGroup g = lInfo_[i].tg;
 			Transform3D tr = new Transform3D();
 			tr.setIdentity();
 			g.setTransform(tr);
+			
 			modifier.init_ = true;
 			modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
 			modifier._calcUpperLower(g, tr);
+			
 			Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
 			Switch bbSwitch =  modifier._makeSwitchNode(modifier._makeBoundingBox(color));
 			bbSwitch.setCapability(Switch.ALLOW_SWITCH_READ);
@@ -466,7 +480,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			bbSwitch.setCapability(Switch.ALLOW_CHILDREN_READ);
 			bbSwitch.setCapability(Switch.ALLOW_CHILDREN_WRITE);
 			g.addChild(bbSwitch);
-
+			
 			userData.put("boundingBoxSwitch", bbSwitch);
 			if (jointAxis != null) {
 				Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
@@ -477,21 +491,26 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			g.setUserData(userData);
 			g.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
 			g.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-
-         int mid = lInfo_[i].mother;
-           if (mid != -1) {	// ERROR 
-               Group mg = (Group)lInfo_[mid].tg.getParent();
-	           mg.addChild(g.getParent());
-           } 
-
+			
+			int mid = lInfo_[i].mother;
+			if (mid != -1) {
+				Group mg = (Group)lInfo_[mid].tg.getParent();
+				mg.addChild(g.getParent());
+			} 
 		}
-
+		
 		lInfo_[0].tg.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
 		_setupMarks();
+		
 		_traverse(bgRoot_, 0);
+		
 		modifier.modifyRobot(this);
 		
-		for (int i = 0; i < lInfo_.length; i++) {
+		setDblAry(lInfo_[0].name+".translation", lInfo_[0].translation);
+		setDblAry(lInfo_[0].name+".rotation", lInfo_[0].rotation);
+		propertyChanged();
+
+		for (int i=0; i<lInfo_.length; i++) {
 			Node n = lInfo_[i].tg.getChild(0);
 			if (n.getCapability(Node.ENABLE_PICK_REPORTING))
 				n.clearCapability(Node.ENABLE_PICK_REPORTING);
@@ -693,7 +712,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		if (linkId != 0 && l.mother != -1) {
 			lInfo_[l.mother].tg.getTransform(t3dm);
 			
-			if (l.jointType.equals("rotate")) {
+			if (l.jointType.equals("rotate") || l.jointType.equals("fixed")) {
 				v3d.set(l.translation[0], l.translation[1], l.translation[2]);
 				t3d.setTranslation(v3d);
 				m3d.set(l.rotation);
@@ -714,7 +733,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			t3dm.mul(t3d);
 			l.tg.setTransform(t3dm);
 		}
-
 		calcForwardKinematics(l.daughter);
 		calcForwardKinematics(l.sister);
 	}
@@ -1641,7 +1659,7 @@ System.out.println( "   ShapeInfo.PrimitiveType error!" );
 				}
 				l.add(sensors[i]);
 				
-				if (sensors[i].type.equals("Vision")) {
+				if (sensors[i].type.equals(SensorType.VISION_SENSOR)) {
 					CameraParameter prm = new CameraParameter();
 					prm.defName = new String(sensors[i].name);
 					prm.sensorName = new String(sensors[i].name);
@@ -1666,8 +1684,6 @@ System.out.println( "   ShapeInfo.PrimitiveType error!" );
 			}
 		}
 	}
-
-
 
 	public List<Camera_impl> getCameraSequence () {
 		return cameraList;
@@ -1804,8 +1820,6 @@ System.out.println( "   ShapeInfo.PrimitiveType error!" );
 			return( rotaton_Array9_ );
 		}
 	}
-
-
 
 	public void setJointColor(int jid, java.awt.Color color) {
         if (color == null) 
@@ -2217,5 +2231,3 @@ System.out.println( "   ShapeInfo.PrimitiveType error!" );
 		return false;
 	}
 }
-
-

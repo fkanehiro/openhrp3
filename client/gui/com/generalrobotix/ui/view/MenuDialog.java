@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  MenuDialog.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -232,6 +241,8 @@ public class MenuDialog extends JPanel {
 
 	private void updateAlwaysMenu() {
 		pnlAlways_.removeAll();
+		pnlAlways_.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+		pnlAlways_.setAlignmentY(JPanel.CENTER_ALIGNMENT);
 		
 		if (menu_[0].length < 1) {
 			JLabel lbl = new JLabel("There is no buttons.");
@@ -243,8 +254,24 @@ public class MenuDialog extends JPanel {
 			return;
 		} 
 
-		for (int i=1; i<menu_[0].length; i=i+2) 
-			pnlAlways_.add(new CommandButton(menu_[0][i-1], menu_[0][i], false));
+		//for (int i=1; i<menu_[0].length; i=i+2) {
+			//pnlAlways_.add(new CommandButton(menu_[0][i-1], menu_[0][i], false));
+		//}
+		for (int i=1; i<menu_[0].length; i=i+2) {
+			String m1 = menu_[0][i-1].trim();
+			String m2 = menu_[0][i].trim();
+			if (m2.equals("#label")) {
+				JLabel lbl = new JLabel(m1);
+				lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+				lbl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+				pnlAlways_.add(lbl);
+			} else {
+				JPanel bPnl = new CommandButton(m1, m2, (i<=1));
+				bPnl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+				bPnl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+				pnlAlways_.add(bPnl);
+			}
+		}
 	}
 
 	private void updateSequentialMenu() {
@@ -318,7 +345,7 @@ public class MenuDialog extends JPanel {
 			int idx = -1;
 			while ( (idx = command.indexOf("#", idx+1)) != -1 ) {
 				char c = command.charAt(idx + 1);
-				if (c == 'd' || c == 'D'|| c == 'i' || c == 'I' || c == 'c' || c == 'C') {
+				if (c == 'D' || c == 'I' || c == 'T') {
 					JTextField f = new JTextField();
 					f.setName("#"+c);
 					f.setPreferredSize(new Dimension(60,20));
@@ -337,11 +364,11 @@ public class MenuDialog extends JPanel {
 						for (int i=0; i<fieldList_.size(); i++) {
 							String type = fieldList_.get(i).getName();
 							String argc = fieldList_.get(i).getText();
-							if (type.toLowerCase().equals("#d"))
+							if (type.equals("#D"))
 								Double.parseDouble(argc);
-							else if (type.toLowerCase().equals("#i"))
+							else if (type.equals("#I"))
 								Integer.parseInt(argc);
- 							else if (type.toLowerCase().equals("#c"))
+ 							else if (type.equals("#T"))
 								argc = "\'"+argc+"\'";
 							else 
 								continue;
@@ -429,11 +456,14 @@ public class MenuDialog extends JPanel {
 			try {
 				interpreter.exec(executingCommand_);
 			} catch (Exception e) {
-				//if (e instanceof ScriptCanceledException) 
-				if (e.toString().indexOf("ScriptCanceledException") > 0)
+				if (e.toString().indexOf("Script Canceled.") > 0) {
 					JOptionPane.showMessageDialog(this, "Script Canceled.");
-				else {
-					JOptionPane.showMessageDialog(this, e.toString());
+				} else {
+					if (e.toString().indexOf("org.omg.CORBA.COMM_FAILURE:") > 0) {
+						String err = e.toString().split("org.omg.CORBA.COMM_FAILURE:")[0];
+						JOptionPane.showMessageDialog(this, "Communication error occured."+err);
+						System.out.println(e.toString());
+					}
 					System.out.println(e.toString());
 				}
 				setContinuous(false);
@@ -500,13 +530,10 @@ public class MenuDialog extends JPanel {
 			thread_ = null;
 		}
 
-
 		Container c = this.getParent();
 		if (c != null)
 			c.remove(this);
 		isWaiting_ = false;
 		return true;
 	}
-
-	static public class ScriptCanceledException extends Exception {}
 }
