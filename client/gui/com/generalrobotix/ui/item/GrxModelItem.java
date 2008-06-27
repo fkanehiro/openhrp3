@@ -66,7 +66,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	private int[] jointToLink_; // length = joint number
 	private final Map<String, LinkInfoLocal> lInfoMap_ = new HashMap<String, LinkInfoLocal>();
 	private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
-	private final Map<SensorType, List<SensorInfoLocal>> sensorMap_ = new HashMap<SensorType, List<SensorInfoLocal>>();
+	private final Map<String, List<SensorInfoLocal>> sensorMap_ = new HashMap<String, List<SensorInfoLocal>>();
 	private List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
 	
 	private Switch switchCom_;
@@ -1659,7 +1659,7 @@ System.out.println( "   ShapeInfo.PrimitiveType error!" );
 				}
 				l.add(sensors[i]);
 				
-				if (sensors[i].type.equals(SensorType.VISION_SENSOR)) {
+				if (sensors[i].type.equals("Vision")) {
 					CameraParameter prm = new CameraParameter();
 					prm.defName = new String(sensors[i].name);
 					prm.sensorName = new String(sensors[i].name);
