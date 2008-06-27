@@ -66,7 +66,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	private int[] jointToLink_; // length = joint number
 	private final Map<String, LinkInfoLocal> lInfoMap_ = new HashMap<String, LinkInfoLocal>();
 	private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
-	private final Map<String, List<SensorInfoLocal>> sensorMap_ = new HashMap<String, List<SensorInfoLocal>>();
+	private final Map<SensorType, List<SensorInfoLocal>> sensorMap_ = new HashMap<SensorType, List<SensorInfoLocal>>();
 	private List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
 	
 	private Switch switchCom_;
