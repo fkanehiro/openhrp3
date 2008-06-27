@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxWorldStateItem.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -52,12 +61,14 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	private AxisAngle4d a4dg = new AxisAngle4d();
 	private Matrix3d m3dg = new Matrix3d();
 
+	private String tempDirBase_;
 	private String tempDir_;
 	
 	public GrxWorldStateItem(String name, GrxPluginManager manager) {
     	super(name, manager);
 
-		tempDir_ = System.getProperty("java.io.tmpdir")+"/grxui-"+System.getProperty("user.name")+File.separator+getName();
+		tempDirBase_ = System.getProperty("java.io.tmpdir")+File.separator+"grxui-"+System.getProperty("user.name")+File.separator;
+		tempDir_ = tempDirBase_+getName();
 
 		save_.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
@@ -125,9 +136,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
 	
 	public void rename(String newName) {
-		File oldDir = new File("log"+File.separator+getName());
+		File oldDir = new File(tempDir_);
 		super.rename(newName);
-		File newDir = new File("log"+File.separator+getName());
+		File newDir = new File(tempDirBase_+getName());
 		if (newDir.isDirectory()) 
 			newDir.delete();
 		
@@ -136,7 +147,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		else 
 			newDir.mkdir();
 		
-		logger_.setTempDir(newDir.getPath());
+		tempDir_ = newDir.getPath();
+		logger_.setTempDir(tempDir_);
 	}
 	
 	public void clearLog() {
@@ -329,7 +341,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			return;
 		initFlag_ = false;
 		save_.setEnabled(true);
-		saveCSV_.setEnabled(false);
+		saveCSV_.setEnabled(true);
 		SimulationTime stime = new SimulationTime();
 		stime.setCurrentTime(newStat_.time);
 		stime.setStartTime(newStat_.time);
@@ -447,7 +459,6 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	private void loadLog(final File logFile) {
         save_.setEnabled(false);
-        saveCSV_.setEnabled(false);
 		manager_.processingWindow_.setTitle("Load worldstate log");
 		manager_.processingWindow_.setMessage("Loading log as a file:log/"+getName()+".log ...");
 		manager_.processingWindow_.setVisible(true);
@@ -455,6 +466,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			public void run() {
 				_loadLog(logFile);
 				manager_.processingWindow_.setVisible(false);
+        		saveCSV_.setEnabled(true);
 			}
 		};
 		t.start();
@@ -462,15 +474,19 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 
 	private void _loadLog(File logFile) {
 		try {
-			File dir = new File("log"+File.separator+getName());
+			if (logFile == null) 
+				logFile = new File("log"+File.separator+getName()+".log");
+
+			if (!logFile.isFile())
+				return;
+
+            String fname = logFile.getAbsolutePath();
+
+			File dir = new File(tempDir_);
 			if (!dir.isDirectory())
 				dir.mkdir();
             clearLog();
 			logger_.setTempDir(tempDir_);
-
-			String fname = "log"+File.separator+getName()+".log";
-            if (logFile != null && logFile.isFile()) 
-                fname = logFile.getAbsolutePath();
 			logger_.load(fname, "");
 			logger_.openAsRead();
 			logger_.openCollisionLogAsRead();
@@ -548,7 +564,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
 	
 	private void saveLog() {
-        saveCSV_.setEnabled(true);
+        save_.setEnabled(false);
 		manager_.processingWindow_.setTitle("Save worldstate log");
 		manager_.processingWindow_.setMessage("Saving log as log/"+getName()+".log ...");
 		manager_.processingWindow_.setVisible(true);
@@ -557,37 +573,42 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 				try {
 					logger_.closeAsWrite();
 					logger_.closeCollisionLogAsWrite();
-					logger_.save("log"+File.separator+
-							GrxWorldStateItem.this.getName()+".log", getName()+".prj");
-					Thread.sleep(2000);
-				} catch (IOException e) {
+					logger_.save("log"+File.separator+GrxWorldStateItem.this.getName()+".log", getName()+".prj");
+				} catch (Exception e) {
 					e.printStackTrace();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				} finally {
+					manager_.processingWindow_.setVisible(false);
 				}
-				manager_.processingWindow_.setVisible(false);
 			}
 		};
 		t.start();
 	}
 	
 	private void saveCSV() {
+        save_.setEnabled(false);
 		manager_.processingWindow_.setTitle("Save log as CSV");
 		manager_.processingWindow_.setMessage("Saving each log as log/"+getName()+"/*.csv ...");
 		manager_.processingWindow_.setVisible(true);
 		Thread t = new Thread() {
 			public void run() {
-				for (int i=0; i<preStat_.charList.size(); i++) {
-					String name = preStat_.charList.get(i).characterName;
-					String fname = "log"+File.separator+
-							GrxWorldStateItem.this.getName()+File.separator+name+".csv";
-					try {
-				  		logger_.saveCSV(fname, name);
-					} catch (FileOpenFailException e) {
-						e.printStackTrace();
+				try {
+					String fname = "log"+File.separator+GrxWorldStateItem.this.getName()+".log";
+					File f = new File(fname);
+					if (!f.isFile()) {
+						logger_.closeAsWrite();
+						logger_.closeCollisionLogAsWrite();
+						logger_.save(fname, getName()+".prj");
 					}
+					for (int i=0; i<preStat_.charList.size(); i++) {
+						String name = preStat_.charList.get(i).characterName;
+						fname = "log"+File.separator+GrxWorldStateItem.this.getName()+"_"+name+".csv";
+			  			logger_.saveCSV(fname, name);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					manager_.processingWindow_.setVisible(false);
 				}
-				manager_.processingWindow_.setVisible(false);
 			}
 		};
 		t.start();

@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxRobotStatView.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -354,9 +363,9 @@ public class GrxRobotStatView extends GrxBaseView {
 					state_.value = FORMAT1.format(Math.toDegrees(li.jointValue));
 					//#####[[Changed]] 2008.03.27
 					if (li.llimit[0] < li.ulimit[0] && (
-					        li.jointValue <= li.llimit[0] || li.ulimit[0]  <= li.jointValue)) {
-					    state_.font = MONO_BOLD_12;
-					    state_.fgColor = Color.red;
+							li.jointValue <= li.llimit[0] || li.ulimit[0]  <= li.jointValue)) {
+						state_.font = MONO_BOLD_12;
+						state_.fgColor = Color.red;
 					}
 					return state_;
 				case 3:
@@ -391,7 +400,8 @@ public class GrxRobotStatView extends GrxBaseView {
 
 	private boolean _isSwitchOn(int ch, long[] state) {
 		long a = 1 << (ch % 64);
-		if ((state[ch / 64] & a) > 0)
+		int idx = ch/64;
+		if (state.length > idx && (state[idx] & a) > 0)
 			return true;
 		return false;
 	}

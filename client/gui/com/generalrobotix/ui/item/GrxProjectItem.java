@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxProjectItem.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -472,7 +481,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			for (int i = 0; i < minfo.viewList.getLength(); i++)
 				_restorePlugin((Element) minfo.viewList.item(i));
 		}
-		
+	/*	
 		List<GrxBaseView> vl = manager_.getActiveViewList();
 		for (int i=0; i<vl.size(); i++) 
 			vl.get(i).restoreProperties();
@@ -482,6 +491,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		*/
 		
 		if (minfo.itemList != null) {
             List<GrxBaseItem> il = new ArrayList<GrxBaseItem>();
@@ -498,6 +508,10 @@ public class GrxProjectItem extends GrxBaseItem {
 			    manager_.setSelectedItem(item, select);
             }
 		}
+
+		List<GrxBaseView> vl = manager_.getActiveViewList();
+		for (int i=0; i<vl.size(); i++) 
+			vl.get(i).restoreProperties();
 		
 		manager_.processingWindow_.setVisible(false);
 	}

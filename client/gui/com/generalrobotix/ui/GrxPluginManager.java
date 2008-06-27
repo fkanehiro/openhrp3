@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxPluginManager.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -104,10 +113,16 @@ public class GrxPluginManager
 			public void actionPerformed(ActionEvent arg0) {
 				_updateItemSelection();
 
-		        if (isItemModelChanged_)  {
-		          treeModel_.reload();
-		          isItemModelChanged_ = false;
-                }
+				if (isItemModelChanged_) {
+					SwingUtilities.invokeLater(
+						new Runnable() {
+							public void run() {
+								treeModel_.reload();
+							}
+						}
+					);
+					isItemModelChanged_ = false;
+				}
 
 				_control();
 			}
@@ -198,7 +213,7 @@ public class GrxPluginManager
 			}
 		}.start();
 
-		frame_.setVisible(true);
+//		frame_.setVisible(true);
 
 		String defaultMode = System.getProperty("MODE", "");
 		GrxModeInfoItem mode = (GrxModeInfoItem)getItem(GrxModeInfoItem.class, defaultMode);
@@ -268,20 +283,26 @@ public class GrxPluginManager
 		// update window config
 		frame_.updateTab(selectedViewList_);
 		frame_.setConfigElement(rcProject_.getWindowConfigElement(currentMode_.getName()));
-		Element el = currentProject_.getWindowConfigElement(currentMode_.getName());
-		frame_.restoreConfig(el);
+		final Element el = currentProject_.getWindowConfigElement(currentMode_.getName());
+		SwingUtilities.invokeLater(
+			new Runnable(){
+				public void run() {
+					frame_.restoreConfig(el);
+				}
+			}
+		);
 		
-		currentProject_.restoreProject();
-
 		now = max = min = 0.0;
 		for (int i=0; i<selectedViewList_.size(); i++)
 			selectedViewList_.get(i).start();
 		timer_.start();
+
+		currentProject_.restoreProject();
 	}
 
 	void setFrame(GrxUIFrame frame) {
 		frame_ = frame;
-		processingWindow_ = new GrxProcessingWindow(frame_, true);
+		processingWindow_ = new GrxProcessingWindow(frame_, false);
 		frame_.setConfigFileName(rcProject_.getURL(true));
 	}
 
@@ -312,7 +333,19 @@ public class GrxPluginManager
 
 		    	PluginInfo pi = new PluginInfo();
                 pi.title = (String)GrxBasePlugin.getField(cls, "TITLE", cls.getSimpleName());
-				pi.lastDir = new File(homePath_+(String)GrxBasePlugin.getField(cls, "DEFAULT_DIR", ""));
+				String default_dir = (String)GrxBasePlugin.getField(cls, "DEFAULT_DIR", "");
+				File dir = new File(homePath_+default_dir);
+				if (dir.isDirectory()) {
+					pi.lastDir = dir;
+				} else {
+					String user_dir = System.getProperty("user.dir","")+File.separator;
+					dir = new File(user_dir+default_dir);
+					if (dir.isDirectory()) {
+						pi.lastDir = dir;
+					} else {
+						pi.lastDir = new File(user_dir);
+					}
+				}
 				String ext = (String)GrxBasePlugin.getField(cls, "FILE_EXTENSION", null);
 				if (ext != null)
 					pi.filter = GrxGuiUtil.createFileFilter(ext);
@@ -514,10 +547,16 @@ public class GrxPluginManager
 	public void removeItem(GrxBaseItem item) {
 		Enumeration e = root_.depthFirstEnumeration();
 		while (e.hasMoreElements()) {
-			DefaultMutableTreeNode n = (DefaultMutableTreeNode) e.nextElement();
+			final DefaultMutableTreeNode n = (DefaultMutableTreeNode) e.nextElement();
 			if (n.getUserObject() == item) {
 				try {
-					treeModel_.removeNodeFromParent(n);
+					SwingUtilities.invokeLater(
+						new Runnable() {
+							public void run() {
+								treeModel_.removeNodeFromParent(n);
+							}
+						}
+					);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
@@ -719,7 +758,7 @@ public class GrxPluginManager
 			load.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					JFileChooser fc = getFileChooser();
-
+System.out.println(pi.lastDir);
 					fc.setCurrentDirectory(pi.lastDir);
 					if (pi.filter != null)
 					    fc.setFileFilter(pi.filter);

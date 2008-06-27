@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxIOBClientView.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -434,22 +443,18 @@ public class GrxIOBClientView extends GrxBaseView {
 				if (item instanceof GrxWorldStateItem)
 					currentItem_ = (GrxWorldStateItem) item;
 			}
-			if (currentItem_ == null) {
+			if (currentItem_ == null)
 				btnConnect_.setEnabled(false);
-			} else {
+			else
 				btnConnect_.setEnabled(true);
-			}
 		}
 
-		if (!itemList.contains(currentModel_)) {
-			if (state_ == CONNECTED)
-				setConnectionState(CONNECTING);
-		}
+		if (!itemList.contains(currentModel_) && state_ == CONNECTED)
+			setConnectionState(CONNECTING);
 	}
 
 	public void restoreProperties() {
 		super.restoreProperties();
-
 		startMonitor(false);
 	}
 
@@ -530,39 +535,48 @@ public class GrxIOBClientView extends GrxBaseView {
 	}
 
 	private void servoOn() {
+		if (isAnyServoOn())
+			return;
+		
+		ioCtrl_.power("all", SwitchStatus.SWITCH_ON);
+			
 		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
-				"!! Robot Motion Warning (Servo ON)!!\n" + 
-				"Confirm Turn Relay On.\n" + 
-				"Then Push [OK] to Servo On.\n", 
+				"!! Robot Motion Warning (SERVO ON) !!\n" + 
+				"Confirm turn RELAY ON.\n" + 
+				"Then Push [OK] to servo ON.\n", 
 				"Servo ON",
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-				manager_.ROBOT_ICON);
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
 		if (ans == JOptionPane.OK_OPTION) {
 			try {
 				destroyAllPlugin(false);
+
+				ioCtrl_.sendMsg(":gain normal");
 				if (seqplay_ != null) 
 					seqplay_.sendMsg(":go-actual");
-
+				pluginManager_.sendMsg(":wait 0.1");	
 				ioCtrl_.servo("all", SwitchStatus.SWITCH_ON);
 				btnServo_.setIcon(servoOffIcon_);
 				btnServo_.setToolTipText("Servo Off");
 			} catch (Exception e) {
+		        ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
 				GrxDebugUtil.printErr("got exception during servo on process:", e);
 			}
 		} else {
+		    ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
 			btnServo_.setSelected(false);
 		}
 	}
 
 	private void servoOff() {
 		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
-				"!! Robot Motion Warning (Servo OFF)!!\n\n" + 
-				"Push [OK] to stop Servo.\n", 
+				"!! Robot Motion Warning (SERVO OFF) !!\n\n" + 
+				"Push [OK] to servo OFF.\n", 
 				"Servo OFF",
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
 		if (ans == JOptionPane.OK_OPTION) {
 			try {
 				ioCtrl_.servo("all", SwitchStatus.SWITCH_OFF);
+		   		ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
 				btnServo_.setIcon(servoOnIcon_);
 				btnServo_.setToolTipText("Servo On");
 			} catch (Exception e) {
@@ -643,13 +657,15 @@ public class GrxIOBClientView extends GrxBaseView {
 			String[] plist = manager.getPluginNames();
 			for (int i=0; i<plist.length; i++) {
 				try {
-					PluginHelper.narrow(GrxCorbaUtil.getReference(plist[plist.length-1-i], nsHost_, nsPort_)).stop();
 					String name = plist[plist.length-1-i];
 					org.omg.CORBA.Object obj = GrxCorbaUtil.getReference(name, nsHost_, nsPort_);
-					if (!obj._is_equivalent(seqplay_) && 
-						!obj._is_equivalent(provider_) && 
-						!obj._is_equivalent(ioCtrl_))
+					if ((seqplay_  != null && !obj._is_equivalent(seqplay_)) && 
+						(provider_ != null && !obj._is_equivalent(provider_)) && 
+						(ioCtrl_   != null && !obj._is_equivalent(ioCtrl_))) {
+						PluginHelper.narrow(obj).stop();
 						manager.sendMsg(":destroy " + name);
+						System.out.println("destroy plugin :" + name);
+					}
 				} catch (Exception e) {
 					GrxDebugUtil.printErr("destroyAllPlugin:",e);
 				}

@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxORBMonitor.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -12,128 +21,112 @@ package com.generalrobotix.ui.util;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.*;
 
 import javax.swing.*;
 
 @SuppressWarnings("serial")
-public class GrxORBMonitor extends JPanel {
-	private static GrxORBMonitor this_ = null;
-    private JDialog dialog_ = null;
-    
-	private JTextField jTextField = null;
-	private JTextField jTextField1 = null;
-	private JLabel jLabel2 = null;
-	private JPanel jPanel = null;
-	private JTextArea jTextArea = null;
-	//private JCheckBox checkActive = new JCheckBox("Check Active",true);
+public class GrxORBMonitor extends JPanel 
+{
+	private static final KeyStroke KS_ENTER = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0);
+
+	private JComboBox  cmbHost_;
+	private JTextField fldHost_;
+	private JTextField fldPort_;
+	private JTextArea  area_;
 
     public GrxORBMonitor() {
 		super(new BorderLayout());
-		// Panel North
-		
-		jPanel = new JPanel(new GridLayout(2,1));
-		jPanel.add(new JLabel("NameService Host"), null);
-		jPanel.add(getJTextField(), null);
-		jPanel.add(new JLabel("NameService Port"), null);
-		jPanel.add(getJTextField1(), null);
-		
-		JButton jButton = new JButton("update");
-		jButton.setPreferredSize(new Dimension(100,26));
-		jButton.addActionListener(new java.awt.event.ActionListener() { 
-			public void actionPerformed(java.awt.event.ActionEvent e) {
+
+		JButton btnUpdate = new JButton("update");
+		btnUpdate.setPreferredSize(new Dimension(120,20));
+		btnUpdate.addActionListener(new ActionListener() { 
+			public void actionPerformed(ActionEvent e) {
 				update();
 			}
 		});
-		JPanel jPanel2 = new JPanel(new BorderLayout());
-		jPanel2.add(jButton, BorderLayout.NORTH);
-		
-		JPanel northPane = new JPanel();
-		northPane.add(jButton, null);
-		northPane.add(jPanel, null);
-		add(northPane, BorderLayout.NORTH);
-		
-		// Panel Center
-		//JPanel jPanel3 = new JPanel();
-		//jPanel3.setLayout(new BoxLayout(jPanel3, BoxLayout.Y_AXIS));
-		//jPanel3.add(getJLabel2(), null);
-		//jPanel3.add(new JScrollPane(getJTextArea()), null);
-		add(new JScrollPane(getJTextArea()), BorderLayout.CENTER);
-		
-		add(getJLabel2(), BorderLayout.SOUTH);
-		
-		setSize(412, 280);
+
+ 		cmbHost_ = new JComboBox(new String[]{"localhost"});
+		cmbHost_.setEditable(true);
+		cmbHost_.setPreferredSize(new Dimension(80, 20));
+		fldHost_ = (JTextField)cmbHost_.getEditor().getEditorComponent();
+		fldHost_.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+				if (ks == KS_ENTER)
+					update();
+			}
+		}); 
+
+		fldPort_ = new JTextField("2809");
+		fldPort_.setPreferredSize(new Dimension(80,20));
+		fldPort_.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+				if (ks == KS_ENTER)
+					update();
+			}
+		}); 
+
+		JPanel pnl = new JPanel();
+		pnl.add(new JLabel("Host"));
+		pnl.add(cmbHost_);
+		pnl.add(new JLabel("Port"));
+		pnl.add(fldPort_);
+		pnl.add(btnUpdate);
+		this.add(pnl, BorderLayout.NORTH);
+
+		area_ = new JTextArea();
+		area_.setEditable(false);
+		this.add(new JScrollPane(area_), BorderLayout.CENTER);
 	}
-    
-	private JTextField getJTextField() {
-		if(jTextField == null) {
-			jTextField = new JTextField("localhost");
-		}
-		return jTextField;
-	}
-	private JTextField getJTextField1() {
-		if(jTextField1 == null) {
-			jTextField1 = new JTextField("2809");
-		}
-		return jTextField1;
-	}
-	private JLabel getJLabel2() {
-		if(jLabel2 == null) {
-			jLabel2 = new JLabel("NS_URL:");
-			jLabel2.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
-		}
-		return jLabel2;
-	}
-	private JTextArea getJTextArea() {
-		if(jTextArea == null) {
-			jTextArea = new JTextArea();
-			jTextArea.setEditable(false);
-		}
-		return jTextArea;
+
+	public void setHosts(String[] hosts) {
+		cmbHost_.removeAllItems();
+		for (int i=0; i<hosts.length; i++) 
+			cmbHost_.addItem(hosts[i]);
 	}
 	
-	// public methods --------------------------------------------------------
-	public static GrxORBMonitor getInstance() {
-		if (this_ == null){
-			this_ =  new GrxORBMonitor();
+	private void update() {
+		String host = (String)fldHost_.getText();
+		if (host.equals(""))
+			host = "localhost";
+
+		int port = 2809;
+		try {
+			port = Integer.parseInt(fldPort_.getText());
+		} catch(Exception e) {
+			area_.setText("Can't parse port as integer : "+fldPort_.getText()+" .");
+			return;
 		}
-		return this_;
-	}
-	public void showDialog(JFrame frame){
-		if (dialog_ == null){
-			dialog_ = new JDialog(frame,"ORB Monitor",false);
-			dialog_.pack();
-			//GuiUtil.setWindowConfig("orbmonitor",dialog_,new Dimension(400,400));
-			dialog_.setContentPane(this);
-			dialog_.addWindowListener(new java.awt.event.WindowAdapter() { 
-				public void windowClosing(java.awt.event.WindowEvent e) {    
-					dialog_.setVisible(false);
-				}
-			});
-		}
-		getJTextArea().setText("");
-		dialog_.setVisible(true);
-	}
-	public void update(){
-		String nsHost = getJTextField().getText();   
-		String nsPort = getJTextField1().getText();
-		if (nsHost == null || nsPort == null) return;
-		int nsPortInt = Integer.parseInt(nsPort);
-		getJLabel2().setText("NS_URL: corbaloc:iiop:"+nsHost+":"+nsPort+"/NameService");
-		
-		String s[] = GrxCorbaUtil.getObjectNameList(nsHost,nsPortInt);
-		getJTextArea().setText("");
-		if (s==null) return;
-		
-		for (int i=0;i<s.length;i++){
-			String str = null;
-			if (GrxCorbaUtil.isConnected(s[i],nsHost,nsPortInt)){
-				str = "(    Active    )  "+s[i]+"\n";
-			} else {
-				str = "( not Active )  "+s[i]+"\n";
+
+		boolean b = true;
+		for (int i=0; i<cmbHost_.getItemCount(); i++) {
+			String val = (String)cmbHost_.getItemAt(i);
+			if (host.equals(val)) {
+				b = false;
+				break;
 			}
-			jTextArea.append(str);
+		}
+
+		area_.setText("accessing "+host+":"+port+" ...");
+		String s[] = GrxCorbaUtil.getObjectNameList(host, port);
+		if (s == null) {
+			area_.setText("Accessing to NameService( "+host+" : "+port+" ) ... failed.");
+			return;
+		}
+
+		area_.setText("");
+		if (b) {
+			cmbHost_.addItem(host);
+			cmbHost_.setSelectedItem(host);
 		}
 		
-		GrxDebugUtil.println("ObjectNum:"+s.length);
+		for (int i=0; i<s.length; i++) {
+			if (GrxCorbaUtil.isConnected(s[i], host, port))
+				area_.append("(    Active    )  "+s[i]+"\n");
+			else
+				area_.append("( not Active )  "+s[i]+"\n");
+		}
 	}
-}  //  @jve:visual-info  decl-index=0 visual-constraint="-123,-111"
+}  

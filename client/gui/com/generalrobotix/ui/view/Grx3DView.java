@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  Grx3DView.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -490,6 +499,7 @@ public class Grx3DView
 			selectionChanged = true;
 		}
 
+		currentWorld_ = null;
 		Iterator it = itemList.iterator();
 		while (it.hasNext()) {
 			GrxBaseItem item = (GrxBaseItem) it.next();
@@ -524,6 +534,7 @@ public class Grx3DView
         viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
         viewToolBar_.setOperation(ViewToolBar.ROTATE);
         stateLogger_ = (GrxLoggerView)manager_.getView(GrxLoggerView.class);
+
        	return registerCORBA();
 	}
 	
@@ -571,8 +582,22 @@ public class Grx3DView
 			return;
 		
     	RecordingDialog dialog = new RecordingDialog(manager_.getFrame());
-    	if (dialog.showModalDialog() != ModalDialog.OK_BUTTON)
+    	if (dialog.showModalDialog() != ModalDialog.OK_BUTTON) {
+			btnRec_.setSelected(false);
     	    return;
+		}
+
+    	String fileName = dialog.getFileName();
+		if (fileName.equals("")) {
+			JOptionPane.showMessageDialog(manager_.getFrame(), "Input file name.");
+			btnRec_.setSelected(false);
+			return;
+		}
+
+    	if (!fileOverwriteDialog(fileName)) {
+			btnRec_.setSelected(false);
+    		return;
+    	}
     	
     	Dimension screen = canvas_.getSize();
     	GrxDebugUtil.println("ScreenSize: " + screen.width + "x" + screen.height + " (may be)");
@@ -588,12 +613,6 @@ public class Grx3DView
     	recordingMgr_.setImageSize(screen.width , screen.height);
     	recordingMgr_.setFrameRate(1000.0f/manager_.getDelay() * (float)stateLogger_.getPlayRate());
     	
-    	String fileName = dialog.getFileName();
-    	if (new File(fileName).exists()) {
-    		if (!fileOverwriteDialog(fileName))
-    			return;
-    	}
-
     	lastMovieFileName = pathToURL(fileName);
     	ComboBoxDialog cmb = new ComboBoxDialog(
     			manager_.getFrame(), 
@@ -601,14 +620,17 @@ public class Grx3DView
     			"Select Video format, Please.",
     			recordingMgr_.preRecord(lastMovieFileName, ImageToMovie.QUICKTIME));
     	String format__ = (String)cmb.showComboBoxDialog();
-    	if (format__ == null) 
+    	if (format__ == null) {
+			btnRec_.setSelected(false);
     		return;
+		}
     	
     	try {
     		recordingMgr_.startRecord(format__);
     	} catch (Exception e) {
     		GrxDebugUtil.printErr("Grx3DView.rec():",e);
 			JOptionPane.showMessageDialog(manager_.getFrame(), "Failed to Record Movie");
+			btnRec_.setSelected(false);
 			return;
     	}
 		canvas_.setRaster( raster_ );
@@ -624,14 +646,19 @@ public class Grx3DView
     }
     
     private boolean fileOverwriteDialog(String fileName){
-        if  (new File(fileName).isDirectory())
-        	return false;
-        
-    	int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
-    		fileName + " " + "is already exist. Are you over write?",
-    	    "File is already exist.",JOptionPane.YES_NO_OPTION);
-    	if (ans == JOptionPane.YES_OPTION)
-    	    return true;
+		File file = new File(fileName);
+		if (!file.exists()) {
+			return true;
+		}
+
+		if (file.isFile()) {
+    		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
+    			fileName + " " + "is already exist. Are you over write?",
+    	    	"File is already exist.",JOptionPane.YES_NO_OPTION);
+    		if (ans == JOptionPane.YES_OPTION) {
+    	    	return true;
+			}
+		}
     	
     	return false;
     }
@@ -935,7 +962,7 @@ public class Grx3DView
 					arg1.value = new Camera[l.size()];
 					for (int j=0; j<l.size(); j++) {
 						try {
-							arg1.value[i] = CameraHelper.narrow(manager_.poa_.servant_to_reference(l.get(i)));
+							arg1.value[j] = CameraHelper.narrow(manager_.poa_.servant_to_reference(l.get(j)));
 						} catch (ServantNotActive e) {
 							e.printStackTrace();
 						} catch (WrongPolicy e) {

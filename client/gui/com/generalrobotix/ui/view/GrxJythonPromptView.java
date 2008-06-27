@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxJythonPromptView.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -16,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.Component;
 import java.io.*;
 import java.net.URL;
 import java.util.LinkedList;
@@ -45,7 +55,6 @@ public class GrxJythonPromptView extends GrxBaseView {
 	private JScrollPane scArea_ = new JScrollPane(area_);
 	private static final int DEFAULT_MAX_ROW = 500;
 	private String prompt_ = ">>> ";
-	private String com_;
 	private Writer writer_;
 	
 	private JSplitPane spltPane_ = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -59,6 +68,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 	private static final KeyStroke KS_SHIFT = KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT, KeyEvent.SHIFT_MASK);
 	private static final KeyStroke KS_CTRL  = KeyStroke.getKeyStroke(KeyEvent.VK_CONTROL, KeyEvent.CTRL_MASK);
 	
+	private static final KeyStroke KS_CTRL_C = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK);
 	private static final KeyStroke KS_CTRL_U = KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_MASK);
 	private static final KeyStroke KS_CTRL_A = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
 	private static final KeyStroke KS_CTRL_E = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_MASK);
@@ -102,14 +112,25 @@ public class GrxJythonPromptView extends GrxBaseView {
 					btnExec_.setToolTipText("interrupt python threads");
 					execFile();
 				} else {
-					if (commandPane_ != null && !commandPane_.exit()) { 
-						btnExec_.setSelected(true);
-						return;
+					if (commandPane_ == null) {
+						if (JOptionPane.showConfirmDialog(manager_.getFrame(),
+								"Are you sure stop script ?\n",
+								"exec script",JOptionPane.OK_CANCEL_OPTION) 
+								== JOptionPane.CANCEL_OPTION) {
+							btnExec_.setSelected(true);
+							return;
+						}
+					} else {
+			   			if (!commandPane_.exit()) { 
+							btnExec_.setSelected(true);
+							return;
+						}
 					}
+
 					btnExec_.setIcon(SIM_SCRIPT_START_ICON);
 					btnExec_.setToolTipText("execute script file");
 					area_.setEnabled(true);
-					interrupt();
+					interrupt(thread_2_);
 				}
 			}
 		});
@@ -172,19 +193,12 @@ public class GrxJythonPromptView extends GrxBaseView {
 		spltPane_.setOneTouchExpandable(true);
 	}
 	
-	public void interrupt() {
-		if (thread_1_ != null) {
+	public void interrupt(Thread thread) {
+		if (thread != null) {
 			try {
-				thread_1_.interrupt();
+				thread.interrupt();
 			} catch (Exception e) {
-				GrxDebugUtil.printErr("stop thread1:", e);
-			}
-		}
-		if (thread_2_ != null) {
-			try {
-				thread_2_.interrupt();
-			} catch (Exception e) {
-				GrxDebugUtil.printErr("stop thread2:", e);
+				GrxDebugUtil.printErr("interrupt thread:", e);
 			}
 		}
 	}
@@ -194,44 +208,39 @@ public class GrxJythonPromptView extends GrxBaseView {
 			KeyStroke ks = KeyStroke.getKeyStrokeForEvent(evt);
 			int len = area_.getText().length();
 			int cp = area_.getCaretPosition();
-			com_ = getCommand();
-            if (thread_1_ != null) {
-		        evt.consume();	
+
+			if (ks == KS_CTRL_C) {
+				interrupt(thread_1_);
 			} else if (ks == KS_ENTER      || ks == KS_ENTER_ALT
 					|| ks == KS_ENTER_CTRL || ks == KS_ENTER_SHIFT) {
+			    if (thread_1_ != null)  
+					return;
+
 				thread_1_ = new Thread() {
 					public void run() {
-						if (com_.trim().length() <= 0)
+						String com = getCommand();
+
+						if (com.trim().length() <= 0) {
 							area_.append("\n"+prompt_);
-						else {
+						} else {
 							area_.append("\n");
-							//area_.setEditable(false);
-							btnExec_.setSelected(true);
-							btnExec_.setIcon(SIM_SCRIPT_STOP_ICON);
+							area_.setCaretPosition(area_.getText().length());
+							if (com.startsWith("dir(")) 
+								com = "print "+com;
 							try {
-								if (com_.startsWith("dir(")) {
-									interpreter_.exec("__tmp__ = " + com_);
-									Object obj = interpreter_.eval("__tmp__");
-									if (obj != null) 
-                                 			area_.append(obj.toString()+"\n"); 
-								} else {
-									interpreter_.exec(com_);
-								}
+								interpreter_.exec(com);
 							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							history_.add(1, com_);
+								showScriptError(e);
+							} 
+							history_.add(1, com);
 							if (history_.size() > HISTORY_SIZE)
-						    history_.remove(HISTORY_SIZE-1);
-							btnExec_.setSelected(false);
-							btnExec_.setIcon(SIM_SCRIPT_START_ICON);
-							//area_.setEditable(true);
-						    area_.requestFocus();
-						    area_.append(prompt_);
+				   				history_.remove(HISTORY_SIZE-1);
+				   			area_.requestFocus();
+				   			area_.append(prompt_);
 						}
-						area_.setCaretPosition(area_.getText().length());
 						hpos_ = 0;
 						thread_1_ = null;
+						area_.setCaretPosition(area_.getText().length());
 					}
 				};
 
@@ -240,10 +249,13 @@ public class GrxJythonPromptView extends GrxBaseView {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+			} else if (thread_1_ != null) {
+				return;
+		        //evt.consume();	
 			} else if (ks == KS_CTRL_U) {
-				area_.replaceRange("", len - com_.length(), len);
+				area_.replaceRange("", len - getCommand().length(), len);
 			} else if (ks == KS_CTRL_A) {
-				area_.setCaretPosition(len - com_.length());
+				area_.setCaretPosition(len - getCommand().length());
 				evt.consume();
 			} else if (ks == KS_CTRL_E) {
 				area_.setCaretPosition(len);
@@ -251,7 +263,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 				if (cp < len)
 					area_.setCaretPosition(cp + 1);
 			} else if ((ks == KS_CTRL_B || ks == KS_LEFT)) {
-				if (len - com_.length() < cp)
+				if (len - getCommand().length() < cp)
 					area_.setCaretPosition(cp - 1);
 				
 			} else if (ks == KS_SHIFT) {   // ignore input of shift key
@@ -263,7 +275,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 					area_.replaceRange("", cp - 1, cp);
 					if (hpos_ > 0) {
 					    history_.remove(hpos_);
-					    history_.add(hpos_,getCommand());
+					    history_.add(hpos_, getCommand());
 					}
 				}
 			} else if (ks == KS_DEL) {
@@ -271,7 +283,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 				    area_.replaceRange("", cp, cp + 1);
 					if (hpos_ > 0) {
 					    history_.remove(hpos_);
-					    history_.add(hpos_,getCommand());
+					    history_.add(hpos_, getCommand());
 					}
 				}
 			} else if (ks == KS_UP || ks == KS_CTRL_P) {
@@ -298,7 +310,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 					//area_.insert(String.valueOf(arg0.getKeyChar()), cp);
 					if (hpos_ > 0) {
 					    history_.remove(hpos_);
-					    history_.add(hpos_,getCommand());
+					    history_.add(hpos_, getCommand());
 					}
 				//}
 			}
@@ -312,12 +324,27 @@ public class GrxJythonPromptView extends GrxBaseView {
 		}
 	}
 
+	private void showScriptError(Exception e) {
+		if (e.toString().indexOf("Script Canceled.") > 0) {
+			JOptionPane.showMessageDialog(manager_.getFrame(), "Script Canceled.");
+		} else if (e.toString().indexOf("org.omg.CORBA.COMM_FAILURE:") > 0) {
+			String err = e.toString().split("org.omg.CORBA.COMM_FAILURE:")[0];
+			JOptionPane.showMessageDialog(manager_.getFrame(), "Communication error occured."+err);
+			System.out.println(e.toString());
+		} else {
+			e.printStackTrace();
+		}	
+	}
+
 	public void execFile() {
 		if (currentItem_ == null)
 			return;
 
 		if (currentItem_.isEdited()) {
-			int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
+			Component parent = commandPane_;
+		  	if (parent== null)
+				parent = manager_.getFrame();
+			int ans = JOptionPane.showConfirmDialog(parent,
 				"File has been changed. Save before execute",
 				"exec script",JOptionPane.OK_CANCEL_OPTION);
 			if (ans == JOptionPane.CANCEL_OPTION || !currentItem_.save())
@@ -331,7 +358,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 	public void execFile(final String url) {
 		if (thread_2_ != null) {
 			JOptionPane.showMessageDialog(manager_.getFrame(), 
-				"The previous script has been running yet.");
+				"The previous script has been stil running.");
 			return;
 		}
 
@@ -341,6 +368,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 				"File " + f.getPath() + " is not exist.");
 			return;
 		}
+
 		File p = f.getParentFile();
 		interpreter_.exec("import sys");
 		interpreter_.exec("rbimporter.refresh()");
@@ -361,18 +389,27 @@ public class GrxJythonPromptView extends GrxBaseView {
 						e.printStackTrace();
 					}
 				}
+
+				btnExec_.setEnabled(true);
+				btnExec_.setSelected(true);
+				btnExec_.setIcon(SIM_SCRIPT_STOP_ICON);
+				btnExec_.setToolTipText("interrupt python threads");
+
+				interpreter_.exec("print 'execfile("+url+")'");
 				try {
-					interpreter_.exec("print 'execfile("+url+")'");
 					interpreter_.execfile(url);
 				} catch (Exception e) {
-					e.printStackTrace();
+					showScriptError(e);
+				} finally {
+					if (currentItem_ == null) 
+						btnExec_.setEnabled(false);
+					btnExec_.setSelected(false);
+					btnExec_.setIcon(SIM_SCRIPT_START_ICON);
+					btnExec_.setToolTipText("execute script file");
+					area_.setCaretPosition(area_.getText().length());
+					hpos_ = 0;
+					thread_2_ = null;
 				}
-				btnExec_.setSelected(false);
-				btnExec_.setIcon(SIM_SCRIPT_START_ICON);
-				btnExec_.setToolTipText("execute script file");
-				area_.setCaretPosition(area_.getText().length());
-				hpos_ = 0;
-				thread_2_ = null;
 			}
 		};
 		thread_2_.start();
@@ -410,7 +447,6 @@ public class GrxJythonPromptView extends GrxBaseView {
 		} catch (Exception e) {
 			interpreter_.exec("print 'failed to connect NameService("+nameservice+")'");
 		}
-		
 		area_.setMaximumRowCount(getInt("maxRowCount", DEFAULT_MAX_ROW));
 		
 		String defaultScript = System.getProperty("SCRIPT");
@@ -430,47 +466,54 @@ public class GrxJythonPromptView extends GrxBaseView {
 	}
 	
 	public void waitInput(String msg) {
-		JOptionPane.showMessageDialog(manager_.getFrame(), msg);
+		Component parent = commandPane_;
+	  	if (parent == null)
+			parent = manager_.getFrame();
+		JOptionPane.showMessageDialog(parent, msg);
 	}
 
 	public boolean waitInputConfirm(String msg) throws Exception { 
-		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
-			msg, "waitInputConfirm",
+		Component parent = commandPane_;
+	  	if (parent == null)
+			parent = manager_.getFrame();
+		int ans = JOptionPane.showConfirmDialog(parent, msg, "waitInputConfirm",
 			JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE,
 			manager_.ROBOT_ICON);
 
 		if (ans == JOptionPane.OK_OPTION)
 			return true;
-
-		if (commandPane_ != null)
-			throw new MenuDialog.ScriptCanceledException();
-
-		interrupt();
-		return true;
+		
+		throw new Exception("Script Canceled.");
 	}
 
 	public boolean waitInputSelect(String msg) throws Exception {
-		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
-			msg,"waitInputSelect",
+		Component parent = commandPane_;
+	  	if (parent == null)
+			parent = manager_.getFrame();
+		int ans = JOptionPane.showConfirmDialog(parent, msg, "waitInputSelect",
 			JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE,
 			manager_.ROBOT_ICON);
 
 		if (ans == JOptionPane.YES_OPTION)
 			return true;
 
-	    if (ans != JOptionPane.NO_OPTION) {
-			if (commandPane_ != null)
-				throw new MenuDialog.ScriptCanceledException();	
-			interrupt();
-		}
+	    if (ans != JOptionPane.NO_OPTION) 
+			throw new Exception("Script Canceled.");
+
 		return false;
 	}
 
-	public Object waitInputMessage(String msg) {
-		return JOptionPane.showInputDialog(manager_.getFrame(),
-				msg, "waitInputMessage",
-				JOptionPane.INFORMATION_MESSAGE,
-				manager_.ROBOT_ICON, null, null);
+	public Object waitInputMessage(String msg) throws Exception {
+		Component p = commandPane_;
+	  	if (p == null)
+			p = manager_.getFrame();
+		Object ret = JOptionPane.showInputDialog(p, msg, "waitInputMessage",
+			JOptionPane.INFORMATION_MESSAGE, manager_.ROBOT_ICON, null, null);
+
+		if (ret == null) 
+			throw new Exception("Script Canceled.");
+
+		return ret;
 	}
 
 	public void waitInputMenu(String[][] menuList) {
@@ -504,7 +547,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 			JDialog dialog = new JDialog(manager_.getFrame(), "WaitInputMenu" ,false);	
 			dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 			dialog.setContentPane(commandPane_);
-			dialog.setSize(400,400);
+			dialog.setSize(300, 400);
 			dialog.setVisible(true);
 
 			commandPane_.start(interpreter_);
@@ -516,7 +559,8 @@ public class GrxJythonPromptView extends GrxBaseView {
 	}
 
 	public void waitInputSetMessage(String msg) {
-		commandPane_.setMessage(msg);
+        if (commandPane_ != null)
+			commandPane_.setMessage(msg);
 	}
 
 	private class JTextComponentWriter extends Writer {
@@ -565,17 +609,5 @@ public class GrxJythonPromptView extends GrxBaseView {
 					throw new IOException();
 			}
 		}
-	}
-
-	public PythonInterpreter getInterpreter() {
-		return interpreter_;
-	}
-
-	public void exec(String command) {
-		interpreter_.exec(command);
-	}
-
-	public void execfile(String fname) {
-		interpreter_.execfile(fname);
 	}
 }

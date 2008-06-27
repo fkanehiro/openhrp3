@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
 /**
  * ControllerPanel.java
  *
@@ -396,7 +405,7 @@ public class ControllerPanel extends JPanel {
             try {
                 boxController_.setSelectedItem(node.getProperty(ATTRIBUTE_CONTROLLER, ""));
                	spinControlTime_.setValue(node.getProperty(ATTRIBUTE_CONTROL_TIME, "0.001"));
-				tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,"$(OPENHRPHOME)/bin/$(BIN_DIR)"));
+				tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,"$(BIN_DIR)"));
                 boxSetupCommand_.setSelectedItem(node.getProperty(ATTRIBUTE_SETUP_COMMAND, ""));
             } catch (Exception ex) {
                 ex.printStackTrace();

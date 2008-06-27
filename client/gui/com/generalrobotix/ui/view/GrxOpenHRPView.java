@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxOpenHRPView.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -224,25 +233,15 @@ public class GrxOpenHRPView extends GrxBaseView {
 			public void run() {
 				isExecuting_ = true;
 				try {
-System.out.println( "startSim.run() : 1"  );
 					Thread.sleep(manager_.getDelay());
-System.out.println( "startSim.run() : 2"  );
 					while (isExecuting_) {
-System.out.println( "startSim.run() : 3"  );
 						if (isSuspending_) {
-System.out.println( "startSim.run() : 4"  );
 							long s = System.currentTimeMillis();
-System.out.println( "startSim.run() : 5"  );
 							Thread.sleep(200);
-System.out.println( "startSim.run() : 6"  );
 							suspendedTime_ += System.currentTimeMillis() - s;
-System.out.println( "startSim.run() : 7"  );
 						} else {
-System.out.println( "startSim.run() : 8"  );
 							simLoop(null);
-System.out.println( "startSim.run() : 9"  );
 						}
-System.out.println( "startSim.run() : 0"  );
 					}
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(manager_.getFrame(),
@@ -322,61 +321,44 @@ System.out.println( "startSim.run() : 0"  );
 	}
 
 	private void simLoop(List<GrxBaseItem> itemList) {
-System.out.println( "  simLoop() : 1"  );
 		// check time
 		if (simTime_ > totalTime_) { // && !extendTime()) {
 			stopSimulation();
 			return;
 		}
 
-System.out.println( "  simLoop() : 2"  );
-System.out.println( "    simTime = " + simTime_ + " logStepTime = " + logStepTime_ + " stepTime = " + stepTime_ );
 		// log
 		if ((simTime_ % logStepTime_) < stepTime_) {
-System.out.println( "  simLoop() : 2.0"  );
 			currentDynamics_.getWorldState(stateH_);
-System.out.println( "  simLoop() : 2.1"  );
 			WorldStateEx wsx = new WorldStateEx(stateH_.value);
-System.out.println( "  simLoop() : 2.2"  );
 			for (int i=0; i<robotEntry_.size(); i++) {
-System.out.println( "  simLoop() : 2.3"  );
 				String name = robotEntry_.get(i);
-System.out.println( "  simLoop() : 2.4"  );
 				currentDynamics_.getCharacterSensorState(name, cStateH_);
-System.out.println( "  simLoop() : 2.5"  );
 				wsx.setSensorState(name, cStateH_.value);
-System.out.println( "  simLoop() : 2.6"  );
 			}
             if (!isIntegrate_)
                 wsx.time = simTime_;
-System.out.println( "  simLoop() : 2.7"  );
 			currentWorld_.addValue(simTime_, wsx);
-System.out.println( "  simLoop() : 2.8"  );
 		}
 
-System.out.println( "  simLoop() : 3"  );
 		// input
 	    for (int i=0; i<controllers_.size(); i++)
 	    	controllers_.get(i).input(simTime_);
 
-System.out.println( "  simLoop() : 4"  );
 		// control
 		for (int i=0; i<controllers_.size(); i++) 
 	    	controllers_.get(i).control();
 		
-System.out.println( "  simLoop() : 5"  );
 		// integrate or calculate forward kinematics
 		if (isIntegrate_) 
 			currentDynamics_.stepSimulation();
 		else 
 			currentDynamics_.calcWorldForwardKinematics();
 		
-System.out.println( "  simLoop() : 6"  );
 		// output
 		for (int i=0; i<controllers_.size(); i++) 
 	    	controllers_.get(i).output();
 
-System.out.println( "  simLoop() : 7"  );
 		simTime_ += stepTime_;
 	}
 	
@@ -521,13 +503,13 @@ System.out.println( "  simLoop() : 7"  );
 		List<GrxBaseItem> models = manager_.getSelectedItemList(GrxModelItem.class);
 		for (int i=0; i<models.size(); i++) {
 			GrxModelItem model = (GrxModelItem) models.get(i);
-			if (model.isRobot() && _setupController(model, false) < 0) 
+			if (model.isRobot() && _setupController(model) < 0) 
 				return false;
 		}
 		return true;
 	}
 	
-	private short _setupController(GrxModelItem model, boolean isViewSim) {
+	private short _setupController(GrxModelItem model) {
 		String controllerName = model.getProperty("controller");
 		double step = model.getDbl("controlTime", 0.005);
 		
