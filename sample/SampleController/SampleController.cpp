@@ -1,4 +1,13 @@
 // -*- C++ -*-
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
 /*!
  * @file  SampleController.cpp
  * @brief Sample component
@@ -23,7 +32,7 @@
 #define RARM_WRIST_Y 10
 #define RARM_WRIST_R 12
 
-#define SC_DEBUG
+//#define SC_DEBUG
 
 using namespace std;
 
@@ -60,11 +69,6 @@ SampleController::SampleController(RTC::Manager* manager)
     // </rtc-template>
 	dummy(0)
 {
-// INSERT TEST 2008/05/8 by TAWARA START
-//	std::string		local_str;
-//	std::cin >> local_str;
-// INSERT TEST 2008/05/8 by TAWARA END
-
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
   // Set InPort buffers
@@ -96,10 +100,6 @@ RTC::ReturnCode_t SampleController::onInitialize()
 {
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
-// INSERT TEST 2008/05/8 by TAWARA START
-//	std::string		local_str;
-//	std::cin >> local_str;
-// INSERT TEST 2008/05/8 by TAWARA END
   // </rtc-template>
 	Pgain = new double[DOF];
 	Dgain = new double[DOF];
@@ -236,28 +236,27 @@ RTC::ReturnCode_t SampleController::onExecute(RTC::UniqueId ec_id)
 				for(int i=0; i<DOF; i++){
 					q_goal[i] = q_ref[i] = m_angle.data[i];
 				}
-				q_goal[RARM_SHOULDER_R] = -0.2;
+				q_goal[RARM_SHOULDER_R] = -0.4;
 				q_goal[RARM_SHOULDER_P] = 0.75;
 				q_goal[RARM_ELBOW] = -2.0;
 				break;
 			case 3 : 
-				remain_t = 0.5;
+				remain_t = 2.0;
 				q_goal[RARM_ELBOW] = -1.57;
-				q_goal[RARM_SHOULDER_P] = 0.0;
-				q_goal[RARM_WRIST_R] = 0.5;
+				q_goal[RARM_SHOULDER_P] = -0.2;
+				q_goal[RARM_WRIST_R] = 1.5;
 				break;
 			case 4 :
-				remain_t =0.5;
-				q_goal[RARM_WRIST_R] = 0.4;
-				q_goal[RARM_ELBOW] = -1.45;
+				remain_t =1.0;
+				q_goal[RARM_ELBOW] = -1.3;
 				break;
 			case 5 :
-				remain_t =2.0;
+				remain_t =5.0;
 				q_goal[RARM_SHOULDER_R] = 0.1;
 				break;
 			case 6 :
-				remain_t =1.0;
-				q_goal[RARM_WRIST_R] = -0.055;
+				remain_t =2.0;
+				q_goal[RARM_WRIST_R] = -0.3;
 				break;
 			case 7 :
 				remain_t =0.5;

@@ -1,4 +1,13 @@
 // -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
 /*!
  * @file  SampleHG.cpp
  * @brief Sample LF component
@@ -165,12 +174,12 @@ RTC::ReturnCode_t SampleHG::onExecute(RTC::UniqueId ec_id)
   {
     std::cout << "SampleHG::onExecute" << std::endl;
   }
-  // Ç±ÇÃä÷êîÇÃêUÇÈïëÇ¢ÇÕController_impl::controlÇÃîhê∂êÊâºëzä÷êîÇ…ëŒâûÇ∑ÇÈ
+  // £È"ÀË’Ó«‚ÀÓU§Á5¡‚°‡ŒÂontroller_impl::control£ˆ√…øÎºÂ≠ÓΩ€≥˚ªÙ£ı1ÕÁ€‚°¶
   double dummy;
   angle >> dummy; vel >> dummy; acc >> dummy; // skip time
   int i;
 
-  //äeÉtÉ@ÉCÉãÇ©ÇÁÉfÅ[É^ÇàÍçsì«Ç›çûÇÒÇ≈É|Å[ÉgÇ…ó¨Ç∑
+  //≥∆•’•°•§•Î£Â"°¶f°º•ø§Í°¶µ‘≈Ù"°¶€‚°¶°¶|°º•»£ı7°¶
   for (i=0; i<DOF; i++)
   {
       angle >> m_angle.data[i];

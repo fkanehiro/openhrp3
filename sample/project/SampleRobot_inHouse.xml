@@ -5,7 +5,7 @@
             <property name="logTimeStep" value="0.002"/>
             <property name="integrate" value="true"/>
             <property name="viewsimulate" value="false"/>
-            <property name="totalTime" value="18.0 "/>
+            <property name="totalTime" value="25.0 "/>
             <property name="timeStep" value="0.002"/>
             <property name="method" value="RUNGE_KUTTA"/>
             <property name="gravity" value="9.8 "/>
