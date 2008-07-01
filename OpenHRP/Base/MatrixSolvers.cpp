@@ -1,4 +1,13 @@
 // -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
 
 #include <iostream>
 #include <vector>
@@ -34,7 +43,7 @@ extern "C" void dgesvd_(char const* jobu, char const* jobvt,
 						double* vt, int const* ldvt,
 						double* work, int const* lwork, int* info);
 
-extern "C" void dgeev_(char *jobvl, char *jobvr, int *n, double *A, 
+extern "C" void dgeev_(char const*jobvl, char const*jobvr, int *n, double *A, 
 					  int *lda, double *wr,double *wi, double *vl, 
 					  int *ldvl, double *vr, int *ldvr, double *work, int *lwork, int *info);
 
@@ -91,11 +100,12 @@ namespace OpenHRP {
 				int n = (int)_a.size2();
 				int nrhs = 1;
 
-				mlapack a = _a;
+				mlapack a = _a; // <-
 
 				int lda = n;
 
-				int *ipiv = new int[n];
+				//int *ipiv = new int[n];
+				std::vector<int> ipiv(n);
 				vlapack x(n);
 
 				int ldb = n;
@@ -127,6 +137,7 @@ namespace OpenHRP {
 				double *work = new double[4*n];
 
 				int *iwork = new int[n];
+
 				dgesvx_(&fact, &transpose, &n, &nrhs, &(a(0,0)), &lda, af, &ldaf, &(ipiv[0]),
 						&equed, r, c, &(b(0)), &ldb, &(x(0)), &ldx, &rcond,
 						ferr, berr, work, iwork, &info);
@@ -146,8 +157,8 @@ namespace OpenHRP {
 									 &(x(0)), ldb);
 #endif
 				_x = x;		// result
-		   
-				delete [] ipiv;
+
+				//delete [] ipiv;
 
 				return info;
 		}
@@ -314,7 +325,7 @@ namespace OpenHRP {
 				typedef boost::numeric::ublas::matrix<double> mlapack;
 				typedef boost::numeric::ublas::vector<double> vlapack;
 				
-				mlapack a    = _a;
+				mlapack a    = _a; // <-
 				mlapack evec = _evec;
 				vlapack eval = _eval;
 				
@@ -326,11 +337,8 @@ namespace OpenHRP {
 
 				int lwork = 4*n;
 				int info;
-
-				char nVar[] = "N";
-				char vVar[] = "V";
 				
-				dgeev_(nVar, vVar, &n, &(a(0,0)), &n, &(eval(0)), wi, vl, &n, &(evec(0,0)), &n, work, &lwork, &info);
+				dgeev_("N","V", &n, &(a(0,0)), &n, &(eval(0)), wi, vl, &n, &(evec(0,0)), &n, work, &lwork, &info);
 				
 				_evec = trans(evec);
 				_eval = eval;
@@ -349,7 +357,7 @@ namespace OpenHRP {
 				assert( _a.size2() == _a.size1() );
 
 				typedef boost::numeric::ublas::matrix<double> mlapack;
-				mlapack a = _a;	
+				mlapack a = _a;	// <-
 
 				int info;
 				int n = a.size2();
