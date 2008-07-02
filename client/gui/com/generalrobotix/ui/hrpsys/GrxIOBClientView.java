@@ -1,3 +1,4 @@
+// -*- mode: java; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -50,7 +51,7 @@ import com.generalrobotix.ui.view.MenuDialog;
 @SuppressWarnings("serial")
 public class GrxIOBClientView extends GrxBaseView {
 	public static final String TITLE = "IOBClient";
-
+  
 	private static final int NOT_CONNECTED = 0;
 	private static final int CONNECTING    = 1;
 	private static final int CONNECTED     = 2;
@@ -79,7 +80,7 @@ public class GrxIOBClientView extends GrxBaseView {
 	private int    nsPort_    = 2809;
 	private int    interval_  = 200;
 	private String setupFile_ = "-----";
-
+	
 	private Date initialDate_;
 	private Date prevDate_;
 	private int  state_       = NOT_CONNECTED;
@@ -137,41 +138,45 @@ public class GrxIOBClientView extends GrxBaseView {
 		btnConnect_.setPreferredSize(GrxBaseView.getDefaultButtonSize());
 		btnConnect_.setMaximumSize(GrxBaseView.getDefaultButtonSize());
 		btnConnect_.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (btnConnect_.isSelected()) {
-					getJythonView().restoreProperties();
-					startMonitor(true);
-				} else {
-					int ans = JOptionPane.showConfirmDialog(manager_.getFrame(), 
-							"Are you sure stop monitor ?", "Stop Robot State Monitor",
-							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
-					if (ans == JOptionPane.OK_OPTION)
-						stopMonitor();
-					else
-						btnConnect_.setSelected(true);
+				public void actionPerformed(ActionEvent arg0) {
+					if (btnConnect_.isSelected()) {
+						getJythonView().restoreProperties();
+						startMonitor(true);
+					} else {
+						int ans = JOptionPane.showConfirmDialog(manager_.getFrame(), 
+									"Do you really want to stop monitoring?",
+									"Stopping Robot State Monitor",
+									JOptionPane.OK_CANCEL_OPTION,
+									JOptionPane.QUESTION_MESSAGE, 
+									manager_.ROBOT_ICON);
+
+						if (ans == JOptionPane.OK_OPTION)
+							stopMonitor();
+						else
+							btnConnect_.setSelected(true);
+					}
 				}
-			}
-		});
+			});
 
 		btnSetup_.setEnabled(false);
 		btnSetup_.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setupFile_ = getProperty("setupFile");
-				getJythonView().execFile(GrxXmlUtil.expandEnvVal(setupFile_));
-			}
-		});
+				public void actionPerformed(ActionEvent e) {
+					setupFile_ = getProperty("setupFile");
+					getJythonView().execFile(GrxXmlUtil.expandEnvVal(setupFile_));
+				}
+			});
 
 		btnServo_.setEnabled(false);
 		btnServo_.setPreferredSize(GrxBaseView.getDefaultButtonSize());
 		btnServo_.setMaximumSize(GrxBaseView.getDefaultButtonSize());
 		btnServo_.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (btnServo_.isSelected())
-					servoOn();
-				else
-					servoOff();
-			}
-		});
+				public void actionPerformed(ActionEvent e) {
+					if (btnServo_.isSelected())
+						servoOn();
+					else
+						servoOff();
+				}
+			});
 		
 		JToolBar toolbar = new JToolBar();
 		toolbar.add(btnServo_);
@@ -200,31 +205,31 @@ public class GrxIOBClientView extends GrxBaseView {
 			label.setPreferredSize(new Dimension(100, 28));
 			fld.setPreferredSize(new Dimension(150, 28));
 			fld.addKeyListener(new KeyAdapter() {
-				public void keyPressed(KeyEvent e) {
-					KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
-					if (ks == KS_ENTER) {
-					 	set(); 
-					} else {
-						boolean hasChanged = !fld.getText().equals(getValue());
-						set.setEnabled(hasChanged);
-						resume.setEnabled(hasChanged);
+					public void keyPressed(KeyEvent e) {
+						KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+						if (ks == KS_ENTER) {
+							set(); 
+						} else {
+							boolean hasChanged = !fld.getText().equals(getValue());
+							set.setEnabled(hasChanged);
+							resume.setEnabled(hasChanged);
+						}
 					}
-				}
-			});
+				});
 
 			set.setEnabled(false);
 			set.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					set();
-				}
-			});
+					public void actionPerformed(ActionEvent e) {
+						set();
+					}
+				});
 
 			resume.setEnabled(false);
 			resume.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					resume();
-				}
-			});
+					public void actionPerformed(ActionEvent e) {
+						resume();
+					}
+				});
 
 			this.add(label);
 			this.add(fld);
@@ -272,10 +277,10 @@ public class GrxIOBClientView extends GrxBaseView {
 			return;
 
 		thread_ = new Thread() {
-			public void run() {
-				startMonitorCore(isInteractive);	
-			}
-		};
+				public void run() {
+					startMonitorCore(isInteractive);	
+				}
+			};
 		thread_.start();
 	}
 						
@@ -296,9 +301,14 @@ public class GrxIOBClientView extends GrxBaseView {
 		try {
 			// set property for connection
 			nsHost_ = manager_.getProjectProperty("nsHost");
-			nsPort_ = Integer.parseInt(manager_.getProjectProperty("nsPort"));
+			try {
+				nsPort_ = Integer.parseInt(manager_.getProjectProperty("nsPort"));
+			} catch (Exception e) {
+				nsPort_ = 2809; // if not set try the default port number
+			}
 
 			robotType_ = getStr("ROBOT", robotType_);
+
 			interval_  = getInt("interval", 200);
 
 			currentModel_ = (GrxModelItem) manager_.getItem(GrxModelItem.class, robotType_);
@@ -316,8 +326,13 @@ public class GrxIOBClientView extends GrxBaseView {
 
 			// used to get servo state 
 			pluginManager_.load("humanoid");
-			ioCtrl_ = IoControlPluginHelper.narrow(pluginManager_.create("humanoid", robotType_, ""));
-			ioCtrl_.start();
+			boolean ioCtrlFlag = isTrue("loadIoControlPlugin", true);
+			if(ioCtrlFlag) {
+				ioCtrl_ = IoControlPluginHelper.narrow(pluginManager_.create("humanoid", robotType_, ""));
+				ioCtrl_.start();
+			} else {
+				ioCtrl_ = null;
+			}
 
 			// for go-actual
 			boolean seqplayFlag = isTrue("loadSeqplay", true);
@@ -340,8 +355,8 @@ public class GrxIOBClientView extends GrxBaseView {
 			dynamics_ = dynFactory.create();
 			dynamics_.registerCharacter(robotType_, currentModel_.cInfo_);
 			dynamics_.init(0.001, IntegrateMethod.EULER, SensorOption.DISABLE_SENSOR);
-			
-            // initialize logger
+
+			// initialize logger
 			currentItem_.clearLog();
 			currentItem_.registerCharacter(robotType_, currentModel_.cInfo_);
 
@@ -358,14 +373,15 @@ public class GrxIOBClientView extends GrxBaseView {
 			initialDate_ = prevDate_ = new Date();
 
 			setConnectionState(CONNECTED);
+			
 		} catch (Exception e) {
 			GrxDebugUtil.printErr("", e);
 
 			if (isInteractive && currentModel_ == null) {
 				JOptionPane.showMessageDialog(manager_.getFrame(),
-					"Load Model(" + robotType_ + ") first.",
-					"Start Robot State Monitor",
-					JOptionPane.WARNING_MESSAGE, manager_.ROBOT_ICON);
+											  "Load Model(" + robotType_ + ") first.",
+											  "Start Robot State Monitor",
+											  JOptionPane.WARNING_MESSAGE, manager_.ROBOT_ICON);
 				stopMonitor();
 			} else {
 				setConnectionState(CONNECTING);
@@ -488,8 +504,10 @@ public class GrxIOBClientView extends GrxBaseView {
 			try {
 				provider_.getActualState(actualStateH_);
 				provider_.getReferenceState(refStateH_);
-				ioCtrl_.getServoStatus(servoStateH_);
-				ioCtrl_.getCalibStatus(calibStateH_); 
+				if(ioCtrl_ != null) {
+					ioCtrl_.getServoStatus(servoStateH_);
+					ioCtrl_.getCalibStatus(calibStateH_); 
+				}
 				
 				dynamics_.setCharacterAllLinkData(robotType_, LinkDataType.JOINT_VALUE, refStateH_.value.angle);
 				//actualStateH_.value.angle);
@@ -537,46 +555,56 @@ public class GrxIOBClientView extends GrxBaseView {
 	private void servoOn() {
 		if (isAnyServoOn())
 			return;
-		
-		ioCtrl_.power("all", SwitchStatus.SWITCH_ON);
+
+		if(ioCtrl_ != null)
+			ioCtrl_.power("all", SwitchStatus.SWITCH_ON);
 			
 		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
-				"!! Robot Motion Warning (SERVO ON) !!\n" + 
-				"Confirm turn RELAY ON.\n" + 
-				"Then Push [OK] to servo ON.\n", 
-				"Servo ON",
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
+												"!! Robot Motion Warning (SERVO ON) !!\n" + 
+												"Confirm RELAY turned ON.\n" + 
+												"Then Push [OK] to servo ON.\n", 
+												"Servo ON",
+												JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
 		if (ans == JOptionPane.OK_OPTION) {
 			try {
 				destroyAllPlugin(false);
 
-				ioCtrl_.sendMsg(":gain normal");
+				if(ioCtrl_ != null)
+					ioCtrl_.sendMsg(":gain normal");
+
 				if (seqplay_ != null) 
 					seqplay_.sendMsg(":go-actual");
 				pluginManager_.sendMsg(":wait 0.1");	
-				ioCtrl_.servo("all", SwitchStatus.SWITCH_ON);
+
+				if(ioCtrl_ != null)
+					ioCtrl_.servo("all", SwitchStatus.SWITCH_ON);
+
 				btnServo_.setIcon(servoOffIcon_);
 				btnServo_.setToolTipText("Servo Off");
 			} catch (Exception e) {
-		        ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
+				if(ioCtrl_ != null)
+					ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
 				GrxDebugUtil.printErr("got exception during servo on process:", e);
 			}
 		} else {
-		    ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
+			if(ioCtrl_ != null)
+				ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
 			btnServo_.setSelected(false);
 		}
 	}
 
 	private void servoOff() {
 		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
-				"!! Robot Motion Warning (SERVO OFF) !!\n\n" + 
-				"Push [OK] to servo OFF.\n", 
-				"Servo OFF",
-				JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
+												"!! Robot Motion Warning (SERVO OFF) !!\n\n" + 
+												"Push [OK] to servo OFF.\n", 
+												"Servo OFF",
+												JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
 		if (ans == JOptionPane.OK_OPTION) {
 			try {
-				ioCtrl_.servo("all", SwitchStatus.SWITCH_OFF);
-		   		ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
+				if(ioCtrl_ != null) {
+					ioCtrl_.servo("all", SwitchStatus.SWITCH_OFF);
+					ioCtrl_.power("all", SwitchStatus.SWITCH_OFF);
+				}
 				btnServo_.setIcon(servoOnIcon_);
 				btnServo_.setToolTipText("Servo On");
 			} catch (Exception e) {
@@ -588,40 +616,49 @@ public class GrxIOBClientView extends GrxBaseView {
 	}
 
 	public boolean isAnyServoOn() {
-		ioCtrl_.getServoStatus(servoStateH_);
-		long[] state = servoStateH_.value;
-		for (int i=0; i<currentModel_.getDOF(); i++) {
-			if (_isSwitchOn(i, state))
-				return true;
+
+		if(ioCtrl_ != null) {
+
+			ioCtrl_.getServoStatus(servoStateH_);
+			long[] state = servoStateH_.value;
+
+			for (int i=0; i<currentModel_.getDOF(); i++) {
+				if (_isSwitchOn(i, state)) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
 
 	public boolean isCalibDone(String jname) {
-		ioCtrl_.getCalibStatus(calibStateH_);
-		long[] state = calibStateH_.value;
+		if(ioCtrl_ != null) {
+			ioCtrl_.getCalibStatus(calibStateH_);
+			long[] state = calibStateH_.value;
 		
-		if (jname.toLowerCase().equals("all")) {
-			for (int i=0; i<currentModel_.getDOF(); i++) {
-				if (!_isSwitchOn(i, state))
-					return false;
-			}
-			return true;
-		} 
-
+			if (jname.toLowerCase().equals("all")) {
+				for (int i=0; i<currentModel_.getDOF(); i++) {
+					if (!_isSwitchOn(i, state))
+						return false;
+				}
+				return true;
+			} 
+		}
 		/*int id = currentModel_.getJointjointId(jname);
-		if (id >= 0)
-			return _isSwitchOn(id, state);
-		else 
-			return false;*/
+		  if (id >= 0)
+		  return _isSwitchOn(id, state);
+		  else 
+		  return false;*/
 		return false;
 	}
 
 	private boolean _isSwitchOn(int ch, long[] state) {
+
 		if (ch >= 0) {
 			long a = 1 << (ch % 64);
-			if ((state[ch / 64] & a) > 0)
+			if ((state[ch / 64] & a) > 0) {
 				return true;
+			}
 		}
 		return false;
 	}
@@ -634,21 +671,13 @@ public class GrxIOBClientView extends GrxBaseView {
 		return false;
 	}
 	
-	public boolean isLanded(double sh) {
-		double[][] dat = actualStateH_.value.force;
-		double lz = dat[0][2],rz = dat[1][2];
-		if (sh<lz && sh<rz)
-			return true;
-		return false;
-	}
-	
 	public void destroyAllPlugin(boolean isInteractive) {
 		try{
 			if (isInteractive) {
 				int ans = JOptionPane.showConfirmDialog(manager_.getFrame(), 
-						"Destroy All Plugins on Robot?", "Destroy All Plugin",
-						JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, 
-						manager_.ROBOT_ICON);
+														"Destroy All Plugins on Robot?", "Destroy All Plugin",
+														JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, 
+														manager_.ROBOT_ICON);
 				if (ans != JOptionPane.OK_OPTION)
 					return;
 			}
