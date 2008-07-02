@@ -399,7 +399,7 @@ BodyPtr OpenHRP::loadBodyFromModelLoader(const char *url, CosNaming::NamingConte
 		std::cerr << "CORBA::SystemException raised by ModelLoader: " << ex._rep_id() << std::endl;
 		return BodyPtr();
 	} catch(ModelLoader::ModelLoaderException& ex){
-		std::cerr << "ModelLoaderException (id = " << ex.id << ") : " << ex.description << std::endl;
+		std::cerr << "ModelLoaderException : " << ex.description << std::endl;
 	}
 
 	if( CORBA::is_nil( bodyInfo ) )
