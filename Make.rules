@@ -316,8 +316,7 @@ IDL_DIR			=	$(TOP)idl/OpenHRP
 #
 # Java compiler
 #
-# "-target 1.5" : to avoid the corba connection problem with java1.6 temporarily
-JAVAC_FLAGS		=	-Xlint:unchecked $(JAVA_EXTDIR_FLAGS) -target 1.5 
+JAVAC_FLAGS		=	-Xlint:unchecked $(JAVA_EXTDIR_FLAGS) 
 PACKAGE			=	jp.go.aist.hrp.simulator
 PACKAGE_DIR		=	jp/go/aist/hrp/simulator
 

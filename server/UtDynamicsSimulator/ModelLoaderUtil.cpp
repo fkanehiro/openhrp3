@@ -1,4 +1,14 @@
 // -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * The University of Tokyo
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
 /** @file DynamicsSimulator/server/convCORBAUtil.cpp
  *
  */
@@ -56,7 +66,6 @@ static void createSensors(OpenHRP::World* world, Joint* jnt,  SensorInfoSequence
 					  << "of character " << jnt->CharName() << "." << std::endl;
 		} else {
 
-			// ƒZƒ“ƒTƒ^ƒCƒv‚ð”»’è‚·‚é
 			int sensorType = Sensor::COMMON;
 
 			//switch(iSensor.type) {
@@ -72,10 +81,10 @@ static void createSensors(OpenHRP::World* world, Joint* jnt,  SensorInfoSequence
 			CORBA::String_var type0 = iSensor.type;
 			string type(type0);
 
-			if( type == "Force" )				{ sensorType = Sensor::FORCE; }			// 6Ž²—ÍƒZƒ“ƒT
-			else if( type == "RateGyro" )		{ sensorType = Sensor::RATE_GYRO; }		// ƒŒ[ƒgƒWƒƒƒCƒƒZƒ“ƒT
-			else if( type == "Acceleration" )	{ sensorType = Sensor::ACCELERATION; }	// ‰Á‘¬“xƒZƒ“ƒT
-			else if( type == "Vision" )			{ sensorType = Sensor::VISION; }		// ƒrƒWƒ‡ƒ“ƒZƒ“ƒT
+			if( type == "Force" )				{ sensorType = Sensor::FORCE; }			// 6Ž²Í÷#Z¥ó¥µ
+			else if( type == "RateGyro" )		{ sensorType = Sensor::RATE_GYRO; }		// ¥ì¡¼¥È¥¸¥ã¥¤¥í¥»¥ó¥µ
+			else if( type == "Acceleration" )	{ sensorType = Sensor::ACCELERATION; }	// ±ñ1¡¦x¥»¥ó¥µ
+			else if( type == "Vision" )			{ sensorType = Sensor::VISION; }		// ¥Ó¥¸¥ç¥ó¥»¥ó¥µ
 
 
 			CORBA::String_var name0 = iSensor.name;
@@ -374,7 +383,7 @@ int OpenHRP::loadBodyFromModelLoader(World* world, const char* name, const char 
 		std::cerr << "CORBA::SystemException raised by ModelLoader: " << ex._rep_id() << std::endl;
 		return 0;
 	} catch(ModelLoader::ModelLoaderException& ex){
-		std::cerr << "ModelLoaderException : " << ex.description << std::endl;
+		std::cerr << "ModelLoaderException (id = " << ex.id << ") : " << ex.description << std::endl;
 	}
 
 	if(CORBA::is_nil(bodyInfo)){

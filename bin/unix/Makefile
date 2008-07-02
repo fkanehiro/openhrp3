@@ -71,7 +71,7 @@ endif
 	echo -n export CLASSPATH=$$ >> config.sh
 	echo -n OPENHRPHOME/java/openhrpstubskel.jar >> config.sh
 	echo -n :$$ >> config.sh
-	echo OPENHRPHOME/gui/plugin/com.generalrobotix.ui.grxui_0.9.5/vrml97.jar >> config.sh
+	echo OPENHRPHOME/gui/plugin/com.generalrobotix.ui.grxui_0.9.6/vrml97.jar >> config.sh
 
 ifneq ("$(JAVA_EXTDIR_FLAGS)","")
 	echo    export EXTRA_JAVA_FLAGS=$(JAVA_EXTDIR_FLAGS) >> config.sh

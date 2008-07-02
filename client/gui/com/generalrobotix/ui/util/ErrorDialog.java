@@ -21,7 +21,7 @@ import javax.swing.*;
 
 
 /**
- * エラーダイア��前
+ * エラーダイアログ
  */
 @SuppressWarnings("serial")
 public class ErrorDialog extends AlertBox {

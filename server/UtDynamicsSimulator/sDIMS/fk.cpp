@@ -1,4 +1,12 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * The University of Tokyo
+ */
+/*
  * fk.cpp
  * Create: Katsu Yamane, Univ. of Tokyo, 03.06.19
  */
@@ -79,7 +87,7 @@ void Joint::calc_acceleration()
 		static fMat33 t_rel_att;
 		static fVec3 v1, v2, v3, v4;
 		t_rel_att.tran(rel_att);
-		// •Ài‰Á‘¬“x
+		// Éğ»Ê±ñ1¡¦x
 		v1.mul(t_rel_att, parent->loc_ang_vel);
 //		v1 += loc_ang_vel;
 		v1 *= 2.0;
@@ -92,13 +100,13 @@ void Joint::calc_acceleration()
 		v1 += v3;
 		v4.mul(t_rel_att, v1);
 		loc_lin_acc += v4;
-		// Šp‰Á‘¬“x
+		// ³Ñ±ñ1¡¦x
 //		v1.cross(loc_ang_vel, parent->rel_ang_vel);
 		v1.cross(loc_ang_vel, rel_ang_vel);
 		loc_ang_acc.add(rel_ang_acc, v1);
 		v1.mul(t_rel_att, parent->loc_ang_acc);
 		loc_ang_acc += v1;
-		// dS‚Ì•Ài‰Á‘¬“x
+		// ½Å¿´£öÅğ»Ê±ñ1¡¦x
 		v1.cross(loc_ang_acc, loc_com);
 		loc_com_acc.add(loc_lin_acc, v1);
 		v1.cross(loc_ang_vel, loc_com);
@@ -112,8 +120,8 @@ void Joint::calc_acceleration()
 	}
 	else
 	{
-		// ƒ‹[ƒgƒŠƒ“ƒN
-		// loc_lin_acc‚É‚Íd—Í‰Á‘¬“x‚ª“ü‚Á‚Ä‚¢‚é‚Ì‚Å‰Šú‰»‚µ‚È‚¢
+		// ¥ë¡¼¥È¥ê¥ó¥¯
+		// loc_lin_acc£õ"¡¦dÍ÷)¡¦¡¦x£åÂğ€¡¦Ãà¡à¡¦Ëà¡¦±êùç¡¦¡¦Çà
 		loc_ang_acc.zero();
 		loc_com_acc.zero();
 	}

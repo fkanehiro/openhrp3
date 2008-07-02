@@ -443,7 +443,7 @@ public class GrxProcessManager {
 					} else {
 						process_.destroy();
 					}
-					if (isRunning()) {
+					if (!isRunning()) {
 						process_ = null;
 						// StatusOut.append("OK\n");
 						GrxDebugUtil.println("stop:OK(" + pi_.id + ")");

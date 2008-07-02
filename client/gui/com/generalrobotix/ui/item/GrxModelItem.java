@@ -1736,7 +1736,6 @@ System.out.println( "   ShapeInfo.PrimitiveType error!" );
 		    // [Changed] double[] maxValue -> float[] specValues
 			maxValue = info.specValues;
 			parent_ = parentLink;
-
 		}
 
 		public int compareTo(Object o) {
