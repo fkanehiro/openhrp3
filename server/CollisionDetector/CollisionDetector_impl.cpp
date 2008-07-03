@@ -1,4 +1,13 @@
 // -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
 /** @file CollisionDetector/server/CollisionDetector_impl.cpp
  * Implementation of CollisionDetector_impl and CollisionDetectorFactory_impl
  *
@@ -67,7 +76,7 @@ void CollisionDetector_impl::addModel(
 
     CdModelCache* cachedModel;
 
-    //Šù‚ÉƒLƒƒƒbƒVƒ…‚É“ü‚Á‚Ä‚éH
+    //´û¤Ë¥­¥ã¥Ã¥·¥å¤ËÆş¤Ã¤Æ¤ë¡©
     CORBA::String_var url = binfo->url();
 
     if( cache_->exist( url ) )
@@ -78,7 +87,7 @@ void CollisionDetector_impl::addModel(
 	{
         cerr << "creating Cd object..." << endl;
 
-        //ƒ[ƒh
+        //¥í¡¼¥É
         LinkInfoSequence_var jList = binfo->links();
         cachedModel = new CdModelCache();
 
@@ -87,20 +96,20 @@ void CollisionDetector_impl::addModel(
 		vector<double> triangles;
         CORBA::String_var jName;
 
-        // ƒWƒ‡ƒCƒ“ƒg‚²‚Æ‚ÉOŠpŒ`W‡’Ç‰Á
+        // ¥¸¥ç¥¤¥ó¥È¤´¤È¤Ë»°³Ñ·Á½¸¹çÄÉ²Ã
 		for( unsigned int i = 0 ; i < jList->length() ; ++i )
 		{
 			jName = jList[i].name;
             int ntri = 0;
 	
-			// ‚±‚ÌƒŠƒ“ƒN‚ÌShapeInfo‚Ì’¸“_À•WŒQ‚ğæ“¾‚·‚é
+			// ¤³¤Î¥ê¥ó¥¯¤ÎShapeInfo¤ÎÄºÅÀºÂÉ¸·²¤ò¼èÆÀ¤¹¤ë
 			triangles = getTrianglesOfLink( i, binfo );
 
-			// ’¸“_”‚ª9‚Ì”{”‚Å‚È‚¯‚ê‚ÎC
-			//  ( æOŠpƒƒbƒVƒ…‚È‚Ì‚ÅC’¸“_”‚ª9‚Ì”{”‚Å‚ ‚é‚Í‚¸)
+			// ÄºÅÀ¿ô¤¬9¤ÎÇÜ¿ô¤Ç¤Ê¤±¤ì¤Ğ¡¤
+			//  ( ¢è»°³Ñ¥á¥Ã¥·¥å¤Ê¤Î¤Ç¡¤ÄºÅÀ¿ô¤¬9¤ÎÇÜ¿ô¤Ç¤¢¤ë¤Ï¤º)
 			if( triangles.size() % 9 )
 			{
-				// ##### [TODO] ##### ƒGƒ‰[‚ğ“Š‚°‚é
+				// ##### [TODO] ##### ¥¨¥é¡¼¤òÅê¤²¤ë
 				cerr << "There is a probrem in the number of vertices.";
 				continue;
 			}
@@ -108,7 +117,7 @@ void CollisionDetector_impl::addModel(
 
 			CdModelSet* modelSet = 0;
 
-			// ‹óƒWƒ‡ƒCƒ“ƒg‚Å‚Í‚Í‚È‚¢‚©
+			// ¶õ¥¸¥ç¥¤¥ó¥È¤Ç¤Ï¤Ï¤Ê¤¤¤«
 			if( 0 < trianglesNumber )
 			{
 				modelSet = new CdModelSet();
@@ -137,7 +146,7 @@ void CollisionDetector_impl::addModel(
 				modelSet->endModel();
 			}
 
-			//ƒLƒƒƒ‰ƒNƒ^‚ÉƒWƒ‡ƒCƒ“ƒg‚ğ’Ç‰Á
+			//¥­¥ã¥é¥¯¥¿¤Ë¥¸¥ç¥¤¥ó¥È¤òÄÉ²Ã
 			cachedModel->addModel(jName, modelSet);
 			
 			cerr << jName << " has "<< trianglesNumber << " triangles." << endl;
@@ -145,7 +154,7 @@ void CollisionDetector_impl::addModel(
 
 		cerr << "finished." << endl;
 
-		//ƒLƒƒƒbƒVƒ…‚ÉƒLƒƒƒ‰ƒNƒ^‚ğ’Ç‰Á
+		//¥­¥ã¥Ã¥·¥å¤Ë¥­¥ã¥é¥¯¥¿¤òÄÉ²Ã
 		cache_->addChar(url,cachedModel);
 
 	}
@@ -164,29 +173,29 @@ vector<double> CollisionDetector_impl::getTrianglesOfLink(
 	ShapeInfoSequence_var	shapes				= binfo->shapes(); 
 	AllLinkShapeIndices_var	allLinkShapeIndices	= binfo->linkShapeIndices(); 
 
-	// linkIndex”Ô–Ú‚ÌƒŠƒ“ƒN‚ÌShapeIndices
+	// linkIndexÈÖÌÜ¤Î¥ê¥ó¥¯¤ÎShapeIndices
 	ShortSequence shapeIndices = allLinkShapeIndices[linkIndex];
 	
-	// ‚±‚ÌLink‚ÌShapeInfo‚Ì”•ªƒ‹[ƒv‚·‚é
+	// ¤³¤ÎLink¤ÎShapeInfo¤Î¿ôÊ¬¥ë¡¼¥×¤¹¤ë
 	for( size_t i = 0 ; i < shapeIndices.length() ; i++ )
 	{
-		// shapeIndices’†‚Åw’è‚³‚ê‚½ shapeInfo ‚ÌƒCƒ“ƒfƒbƒNƒX‚Í
+		// shapeIndicesÃæ¤Ç»ØÄê¤µ¤ì¤¿ shapeInfo ¤Î¥¤¥ó¥Ç¥Ã¥¯¥¹¤Ï
 		short shapeIndex = shapeIndices[i];
 		ShapeInfo shapeInfo = shapes[shapeIndex];
 
-		// triangles‚ªw‚µ¦‚·’¸“_‡‚Éƒ‹[ƒv‚·‚é
+		// triangles¤¬»Ø¤·¼¨¤¹ÄºÅÀ½ç¤Ë¥ë¡¼¥×¤¹¤ë
 		for( size_t t = 0 ; t < shapeInfo.triangles.length() ; t++ )
 		{
-			// ’¸“_”Ô†‚ÍC
+			// ÄºÅÀÈÖ¹æ¤Ï¡¤
 			long vertexIndex = shapeInfo.triangles[t];
 
-			// ’¸“_À•W‚ÍC
-			//  [NOTE] vertices‚É‚Í XYZXYZ...‚Ì‚æ‚¤‚É’¸“_À•W‚ªŠi”[‚³‚ê‚Ä‚¢‚é‚Ì‚ÅC
-			//         ’¸“_”Ô†(vertexIndex)‚É‘Î‰‚·‚é(vertices’†‚Ì)’¸“_À•W‚Ì”z—ñ“Yš‚Í
-			//             XÀ•W = vertexIndex*3
-			//             YÀ•W = vertexIndex*3+1
-			//             ZÀ•W = vertexIndex*3+2
-			//         ‚Åæ“¾(ƒAƒNƒZƒX)‰Â”\‚Å‚ ‚éB
+			// ÄºÅÀºÂÉ¸¤Ï¡¤
+			//  [NOTE] vertices¤Ë¤Ï XYZXYZ...¤Î¤è¤¦¤ËÄºÅÀºÂÉ¸¤¬³ÊÇ¼¤µ¤ì¤Æ¤¤¤ë¤Î¤Ç¡¤
+			//         ÄºÅÀÈÖ¹æ(vertexIndex)¤ËÂĞ±ş¤¹¤ë(verticesÃæ¤Î)ÄºÅÀºÂÉ¸¤ÎÇÛÎóÅº»ú¤Ï
+			//             XºÂÉ¸ = vertexIndex*3
+			//             YºÂÉ¸ = vertexIndex*3+1
+			//             ZºÂÉ¸ = vertexIndex*3+2
+			//         ¤Ç¼èÆÀ(¥¢¥¯¥»¥¹)²ÄÇ½¤Ç¤¢¤ë¡£
 			double x = static_cast<double>(shapeInfo.vertices[vertexIndex*3+0]);
 			double y = static_cast<double>(shapeInfo.vertices[vertexIndex*3+1]);
 			double z = static_cast<double>(shapeInfo.vertices[vertexIndex*3+2]);
@@ -195,7 +204,7 @@ vector<double> CollisionDetector_impl::getTrianglesOfLink(
 			triangles.push_back( y );
 			triangles.push_back( z );
 			
-			// ã‹L‚Ìˆ—‚ÍˆÈ‰º‹Lq‚ª‰Â”\‚Å‚ ‚é‚ªC‰ğ‚èˆÕ‚­‚·‚é–Ú“I‚Å 3À•W‚É‚µ‚Ä‹Lq‚µ‚½B
+			// ¾åµ­¤Î½èÍı¤Ï°Ê²¼µ­½Ò¤¬²ÄÇ½¤Ç¤¢¤ë¤¬¡¤²ò¤ê°×¤¯¤¹¤ëÌÜÅª¤Ç 3ºÂÉ¸¤Ë¤·¤Æµ­½Ò¤·¤¿¡£
 			//	for( int c = 0 ; c < 3 ; c++ )
 			//	{
 			//		triangles.push_back( static_cast<double>(shapeInfo.vertices[vertexIndex*3+c]) );
@@ -207,7 +216,7 @@ vector<double> CollisionDetector_impl::getTrianglesOfLink(
 }
 
 
-#if 0 // ‰ü‘¢‘O
+#if 0 // ²şÂ¤Á°
 
 void CollisionDetector_impl::addModel(
 	const char* charName,
@@ -221,7 +230,7 @@ void CollisionDetector_impl::addModel(
 
     CdModelCache* cachedModel;
 
-    //Šù‚ÉƒLƒƒƒbƒVƒ…‚É“ü‚Á‚Ä‚éH
+    //´û¤Ë¥­¥ã¥Ã¥·¥å¤ËÆş¤Ã¤Æ¤ë¡©
     CORBA::String_var url = binfo->url();
 
     if(cache_->exist(url)){
@@ -229,7 +238,7 @@ void CollisionDetector_impl::addModel(
     }else{
         cerr << "creating Cd object..." << endl;
 
-        //ƒ[ƒh
+        //¥í¡¼¥É
         LinkInfoSequence_var jList = binfo->links();
         cachedModel = new CdModelCache();
 
@@ -237,51 +246,51 @@ void CollisionDetector_impl::addModel(
         DblSequence tris;
         CORBA::String_var jName;
 
-        // ƒWƒ‡ƒCƒ“ƒg‚²‚Æ‚ÉOŠpŒ`W‡’Ç‰Á
+        // ¥¸¥ç¥¤¥ó¥È¤´¤È¤Ë»°³Ñ·Á½¸¹çÄÉ²Ã
 		for( unsigned int i = 0 ; i < jList->length() ; ++i )
 		{
 			jName = jList[i].name;
             int ntri = 0;
 
-// ###### [TODO] readTriangles ‚Í NewModelLoader ‚É‚Í–³‚¢B
-//               ShapeInfo ‚©‚ç¶¬‚·‚é“¯“™‚Ìˆ—‚ğ‚±‚±‚ÉB 
+// ###### [TODO] readTriangles ¤Ï NewModelLoader ¤Ë¤ÏÌµ¤¤¡£
+//               ShapeInfo ¤«¤éÀ¸À®¤¹¤ëÆ±Åù¤Î½èÍı¤ò¤³¤³¤Ë¡£ 
 //            tris = jList[i]->readTriangles(ntri, READTRI_COUNT);
 
-			// linkShapeIndices ‚É‘SƒŠƒ“ƒN‚É‘®‚·‚éSahpeInfo (shapes‚ÌIndex)
-			//‚ªAƒŠƒ“ƒN‡‚ÉƒZƒbƒg‚³‚ê‚Ä‚¢‚é‚Ì‚ÅAƒŠƒ“ƒN‡‚ğw’è‚µ‚Äæ“¾‚·‚éB
+			// linkShapeIndices ¤ËÁ´¥ê¥ó¥¯¤ËÂ°¤¹¤ëSahpeInfo (shapes¤ÎIndex)
+			//¤¬¡¢¥ê¥ó¥¯½ç¤Ë¥»¥Ã¥È¤µ¤ì¤Æ¤¤¤ë¤Î¤Ç¡¢¥ê¥ó¥¯½ç¤ò»ØÄê¤·¤Æ¼èÆÀ¤¹¤ë¡£
 			AllLinkShapeIndices_var alllinkShapeIndices = binfo->linkShapeIndices(); 
 
-			//‚PƒŠƒ“ƒN‚ÌShape”
+			//£±¥ê¥ó¥¯¤ÎShape¿ô
 			int shapeCountsByLink = alllinkShapeIndices[i].length();
 
-			//‘æ i ƒŠƒ“ƒN‚ÌShapeIndices ‚ÌƒV[ƒPƒ“ƒXƒf[ƒ^
+			//Âè i ¥ê¥ó¥¯¤ÎShapeIndices ¤Î¥·¡¼¥±¥ó¥¹¥Ç¡¼¥¿
 			ShortSequence shapeIndicesSeqByLink = alllinkShapeIndices[i];
-			short shapeIndex;		// ˆ—‚·‚×‚« ShapeInfo‚Ì shapeIndicesSeqByLink ‚Ì’†‚ÌIndex
-			int triCountsSum = 0;	// tri ƒf[ƒ^ƒTƒCƒY
-			int triInsertIndex = 0;	// tri ƒf[ƒ^ ‘}“üˆÊ’u
+			short shapeIndex;		// ½èÍı¤¹¤Ù¤­ ShapeInfo¤Î shapeIndicesSeqByLink ¤ÎÃæ¤ÎIndex
+			int triCountsSum = 0;	// tri ¥Ç¡¼¥¿¥µ¥¤¥º
+			int triInsertIndex = 0;	// tri ¥Ç¡¼¥¿ ÁŞÆş°ÌÃÖ
 
-			// ‚PƒŠƒ“ƒN‚ÌShape”•ª ƒ‹[ƒv‚µ OŠpƒƒbƒVƒ…ƒf[ƒ^‚ğ tris[] ‚ÉƒZƒbƒg‚·‚éB
+			// £±¥ê¥ó¥¯¤ÎShape¿ôÊ¬ ¥ë¡¼¥×¤· »°³Ñ¥á¥Ã¥·¥å¥Ç¡¼¥¿¤ò tris[] ¤Ë¥»¥Ã¥È¤¹¤ë¡£
 			for(unsigned int k=0; k < shapeCountsByLink; k++){
 
-				// (triangle)–Êî•ñ‚Ì ‘æ k ’¸“_‚Ì shapes’†‚Ì Indexæ“¾‚·‚éB
+				// (triangle)ÌÌ¾ğÊó¤Î Âè k ÄºÅÀ¤Î shapesÃæ¤Î Index¼èÆÀ¤¹¤ë¡£
 				shapeIndex = shapeIndicesSeqByLink[k];	
-				// BodyInfo‚©‚ç shapesƒf[ƒ^—ñæ“¾
+				// BodyInfo¤«¤é shapes¥Ç¡¼¥¿Îó¼èÆÀ
 				ShapeInfoSequence_var shapeIndicesByLink = binfo->shapes(); 
-				// shapesƒf[ƒ^—ñ‚©‚ç‘æ k ”Ô–Ú—v‘f‚Ì ShapeInfo(k) æ“¾
+				// shapes¥Ç¡¼¥¿Îó¤«¤éÂè k ÈÖÌÜÍ×ÁÇ¤Î ShapeInfo(k) ¼èÆÀ
 				ShapeInfo shapeInfoByLink = shapeIndicesByLink[k];
 
-				// ShapeInfo(k) ‚ÌOŠpƒƒbƒVƒ…”~‚R ‚ğæ“¾‚·‚é
+				// ShapeInfo(k) ¤Î»°³Ñ¥á¥Ã¥·¥å¿ô¡ß£³ ¤ò¼èÆÀ¤¹¤ë
 				int meshVertexCounts = shapeInfoByLink.triangles.length();
 
-				// ShapeInfo(k)‚ÌOŠpƒpƒbƒ`ƒf[ƒ^”iOŠpƒƒbƒVƒ…”~‚R~‚RjZo
+				// ShapeInfo(k)¤Î»°³Ñ¥Ñ¥Ã¥Á¥Ç¡¼¥¿¿ô¡Ê»°³Ñ¥á¥Ã¥·¥å¿ô¡ß£³¡ß£³¡Ë»»½Ğ
 				int triCounts = meshVertexCounts * 3;
 
-				// tris ‚Ì’·‚³İ’è
-				triInsertIndex = triCountsSum;	//tri ƒf[ƒ^ ‘}“üˆÊ’u
-				triCountsSum += triCounts;		//tri ƒf[ƒ^ ƒŠƒTƒCƒYƒTƒCƒY
+				// tris ¤ÎÄ¹¤µÀßÄê
+				triInsertIndex = triCountsSum;	//tri ¥Ç¡¼¥¿ ÁŞÆş°ÌÃÖ
+				triCountsSum += triCounts;		//tri ¥Ç¡¼¥¿ ¥ê¥µ¥¤¥º¥µ¥¤¥º
 				tris.length( triCountsSum );
 
-				// tris‚É’¸“_‚²‚Æ‚ÉiXYZ)À•W’lŠi”[‚·‚é
+				// tris¤ËÄºÅÀ¤´¤È¤Ë¡ÊXYZ)ºÂÉ¸ÃÍ³ÊÇ¼¤¹¤ë
 				for(unsigned int m=0; m < meshVertexCounts; m++){ 
 					int vNo = shapeInfoByLink.triangles[m];
 					int vindex_X = vNo * 3;
@@ -293,7 +302,7 @@ void CollisionDetector_impl::addModel(
 
 			CdModelSet* modelSet = 0;
 			
-            //‹óƒWƒ‡ƒCƒ“ƒg‚Å‚Í‚Í‚È‚¢‚©
+            //¶õ¥¸¥ç¥¤¥ó¥È¤Ç¤Ï¤Ï¤Ê¤¤¤«
 			if(tris.length())
 			{
                 modelSet = new CdModelSet();
@@ -302,7 +311,7 @@ void CollisionDetector_impl::addModel(
 				int trisCnts = tris.length()/9;
 
                 while (trisCnts > 0){
-                    ntri += tris.length()/9;	//VIDL‚Å‚ÍA–¢g—p
+                    ntri += tris.length()/9;	//¿·IDL¤Ç¤Ï¡¢Ì¤»ÈÍÑ
 					trisCnts -= 1;
                     for(unsigned int j=0;j<tris.length();j+=9){
                         p[0][0]=tris[j+0];
@@ -316,16 +325,16 @@ void CollisionDetector_impl::addModel(
                         p[2][2]=tris[j+8];
                         modelSet->addTriangle(p[0],p[1],p[2]);					
                     }
-                    //‹Œtris‚Í©“®“I‚É‰ğ•ú‚³‚ê‚é
+                    //µìtris¤Ï¼«Æ°Åª¤Ë²òÊü¤µ¤ì¤ë
 
-					// ###### [TODO] readTriangles ‚Í NewModelLoader ‚É‚Í–³‚¢B
-					//               ShapeInfo ‚©‚ç¶¬‚·‚é“¯“™‚Ìˆ—‚ğ‚±‚±‚ÉB
+					// ###### [TODO] readTriangles ¤Ï NewModelLoader ¤Ë¤ÏÌµ¤¤¡£
+					//               ShapeInfo ¤«¤éÀ¸À®¤¹¤ëÆ±Åù¤Î½èÍı¤ò¤³¤³¤Ë¡£
                     // tris=jList[i]->readTriangles(ntri, READTRI_COUNT);
                 }
                 modelSet->endModel();
 			}
 
-			//ƒLƒƒƒ‰ƒNƒ^‚ÉƒWƒ‡ƒCƒ“ƒg‚ğ’Ç‰Á
+			//¥­¥ã¥é¥¯¥¿¤Ë¥¸¥ç¥¤¥ó¥È¤òÄÉ²Ã
 			cachedModel->addModel(jName, modelSet);
 			
             cerr << jName << " has "<< ntri << " tris." << endl;
@@ -333,7 +342,7 @@ void CollisionDetector_impl::addModel(
 
         cerr << "finished." << endl;
 
-        //ƒLƒƒƒbƒVƒ…‚ÉƒLƒƒƒ‰ƒNƒ^‚ğ’Ç‰Á
+        //¥­¥ã¥Ã¥·¥å¤Ë¥­¥ã¥é¥¯¥¿¤òÄÉ²Ã
         cache_->addChar(url,cachedModel);
 
     }
@@ -342,7 +351,7 @@ void CollisionDetector_impl::addModel(
 
 }
 
-#endif // ‰ü‘¢‘O
+#endif // ²şÂ¤Á°
 
 
 
@@ -405,7 +414,7 @@ void CollisionDetector_impl::removeCollisionPair(const LinkPair& colPair)
 }
 
 
-//ƒWƒ‡ƒCƒ“ƒgˆÊ’uƒZƒbƒg
+//¥¸¥ç¥¤¥ó¥È°ÌÃÖ¥»¥Ã¥È
 void CollisionDetector_impl::_setCharacterData
 (
  const CharacterPositionSequence& characterPositions
@@ -431,7 +440,7 @@ void CollisionDetector_impl::_setCharacterData
         }
     }
 
-    //ƒWƒ‡ƒCƒ“ƒg‚ÌˆÊ’up¨‚ğƒZƒbƒg
+    //¥¸¥ç¥¤¥ó¥È¤Î°ÌÃÖ»ÑÀª¤ò¥»¥Ã¥È
     vector<CdJoint *>::iterator it = joints.begin();
     for(unsigned int i = 0; i < characterPositions.length(); i++){
 		const LinkPositionSequence& linkPositions = characterPositions[i].linkPositions;
@@ -452,7 +461,7 @@ void CollisionDetector_impl::_setCharacterData
     }
 }
 
-//‰º¿‚¯
+//²¼ÀÁ¤±
 int CollisionDetector_impl::_contactIntersection
 (
  CdCheckPair* rPair
@@ -464,7 +473,7 @@ int CollisionDetector_impl::_contactIntersection
 
     rPair->collide(&ret,&pair,CD_FIRST_CONTACT);
 
-    // ‚±‚Ì’iŠK‚Å‚ÍÚG“_”•ª‚©‚ç‚È‚¢‚Ì‚ÅAÚG“_”‚ğƒJƒEƒ“ƒg‚·‚éB
+    // ¤³¤ÎÃÊ³¬¤Ç¤ÏÀÜ¿¨ÅÀ¿ôÊ¬¤«¤é¤Ê¤¤¤Î¤Ç¡¢ÀÜ¿¨ÅÀ¿ô¤ò¥«¥¦¥ó¥È¤¹¤ë¡£
     int npoints = 0;
     for (i = 0; i < ret; ++i) {
         npoints += pair[i].num_of_i_points;
@@ -472,7 +481,7 @@ int CollisionDetector_impl::_contactIntersection
     delete pair;
     return npoints;
 }
-//‰º¿‚¯
+//²¼ÀÁ¤±
 void CollisionDetector_impl::_contactDetermination(CdCheckPair* rPair, Collision&  out_collision)
 {
     int ret;
@@ -480,7 +489,7 @@ void CollisionDetector_impl::_contactDetermination(CdCheckPair* rPair, Collision
 	collision_data *cdata;
     rPair->collide(&ret, &cdata);
 
-    // ‚±‚Ì’iŠK‚Å‚ÍÚG“_”•ª‚©‚ç‚È‚¢‚Ì‚ÅAÚG“_”‚ğƒJƒEƒ“ƒg‚·‚éB
+    // ¤³¤ÎÃÊ³¬¤Ç¤ÏÀÜ¿¨ÅÀ¿ôÊ¬¤«¤é¤Ê¤¤¤Î¤Ç¡¢ÀÜ¿¨ÅÀ¿ô¤ò¥«¥¦¥ó¥È¤¹¤ë¡£
     int npoints = 0;
     for (int i = 0; i < ret; i++) {
         for (int j = 0; j<cdata[i].num_of_i_points; j++){
@@ -509,12 +518,12 @@ void CollisionDetector_impl::_contactDetermination(CdCheckPair* rPair, Collision
         }
     }
     if (rPair->joint_[0]){
-        out_collision.pair.charName1 = CORBA::string_dup(rPair->joint_[0]->parent_->name_.c_str());    // ƒpƒX–¼1
-        out_collision.pair.linkName1 = CORBA::string_dup(rPair->joint_[0]->name_.c_str());    // ƒpƒX–¼1
+        out_collision.pair.charName1 = CORBA::string_dup(rPair->joint_[0]->parent_->name_.c_str());    // ¥Ñ¥¹Ì¾1
+        out_collision.pair.linkName1 = CORBA::string_dup(rPair->joint_[0]->name_.c_str());    // ¥Ñ¥¹Ì¾1
     }
     if (rPair->joint_[1]){
-        out_collision.pair.charName2 = CORBA::string_dup(rPair->joint_[1]->parent_->name_.c_str());    // ƒpƒX–¼2
-        out_collision.pair.linkName2 = CORBA::string_dup(rPair->joint_[1]->name_.c_str());    // ƒpƒX–¼2
+        out_collision.pair.charName2 = CORBA::string_dup(rPair->joint_[1]->parent_->name_.c_str());    // ¥Ñ¥¹Ì¾2
+        out_collision.pair.linkName2 = CORBA::string_dup(rPair->joint_[1]->name_.c_str());    // ¥Ñ¥¹Ì¾2
     }
 }
 
@@ -569,7 +578,7 @@ CollisionDetector_impl::queryContactDeterminationForGivenPairs
 
     vector<CdCheckPair*> rPairSeq;
 
-    //—ÕƒyƒA¶¬
+    //Î×»ş¥Ú¥¢À¸À®
     for(unsigned int i=0;i<checkPairs.length();++i){
         const char* charName1 = checkPairs[i].charName1;
         const char* charName2 = checkPairs[i].charName2;
@@ -642,7 +651,7 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForDefinedPairs
         }
     }
 
-    //î•ñì¬
+    //¾ğÊóºîÀ®
 
     //cerr << "CollisionDetector_impl::checkCollision(2)" << endl;
 
@@ -676,7 +685,7 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForGivenPairs
 
     vector<CdCheckPair*> rPairSeq;
 
-    //—ÕƒyƒA¶¬
+    //Î×»ş¥Ú¥¢À¸À®
     unsigned int i;
     for(i=0;i<checkPairs.length();++i){
         const char* charName1  = checkPairs[i].charName1;
@@ -725,7 +734,7 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForGivenPairs
         }
     }
 
-    //î•ñì¬
+    //¾ğÊóºîÀ®
 
     //cerr << "CollisionDetector_impl::checkCollision(2)" << endl;
 

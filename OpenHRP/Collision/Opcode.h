@@ -72,7 +72,7 @@
 #endif
 
 	#include "OPC_IceHook.h"
-#include<iostream>
+//#include<iostream>
 	namespace Opcode
 	{
 		// Bulk-of-the-work
