@@ -417,10 +417,9 @@ public class GrxPluginManager
 		if (_url == null)
 			return null;
          
-		URL u = null;
 		File f = null;
 		try {
-			u = new URL(_url);
+			URL u = new URL(_url);
 			f = new File(u.getFile());
 		} catch (Exception e) {
 			GrxDebugUtil.printErr("loadItem : in not URL format\n", e);
@@ -855,6 +854,7 @@ System.out.println(pi.lastDir);
 		if (pmView == null) 
 			return;
 		
+		processingWindow_.setVisible(false);
 		processingWindow_.setMessage("loading process manager settings ...");
 		processingWindow_.setVisible(true);
 		pmView.loadProcessList(rcProject_.getElement());

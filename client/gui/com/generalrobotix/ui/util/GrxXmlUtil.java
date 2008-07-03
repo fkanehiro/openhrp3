@@ -113,9 +113,13 @@ public class GrxXmlUtil {
 		Element e = getElement(path);
 		if (e != null) {
 			ret = new double[3];
-			ret[0] = Double.parseDouble(e.getAttribute("x"));
-			ret[1] = Double.parseDouble(e.getAttribute("y"));
-			ret[2] = Double.parseDouble(e.getAttribute("z"));
+			try {
+				ret[0] = Double.parseDouble(e.getAttribute("x"));
+				ret[1] = Double.parseDouble(e.getAttribute("y"));
+				ret[2] = Double.parseDouble(e.getAttribute("z"));
+			} catch (Exception ex) {
+				return null;
+			}
 		}
 		return ret;
 	}
@@ -148,10 +152,14 @@ public class GrxXmlUtil {
 		Element e = getElement(path);
 		if (e != null) {
 			ret = new double[4];
-			ret[0] = Double.parseDouble(e.getAttribute("q1"));
-			ret[1] = Double.parseDouble(e.getAttribute("q2"));
-			ret[2] = Double.parseDouble(e.getAttribute("q3"));
-			ret[3] = Double.parseDouble(e.getAttribute("q4"));
+			try {
+				ret[0] = Double.parseDouble(e.getAttribute("q1"));
+				ret[1] = Double.parseDouble(e.getAttribute("q2"));
+				ret[2] = Double.parseDouble(e.getAttribute("q3"));
+				ret[3] = Double.parseDouble(e.getAttribute("q4"));
+			} catch (Exception ex) {
+				return null;
+			}
 		}
 		return ret;
 	}
@@ -172,9 +180,14 @@ public class GrxXmlUtil {
 
 	public static Double getDouble(Element e, String atr) {
 		if (e != null) {
-			String str = e.getAttribute(atr);
-			if (!str.equals(""))
-				return Double.parseDouble(str);
+			String str = expandEnvVal(e.getAttribute(atr));
+			if (!str.equals("")) {
+				try {
+					return Double.parseDouble(str);
+				} catch (Exception ex) {
+					return null;
+				}
+			}
 		}
 		return null;
 	}
@@ -194,9 +207,14 @@ public class GrxXmlUtil {
 
 	public static Integer getInteger(Element e, String atr, int defaultValue) {
 		if (e != null) {
-			String str = e.getAttribute(atr);
-			if (!str.equals(""))
-				return Integer.parseInt(str);
+			String str = expandEnvVal(e.getAttribute(atr));
+			if (!str.equals("")) {
+				try {
+					return Integer.parseInt(str);
+				} catch (Exception ex) {
+					return defaultValue;
+				}
+			}
 		}
 		return defaultValue;
 	}
@@ -217,9 +235,14 @@ public class GrxXmlUtil {
 
 	public static Boolean getBoolean(Element e, String atr, boolean defaultValue) {
 		if (e != null) {
-			String str = e.getAttribute(atr);
-			if (!str.equals(""))
-				return Boolean.parseBoolean(str);
+			String str = expandEnvVal(e.getAttribute(atr));
+			if (!str.equals("")) {
+				try {
+					return Boolean.parseBoolean(str);
+				} catch (Exception ex) {
+					return defaultValue;
+				}
+			}
 		}
 		return defaultValue;
 	}
@@ -229,8 +252,9 @@ public class GrxXmlUtil {
 	}
 
 	public static void setBoolean(Element e, String atr, boolean b) {
-		if (e != null)
+		if (e != null) {
 			e.setAttribute(atr, String.valueOf(b));
+		}
 	}
 
 	public static String getString(String[] path, String atr,

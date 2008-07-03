@@ -82,7 +82,6 @@ public class ControllerPanel extends JPanel {
             
             public Object getValueAt(int row, int col) {
                 GrxModelItem node = (GrxModelItem)vecRobot_.get(row);
-                //System.out.println("row:col = " + col);
                 String str = null;
                 if (col ==0){
                     return node.getName();
@@ -170,20 +169,7 @@ public class ControllerPanel extends JPanel {
         pnlTable.setPreferredSize(new Dimension(260,90));
         add(pnlTable);
         
-        String[] names = GrxCorbaUtil.getObjectNameList("localhost",2809);
-        List<String> list = new ArrayList<String>();
-        if (names != null) {
-          for (int i=0; i<names.length; i++) {  
-            //org.omg.CORBA.Object obj = GrxCorbaUtil.getReferenceURL(names[i], "localhost", 2809);
-            //try {
-            //  jp.go.aist.hrp.simulator.ControllerFactoryHelper.narrow(obj);
-              list.add(names[i]);
-            //} catch (Exception e) {}
-          }
-        }
-        list.add(0,"");
-        
-        editorPanel_ = new ControllerEditorPanel(list.toArray(new Object[0]));
+        editorPanel_ = new ControllerEditorPanel();
         editorPanel_.setPreferredSize(new Dimension(260,90));
         //editorPanel_.setBounds(12,280,360,300);
         add(editorPanel_);
@@ -239,7 +225,6 @@ public class ControllerPanel extends JPanel {
                     }
                 }
             }
-        	
         }
 
         if (flag) 
@@ -261,15 +246,14 @@ public class ControllerPanel extends JPanel {
         private JComboBox  boxSetupCommand_;
         private JButton btnOk_,btnCancel_;
         
-        public ControllerEditorPanel(Object[] controllers) {
+        public ControllerEditorPanel() {
             setLayout(null);
-           
 		    // Controller	
             JLabel lbl = new JLabel( MessageBundle.get("panel.controller.controller"), JLabel.RIGHT);
             lbl.setBounds(0,0,120,24);
             this.add(lbl);
 
-            boxController_ = new JComboBox(controllers);
+            boxController_ = new JComboBox();
             boxController_.setEditable(true);
             boxController_.setBounds(120 + 6,0,180,24);
             boxController_.setLightWeightPopupEnabled(false);
@@ -277,7 +261,7 @@ public class ControllerPanel extends JPanel {
               public void popupMenuCanceled(PopupMenuEvent e) {}
               public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
               public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                String[] names = GrxCorbaUtil.getObjectNameList("localhost",2809);
+                String[] names = GrxCorbaUtil.getObjectNameList();
 				Object obj = boxController_.getSelectedItem();
                 boxController_.removeAllItems();
 				boxController_.addItem(obj);
@@ -309,7 +293,7 @@ public class ControllerPanel extends JPanel {
             lbl.setBounds(0,30+30+30,120,24);
             this.add(lbl);
             
-            boxSetupCommand_ = new JComboBox(controllers);
+            boxSetupCommand_ = new JComboBox();
             boxSetupCommand_.setBounds(120+6, 30+30+30, 180, 24);
             boxSetupCommand_.setLightWeightPopupEnabled(false);
             boxSetupCommand_.setEditable(true);

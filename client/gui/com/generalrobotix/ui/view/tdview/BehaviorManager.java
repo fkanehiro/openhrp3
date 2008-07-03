@@ -184,7 +184,7 @@ public class BehaviorManager implements WorldReplaceListener {
 	private DynamicsSimulator initDynamicsSimulator(List<GrxBaseItem> modelList) {
 		DynamicsSimulator dynamics;
 		try {
-			org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory", "localhost", 2809);
+			org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
 			DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper.narrow(obj);
 			dynamics = ifactory.create();
 		} catch (Exception e) {

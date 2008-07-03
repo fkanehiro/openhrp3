@@ -175,12 +175,6 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 				currentPort_.println("send robot :start");
 			//}
 
-			org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory", "localhost", 2809);
-			DynamicsSimulatorFactory dynFactory = DynamicsSimulatorFactoryHelper.narrow(obj);
-			dynamics_ = dynFactory.create();
-			dynamics_.registerCharacter(modelName_, currentModel_.cInfo_);
-			dynamics_.init(0.001, IntegrateMethod.EULER, SensorOption.DISABLE_SENSOR);
-			
 			currentItem_.clearLog();
 			currentItem_.registerCharacter(modelName_, currentModel_.cInfo_);
 
@@ -193,6 +187,7 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 			startMon_.setToolTipText("Stop Robot State Monitor");
 			startMon_.setSelected(true);
 			prevDate_ = new Date();
+			initDynamicsSimulator(false);
 			start();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(manager_.getFrame(),
@@ -202,6 +197,30 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 					manager_.ROBOT_ICON);
 			stopMonitor();
 		}
+	}
+
+	private DynamicsSimulator initDynamicsSimulator(boolean update) {
+		if (dynamics_ != null && !update) 
+			return dynamics_;
+
+		obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
+		DynamicsSimulatorFactory dynFactory = DynamicsSimulatorFactoryHelper.narrow(obj);
+		if (dynamics_ != null)  {
+			try {
+				dynamics_.destroy();
+			} catch(Exception e) {
+				GrxDebugUtil.printErr("", e);
+			}
+		}
+		try {
+			dynamics_ = dynFactory.create();
+			dynamics_.registerCharacter(robotType_, currentModel_.cInfo_);
+			dynamics_.init(0.001, IntegrateMethod.EULER, SensorOption.DISABLE_SENSOR);
+		} catch (Exception e) {
+			dynamics_ = null;
+		}
+
+		return dynamics_;
 	}
 
 	private void stopMonitor() {
@@ -215,14 +234,6 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 				currentPort_.close();
 			} catch (Exception e) {
 				e.printStackTrace();
-			}
-		}
-		
-		if (dynamics_ != null) {
-			try {
-				dynamics_.destroy();
-			} catch (Exception e) {
-				GrxDebugUtil.printErr(this.getClass().getName()+".stopMonitor():" ,e);
 			}
 		}
 		
@@ -353,25 +364,25 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 				rowData.append(str);
 			}
 			
-           if (rowData != null) {
-			WorldStateEx wsx = parse(rowData.toString());
+			if (rowData != null) {
+				WorldStateEx wsx = parse(rowData.toString());
 			
-			double[] val = wsx.get(modelName_).sensorState.q;
-			if (val != null && currentItem_ != null) {
-				dynamics_.setCharacterAllLinkData(modelName_, LinkDataType.JOINT_VALUE, val);
-				dynamics_.calcWorldForwardKinematics();
-				dynamics_.getWorldState(worldStateH_);
-				worldStateH_.value.time = wsx.time;
-				wsx.setWorldState(worldStateH_.value);
-				currentItem_.addValue(wsx.time, wsx);
-			    requesting_ = false;
+				double[] val = wsx.get(modelName_).sensorState.q;
+				if (val != null && currentItem_ != null) {
+					dynamics_.setCharacterAllLinkData(modelName_, LinkDataType.JOINT_VALUE, val);
+					dynamics_.calcWorldForwardKinematics();
+					dynamics_.getWorldState(worldStateH_);
+					worldStateH_.value.time = wsx.time;
+					wsx.setWorldState(worldStateH_.value);
+					currentItem_.addValue(wsx.time, wsx);
+					requesting_ = false;
+				}
 			}
-           }
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private WorldStateEx parse(String rowData) {
 		//System.out.println(rowData);
 		WorldStateEx wsx = new WorldStateEx();

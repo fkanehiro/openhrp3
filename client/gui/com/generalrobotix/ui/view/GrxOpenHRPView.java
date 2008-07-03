@@ -167,6 +167,20 @@ public class GrxOpenHRPView extends GrxBaseView {
 			}
 		});
 	}
+
+	public void restoreProperties() {
+		super.restoreProperties();
+		nsHost_ = System.getenv("NS_HOST");
+		if (nsHost_ == null) {
+			nsHost_ = "localhost";
+		}
+
+		try {
+			nsPort_ = Integer.parseInt(System.getenv("NS_PORT"));
+		} catch (Exception e) {
+		 	nsPort_ = 2809;
+		}
+	}
 	
 	public void startSimulation(boolean isInteractive) {
 		if (isExecuting_)

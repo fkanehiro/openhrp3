@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grxui>
     <processmanagerconfig>
-        <process dir="$(BIN_DIR)" nshost="localhost" nsport="2809" waitcount="500"/>
+        <process dir="$(BIN_DIR)" nshost="$(NS_HOST)" nsport="$(NS_PORT)" waitcount="500"/>
         <process com="$(NAMESERV)" id="NameService"/>
         <process com="$(BIN_DIR)/ModelLoader$(BIN_SFX)" hasshutdown="true" id="ModelLoader"/>
         <process com="$(BIN_DIR)/CollisionDetector$(BIN_SFX)" hasshutdown="true" id="CollisionDetectorFactory"/>
-        <process com="$(BIN_DIR)/DynamicsSimulator$(BIN_SFX)" hasshutdown="true" id="DynamicsSimulatorFactory" waitcount="1000"/> 
+        <process com="$(BIN_DIR)/DynamicsSimulator$(BIN_SFX)" hasshutdown="true" id="DynamicsSimulatorFactory"/> 
     </processmanagerconfig>
 
     <mode name="Simulation" select="true">

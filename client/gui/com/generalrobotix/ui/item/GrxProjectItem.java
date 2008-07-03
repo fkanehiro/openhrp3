@@ -464,6 +464,7 @@ public class GrxProjectItem extends GrxBaseItem {
         if (we != null) 
 		    manager_.getFrame().restoreConfig(we);
 		
+		manager_.processingWindow_.setVisible(false);
 		manager_.processingWindow_.setMessage("restore view plugin  ... ");
 		manager_.processingWindow_.setVisible(true);
 		
@@ -559,6 +560,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		fc.setSelectedFile(null);
 		
 		if (fc.showOpenDialog(manager_.getFrame()) == JFileChooser.APPROVE_OPTION) {
+			manager_.processingWindow_.setVisible(false);
 			manager_.processingWindow_.setTitle("Importing ISE Project");
 			manager_.processingWindow_.setMessage(" importing ISE Project ...");
 			manager_.processingWindow_.setVisible(true);
@@ -597,9 +599,6 @@ public class GrxProjectItem extends GrxBaseItem {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		setProperty("nsHost", "localhost");
-		setProperty("nsPort", "2809");
 
 		String pname = prop.getStr("Project.name", "");
 		Class cls = manager_.registerPlugin(WORLD_STATE_ITEM);

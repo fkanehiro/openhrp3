@@ -35,8 +35,6 @@ public class GrxCorbaUtil {
 		if (orb_ == null) {
 			java.util.Properties props = null;
 			props = System.getProperties();
-			//props.put("org.omg.CORBA.ORBClass","com.ooc.OBServer.ORB");
-			//props.put("org.omg.CORBA.ORBSingletonClass","com.ooc.CORBA.ORBSingleton");
 			orb_ = ORB.init(argv,props);
 		}
 		return orb_;
@@ -47,19 +45,17 @@ public class GrxCorbaUtil {
 	}
   
 	public static NamingContext getNamingContext() {   
-		try {
-			org.omg.CORBA.Object obj = getORB().resolve_initial_references("NameService");
-			return NamingContextHelper.narrow(obj);
-		} catch (Exception excep) {     
-			GrxDebugUtil.printErr("getNamingContext:NG"); 
+		String nsHost = System.getenv("NS_HOST");
+		if (nsHost == null) {
+			nsHost = "localhost";
 		}
-		return null;
-	}
-
-	private static HashMap<String, NamingContext> getNamingContextList() {
-		if (namingContextList_ == null)
-			namingContextList_ = new HashMap<String, NamingContext>();
-		return namingContextList_;
+		int nsPort = 2809;
+		try {
+			nsPort = Integer.parseInt(System.getenv("NS_HOST"));
+		} catch (Exception e) {
+			nsPort = 2809;
+		}
+		return getNamingContext(nsHost, nsPort);
 	}
 
 	public static NamingContext getNamingContext(String nsHost, int nsPort) {
@@ -69,22 +65,41 @@ public class GrxCorbaUtil {
 		try {
 			if (ncxt == null) {
 				org.omg.CORBA.Object obj = orb_.string_to_object(nameServiceURL);
-				if (!obj._non_existent()) {
-					ncxt = NamingContextHelper.narrow(obj);
-					getNamingContextList().put(nameServiceURL,ncxt);
-				}
+				ncxt = NamingContextHelper.narrow(obj);
+				getNamingContextList().put(nameServiceURL,ncxt);
 			}
 			ncxt._non_existent();
 		} catch (Exception excep) {
 			ncxt = null;
-			namingContextList_.remove(nameServiceURL);
-			//GrxDebugUtil.printErr("getNamingContext:NG("+nsHost+","+nsPort+")");
+			getNamingContextList().remove(nameServiceURL);
 		}
 		return ncxt;
 	}
 
+	private static HashMap<String, NamingContext> getNamingContextList() {
+		if (namingContextList_ == null)
+			namingContextList_ = new HashMap<String, NamingContext>();
+		return namingContextList_;
+	}
+
+
+	public static org.omg.CORBA.Object getReference(String id) {
+		String nsHost = System.getenv("NS_HOST");
+		if (nsHost == null) {
+			nsHost = "localhost";
+		}
+		int nsPort = 2809;
+		try {
+			nsPort = Integer.parseInt(System.getenv("NS_HOST"));
+		} catch (Exception e) {
+			nsPort = 2809;
+		}
+
+		return  getReference(id, nsHost, nsPort);
+	}
+
 	public static org.omg.CORBA.Object getReference(String id, String nsHost, int nsPort) {
-		NamingContext namingContext = getNamingContext(nsHost,nsPort);
+		NamingContext namingContext = getNamingContext(nsHost, nsPort);
 		org.omg.CORBA.Object obj = null;
 		try {
 			NameComponent[] nc = new NameComponent[1];
@@ -96,29 +111,6 @@ public class GrxCorbaUtil {
 		}
 		return obj;
 	}
-
-/* public static Plugin getPlugin(String id,String nsHost,int nsPort) {
-		Plugin p = null;
-		try {
-			p = jp.go.aist.hrp.simulator.PluginHelper.narrow(getReference(id,nsHost,nsPort));
-			p._non_existent();
-		} catch (Exception e) {
-			DebugUtil.printErr("getPlugin:NG("+id+","+nsHost+","+nsPort+")");
-		}
-		return p;
-	}
-
-	public static PluginManager getPluginManager(String id,String nsHost,int nsPort) {
-		PluginManager p = null;
-		try {
-			p = jp.go.aist.hrp.simulator.PluginManagerHelper.narrow(getReference(id,nsHost,nsPort));
-			p._non_existent();
-		} catch (Exception e) {
-			DebugUtil.printErr("getPluginManager:NG("+id+","+nsHost+","+nsPort+")");
-		}
-		return p;
-	}
-*/
 
 	public static org.omg.CORBA.Object getReferenceURL(String id, String nsHost, int nsPort) {
 		org.omg.CORBA.Object obj = null;
@@ -163,19 +155,28 @@ public class GrxCorbaUtil {
 		return isConnected(obj);
 	}
 
-	public static String[] getObjectNameList(String nsHost,int nsPort) {
+	public static String[] getObjectNameList() {
+		return _getObjectNameList(getNamingContext());
+	}
+
+	public static String[] getObjectNameList(String nsHost, int nsPort) {
+		return _getObjectNameList(getNamingContext(nsHost, nsPort));
+	}
+
+	private static String[] _getObjectNameList(NamingContext cxt) {
 		int a = 100;
-		BindingListHolder bl 	 = new BindingListHolder();
+		BindingListHolder     bl = new BindingListHolder();
 		BindingIteratorHolder bi = new BindingIteratorHolder();
 		String[] ret = null;
 		try {
-			getNamingContext(nsHost,nsPort).list(a,bl,bi);
+			cxt.list(a, bl, bi);
 			ret = new String[bl.value.length];
-			for (int i=0;i<bl.value.length;i++)
+			for (int i=0; i<bl.value.length; i++) {
 				ret[i] = bl.value[i].binding_name[0].id;
+			}
 		} catch(Exception ex) {
 			ret = null;
-			GrxDebugUtil.println("getObjectList:NG("+nsHost+","+String.valueOf(nsPort)+")");
+			GrxDebugUtil.printErr("getObjectList:NG", ex);
 		}
 
 		return ret;

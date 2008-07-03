@@ -425,12 +425,20 @@ public class GrxJythonPromptView extends GrxBaseView {
 	
 	public void restoreProperties() {
 		super.restoreProperties();
-		String nsHost = manager_.getProjectProperty("nsHost");
-		String nsPort = manager_.getProjectProperty("nsPort");
-		if (nsHost == null)
-			nsHost = "localhost";
-		if (nsPort == null)
-			nsPort = "2809";
+		String nsHost = manager_.getProjectProperty("robotHost");
+		String nsPort = manager_.getProjectProperty("robotPort");
+		if (nsHost == null) {
+			nsHost = System.getenv("NS_HOST");
+			if (nsHost == null) {
+				nsHost = "localhost";
+			}
+		}
+		if (nsPort == null) {
+			nsPort = System.getenv("NS_PORT");
+			if (nsPort == null) {
+				nsPort = "2809";
+			}
+		}
 			
 		String NS_OPT = "-ORBInitRef NameService=corbaloc:iiop:"+nsHost+":"+nsPort+"/NameService";
 		System.setProperty("NS_OPT", NS_OPT);
