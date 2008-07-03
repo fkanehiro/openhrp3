@@ -26,17 +26,33 @@ import com.generalrobotix.ui.util.GrxORBMonitor;
 
 @SuppressWarnings("serial")
 public class GrxORBMonitorView extends GrxBaseView {
-    public static final String TITLE = "NameService Monitor";
+	public static final String TITLE = "NameService Monitor";
 	private GrxORBMonitor monitor_;
+	private String nsHost_;
+	private int    nsPort_;
 
 	public GrxORBMonitorView(String name, GrxPluginManager manager) {
 		super(name, manager);
 		getContentPane().setLayout(new BorderLayout());
 		monitor_ = new GrxORBMonitor();
 		getContentPane().add(monitor_);
+
+		nsHost_ = System.getenv("NS_HOST");
+		if (nsHost_ == null) {
+			nsHost_ = "localhost";
+		}
+		try {
+			nsPort_ = Integer.parseInt(System.getenv("NS_PORT"));
+		} catch (Exception e) {
+			nsPort_ = 2809;
+		}
 	}
 
 	public void restoreProperties() {
-		monitor_.setHosts(new String[]{"localhost", getStr("nsHost", "")});
+		if (nsHost_.equals("localhost")) {
+			monitor_.setHosts(new String[]{"localhost"});
+		} else {
+			monitor_.setHosts(new String[]{nsHost_, "localhost"});
+		}
 	}
 }

@@ -301,8 +301,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 				if (sdata != null) {
 //System.out.println( "    addValue() : 2.7.5"  );
 // ##### [Changed] #####
-   //2008-03-06“_‚ÌModelLoader‚Å‚ÍC‚±‚Ì‰ÓŠ‚Å–â‘è‚ª”­¶‚·‚éê‡‚ª‚ ‚éB
-   //Œ»İŒ´ˆö’²¸’†B
+   //2008-03-06Ûó_£öKodelLoader£ó"¡¦C£é"Ëç¡¦³â¡¦áïçà¡¦¡¦µà¡¦¡¦éë­â¡¦ ¤ç!B
+   //·î-¡¦³æ¡¦±ë·ğ¡¦B
 //System.out.println( "       sdata.q.length = " + sdata.q.length );
 					for (int j=0; j<sdata.q.length; j++) {
 //System.out.println( "         j = " + j + ", sdata.q[j] = " + sdata.q[j] + ", sdata.u[j] = " + sdata.q[j]  );
@@ -459,11 +459,12 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	private void loadLog(final File logFile) {
         save_.setEnabled(false);
+		manager_.processingWindow_.setVisible(false);
 		manager_.processingWindow_.setTitle("Load worldstate log");
 		manager_.processingWindow_.setMessage("Loading log as a file:log/"+getName()+".log ...");
-		manager_.processingWindow_.setVisible(true);
 		Thread t = new Thread() {
 			public void run() {
+				manager_.processingWindow_.setVisible(true);
 				_loadLog(logFile);
 				manager_.processingWindow_.setVisible(false);
         		saveCSV_.setEnabled(true);
@@ -567,9 +568,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         save_.setEnabled(false);
 		manager_.processingWindow_.setTitle("Save worldstate log");
 		manager_.processingWindow_.setMessage("Saving log as log/"+getName()+".log ...");
-		manager_.processingWindow_.setVisible(true);
 		Thread t = new Thread() {
 			public void run() {
+				manager_.processingWindow_.setVisible(true);
 				try {
 					logger_.closeAsWrite();
 					logger_.closeCollisionLogAsWrite();
@@ -588,10 +589,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         save_.setEnabled(false);
 		manager_.processingWindow_.setTitle("Save log as CSV");
 		manager_.processingWindow_.setMessage("Saving each log as log/"+getName()+"/*.csv ...");
-		manager_.processingWindow_.setVisible(true);
 		Thread t = new Thread() {
 			public void run() {
 				try {
+					manager_.processingWindow_.setVisible(true);
 					String fname = "log"+File.separator+GrxWorldStateItem.this.getName()+".log";
 					File f = new File(fname);
 					if (!f.isFile()) {
@@ -725,7 +726,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	private static class SensorInfoLocal implements Comparable {
 		String name;
-		String type; //#####[Changed] int -> string ‚É•ÏX‚·‚éI
+		String type; //#####[Changed] int -> string £õ5¡¦X£ì"¡¦I
 		int id;
 		public SensorInfoLocal(SensorInfo info) {
 			name = info.name;

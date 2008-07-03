@@ -96,6 +96,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		JMenuItem reload = new JMenuItem("reload");
 		reload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				manager_.processingWindow_.setVisible(false);
 				manager_.processingWindow_.setMessage("reloading model :"+getName()+" ...");
 				manager_.processingWindow_.setVisible(true);
 				Thread t = new Thread() {
@@ -285,6 +286,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms");
 			setURL(url);
 			manager_.setSelectedItem(this, true);
+			setProperty("isRobot", Boolean.toString(isRobot_));
 		} catch (Exception ex) {
 			System.out.println("Failed to load vrml model:" + url);
 			ex.printStackTrace();

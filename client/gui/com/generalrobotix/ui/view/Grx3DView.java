@@ -833,7 +833,7 @@ public class Grx3DView
 	}
 	
 	public boolean registerCORBA() {
-		NamingContext rootnc = GrxCorbaUtil.getNamingContext("localhost",2809);
+		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
 		
 		OnlineViewer_impl olvImpl = new OnlineViewer_impl();
 		OnlineViewer olv = olvImpl._this(manager_.orb_);//GrxCorbaUtil.getORB());

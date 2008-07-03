@@ -76,8 +76,8 @@ public class GrxIOBClientView extends GrxBaseView {
 	private StatusSeqHolder calibStateH_ = new StatusSeqHolder();
 	
 	private String robotType_ = "-----";
-	private String nsHost_    = "-----";
-	private int    nsPort_    = 2809;
+	private String robotHost_    = "-----";
+	private int    robotPort_    = 2809;
 	private int    interval_  = 200;
 	private String setupFile_ = "-----";
 	
@@ -85,6 +85,7 @@ public class GrxIOBClientView extends GrxBaseView {
 	private Date prevDate_;
 	private int  state_       = NOT_CONNECTED;
 	private Thread thread_;
+	private boolean actualFlag = false;
 
 	private ImageIcon startMonitorIcon_ = new ImageIcon(getClass().getResource("/resources/images/sim_start.png"));
 	private ImageIcon stopMonitorIcon_  = new ImageIcon(getClass().getResource("/resources/images/sim_stop.png"));
@@ -121,8 +122,8 @@ public class GrxIOBClientView extends GrxBaseView {
 		layout1.add(btnSetup_);
 		cpane.add(layout1, BorderLayout.NORTH);
 
-		propList_.add(new SetPropertyPanel("Robot Host",  "nsHost", false, nsHost_));
-		propList_.add(new SetPropertyPanel("Robot Port",  "nsPort", false, new Integer(nsPort_).toString()));
+		propList_.add(new SetPropertyPanel("Robot Host",  "robotHost", false, robotHost_));
+		propList_.add(new SetPropertyPanel("Robot Port",  "robotPort", false, new Integer(robotPort_).toString()));
 		propList_.add(new SetPropertyPanel("Robot Name",  "ROBOT",  false, robotType_));
 		propList_.add(new SetPropertyPanel("Interval[ms]","interval", true, new Integer(interval_).toString()));
 		propList_.add(new SetPropertyPanel("Setup File",  "setupFile", true, setupFile_));
@@ -300,11 +301,11 @@ public class GrxIOBClientView extends GrxBaseView {
 
 		try {
 			// set property for connection
-			nsHost_ = manager_.getProjectProperty("nsHost");
+			robotHost_ = manager_.getProjectProperty("robotHost");
 			try {
-				nsPort_ = Integer.parseInt(manager_.getProjectProperty("nsPort"));
+				robotPort_ = Integer.parseInt(manager_.getProjectProperty("robotPort"));
 			} catch (Exception e) {
-				nsPort_ = 2809; // if not set try the default port number
+				robotPort_ = 2809; // if not set try the default port number
 			}
 
 			robotType_ = getStr("ROBOT", robotType_);
@@ -316,7 +317,7 @@ public class GrxIOBClientView extends GrxBaseView {
 				return;
 
 			// used to create Plugins
-			org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("motionsys", nsHost_, nsPort_);
+			org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("motionsys", robotHost_, robotPort_);
 			pluginManager_ = PluginManagerHelper.narrow(obj);
 			
 			// used to get robot state (joint angles etc.)
@@ -342,19 +343,7 @@ public class GrxIOBClientView extends GrxBaseView {
 				seqplay_.start();
 			}
 
-			// to calculate forward-kinematics
-			obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory", "localhost", 2809);
-			DynamicsSimulatorFactory dynFactory = DynamicsSimulatorFactoryHelper.narrow(obj);
-			if (dynamics_ != null)  {
-				try {
-					dynamics_.destroy();
-				} catch(Exception e) {
-					GrxDebugUtil.printErr("", e);
-				}
-			}
-			dynamics_ = dynFactory.create();
-			dynamics_.registerCharacter(robotType_, currentModel_.cInfo_);
-			dynamics_.init(0.001, IntegrateMethod.EULER, SensorOption.DISABLE_SENSOR);
+			actualFlag = isTrue("showActualState", false);
 
 			// initialize logger
 			currentItem_.clearLog();
@@ -371,6 +360,8 @@ public class GrxIOBClientView extends GrxBaseView {
 				btnServo_.setToolTipText("Servo On");
 			}
 			initialDate_ = prevDate_ = new Date();
+
+			initDynamicsSimulator(false);
 
 			setConnectionState(CONNECTED);
 			
@@ -500,6 +491,7 @@ public class GrxIOBClientView extends GrxBaseView {
 		}
 
 		if (state_ == CONNECTED && time > interval_) {
+
 			prevDate_ = now;
 			try {
 				provider_.getActualState(actualStateH_);
@@ -508,9 +500,13 @@ public class GrxIOBClientView extends GrxBaseView {
 					ioCtrl_.getServoStatus(servoStateH_);
 					ioCtrl_.getCalibStatus(calibStateH_); 
 				}
-				
-				dynamics_.setCharacterAllLinkData(robotType_, LinkDataType.JOINT_VALUE, refStateH_.value.angle);
-				//actualStateH_.value.angle);
+
+				if(actualFlag) {
+					dynamics_.setCharacterAllLinkData(robotType_, LinkDataType.JOINT_VALUE, actualStateH_.value.angle);
+				} else {
+					dynamics_.setCharacterAllLinkData(robotType_, LinkDataType.JOINT_VALUE, refStateH_.value.angle);
+				}
+
 				double[] posatt = new double[12];
 				for (int i=0; i<3; i++) 
 					posatt[i] = refStateH_.value.basePos[i];
@@ -521,7 +517,9 @@ public class GrxIOBClientView extends GrxBaseView {
 				dynamics_.setCharacterLinkData(robotType_, currentModel_.lInfo_[0].name, LinkDataType.ABS_TRANSFORM, posatt);
 				dynamics_.calcWorldForwardKinematics();
 				dynamics_.getWorldState(worldStateH_);
+
 			} catch (Exception e) {
+
 				GrxDebugUtil.printErr("iobclient got exception:", e);
 				setConnectionState(CONNECTING);
 				return;
@@ -543,6 +541,30 @@ public class GrxIOBClientView extends GrxBaseView {
 			wsx.setCalibState(robotType_, calibStateH_.value);
 			currentItem_.addValue(wsx.time, wsx);
 		}
+	}
+
+	private DynamicsSimulator initDynamicsSimulator(boolean update) {
+		if (dynamics_ != null && !update) 
+			return dynamics_;
+
+		org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
+		DynamicsSimulatorFactory dynFactory = DynamicsSimulatorFactoryHelper.narrow(obj);
+		if (dynamics_ != null)  {
+			try {
+				dynamics_.destroy();
+			} catch(Exception e) {
+				GrxDebugUtil.printErr("", e);
+			}
+		}
+		try {
+			dynamics_ = dynFactory.create();
+			dynamics_.registerCharacter(robotType_, currentModel_.cInfo_);
+			dynamics_.init(0.001, IntegrateMethod.EULER, SensorOption.DISABLE_SENSOR);
+		} catch (Exception e) {
+			dynamics_ = null;
+		}
+
+		return dynamics_;
 	}
 
 	private GrxJythonPromptView getJythonView() {
@@ -675,19 +697,19 @@ public class GrxIOBClientView extends GrxBaseView {
 		try{
 			if (isInteractive) {
 				int ans = JOptionPane.showConfirmDialog(manager_.getFrame(), 
-														"Destroy All Plugins on Robot?", "Destroy All Plugin",
-														JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, 
-														manager_.ROBOT_ICON);
+						"Destroy All Plugins on Robot?", "Destroy All Plugin",
+						JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, 
+						manager_.ROBOT_ICON);
 				if (ans != JOptionPane.OK_OPTION)
 					return;
 			}
 
-			PluginManager manager = PluginManagerHelper.narrow(GrxCorbaUtil.getReference("motionsys", nsHost_, nsPort_));
+			PluginManager manager = PluginManagerHelper.narrow(GrxCorbaUtil.getReference("motionsys", robotHost_, robotPort_));
 			String[] plist = manager.getPluginNames();
 			for (int i=0; i<plist.length; i++) {
 				try {
 					String name = plist[plist.length-1-i];
-					org.omg.CORBA.Object obj = GrxCorbaUtil.getReference(name, nsHost_, nsPort_);
+					org.omg.CORBA.Object obj = GrxCorbaUtil.getReference(name, robotHost_, robotPort_);
 					if ((seqplay_  != null && !obj._is_equivalent(seqplay_)) && 
 						(provider_ != null && !obj._is_equivalent(provider_)) && 
 						(ioCtrl_   != null && !obj._is_equivalent(ioCtrl_))) {
