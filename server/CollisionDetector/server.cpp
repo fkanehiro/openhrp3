@@ -1,5 +1,14 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
 /**
- * CollisionDetector$B$N%5!<%P%9%?!<%H%"%C%W(B
+ * CollisionDetector¤Î¥µ¡¼¥Ð¥¹¥¿¡¼¥È¥¢¥Ã¥×
  *
  * @author  K Saito (Kernel. Co.,Ltd.)
  * @version 0.1 (2002/02/22)
@@ -19,7 +28,7 @@ using namespace std;
 
 
 /**
- * $B%5!<%P%9%?!<%H%"%C%W(B
+ * ¥µ¡¼¥Ð¥¹¥¿¡¼¥È¥¢¥Ã¥×
  *
  * @param   argc
  * @param   argv
@@ -40,7 +49,7 @@ int main(int argc, char* argv[]) {
         //
         PortableServer::POAManager_var manager = rootPOA -> the_POAManager();
 
-    // $B%M!<%`%5!<%P$X$N;2>H<hF@(B
+    // ¥Í¡¼¥à¥µ¡¼¥Ð¤Ø¤Î»²¾È¼èÆÀ
     CORBA_Object_var ns;
     try {
       ns = orb -> resolve_initial_references("NameService");
@@ -55,7 +64,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
     
-    // $B%k!<%H%M!<%_%s%0%3%s%F%-%9%H<hF@(B
+    // ¥ë¡¼¥È¥Í¡¼¥ß¥ó¥°¥³¥ó¥Æ¥­¥¹¥È¼èÆÀ
     CosNaming_NamingContext_var rootnc = CosNaming_NamingContext::_narrow(ns);
     if(CORBA_is_nil(rootnc)) {
       cerr << argv[0]
@@ -73,7 +82,7 @@ int main(int argc, char* argv[]) {
     nc[0].kind = CORBA_string_dup("");
     rootnc -> rebind(nc, cdFactory);
     
-    // $B%/%i%$%"%s%HB&$+$i$N@\B3BT$A(B
+    // ¥¯¥é¥¤¥¢¥ó¥ÈÂ¦¤«¤é¤ÎÀÜÂ³ÂÔ¤Á
     manager -> activate();
     cout << "ready" << endl;
     
