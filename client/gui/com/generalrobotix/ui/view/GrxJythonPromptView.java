@@ -376,8 +376,9 @@ public class GrxJythonPromptView extends GrxBaseView {
 		PyList pathList = (PyList)interpreter_.eval("sys.path");
 		if (!pathList.__contains__(pyStr)) {
 			String com = "sys.path.append(\""+p.getAbsolutePath()+"\")";
-			interpreter_.exec("print '"+com+"'");
-			interpreter_.exec(com);
+			String com1=com.replace("\\","\\\\");
+			interpreter_.exec("print '"+com1+"'");
+			interpreter_.exec(com1);
 		}
 		
 		thread_2_ = new Thread() {

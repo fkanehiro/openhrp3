@@ -51,7 +51,7 @@ public class GrxCorbaUtil {
 		}
 		int nsPort = 2809;
 		try {
-			nsPort = Integer.parseInt(System.getenv("NS_HOST"));
+			nsPort = Integer.parseInt(System.getenv("NS_PORT"));
 		} catch (Exception e) {
 			nsPort = 2809;
 		}
@@ -90,7 +90,7 @@ public class GrxCorbaUtil {
 		}
 		int nsPort = 2809;
 		try {
-			nsPort = Integer.parseInt(System.getenv("NS_HOST"));
+			nsPort = Integer.parseInt(System.getenv("NS_PORT"));
 		} catch (Exception e) {
 			nsPort = 2809;
 		}
