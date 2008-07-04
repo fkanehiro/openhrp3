@@ -28,7 +28,7 @@ IMPL_OBJ =
 OBJS     = PA10Controller.o $(SKEL_OBJ) $(IMPL_OBJ)
 
 target: PA10Controller.$(DLLSFX) PA10ControllerComp
-	chmod +x PA10Controller.sh
+#	chmod +x PA10Controller.sh
 
 PA10Controller.$(DLLSFX): $(OBJS)
 	$(LINK) $(LINK_FLAGS) $(SOFLAGS) $(OUTOPT)$@ $(OBJS) $(RTM_LIBS)

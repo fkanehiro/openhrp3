@@ -41,7 +41,7 @@ OBJS     = SampleController.o $(SKEL_OBJ) $(IMPL_OBJ)
 
 
 target: SampleController.$(DLLSFX) SampleControllerComp
-	chmod +x SampleController.sh
+#	chmod +x SampleController.sh
 
 SampleController.$(DLLSFX): $(OBJS)
 	$(LINK) $(LINK_FLAGS) $(SOFLAGS) $(OUTOPT)$@ $(OBJS) $(RTM_LIBS)
