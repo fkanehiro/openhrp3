@@ -42,7 +42,7 @@ OBJS     = SampleLF.o $(SKEL_OBJ) $(IMPL_OBJ)
 
 
 target: SampleLF.$(DLLSFX) SampleLFComp
-	chmod +x SampleLF.sh
+#	chmod +x SampleLF.sh
 
 SampleLF.$(DLLSFX): $(OBJS)
 	$(LINK) $(LINK_FLAGS) $(SOFLAGS) $(OUTOPT)$@ $(OBJS) $(RTM_LIBS)

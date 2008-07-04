@@ -41,7 +41,7 @@ OBJS     = SampleHG.o $(SKEL_OBJ) $(IMPL_OBJ)
 
 
 target: SampleHG.$(DLLSFX) SampleHGComp
-	chmod +x SampleHG.sh
+#	chmod +x SampleHG.sh
 
 SampleHG.$(DLLSFX): $(OBJS)
 	$(LINK) $(LINK_FLAGS) $(SOFLAGS) $(OUTOPT)$@ $(OBJS) $(RTM_LIBS)

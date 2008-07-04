@@ -96,7 +96,7 @@ ifneq ("$(ROBOT)", "")
 	echo -n export ROBOT= >> config.sh
 	echo $(ROBOT) >> config.sh
 endif
-	chmod +x *.sh
+#	chmod +x *.sh
 
 clean: del_generic
 	-$(RM) config.sh

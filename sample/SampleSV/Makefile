@@ -41,7 +41,7 @@ OBJS     = SampleSV.o $(SKEL_OBJ) $(IMPL_OBJ)
 
 
 target: SampleSV.$(DLLSFX) SampleSVComp
-	chmod +x SampleSV.sh
+#	chmod +x SampleSV.sh
 
 SampleSV.$(DLLSFX): $(OBJS)
 	$(LINK) $(LINK_FLAGS) $(SOFLAGS) $(OUTOPT)$@ $(OBJS) $(RTM_LIBS)
