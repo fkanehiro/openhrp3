@@ -38,17 +38,19 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
-import com.generalrobotix.ui.shrpsys.item.GrxPortItem;
-import com.generalrobotix.ui.shrpsys.item.GrxSockPortItem;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 
+import com.generalrobotix.ui.shrpsys.item.GrxPortItem;
+import com.generalrobotix.ui.shrpsys.item.GrxSockPortItem;
+
 @SuppressWarnings("serial")
 public class GrxSHrpsysClientView extends GrxBaseView {
-	private DynamicsSimulator dynamics_;
 	private GrxWorldStateItem currentItem_;
 	private GrxModelItem currentModel_;
 	private GrxPortItem currentPort_;
+
+	private DynamicsSimulator dynamics_;
 	
 	private List<Integer> jointOrder = new ArrayList<Integer>();
 	private double[] prevAngles_ = null;
@@ -58,20 +60,16 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 	private Date servoOnTimer_ = null;
 	private int SERVO_OVERRUN_TIME = 300000; // [msec]
 	
-	private String modelName_ = "TRP1";
-	private String nsHost_ = "localhost";
-	private int nsPort_ = 2809;
+	private String modelName_ = "CHOROMET";
+	private String robotHost_ = "hrp3";
+	private int robotPort_ = 7777;
 	//private Date initialDate_;
 	private Date prevDate_;
 	private int intervalMS_ = 200;
-	private ImageIcon startMonitorIcon_ = new ImageIcon(getClass().getResource(
-			"/resources/images/sim_start.png"));
-	private ImageIcon stopMonitorIcon_ = new ImageIcon(getClass().getResource(
-			"/resources/images/sim_stop.png"));
-	private ImageIcon servoOnIcon_ = new ImageIcon(getClass().getResource(
-			"/resources/images/robot_servo_start.png"));
-	private ImageIcon servoOffIcon_ = new ImageIcon(getClass().getResource(
-			"/resources/images/robot_servo_stop.png"));
+	private ImageIcon startMonitorIcon_ = new ImageIcon(getClass().getResource( "/resources/images/sim_start.png"));
+	private ImageIcon stopMonitorIcon_ = new ImageIcon(getClass().getResource( "/resources/images/sim_stop.png"));
+	private ImageIcon servoOnIcon_ = new ImageIcon(getClass().getResource( "/resources/images/robot_servo_start.png"));
+	private ImageIcon servoOffIcon_ = new ImageIcon(getClass().getResource( "/resources/images/robot_servo_stop.png"));
 	private JToggleButton startMon_ = new JToggleButton(startMonitorIcon_);
 	private JToggleButton servoOn_ = new JToggleButton(servoOnIcon_);
 	private boolean requesting_ = false;
@@ -92,7 +90,10 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 			public void actionPerformed(ActionEvent arg0) {
 				JToggleButton b = (JToggleButton) arg0.getSource();
 				if (b.isSelected()) {
-					modelName_ = getStr("modelName", modelName_);
+					String str = manager_.getProjectProperty("ROBOT");
+					if (str != null)  {
+						modelName_ = str;
+					}
 					startMonitor();
 				} else {
 					int ans = JOptionPane.showConfirmDialog(
@@ -145,7 +146,7 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 			for (int i=0; i<currentModel_.lInfo_.length; i++)
 				jointOrder.add(currentModel_.lInfo_[i].jointId);
 
-			setProperty("modelName", modelName_);
+			setProperty("ROBOT", modelName_);
 
 			//
 			// This is required
@@ -167,14 +168,20 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 			//boolean seqplayFlag = isTrue("loadSeqplay", true);
 			//if (seqplayFlag == true) {
 			currentPort_.setEnabled(true);
-				currentPort_.println("send self :load seqplay");
-				currentPort_.println("send self :create seqplay seq");
-				currentPort_.println("send seq :start");
-				currentPort_.println("send self :load jxcPlugin");
-				currentPort_.println("send self :create jxcPlugin robot");
-				currentPort_.println("send robot :start");
+			currentPort_.println("send self :load seqplay");
+			currentPort_.println("send self :create seqplay seq");
+			currentPort_.println("send seq :start");
+			currentPort_.println("send self :load jsrPlugin");
+			currentPort_.println("send self :create jsrPlugin robot");
+			currentPort_.println("send robot :start");
 			//}
 
+			org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory", "localhost", 2809);
+			DynamicsSimulatorFactory dynFactory = DynamicsSimulatorFactoryHelper.narrow(obj);
+			dynamics_ = dynFactory.create();
+			dynamics_.registerCharacter(modelName_, currentModel_.cInfo_);
+			dynamics_.init(0.001, IntegrateMethod.EULER, SensorOption.DISABLE_SENSOR);
+			
 			currentItem_.clearLog();
 			currentItem_.registerCharacter(modelName_, currentModel_.cInfo_);
 
@@ -187,11 +194,13 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 			startMon_.setToolTipText("Stop Robot State Monitor");
 			startMon_.setSelected(true);
 			prevDate_ = new Date();
+
 			initDynamicsSimulator(false);
+
 			start();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(manager_.getFrame(),
-					"Couldn't Connect StateProvider(" + nsHost_ + ":" + nsPort_
+					"Couldn't Connect StateProvider(" + robotHost_ + ":" + robotPort_
 							+ ":" + modelName_ + ").",
 					"Start Robot State Monitor", JOptionPane.WARNING_MESSAGE,
 					manager_.ROBOT_ICON);
@@ -203,7 +212,7 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 		if (dynamics_ != null && !update) 
 			return dynamics_;
 
-		obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
+		org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
 		DynamicsSimulatorFactory dynFactory = DynamicsSimulatorFactoryHelper.narrow(obj);
 		if (dynamics_ != null)  {
 			try {
@@ -214,7 +223,7 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 		}
 		try {
 			dynamics_ = dynFactory.create();
-			dynamics_.registerCharacter(robotType_, currentModel_.cInfo_);
+			dynamics_.registerCharacter(modelName_, currentModel_.cInfo_);
 			dynamics_.init(0.001, IntegrateMethod.EULER, SensorOption.DISABLE_SENSOR);
 		} catch (Exception e) {
 			dynamics_ = null;
@@ -234,6 +243,14 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 				currentPort_.close();
 			} catch (Exception e) {
 				e.printStackTrace();
+			}
+		}
+		
+		if (dynamics_ != null) {
+			try {
+				dynamics_.destroy();
+			} catch (Exception e) {
+				GrxDebugUtil.printErr(this.getClass().getName()+".stopMonitor():" ,e);
 			}
 		}
 		
@@ -337,6 +354,10 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 		}
 		_receiveData();
 			
+		try {
+		} catch (Exception e) {
+		e.printStackTrace();
+		}
 		Date now = new Date();
 		try {
 			if (!requesting_ && !currentPort_.ready() &&
@@ -377,12 +398,12 @@ public class GrxSHrpsysClientView extends GrxBaseView {
 					currentItem_.addValue(wsx.time, wsx);
 					requesting_ = false;
 				}
-			}
-		} catch (IOException e) {
+           }
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
+	
 	private WorldStateEx parse(String rowData) {
 		//System.out.println(rowData);
 		WorldStateEx wsx = new WorldStateEx();
