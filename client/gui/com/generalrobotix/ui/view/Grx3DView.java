@@ -293,9 +293,9 @@ public class Grx3DView
         tg[3].setTransform(transform);
 
 		// Ambient Light for Alert
-		//AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
-		//alight.setInfluencingBounds(bounds);
-		//tg[0].addChild(alight);
+		AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
+		alight.setInfluencingBounds(bounds);
+		tg[0].addChild(alight);
 
 		// background
 		backGround_.setCapability(Background.ALLOW_COLOR_READ);
@@ -846,13 +846,12 @@ public class Grx3DView
 		try {
 			rootnc.rebind(path1, olv);
 			rootnc.rebind(path2, view);
-			
 		} catch (Exception ex) {
-			System.out.println("3DVIEW : failed to bind to localhost NameService");
+			GrxDebugUtil.println("3DVIEW : failed to bind to localhost NameService");
 			return false;
 		}
  		
-		System.out.println("3DVIEW : successfully bound to localhost NameService");
+		GrxDebugUtil.println("3DVIEW : successfully bound to localhost NameService");
 		return true;
 	}
 	

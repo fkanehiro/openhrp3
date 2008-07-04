@@ -206,7 +206,8 @@ public class GrxEasyDemoView extends GrxBaseView {
 	
 	public void updateDemoPane() {
 		paneDemo1_.removeAll();
-		int len = Integer.parseInt(getProperty("motionNumber"));
+		//int len = Integer.parseInt(getProperty("motionNumber"));
+		int len = getInt("motionNumber", 0);
 		for (int i=0; i<len; i++) {
 			String header = "motion"+i+".";
 			String name    = getProperty(header+"name", "no name");
@@ -228,7 +229,8 @@ public class GrxEasyDemoView extends GrxBaseView {
 				lastButton.labelContinuous_.setVisible(false);
 		}
 		
-		setCurrent((MotionPanel)paneDemo1_.getComponent(0));
+		if (len > 0)
+			setCurrent((MotionPanel)paneDemo1_.getComponent(0));
 	}
 	
 	public void updateDemoPaneTest() {

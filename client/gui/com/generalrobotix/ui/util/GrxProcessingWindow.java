@@ -76,34 +76,23 @@ public class GrxProcessingWindow extends JDialog{
 	
 	public void setVisible(boolean b) {
 		if (!b) {
-			super.setVisible(false);
+			SwingUtilities.invokeLater(
+				new Runnable() {
+					public void run() {
+						GrxProcessingWindow.super.setVisible(false);
+					}
+				}
+			);
 			if (timer_ != null) {
 				timer_.cancel();
 				timer_.purge();
 				timer_ = null;
 			}
 			return;
+		} else if (timer_ != null) {
+			return;
 		}
 
-		setSize(new Dimension(400,150));
-		setLocationRelativeTo(getOwner());
-
-		while (!getOwner().isVisible()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		SwingUtilities.invokeLater(
-			new Runnable() {
-				public void run() {
-					GrxProcessingWindow.super.setVisible(true);
-				}
-			}
-		);
-		
 		timer_ = new java.util.Timer();
 		TimerTask task_ = new TimerTask() {
 			public void run() {
@@ -117,14 +106,17 @@ public class GrxProcessingWindow extends JDialog{
 				);
 			}
 		};
-		timer_.scheduleAtFixedRate(task_, 0, 700);
-		
-		while (!isVisible()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+
+		SwingUtilities.invokeLater(
+			new Runnable() {
+				public void run() {
+					setSize(new Dimension(400,150));
+					setLocationRelativeTo(getOwner());
+					GrxProcessingWindow.super.setVisible(true);
+				}
 			}
-		}	
+		);
+		
+		timer_.scheduleAtFixedRate(task_, 0, 700);
 	}
 }
