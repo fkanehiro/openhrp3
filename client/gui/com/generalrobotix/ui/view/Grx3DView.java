@@ -293,9 +293,9 @@ public class Grx3DView
         tg[3].setTransform(transform);
 
 		// Ambient Light for Alert
-		AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
-		alight.setInfluencingBounds(bounds);
-		tg[0].addChild(alight);
+//		AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
+//		alight.setInfluencingBounds(bounds);
+//		tg[0].addChild(alight);
 
 		// background
 		backGround_.setCapability(Background.ALLOW_COLOR_READ);
