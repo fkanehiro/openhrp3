@@ -1,0 +1,14 @@
+export OPENHRPHOME=@OpenHRP_BINARY_DIR@
+
+export DYNAMICS_SIMULATOR_DIR=${OPENHRPHOME}/bin/
+export JAVAVM=@JAVA@
+# export JYTHON_DIR=/usr/share/java
+
+export LD_LIBRARY_PATH=@JAVA_LD_LIBRARY_PATH@
+
+export CLASSPATH=${OPENHRPHOME}/java/grxui.jar:${OPENHRPHOME}/java/openhrpstubskel.jar:${OPENHRPHOME}/java/vrml97.jar:@JYTHON_JAR@:${CLASSPATH}
+
+export NS_OPT="-ORBInitRef NameService=corbaloc:iiop:localhost:2809/NameService"
+export NAMESERV="omniNames -start 2809 -logdir /tmp"
+
+export JYTHON_HOME=@JYTHON_HOME@
