@@ -1,0 +1,8 @@
+
+#ifndef OPENHRP_BASE_CONFIG_H_INCLUDED
+#define OPENHRP_BASE_CONFIG_H_INCLUDED
+
+#cmakedefine HAVE_DLFCN_H 1
+
+
+#endif
