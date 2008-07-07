@@ -143,6 +143,7 @@ if(JMFHOME)
 endif()
 
 if(CLASSPATH)
+  string(REGEX REPLACE "^:" "" CLASSPATH ${CLASSPATH})
   message(STATUS "Additional Java CLASSPATH is ${CLASSPATH}")
 endif()
 

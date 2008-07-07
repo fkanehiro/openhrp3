@@ -6,7 +6,7 @@ export JAVAVM=@JAVA@
 
 export LD_LIBRARY_PATH=@JAVA_LD_LIBRARY_PATH@
 
-export CLASSPATH=${OPENHRPHOME}/java/grxui.jar:${OPENHRPHOME}/java/openhrpstubskel.jar:${OPENHRPHOME}/java/vrml97.jar:@JYTHON_JAR@:${CLASSPATH}
+export CLASSPATH=${OPENHRPHOME}/java/grxui.jar:${OPENHRPHOME}/java/openhrpstubskel.jar:${OPENHRPHOME}/java/vrml97.jar:@JYTHON_JAR@:@CLASSPATH@:${CLASSPATH}
 
 export NS_OPT="-ORBInitRef NameService=corbaloc:iiop:localhost:2809/NameService"
 export NAMESERV="omniNames -start 2809 -logdir /tmp"
