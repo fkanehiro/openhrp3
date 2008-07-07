@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CONTROLLER_BRIDGE_DIR=../../server/ControllerBridge
+CONTROLLER_BRIDGE_DIR=../../bin
 
 $CONTROLLER_BRIDGE_DIR/ControllerBridge \
 --server-name SampleHGController \
