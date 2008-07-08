@@ -17,7 +17,7 @@
             <property name="J4.angle" value="0.8"/>
             <property name="BASE.rotation" value="0.0 0.0 1.0 0.0"/>
             <property name="J6.angle" value="0.8"/>
-			<property name="setupDirectory" value="$(OPENHRPHOME)/sample/PA10Sample"/>
+			<property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/PA10Sample"/>
 			<property name="setupCommand" value="PA10Controller$(BIN_SFX)"/>
             <property name="controller" value="PA10Controller"/>
             <property name="J1.angle" value="0"/>
