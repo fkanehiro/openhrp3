@@ -112,7 +112,7 @@ namespace OpenHRP {
 	VrmlNode();
 	virtual ~VrmlNode();
 
-	static char* getLabelOfFieldType(int type);
+	static const char* getLabelOfFieldType(int type);
 	
 	std::string defName;
 
