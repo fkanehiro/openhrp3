@@ -1,8 +1,6 @@
 #!/bin/sh
 
-CONTROLLER_BRIDGE_DIR=../../bin
-
-$CONTROLLER_BRIDGE_DIR/ControllerBridge \
+openhrp-controller-bridge \
 --server-name SampleController \
 --module SampleController.so \
 --out-port angle:JOINT_VALUE \

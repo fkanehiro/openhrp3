@@ -1,6 +1,5 @@
 
-# set(program openhrp-model-loader)
-set(program ModelLoader)
+set(program openhrp-model-loader)
 
 set(sources
   ModelLoader_impl.cpp

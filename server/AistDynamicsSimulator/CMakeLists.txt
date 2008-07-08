@@ -1,6 +1,5 @@
 
-# set(program openhrp-aist-dynamics-simulator)
-set(program DynamicsSimulator)
+set(program openhrp-aist-dynamics-simulator)
 
 set(sources DynamicsSimulator_impl.cpp server.cpp)
 

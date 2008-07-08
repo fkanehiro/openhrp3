@@ -1,5 +1,5 @@
 
-set(controller SamplePD)
+set(controller SampleHG)
 
 add_library(${controller} SHARED ${controller}.cpp)
 target_link_libraries(${controller} ${OPENRTM_LIBRARIES})
