@@ -301,8 +301,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 				if (sdata != null) {
 //System.out.println( "    addValue() : 2.7.5"  );
 // ##### [Changed] #####
-   //2008-03-06Ûó_£öKodelLoader£ó"¡¦C£é"Ëç¡¦³â¡¦áïçà¡¦¡¦µà¡¦¡¦éë­â¡¦ ¤ç!B
-   //·î-¡¦³æ¡¦±ë·ð¡¦B
+   //2008-03-06
 //System.out.println( "       sdata.q.length = " + sdata.q.length );
 					for (int j=0; j<sdata.q.length; j++) {
 //System.out.println( "         j = " + j + ", sdata.q[j] = " + sdata.q[j] + ", sdata.u[j] = " + sdata.q[j]  );

@@ -7,7 +7,7 @@
 using namespace OpenHRP;
 
 
-char* VrmlNode::getLabelOfFieldType(int type)
+const char* VrmlNode::getLabelOfFieldType(int type)
 {
     switch(type){
     case SFINT32: return "SFInt32";
