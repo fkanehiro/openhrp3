@@ -20,7 +20,7 @@
             <property name="isRobot" value="true"/>
             <property name="controller" value="SampleHGController"/>
             <property name="controlTime" value="0.002"/>
-            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/SampleHG"/>
+            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/SampleHG"/>
             <property name="setupCommand" value="SampleHG$(BIN_SFX)"/>
             <property name="RLEG_HIP_R.angle" value="0.0 "/>
             <property name="RARM_SHOULDER_R.mode" value="HighGain"/>

@@ -20,7 +20,7 @@
             <property name="isRobot" value="true"/>
             <property name="controller" value="SampleLFController"/>
             <property name="controlTime" value="0.002"/>
-            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/SampleLF"/>
+            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/SampleLF"/>
             <property name="setupCommand" value="SampleLF$(BIN_SFX)"/>
             <property name="LLEG_HIP_Y.angle" value="0.0 "/>
             <property name="LARM_WRIST_Y.angle" value="0.0 "/>

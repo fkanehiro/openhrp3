@@ -20,7 +20,7 @@
             <property name="isRobot" value="true"/>
             <property name="controller" value="SampleSVController"/>
             <property name="controlTime" value="0.002"/>
-            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/SampleSV"/>
+            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/SampleSV"/>
             <property name="setupCommand" value="SampleSV$(BIN_SFX)"/>
             <property name="BODY.translation" value="0.0 -1.0 0.1 "/>
             <property name="BODY.rotation" value="0.0 0.0 0.1 1.5708 "/>

@@ -35,7 +35,7 @@
 			<property name="isRobot" value="true"/>
 			<property name="controller" value="SampleController"/>
 			<property name="controlTime" value="0.002"/>
-			<property name="setupDirectory" value="$(OPENHRPHOME)/sample/SampleController"/>
+			<property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/SampleController"/>
 			<property name="setupCommand" value="SampleController$(BIN_SFX)"/>
 			<property name="WAIST.translation" value="1.9 -0.798 0.7235 "/>
 			<property name="WAIST.rotation" value="0.0 0.0 1.0 1.570796 "/>

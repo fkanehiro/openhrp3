@@ -20,7 +20,7 @@
             <property name="isRobot" value="true"/>
             <property name="controller" value="SamplePDController"/>
             <property name="controlTime" value="0.002"/>
-            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/SamplePD"/>
+            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/SamplePD"/>
             <property name="setupCommand" value="SamplePD$(BIN_SFX)"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.0 0.0 0.7135 "/>
