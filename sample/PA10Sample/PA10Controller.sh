@@ -1,8 +1,6 @@
 #!/bin/sh
 
-CONTROLLER_BRIDGE_DIR=../../bin
-
-$CONTROLLER_BRIDGE_DIR/ControllerBridge \
+openhrp-controller-bridge \
 --server-name PA10Controller \
 --module PA10Controller.so \
 --out-port angle:JOINT_VALUE \

@@ -1,6 +1,5 @@
 
-# set(program openhrp-controller-bridge)
-set(program ControllerBridge)
+set(program openhrp-controller-bridge)
 
 set(sources 
   BridgeConf.cpp

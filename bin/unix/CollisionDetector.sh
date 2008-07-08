@@ -2,6 +2,6 @@
 
 . config.sh
 cd $OPENHRPHOME/bin
-./CollisionDetector $NS_OPT
+./openhrp-collision-detector $NS_OPT
 
 

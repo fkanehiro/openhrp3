@@ -1,6 +1,5 @@
 
-# set(program openhrp-collision-detector)
-set(program CollisionDetector)
+set(program openhrp-collision-detector)
 
 set(sources CollisionDetector_impl.cpp server.cpp)
 

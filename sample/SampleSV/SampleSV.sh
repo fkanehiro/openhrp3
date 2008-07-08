@@ -1,8 +1,6 @@
 #!/bin/sh
 
-CONTROLLER_BRIDGE_DIR=../../bin
-
-$CONTROLLER_BRIDGE_DIR/ControllerBridge \
+openhrp-controller-bridge \
 --server-name SampleSVController \
 --module SampleSV.so \
 --out-port steer:JOINT_VALUE \
