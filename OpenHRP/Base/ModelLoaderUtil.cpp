@@ -249,10 +249,7 @@ static OpenHRP::Link* createLink
 	link->gearRatio		= iLink.gearRatio;
 	link->rotorResistor	= iLink.rotorResistor;
 	link->torqueConst	= iLink.torqueConst;
-	
-	if (link->Jm2 == 0){
-		link->Jm2 = link->Ir * link->gearRatio * link->gearRatio;
-	}
+	link->Jm2 = link->Ir * link->gearRatio * link->gearRatio;
 	link->encoderPulse	= iLink.encoderPulse;
 
 	DblSequence ulimit  = iLink.ulimit;
