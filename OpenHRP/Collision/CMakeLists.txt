@@ -34,7 +34,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(hrpCollision3 SHARED ${sources})
 
-set_target_properties(hrpCollision3 PROPERTIES VERSION ${LIBRARY_VERSION} SOVERSION ${LIBRARY_SO_VERSION})
+# interface version 0.0.0 - version 3.0.0 beta1
+set_target_properties(hrpCollision3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 target_link_libraries(hrpCollision3 m)
 
