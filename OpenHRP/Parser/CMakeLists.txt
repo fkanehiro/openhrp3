@@ -13,7 +13,8 @@ include_directories(.)
 
 add_library(hrpParser3 SHARED ${sources})
 
-set_target_properties(hrpParser3 PROPERTIES VERSION ${LIBRARY_VERSION} SOVERSION ${LIBRARY_SO_VERSION})
+# interface version 0.0.0 - version 3.0.0 beta1
+set_target_properties(hrpParser3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 target_link_libraries(hrpParser3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
 

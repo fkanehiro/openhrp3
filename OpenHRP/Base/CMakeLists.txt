@@ -21,7 +21,8 @@ set(sources
 
 add_library(hrpBase3 SHARED ${sources})
 
-set_target_properties(hrpBase3 PROPERTIES VERSION ${LIBRARY_VERSION} SOVERSION ${LIBRARY_SO_VERSION})
+# interface version 0.0.0 - version 3.0.0 beta1
+set_target_properties(hrpBase3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 target_link_libraries(
   hrpBase3 hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
