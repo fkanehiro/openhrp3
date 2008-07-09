@@ -1,5 +1,5 @@
 
-set(hrpCollision_sources
+set(sources
   Ice/IceAABB.cpp
   Ice/IceContainer.cpp
   Ice/IceIndexedTriangle.cpp
@@ -32,8 +32,10 @@ set_source_files_properties(OPC_TreeCollider.cpp PROPERTIES COMPILE_FLAGS -O)
 # TODO: remove this
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(hrpCollision SHARED ${hrpCollision_sources})
+add_library(hrpCollision3 SHARED ${sources})
 
-target_link_libraries(hrpCollision m)
+set_target_properties(hrpCollision3 PROPERTIES VERSION ${LIBRARY_VERSION} SOVERSION ${LIBRARY_SO_VERSION})
 
-INSTALL(TARGETS hrpCollision LIBRARY DESTINATION lib)
+target_link_libraries(hrpCollision3 m)
+
+INSTALL(TARGETS hrpCollision3 LIBRARY DESTINATION lib)

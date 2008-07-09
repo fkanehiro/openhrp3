@@ -5,6 +5,11 @@ cmake_minimum_required(VERSION 2.4)
 
 project(OpenHRP)
 
+set(OpenHRP_MAJOR_VERSION 3)
+set(OpenHRP_MINOR_VERSION 1)
+set(OpenHRP_RELEASE_VERSION 0)
+
+
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules/)
 

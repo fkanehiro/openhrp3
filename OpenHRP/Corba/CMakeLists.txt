@@ -20,4 +20,4 @@ foreach(idl_basename ${IDL_FILE_BASENAMES})
    )
 endforeach()
 
-add_library(hrpCorbaStubSkel STATIC ${idl_cpp_files})
+add_library(hrpCorbaStubSkel3 STATIC ${idl_cpp_files})
