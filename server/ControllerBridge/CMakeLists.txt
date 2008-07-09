@@ -11,5 +11,5 @@ set(sources
 add_executable(${program} ${sources})
 
 target_link_libraries(
-  ${program} hrpCorbaStubSkel ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES}
+  ${program} hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES}
   boost_filesystem boost_program_options boost_regex)

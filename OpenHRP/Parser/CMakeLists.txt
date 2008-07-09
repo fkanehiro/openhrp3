@@ -1,5 +1,5 @@
 
-set(hrpParser_sources
+set(sources
   EasyScanner.cpp
   VrmlNodes.cpp
   VrmlParser.cpp
@@ -11,8 +11,10 @@ set(hrpParser_sources
 # #include <EasyScanner.h> を #include "EasyScanner.h" にして以下はなくす
 include_directories(.)
 
-add_library(hrpParser SHARED ${hrpParser_sources})
+add_library(hrpParser3 SHARED ${sources})
 
-target_link_libraries(hrpParser boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
+set_target_properties(hrpParser3 PROPERTIES VERSION ${LIBRARY_VERSION} SOVERSION ${LIBRARY_SO_VERSION})
 
-INSTALL(TARGETS hrpParser LIBRARY DESTINATION lib)
+target_link_libraries(hrpParser3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
+
+INSTALL(TARGETS hrpParser3 LIBRARY DESTINATION lib)
