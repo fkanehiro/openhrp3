@@ -1,5 +1,4 @@
 #!/bin/sh
-. ./config.sh
 
 ##
 # GrxUI usage:
@@ -12,17 +11,36 @@ DEFAULT_MODE=$2
 SCRIPT=$3
 DEBUG=$4
 
+export OPENHRPHOME=@OPENHRPHOME@
+
+JAVAVM=@GRXUI_JAVAVM@
+JYTHON_HOME=@GRXUI_JYTHON_HOME@
+
+ADDITIONAL_PATH=@GRXUI_ADDITIONAL_PATH@
+
+if [ ${ADDITIONAL_PATH} ] ; then
+    echo "ikatako"
+    echo ${ADDITIONAL_PATH}:$PATH
+    export PATH=${ADDITIONAL_PATH}:$PATH
+fi
+
+export LD_LIBRARY_PATH=@GRXUI_LD_LIBRARY_PATH@:${LD_LIBRARY_PATH}
+
+export CLASSPATH=@GRXUI_CLASSPATH@:${CLASSPATH}
+
+NS_OPT="-ORBInitRef NameService=corbaloc:iiop:@NS_HOST@:@NS_PORT@/NameService"
+
+GRXUI_HOME=@GRXUI_HOME@
+
+
 ## 
 # for client/gui/grxuirc.xml
 ##
 BIN_DIR=${OPENHRPHOME}/bin/unix
 BIN_SFX=.sh
 
-if [ -f ${OPENHRPHOME}/bin/unix/omninames-*.log ] ; then
-/bin/rm ${OPENHRPHOME}/bin/unix/omninames-*.*;
-fi
+cd ${GRXUI_HOME}
 
-cd ../../client/gui
 ${JAVAVM} -server -Xmx512m \
 	-DPROJECT="${DEFAULT_PROJECT}" \
 	-DMODE="${DEFAULT_MODE}" \

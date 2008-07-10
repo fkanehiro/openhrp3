@@ -11,8 +11,7 @@ DEFAULT_MODE=$2
 SCRIPT=$3
 DEBUG=$4
 
-
-export OPENHRPHOME=@GRXUI_OPENHRPHOME@
+export OPENHRPHOME=@OPENHRPHOME@
 
 JAVAVM=@GRXUI_JAVAVM@
 JYTHON_HOME=@GRXUI_JYTHON_HOME@
@@ -24,8 +23,7 @@ export LD_LIBRARY_PATH=@GRXUI_LD_LIBRARY_PATH@:${LD_LIBRARY_PATH}
 
 export CLASSPATH=@GRXUI_CLASSPATH@:${CLASSPATH}
 
-export NS_OPT="-ORBInitRef NameService=corbaloc:iiop:localhost:2809/NameService"
-export NAMESERV="omniNames -start 2809 -logdir /tmp"
+NS_OPT="-ORBInitRef NameService=corbaloc:iiop:@NS_HOST@:@NS_PORT@/NameService"
 
 GRXUI_HOME=@GRXUI_HOME@
 
@@ -35,10 +33,6 @@ GRXUI_HOME=@GRXUI_HOME@
 ##
 BIN_DIR=${OPENHRPHOME}/bin/unix
 BIN_SFX=.sh
-
-if [ -f ${OPENHRPHOME}/bin/unix/omninames-*.log ] ; then
-/bin/rm ${OPENHRPHOME}/bin/unix/omninames-*.*;
-fi
 
 cd ${GRXUI_HOME}
 
