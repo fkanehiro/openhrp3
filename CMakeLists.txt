@@ -141,7 +141,7 @@ message(STATUS "JDK: ${JDK_DIR}")
 find_package(Jython REQUIRED)
 
 if(JYTHON_JAR)
-  set(CLASSPATH "${CLASSPATH}:${JYTHON_JAR}")
+  set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}:${JYTHON_JAR}")
 endif()
 
 set(JAVA3D_LIB_DIR CACHE FILEPATH "set the location of Java3D 'lib' directory when it is not installed in the JDK")
@@ -149,7 +149,7 @@ set(JAVA3D_LIB_DIR CACHE FILEPATH "set the location of Java3D 'lib' directory wh
 if(JAVA3D_LIB_DIR)
   string(REGEX REPLACE "/$" "" JAVA3D_LIB_DIR ${JAVA3D_LIB_DIR})
   foreach(jar_file j3dcore.jar j3dutils.jar vecmath.jar)
-    set(CLASSPATH "${CLASSPATH}:${JAVA3D_LIB_DIR}/ext/${jar_file}")
+    set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}:${JAVA3D_LIB_DIR}/ext/${jar_file}")
   endforeach()
   set(JAVA_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}:${JAVA3D_LIB_DIR}/i386")
 endif()
@@ -158,13 +158,14 @@ set(JMFHOME $ENV{JMFHOME} CACHE FILEPATH "set the location of Java Media Framewo
 
 if(JMFHOME)
   string(REGEX REPLACE "/$" "" JMFHOME ${JMFHOME})
-  set(CLASSPATH "${CLASSPATH}:${JMFHOME}/lib/jmf.jar")
+  set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}:${JMFHOME}/lib/jmf.jar")
   set(JAVA_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}:${JMFHOME}/lib")
 endif()
 
-if(CLASSPATH)
-  string(REGEX REPLACE "^:" "" CLASSPATH ${CLASSPATH})
-  message(STATUS "Additional Java CLASSPATH is ${CLASSPATH}")
+if(SYSTEM_CLASSPATH)
+  string(REGEX REPLACE "^:" "" SYSTEM_CLASSPATH ${SYSTEM_CLASSPATH})
+  message(STATUS "Additional Java SYSTEM_CLASSPATH is ${SYSTEM_CLASSPATH}")
+  set(CLASSPATH ${SYSTEM_CLASSPATH})
 endif()
 
 if(JAVA_LD_LIBRARY_PATH)
