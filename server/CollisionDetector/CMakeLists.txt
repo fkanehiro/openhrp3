@@ -8,3 +8,5 @@ include_directories(${PROJECT_SOURCE_DIR}/OpenHRP/Collision)
 add_executable(${program} ${sources})
 
 target_link_libraries(${program} hrpCollision3 hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES})
+
+install(TARGETS ${program} DESTINATION bin)

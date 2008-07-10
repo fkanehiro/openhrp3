@@ -191,3 +191,20 @@ add_dependencies(GrxUI JavaSutbSkel)
 
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES classes)
 
+set(grxui_rc_files
+  grxuirc.xml
+)
+
+
+install(FILES ${grxui_jar} DESTINATION ${RELATIVE_GRXUI_INSTALL_PATH})
+install(FILES ${grxui_rc_files} DESTINATION ${RELATIVE_GRXUI_INSTALL_PATH})
+
+file(GLOB grxui_script_files script/*.py)
+install(FILES ${grxui_script_files} DESTINATION ${RELATIVE_GRXUI_INSTALL_PATH}/script)
+
+install(DIRECTORY resources
+  DESTINATION ${RELATIVE_GRXUI_INSTALL_PATH}
+  PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY DESTINATION ${RELATIVE_GRXUI_INSTALL_PATH}/plugin)
+install(DIRECTORY DESTINATION ${RELATIVE_GRXUI_INSTALL_PATH}/log)

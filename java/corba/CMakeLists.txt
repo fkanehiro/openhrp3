@@ -4,7 +4,7 @@
 set(package jp.go.aist.hrp.simulator)
 string(REPLACE "." "/" package_path ${package})
 
-include(${OpenHRP_SOURCE_DIR}/idl/OpenHRP/IDL_FILE_BASENAMES.cmake)
+include(${OPENHRP_IDL_DIR}/IDL_FILE_BASENAMES.cmake)
 
 set(idl_files)
 foreach(name ${IDL_FILE_BASENAMES})
@@ -53,3 +53,6 @@ add_custom_target(JavaSutbSkel ALL DEPENDS ${jarfile})
 # add_custom_target(clean COMMAND ${RMDIR} src jp)
 
 # set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "src;jp")
+
+install(FILES ${jarfile} DESTINATION ${RELATIVE_JAVA_INSTALL_PATH})
+

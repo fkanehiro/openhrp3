@@ -21,3 +21,14 @@ foreach(idl_basename ${IDL_FILE_BASENAMES})
 endforeach()
 
 add_library(hrpCorbaStubSkel3 STATIC ${idl_cpp_files})
+
+install(TARGETS hrpCorbaStubSkel3
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib)
+
+set(given_headers ORBwrap.h)
+
+install(FILES ${given_headers} ${CMAKE_CURRENT_BINARY_DIR}/${idl_h_files} DESTINATION include/OpenHRP/Corba)
+
+
