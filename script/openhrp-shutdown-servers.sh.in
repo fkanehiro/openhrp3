@@ -1,0 +1,6 @@
+#!/bin/sh
+
+killall -9 omniNames
+killall -9 openhrp-aist-dynamics-simulator
+killall -9 openhrp-collision-detector
+killall -9 openhrp-model-loader

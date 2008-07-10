@@ -219,14 +219,10 @@ add_subdirectory(OpenHRP)
 add_subdirectory(server)
 add_subdirectory(java)
 add_subdirectory(client/gui)
+add_subdirectory(script)
 
 add_subdirectory(sample)
 
 if(EXISTS ${PROJECT_SOURCE_DIR}/PatternGenerator)
   add_subdirectory(PatternGenerator)
 endif()
-
-configure_file(
-  ${PROJECT_SOURCE_DIR}/bin/unix/config.sh.in
-  ${PROJECT_BINARY_DIR}/bin/unix/config.sh
-  @ONLY)
