@@ -8,6 +8,21 @@ set(sources
   CalculateNormal.cpp
   ModelNodeSet.cpp)
 
+set(headers
+  CalculateNormal.h
+  EasyScanner.h
+  ModelParserConfig.h
+  ModelParserExportDef.h
+  UniformedShape.h
+  VrmlParser.h
+  ModelNodeSet.h
+  ModelParserConfigImport.h
+  ModelUniformConfig.h
+  VrmlNodes.h
+  VrmlWriter.h
+)
+
+
 # #include <EasyScanner.h> を #include "EasyScanner.h" にして以下はなくす
 include_directories(.)
 
@@ -18,4 +33,9 @@ set_target_properties(hrpParser3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 target_link_libraries(hrpParser3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
 
-INSTALL(TARGETS hrpParser3 LIBRARY DESTINATION lib)
+install(TARGETS hrpParser3
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib)
+
+install(FILES ${headers} DESTINATION include/OpenHRP/Parser)

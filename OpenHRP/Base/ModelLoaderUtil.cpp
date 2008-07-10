@@ -18,7 +18,6 @@
 #include "Link.h"
 #include "Sensor.h"
 #include "tvmet3d.h"
-#include "quaternion.h"
 
 using namespace OpenHRP;
 using namespace std;

@@ -26,6 +26,38 @@ set(sources
   CdWrapper.cpp
   )
 
+set(headers
+OPC_PlanesTriOverlap.h
+OPC_PlanesAABBOverlap.h
+OPC_BaseModel.h
+OPC_OptimizedTree.h
+OPC_Collider.h
+OPC_TreeBuilders.h
+OPC_HybridModel.h
+OPC_Common.h
+OPC_SphereAABBOverlap.h
+OPC_AABBTree.h
+OPC_TreeCollider.h
+OPC_SphereTriOverlap.h
+OPC_TriBoxOverlap.h
+OPC_BoxBoxOverlap.h
+OPC_VolumeCollider.h
+OPC_TriTriOverlap.h
+OPC_Model.h
+OPC_Picking.h
+OPC_SweepAndPrune.h
+OPC_MeshInterface.h
+OPC_IceHook.h
+OPC_BoxPruning.h
+OPC_Settings.h
+Opcode.h
+Stdafx.h
+utilities.h
+CdCache.h
+CdWrapper.h
+CdScene.h
+)
+
 # to avoid a bug which may be caused by the optimization
 set_source_files_properties(OPC_TreeCollider.cpp PROPERTIES COMPILE_FLAGS -O)
 
@@ -39,4 +71,10 @@ set_target_properties(hrpCollision3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 target_link_libraries(hrpCollision3 m)
 
-INSTALL(TARGETS hrpCollision3 LIBRARY DESTINATION lib)
+install(TARGETS hrpCollision3
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib)
+
+install(FILES ${headers} DESTINATION include/OpenHRP/Collision)
+

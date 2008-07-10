@@ -19,6 +19,30 @@ set(sources
 	ModelLoaderUtil.cpp
 	)
 
+set(headers
+	Body.h
+	BodyCustomizerInterface.h
+	ConstraintForceSolver.h
+	ForwardDynamics.h
+	ForwardDynamicsABM.h
+	ForwardDynamicsCBM.h
+	Link.h
+	LinkPath.h
+	LinkTraverse.h
+	MatrixSolvers.h
+	ModelLoaderUtil.h
+	Sensor.h
+	TimeMeasure.h
+	World.h
+	hrpModelExportDef.h
+	quaternion.h
+	tvmet3d.h
+	tvmetCommonTypes.h
+	ublasCommonTypes.h
+	${CMAKE_CURRENT_BINARY_DIR}/config.h
+)				
+
+
 add_library(hrpBase3 SHARED ${sources})
 
 # interface version 0.0.0 - version 3.0.0 beta1
@@ -28,7 +52,14 @@ target_link_libraries(
   hrpBase3 hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
   boost_filesystem boost_regex dl)
 
-INSTALL(TARGETS hrpBase3 LIBRARY DESTINATION lib)
+install(TARGETS hrpBase3
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib)
+	
+install(FILES ${headers} DESTINATION include/OpenHRP/Base)
+
+
 
 
 
