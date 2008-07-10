@@ -29,7 +29,7 @@ set(GRXUI_JYTHON_HOME ${JYTHON_HOME})
 set(GRXUI_ADDITIONAL_PATH ${OPENHRPHOME}/bin:${OPENHRPHOME}/bin/${subbin})
 set(GRXUI_LD_LIBRARY_PATH ${JAVA_LD_LIBRARY_PATH})
 set(GRXUI_CLASSPATH ${OPENHRPHOME}/java/grxui.jar:${OPENHRPHOME}/java/openhrpstubskel.jar:${CLASSPATH})
-set(GRXUI_HOME ${PROJECT_SOURCE_DIR}/client/gui)
+set(GRXUI_HOME ${PROJECT_SOURCE_DIR}/java/grxui)
 
 # TODO: set a full path if the program is not in the PATH
 set(OMNINAMES omniNames)
