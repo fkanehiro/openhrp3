@@ -9,14 +9,23 @@ elseif(WIN32)
 endif()
 
 
-macro(create_bootscripts DESTINATION)
+macro(create_bootscripts DESTINATION DO_INSTALL)
+  
+  # This is needed. CMake's bug ?
+  set(DO_INSTALL ${DO_INSTALL})
 
   foreach(script CollisionDetector.sh DynamicsSimulator.sh ModelLoader.sh NameServer.sh)
     configure_file(${script}.in ${DESTINATION}/${subbin}/${script} @ONLY)
+      if(DO_INSTALL)
+	install(PROGRAMS ${DESTINATION}/${subbin}/${script} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/${subbin})
+      endif()
   endforeach()
 
   foreach(script openhrp-grxui openhrp-jython-prompt openhrp-shutdown-servers)
     configure_file(${script}.sh.in ${DESTINATION}/${script} @ONLY)
+    if(DO_INSTALL)
+      install(PROGRAMS ${DESTINATION}/${script} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+    endif()
   endforeach()
 
 endmacro()
@@ -37,7 +46,7 @@ set(OMNINAMES omniNames)
 set(NS_PORT 2809)
 set(NS_HOST localhost)
 
-create_bootscripts(${PROJECT_BINARY_DIR}/bin)
+create_bootscripts(${PROJECT_BINARY_DIR}/bin false)
 
 
 
@@ -45,12 +54,10 @@ set(OPENHRPHOME ${CMAKE_INSTALL_PREFIX})
 if(NOT ${OPENHRPHOME} STREQUAL /usr OR ${OPENHRPHOME} STREQUAL /usr/local)
   set(GRXUI_ADDITIONAL_PATH ${OPENHRPHOME}/bin)
 endif()
-set(GRXUI_CLASSPATH ${OPENHRPHOME}/${RELATIVE_GRXUI_INSTALL_PATH}/grxui.jar:${OPENHRPHOME}/${RELATIVE_JAVA_INSTALL_PATH}/openhrpstubskel.jar:${OPENHRPHOME}/${RELATIVE_JAVA_INSTALL_PATH}/vrml97.jar:${CLASSPATH})
+set(GRXUI_CLASSPATH ${OPENHRPHOME}/${RELATIVE_GRXUI_INSTALL_PATH}/grxui.jar:${OPENHRPHOME}/${RELATIVE_JAVA_INSTALL_PATH}/openhrpstubskel.jar:${CLASSPATH})
 
 set(RELATIVE_JAVA_INSTALL_PATH share/${OPENHRP_INSTALL_SUB_DIR}/java)
 
 set(GRXUI_HOME ${CMAKE_INSTALL_PREFIX}/${RELATIVE_GRXUI_INSTALL_PATH})
 
-create_bootscripts(${CMAKE_INSTALL_PREFIX}/bin)
-
-install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/openhrp-grxui DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+create_bootscripts(${CMAKE_CURRENT_BINARY_DIR} true)

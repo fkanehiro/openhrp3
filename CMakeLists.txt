@@ -218,7 +218,6 @@ add_subdirectory(idl/OpenHRP)
 add_subdirectory(OpenHRP)
 add_subdirectory(server)
 add_subdirectory(java)
-add_subdirectory(client/gui)
 add_subdirectory(script)
 
 add_subdirectory(sample)
