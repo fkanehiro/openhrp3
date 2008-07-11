@@ -16,19 +16,13 @@ cmake
 
 # omniORB
 libcos4-dev 
-libcos4c2
 libomnievents-dev 
-libomnieventsc2a 
 libomniorb4-dev
-libomniorb4c2
 libomnithread3-dev
-libomnithread3c2
-odbcinst1debian1
 omnievents
 omniidl4
 omniidl4-python
 omniorb4
-omniorb4-idl
 omniorb4-nameserver
 python-omniorb2
 python-tk

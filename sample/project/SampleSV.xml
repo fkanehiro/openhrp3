@@ -11,16 +11,16 @@
             <property name="gravity" value="9.8 "/>
             <property name="viewsimulationTimeStep" value="0.033 "/>
         </item>
-		<item class="com.generalrobotix.ui.item.GrxModelItem" name="longfloor" select="true" url="$(OPENHRPHOME)/sample/model/longfloor.wrl">
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="longfloor" select="true" url="$(PROJECT_DIR)/../model/longfloor.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="simple_vehicle" select="true" url="$(OPENHRPHOME)/sample/model/simple_vehicle_with_camera.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="simple_vehicle" select="true" url="$(PROJECT_DIR)/../model/simple_vehicle_with_camera.wrl">
             <property name="isRobot" value="true"/>
             <property name="controller" value="SampleSVController"/>
             <property name="controlTime" value="0.002"/>
-            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/SampleSV"/>
+            <property name="setupDirectory" value="$(PROJECT_DIR)/../controller/SampleSV"/>
             <property name="setupCommand" value="SampleSV$(BIN_SFX)"/>
             <property name="BODY.translation" value="0.0 -1.0 0.1 "/>
             <property name="BODY.rotation" value="0.0 0.0 0.1 1.5708 "/>

@@ -11,7 +11,7 @@
             <property name="gravity" value="9.8 "/>
             <property name="viewsimulationTimeStep" value="0.033 "/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box2" select="true" url="$(OPENHRPHOME)/sample/model/box2.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box2" select="true" url="$(PROJECT_DIR)/../model/box2.wrl">
             <property name="isRobot" value="false"/>
             <property name="controller" value=""/>
             <property name="controlTime" value="0.1"/>
@@ -19,7 +19,7 @@
             <property name="WAIST.translation" value="0.15 0.15 0.3 "/>
             <property name="WAIST.mode" value="HighGain"/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(OPENHRPHOME)/sample/model/box.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(PROJECT_DIR)/../model/box.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0 "/>
             <property name="WAIST.translation" value="0.0 0.0 0.0 "/>
