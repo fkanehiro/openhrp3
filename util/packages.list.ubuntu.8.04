@@ -1,0 +1,67 @@
+# package list for ubuntu 7.10
+
+# java
+sun-java6-jdk
+sun-java6-fonts
+jython
+libreadline-java
+java-common
+
+# compilers
+g++
+g77
+
+# build tools
+cmake
+
+# omniORB
+libcos4-dev 
+libcos4c2
+libomnievents-dev 
+libomnieventsc2a 
+libomniorb4-dev
+libomniorb4c2
+libomnithread3-dev
+libomnithread3c2
+odbcinst1debian1
+omnievents
+omniidl4
+omniidl4-python
+omniorb4
+omniorb4-idl
+omniorb4-nameserver
+python-omniorb2
+python-tk
+
+# math 
+lapack3
+lapack3-dev
+atlas3-base
+atlas3-base-dev
+atlas3-headers
+refblas3
+refblas3-dev 
+f2c
+libf2c2
+libf2c2-dev 
+libg2c0
+libg2c0-dev 
+
+# boost
+libboost-dev
+libboost-filesystem-dev 
+libboost-program-options-dev 
+libboost-regex-dev
+libboost-signals-dev 
+libboost-thread-dev
+
+# etc
+libc6-dev
+zlib1g-dev
+libace-dev
+libjpeg62-dev
+libpng12-dev
+
+# for hrpsys
+# libncurses5-dev
+# libreadline5-dev

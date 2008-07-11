@@ -186,7 +186,9 @@ option(CHECK_UNRESOLVED_SYMBOLS "check unresolved symbols in the object files wh
 mark_as_advanced(CHECK_UNRESOLVED_SYMBOLS)
 
 if(CHECK_UNRESOLVED_SYMBOLS)
-  list(APPEND CMAKE_SHARED_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-shared-libs")
+  if(UNIX)
+    list(APPEND CMAKE_SHARED_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-shared-libs")
+  endif()
 endif()
 
 
