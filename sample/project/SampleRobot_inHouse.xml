@@ -11,31 +11,31 @@
             <property name="gravity" value="9.8 "/>
             <property name="viewsimulationTimeStep" value="0.033 "/>
         </item>
-		    <item class="com.generalrobotix.ui.item.GrxModelItem" name="house" select="true" url="$(OPENHRPHOME)/sample/model/house/house.main.wrl">
+		    <item class="com.generalrobotix.ui.item.GrxModelItem" name="house" select="true" url="$(PROJECT_DIR)/../model/house/house.main.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="1.0 0.0 0.0 1.570796 "/>
             <property name="WAIST.translation" value="0.0 2.5 0.0 "/>
         </item>
-		<item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(OPENHRPHOME)/sample/model/house/floor.main.wrl">
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/house/floor.main.wrl">
 			<property name="isRobot" value="false"/>
 			<property name="WAIST.rotation" value="1.0 0.0 0.0 1.570796 "/>
 			<property name="WAIST.translation" value="0.0 2.5 0.0 "/>
 		</item>
-		<item class="com.generalrobotix.ui.item.GrxModelItem" name="table" select="true" url="$(OPENHRPHOME)/sample/model/house/table.main.wrl">
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="table" select="true" url="$(PROJECT_DIR)/../model/house/table.main.wrl">
 			<property name="isRobot" value="false"/>
 			<property name="WAIST.rotation" value="1.0 0.0 0.0 1.570796 "/>
 			<property name="WAIST.translation" value="0.0 2.5 0.0 "/>
 		</item>
-		<item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(OPENHRPHOME)/sample/model/house/box.wrl">
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(PROJECT_DIR)/../model/house/box.wrl">
 			<property name="isRobot" value="true"/>
 			<property name="WAIST.rotation" value="0.0 0.0 1.0 1.570796 "/>
 			<property name="WAIST.translation" value="2.18 0.55 0.89 "/>
 		</item>  
-		<item class="com.generalrobotix.ui.item.GrxModelItem" name="Robot" select="true" url="$(OPENHRPHOME)/sample/model/sample1.wrl">
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="Robot" select="true" url="$(PROJECT_DIR)/../model/sample1.wrl">
 			<property name="isRobot" value="true"/>
 			<property name="controller" value="SampleController"/>
 			<property name="controlTime" value="0.002"/>
-			<property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/SampleController"/>
+			<property name="setupDirectory" value="$(PROJECT_DIR)/../controller/SampleController"/>
 			<property name="setupCommand" value="SampleController$(BIN_SFX)"/>
 			<property name="WAIST.translation" value="1.9 -0.798 0.7235 "/>
 			<property name="WAIST.rotation" value="0.0 0.0 1.0 1.570796 "/>

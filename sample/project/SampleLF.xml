@@ -11,16 +11,16 @@
             <property name="gravity" value="9.8 "/>
             <property name="viewsimulationTimeStep" value="0.033 "/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(OPENHRPHOME)/sample/model/floor.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/floor.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="sample" select="true" url="$(OPENHRPHOME)/sample/model/sample.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="sample" select="true" url="$(PROJECT_DIR)/../model/sample.wrl">
             <property name="isRobot" value="true"/>
             <property name="controller" value="SampleLFController"/>
             <property name="controlTime" value="0.002"/>
-            <property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/SampleLF"/>
+            <property name="setupDirectory" value="$(PROJECT_DIR)/../controller/SampleLF"/>
             <property name="setupCommand" value="SampleLF$(BIN_SFX)"/>
             <property name="LLEG_HIP_Y.angle" value="0.0 "/>
             <property name="LARM_WRIST_Y.angle" value="0.0 "/>
@@ -54,7 +54,7 @@
             <property name="LLEG_HIP_R.angle" value="0.0 "/>
             <property name="LARM_WRIST_R.angle" value="0.0 "/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box3" select="true" url="/$(OPENHRPHOME)/sample/model/box3.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box3" select="true" url="$(PROJECT_DIR)/../model/box3.wrl">
             <property name="isRobot" value="true"/>
             <property name="controller" value=""/>
             <property name="controlTime" value="0.002"/>

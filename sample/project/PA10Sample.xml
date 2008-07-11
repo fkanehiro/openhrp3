@@ -11,14 +11,14 @@
             <property name="viewsimulationTimeStep" value="0.033 "/>
             <property name="method" value="RUNGE_KUTTA"/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="pa10" select="true" url="$(OPENHRPHOME)/sample/model/PA10/pa10.main.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="pa10" select="true" url="$(PROJECT_DIR)/../model/PA10/pa10.main.wrl">
 			<property name="HAND_R.angle" value="0.02"/>
             <property name="J2.angle" value="0.8"/>
             <property name="J4.angle" value="0.8"/>
             <property name="BASE.rotation" value="0.0 0.0 1.0 0.0"/>
             <property name="J6.angle" value="0.8"/>
-			<property name="setupDirectory" value="$(OPENHRPHOME)/sample/controller/PA10Sample"/>
-			<property name="setupCommand" value="PA10Controller$(BIN_SFX)"/>
+	    <property name="setupDirectory" value="$(PROJECT_DIR)/../controller/PA10Controller"/>
+	    <property name="setupCommand" value="PA10Controller$(BIN_SFX)"/>
             <property name="controller" value="PA10Controller"/>
             <property name="J1.angle" value="0"/>
             <property name="J3.angle" value="0.0 "/>
@@ -29,12 +29,12 @@
             <property name="J5.angle" value="0.0 "/>
             <property name="J7.angle" value="1.57"/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(OPENHRPHOME)/sample/model/floor.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/floor.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.0 0.0 -0.10000000149011612 "/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(OPENHRPHOME)/sample/model/PA10/box.wrl">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(PROJECT_DIR)/../model/PA10/box.wrl">
             <property name="isRobot" value="true"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.0 -0.9 0.04"/>
