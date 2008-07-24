@@ -1,33 +1,45 @@
 
 # @author Shin'ichiro Nakaoka
 
+set(script_list
+    CollisionDetector
+    DynamicsSimulator
+    ModelLoader
+    NameServer
+)
+set(grxui_script_list
+    openhrp-grxui
+    openhrp-jython-prompt
+)
 
 if(UNIX)
   set(subbin unix)
+  list(APPEND grxui_script_list openhrp-shutdown-servers ) 
+  set(sfx "sh")
 elseif(WIN32)
   set(subbin dos)
+  set(sfx "bat")
 endif()
-
 
 macro(create_bootscripts DESTINATION DO_INSTALL)
   
   # This is needed. CMake's bug ?
   set(DO_INSTALL ${DO_INSTALL})
 
-  foreach(script CollisionDetector.sh DynamicsSimulator.sh ModelLoader.sh NameServer.sh)
-    configure_file(${script}.in ${DESTINATION}/${subbin}/${script} @ONLY)
-      if(DO_INSTALL)
-	install(PROGRAMS ${DESTINATION}/${subbin}/${script} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/${subbin})
-      endif()
-  endforeach()
-
-  foreach(script openhrp-grxui openhrp-jython-prompt openhrp-shutdown-servers)
-    configure_file(${script}.sh.in ${DESTINATION}/${script} @ONLY)
+  foreach(script ${script_list} )
+    configure_file(${script}.${sfx}.in ${DESTINATION}/${subbin}/${script}.${sfx} @ONLY)
     if(DO_INSTALL)
-      install(PROGRAMS ${DESTINATION}/${script} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+	  install(PROGRAMS ${DESTINATION}/${subbin}/${script}.${sfx} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/${subbin})
     endif()
   endforeach()
 
+  foreach(script ${grxui_script_list} )
+    configure_file(${script}.${sfx}.in ${DESTINATION}/${script}.${sfx} @ONLY)
+    if(DO_INSTALL)
+      install(PROGRAMS ${DESTINATION}/${script}.${sfx} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+    endif()
+  endforeach()
+ 
 endmacro()
 
 
@@ -35,13 +47,25 @@ set(OPENHRPHOME ${PROJECT_BINARY_DIR})
 set(OPENHRP_CONFDIR_NAME .OpenHRP-${OpenHRP_MAJOR_VERSION}.${OpenHRP_MINOR_VERSION})
 set(GRXUI_JAVAVM ${JAVAVM})
 set(GRXUI_JYTHON_HOME ${JYTHON_HOME})
-set(GRXUI_ADDITIONAL_PATH ${OPENHRPHOME}/bin:${OPENHRPHOME}/bin/${subbin})
 set(GRXUI_LD_LIBRARY_PATH ${JAVA_LD_LIBRARY_PATH})
-set(GRXUI_CLASSPATH ${OPENHRPHOME}/java/grxui.jar:${OPENHRPHOME}/java/openhrpstubskel.jar:${CLASSPATH})
+if(UNIX)
+  set(GRXUI_ADDITIONAL_PATH ${OPENHRPHOME}/bin:${OPENHRPHOME}/bin/${subbin})
+  set(GRXUI_CLASSPATH ${OPENHRPHOME}/java/grxui.jar:${OPENHRPHOME}/java/openhrpstubskel.jar:${CLASSPATH})
+elseif(WIN32)
+  set(GRXUI_ADDITIONAL_PATH "${OPENHRPHOME}/bin;${OPENHRPHOME}/bin/${subbin}")
+  set(GRXUI_CLASSPATH "${OPENHRPHOME}/java/grxui.jar;${OPENHRPHOME}/java/openhrpstubskel.jar;${CLASSPATH}")
+endif()
 set(GRXUI_HOME ${PROJECT_SOURCE_DIR}/java/grxui)
 
+file(TO_NATIVE_PATH ${GRXUI_HOME} GRXUI_HOME)
+
 # TODO: set a full path if the program is not in the PATH
-set(OMNINAMES omniNames)
+if(UNIX)
+  set(OMNINAMES omniNames)
+elseif(WIN32)
+  set(OMNINAMES ${OMNIORB_DIR}/bin/x86_win32/omniNames)
+endif()
+
 # TODO: enable the follwoing values to be edited
 set(NS_PORT 2809)
 set(NS_HOST localhost)
@@ -54,10 +78,15 @@ set(OPENHRPHOME ${CMAKE_INSTALL_PREFIX})
 if(NOT ${OPENHRPHOME} STREQUAL /usr OR ${OPENHRPHOME} STREQUAL /usr/local)
   set(GRXUI_ADDITIONAL_PATH ${OPENHRPHOME}/bin)
 endif()
-set(GRXUI_CLASSPATH ${OPENHRPHOME}/${RELATIVE_GRXUI_INSTALL_PATH}/grxui.jar:${OPENHRPHOME}/${RELATIVE_JAVA_INSTALL_PATH}/openhrpstubskel.jar:${CLASSPATH})
+if(UNIX)
+  set(GRXUI_CLASSPATH ${OPENHRPHOME}/${RELATIVE_GRXUI_INSTALL_PATH}/grxui.jar:${OPENHRPHOME}/${RELATIVE_JAVA_INSTALL_PATH}/openhrpstubskel.jar:${CLASSPATH})
+elseif(WIN32)
+  set(GRXUI_CLASSPATH "${OPENHRPHOME}/${RELATIVE_GRXUI_INSTALL_PATH}/grxui.jar;${OPENHRPHOME}/${RELATIVE_JAVA_INSTALL_PATH}/openhrpstubskel.jar;${CLASSPATH}")
+endif()
 
 set(RELATIVE_JAVA_INSTALL_PATH share/${OPENHRP_INSTALL_SUB_DIR}/java)
 
 set(GRXUI_HOME ${CMAKE_INSTALL_PREFIX}/${RELATIVE_GRXUI_INSTALL_PATH})
+file(TO_NATIVE_PATH ${GRXUI_HOME} GRXUI_HOME)
 
 create_bootscripts(${CMAKE_CURRENT_BINARY_DIR} true)

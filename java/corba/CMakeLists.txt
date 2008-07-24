@@ -41,16 +41,25 @@ endif()
 
 set(jarfile ${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar)
 
-add_custom_command(
-  OUTPUT ${jarfile} jp
-  COMMAND ${JAVAC} ${javac_flags} src/${package_path}/*.java
-  COMMAND ${JAR} cf ${jarfile} jp
-  DEPENDS ${idl_compiled_flag_files}
-)
+if(UNIX)
+  add_custom_command(
+    OUTPUT ${jarfile} jp
+    COMMAND ${JAVAC} ${javac_flags} src/${package_path}/*.java
+    COMMAND ${JAR} cf ${jarfile} jp
+    DEPENDS ${idl_compiled_flag_files}
+  )
+elseif(WIN32)
+  add_custom_command(
+    OUTPUT ${jarfile} 
+    COMMAND ${JAVAC} ${javac_flags} src/${package_path}/*.java
+    COMMAND ${JAR} cf ${jarfile} jp
+    DEPENDS ${idl_compiled_flag_files}
+  )
+endif()
 
 add_custom_target(JavaSutbSkel ALL DEPENDS ${jarfile})
 
-# add_custom_target(clean COMMAND ${RMDIR} src jp)
+#add_custom_target(clean COMMAND ${RMDIR} src jp)
 
 # set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "src;jp")
 

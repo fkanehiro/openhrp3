@@ -165,10 +165,15 @@ foreach(source ${sources_short})
   list(APPEND sources com/generalrobotix/ui/${source})
 endforeach()
 
+if(UNIX)
 set(classpath
   "${CLASSPATH}:${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar:${OpenHRP_BINARY_DIR}/java/vrml97.jar")
-
-set(javac_flags -target 1.5 -encoding EUCJIS -classpath ${classpath} -d classes)
+  set(javac_flags -target 1.5 -encoding EUCJIS -classpath ${classpath} -d classes)
+elseif(WIN32)
+set(classpath
+  "${CLASSPATH}\;${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar\;${OpenHRP_BINARY_DIR}/java/vrml97.jar")
+  set(javac_flags -target 1.5 -encoding EUCJIS -d classes)
+endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
   list(APPEND javac_flags -g)
@@ -176,6 +181,7 @@ endif()
 
 set(grxui_jar ${OpenHRP_BINARY_DIR}/java/grxui.jar)
 
+if(UNIX)
 add_custom_command(
   OUTPUT  ${grxui_jar} classes
   COMMAND ${CMAKE_COMMAND} -E make_directory classes
@@ -183,7 +189,20 @@ add_custom_command(
   COMMAND ${JAR} cmf Manifest.mf ${grxui_jar} resources -C classes com
   DEPENDS ${sources}
 )
-
+elseif(WIN32)
+  set(classes)
+  foreach(source ${sources})
+    string(REGEX REPLACE ".java" ".class" source ${source} )
+    list(APPEND classes classes/${source})
+  endforeach()
+  add_custom_command(
+    OUTPUT  ${grxui_jar} ${classes}
+    COMMAND ${CMAKE_COMMAND} -E make_directory classes
+    COMMAND ${JAVAC} ${javac_flags} -classpath ${classpath} ${sources}
+    COMMAND ${JAR} cmf Manifest.mf ${grxui_jar} resources -C classes com
+    DEPENDS ${sources}
+)
+endif()
 
 add_custom_target(GrxUI ALL DEPENDS ${grxui_jar})
 

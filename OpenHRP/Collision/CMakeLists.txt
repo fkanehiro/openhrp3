@@ -58,9 +58,6 @@ CdWrapper.h
 CdScene.h
 )
 
-# to avoid a bug which may be caused by the optimization
-set_source_files_properties(OPC_TreeCollider.cpp PROPERTIES COMPILE_FLAGS -O)
-
 # TODO: remove this
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -69,10 +66,23 @@ add_library(hrpCollision3 SHARED ${sources})
 # interface version 0.0.0 - version 3.0.0 beta1
 set_target_properties(hrpCollision3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
-target_link_libraries(hrpCollision3 m)
+if(UNIX)
+    # to avoid a bug which may be caused by the optimization
+    set_source_files_properties(OPC_TreeCollider.cpp PROPERTIES COMPILE_FLAGS -O)
+
+    target_link_libraries(hrpCollision3 m)
+endif()
+
+if(WIN32)
+install(TARGETS hrpCollision3
+	RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin
+	LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib
+	ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib
+	CONFIGURATIONS Release )
+endif()
 
 install(TARGETS hrpCollision3
-	RUNTIME DESTINATION bin
+    RUNTIME DESTINATION bin
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib)
 

@@ -13,14 +13,31 @@ endforeach()
 
 foreach(idl_basename ${IDL_FILE_BASENAMES})
   set(idl_file ${OPENHRP_IDL_DIR}/${idl_basename}.idl)
+if(UNIX)
   add_custom_command(
-    OUTPUT ${idl_basename}.h ${idl_basename}Sk.cpp 
+    OUTPUT ${idl_basename}.h ${idl_basename}Sk.cpp
     COMMAND omniidl ${idl_flags} ${idl_file}
     DEPENDS ${idl_files}
    )
+elseif(WIN32)
+   add_custom_command(
+    OUTPUT ${idl_basename}.h ${idl_basename}Sk.cpp
+    COMMAND set PATH=${OMNIORB_DIR}/bin/x86_win32
+    COMMAND omniidl ${idl_flags} ${idl_file}
+    DEPENDS ${idl_files}
+   )
+endif()
 endforeach()
 
 add_library(hrpCorbaStubSkel3 STATIC ${idl_cpp_files})
+
+if(WIN32)
+install(TARGETS hrpCorbaStubSkel3
+	RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin
+	LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib
+	ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib
+	CONFIGURATIONS Release )
+endif()
 
 install(TARGETS hrpCorbaStubSkel3
 	RUNTIME DESTINATION bin

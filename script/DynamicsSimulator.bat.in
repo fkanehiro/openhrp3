@@ -1,0 +1,3 @@
+rem --- Start up Dynamics ---
+"@OPENHRPHOME@/bin/openhrp-aist-dynamics-simulator" -ORBInitRef NameService=corbaloc:iiop:@NS_HOST@:@NS_PORT@/NameService
+
