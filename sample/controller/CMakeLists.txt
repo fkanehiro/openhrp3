@@ -10,10 +10,23 @@ macro(create_simple_controller CONTROLLER_NAME)
 
   add_executable(${CONTROLLER_NAME}Comp ${CONTROLLER_NAME}Comp.cpp ${CONTROLLER_NAME}.cpp)
   target_link_libraries(${CONTROLLER_NAME}Comp ${OPENRTM_LIBRARIES})
+  
+  if(WIN32)
+	add_definitions(${OPENRTM_DEFINITIONS})
+	add_definitions(-DMAKE_RTC_DLL)
+	target_link_libraries(${CONTROLLER_NAME} hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} )
+	target_link_libraries(${CONTROLLER_NAME}Comp hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} )
+  endif()
 
   set(controller_install_path ${RELATIVE_SAMPLE_INSTALL_PATH}/controller/${CONTROLLER_NAME})
 
   install(TARGETS ${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp DESTINATION ${controller_install_path})
+  
+  if(WIN32)
+    install(TARGETS ${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp 
+        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR} 
+        CONFIGURATIONS Release )
+  endif()  
 
   if(UNIX)
     install(PROGRAMS ${CONTROLLER_NAME}.sh DESTINATION ${controller_install_path})
@@ -35,4 +48,4 @@ add_subdirectory(SampleHG)
 add_subdirectory(SampleLF)
 add_subdirectory(SampleSV)
 add_subdirectory(SampleController)
-add_subdirectory(PA10Sample)
+add_subdirectory(PA10Controller)

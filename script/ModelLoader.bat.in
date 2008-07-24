@@ -1,0 +1,2 @@
+rem --- Start up ModelLoader ---
+"@OPENHRPHOME@/bin/openhrp-model-loader" -ORBInitRef NameService=corbaloc:iiop:@NS_HOST@:@NS_PORT@/NameService

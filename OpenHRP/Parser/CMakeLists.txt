@@ -31,7 +31,21 @@ add_library(hrpParser3 SHARED ${sources})
 # interface version 0.0.0 - version 3.0.0 beta1
 set_target_properties(hrpParser3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
-target_link_libraries(hrpParser3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
+if(UNIX)
+	target_link_libraries(hrpParser boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
+    
+elseif(WIN32)
+    target_link_libraries(hrpParser ${PNG_LIBRARY} ${JPEG_LIBRARY})
+
+endif() 
+
+if(WIN32)
+install(TARGETS hrpParser3
+	RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin
+	LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib
+	ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib
+	CONFIGURATIONS Release )
+endif()
 
 install(TARGETS hrpParser3
 	RUNTIME DESTINATION bin

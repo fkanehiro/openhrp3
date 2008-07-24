@@ -21,7 +21,7 @@
 #include "VirtualRobotRTC.h"
 
 
-#if ( defined ( WIN32 ) || defined ( _WIN32 ) || defined(__WIN32__) ) && defined ( USE_stub_in_nt_dll )
+#if ( defined ( WIN32 ) || defined ( _WIN32 ) || defined(__WIN32__) ) 
 #include <ace/OS_main.h> 
 #endif
 

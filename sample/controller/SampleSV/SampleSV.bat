@@ -1,6 +1,4 @@
-SET CONTROLLER_BRIDGE_DIR=..\..\bridge
-
-%CONTROLLER_BRIDGE_DIR%\ControllerBridge ^
+openhrp-controller-bridge ^
 --server-name SampleSVController ^
 --module SampleSV.dll ^
 --out-port steer:JOINT_VALUE ^
@@ -11,15 +9,3 @@ SET CONTROLLER_BRIDGE_DIR=..\..\bridge
 --connection torque:torque
 
 
-echooff@
-REM For debug start
-REM %CONTROLLER_BRIDGE_DIR%\ControllerBridged ^
-REM --server-name SampleSVController ^
-REM --module ./debug/SampleSV.dll ^
-REM --out-port steer:JOINT_VALUE ^
-REM --out-port vel:JOINT_VELOCITY ^
-REM --in-port torque:JOINT_TORQUE ^
-REM --connection steer:steer ^
-REM --connection vel:vel ^
-REM --connection torque:torque
-echoon@

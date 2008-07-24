@@ -1,0 +1,18 @@
+set ARGS= 
+:loop 
+if [%1] == [] goto end 
+set ARGS=%ARGS% %1 
+shift 
+goto loop 
+:end 
+
+set OPENHRPHOME=@OPENHRPHOME@
+set CLASSPATH=@GRXUI_HOME@plugin;%CLASSPATH%
+set JAVAVM=@GRXUI_JAVAVM@
+set JYTHON_HOME=@GRXUI_JYTHON_HOME@
+set NS_OPT="-ORBInitRef NameService=corbaloc:iiop:@NS_HOST@:@NS_PORT@/NameService"
+
+%JAVAVM% -Dpython.home=%JYTHON_HOME% ^
+         -classpath %JYTHON_HOME%\jython.jar;%OPENHRPHOME%\Common\corba\openhrpstubskel.jar;^
+         -DNS_OPT=%NS_OPT%^
+         org.python.util.jython %ARGS% 

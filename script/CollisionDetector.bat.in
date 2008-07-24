@@ -1,0 +1,2 @@
+rem --- Start up CollisionDetector ---
+"@OPENHRPHOME@/bin/openhrp-collision-detector" -ORBInitRef NameService=corbaloc:iiop:@NS_HOST@:@NS_PORT@/NameService
