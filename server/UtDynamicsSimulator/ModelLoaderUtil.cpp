@@ -81,9 +81,9 @@ static void createSensors(OpenHRP::World* world, Joint* jnt,  SensorInfoSequence
 			CORBA::String_var type0 = iSensor.type;
 			string type(type0);
 
-			if( type == "Force" )				{ sensorType = Sensor::FORCE; }			// 6é≤Õ˜#Z•Û•µ
-			else if( type == "RateGyro" )		{ sensorType = Sensor::RATE_GYRO; }		// •Ï°º•»•∏•„•§•Ì•ª•Û•µ
-			else if( type == "Acceleration" )	{ sensorType = Sensor::ACCELERATION; }	// ±Ò1°¶x•ª•Û•µ
+			if( type == "Force" )				{ sensorType = Sensor::FORCE; }			// 6é≤ÕÅEZ•Û•µ
+			else if( type == "RateGyro" )		{ sensorType = Sensor::RATE_GYRO; }		// •ÅEº•»•∏•„•§•˙¡ª•Û•µ
+			else if( type == "Acceleration" )	{ sensorType = Sensor::ACCELERATION; }	// ±ÅE°¶x•ª•Û•µ
 			else if( type == "Vision" )			{ sensorType = Sensor::VISION; }		// •”•∏•Á•Û•ª•Û•µ
 
 
@@ -383,7 +383,7 @@ int OpenHRP::loadBodyFromModelLoader(World* world, const char* name, const char 
 		std::cerr << "CORBA::SystemException raised by ModelLoader: " << ex._rep_id() << std::endl;
 		return 0;
 	} catch(ModelLoader::ModelLoaderException& ex){
-		std::cerr << "ModelLoaderException (id = " << ex.id << ") : " << ex.description << std::endl;
+		std::cerr << "ModelLoaderException ( " << ex.description << ") : " << ex.description << std::endl;
 	}
 
 	if(CORBA::is_nil(bodyInfo)){
