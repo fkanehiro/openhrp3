@@ -13,7 +13,7 @@ macro(create_simple_controller CONTROLLER_NAME)
   
   if(WIN32)
 	add_definitions(${OPENRTM_DEFINITIONS})
-	add_definitions(-DMAKE_RTC_DLL)
+	add_definitions(-DMAKE_RTC_DLL;-DUSE_stub_in_nt_dll)
 	target_link_libraries(${CONTROLLER_NAME} hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} )
 	target_link_libraries(${CONTROLLER_NAME}Comp hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} )
   endif()
