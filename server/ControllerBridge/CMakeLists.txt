@@ -15,7 +15,7 @@ if(UNIX)
 	  ${program} hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES}
 	  boost_filesystem boost_program_options boost_regex)
 elseif(WIN32)
-#	add_definitions(-DUSE_stub_in_nt_dll)
+	add_definitions(-DUSE_stub_in_nt_dll)
 	target_link_libraries(
 	  ${program} hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES})
 endif()
