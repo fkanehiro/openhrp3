@@ -32,10 +32,10 @@ add_library(hrpParser3 SHARED ${sources})
 set_target_properties(hrpParser3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
-	target_link_libraries(hrpParser boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
+  target_link_libraries(hrpParser3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
     
 elseif(WIN32)
-    target_link_libraries(hrpParser ${PNG_LIBRARY} ${JPEG_LIBRARY})
+  target_link_libraries(hrpParser3 ${PNG_LIBRARY} ${JPEG_LIBRARY})
 
 endif() 
 
