@@ -13,7 +13,7 @@ extern "C" {
 }
 
 #include "png.h"
-#include <VrmlNodes.h>
+#include "VrmlNodes.h"
 
 using namespace std;
 

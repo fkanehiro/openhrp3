@@ -15,9 +15,9 @@ using namespace OpenHRP;
 
 
 ModelLoader_impl::ModelLoader_impl(CORBA::ORB_ptr orb, PortableServer::POA_ptr poa)
-	:
-	orb(CORBA::ORB::_duplicate(orb)),
-	poa(PortableServer::POA::_duplicate(poa))
+    :
+    orb(CORBA::ORB::_duplicate(orb)),
+    poa(PortableServer::POA::_duplicate(poa))
 {
 
 }
@@ -25,13 +25,13 @@ ModelLoader_impl::ModelLoader_impl(CORBA::ORB_ptr orb, PortableServer::POA_ptr p
 
 ModelLoader_impl::~ModelLoader_impl()
 {
-	clearData();
+    clearData();
 }
 
 
 PortableServer::POA_ptr ModelLoader_impl::_default_POA()
 {
-	return PortableServer::POA::_duplicate(poa);
+    return PortableServer::POA::_duplicate(poa);
 }
 
 
@@ -50,29 +50,29 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url0)
 
     BodyInfo_impl* bodyInfo = 0;
     
-	// URLschemeを取り除いたファイルパスを取得する
-	string filename( BodyInfo_impl::deleteURLScheme( url ) );
-	struct stat statbuff;
-	time_t mtime = 0;
+    // URLschemeを取り除いたファイルパスを取得する
+    string filename( BodyInfo_impl::deleteURLScheme( url ) );
+    struct stat statbuff;
+    time_t mtime = 0;
 
-	// ファイル url0 の最終修正時刻を取得し，取得に成功したならば
-	if( stat( filename.c_str(), &statbuff ) == 0 )
+    // ファイル url0 の最終修正時刻を取得し，取得に成功したならば
+    if( stat( filename.c_str(), &statbuff ) == 0 )
 	{
-		mtime = statbuff.st_mtime;
+            mtime = statbuff.st_mtime;
 	}
 
-	UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
+    UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
     if( ( p != urlToBodyInfoMap.end() )
 	&& ( mtime == p->second->getLastUpdateTime() ) )
 	{
-		bodyInfo = p->second;
-		cout << string("cache found for ") + url << endl;
-    }
-	else
+            bodyInfo = p->second;
+            cout << string("cache found for ") + url << endl;
+        }
+    else
 	{
-		bodyInfo = loadBodyInfoFromModelFile(url);
-		bodyInfo->setLastUpdateTime( mtime );
-    }
+            bodyInfo = loadBodyInfoFromModelFile(url);
+            bodyInfo->setLastUpdateTime( mtime );
+        }
 
     return bodyInfo->_this();
 }
@@ -80,7 +80,7 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url0)
 
 BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url)
 {
-  cout << "loading " << url << endl;
+    cout << "loading " << url << endl;
 
     BodyInfo_impl* bodyInfo = new BodyInfo_impl(poa);
 
@@ -104,19 +104,19 @@ BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url)
 
 void ModelLoader_impl::clearData()
 {
-	//UrlToBodyInfoMap::iterator p;
-	//for(p = urlToBodyInfoMap.begin(); p != urlToBodyInfoMap.end(); ++p){
-	//	BodyInfo_impl* bodyInfo = p->second;
-	//	PortableServer::ObjectId_var objectId = poa->servant_to_id(bodyInfo);
-	//	poa->deactivate_object(objectId);
-	//	bodyInfo->_remove_ref();
-	//}
-	urlToBodyInfoMap.clear();
+    //UrlToBodyInfoMap::iterator p;
+    //for(p = urlToBodyInfoMap.begin(); p != urlToBodyInfoMap.end(); ++p){
+    //	BodyInfo_impl* bodyInfo = p->second;
+    //	PortableServer::ObjectId_var objectId = poa->servant_to_id(bodyInfo);
+    //	poa->deactivate_object(objectId);
+    //	bodyInfo->_remove_ref();
+    //}
+    urlToBodyInfoMap.clear();
 }
 
 
 void ModelLoader_impl::shutdown()
 {
-	clearData();
+    clearData();
     orb->shutdown(false);
 }

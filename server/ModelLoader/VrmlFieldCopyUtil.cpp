@@ -2,9 +2,8 @@
   @author S.NAKAOKA
 */
 
-#include <string>
-#include <cmath>
 #include "VrmlFieldCopyUtil.h"
+#include <cmath>
 
 using namespace std;
 using namespace OpenHRP;
@@ -28,14 +27,14 @@ namespace OpenHRP {
 	    out_s = f.sfString();
 	    break;
 	case MFSTRING:
-	    {
-		MFString& strings = f.mfString();
-		out_s = "";
-		for(size_t i=0; i < strings.size(); i++){
-		    out_s += strings[i] + "\n";
-		}
-	    }
-	    break;
+        {
+            MFString& strings = f.mfString();
+            out_s = "";
+            for(size_t i=0; i < strings.size(); i++){
+                out_s += strings[i] + "\n";
+            }
+        }
+        break;
 	default:
 	    throwException(name, "SFString or MFString");
 	}
@@ -47,15 +46,15 @@ namespace OpenHRP {
 	VrmlVariantField& f = fmap[name];
 	switch(f.typeId()){
 	case MFFLOAT:
-	    {
-		MFFloat& mf = f.mfFloat();
-		CORBA::ULong n = mf.size();
-		out_v.length(n);
-		for(CORBA::ULong i=0; i < n; ++i){
-		    out_v[i] = mf[i];
-		}
-	    }
-	    break;
+        {
+            MFFloat& mf = f.mfFloat();
+            CORBA::ULong n = mf.size();
+            out_v.length(n);
+            for(CORBA::ULong i=0; i < n; ++i){
+                out_v[i] = mf[i];
+            }
+        }
+        break;
 	default:
 	    throwException(name, "MFFloat");
 	}
@@ -68,13 +67,13 @@ namespace OpenHRP {
 	switch(f.typeId()){
 	case SFVEC3F:
 	case SFCOLOR:
-	    {
-		SFVec3f& v = f.sfVec3f();
-		for(int i = 0; i < 3; ++i){
-		    out_v[i] = v[i];
-		}
-	    }
-	    break;
+        {
+            SFVec3f& v = f.sfVec3f();
+            for(int i = 0; i < 3; ++i){
+                out_v[i] = v[i];
+            }
+        }
+        break;
 	default:
 	    throwException(name, "SFVec3f or SFColor");
 	}
@@ -85,17 +84,17 @@ namespace OpenHRP {
 	VrmlVariantField& f = fmap[name];
 	switch(f.typeId()){
 	case MFFLOAT:
-	    {
-		MFFloat& mf = f.mfFloat();
-		if(mf.size() == 9){
-		    for(int i=0; i < 9; ++i){
-			out_m[i] = mf[i];
-		    }
-		} else {
-		    throw ModelLoader::ModelLoaderException("illegal size of a matrix field");
-		}
-	    }
-	    break;
+        {
+            MFFloat& mf = f.mfFloat();
+            if(mf.size() == 9){
+                for(int i=0; i < 9; ++i){
+                    out_m[i] = mf[i];
+                }
+            } else {
+                throw ModelLoader::ModelLoaderException("illegal size of a matrix field");
+            }
+        }
+        break;
 	default:
 	    throwException(name, "MFFloat");
 	}
@@ -128,18 +127,18 @@ namespace OpenHRP {
 
 
 
-	//void copyVrmlField(TProtoFieldMap& fmap, const std::string& name, CORBA::Long& out_v)
-	//{
-	//	VrmlVariantField& f = fmap[name];
-	//	switch( f.typeId() )
-	//	{
-	//	case SFINT32:
-	//		out_v = f.sfInt32();
-	//		break;
-	//	default:
-	//		throwException( name, "SFInt32" );
-	//	}
-	//}
+    //void copyVrmlField(TProtoFieldMap& fmap, const std::string& name, CORBA::Long& out_v)
+    //{
+    //	VrmlVariantField& f = fmap[name];
+    //	switch( f.typeId() )
+    //	{
+    //	case SFINT32:
+    //		out_v = f.sfInt32();
+    //		break;
+    //	default:
+    //		throwException( name, "SFInt32" );
+    //	}
+    //}
 
 
 
@@ -191,21 +190,21 @@ namespace OpenHRP {
 
 
     void copyVrmlRotationFieldToDblArray4
-	 (TProtoFieldMap& fieldMap, const std::string name, DblArray4& out_R)
-	{
-		VrmlVariantField& rotationField = fieldMap[name];
+    (TProtoFieldMap& fieldMap, const std::string name, DblArray4& out_R)
+    {
+        VrmlVariantField& rotationField = fieldMap[name];
 
-		if(rotationField.typeId() != SFROTATION)
-		{
-			throwException( name, "SFRotation" );
-		}
+        if(rotationField.typeId() != SFROTATION)
+            {
+                throwException( name, "SFRotation" );
+            }
 
-		SFRotation& r = rotationField.sfRotation();
+        SFRotation& r = rotationField.sfRotation();
 
-		for( int i = 0 ; i < 4 ; i++ )
-		{
-			out_R[i] = r[i];
-		}
-	}
+        for( int i = 0 ; i < 4 ; i++ )
+            {
+                out_R[i] = r[i];
+            }
+    }
 
 };

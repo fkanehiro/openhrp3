@@ -199,7 +199,7 @@ endif()
 include_directories(${OpenHRP_SOURCE_DIR})
 
 # TODO: remove this later
-include_directories(${PROJECT_SOURCE_DIR}/OpenHRP/Corba)
+# include_directories(${PROJECT_SOURCE_DIR}/OpenHRP/Corba)
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
