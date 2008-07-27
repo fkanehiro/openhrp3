@@ -1,4 +1,3 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -8,16 +7,19 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  * General Robotix Inc. 
  */
+
 #ifndef MODEL_LOADER_UTIL_H_INCLUDED
 #define MODEL_LOADER_UTIL_H_INCLUDED
+
+#include "hrpModelExportDef.h"
+#include "Body.h"
+
+#include <OpenHRP/Corba/ORBwrap.h>
+#include <OpenHRP/Corba/ModelLoader.h>
 
 #include <string>
 #include <sstream>
 
-#include <ModelLoader.h>
-#include "ORBwrap.h"
-#include "Body.h"
-#include "hrpModelExportDef.h"
 
 namespace OpenHRP
 {

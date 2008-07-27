@@ -23,9 +23,9 @@
 #include <rtm/CorbaNaming.h>
 #include <rtm/idl/RTCStub.h>
 
-#include <Controller.h>
-#include <ViewSimulator.h>
-#include <DynamicsSimulator.h>
+#include <OpenHRP/Corba/Controller.h>
+#include <OpenHRP/Corba/ViewSimulator.h>
+#include <OpenHRP/Corba/DynamicsSimulator.h>
 
 #include "BridgeConf.h"
 

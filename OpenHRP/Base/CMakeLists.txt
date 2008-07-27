@@ -41,7 +41,11 @@ set(headers
 	ublasCommonTypes.h
 	${CMAKE_CURRENT_BINARY_DIR}/config.h
 )	
-			
+
+
+# \TODO: remove this
+include_directories(${PROJECT_SOURCE_DIR}/OpenHRP/Corba)
+
 add_library(hrpBase3 SHARED ${sources})
 
 # interface version 0.0.0 - version 3.0.0 beta1

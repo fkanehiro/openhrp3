@@ -17,7 +17,7 @@
  */
 
 #include "CollisionDetector_impl.h"
-#include "CdCache.h"
+#include <OpenHRP/Collision/CdCache.h>
 
 #include <time.h>
 #include <iostream>

@@ -6,6 +6,7 @@ set(sources
   VrmlWriter.cpp
   UniformedShape.cpp
   CalculateNormal.cpp
+  ImageConverter.cpp
   ModelNodeSet.cpp)
 
 set(headers
@@ -20,11 +21,9 @@ set(headers
   ModelUniformConfig.h
   VrmlNodes.h
   VrmlWriter.h
+  ImageConverter.h
 )
 
-
-# #include <EasyScanner.h> を #include "EasyScanner.h" にして以下はなくす
-include_directories(.)
 
 add_library(hrpParser3 SHARED ${sources})
 
@@ -40,16 +39,18 @@ elseif(WIN32)
 endif() 
 
 if(WIN32)
-install(TARGETS hrpParser3
-	RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin
-	LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib
-	ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib
-	CONFIGURATIONS Release )
+  install(
+    TARGETS hrpParser3
+    RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin
+    LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib
+    ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib
+    CONFIGURATIONS Release )
 endif()
 
-install(TARGETS hrpParser3
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib)
+install(
+  TARGETS hrpParser3
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 install(FILES ${headers} DESTINATION include/OpenHRP/Parser)

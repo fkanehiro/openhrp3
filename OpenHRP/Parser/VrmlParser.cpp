@@ -3,7 +3,7 @@
 */
 
 #include <iostream>
-#include <EasyScanner.h>
+#include "EasyScanner.h"
 #include "VrmlParser.h"
 
 using namespace std;
