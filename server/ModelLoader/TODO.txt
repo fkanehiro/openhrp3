@@ -1,0 +1,45 @@
+
+ModelLoader_impl.cpp
+
+ファイル更新時刻の取得には、stat ではなく boost::filesystem の機能を使った方がよいかも？
+
+CORBAオブジェクトに対する _remove_ref() とか activate_object()
+とかが省かれてるけど、なんで？
+
+コメントがsjisになってる。UTF-8にしてって書いたのに〜。
+
+
+BodyInfo_impl.cpp
+
+SharedShapeInfoMap sharedShapeInfoMap;
+ってファイルレベルで定義されてるけど、こりゃまずいでしょ。
+多分排他処理とかやってないから、同時にモデルロードのアクセスがあったときに競合しちゃうし、
+そもそもこのマップはモデルファイルごとに作ればいいのだから、
+全てひとつのマップにするのはパフォーマンス上もよろしくない。
+この変数はインスタンス変数とすべし。
+
+sensorTypeMap も初回設定時にスレッド競合をおこさないよう改良すべし
+
+
+bool operator != (matrix44d& a, matrix44d& b)
+は、ひょっとしてTransformが同一かをチェックするためのもの？
+だとしたら、要素の厳密一致は必ずしも適さないんじゃない？
+
+
+形状ノードの整形処理はサーバ部ではなく、整形部として独立したかたちでやってって、仕様書にも目立つように書いたし、
+何回も説明したのに、ものの見事にサーバ部(ModelLoader_impl.cpp)でやってある。とほほ。
+
+
+traverseShapeNodes において、TransformノードではないGroupノードだった場合、親ノードからの変換行列が
+単位行列にクリアされてしまって、正しい変換行列はならなくなってしまう。
+これで、読み込み時に位置がおかしくなっていたりしたんじゃないか。
+
+
+SharedShapeInfoMap には VrmlNodePtr ではなくて VrmlShapePtr を入れるべき -> 修正した
+
+
+関数の引数で、頂点データとか行列とかをコピーで渡しているところがいくつかあった。参照で渡すべし。
+
+なんで法線の計算をする setNormals が ModelLoader_impl にあるんじぁ。あれほど整形部って言ったじゃないかぁ。
+それに、Transformの適用処理がsetVerticesとダブってるよ。
+

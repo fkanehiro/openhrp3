@@ -1,19 +1,33 @@
-/*! 
-  @file BodyInfo_impl.cpp
-  @author S.NAKAOKA
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
+
+/*!
+  @file BodyInfo_impl.h
+  @author Shin'ichiro Nakaoka
+  @author Y.TSUNODA (Ergovision)
 */
 
 #include "BodyInfo_impl.h"
 
+#include <map>
+#include <vector>
+#include <iostream>
+#include <boost/bind.hpp>
+
 #include <OpenHRP/Corba/ViewSimulator.h>
+
 #include <OpenHRP/Parser/VrmlNodes.h>
 #include <OpenHRP/Parser/CalculateNormal.h>
 #include <OpenHRP/Parser/ImageConverter.h>
 
-#include <iostream>
-#include <map>
-#include <vector>
-#include <boost/bind.hpp>
+#include "UtilFunctions.h"
 
 
 using namespace std;
@@ -21,46 +35,58 @@ using namespace boost;
 using namespace OpenHRP;
 
 
-/*!
-  @if jp
-  shapeInfo‹¤—L‚Ì‚½‚ß‚Ìƒ}ƒbƒv
-  Šù‚É shape_ ‚ÉŠi”[‚³‚ê‚Ä‚¢‚é node ‚Å‚ ‚ê‚ÎA‘Î‰‚·‚éƒCƒ“ƒfƒbƒNƒX‚ğ‚Â
-  @else
-  Map for sharing shapeInfo
-  if it is node that has already stored in shape_, it has the corresponding index.
-  @endif
-*/
+namespace {
 
-// ShapeInfo‚Ìindex‚ÆC‚»‚Ìshape‚ğZo‚µ‚½transform‚ÌƒyƒA
-struct ShapeObject
-{
-    matrix44d	transform;
-    short		index;
-};
+    typedef map<string, string> SensorTypeMap;
+    SensorTypeMap sensorTypeMap;
+    
+    bool operator != (const matrix44d& a, const matrix44d& b)
+    {
+        for(int i = 0; i < 4; i++) {
+            for(int j = 0; j < 4; j++) {
+                if(a( i, j ) != b( i, j ))
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+       This function was imported from tvmet3d.cpp in the Base library
+    */
+    static void rodrigues(matrix33d& out_R, const vector3d& axis, double q)
+    {
+        const double sth = sin(q);
+        const double vth = 1.0 - cos(q);
+        
+	vector3d a = static_cast<vector3d>( tvmet::normalize( axis ) );
+        
+        double ax = a(0);
+        double ay = a(1);
+        double az = a(2);
+        
+        const double axx = ax*ax*vth;
+        const double ayy = ay*ay*vth;
+        const double azz = az*az*vth;
+        const double axy = ax*ay*vth;
+        const double ayz = ay*az*vth;
+        const double azx = az*ax*vth;
+        
+        ax *= sth;
+        ay *= sth;
+        az *= sth;
+        
+        out_R = 1.0 - azz - ayy, -az + axy,       ay + azx,
+            az + axy,        1.0 - azz - axx, -ax + ayz,
+            -ay + azx,       ax + ayz,        1.0 - ayy - axx;
+    }
 
-typedef map<OpenHRP::VrmlNodePtr, ShapeObject> SharedShapeInfoMap;
-SharedShapeInfoMap sharedShapeInfoMap;
-
-typedef map<string, string> SensorTypeMap;
-SensorTypeMap sensorTypeMap;
-
-
-bool operator != ( matrix44d& a, matrix44d& b )
-{
-    for( int i = 0 ; i < 4 ; i++ )
-	{
-            for( int j = 0 ; j < 4; j++ )
-		{
-                    if( a( i, j ) != b( i, j ) )
-                        return false;
-		}
-	}
-    return true;
 }
+    
 
 
 BodyInfo_impl::BodyInfo_impl( PortableServer::POA_ptr poa ) :
-    poa( PortableServer::POA::_duplicate( poa ) )
+    poa(PortableServer::POA::_duplicate( poa ))
 {
     lastUpdate_ = 0;
 }
@@ -68,6 +94,7 @@ BodyInfo_impl::BodyInfo_impl( PortableServer::POA_ptr poa ) :
 
 BodyInfo_impl::~BodyInfo_impl()
 {
+    
 }
 
 
@@ -82,45 +109,54 @@ char* BodyInfo_impl::name()
     return CORBA::string_dup(name_.c_str());
 }
 
+
 char* BodyInfo_impl::url()
 {
     return CORBA::string_dup(url_.c_str());
 }
+
 
 StringSequence* BodyInfo_impl::info()
 {
     return new StringSequence(info_);
 }
 
+
 LinkInfoSequence* BodyInfo_impl::links()
 {
     return new LinkInfoSequence(links_);
 }
+
 
 AllLinkShapeIndices* BodyInfo_impl::linkShapeIndices()
 {
     return new AllLinkShapeIndices( linkShapeIndices_ );
 }
 
+
 ShapeInfoSequence* BodyInfo_impl::shapes()
 {
     return new ShapeInfoSequence( shapes_ );
 }
+
 
 AppearanceInfoSequence* BodyInfo_impl::appearances()
 {
     return new AppearanceInfoSequence( appearances_ );
 }
 
+
 MaterialInfoSequence* BodyInfo_impl::materials()
 {
     return new MaterialInfoSequence( materials_ );
 }
 
+
 TextureInfoSequence* BodyInfo_impl::textures()
 {
     return new TextureInfoSequence( textures_ );
 }
+
 
 void BodyInfo_impl::putMessage( const std::string& message )
 {
@@ -128,107 +164,38 @@ void BodyInfo_impl::putMessage( const std::string& message )
 }
 
 
-
-
-//==================================================================================================
-/*!
+/**
   @if jp
-
-  @brief		URLƒXƒL[ƒ€(file:)•¶š—ñ‚ğíœ
-
-  @note       <BR>
-
-  @return	    string URLƒXƒL[ƒ€•¶š—ñ‚ğæ‚èœ‚¢‚½•¶š—ñ
-
+  @brief æ–‡å­—åˆ—ç½®æ›
+  @return str å†…ã® ç‰¹å®šæ–‡å­—åˆ—ã€€sb ã‚’ åˆ¥ã®æ–‡å­—åˆ—ã€€sa ã«ç½®æ›
   @endif
 */
-//==================================================================================================
-string
-BodyInfo_impl::deleteURLScheme(
-    string url )	//!< URLƒpƒX•¶š—ñ
-{
-    // URL scheme ‚ğæ‚èœ‚­
-    static const string fileProtocolHeader1("file:///");
-    static const string fileProtocolHeader2("file://");
-    static const string fileProtocolHeader3("file:");
-
-    size_t pos = url.find( fileProtocolHeader1 );
-    if( 0 == pos )
-	{
-            url.erase( 0, fileProtocolHeader1.size() );
-        }
-    else
-	{
-	    size_t pos = url.find( fileProtocolHeader2 );
-            if( 0 == pos )
-		{
-                    url.erase( 0, fileProtocolHeader2.size() );
-                }
-            else
-		{
-                    size_t pos = url.find( fileProtocolHeader3 );
-                    if( 0 == pos )
-			{
-                            url.erase( 0, fileProtocolHeader3.size() );
-                        }
-		}
-        }
-
-    return url;
-}
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief		•¶š—ñ’uŠ·
-
-  @note       <BR>
-
-  @return	    str “à‚Ì “Á’è•¶š—ñ@sb ‚ğ •Ê‚Ì•¶š—ñ@sa ‚É’uŠ·
-
-
-  @endif
-*/
-//==================================================================================================
-string&
-BodyInfo_impl::replace(string& str, const string sb, const string sa)
+string& BodyInfo_impl::replace(string& str, const string sb, const string sa)
 {
     string::size_type n, nb = 0;
 	
-    while ((n = str.find(sb,nb)) != string::npos)
-	{
-            str.replace(n,sb.size(),sa);
-            nb = n + sa.size();
-	}
+    while ((n = str.find(sb,nb)) != string::npos){
+        str.replace(n,sb.size(),sa);
+        nb = n + sa.size();
+    }
 	
     return str;
 }
 
 
-
-
-//==================================================================================================
 /*!
   @if jp
-  @brief		ƒ‚ƒfƒ‹ƒtƒ@ƒCƒ‹‚Ìƒ[ƒh
-  @note		BodyInfo‚ğ\’z‚·‚éB
-  @return	    void
+  @brief ãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ­ãƒ¼ãƒ‰ã—ã€BodyInfoã‚’æ§‹ç¯‰ã™ã‚‹ã€‚
   @else
-  @brief		load model file
-  @note		Constructs a BodyInfo (a CORBA interface)
-  @return	    void
+  @brief This function loads a model file and creates a BodyInfo object.
+  @param url The url to a model file
   @endif
 */
-//==================================================================================================
-void
-BodyInfo_impl::loadModelFile(
-    const std::string& url )	//!< ƒ‚ƒfƒ‹ƒtƒ@ƒCƒ‹ƒpƒX•¶š—ñ (URL)
+void BodyInfo_impl::loadModelFile(const std::string& url)
 {
-    // URL scheme ‚ğæ‚èœ‚¢‚½ƒtƒ@ƒCƒ‹ƒpƒX‚ğƒZƒbƒg‚·‚é
     string filename( deleteURLScheme( url ) );
 
-    // URL•¶š—ñ‚Ì' \' ‹æØ‚èq‚ğ'/' ‚É’u‚«Š·‚¦  Windows ƒtƒ@ƒCƒ‹ƒpƒX‘Î‰ 
+    // URLæ–‡å­—åˆ—ã®' \' åŒºåˆ‡ã‚Šå­ã‚’'/' ã«ç½®ãæ›ãˆ  Windows ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹å¯¾å¿œ 
     string url2;
     url2 = filename;
     replace( url2, string("\\"), string("/") );
@@ -238,66 +205,36 @@ BodyInfo_impl::loadModelFile(
     modelNodeSet.signalOnStatusMessage.connect(bind(&BodyInfo_impl::putMessage, this, _1));
     modelNodeSet.setMessageOutput( true );
 
-
-    try
-	{
-            modelNodeSet.loadModelFile( filename );
-            cout.flush();
-        }
-    catch(ModelNodeSet::Exception& ex)
-	{
-            throw ModelLoader::ModelLoaderException(ex.message.c_str());
-        }
-
-    // BodyInfoƒƒ“ƒo‚É’l‚ğƒZƒbƒg‚·‚é
-    const string& humanoidName = modelNodeSet.humanoidNode()->defName;
-    name_ = CORBA::string_dup(humanoidName.c_str());
+    try	{
+        modelNodeSet.loadModelFile( filename );
+        cout.flush();
+    }
+    catch(ModelNodeSet::Exception& ex) {
+        throw ModelLoader::ModelLoaderException(ex.message.c_str());
+    }
 
     url_ = CORBA::string_dup(url2.c_str());
 
-    // JointNode”‚ğæ“¾‚·‚é
+    const string& humanoidName = modelNodeSet.humanoidNode()->defName;
+    name_ = CORBA::string_dup(humanoidName.c_str());
+
     int numJointNodes = modelNodeSet.numJointNodes();
 
-    // links_, linkShapeIndices_ ”z—ñƒTƒCƒY‚ğŠm•Û‚·‚é
     links_.length(numJointNodes);
-    linkShapeIndices_.length( numJointNodes );
+    if( 0 < numJointNodes ) {
+        int currentIndex = 0;
+        JointNodeSetPtr rootJointNodeSet = modelNodeSet.rootJointNodeSet();
+        readJointNodeSet(rootJointNodeSet, currentIndex, -1);
+    }
 
-    if( 0 < numJointNodes )
-	{
-            int currentIndex = 0;
-
-            // JointNode ‚ğÄ‹A“I‚É’H‚èCLinkInfo‚ğ¶¬‚·‚é
-            JointNodeSetPtr rootJointNodeSet = modelNodeSet.rootJointNodeSet();
-            readJointNodeSet( rootJointNodeSet, currentIndex, -1 );
-
-            // AllLinkShapeIndices ‚ğ\’z‚·‚é
-            // links_’†‚ÌlinkInfo‚ğ’H‚èC
-            for( size_t i = 0 ; i < numJointNodes ; ++i )
-		{
-                    // linkInfo‚Ìƒƒ“ƒoshapeIndices‚ğlinkShapeIndices‚Ö‘ã“ü‚·‚é
-                    linkShapeIndices_[i] = links_[i].shapeIndices;
-		}
-        }
+    linkShapeIndices_.length(numJointNodes); 
+    for(size_t i = 0 ; i < numJointNodes ; ++i) {
+        linkShapeIndices_[i] = links_[i].shapeIndices;
+    }
 }
 
 
-
-
-//==================================================================================================
-/*!
-  @if jp
-  @brief		read JointNodeSet
-  @note		Constructs a BodyInfo (a CORBA interface) <BR>
-  During construction of the BodyInfo, LinkInfo, ShapeInfo, AppearanceInfo, 
-  MaterialInfo, and TextureInfo structures are constructed.
-  @return	    int
-  @endif
-*/
-//==================================================================================================
-int BodyInfo_impl::readJointNodeSet(
-    JointNodeSetPtr		jointNodeSet,	//!< ‘ÎÛ‚Æ‚È‚é JointNodeSet
-    int&				currentIndex,	//!< ‚±‚ÌJointNodeSet‚Ìindex
-    int					parentIndex )	//!< eNode‚Ìindex
+int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIndex, int parentIndex)
 {
     int index = currentIndex;
     currentIndex++;
@@ -305,75 +242,43 @@ int BodyInfo_impl::readJointNodeSet(
     LinkInfo_var linkInfo( new LinkInfo() );
     linkInfo->parentIndex = parentIndex;
 
-    // qJointNode”‚ğæ“¾‚·‚é
     size_t numChildren = jointNodeSet->childJointNodeSets.size();
 
-    // qJointNode‚ğ‡‚É’H‚é
-    for( size_t i = 0 ; i < numChildren ; ++i )
-	{
-            // eqŠÖŒW‚ÌƒŠƒ“ƒN‚ğ¶¬‚·‚é
-            JointNodeSetPtr childJointNodeSet = jointNodeSet->childJointNodeSets[i];
-            int childIndex = readJointNodeSet( childJointNodeSet, currentIndex, index );
+    for( size_t i = 0 ; i < numChildren ; ++i ){
+        JointNodeSetPtr childJointNodeSet = jointNodeSet->childJointNodeSets[i];
+        int childIndex = readJointNodeSet(childJointNodeSet, currentIndex, index);
 
-            // chidlIndices ‚É childIndex ‚ğ’Ç‰Á‚·‚é
-            long childIndicesLength = linkInfo->childIndices.length();
-            linkInfo->childIndices.length( childIndicesLength + 1 );
-            linkInfo->childIndices[childIndicesLength] = childIndex;
-        }
+        long childIndicesLength = linkInfo->childIndices.length();
+        linkInfo->childIndices.length( childIndicesLength + 1 );
+        linkInfo->childIndices[childIndicesLength] = childIndex;
+    }
 
-    // links_ ‚Ì“KØ‚ÈˆÊ’u(index)‚ÖŠi”[‚·‚é
     links_[index] = linkInfo;
 
-    try
-	{
-            matrix44d unit4d( tvmet::identity<matrix44d>() );
+    try	{
+        matrix44d unit4d( tvmet::identity<matrix44d>() );
+        traverseShapeNodes(index, jointNodeSet->segmentNode->fields["children"].mfNode(), unit4d);
 
-            // JointNodeSet ‚Ì segmentNode
-            traverseShapeNodes( index, jointNodeSet->segmentNode->fields["children"].mfNode(), unit4d );
-
-            setJointParameters( index, jointNodeSet->jointNode );
-            setSegmentParameters( index, jointNodeSet->segmentNode );
-            setSensors( index, jointNodeSet );
-        }
-
-    catch( ModelLoader::ModelLoaderException& ex )
-	{
-            //string name = linkInfo->name;
-            CORBA::String_var cName = linkInfo->name;
-            string name( cName );
-            string error = name.empty() ? "Unnamed JoitNode" : name;
-            error += ": ";
-            error += ex.description;
-            throw ModelLoader::ModelLoaderException( error.c_str() );
-        }
+        setJointParameters(index, jointNodeSet->jointNode);
+        setSegmentParameters(index, jointNodeSet->segmentNode);
+        setSensors(index, jointNodeSet);
+    }
+    catch( ModelLoader::ModelLoaderException& ex ) {
+        //CORBA::String_var cName = linkInfo->name;
+        //string name( cName );
+        string name(linkInfo->name);
+        string error = name.empty() ? "Unnamed JoitNode" : name;
+        error += ": ";
+        error += ex.description;
+        throw ModelLoader::ModelLoaderException( error.c_str() );
+    }
 
     return index;
 }
 
 
-
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief		LinkInfo‚ÉJointNode‚Ìƒpƒ‰ƒ[ƒ^İ’è
-
-  @note       <BR>
-
-  @date       2008-03-11 Y.TSUNODA <BR>
-
-  @return     void
-
-  @endif
-*/
-//==================================================================================================
-void
-BodyInfo_impl::setJointParameters(
-    int linkInfoIndex,					//!< LinkInfoƒCƒ“ƒfƒbƒNƒX (links_‚ÌƒCƒ“ƒfƒbƒNƒX)
-    VrmlProtoInstancePtr jointNode )	//!< JointNodeƒIƒuƒWƒFƒNƒg‚Ö‚Ìƒ|ƒCƒ“ƒ^
+void BodyInfo_impl::setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr jointNode)
 {
-    // ‘ÎÛ‚Æ‚È‚é linkInfoƒCƒ“ƒXƒ^ƒ“ƒX‚Ö‚ÌQÆ
     LinkInfo& linkInfo = links_[linkInfoIndex];
 
     linkInfo.name =  CORBA::string_dup( jointNode->defName.c_str() );
@@ -390,25 +295,24 @@ BodyInfo_impl::setJointParameters(
     
     VrmlVariantField& fJointAxis = fmap["jointAxis"];
 
-    switch( fJointAxis.typeId() )
-	{
+    switch( fJointAxis.typeId() ) {
 
-        case SFSTRING:
-        {
-            SFString& axisLabel = fJointAxis.sfString();
+    case SFSTRING:
+    {
+        SFString& axisLabel = fJointAxis.sfString();
             if( axisLabel == "X" )		{ linkInfo.jointAxis[0] = 1.0; }
             else if( axisLabel == "Y" )	{ linkInfo.jointAxis[1] = 1.0; }
             else if( axisLabel == "Z" ) { linkInfo.jointAxis[2] = 1.0; }
-        }
-        break;
+    }
+    break;
 		
-        case SFVEC3F:
-            copyVrmlField( fmap, "jointAxis", linkInfo.jointAxis );
-            break;
+    case SFVEC3F:
+        copyVrmlField( fmap, "jointAxis", linkInfo.jointAxis );
+        break;
 
-        default:
-            break;
-        }
+    default:
+        break;
+    }
 
     std::string jointType;
     copyVrmlField( fmap, "jointType", jointType );
@@ -429,912 +333,617 @@ BodyInfo_impl::setJointParameters(
     copyVrmlField( fmap, "encoderPulse",  linkInfo.encoderPulse );
     copyVrmlField( fmap, "jointValue",    linkInfo.jointValue );
 
-    // equivalentInertia ‚Í”p~
+    // equivalentInertia ã¯å»ƒæ­¢
 }
 
 
-
-
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief		LinkInfo‚ÉSegmentNode‚Ìƒpƒ‰ƒ[ƒ^İ’è
-
-  @note       <BR>
-
-  @date       2008-03-11 Y.TSUNODA <BR>
-
-  @return     void
-
-  @endif
-*/
-//==================================================================================================
-void BodyInfo_impl::setSegmentParameters(
-    int linkInfoIndex,					//!< LinkInfoƒCƒ“ƒfƒbƒNƒX (links_‚ÌƒCƒ“ƒfƒbƒNƒX)
-    VrmlProtoInstancePtr segmentNode )	//!< SegmentNodeƒIƒuƒWƒFƒNƒg‚Ö‚Ìƒ|ƒCƒ“ƒ^
+void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, VrmlProtoInstancePtr segmentNode)
 {
-    // ‘ÎÛ‚Æ‚È‚é linkInfoƒCƒ“ƒXƒ^ƒ“ƒX‚Ö‚ÌQÆ
     LinkInfo& linkInfo = links_[linkInfoIndex];
 
-    if( segmentNode )
-	{
-            TProtoFieldMap& fmap = segmentNode->fields;
-		
-            copyVrmlField( fmap, "centerOfMass",     linkInfo.centerOfMass );
-            copyVrmlField( fmap, "mass",             linkInfo.mass );
-            copyVrmlField( fmap, "momentsOfInertia", linkInfo.inertia );
-	}
-    else
-	{
-            linkInfo.mass = 0.0;
-            // set zero to centerOfMass and inertia
-            for( int i = 0 ; i < 3 ; ++i )
-		{
-                    linkInfo.centerOfMass[i] = 0.0;
-                    for( int j = 0 ; j < 3 ; ++j )
-			{
-                            linkInfo.inertia[i*3 + j] = 0.0;
-			}
-		}
-	}
+    if(segmentNode) {
+        TProtoFieldMap& fmap = segmentNode->fields;
+        copyVrmlField( fmap, "centerOfMass",     linkInfo.centerOfMass );
+        copyVrmlField( fmap, "mass",             linkInfo.mass );
+        copyVrmlField( fmap, "momentsOfInertia", linkInfo.inertia );
+    } else {
+        linkInfo.mass = 0.0;
+        // set zero to centerOfMass and inertia
+        for( int i = 0 ; i < 3 ; ++i ) {
+            linkInfo.centerOfMass[i] = 0.0;
+            for( int j = 0 ; j < 3 ; ++j ) {
+                linkInfo.inertia[i*3 + j] = 0.0;
+            }
+        }
+    }
 }
 
 
-
-
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief		SensorInfo¶¬
-
-  @note       <BR>
-
-  @date       2008-03-11 Y.TSUNODA <BR>
-
-  @return     void
-
-  @endif
-*/
-//==================================================================================================
-void
-BodyInfo_impl::setSensors(
-    int linkInfoIndex,				//!< LinkInfoƒCƒ“ƒfƒbƒNƒX (links_‚ÌƒCƒ“ƒfƒbƒNƒX)
-    JointNodeSetPtr jointNodeSet )	//!< JointNodeSetƒIƒuƒWƒFƒNƒg‚Ö‚Ìƒ|ƒCƒ“ƒ^
+void BodyInfo_impl::setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet)
 {
-    // ‘ÎÛ‚Æ‚È‚é linkInfoƒCƒ“ƒXƒ^ƒ“ƒX‚Ö‚ÌQÆ
     LinkInfo& linkInfo = links_[linkInfoIndex];
 
     vector<VrmlProtoInstancePtr>& sensorNodes = jointNodeSet->sensorNodes;
 
     int numSensors = sensorNodes.size();
-    linkInfo.sensors.length( numSensors );
+    linkInfo.sensors.length(numSensors);
 
-    for( int i = 0 ; i < numSensors ; ++i )
-	{
-            SensorInfo_var sensorInfo( new SensorInfo() );
-
-            readSensorNode( linkInfoIndex, sensorInfo, sensorNodes[i] );
-
-            linkInfo.sensors[i] = sensorInfo;
-	}
+    for(int i = 0 ; i < numSensors ; ++i) {
+        SensorInfo_var sensorInfo( new SensorInfo() );
+        readSensorNode( linkInfoIndex, sensorInfo, sensorNodes[i] );
+        linkInfo.sensors[i] = sensorInfo;
+    }
 }
 
 
-
-
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief		SensorInfo‚ÉSensorNode‚Ìƒpƒ‰ƒ[ƒ^İ’è
-
-  @note       <BR>
-
-  @date       2008-03-11 Y.TSUNODA <BR>
-
-  @return     void
-
-  @endif
-*/
-//==================================================================================================
-void
-BodyInfo_impl::readSensorNode(
-    int linkInfoIndex,					//!< LinkInfoƒCƒ“ƒfƒbƒNƒX (links_‚ÌƒCƒ“ƒfƒbƒNƒX)
-    SensorInfo& sensorInfo,				//!< SensorInfoƒIƒuƒWƒFƒNƒg(ƒpƒ‰ƒ[ƒ^‚ğ‘ã“ü‚·‚éæ)
-    VrmlProtoInstancePtr sensorNode )	//!< SensorNodeƒIƒuƒWƒFƒNƒg‚Ö‚Ìƒ|ƒCƒ“ƒ^
+void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode)
 {
-    if( sensorTypeMap.empty() )
-	{
-            // initSensorTypeMap();
-            sensorTypeMap["ForceSensor"]		= "Force";
-            sensorTypeMap["Gyro"]				= "RateGyro";
-            sensorTypeMap["AccelerationSensor"]	= "Acceleration";
-            sensorTypeMap["PressureSensor"]		= "";
-            sensorTypeMap["PhotoInterrupter"]	= "";
-            sensorTypeMap["VisionSensor"]		= "Vision";
-            sensorTypeMap["TorqueSensor"]		= "";
-	}
+    if(sensorTypeMap.empty()) {
+        // initSensorTypeMap();
+        sensorTypeMap["ForceSensor"]        = "Force";
+        sensorTypeMap["Gyro"]               = "RateGyro";
+        sensorTypeMap["AccelerationSensor"] = "Acceleration";
+        sensorTypeMap["PressureSensor"]     = "";
+        sensorTypeMap["PhotoInterrupter"]   = "";
+        sensorTypeMap["VisionSensor"]       = "Vision";
+        sensorTypeMap["TorqueSensor"]       = "";
+    }
 
-    try
-	{
-            sensorInfo.name = CORBA::string_dup( sensorNode->defName.c_str() );
+    try	{
+        sensorInfo.name = CORBA::string_dup( sensorNode->defName.c_str() );
 
-            TProtoFieldMap& fmap = sensorNode->fields;
-
-            copyVrmlField( fmap, "sensorId", sensorInfo.id );
-
-            copyVrmlField( fmap, "translation", sensorInfo.translation );
-            copyVrmlRotationFieldToDblArray4( fmap, "rotation", sensorInfo.rotation );
-
-            SensorTypeMap::iterator p = sensorTypeMap.find( sensorNode->proto->protoName );
-            std::string sensorType;
-            if( p != sensorTypeMap.end() )
-		{
-                    sensorType = p->second;
-                    sensorInfo.type = CORBA::string_dup( sensorType.c_str() );
-		}
-            else
-		{
-                    throw ModelLoader::ModelLoaderException("Unknown Sensor Node");
-		}
-
-            if( sensorType == "Force" )
-		{
-                    sensorInfo.specValues.length( CORBA::ULong(6) );
-                    DblArray3 maxForce, maxTorque;
-                    copyVrmlField( fmap, "maxForce", maxForce );
-                    copyVrmlField( fmap, "maxTorque", maxTorque );
-                    sensorInfo.specValues[0] = maxForce[0];
-                    sensorInfo.specValues[1] = maxForce[1];
-                    sensorInfo.specValues[2] = maxForce[2];
-                    sensorInfo.specValues[3] = maxTorque[0];
-                    sensorInfo.specValues[4] = maxTorque[1];
-                    sensorInfo.specValues[5] = maxTorque[2];
-
-		}
-            else if( sensorType == "RateGyro" )
-		{
-                    sensorInfo.specValues.length( CORBA::ULong(3) );
-                    DblArray3 maxAngularVelocity;
-                    copyVrmlField(fmap, "maxAngularVelocity", maxAngularVelocity);
-                    sensorInfo.specValues[0] = maxAngularVelocity[0];
-                    sensorInfo.specValues[1] = maxAngularVelocity[1];
-                    sensorInfo.specValues[2] = maxAngularVelocity[2];
-
-		}
-            else if( sensorType == "Acceleration" )
-		{
-                    sensorInfo.specValues.length( CORBA::ULong(3) );
-                    DblArray3 maxAcceleration;
-                    copyVrmlField(fmap, "maxAcceleration", maxAcceleration);
-                    sensorInfo.specValues[0] = maxAcceleration[0];
-                    sensorInfo.specValues[1] = maxAcceleration[1];
-                    sensorInfo.specValues[2] = maxAcceleration[2];
-
-		}
-            else if( sensorType == "Vision" )
-		{
-                    sensorInfo.specValues.length( CORBA::ULong(6) );
-
-                    CORBA::Double specValues[3];
-                    copyVrmlField( fmap, "frontClipDistance", specValues[0] );
-                    copyVrmlField( fmap, "backClipDistance", specValues[1] );
-                    copyVrmlField( fmap, "fieldOfView", specValues[2] );
-                    sensorInfo.specValues[0] = specValues[0];
-                    sensorInfo.specValues[1] = specValues[1];
-                    sensorInfo.specValues[2] = specValues[2];
-
-                    std::string sensorTypeString;
-                    copyVrmlField( fmap, "type", sensorTypeString );
-		    
-                    if( sensorTypeString=="NONE" )				{ sensorInfo.specValues[3] = Camera::NONE;		}
-                    else if( sensorTypeString=="COLOR" )		{ sensorInfo.specValues[3] = Camera::COLOR;		}
-                    else if( sensorTypeString=="MONO" )			{ sensorInfo.specValues[3] = Camera::MONO;		}
-                    else if( sensorTypeString=="DEPTH" )		{ sensorInfo.specValues[3] = Camera::DEPTH;		}
-                    else if( sensorTypeString=="COLOR_DEPTH" )	{ sensorInfo.specValues[3] = Camera::COLOR_DEPTH; }
-                    else if( sensorTypeString=="MONO_DEPTH" )	{ sensorInfo.specValues[3] = Camera::MONO_DEPTH; }
-                    else
-			{
-                            throw ModelLoader::ModelLoaderException("Sensor node has unkown type string");
-			}
-
-                    CORBA::Long width, height;
-                    copyVrmlField( fmap, "width", width );
-                    copyVrmlField( fmap, "height", height );
-
-                    sensorInfo.specValues[4] = static_cast<CORBA::Double>(width);
-                    sensorInfo.specValues[5] = static_cast<CORBA::Double>(height);
-		}
-
-
-            // rotationƒƒhƒŠƒQƒX‚Ì‰ñ“]²
-            vector3d vRotation( sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2] );
-
-            // ƒƒhƒŠƒQƒXrotation‚ğ3x3s—ñ‚É•ÏŠ·‚·‚é
-            matrix33d mRotation;
-            PRIVATE::rodrigues( mRotation, vRotation, sensorInfo.rotation[3] );
-
-            // rotation, translation ‚ğ4x4s—ñ‚É‘ã“ü‚·‚é
-            matrix44d mTransform( tvmet::identity<matrix44d>() );
-            mTransform =
-                mRotation(0,0), mRotation(0,1), mRotation(0,2), sensorInfo.translation[0],
-                mRotation(1,0), mRotation(1,1), mRotation(1,2), sensorInfo.translation[1],
-                mRotation(2,0), mRotation(2,1), mRotation(2,2), sensorInfo.translation[2],
-                0.0,            0.0,            0.0,		    1.0;
-
-            // 
-            if( NULL != sensorNode->getField( "children" ) )
-		{
-                    traverseShapeNodes( linkInfoIndex, sensorNode->fields["children"].mfNode(), mTransform );
-		}
+        TProtoFieldMap& fmap = sensorNode->fields;
+        
+        copyVrmlField(fmap, "sensorId", sensorInfo.id );
+        copyVrmlField(fmap, "translation", sensorInfo.translation );
+        copyVrmlRotationFieldToDblArray4( fmap, "rotation", sensorInfo.rotation );
+        
+        SensorTypeMap::iterator p = sensorTypeMap.find( sensorNode->proto->protoName );
+        std::string sensorType;
+        if(p != sensorTypeMap.end()){
+            sensorType = p->second;
+            sensorInfo.type = CORBA::string_dup( sensorType.c_str() );
+        } else {
+            throw ModelLoader::ModelLoaderException("Unknown Sensor Node");
         }
-    catch(ModelLoader::ModelLoaderException& ex)
-	{
-            string error = name_.empty() ? "Unnamed sensor node" : name_;
-            error += ": ";
-            error += ex.description;
-            throw ModelLoader::ModelLoaderException( error.c_str() );
+
+        if(sensorType == "Force") {
+            sensorInfo.specValues.length( CORBA::ULong(6) );
+            DblArray3 maxForce, maxTorque;
+            copyVrmlField(fmap, "maxForce", maxForce );
+            copyVrmlField(fmap, "maxTorque", maxTorque );
+            sensorInfo.specValues[0] = maxForce[0];
+            sensorInfo.specValues[1] = maxForce[1];
+            sensorInfo.specValues[2] = maxForce[2];
+            sensorInfo.specValues[3] = maxTorque[0];
+            sensorInfo.specValues[4] = maxTorque[1];
+            sensorInfo.specValues[5] = maxTorque[2];
+            
+        } else if(sensorType == "RateGyro") {
+            sensorInfo.specValues.length( CORBA::ULong(3) );
+            DblArray3 maxAngularVelocity;
+            copyVrmlField(fmap, "maxAngularVelocity", maxAngularVelocity);
+            sensorInfo.specValues[0] = maxAngularVelocity[0];
+            sensorInfo.specValues[1] = maxAngularVelocity[1];
+            sensorInfo.specValues[2] = maxAngularVelocity[2];
+            
+        } else if( sensorType == "Acceleration" ){
+            sensorInfo.specValues.length( CORBA::ULong(3) );
+            DblArray3 maxAcceleration;
+            copyVrmlField(fmap, "maxAcceleration", maxAcceleration);
+            sensorInfo.specValues[0] = maxAcceleration[0];
+            sensorInfo.specValues[1] = maxAcceleration[1];
+            sensorInfo.specValues[2] = maxAcceleration[2];
+            
+        } else if( sensorType == "Vision" ){
+            sensorInfo.specValues.length( CORBA::ULong(6) );
+
+            CORBA::Double specValues[3];
+            copyVrmlField(fmap, "frontClipDistance", specValues[0] );
+            copyVrmlField(fmap, "backClipDistance", specValues[1] );
+            copyVrmlField(fmap, "fieldOfView", specValues[2] );
+            sensorInfo.specValues[0] = specValues[0];
+            sensorInfo.specValues[1] = specValues[1];
+            sensorInfo.specValues[2] = specValues[2];
+            
+            std::string sensorTypeString;
+            copyVrmlField(fmap, "type", sensorTypeString );
+            
+            if(sensorTypeString=="NONE" ) {
+                sensorInfo.specValues[3] = Camera::NONE;
+            } else if(sensorTypeString=="COLOR") {
+                sensorInfo.specValues[3] = Camera::COLOR;
+            } else if(sensorTypeString=="MONO") {
+                sensorInfo.specValues[3] = Camera::MONO;
+            } else if(sensorTypeString=="DEPTH") {
+                sensorInfo.specValues[3] = Camera::DEPTH;
+            } else if(sensorTypeString=="COLOR_DEPTH") {
+                sensorInfo.specValues[3] = Camera::COLOR_DEPTH;
+            } else if(sensorTypeString=="MONO_DEPTH") {
+                sensorInfo.specValues[3] = Camera::MONO_DEPTH;
+            } else {
+                throw ModelLoader::ModelLoaderException("Sensor node has unkown type string");
+            }
+
+            CORBA::Long width, height;
+            copyVrmlField(fmap, "width", width);
+            copyVrmlField(fmap, "height", height);
+
+            sensorInfo.specValues[4] = static_cast<CORBA::Double>(width);
+            sensorInfo.specValues[5] = static_cast<CORBA::Double>(height);
         }
+
+        matrix33d mRotation;
+        vector3d axis(sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2]);
+        rodrigues(mRotation, axis, sensorInfo.rotation[3]);
+
+        matrix44d mTransform;
+        mTransform =
+            mRotation(0,0), mRotation(0,1), mRotation(0,2), sensorInfo.translation[0],
+            mRotation(1,0), mRotation(1,1), mRotation(1,2), sensorInfo.translation[1],
+            mRotation(2,0), mRotation(2,1), mRotation(2,2), sensorInfo.translation[2],
+            0.0,            0.0,            0.0,		    1.0;
+
+        if(NULL != sensorNode->getField("children")){
+            traverseShapeNodes( linkInfoIndex, sensorNode->fields["children"].mfNode(), mTransform );
+        }
+
+    } catch(ModelLoader::ModelLoaderException& ex) {
+        string error = name_.empty() ? "Unnamed sensor node" : name_;
+        error += ": ";
+        error += ex.description;
+        throw ModelLoader::ModelLoaderException( error.c_str() );
+    }
 }
 
 
-
-
-//==================================================================================================
 /*!
   @if jp
+  Shape ãƒãƒ¼ãƒ‰æ¢ç´¢ã®ãŸã‚ã®å†å¸°é–¢æ•°
 
-  @brief		Shape ƒm[ƒh’Tõ‚Ì‚½‚ß‚ÌÄ‹AŠÖ”
-
-  @note       qƒm[ƒhƒIƒuƒWƒFƒNƒg‚ğ’H‚è ShapeInfo‚ğ¶¬‚·‚éB<BR>
-  ¶¬‚µ‚½ShapeInfo‚ÍBodyInfo‚Ìshapes_‚É’Ç‰Á‚·‚éB<BR>
-  shapes_‚É’Ç‰Á‚µ‚½ˆÊ’u(index)‚ğ LinkInfo‚ÌshapeIndices‚É’Ç‰Á‚·‚éB<BR>
-
-  @date       2008-03-11 Y.TSUNODA <BR>
-
-  @return	    void
-
+  å­ãƒãƒ¼ãƒ‰ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’è¾¿ã‚Š ShapeInfoã‚’ç”Ÿæˆã™ã‚‹ã€‚
+  ç”Ÿæˆã—ãŸShapeInfoã¯BodyInfoã®shapes_ã«è¿½åŠ ã™ã‚‹ã€‚
+  shapes_ã«è¿½åŠ ã—ãŸä½ç½®(index)ã‚’ LinkInfoã®shapeIndicesã«è¿½åŠ ã™ã‚‹ã€‚
   @endif
 */
-//==================================================================================================
-void
-BodyInfo_impl::traverseShapeNodes(
-    int linkInfoIndex,				//!< links_ ‚Ìindex (‚±‚ÌlinkInfo‚ÉŠY“–‚·‚éShapeInfo‚Å‚ ‚é)
-    MFNode& childNodes,				//!< qNode
-    matrix44d mTransform )			//!< ‰ñ“]E•Ài 4x4s—ñ
+void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, const matrix44d& transform)
 {
-    // ‘ÎÛ‚Æ‚È‚é linkInfoƒCƒ“ƒXƒ^ƒ“ƒX‚Ö‚ÌQÆ
     LinkInfo& linkInfo = links_[linkInfoIndex];
 
-    for( size_t i = 0 ; i < childNodes.size() ; ++i )
-	{
-            VrmlNodePtr node = childNodes[i];
+    for(size_t i = 0; i < childNodes.size(); ++i) {
+        VrmlNodePtr node = childNodes[i];
 
-            // Groupƒm[ƒh‚Æ‚»‚ê‚ğŒp³‚µ‚½ƒm[ƒh‚Ìê‡‚ğAqƒm[ƒh‚ğ’H‚Á‚Ä‚¢‚­
-            if( node->isCategoryOf( GROUPING_NODE ) )
-		{
-                    VrmlGroupPtr group = static_pointer_cast<VrmlGroup>( node );
+        if(node->isCategoryOf(GROUPING_NODE)) {
+            VrmlGroupPtr groupNode = static_pointer_cast<VrmlGroup>(node);
+            VrmlTransformPtr transformNode = dynamic_pointer_cast<VrmlTransform>(groupNode);
+            if(!transformNode){
+                traverseShapeNodes(linkInfoIndex, groupNode->children, transform);
+            } else {
+                matrix44d localTransform;
+                calcTransform(transformNode, localTransform); // ã“ã®ãƒãƒ¼ãƒ‰ã§è¨­å®šã•ã‚ŒãŸ transform (scaleã‚‚å«ã‚€)
+                traverseShapeNodes(linkInfoIndex, groupNode->children, matrix44d(transform * localTransform));
+            }
 
-                    matrix44d mCurrentTransform( tvmet::identity<matrix44d>() );	// Transform‚Åİ’è‚³‚ê‚½‰ñ“]E•Ài¬•ª‚ğ‡¬‚µ‚½s—ñ
+        } else if(node->isCategoryOf(SHAPE_NODE)) {
 
-                    // Transformƒm[ƒh‚Å‚ ‚é‚©‚Ì”»’èB
-                    //   GROUPING_NODE‚È‚ÇAƒm[ƒh‚ÌŠî–{‚Æ‚È‚éƒJƒeƒSƒŠ‚Í isCategoryOf() ‚Å”»’è‚Å‚«‚é‚æ‚¤‚É‚µ‚Ä‚¢‚é‚ªA
-                    //   ¡‚Ì‚Æ‚±‚ëTransform‚Å‚ ‚é‚©‚Ç‚¤‚©‚Í‚»‚Ì‚æ‚¤‚ÈŠî–{ƒJƒeƒSƒŠ‚Æ‚µ‚Ä‚¢‚È‚¢
-                    if( VrmlTransformPtr transform = dynamic_pointer_cast<VrmlTransform>( group ) )
-			{
-                            // ‚±‚Ìƒm[ƒh‚Åİ’è‚³‚ê‚½ transform (scale‚àŠÜ‚Ş)‚ğŒvZ‚µC4x4‚Ìs—ñ‚É‘ã“ü‚·‚é
-                            matrix44d mThisTransform;
-                            _calcTransform( transform, mThisTransform );
+            VrmlShapePtr shapeNode = static_pointer_cast<VrmlShape>(node);
+            
+            short shapeInfoIndex;
 
-                            // eƒm[ƒh‚Åİ’è‚³‚ê‚½‰ñ“]E•Ài¬•ª‚Æ‡¬‚·‚é
-                            mCurrentTransform = mTransform * mThisTransform;
-			}
-			
-                    // qƒm[ƒh‚Ì’Tõ
-                    traverseShapeNodes( linkInfoIndex, group->children, mCurrentTransform );
-		}
-            // Shapeƒm[ƒh‚Å‚ ‚é‚©‚Ì”»’è
-            else if( node->isCategoryOf( SHAPE_NODE ) )
-		{
-                    short shapeInfoIndex;		// shapeInfoVec(shape_)’†‚Ìindex
+            // ã™ã§ã«ç”Ÿæˆæ¸ˆã¿ã®Shapeãƒãƒ¼ãƒ‰ã‹ï¼Ÿ
+            //! \todo Transform ã®æ¯”è¼ƒã‚’ãƒ•ã‚¡ã‚¸ãƒ¼ã«ã—ãŸæ–¹ãŒã‚ˆã„
+            SharedShapeInfoMap::iterator itr = sharedShapeInfoMap.find(shapeNode);
+            if((itr != sharedShapeInfoMap.end()) && (itr->second.transform != transform)){
+                shapeInfoIndex = itr->second.index;
+            } else {
+                shapeInfoIndex = createShapeInfo(shapeNode, transform);
+            }
 
-                    // shapeInfo‹¤—Lƒ}ƒbƒv‚É‚±‚Ìnode‚ª“o˜^‚³‚ê‚Ä‚¢‚é‚©ŒŸõ‚·‚é
-                    SharedShapeInfoMap::iterator itr = sharedShapeInfoMap.find( node );
-
-                    // “¯‚¶node‚ÅCtransform‚ª“¯‚¶‚à‚Ì‚ª“o˜^‚³‚ê‚Ä‚¢‚ê‚Î
-                    if( sharedShapeInfoMap.end() != itr 
-			&& ( itr->second.transform != mTransform ) )
-			{
-                            // ƒCƒ“ƒfƒbƒNƒX‚ğæ“¾‚·‚é
-                            shapeInfoIndex = itr->second.index;
-			}
-                    // “o˜^‚³‚ê‚Ä‚¢‚È‚¯‚ê‚ÎC
-                    else
-			{
-                            // ®Œ`ˆ—CShapeInfo ‚ğ¶¬‚·‚é
-                            UniformedShape uniformShape;
-                            uniformShape.signalOnStatusMessage.connect( bind( &BodyInfo_impl::putMessage, this, _1 ) );
-                            uniformShape.setMessageOutput( true );
-
-                            if( !uniformShape.uniform( node ) )
-                                {
-                                    // ®Œ`ˆ—‚É¸”s‚µ‚½‚Ì‚ÅShapeInfo‚Í¶¬‚µ‚È‚¢
-                                    continue;
-                                };
-
-                            // ®Œ`ˆ—Œ‹‰Ê‚ğŠi”[
-                            ShapeInfo_var   shapeInfo( new ShapeInfo );
-
-                            // ’¸“_EƒƒbƒVƒ…‚ğ‘ã“ü‚·‚é
-                            _setVertices( shapeInfo, uniformShape.getVertexList(), mTransform );
-                            _setTriangles( shapeInfo, uniformShape.getTriangleList() );
-
-                            // PrimitiveType‚ğ‘ã“ü‚·‚é
-                            _setShapeInfoType( shapeInfo, uniformShape.getShapeType() );
-
-                            // AppearanceInfo
-                            {
-                                VrmlShapePtr shapeNode = static_pointer_cast<VrmlShape>( node );
-                                VrmlAppearancePtr appearanceNode = shapeNode->appearance;
-                                if( NULL != appearanceNode )
-                                    {
-                                        AppearanceInfo_var appearance( new AppearanceInfo() );
-                                        //appearance->creaseAngle = 0.0;
-                                        appearance->creaseAngle = 3.14;		// 2008.05.11 Changed. ƒvƒŠƒ~ƒeƒBƒuŒ`ó CreaseAngleƒfƒtƒHƒ‹ƒg’l
-
-                                        // IndexedFaceSet‚Ìê‡
-                                        if( UniformedShape::S_INDEXED_FACE_SET == uniformShape.getShapeType() )
-                                            {
-                                                VrmlIndexedFaceSetPtr faceSet = static_pointer_cast<VrmlIndexedFaceSet>( shapeNode->geometry );
-
-                                                appearance->coloerPerVertex = faceSet->colorPerVertex;
-							
-                                                if( NULL != faceSet->color )
-                                                    {
-                                                        size_t colorNum = faceSet->color->color.size();
-                                                        appearance->colors.length( colorNum * 3 );
-                                                        for( size_t i = 0 ; i < colorNum ; ++i )
-                                                            {
-                                                                SFColor color = faceSet->color->color[i];
-                                                                appearance->colors[3*i+0] = color[0];
-                                                                appearance->colors[3*i+1] = color[1];
-                                                                appearance->colors[3*i+2] = color[2];
-                                                            }
-                                                    }
-
-                                                size_t colorIndexNum = faceSet->colorIndex.size();
-                                                appearance->colorIndices.length( colorIndexNum );
-                                                for( size_t i = 0 ; i < colorIndexNum ; ++i )
-                                                    {
-                                                        appearance->colorIndices[i] = faceSet->colorIndex[i];
-                                                    }
-
-                                                appearance->normalPerVertex = faceSet->normalPerVertex;
-                                                appearance->solid = faceSet->solid;
-                                                appearance->creaseAngle = faceSet->creaseAngle;
-
-                                                // ##### [TODO] #####
-                                                //appearance->textureCoordinate = faceSet->texCood;
-
-                                                _setNormals( appearance, uniformShape.getVertexList(), uniformShape.getTriangleList(), mTransform );
-
-                                            }
-                                        // ElevationGrid‚Ìê‡
-                                        else if( UniformedShape::S_ELEVATION_GRID == uniformShape.getShapeType() )
-                                            {
-                                                VrmlElevationGridPtr elevationGrid = static_pointer_cast<VrmlElevationGrid>( shapeNode->geometry );
-
-                                                appearance->coloerPerVertex = elevationGrid->colorPerVertex;
-							
-                                                if( NULL != elevationGrid->color )
-                                                    {
-                                                        size_t colorNum = elevationGrid->color->color.size();
-                                                        appearance->colors.length( colorNum * 3 );
-                                                        for( size_t i = 0 ; i < colorNum ; ++i )
-                                                            {
-                                                                SFColor color = elevationGrid->color->color[i];
-                                                                appearance->colors[3*i+0] = color[0];
-                                                                appearance->colors[3*i+1] = color[1];
-                                                                appearance->colors[3*i+2] = color[2];
-                                                            }
-                                                    }
-
-                                                // appearance->colorIndices // ElevationGrid ‚Ìƒƒ“ƒo‚É‚Í–³‚µ
-
-                                                appearance->normalPerVertex = elevationGrid->normalPerVertex;
-                                                appearance->solid = elevationGrid->solid;
-                                                appearance->creaseAngle = elevationGrid->creaseAngle;
-
-                                                // ##### [TODO] #####
-                                                //appearance->textureCoordinate = elevationGrid->texCood;
-
-                                                _setNormals( appearance, uniformShape.getVertexList(), uniformShape.getTriangleList(), mTransform );
-                                            }
-                                        // Box‚Ìê‡
-                                        else if( UniformedShape::S_BOX == uniformShape.getShapeType() )
-                                            {
-                                                appearance->creaseAngle = (float)(3.14 / 2);
-                                            }
-                                        // Cone‚Ìê‡
-                                        else if( UniformedShape::S_CONE == uniformShape.getShapeType() )
-                                            {
-                                                appearance->creaseAngle = (float)(3.14 / 2);
-                                            }
-                                        // Cylinder‚Ìê‡
-                                        else if( UniformedShape::S_CYLINDER == uniformShape.getShapeType() )
-                                            {
-                                                appearance->creaseAngle = (float)(3.14 / 2);
-                                            }
-                                        // Sphere‚Ìê‡
-                                        else if( UniformedShape::S_SPHERE == uniformShape.getShapeType() )
-                                            {
-                                                appearance->creaseAngle = (float)(3.14 / 2);
-                                            }
-                                        // Extrusion‚Ìê‡
-                                        else if( UniformedShape::S_EXTRUSION == uniformShape.getShapeType() )
-                                            {
-                                                appearance->creaseAngle = 3.14;
-                                            }
-
-
-                                        // MaterialInfo 
-                                        //   materialƒm[ƒh‚ª‘¶İ‚·‚ê‚ÎCMaterialInfo‚ğ¶¬Cmaterials_‚ÉŠi”[‚·‚é
-                                        appearance->materialIndex = _createMaterialInfo( appearanceNode->material );
-
-
-                                        // TextureInfo
-                                        //   textureƒm[ƒh‚ª‘¶İ‚·‚ê‚ÎCTextureInfo‚ğ¶¬Ctextures_‚ÉŠi”[‚·‚é
-                                        appearance->textureIndex = _createTextureInfo( appearanceNode->texture );
-
-
-                                        long appearancesLength	= appearances_.length();
-                                        appearances_.length( appearancesLength + 1 );
-                                        appearances_[appearancesLength] = appearance;
-
-                                        // ShapeInfo‚ÌappearanceIndex‚ÉƒCƒ“ƒfƒbƒNƒX‚ğ‘ã“ü
-                                        shapeInfo->appearanceIndex = appearancesLength;
-                                    }
-                                else
-                                    {
-                                        shapeInfo->appearanceIndex = -1;
-                                    }
-                            }
-
-                            // shapes_‚ÌÅŒã‚É’Ç‰Á‚·‚é
-                            int shapesLength = shapes_.length();
-                            shapes_.length( shapesLength + 1 );
-                            shapes_[shapesLength] = shapeInfo;
-
-                            // shapes_’†‚Ìindex ‚Í
-                            shapeInfoIndex = shapesLength;
-
-                            // shapeInfo‹¤—Lƒ}ƒbƒv‚É ‚±‚ÌshapeInfo(node)‚Æindex,transform‚Ìî•ñ‚ğ‚ğ“o˜^(‘}“ü)‚·‚é
-                            ShapeObject shapeObject;
-                            shapeObject.index = shapeInfoIndex;
-                            shapeObject.transform = mTransform;
-                            sharedShapeInfoMap.insert( pair<OpenHRP::VrmlNodePtr, ShapeObject>( node, shapeObject ) );
-			}
-
-                    // index‚ğ LinkInfo ‚Ì shapeIndices ‚É’Ç‰Á‚·‚é
-                    long shapeIndicesLength = linkInfo.shapeIndices.length();
-                    linkInfo.shapeIndices.length( shapeIndicesLength + 1 );
-                    linkInfo.shapeIndices[shapeIndicesLength] = shapeInfoIndex;
-		}
-	}
+            if(shapeInfoIndex >= 0){
+                // indexã‚’ LinkInfo ã® shapeIndices ã«è¿½åŠ ã™ã‚‹
+                long shapeIndicesLength = linkInfo.shapeIndices.length();
+                linkInfo.shapeIndices.length( shapeIndicesLength + 1 );
+                linkInfo.shapeIndices[shapeIndicesLength] = shapeInfoIndex;
+            }
+        }
+    }
 }
 
 
+/**
+   @return the index of a created ShapeInfo object. The return value is -1 if the creation fails.
+*/
+int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const matrix44d& transform)
+{
+    int shapeInfoIndex = -1;
+    
+    // æ•´å½¢å‡¦ç†.ã“ã“ã®å‡¦ç†ã¯ OpenHRP/Parser ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã«ç§»ã™ã¹ã
+    UniformedShape uniformShape;
+    uniformShape.signalOnStatusMessage.connect(bind(&BodyInfo_impl::putMessage, this, _1));
+    uniformShape.setMessageOutput(true);
+
+    if(uniformShape.uniform(shapeNode)) {
+        // æ•´å½¢å‡¦ç†çµæœã‚’æ ¼ç´
+        ShapeInfo_var shapeInfo(new ShapeInfo);
+        
+        // é ‚ç‚¹ãƒ»ãƒ¡ãƒƒã‚·ãƒ¥ã‚’ä»£å…¥ã™ã‚‹
+        setVertices(shapeInfo, uniformShape.getVertexList(), transform);
+        setTriangles(shapeInfo, uniformShape.getTriangleList());
+        
+        // PrimitiveTypeã‚’ä»£å…¥ã™ã‚‹
+        setShapeInfoType(shapeInfo, uniformShape.getShapeType());
+        
+        // AppearanceInfo
+        shapeInfo->appearanceIndex = createAppearanceInfo(shapeNode, uniformShape, transform);
+        
+        // shapes_ã®æœ€å¾Œã«è¿½åŠ ã™ã‚‹
+        shapeInfoIndex = shapes_.length();
+        shapes_.length(shapeInfoIndex + 1);
+        shapes_[shapeInfoIndex] = shapeInfo;
+        
+        // shapeInfoå…±æœ‰ãƒãƒƒãƒ—ã« ã“ã®shapeInfo(node)ã¨index,transformã®æƒ…å ±ã‚’ç™»éŒ²(æŒ¿å…¥)ã™ã‚‹
+        ShapeObject shapeObject;
+        shapeObject.index = shapeInfoIndex;
+        shapeObject.transform = transform;
+        sharedShapeInfoMap.insert(make_pair(shapeNode, shapeObject));
+    }
+        
+    return shapeInfoIndex;
+}
 
 
-//==================================================================================================
+/**
+   @return the index of a created AppearanceInfo object. The return value is -1 if the creation fails.
+*/
+int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, UniformedShape& uniformedShape, const matrix44d& transform)
+{
+    int appearanceIndex = -1;
+    
+    VrmlAppearancePtr appearanceNode = shapeNode->appearance;
+
+    if(appearanceNode) {
+
+        AppearanceInfo_var appearance( new AppearanceInfo() );
+        appearance->creaseAngle = 3.14 / 2.0;
+
+        switch(uniformedShape.getShapeType()){
+
+        case UniformedShape::S_INDEXED_FACE_SET:
+            {
+                VrmlIndexedFaceSetPtr faceSet = static_pointer_cast<VrmlIndexedFaceSet>(shapeNode->geometry);
+                                
+                appearance->coloerPerVertex = faceSet->colorPerVertex;
+                
+                if(faceSet->color){
+                    size_t colorNum = faceSet->color->color.size();
+                    appearance->colors.length( colorNum * 3 );
+                    for(size_t i = 0 ; i < colorNum ; ++i){
+                        SFColor color = faceSet->color->color[i];
+                        appearance->colors[3*i+0] = color[0];
+                        appearance->colors[3*i+1] = color[1];
+                        appearance->colors[3*i+2] = color[2];
+                    }
+                    
+                    size_t colorIndexNum = faceSet->colorIndex.size();
+                    appearance->colorIndices.length( colorIndexNum );
+                    for( size_t i = 0 ; i < colorIndexNum ; ++i ){
+                        appearance->colorIndices[i] = faceSet->colorIndex[i];
+                    }
+                    
+                    appearance->normalPerVertex = faceSet->normalPerVertex;
+                    appearance->solid = faceSet->solid;
+                    appearance->creaseAngle = faceSet->creaseAngle;
+                    
+                    // ##### [TODO] #####
+                    //appearance->textureCoordinate = faceSet->texCood;
+                    
+                    setNormals(appearance, uniformedShape.getVertexList(), uniformedShape.getTriangleList(), transform);
+                }
+            }
+            break;
+
+        case UniformedShape::S_ELEVATION_GRID:
+            {
+                VrmlElevationGridPtr elevationGrid = static_pointer_cast<VrmlElevationGrid>(shapeNode->geometry);
+                
+                appearance->coloerPerVertex = elevationGrid->colorPerVertex;
+                
+                if(elevationGrid->color) {
+                    size_t colorNum = elevationGrid->color->color.size();
+                    appearance->colors.length( colorNum * 3 );
+                    for(size_t i = 0 ; i < colorNum ; ++i) {
+                        SFColor color = elevationGrid->color->color[i];
+                        appearance->colors[3*i+0] = color[0];
+                        appearance->colors[3*i+1] = color[1];
+                        appearance->colors[3*i+2] = color[2];
+                    }
+                }
+                
+                // appearance->colorIndices // ElevationGrid ã®ãƒ¡ãƒ³ãƒã«ã¯ç„¡ã—
+                
+                appearance->normalPerVertex = elevationGrid->normalPerVertex;
+                appearance->solid = elevationGrid->solid;
+                appearance->creaseAngle = elevationGrid->creaseAngle;
+                
+                // ##### [TODO] #####
+                //appearance->textureCoordinate = elevationGrid->texCood;
+                
+                setNormals(appearance, uniformedShape.getVertexList(), uniformedShape.getTriangleList(), transform);
+            }
+            break;
+        }
+        
+        appearance->materialIndex = createMaterialInfo(appearanceNode->material);
+        appearance->textureIndex  = createTextureInfo (appearanceNode->texture);
+
+        appearanceIndex	= appearances_.length();
+        appearances_.length(appearanceIndex + 1);
+        appearances_[appearanceIndex] = appearance;
+    }
+
+    return appearanceIndex;
+}
+
+    
 /*!
   @if jp
-
-  @brief      ’¸“_À•W‚ğShapeInfo.vertices‚É‘ã“ü
-
-  @note       ’¸“_ƒŠƒXƒg‚ÉŠi”[‚³‚ê‚Ä‚¢‚é’¸“_À•W‚ğShapeInfo.vertices‚É‘ã“ü‚·‚é <BR>
-  mTransform‚Æ‚µ‚Ä—^‚¦‚ç‚ê‚½‰ñ“]E•Ài¬•ª‚ğ‘S‚Ä‚Ì’¸“_‚É”½‰f‚·‚é <BR>
-
-  @date       2008-03-10 Y.TSUNODA <BR>
-  2008-04-11 Y.TSUNODA ’¸“_À•W‚ğ4ŸŒ³ƒxƒNƒgƒ‹‚É‚µ‚ÄŒvZ <BR>
-
-  @return     void
-
+  é ‚ç‚¹ãƒªã‚¹ãƒˆã«æ ¼ç´ã•ã‚Œã¦ã„ã‚‹é ‚ç‚¹åº§æ¨™ã‚’ShapeInfo.verticesã«ä»£å…¥ã™ã‚‹.
+  transformã¨ã—ã¦ä¸ãˆã‚‰ã‚ŒãŸå›è»¢ãƒ»ä¸¦é€²æˆåˆ†ã‚’å…¨ã¦ã®é ‚ç‚¹ã«åæ˜ ã™ã‚‹.
   @endif
 */
-//==================================================================================================
-void
-BodyInfo_impl::_setVertices(
-    ShapeInfo_var& shape,           //!< ‹l‚ß‚İ‘ÎÛ
-    vector<vector3d> vList,			//!< ’¸“_À•WƒŠƒXƒg
-    matrix44d mTransform )			//!< ‰ñ“]E•Ài¬•ª
+void BodyInfo_impl::setVertices(ShapeInfo_var& shape, const vector<vector3d>& vertices, const matrix44d& transform)
 {
-    // ’¸“_”‚ğæ“¾‚·‚é
-    size_t vertexNumber = vList.size();
-
-    // ’¸“_À•W‚ğŠi”[‚·‚é”z—ñƒTƒCƒY‚ğw’è‚·‚é
-    shape->vertices.length( vertexNumber * 3 );
+    size_t numVertices = vertices.size();
+    shape->vertices.length(numVertices * 3);
 
     int i = 0;
-    for( size_t v = 0 ; v < vertexNumber ; v++ )
-	{
-            vector4d vertex4;			// ‰ñ“]E•Ài‘O‚ÌƒxƒNƒgƒ‹(À•W)	
-            vector4d transformed;		// ‰ñ“]E•ÀiŒã‚ÌƒxƒNƒgƒ‹(À•W)
-		
-            // ’¸“_À•W‚ğ4ŸŒ³ƒxƒNƒgƒ‹‚É‘ã“ü‚·‚é
-            vertex4 = vList.at( v )[0], vList.at( v )[1], vList.at( v )[2], 1; 
-		
-            // ‰ñ“]E•ÀiŒvZ
-            transformed = mTransform * vertex4;
-
-            // ShapeInfo‚Ìvertices‚É‘ã“ü‚·‚é
-            shape->vertices[i] = transformed[0]; i++;
-            shape->vertices[i] = transformed[1]; i++;
-            shape->vertices[i] = transformed[2]; i++;
-	}
+    for(size_t v = 0 ; v < numVertices ; v++){
+        const vector3d& vorg = vertices[v];
+        vector4d v(vorg(0), vorg(1), vorg(2), 1.0);
+        vector4d transformed(transform * v);
+        shape->vertices[i++] = transformed[0];
+        shape->vertices[i++] = transformed[1];
+        shape->vertices[i++] = transformed[2];
+    }
 }
 
 
-
-
-//==================================================================================================
 /*!
   @if jp
-
-  @brief      OŠpƒƒbƒVƒ…î•ñ‚ğShapeInfo.triangles‚É‘ã“ü
-
-  @note       OŠpƒƒbƒVƒ…ƒŠƒXƒg‚ÉŠi”[‚³‚ê‚Ä‚¢‚éOŠpƒƒbƒVƒ…î•ñ‚ğShapeInfo.triangles‚É‘ã“ü‚·‚é <BR>
-
-  @date       2008-03-10 Y.TSUNODA <BR>
-
-  @return     void
-
+  ä¸‰è§’ãƒ¡ãƒƒã‚·ãƒ¥æƒ…å ±ã‚’ShapeInfo.trianglesã«ä»£å…¥
   @endif
 */
-//==================================================================================================
-void
-BodyInfo_impl::_setTriangles(
-    ShapeInfo_var& shape,				//!< ‘ÎÛ‚ÌShapeInfo
-    vector<vector3i> tList )			//!< ƒƒbƒVƒ…ƒŠƒXƒg
+void BodyInfo_impl::setTriangles(ShapeInfo_var& shape, const vector<vector3i>& triangles)
 {
-    // ƒƒbƒVƒ…”‚ğæ“¾‚·‚é
-    size_t triangleNumber = tList.size();
-
-    // ƒƒbƒVƒ…‚ğŠi”[‚·‚é”z—ñƒTƒCƒY‚ğw’è‚·‚é
-    shape->triangles.length( triangleNumber * 3 );
+    const size_t numTriangles = triangles.size();
+    shape->triangles.length(numTriangles * 3);
 	
     int i = 0;
-    for( size_t t = 0 ; t < triangleNumber ; t++ )
-	{
-            shape->triangles[i] = ( tList.at( t ) )[0]; i++;
-            shape->triangles[i] = ( tList.at( t ) )[1]; i++;
-            shape->triangles[i] = ( tList.at( t ) )[2]; i++;
-	}
+    for(size_t t = 0 ; t < numTriangles ; t++){
+        shape->triangles[i++] = triangles[t][0];
+        shape->triangles[i++] = triangles[t][1];
+        shape->triangles[i++] = triangles[t][2];
+    }
 }
 
 
-
-
-//==================================================================================================
 /*!
   @if jp
-
-  @brief      –@ü‚ğŒvZ‚µAppearanceInfo‚É‘ã“ü
-
-  @note       ’¸“_ƒŠƒXƒgEOŠpƒƒbƒVƒ…ƒŠƒXƒg‚©‚ç–@ü‚ğŒvZ‚µCAppearanceInfo‚É‘ã“ü‚·‚é<BR>
-
-  @date       2008-04-11 Y.TSUNODA <BR>
-
-  @return     void
-
+  é ‚ç‚¹ãƒªã‚¹ãƒˆãƒ»ä¸‰è§’ãƒ¡ãƒƒã‚·ãƒ¥ãƒªã‚¹ãƒˆã‹ã‚‰æ³•ç·šã‚’è¨ˆç®—ã—ï¼ŒAppearanceInfoã«ä»£å…¥ã™ã‚‹
+  @retval appearance è¨ˆç®—çµæœã®æ³•ç·šã‚’ä»£å…¥ã™ã‚‹AppearanceInfo
+  @todo ã“ã®æ©Ÿèƒ½ã¯æ•´å½¢éƒ¨ã«ç§»ã™ã¹ã—
   @endif
 */
-//==================================================================================================
-void
-BodyInfo_impl::_setNormals(
-    AppearanceInfo_var& appearance,		//!< ŒvZŒ‹‰Ê‚Ì–@ü‚ğ‘ã“ü‚·‚éAppearanceInfo
-    vector<vector3d> vertexList,		//!< ’¸“_ƒŠƒXƒg
-    vector<vector3i> traiangleList,		//!< OŠpƒƒbƒVƒ…ƒŠƒXƒg
-    matrix44d mTransform )				//!< ‰ñ“]E•Ài¬•ª
+void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<vector3d>& vertexList, const vector<vector3i>& traiangleList, const matrix44d& transform)
 {
-    // ’¸“_ƒŠƒXƒg’†‚Ì’¸“_À•W‚»‚ê‚¼‚ê‚ÉC‰ñ“]E•Ài¬•ª‚ğŠ|‚¯‚é
-    vector<vector3d> transformedVertexList;	// ‰ñ“]E•ÀiŒvZŒã‚Ì’¸“_ƒŠƒXƒg
-    vector4d vertex4;						// ‰ñ“]E•Ài‘O‚ÌƒxƒNƒgƒ‹(À•W)	
-    vector4d transformed4;					// ‰ñ“]E•ÀiŒã‚ÌƒxƒNƒgƒ‹(À•W)
-    vector3d transformed;					//    V
+    // ã“ã“ã®å‡¦ç†ã£ã¦setVerticesã¨ãƒ€ãƒ–ã£ã¦ã‚‹ã‚ˆã€‚å»ƒæ­¢ï¼
+    vector<vector3d> transformedVertexList;
+    vector4d vertex4;				
+    vector4d transformed4;			
 
-    for( size_t v = 0 ; v < vertexList.size() ; ++v )
-	{
-            // ’¸“_À•W‚ğ4ŸŒ³ƒxƒNƒgƒ‹‚É‘ã“ü‚·‚é
-            vertex4 = vertexList.at( v )[0], vertexList.at( v )[1], vertexList.at( v )[2], 1; 
-		
-            // ‰ñ“]E•ÀiŒvZ
-            transformed4 = mTransform * vertex4;
+    for(size_t v = 0; v < vertexList.size(); ++v){
+        vertex4 = vertexList[v][0], vertexList[v][1], vertexList[v][2], 1; 
+        transformed4 = transform * vertex4;
+        transformedVertexList.push_back(vector3d(transformed4[0], transformed4[1], transformed4[2]));
+    }
 
-            transformed = transformed4[0], transformed4[1], transformed4[2];
-            transformedVertexList.push_back( transformed );
-	}
 
     CalculateNormal calculateNormal;
 
-    // ƒƒbƒVƒ…‚Ì–@ü(–Ê‚Ì–@ü)‚ğŒvZ‚·‚é
-    calculateNormal.calculateNormalsOfMesh( transformedVertexList, traiangleList );
+    // ãƒ¡ãƒƒã‚·ãƒ¥ã®æ³•ç·š(é¢ã®æ³•ç·š)ã‚’è¨ˆç®—ã™ã‚‹
+    calculateNormal.calculateNormalsOfMesh(transformedVertexList, traiangleList);
 
+    // é ‚ç‚¹ã®æ³•ç·š
+    if(appearance->normalPerVertex) {
+        calculateNormal.calculateNormalsOfVertex(transformedVertexList, traiangleList, appearance->creaseAngle);
 
-    // normalPerVertex == TRUE ‚È‚Ì‚ÅC’¸“_‚Ì–@ü
-    if( true == appearance->normalPerVertex )
-	{
-            calculateNormal.calculateNormalsOfVertex( transformedVertexList, traiangleList, appearance->creaseAngle );
+        const vector<vector3d>& normalsVertex = calculateNormal.getNormalsOfVertex();
+        const vector<vector3i>& normalIndex = calculateNormal.getNormalIndex();
 
-            vector<vector3d> normalsVertex = calculateNormal.getNormalsOfVertex();
-            vector<vector3i> normalIndex = calculateNormal.getNormalIndex();
+        // æ³•ç·šãƒ‡ãƒ¼ã‚¿ã‚’ä»£å…¥ã™ã‚‹
+        size_t normalsVertexNum = normalsVertex.size();
+        appearance->normals.length(normalsVertexNum * 3);
 
-            // –@üƒf[ƒ^‚ğ‘ã“ü‚·‚é
-            size_t normalsVertexNum = normalsVertex.size();
-            appearance->normals.length( normalsVertexNum * 3 );
-
-            for( size_t i = 0 ; i < normalsVertexNum ; ++i )
-		{
-                    // –@üƒxƒNƒgƒ‹‚ğ³‹K‰»‚·‚é
-                    vector3d normal = static_cast<vector3d>( tvmet::normalize( normalsVertex.at( i ) ) );
-
-                    // AppearanceInfo ‚Ìƒƒ“ƒo‚É‘ã“ü‚·‚é
-                    appearance->normals[3*i+0] = normal[0];
-                    appearance->normals[3*i+1] = normal[1];
-                    appearance->normals[3*i+2] = normal[2];
-		}
-
-            // –@ü‘Î‰•t‚¯ƒf[ƒ^(ƒCƒ“ƒfƒbƒNƒX—ñ)‚ğ‘ã“ü‚·‚é
-            size_t normalIndexNum = normalIndex.size();
-            appearance->normalIndices.length( normalIndexNum * 4 );
-
-            for( size_t i = 0 ; i < normalIndexNum ; ++i )
-		{
-                    appearance->normalIndices[4*i+0] = normalIndex.at( i )[0];
-                    appearance->normalIndices[4*i+1] = normalIndex.at( i )[1];
-                    appearance->normalIndices[4*i+2] = normalIndex.at( i )[2];
-                    appearance->normalIndices[4*i+3] = -1;
-		}
-	}
-    // –Ê‚Ì–@ü
-    else
-	{
-            // Zo‚µ‚½–Ê‚Ì–@ü(‚Ìvector:”z—ñ)‚ğæ“¾‚·‚é
-            vector<vector3d> normalsMesh = calculateNormal.getNormalsOfMesh();
-
-            // –Ê‚Ì–@üƒf[ƒ^”‚ğæ“¾‚·‚é
-            size_t normalsMeshNum = normalsMesh.size();
-
-            // ‘ã“ü‚·‚é–@üC–@üƒCƒ“ƒfƒbƒNƒX‚Ìvector(”z—ñ)ƒTƒCƒY‚ğw’è‚·‚é
-            appearance->normals.length( normalsMeshNum * 3 );
-            appearance->normalIndices.length( normalsMeshNum );
-
-            for( size_t i = 0 ; i < normalsMeshNum ; ++i )
-		{
-                    // –@üƒxƒNƒgƒ‹‚ğ³‹K‰»‚·‚é
-                    vector3d normal = static_cast<vector3d>( tvmet::normalize( normalsMesh.at( i ) ) );
-
-                    // AppearanceInfo ‚Ìƒƒ“ƒo‚É‘ã“ü‚·‚é
-                    appearance->normals[3*i+0] = normal[0];
-                    appearance->normals[3*i+1] = normal[1];
-                    appearance->normals[3*i+2] = normal[2];
-
-                    appearance->normalIndices[i] = i;
-		}
-	}
-}
-
-
-
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief      ShapeInfo‚ÉPrimitiveType‚ğ‘ã“ü
-
-  @note       <BR>
-
-  @date       2008-04-11 Y.TSUNODA <BR>
-
-  @return     void
-
-  @endif
-*/
-//==================================================================================================
-void
-BodyInfo_impl::_setShapeInfoType(
-    ShapeInfo_var& shapeInfo,					//!< ‘ÎÛ‚ÌShapeInfo
-    UniformedShape::ShapePrimitiveType type )	//!< ShapeType
-{
-    switch( type )
-        {
-        case UniformedShape::S_BOX:
-            shapeInfo->type = BOX;
-            break;
-        case UniformedShape::S_CONE:
-            shapeInfo->type = CONE;
-            break;
-        case UniformedShape::S_CYLINDER:
-            shapeInfo->type = CYLINDER;
-            break;
-        case UniformedShape::S_SPHERE:
-            shapeInfo->type = SPHERE;
-            break;
-        case UniformedShape::S_INDEXED_FACE_SET:
-        case UniformedShape::S_ELEVATION_GRID:
-        case UniformedShape::S_EXTRUSION:
-            shapeInfo->type = MESH;
-            break;
+        // AppearanceInfo ã®ãƒ¡ãƒ³ãƒã«ä»£å…¥ã™ã‚‹
+        for(size_t i = 0; i < normalsVertexNum; ++i) {
+            vector3d normal(tvmet::normalize(normalsVertex[i]));
+            appearance->normals[3*i+0] = normal[0];
+            appearance->normals[3*i+1] = normal[1];
+            appearance->normals[3*i+2] = normal[2];
         }
+
+        // æ³•ç·šå¯¾å¿œä»˜ã‘ãƒ‡ãƒ¼ã‚¿(ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹åˆ—)ã‚’ä»£å…¥ã™ã‚‹
+        size_t normalIndexNum = normalIndex.size();
+        appearance->normalIndices.length( normalIndexNum * 4 );
+
+        for(size_t i = 0; i < normalIndexNum; ++i){
+            appearance->normalIndices[4*i+0] = normalIndex[i][0];
+            appearance->normalIndices[4*i+1] = normalIndex[i][1];
+            appearance->normalIndices[4*i+2] = normalIndex[i][2];
+            appearance->normalIndices[4*i+3] = -1;
+        }
+    } else { // é¢ã®æ³•ç·š
+        // ç®—å‡ºã—ãŸé¢ã®æ³•ç·š(ã®vector:é…åˆ—)ã‚’å–å¾—ã™ã‚‹
+        const vector<vector3d>& normalsMesh = calculateNormal.getNormalsOfMesh();
+        
+        // é¢ã®æ³•ç·šãƒ‡ãƒ¼ã‚¿æ•°ã‚’å–å¾—ã™ã‚‹
+        size_t normalsMeshNum = normalsMesh.size();
+        
+        // ä»£å…¥ã™ã‚‹æ³•ç·šï¼Œæ³•ç·šã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®vector(é…åˆ—)ã‚µã‚¤ã‚ºã‚’æŒ‡å®šã™ã‚‹
+        appearance->normals.length( normalsMeshNum * 3 );
+        appearance->normalIndices.length( normalsMeshNum );
+        
+        for(size_t i = 0 ; i < normalsMeshNum ; ++i){
+            // æ³•ç·šãƒ™ã‚¯ãƒˆãƒ«ã‚’æ­£è¦åŒ–ã™ã‚‹
+            vector3d normal(tvmet::normalize(normalsMesh[i]));
+            // AppearanceInfo ã®ãƒ¡ãƒ³ãƒã«ä»£å…¥ã™ã‚‹
+            appearance->normals[3*i+0] = normal[0];
+            appearance->normals[3*i+1] = normal[1];
+            appearance->normals[3*i+2] = normal[2];
+            appearance->normalIndices[i] = i;
+        }
+    }
 }
 
 
-
-
-//==================================================================================================
 /*!
   @if jp
-
-  @brief		TextureInfo¶¬
-
-  @note       textureƒm[ƒh‚ª‘¶İ‚·‚ê‚ÎCTextureInfo‚ğ¶¬Ctextures_ ‚É’Ç‰Á‚·‚éB<BR>
-  ‚È‚¨CImageTextureƒm[ƒh‚Ìê‡‚ÍCPixelTexture‚É•ÏŠ·‚µ TextureInfo‚ğ¶¬‚·‚éB<BR>
-  textures_‚É’Ç‰Á‚µ‚½ˆÊ’u(ƒCƒ“ƒfƒbƒNƒX)‚ğ–ß‚è’l‚Æ‚µ‚Ä•Ô‚·B<BR>
-
-  @date       2008-04-18 Y.TSUNODA <BR>
-
-  @return	    long  TextureInfo(textures_)‚ÌƒCƒ“ƒfƒbƒNƒXCtextureƒm[ƒh‚ª‘¶İ‚µ‚È‚¢ê‡‚Í -1
-
+  ShapeInfoã«PrimitiveTypeã‚’ä»£å…¥
   @endif
 */
-//==================================================================================================
-long
-BodyInfo_impl::_createTextureInfo( 
-    VrmlTexturePtr textureNode )
+void BodyInfo_impl::setShapeInfoType(ShapeInfo_var& shapeInfo, UniformedShape::ShapePrimitiveType type)
 {
-    if( ! textureNode )	return -1;
+    switch(type) {
 
-    VrmlPixelTexturePtr pixelTextureNode = NULL;
-    VrmlImageTexturePtr imageTextureNode = dynamic_pointer_cast<VrmlImageTexture>( textureNode );
+    case UniformedShape::S_BOX:
+        shapeInfo->type = BOX;
+        break;
 
-    // ImageTexture‚©‚Ç‚¤‚©‚Ì”»’f
-    if( imageTextureNode )
-	{
-            ImageConverter  converter;
+    case UniformedShape::S_CONE:
+        shapeInfo->type = CONE;
+        break;
 
-            VrmlPixelTexture* tempTexture = new VrmlPixelTexture;
+    case UniformedShape::S_CYLINDER:
+        shapeInfo->type = CYLINDER;
+        break;
 
-            // PixelTexture‚É•ÏŠ·‚·‚é
-            if( converter.convert( *imageTextureNode, *tempTexture, _getModelFileDirPath() ) )
-		{
+    case UniformedShape::S_SPHERE:
+        shapeInfo->type = SPHERE;
+        break;
+
+    case UniformedShape::S_INDEXED_FACE_SET:
+    case UniformedShape::S_ELEVATION_GRID:
+    case UniformedShape::S_EXTRUSION:
+        shapeInfo->type = MESH;
+        break;
+    }
+}
+
+
+/*!
+  @if jp
+  textureãƒãƒ¼ãƒ‰ãŒå­˜åœ¨ã™ã‚Œã°ï¼ŒTextureInfoã‚’ç”Ÿæˆï¼Œtextures_ ã«è¿½åŠ ã™ã‚‹ã€‚
+  ãªãŠï¼ŒImageTextureãƒãƒ¼ãƒ‰ã®å ´åˆã¯ï¼ŒPixelTextureã«å¤‰æ›ã— TextureInfoã‚’ç”Ÿæˆã™ã‚‹ã€‚
+
+  @return long TextureInfo(textures_)ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ï¼Œtextureãƒãƒ¼ãƒ‰ãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ -1
+  @endif
+*/
+int BodyInfo_impl::createTextureInfo(VrmlTexturePtr textureNode)
+{
+    int textureInfoIndex = -1;
+
+    if(textureNode){
+
+        VrmlPixelTexturePtr pixelTextureNode = dynamic_pointer_cast<VrmlPixelTexture>(textureNode);
+
+        if(!pixelTextureNode){
+            VrmlImageTexturePtr imageTextureNode = dynamic_pointer_cast<VrmlImageTexture>(textureNode);
+            if(imageTextureNode){
+                ImageConverter  converter;
+                VrmlPixelTexture* tempTexture = new VrmlPixelTexture;
+                if(converter.convert(*imageTextureNode, *tempTexture, getModelFileDirPath())){
                     pixelTextureNode = tempTexture;
-		}
-	}
-    // ImageTexture‚Å‚È‚¯‚ê‚ÎPixelTexture‚©‚Ç‚¤‚©
-    else
-	{
-            pixelTextureNode = dynamic_pointer_cast<VrmlPixelTexture>( textureNode );
-	}
+                }
+            }
+        }
 
-    if( pixelTextureNode )
-	{
-            TextureInfo_var texture( new TextureInfo() );
+        if(pixelTextureNode){
+            TextureInfo_var texture(new TextureInfo());
 
             texture->height = pixelTextureNode->image.height;
-            texture->width =pixelTextureNode->image.width;
+            texture->width = pixelTextureNode->image.width;
             texture->numComponents = pixelTextureNode->image.numComponents;
 		
             size_t pixelsLength =  pixelTextureNode->image.pixels.size();
             texture->image.length( pixelsLength );
-            for( size_t j = 0 ; j < pixelsLength ; j++ )
-		{
-                    texture->image[j] = pixelTextureNode->image.pixels[j];
-		}
+            for(size_t j = 0 ; j < pixelsLength ; j++ ){
+                texture->image[j] = pixelTextureNode->image.pixels[j];
+            }
             texture->repeatS = pixelTextureNode->repeatS;
             texture->repeatT = pixelTextureNode->repeatT;
 
-            long texturesLength = textures_.length();
-            textures_.length( texturesLength + 1 );
-            textures_[texturesLength] = texture;
+            textureInfoIndex = textures_.length();
+            textures_.length(textureInfoIndex + 1);
+            textures_[textureInfoIndex] = texture;
+	}
+    }
 
-            return texturesLength;
-	}
-    else
-	{
-            return -1;
-	}
+    return textureInfoIndex;
 }
 
 
-
-
-//==================================================================================================
 /*!
   @if jp
+  materialãƒãƒ¼ãƒ‰ãŒå­˜åœ¨ã™ã‚Œã°ï¼ŒMaterialInfoã‚’ç”Ÿæˆï¼Œmaterials_ã«è¿½åŠ ã™ã‚‹ã€‚
+  materials_ã«è¿½åŠ ã—ãŸä½ç½®(ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹)ã‚’æˆ»ã‚Šå€¤ã¨ã—ã¦è¿”ã™ã€‚
 
-  @brief		MaterialInfo¶¬
-
-  @note       materialƒm[ƒh‚ª‘¶İ‚·‚ê‚ÎCMaterialInfo‚ğ¶¬Cmaterials_‚É’Ç‰Á‚·‚éB<BR>
-  materials_‚É’Ç‰Á‚µ‚½ˆÊ’u(ƒCƒ“ƒfƒbƒNƒX)‚ğ–ß‚è’l‚Æ‚µ‚Ä•Ô‚·B<BR>
-
-  @date       2008-04-18 Y.TSUNODA <BR>
-
-  @return	    long  MaterialInfo (materials_)‚ÌƒCƒ“ƒfƒbƒNƒXCmaterialƒm[ƒh‚ª‘¶İ‚µ‚È‚¢ê‡‚Í -1
-
+  @return long MaterialInfo (materials_)ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ï¼Œmaterialãƒãƒ¼ãƒ‰ãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ -1
   @endif
 */
-//==================================================================================================
-long
-BodyInfo_impl::_createMaterialInfo(
-    VrmlMaterialPtr materialNode )		//!< MaterialNode‚Ö‚Ìƒ|ƒCƒ“ƒ^
+int BodyInfo_impl::createMaterialInfo(VrmlMaterialPtr materialNode)
 {
-    // materialƒm[ƒh‚ª‘¶İ‚·‚ê‚Î
-    if( materialNode )
-	{
-            MaterialInfo_var material( new MaterialInfo() );
+    int materialInfoIndex = -1;
 
-            material->ambientIntensity = materialNode->ambientIntensity;
-            material->shininess = materialNode->shininess;
-            material->transparency = materialNode->transparency;
-            for( int j = 0 ; j < 3 ; j++ )
-		{
-                    material->diffuseColor[j] = materialNode->diffuseColor[j];
-                    material->emissiveColor[j] = materialNode->emissiveColor[j];
-                    material->specularColor[j] = materialNode->specularColor[j];
-		}
+    if(materialNode){
+        MaterialInfo_var material(new MaterialInfo());
 
-            // materials_‚É’Ç‰Á‚·‚é
-            long materialsLength = materials_.length();
-            materials_.length( materialsLength + 1 );
-            materials_[materialsLength] = material;
+        material->ambientIntensity = materialNode->ambientIntensity;
+        material->shininess = materialNode->shininess;
+        material->transparency = materialNode->transparency;
 
-            // ’Ç‰Á‚µ‚½ˆÊ’u(materials_)‚ÌƒCƒ“ƒfƒbƒNƒX‚ğ•Ô‚·
-            return materialsLength;
-	}
-    else
-	{
-            return -1;
-	}
+        for(int j = 0 ; j < 3 ; j++){
+            material->diffuseColor[j] = materialNode->diffuseColor[j];
+            material->emissiveColor[j] = materialNode->emissiveColor[j];
+            material->specularColor[j] = materialNode->specularColor[j];
+        }
+
+        // materials_ã«è¿½åŠ ã™ã‚‹
+        materialInfoIndex = materials_.length();
+        materials_.length(materialInfoIndex + 1 );
+        materials_[materialInfoIndex] = material;
+
+    }
+
+    return materialInfoIndex;
 }
 
 
-
-
-//==================================================================================================
 /*!
   @if jp
-
-  @brief      transformŒvZ
-
-  @note       transformƒm[ƒh‚Åw’è‚³‚ê‚½rotation,translation,scale‚ğŒvZ‚µC4x4s—ñ‚É‘ã“ü‚·‚é<BR>
-  ŒvZŒ‹‰Ê‚Í‘æ2ˆø”‚É‘ã“ü‚·‚é<BR>
-
-  @date       2008-04-07 Y.TSUNODA <BR>
-
-  @return     bool true:¬Œ÷ / false:¸”s
-
+  transformãƒãƒ¼ãƒ‰ã§æŒ‡å®šã•ã‚ŒãŸrotation,translation,scaleã‚’è¨ˆç®—ã—ï¼Œ4x4è¡Œåˆ—ã«ä»£å…¥ã™ã‚‹ã€‚
+  è¨ˆç®—çµæœã¯ç¬¬2å¼•æ•°ã«ä»£å…¥ã™ã‚‹ã€‚
   @endif
 */
-//==================================================================================================
-bool
-BodyInfo_impl::_calcTransform(
-    VrmlTransformPtr transform,		//!< transformƒm[ƒh
-    matrix44d&		mOutput )		//!< ŒvZŒ‹‰Ê‚ğ‘ã“ü‚·‚é4x4‚Ìs—ñ
+void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, matrix44d& out_matrix)
 {
-    // rotationƒƒhƒŠƒQƒX‚Ì‰ñ“]²
-    vector3d vRotation( transform->rotation[0], transform->rotation[1], transform->rotation[2] );
+    // rotationãƒ­ãƒ‰ãƒªã‚²ã‚¹ã®å›è»¢è»¸
+    vector3d axis(transform->rotation[0], transform->rotation[1], transform->rotation[2]);
 
-    // ƒƒhƒŠƒQƒXrotation‚ğ3x3s—ñ‚É•ÏŠ·‚·‚é
+    // ãƒ­ãƒ‰ãƒªã‚²ã‚¹rotationã‚’3x3è¡Œåˆ—ã«å¤‰æ›ã™ã‚‹
     matrix33d mRotation;
-    PRIVATE::rodrigues( mRotation, vRotation, transform->rotation[3] );
+    rodrigues(mRotation, axis, transform->rotation[3]);
 
-    // rotation, translation ‚ğ4x4s—ñ‚É‘ã“ü‚·‚é
+    // rotation, translation ã‚’4x4è¡Œåˆ—ã«ä»£å…¥ã™ã‚‹
     matrix44d mTransform;
     mTransform =
         mRotation(0,0), mRotation(0,1), mRotation(0,2), transform->translation[0],
@@ -1344,90 +953,78 @@ BodyInfo_impl::_calcTransform(
 
 
     // ScaleOrientation
-    vector3d scaleOrientation;
-    scaleOrientation =	transform->scaleOrientation[0],
-        transform->scaleOrientation[1],
-        transform->scaleOrientation[2];
+    vector3d scaleOrientation(transform->scaleOrientation[0], transform->scaleOrientation[1], transform->scaleOrientation[2]);
 
-    // ScaleOrientation‚ğ3x3s—ñ‚É•ÏŠ·‚·‚é
+    // ScaleOrientationã‚’3x3è¡Œåˆ—ã«å¤‰æ›ã™ã‚‹
     matrix33d mSO;
-    PRIVATE::rodrigues( mSO, scaleOrientation, transform->scaleOrientation[3] );
+    rodrigues(mSO, scaleOrientation, transform->scaleOrientation[3]);
 
-    // ƒXƒP[ƒŠƒ“ƒO’†S •½sˆÚ“®
+    // ã‚¹ã‚±ãƒ¼ãƒªãƒ³ã‚°ä¸­å¿ƒ å¹³è¡Œç§»å‹•
     matrix44d mTranslation;
-    mTranslation = 1.0, 0.0, 0.0, transform->center[0],
+    mTranslation =
+        1.0, 0.0, 0.0, transform->center[0],
         0.0, 1.0, 0.0, transform->center[1],
         0.0, 0.0, 1.0, transform->center[2],
         0.0, 0.0, 0.0, 1.0;
 
-    // ƒXƒP[ƒŠƒ“ƒO’†S ‹t•½sˆÚ“®
+    // ã‚¹ã‚±ãƒ¼ãƒªãƒ³ã‚°ä¸­å¿ƒ é€†å¹³è¡Œç§»å‹•
     matrix44d mTranslationInv;
-    mTranslationInv = 1.0, 0.0, 0.0, -transform->center[0],
+    mTranslationInv =
+        1.0, 0.0, 0.0, -transform->center[0],
         0.0, 1.0, 0.0, -transform->center[1],
         0.0, 0.0, 1.0, -transform->center[2],
         0.0, 0.0, 0.0, 1.0;
 
-    // ScaleOrientation ‰ñ“]
+    // ScaleOrientation å›è»¢
     matrix44d mScaleOrientation;
-    mScaleOrientation =	mSO(0,0), mSO(0,1), mSO(0,2), 0,
+    mScaleOrientation =
+        mSO(0,0), mSO(0,1), mSO(0,2), 0,
         mSO(1,0), mSO(1,1), mSO(1,2), 0,
         mSO(2,0), mSO(2,1), mSO(2,2), 0,
         0,        0,        0,        1;
 
-    // ƒXƒP[ƒ‹(Šg‘åEk¬—¦)
+    // ã‚¹ã‚±ãƒ¼ãƒ«(æ‹¡å¤§ãƒ»ç¸®å°ç‡)
     matrix44d mScale;
-    mScale = transform->scale[0],                 0.0,                 0.0, 0.0,
-        0.0, transform->scale[1],                 0.0, 0.0,
-        0.0,                 0.0, transform->scale[2], 0.0,
-        0.0,                 0.0,                 0.0, 1.0;
+    mScale =
+        transform->scale[0],    0.0,                    0.0,                    0.0,
+        0.0,                    transform->scale[1],    0.0,                    0.0,
+        0.0,                    0.0,                    transform->scale[2],    0.0,
+        0.0,                    0.0,                    0.0,                    1.0;
 
-    // ScaleOrientation ‹t‰ñ“]
+    // ScaleOrientation é€†å›è»¢
     matrix44d mScaleOrientationInv;
-    mScaleOrientationInv =	mSO(0,0), mSO(1,0), mSO(2,0), 0,
+    mScaleOrientationInv =
+	mSO(0,0), mSO(1,0), mSO(2,0), 0,
         mSO(0,1), mSO(1,1), mSO(2,1), 0,
         mSO(0,2), mSO(1,2), mSO(2,2), 0,
         0,        0,        0,        1; 
 
-    // transform, scale, scaleOrientation ‚Åİ’è‚³‚ê‚½‰ñ“]E•Ài¬•ª‚ğ‡¬‚·‚é
-    mOutput = mTransform
-        * mScaleOrientation * mTranslationInv * mScale * mTranslation * mScaleOrientationInv;
-
-    return true;
+    // transform, scale, scaleOrientation ã§è¨­å®šã•ã‚ŒãŸå›è»¢ãƒ»ä¸¦é€²æˆåˆ†ã‚’åˆæˆã™ã‚‹
+    out_matrix = mTransform * mScaleOrientation * mTranslationInv * mScale * mTranslation * mScaleOrientationInv;
 }
 
 
-
-
-//==================================================================================================
 /*!
   @if jp
-
-  @brief      ModelFile(.wrl)‚ÌƒfƒBƒŒƒNƒgƒŠƒpƒX‚ğæ“¾
-
-  @note       url_‚ÌƒpƒX‚©‚çURLƒXƒL[ƒ€Cƒtƒ@ƒCƒ‹–¼‚ğœ‹‚µ‚½ƒfƒBƒŒƒNƒgƒŠƒpƒX•¶š—ñ‚ğ•Ô‚·<BR>
-
-  @date       2008-04-19 Y.TSUNODA <BR>
-
-  @return     string ModelFile(.wrl)‚ÌƒfƒBƒŒƒNƒgƒŠƒpƒX•¶š—ñ
-
+  @note url_ã®ãƒ‘ã‚¹ã‹ã‚‰URLã‚¹ã‚­ãƒ¼ãƒ ï¼Œãƒ•ã‚¡ã‚¤ãƒ«åã‚’é™¤å»ã—ãŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ‘ã‚¹æ–‡å­—åˆ—ã‚’è¿”ã™ã€‚
+  @todo boost::filesystem ã§å®Ÿè£…ã—ãªãŠã™
+  @return string ModelFile(.wrl)ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ‘ã‚¹æ–‡å­—åˆ—
   @endif
 */
-//==================================================================================================
-string
-BodyInfo_impl::_getModelFileDirPath()
+string BodyInfo_impl::getModelFileDirPath()
 {
-    // BodyInfo::url_ ‚©‚ç URLƒXƒL[ƒ€‚ğíœ‚·‚é
+    // BodyInfo::url_ ã‹ã‚‰ URLã‚¹ã‚­ãƒ¼ãƒ ã‚’å‰Šé™¤ã™ã‚‹
     string filepath = deleteURLScheme( url_ );
 
-    // '/' ‚Ü‚½‚Í '\' ‚ÌÅŒã‚ÌˆÊ’u‚ğæ“¾‚·‚é
+    // '/' ã¾ãŸã¯ '\' ã®æœ€å¾Œã®ä½ç½®ã‚’å–å¾—ã™ã‚‹
     size_t pos = filepath.find_last_of( "/\\" );
 
     string dirPath = "";
 
-    // ‘¶İ‚·‚ê‚ÎC
+    // å­˜åœ¨ã™ã‚Œã°ï¼Œ
     if( pos != string::npos )
 	{
-            // ƒfƒBƒŒƒNƒgƒŠƒpƒX•¶š—ñ
+            // ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ‘ã‚¹æ–‡å­—åˆ—
             dirPath = filepath;
             dirPath.resize( pos + 1 );
 	}

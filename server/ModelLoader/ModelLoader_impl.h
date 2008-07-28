@@ -1,21 +1,27 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
+
 /*! @file
-  @author S.NAKAOKA
-*/
-
-#ifndef MODELLOADER_IMPL_H_INCLUDED
-#define MODELLOADER_IMPL_H_INCLUDED
-
-/**
    \file ModelLoader/server/ModelLoader_impl.h
+   @author Shin'ichiro Nakaoka
 */
 
-#include "BodyInfo_impl.h"
-
-#include <OpenHRP/Corba/ORBwrap.h>
-#include <OpenHRP/Corba/ModelLoader.h>
+#ifndef OPENHRP_MODELLOADER_IMPL_H_INCLUDED
+#define OPENHRP_MODELLOADER_IMPL_H_INCLUDED
 
 #include <map>
 #include <string>
+#include <OpenHRP/Corba/ORBwrap.h>
+#include <OpenHRP/Corba/ModelLoader.h>
+
+#include "BodyInfo_impl.h"
 
 
 namespace OpenHRP {
@@ -33,7 +39,7 @@ namespace OpenHRP {
     public:
 		
         ModelLoader_impl(CORBA::ORB_ptr orb, PortableServer::POA_ptr poa);
-        ~ModelLoader_impl();
+        virtual ~ModelLoader_impl();
 		
         virtual PortableServer::POA_ptr _default_POA();
 		

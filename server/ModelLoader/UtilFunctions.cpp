@@ -207,4 +207,35 @@ namespace OpenHRP {
             }
     }
 
+
+    /*!
+      @if jp
+      @brief URLスキーム(file:)文字列を削除
+      @return string URLスキーム文字列を取り除いた文字列
+      @endif
+    */
+    string deleteURLScheme(string url)
+    {
+        static const string fileProtocolHeader1("file:///");
+        static const string fileProtocolHeader2("file://");
+        static const string fileProtocolHeader3("file:");
+        
+        size_t pos = url.find( fileProtocolHeader1 );
+        if( 0 == pos ) {
+            url.erase( 0, fileProtocolHeader1.size() );
+        } else {
+            size_t pos = url.find( fileProtocolHeader2 );
+            if( 0 == pos ) {
+                url.erase( 0, fileProtocolHeader2.size() );
+            } else {
+                size_t pos = url.find( fileProtocolHeader3 );
+                if( 0 == pos ) {
+                    url.erase( 0, fileProtocolHeader3.size() );
+                }
+            }
+        }
+        
+        return url;
+    }
+
 };

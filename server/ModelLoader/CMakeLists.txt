@@ -4,7 +4,7 @@ set(program openhrp-model-loader)
 set(sources
   ModelLoader_impl.cpp
   BodyInfo_impl.cpp
-  VrmlFieldCopyUtil.cpp
+  UtilFunctions.cpp
   server.cpp )
 
 add_executable(${program} ${sources})
