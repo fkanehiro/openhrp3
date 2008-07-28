@@ -26,16 +26,6 @@ using namespace boost;
 
 namespace {
 
-    enum {
-	PROTO_UNDEFINED = 0,
-	PROTO_HUMANOID,
-	PROTO_JOINT,
-	PROTO_SEGMENT,
-	PROTO_SENSOR,
-	PROTO_HARDWARECOMPONENT,
-    };
-    
-    
     typedef void (ModelNodeSet::*ProtoCheckFunc)(void);
     
     struct ProtoInfo
@@ -48,6 +38,7 @@ namespace {
     
     typedef map<string,ProtoInfo> ProtoNameToInfoMap;
     ProtoNameToInfoMap protoNameToInfoMap;
+
 }
 
 
@@ -312,72 +303,87 @@ void ModelNodeSet::extractJointNodes()
 JointNodeSetPtr ModelNodeSet::addJointNodeSet(VrmlProtoInstancePtr jointNode)
 {
     numJointNodes_++;
-    messageIndent_ += 2;
 
-    string message("Joint node ");
-    message += jointNode->defName;
-    putMessage(message);
+    putMessage(string("Joint node") + jointNode->defName);
 
     JointNodeSetPtr jointNodeSet(new JointNodeSet());
 
     jointNodeSet->jointNode = jointNode;
 
     MFNode& childNodes = jointNode->fields["children"].mfNode();
-    extractChildNodes(jointNodeSet, childNodes);
 
-    messageIndent_ -= 2;
+    ProtoIdSet acceptableProtoIds;
+    acceptableProtoIds.set(PROTO_JOINT);
+    acceptableProtoIds.set(PROTO_SEGMENT);
+    acceptableProtoIds.set(PROTO_SENSOR);
+    acceptableProtoIds.set(PROTO_HARDWARECOMPONENT);
+    
+    extractChildNodes(jointNodeSet, childNodes, acceptableProtoIds);
 
     return jointNodeSet;
 }
 
 
-void ModelNodeSet::extractChildNodes(JointNodeSetPtr jointNodeSet, MFNode& childNodes)
+void ModelNodeSet::extractChildNodes
+(JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds)
 {
     for(size_t i = 0; i < childNodes.size(); i++){
         VrmlNode* childNode = childNodes[i].get();
 
         if(childNode->isCategoryOf(GROUPING_NODE)){
             VrmlGroup* groupNode = static_cast<VrmlGroup*>(childNode);
-            extractChildNodes(jointNodeSet, groupNode->children);
+            extractChildNodes(jointNodeSet, groupNode->children, acceptableProtoIds);
 
         } else if(childNode->isCategoryOf(PROTO_INSTANCE_NODE)){
             VrmlProtoInstance* protoInstance = static_cast<VrmlProtoInstance*>(childNode);
 
             int id = PROTO_UNDEFINED;
-            ProtoNameToInfoMap::iterator p = protoNameToInfoMap.find( protoInstance->proto->protoName );
+            const string& protoName = protoInstance->proto->protoName;
+            ProtoNameToInfoMap::iterator p = protoNameToInfoMap.find(protoName);
 			
             if(p != protoNameToInfoMap.end()){
                 id = p->second.id;
             }
 
-            switch(id){
-            case PROTO_SEGMENT:
-                {
-                    if(jointNodeSet->segmentNode){
-                        const string& jointName = jointNodeSet->jointNode->defName;
-                        throw Exception((string("Joint node ") + jointName +
-                                         "includes multipe segment nodes, which is not supported."));
+            if(!acceptableProtoIds.test(id)){
+                throw Exception(protoName + " node is not in a correct place.");
+            } else {
+
+                messageIndent_ += 2;
+
+                switch(id){
+                
+                case PROTO_JOINT:
+                    jointNodeSet->childJointNodeSets.push_back(addJointNodeSet(protoInstance));
+                    break;
+
+                case PROTO_SENSOR:
+                    jointNodeSet->sensorNodes.push_back(protoInstance);
+                    putMessage(protoName + protoInstance->defName);
+                    break;
+
+                case PROTO_SEGMENT:
+                    {
+                        if(jointNodeSet->segmentNode){
+                            const string& jointName = jointNodeSet->jointNode->defName;
+                            throw Exception((string("Joint node ") + jointName +
+                                             "includes multipe segment nodes, which is not supported."));
+                        }
+                        jointNodeSet->segmentNode = protoInstance;
+                        putMessage(string("Segment node ") + protoInstance->defName);
+
+                        MFNode& childNodes = protoInstance->fields["children"].mfNode();
+                        ProtoIdSet acceptableChildProtoIds;
+                        acceptableChildProtoIds.set(PROTO_SENSOR);
+                        extractChildNodes(jointNodeSet, childNodes, acceptableChildProtoIds);
                     }
-                    jointNodeSet->segmentNode = protoInstance;
+                    break;
+
+                default:
+                    break;
                 }
-                break;
 
-            case PROTO_JOINT:
-                jointNodeSet->childJointNodeSets.push_back( addJointNodeSet(protoInstance) );
-                break;
-
-            case PROTO_SENSOR:
-                jointNodeSet->sensorNodes.push_back(protoInstance);
-                break;
-
-            default:
-                {
-                    TProtoFieldMap::iterator p = protoInstance->fields.find( "children" );
-                    if(p != protoInstance->fields.end()) {
-                        VrmlVariantField& children = p->second;
-                        extractChildNodes(jointNodeSet, children.mfNode());
-                    }
-                }
+                messageIndent_ -= 2;
             }
         }
     }
