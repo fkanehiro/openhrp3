@@ -1,13 +1,25 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
+
 /**
    \file ModelLoader/server/ModelLoader_impl.cpp
-   \author S.NAKAOKA
+   \author Shin'ichiro Nakaoka
 */
 
 #include "ModelLoader_impl.h"
-#include <iostream>
 
+#include <iostream>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include "UtilFunctions.h"
 
 using namespace std;
 using namespace OpenHRP;
@@ -50,29 +62,23 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url0)
 
     BodyInfo_impl* bodyInfo = 0;
     
-    // URLschemeを取り除いたファイルパスを取得する
-    string filename( BodyInfo_impl::deleteURLScheme( url ) );
+    string filename(deleteURLScheme(url));
     struct stat statbuff;
     time_t mtime = 0;
 
-    // ファイル url0 の最終修正時刻を取得し，取得に成功したならば
-    if( stat( filename.c_str(), &statbuff ) == 0 )
-	{
-            mtime = statbuff.st_mtime;
-	}
+    // get a file modification time
+    if( stat( filename.c_str(), &statbuff ) == 0 ){
+        mtime = statbuff.st_mtime;
+    }
 
     UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
-    if( ( p != urlToBodyInfoMap.end() )
-	&& ( mtime == p->second->getLastUpdateTime() ) )
-	{
-            bodyInfo = p->second;
-            cout << string("cache found for ") + url << endl;
-        }
-    else
-	{
-            bodyInfo = loadBodyInfoFromModelFile(url);
-            bodyInfo->setLastUpdateTime( mtime );
-        }
+    if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime()){
+        bodyInfo = p->second;
+        cout << string("cache found for ") + url << endl;
+    } else {
+        bodyInfo = loadBodyInfoFromModelFile(url);
+        bodyInfo->setLastUpdateTime( mtime );
+    }
 
     return bodyInfo->_this();
 }

@@ -8,26 +8,31 @@
  * General Robotix Inc. 
  */
 
-#ifndef MODEL_LOADER_UTIL_H_INCLUDED
-#define MODEL_LOADER_UTIL_H_INCLUDED
+/**
+   @author Shin'ichiro Nakaoka
+*/
+
+#ifndef OPENHRP_BASE_MODEL_LOADER_UTIL_H_INCLUDED
+#define OPENHRP_BASE_MODEL_LOADER_UTIL_H_INCLUDED
 
 #include "hrpModelExportDef.h"
-#include "Body.h"
-
-#include <OpenHRP/Corba/ORBwrap.h>
-#include <OpenHRP/Corba/ModelLoader.h>
 
 #include <string>
 #include <sstream>
 
+#include <OpenHRP/Corba/ORBwrap.h>
+#include <OpenHRP/Corba/ModelLoader.h>
+
+#include "Body.h"
+
 
 namespace OpenHRP
 {
-	HRPMODEL_EXPORT BodyPtr loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo);
-	HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb);
-	HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt);
-	HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, int argc, char *argv[]);
-	HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, std::istringstream& strm);
+    HRPMODEL_EXPORT BodyPtr loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo);
+    HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb);
+    HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt);
+    HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, int argc, char *argv[]);
+    HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, std::istringstream& strm);
 };
 
 

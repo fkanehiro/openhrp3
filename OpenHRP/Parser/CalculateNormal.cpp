@@ -36,8 +36,8 @@ static const double PI = 3.14159265358979323846;
 //==================================================================================================
 bool
 CalculateNormal::calculateNormalsOfVertex( 
-	vector<vector3d> vertexList,		//!< ’¸“_ŒQ
-	vector<vector3i> triangleList,		//!< ŽOŠpƒƒbƒVƒ…ŒQ
+	const vector<vector3d>& vertexList,		//!< ’¸“_ŒQ
+	const vector<vector3i>& triangleList,		//!< ŽOŠpƒƒbƒVƒ…ŒQ
 	double creaseAngle )				//!< Ü‚è–ÚŠp“x
 {
 	size_t normalsOfMeshNum = _normalsOfMesh.size();
@@ -159,8 +159,8 @@ CalculateNormal::calculateNormalsOfVertex(
 //==================================================================================================
 bool
 CalculateNormal::calculateNormalsOfMesh( 
-	vector<vector3d> vertexList,		//!< ’¸“_ŒQ
-	vector<vector3i> triangleList )		//!< ŽOŠpƒƒbƒVƒ…ŒQ
+	const vector<vector3d>& vertexList,		//!< ’¸“_ŒQ
+	const vector<vector3i>& triangleList )		//!< ŽOŠpƒƒbƒVƒ…ŒQ
 {
 	// ŽOŠpƒƒbƒVƒ…ŒQ‚Ì–@üƒŠƒXƒgC’¸“_EŽOŠpƒƒbƒVƒ…‘Î‰žƒŠƒXƒg‚ðƒNƒŠƒA‚·‚é
 	_normalsOfMesh.clear();

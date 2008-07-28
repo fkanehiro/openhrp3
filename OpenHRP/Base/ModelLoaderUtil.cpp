@@ -1,4 +1,3 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -8,13 +7,17 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  * General Robotix Inc. 
  */
-/** @file DynamicsSimulator/server/convCORBAUtil.cpp
- *
- */
 
-#include <OpenHRPCommon.h>
-#include <stack>
+/**
+   @author Shin'ichiro Nakaoka
+   @author Ergovision
+*/
+
 #include "ModelLoaderUtil.h"
+
+#include <stack>
+#include <OpenHRP/Corba/OpenHRPCommon.h>
+
 #include "Link.h"
 #include "Sensor.h"
 #include "tvmet3d.h"
@@ -22,339 +25,291 @@
 using namespace OpenHRP;
 using namespace std;
 
-static const bool debugMode = false;
+
+namespace {
+
+    const bool debugMode = false;
+
+    ostream& operator<<(ostream& os, DblSequence_var& data)
+    {
+        int size = data->length();
+        for(int i=0; i < size-1; ++i){
+            cout << data[i] << ", ";
+        }
+        cout << data[size-1];
+
+        return os;
+    }
 
 
-static ostream& operator<<(ostream& os, DblSequence_var& data)
-{
-	int size = data->length();
-	for(int i=0; i < size-1; ++i){
-		cout << data[i] << ", ";
-	}
-	cout << data[size-1];
-
-	return os;
-}
+    ostream& operator<<(ostream& os, DblArray3_var& data)
+    {
+        cout << data[CORBA::ULong(0)] << ", " << data[CORBA::ULong(1)] << ", " << data[CORBA::ULong(2)];
+        return os;
+    }
 
 
-static ostream& operator<<(ostream& os, DblArray3_var& data)
-{
-	cout << data[CORBA::ULong(0)] << ", " << data[CORBA::ULong(1)] << ", " << data[CORBA::ULong(2)];
-	return os;
-}
+    ostream& operator<<(ostream& os, DblArray9_var& data)
+    {
+        for(CORBA::ULong i=0; i < 8; ++i){
+            cout << data[i] << ", ";
+        }
+        cout << data[CORBA::ULong(9)];
+        return os;
+    }
 
 
-static ostream& operator<<(ostream& os, DblArray9_var& data)
-{
-	for(CORBA::ULong i=0; i < 8; ++i){
-		cout << data[i] << ", ";
-	}
-	cout << data[CORBA::ULong(9)];
-	return os;
-}
+    void dumpBodyInfo(BodyInfo_ptr bodyInfo)
+    {
+        cout << "<<< CharacterInfo >>>\n";
 
+        CORBA::String_var charaName = bodyInfo->name();
 
+        cout << "name: " << charaName << "\n";
 
-static void dumpBodyInfo(BodyInfo_ptr bodyInfo)
-{
-	cout << "<<< CharacterInfo >>>\n";
+        LinkInfoSequence_var linkInfoSeq = bodyInfo->links();
 
-	CORBA::String_var charaName = bodyInfo->name();
+        int numLinks = linkInfoSeq->length();
+        cout << "num links: " << numLinks << "\n";
 
-	cout << "name: " << charaName << "\n";
+        for(int i=0; i < numLinks; ++i){
 
-	LinkInfoSequence_var linkInfoSeq = bodyInfo->links();
+            const LinkInfo& linkInfo = linkInfoSeq[i];
+            CORBA::String_var linkName = linkInfo.name;
 
-	int numLinks = linkInfoSeq->length();
-	cout << "num links: " << numLinks << "\n";
+            cout << "<<< LinkInfo: " << linkName << " (index " << i << ") >>>\n";
+            cout << "parentIndex: " << linkInfo.parentIndex << "\n";
 
-	for(int i=0; i < numLinks; ++i){
+            const ShortSequence& childIndices = linkInfo.childIndices;
+            if(childIndices.length() > 0){
+                cout << "childIndices: ";
+                for(CORBA::ULong i=0; i < childIndices.length(); ++i){
+                    cout << childIndices[i] << " ";
+                }
+                cout << "\n";
+            }
 
-		LinkInfo linkInfo = linkInfoSeq[i];
-		CORBA::String_var linkName = linkInfo.name;
+            const SensorInfoSequence& sensorInfoSeq = linkInfo.sensors;
 
-		cout << "<<< LinkInfo: " << linkName << " (index " << i << ") >>>\n";
-		cout << "parentIndex: " << linkInfo.parentIndex << "\n";
-		cout << "childIndices: " << linkInfo.childIndices[0] << "\n";
+            int numSensors = sensorInfoSeq.length();
+            cout << "num sensors: " << numSensors << "\n";
 
-		SensorInfoSequence sensorInfoSeq = linkInfo.sensors;
+            for(int j=0; j < numSensors; ++j){
+                cout << "<<< SensorInfo >>>\n";
+                const SensorInfo& sensorInfo = sensorInfoSeq[j];
+                cout << "id: " << sensorInfo.id << "\n";
+                cout << "type: " << sensorInfo.type << "\n";
 
-		int numSensors = sensorInfoSeq.length();
-		cout << "num sensors: " << numSensors << "\n";
+                CORBA::String_var sensorName = sensorInfo.name;
+                cout << "name: \"" << sensorName << "\"\n";
 
-		for(int j=0; j < numSensors; ++j){
-			cout << "<<< SensorInfo >>>\n";
-			SensorInfo sensorInfo = sensorInfoSeq[j];
-			cout << "id: " << sensorInfo.id << "\n";
-			cout << "type: " << sensorInfo.type << "\n";
+                const DblArray3& p = sensorInfo.translation;
+                cout << "translation: " << p[0] << ", " << p[1] << ", " << p[2] << "\n";
 
-			CORBA::String_var sensorName = sensorInfo.name;
-			cout << "name: \"" << sensorName << "\"\n";
-
-			// ##### [TODO] #####
-			// maxValue が新IDLから削除されている
-			//DblSequence_var maxValue = sensorInfo->maxValue();
-			//新IDLでは、maxValue   SensorInfoから削除されている。
-			//cout << "maxValue: " << maxValue << "\n";
-
-			DblArray3 translation;
-			for( int k = 0 ; k < 3 ; ++k ) translation[k] = sensorInfo.translation[k];
-			cout << "translation: " << translation << "\n";
-
-			DblArray4 rotation;
-			for( int k = 0 ; k < 4 ; ++k ) rotation[k] = sensorInfo.rotation[k];
-			cout << "rotation: " << rotation << "\n";
+                const DblArray4& r = sensorInfo.rotation;
+                cout << "rotation: " << r[0] << ", " << r[1] << ", " << r[2] << ", " << r[3] << "\n";
 			
-		}
-	}
-}
+            }
+        }
+
+        cout.flush();
+    }
 
 
-static void createSensors(BodyPtr body, Link* link,  SensorInfoSequence iSensors, const matrix33& Rs)
-{
-	int numSensors = iSensors.length();
+    void createSensors(BodyPtr body, Link* link, const SensorInfoSequence& sensorInfoSeq, const matrix33& Rs)
+    {
+        int numSensors = sensorInfoSeq.length();
 
-	for(int i=0 ; i < numSensors ; ++i )
-	{
-		SensorInfo iSensor = iSensors[i];
+        for(int i=0 ; i < numSensors ; ++i ) {
+            const SensorInfo& sensorInfo = sensorInfoSeq[i];
 
-		int id = iSensor.id;
-		if(id < 0)
-		{
-			std::cerr << "Warning:  sensor ID is not given to sensor " << iSensor.name
-					  << "of model " << body->modelName << "." << std::endl;
-		}
-		else
-		{
-			// センサタイプを判定する
-			int sensorType = Sensor::COMMON;
+            int id = sensorInfo.id;
+            if(id < 0) {
+                std::cerr << "Warning:  sensor ID is not given to sensor " << sensorInfo.name
+                          << "of model " << body->modelName << "." << std::endl;
+            } else {
+                int sensorType = Sensor::COMMON;
 
-			//switch(iSensor->type()) {
-			//switch(iSensor.type) {
-			//case ::FORCE_SENSOR:		sensorType = Sensor::FORCE;				break;
-			//case ::RATE_GYRO:			sensorType = Sensor::RATE_GYRO;			break;
-			//case ::ACCELERATION_SENSOR: sensorType = Sensor::ACCELERATION;		break;
-			//case ::PRESSURE_SENSOR:		sensorType = Sensor::PRESSURE;			break;
-			//case ::PHOTO_INTERRUPTER:	sensorType = Sensor::PHOTO_INTERRUPTER; break;
-			//case ::VISION_SENSOR:		sensorType = Sensor::VISION;			break;
-			//case ::TORQUE_SENSOR:		sensorType = Sensor::TORQUE;			break;
-			//}
+                CORBA::String_var type0 = sensorInfo.type;
+                string type(type0);
 
-			CORBA::String_var type0 = iSensor.type;
-			string type(type0);
+                if(type == "Force")             { sensorType = Sensor::FORCE; }
+                else if(type == "RateGyro")     { sensorType = Sensor::RATE_GYRO; }
+                else if(type == "Acceleration")	{ sensorType = Sensor::ACCELERATION; }
+                else if(type == "Vision")       { sensorType = Sensor::VISION; }
 
-			if( type == "Force" )				{ sensorType = Sensor::FORCE; }			// 6軸力センサ
-			else if( type == "RateGyro" )		{ sensorType = Sensor::RATE_GYRO; }		// レートジャイロセンサ
-			else if( type == "Acceleration" )	{ sensorType = Sensor::ACCELERATION; }	// 加速度センサ
-			else if( type == "Vision" )			{ sensorType = Sensor::VISION; }		// ビジョンセンサ
+                CORBA::String_var name0 = sensorInfo.name;
+                string name(name0);
 
-			CORBA::String_var name0 = iSensor.name;
-			string name(name0);
+                Sensor* sensor = body->createSensor(link, sensorType, id, name);
 
-			Sensor* sensor = body->createSensor(link, sensorType, id, name);
+                if(sensor) {
+                    const DblArray3& p = sensorInfo.translation;
+                    sensor->localPos = Rs * vector3(p[0], p[1], p[2]);
 
-			if(sensor)
-			{
-				DblArray3 p;
-				for( int j = 0 ; j < 3 ; ++j ) p[j]= iSensor.translation[j];
-				sensor->localPos = Rs * vector3( p[0u], p[1u], p[2u] );
-
-				//DblArray4 rot;
-				//for( int j = 0 ; j < 4 ; ++j ) rot[j] = iSensor.rotation[j];
-				//matrix33 R;
-				//getMatrix33FromRowMajorArray( R, rot );
-
-				vector3 rot( iSensor.rotation[0], iSensor.rotation[1], iSensor.rotation[2] );
-				matrix33 R = rodrigues( rot, iSensor.rotation[3] );
-
-				sensor->localR = Rs * R;
- 			}
-		}
-	}
-}
+                    const vector3 axis(sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2]);
+                    const matrix33 R(rodrigues(axis, sensorInfo.rotation[3]));
+                    sensor->localR = Rs * R;
+                }
+            }
+        }
+    }
 
 
-static inline double getLimitValue(DblSequence limitseq, double defaultValue)
-{
-	return (limitseq.length() == 0) ? defaultValue : limitseq[0];
-}
+    inline double getLimitValue(DblSequence limitseq, double defaultValue)
+    {
+        return (limitseq.length() == 0) ? defaultValue : limitseq[0];
+    }
 
 
-static OpenHRP::Link* createLink
-(BodyPtr body, int index, LinkInfoSequence_var iLinks, const matrix33& parentRs)
-{
-	LinkInfo iLink = iLinks[index];
-	int jointId = iLink.jointId;
+    OpenHRP::Link* createLink(BodyPtr body, int index, LinkInfoSequence_var& linkInfoSeq, const matrix33& parentRs)
+    {
+        const LinkInfo& linkInfo = linkInfoSeq[index];
+        int jointId = linkInfo.jointId;
+        
+        OpenHRP::Link* link = NULL;
+        link = new Link;
+        
+        CORBA::String_var name0 = linkInfo.name;
+        link->name = string( name0 );
+        link->jointId = jointId;
+        
+        vector3 relPos(linkInfo.translation[0], linkInfo.translation[1], linkInfo.translation[2]);
+        link->b = parentRs * relPos;
 
-	OpenHRP::Link* link = NULL;
-	link = new Link;
+        vector3 rotAxis(linkInfo.rotation[0], linkInfo.rotation[1], linkInfo.rotation[2]);
+        matrix33 R = rodrigues(rotAxis, linkInfo.rotation[3]);
+        link->Rs = (parentRs * R);
+        const matrix33& Rs = link->Rs;
 
-	CORBA::String_var name0 = iLink.name;
-	link->name = string( name0 );
-	link->jointId = jointId;
+        CORBA::String_var jointType = linkInfo.jointType;
+        const std::string jt( jointType );
 
-	DblArray3 b;
-	for( int i = 0 ; i < 3 ; ++i ) 	b[i] = iLink.translation[i];
+        if(jt == "fixed" ){
+            link->jointType = Link::FIXED_JOINT;
+        } else if(jt == "free" ){
+            link->jointType = Link::FREE_JOINT;
+        } else if(jt == "rotate" ){
+            link->jointType = Link::ROTATIONAL_JOINT;
+        } else if(jt == "slide" ){
+            link->jointType = Link::SLIDE_JOINT;
+        } else {
+            link->jointType = Link::FREE_JOINT;
+        }
 
-	vector3 relPos( b[0u], b[1u], b[2u] );
-	link->b = parentRs * relPos;
+        if(jointId < 0){
+            if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
+                std::cerr << "Warning:  Joint ID is not given to joint " << link->name
+                          << " of model " << body->modelName << "." << std::endl;
+            }
+        }
 
-	vector3 rotAxis( iLink.rotation[0], iLink.rotation[1], iLink.rotation[2] );
-	matrix33 R = rodrigues( rotAxis, iLink.rotation[3] );
-	link->Rs = (parentRs * R);
-	const matrix33& Rs = link->Rs;
+        link->a = 0.0;
+        link->d = 0.0;
 
-	CORBA::String_var jointType = iLink.jointType;
-	const std::string jt( jointType );
+        vector3 axis( Rs * vector3(linkInfo.jointAxis[0], linkInfo.jointAxis[1], linkInfo.jointAxis[2]));
 
-	if(jt == "fixed" ){
-	    link->jointType = Link::FIXED_JOINT;
-	} else if(jt == "free" ){
-	    link->jointType = Link::FREE_JOINT;
-	} else if(jt == "rotate" ){
-	    link->jointType = Link::ROTATIONAL_JOINT;
-	} else if(jt == "slide" ){
-	    link->jointType = Link::SLIDE_JOINT;
-	} else {
-	    link->jointType = Link::FREE_JOINT;
-	}
+        if(link->jointType == Link::ROTATIONAL_JOINT){
+            link->a = axis;
+        } else if(link->jointType == Link::SLIDE_JOINT){
+            link->d = axis;
+        }
 
-	if(jointId < 0){
-		if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
-			std::cerr << "Warning:  Joint ID is not given to joint " << link->name
-					  << " of model " << body->modelName << "." << std::endl;
-		}
-	}
+        link->m  = linkInfo.mass;
+        link->Ir = linkInfo.rotorInertia;
 
-	link->a = 0.0;
-	link->d = 0.0;
+        link->gearRatio     = linkInfo.gearRatio;
+        link->rotorResistor = linkInfo.rotorResistor;
+        link->torqueConst   = linkInfo.torqueConst;
+        link->encoderPulse  = linkInfo.encoderPulse;
 
-	DblArray3 a;
-	for( int i = 0 ; i < 3 ; i++ ) a[i] = iLink.jointAxis[i];
-	vector3 axis( Rs * vector3( a[0u], a[1u], a[2u] ) );
+        link->Jm2 = link->Ir * link->gearRatio * link->gearRatio;
 
-	if(link->jointType == Link::ROTATIONAL_JOINT){
-		link->a = axis;
-	} else if(link->jointType == Link::SLIDE_JOINT){
-		link->d = axis;
-	}
+        DblSequence ulimit  = linkInfo.ulimit;
+        DblSequence llimit  = linkInfo.llimit;
+        DblSequence uvlimit = linkInfo.uvlimit;
+        DblSequence lvlimit = linkInfo.lvlimit;
 
-	link->m             = iLink.mass;
-	link->Ir            = iLink.rotorInertia;
+        double maxlimit = numeric_limits<double>::max();
 
-	//equivalentInertia は、新IDLから削除
-	//link->Jm2	        = iLink->equivalentInertia();
+        link->ulimit  = getLimitValue(ulimit,  +maxlimit);
+        link->llimit  = getLimitValue(llimit,  -maxlimit);
+        link->uvlimit = getLimitValue(uvlimit, +maxlimit);
+        link->lvlimit = getLimitValue(lvlimit, -maxlimit);
 
-	link->gearRatio		= iLink.gearRatio;
-	link->rotorResistor	= iLink.rotorResistor;
-	link->torqueConst	= iLink.torqueConst;
-	link->Jm2 = link->Ir * link->gearRatio * link->gearRatio;
-	link->encoderPulse	= iLink.encoderPulse;
+        link->c = Rs * vector3(linkInfo.centerOfMass[0], linkInfo.centerOfMass[1], linkInfo.centerOfMass[2]);
 
-	DblSequence ulimit  = iLink.ulimit;
-	DblSequence llimit  = iLink.llimit;
-	DblSequence uvlimit = iLink.uvlimit;
-	DblSequence lvlimit = iLink.lvlimit;
+        matrix33 Io;
+        getMatrix33FromRowMajorArray(Io, linkInfo.inertia);
+        link->I = Rs * Io;
 
-	double maxlimit = numeric_limits<double>::max();
-
-	link->ulimit  = getLimitValue(ulimit,  +maxlimit);
-	link->llimit  = getLimitValue(llimit,  -maxlimit);
-	link->uvlimit = getLimitValue(uvlimit, +maxlimit);
-	link->lvlimit = getLimitValue(lvlimit, -maxlimit);
-
-	DblArray3 rc;
-	for( int i = 0 ; i < 3 ; ++i ) rc[i] = iLink.centerOfMass[i];
-	link->c = Rs * vector3( rc[0u], rc[1u], rc[2u] );
-
-	DblArray9 I;
-	for( int i = 0 ; i < 9 ; ++i ) I[i]= iLink.inertia[i];
-
-	matrix33 Io;
-	getMatrix33FromRowMajorArray(Io, I);
-	link->I = Rs * Io;
-
-	// a stack is used for keeping the same order of children
-	std::stack<Link*> children;
+        // a stack is used for keeping the same order of children
+        std::stack<Link*> children;
 	
-	//##### [Changed] Link Structure (convert NaryTree to BinaryTree).
-	int childNum = iLink.childIndices.length();
-	for( int i = 0 ; i < childNum ; i++ )
-	{
-		int childIndex = iLink.childIndices[i];
-		Link* childLink = createLink( body, childIndex, iLinks, Rs );
-	    if( childLink )
-		{
-			children.push( childLink );
-		}
-	}
-	while(!children.empty()){
-		link->addChild(children.top());
-		children.pop();
-	}
+        //##### [Changed] Link Structure (convert NaryTree to BinaryTree).
+        int childNum = linkInfo.childIndices.length();
+        for(int i = 0 ; i < childNum ; i++) {
+            int childIndex = linkInfo.childIndices[i];
+            Link* childLink = createLink(body, childIndex, linkInfoSeq, Rs);
+            if(childLink) {
+                children.push(childLink);
+            }
+        }
+        while(!children.empty()){
+            link->addChild(children.top());
+            children.pop();
+        }
+        
+        createSensors(body, link, linkInfo.sensors, Rs);
 
-	createSensors( body, link, iLink.sensors, Rs );
-
-	return link;
+        return link;
+    }
 }
 
 
 
-BodyPtr OpenHRP::loadBodyFromBodyInfo( BodyInfo_ptr bodyInfo )
+BodyPtr OpenHRP::loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo)
 {
-	if( debugMode )
-	{
-		dumpBodyInfo( bodyInfo );
-	}
+    cout << "hogehoge" << endl;
+    
+    if(debugMode){
+        dumpBodyInfo(bodyInfo);
+    }
 	
-	BodyPtr body(new Body());
+    BodyPtr body(new Body());
 
-	CORBA::String_var name = bodyInfo->name();
-	body->modelName = name;
+    CORBA::String_var name = bodyInfo->name();
+    body->modelName = name;
 
-	int n = bodyInfo->links()->length();
-	LinkInfoSequence_var iLinks = bodyInfo->links();
+    int n = bodyInfo->links()->length();
+    LinkInfoSequence_var linkInfoSeq = bodyInfo->links();
 
-	int rootIndex = -1;
+    int rootIndex = -1;
 
-	for(int i=0; i < n; ++i)
-	{
-		if(iLinks[i].parentIndex < 0)
-		{
-			if( rootIndex < 0 )
-			{
-				rootIndex = i;
-			} else {
-				body = 0; // more than one root !
-			}
-		}
-	}
-	if(rootIndex < 0){
-		body = 0; // no root !
-	}
+    for(int i=0; i < n; ++i){
+        if(linkInfoSeq[i].parentIndex < 0){
+            if(rootIndex < 0){
+                rootIndex = i;
+            } else {
+                body = 0; // more than one root !
+            }
+        }
+    }
+    if(rootIndex < 0){
+        body = 0; // no root !
+    }
 
-	if( body ){
-		matrix33 Rs( tvmet::identity<matrix33>() );
-		Link* rootLink = createLink(body, rootIndex, iLinks, Rs);
-		body->setRootLink(rootLink);
+    if(body){
+        matrix33 Rs(tvmet::identity<matrix33>());
+        Link* rootLink = createLink(body, rootIndex, linkInfoSeq, Rs);
+        body->setRootLink(rootLink);
+        body->setDefaultRootPosition(rootLink->b, rootLink->Rs);
 
-		DblArray3 p;
-		for( int i = 0 ; i < 3 ; ++i ) p[i] = iLinks[rootIndex].translation[i];
-		vector3 pos( p[0u], p[1u], p[2u] );
+        body->installCustomizer();
+        body->initializeConfiguration();
+    }
 
-		DblArray9 R;
-		for( int i = 0 ; i < 9 ; ++i ) R[i] = iLinks[rootIndex].rotation[i];
-
-		matrix33 att;
-		getMatrix33FromRowMajorArray(att, R);
-		body->setDefaultRootPosition(pos, att);
-
-		body->installCustomizer();
-
-		body->initializeConfiguration();
-	}
-
-	return body;
+    return body;
 }
 
 
@@ -386,24 +341,24 @@ BodyPtr OpenHRP::loadBodyFromModelLoader(const char *url, CosNaming::NamingConte
         std::cerr << "Resolve ModelLoader InvalidName" << std::endl;
     }
 
-	BodyInfo_var bodyInfo;
+    BodyInfo_var bodyInfo;
 
-	try
+    try
 	{
-		bodyInfo = modelLoader->getBodyInfo( url );
+            bodyInfo = modelLoader->getBodyInfo( url );
 	} catch( CORBA::SystemException& ex ) {
-		std::cerr << "CORBA::SystemException raised by ModelLoader: " << ex._rep_id() << std::endl;
-		return BodyPtr();
-	} catch(ModelLoader::ModelLoaderException& ex){
-		std::cerr << "ModelLoaderException : " << ex.description << std::endl;
-	}
+        std::cerr << "CORBA::SystemException raised by ModelLoader: " << ex._rep_id() << std::endl;
+        return BodyPtr();
+    } catch(ModelLoader::ModelLoaderException& ex){
+        std::cerr << "ModelLoaderException : " << ex.description << std::endl;
+    }
 
-	if( CORBA::is_nil( bodyInfo ) )
+    if( CORBA::is_nil( bodyInfo ) )
 	{
-		return BodyPtr();
+            return BodyPtr();
 	}
 
-	return loadBodyFromBodyInfo( bodyInfo );
+    return loadBodyFromBodyInfo( bodyInfo );
 }
 
 
@@ -411,14 +366,14 @@ BodyPtr OpenHRP::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
 {
     CosNaming::NamingContext_var cxt;
     try {
-      CORBA::Object_var	nS = orb->resolve_initial_references("NameService");
-      cxt = CosNaming::NamingContext::_narrow(nS);
+        CORBA::Object_var	nS = orb->resolve_initial_references("NameService");
+        cxt = CosNaming::NamingContext::_narrow(nS);
     } catch(CORBA::SystemException& ex) {
-		std::cerr << "NameService doesn't exist" << std::endl;
-		return BodyPtr();
-	}
+        std::cerr << "NameService doesn't exist" << std::endl;
+        return BodyPtr();
+    }
 
-	return loadBodyFromModelLoader(url, cxt);
+    return loadBodyFromModelLoader(url, cxt);
 }
 
 
@@ -443,7 +398,7 @@ BodyPtr OpenHRP::loadBodyFromModelLoader(const char *URL, istringstream &strm)
         argv[i] = (char *)argvec[i].c_str();
     }
 
-	BodyPtr body = loadBodyFromModelLoader(URL, argc, argv);
+    BodyPtr body = loadBodyFromModelLoader(URL, argc, argv);
 
     delete [] argv;
 
