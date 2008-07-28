@@ -18,6 +18,7 @@
 #include "ModelParserConfig.h"
 
 #include <vector>
+#include <bitset>
 #include <boost/shared_ptr.hpp>
 #include <boost/signals.hpp>
 
@@ -28,77 +29,93 @@ namespace OpenHRP {
 
     class VRMLParser;
 
-	class JointNodeSet;
-	typedef boost::shared_ptr<JointNodeSet> JointNodeSetPtr;
+    class JointNodeSet;
+    typedef boost::shared_ptr<JointNodeSet> JointNodeSetPtr;
 
     class JointNodeSet
     {
     public:
-		VrmlProtoInstancePtr jointNode;
-		VrmlProtoInstancePtr segmentNode;
-		std::vector<JointNodeSetPtr> childJointNodeSets;
-		std::vector<VrmlProtoInstancePtr> sensorNodes;
+        VrmlProtoInstancePtr jointNode;
+        VrmlProtoInstancePtr segmentNode;
+        std::vector<JointNodeSetPtr> childJointNodeSets;
+        std::vector<VrmlProtoInstancePtr> sensorNodes;
     };
     
     typedef std::vector<JointNodeSetPtr> JointNodeSetArray;
     
 
-    class MODELPARSER_EXPORT  ModelNodeSet
+    class MODELPARSER_EXPORT ModelNodeSet
     {
-		int numJointNodes_;
-		VrmlProtoInstancePtr humanoidNode_;
-		JointNodeSetPtr rootJointNodeSet_;
-		int messageIndent_;
-		bool flgMessageOutput_;
+      public:
 
-		VrmlProtoPtr protoToCheck;
+        ModelNodeSet();
 
-		void extractHumanoidNode(VRMLParser& parser);
-
-		void throwExceptionOfIllegalField(const std::string& name, VrmlFieldTypeId typeId);
-		void requireField(const std::string& name, VrmlFieldTypeId type);
-		void checkFieldType(const std::string& name, VrmlFieldTypeId type);
-		VrmlVariantField* addField(const std::string& name, VrmlFieldTypeId type);
-		void addFloatField(const std::string& name, double defaultValue);
+        bool loadModelFile(const std::string& filename);
 		
-		void checkHumanoidProto();
-		void checkJointProto();
-		void checkSegmentProto();
-		void checkSensorProtoCommon();
-		void checkHardwareComponentProto();
-		void extractJointNodes();
-		JointNodeSetPtr addJointNodeSet(VrmlProtoInstancePtr jointNode);
-		void extractChildNodes(JointNodeSetPtr jointNodeSet, MFNode& childNodes);
+        int numJointNodes() { return numJointNodes_; }
+        VrmlProtoInstancePtr humanoidNode() { return humanoidNode_; }
+        JointNodeSetPtr rootJointNodeSet() { return rootJointNodeSet_; }
 
-		void putMessage(const std::string& message);
+        /**
+           @if jp
+           読み込み進行状況のメッセージを出力するためのシグナル.
+           @note エラー発生時のメッセージはこのシグナルではなく例外によって処理される。
+           @endif
+        */
+        boost::signal<void(const std::string& message)> signalOnStatusMessage;
+
+        bool setMessageOutput( bool val ) { return( flgMessageOutput_ = val ); }
+
+        struct Exception {
+            Exception(const std::string& message) : message(message) { }
+            std::string message;
+        };
+
+      private:
+        
+        int numJointNodes_;
+        VrmlProtoInstancePtr humanoidNode_;
+        JointNodeSetPtr rootJointNodeSet_;
+        int messageIndent_;
+        bool flgMessageOutput_;
+
+        VrmlProtoPtr protoToCheck;
+
+        enum {
+            PROTO_UNDEFINED = 0,
+            PROTO_HUMANOID,
+            PROTO_JOINT,
+            PROTO_SEGMENT,
+            PROTO_SENSOR,
+            PROTO_HARDWARECOMPONENT,
+            NUM_PROTOS
+        };
+
+        typedef std::bitset<NUM_PROTOS> ProtoIdSet;
+    
+        void extractHumanoidNode(VRMLParser& parser);
+
+        void throwExceptionOfIllegalField(const std::string& name, VrmlFieldTypeId typeId);
+        void requireField(const std::string& name, VrmlFieldTypeId type);
+        void checkFieldType(const std::string& name, VrmlFieldTypeId type);
+        VrmlVariantField* addField(const std::string& name, VrmlFieldTypeId type);
+        void addFloatField(const std::string& name, double defaultValue);
 		
-    public:
+        void checkHumanoidProto();
+        void checkJointProto();
+        void checkSegmentProto();
+        void checkSensorProtoCommon();
+        void checkHardwareComponentProto();
+        void extractJointNodes();
+        JointNodeSetPtr addJointNodeSet(VrmlProtoInstancePtr jointNode);
+        void extractChildNodes
+            (JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds);
 
-		struct Exception {
-			Exception(const std::string& message) : message(message) { }
-			std::string message;
-		};
+        void putMessage(const std::string& message);
 		
-		ModelNodeSet();
-
-		bool loadModelFile(const std::string& filename);
-		
-		int numJointNodes() { return numJointNodes_; }
-		VrmlProtoInstancePtr humanoidNode() { return humanoidNode_; }
-		JointNodeSetPtr rootJointNodeSet() { return rootJointNodeSet_; }
-
-		/**
-		   @if jp
-		   読み込み進行状況のメッセージを出力するためのシグナル.
-		   @note エラー発生時のメッセージはこのシグナルではなく例外によって処理される。
-		   @endif
-		*/
-		boost::signal<void(const std::string& message)> signalOnStatusMessage;
-
-		bool setMessageOutput( bool val ) { return( flgMessageOutput_ = val ); }
     };
 
-	typedef boost::shared_ptr<ModelNodeSet> ModelNodeSetPtr;
+    typedef boost::shared_ptr<ModelNodeSet> ModelNodeSetPtr;
 };
     
 

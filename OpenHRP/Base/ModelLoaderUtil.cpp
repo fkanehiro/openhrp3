@@ -270,8 +270,6 @@ namespace {
 
 BodyPtr OpenHRP::loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo)
 {
-    cout << "hogehoge" << endl;
-    
     if(debugMode){
         dumpBodyInfo(bodyInfo);
     }
