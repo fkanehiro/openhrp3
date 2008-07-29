@@ -33,9 +33,9 @@ endif()
 
 # commands
 if(UNIX)
-	set(RMDIR rm -fr)
+  set(RMDIR rm -fr)
 elseif(WIN32)
-	set(RMDIR rmdir /S/Q)
+  set(RMDIR rmdir /S/Q)
 endif()
 
 # shell script file suffix

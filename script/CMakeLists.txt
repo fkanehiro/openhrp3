@@ -2,16 +2,17 @@
 # @author Shin'ichiro Nakaoka
 
 set(script_list
-    CollisionDetector
-    DynamicsSimulator
-    ModelLoader
-    NameServer
-)
+  CollisionDetector
+  DynamicsSimulator
+  ModelLoader
+  NameServer
+  )
+
 set(grxui_script_list
-    openhrp-grxui
-    openhrp-jython-prompt
-    openhrp-shutdown-servers
-)
+  openhrp-grxui
+  openhrp-jython-prompt
+  openhrp-shutdown-servers
+  )
 
 if(UNIX)
   set(subbin unix)
@@ -32,9 +33,14 @@ macro(create_bootscripts DESTINATION DO_INSTALL)
   endforeach()
 
   foreach(script ${grxui_script_list} )
-    configure_file(${script}.${SH_SFX}.in ${DESTINATION}/${script}.${SH_SFX} @ONLY)
+    
+    if(WIN32)
+      set(script ${script}.${SH_SFX})
+    endif()
+
+    configure_file(${script}.in ${DESTINATION}/${script} @ONLY)
     if(DO_INSTALL)
-      install(PROGRAMS ${DESTINATION}/${script}.${SH_SFX} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+      install(PROGRAMS ${DESTINATION}/${script} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
     endif()
   endforeach()
  
