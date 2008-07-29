@@ -18,7 +18,6 @@
 #include "ModelParserConfig.h"
 
 #include <vector>
-#include <bitset>
 #include <boost/shared_ptr.hpp>
 #include <boost/signals.hpp>
 
@@ -42,19 +41,21 @@ namespace OpenHRP {
     };
     
     typedef std::vector<JointNodeSetPtr> JointNodeSetArray;
-    
+
+    class ModelNodeSetImpl;
 
     class MODELPARSER_EXPORT ModelNodeSet
     {
       public:
 
         ModelNodeSet();
+        virtual ~ModelNodeSet();
 
         bool loadModelFile(const std::string& filename);
 		
-        int numJointNodes() { return numJointNodes_; }
-        VrmlProtoInstancePtr humanoidNode() { return humanoidNode_; }
-        JointNodeSetPtr rootJointNodeSet() { return rootJointNodeSet_; }
+        int numJointNodes();
+        VrmlProtoInstancePtr humanoidNode();
+        JointNodeSetPtr rootJointNodeSet();
 
         /**
            @if jp
@@ -62,57 +63,18 @@ namespace OpenHRP {
            @note エラー発生時のメッセージはこのシグナルではなく例外によって処理される。
            @endif
         */
-        boost::signal<void(const std::string& message)> signalOnStatusMessage;
+        boost::signal<void(const std::string& message)> sigMessage;
 
-        bool setMessageOutput( bool val ) { return( flgMessageOutput_ = val ); }
-
-        struct Exception {
-            Exception(const std::string& message) : message(message) { }
-            std::string message;
+        class Exception {
+        public:
+            Exception(const std::string& description) : description(description) { }
+            const char* what() const { return description.c_str(); }
+        private:
+            std::string description;
         };
 
       private:
-        
-        int numJointNodes_;
-        VrmlProtoInstancePtr humanoidNode_;
-        JointNodeSetPtr rootJointNodeSet_;
-        int messageIndent_;
-        bool flgMessageOutput_;
-
-        VrmlProtoPtr protoToCheck;
-
-        enum {
-            PROTO_UNDEFINED = 0,
-            PROTO_HUMANOID,
-            PROTO_JOINT,
-            PROTO_SEGMENT,
-            PROTO_SENSOR,
-            PROTO_HARDWARECOMPONENT,
-            NUM_PROTOS
-        };
-
-        typedef std::bitset<NUM_PROTOS> ProtoIdSet;
-    
-        void extractHumanoidNode(VRMLParser& parser);
-
-        void throwExceptionOfIllegalField(const std::string& name, VrmlFieldTypeId typeId);
-        void requireField(const std::string& name, VrmlFieldTypeId type);
-        void checkFieldType(const std::string& name, VrmlFieldTypeId type);
-        VrmlVariantField* addField(const std::string& name, VrmlFieldTypeId type);
-        void addFloatField(const std::string& name, double defaultValue);
-		
-        void checkHumanoidProto();
-        void checkJointProto();
-        void checkSegmentProto();
-        void checkSensorProtoCommon();
-        void checkHardwareComponentProto();
-        void extractJointNodes();
-        JointNodeSetPtr addJointNodeSet(VrmlProtoInstancePtr jointNode);
-        void extractChildNodes
-            (JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds);
-
-        void putMessage(const std::string& message);
-		
+        ModelNodeSetImpl* impl;
     };
 
     typedef boost::shared_ptr<ModelNodeSet> ModelNodeSetPtr;

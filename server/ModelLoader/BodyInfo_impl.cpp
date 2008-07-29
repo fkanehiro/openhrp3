@@ -202,15 +202,15 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     filename = url2;
 
     ModelNodeSet modelNodeSet;
-    modelNodeSet.signalOnStatusMessage.connect(bind(&BodyInfo_impl::putMessage, this, _1));
-    modelNodeSet.setMessageOutput( true );
+    modelNodeSet.sigMessage.connect(bind(&BodyInfo_impl::putMessage, this, _1));
 
     try	{
         modelNodeSet.loadModelFile( filename );
         cout.flush();
     }
-    catch(ModelNodeSet::Exception& ex) {
-        throw ModelLoader::ModelLoaderException(ex.message.c_str());
+    catch(const ModelNodeSet::Exception& ex) {
+        cout << ex.what() << endl;
+        throw ModelLoader::ModelLoaderException(ex.what());
     }
 
     url_ = CORBA::string_dup(url2.c_str());
