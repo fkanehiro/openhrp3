@@ -226,6 +226,12 @@ void EasyScanner::throwException(const char* message)
 }
 
 
+void EasyScanner::throwException(const std::string& message)
+{
+    throwException(message.c_str());
+}
+
+
 /*!
   This function sets the identifier character of comment beginning.
   @param cc Identifier character. Default is '#'. If you want no comment, set 0.

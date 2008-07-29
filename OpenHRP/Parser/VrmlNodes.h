@@ -1,10 +1,21 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
+
 /*! @file
-  @brief Header file of VRML node classes
-  @author S.Nakaoka
+  @author Shin'ichiro Nakaoka
+  @author Ergovision
 */
 
-#ifndef VRMLNODES_H_INCLUDED
-#define VRMLNODES_H_INCLUDED
+
+#ifndef OPENHRP_PARSER_VRMLNODES_H_INCLUDED
+#define OPENHRP_PARSER_VRMLNODES_H_INCLUDED
 
 #include "ModelParserConfig.h"
 
@@ -21,18 +32,18 @@
 namespace OpenHRP {
 
     enum VrmlFieldTypeId {
-      UNDETERMINED_FIELD_TYPE = 0,
-      SFBOOL,
-      SFINT32, MFINT32,
-      SFFLOAT, MFFLOAT,
-      SFVEC2F, MFVEC2F,
-      SFVEC3F, MFVEC3F,
-      SFROTATION, MFROTATION,
-      SFTIME, MFTIME,
-      SFCOLOR, MFCOLOR,
-      SFSTRING, MFSTRING,
-      SFNODE, MFNODE,
-	  SFIMAGE,				// #####
+        UNDETERMINED_FIELD_TYPE = 0,
+        SFBOOL,
+        SFINT32, MFINT32,
+        SFFLOAT, MFFLOAT,
+        SFVEC2F, MFVEC2F,
+        SFVEC3F, MFVEC3F,
+        SFROTATION, MFROTATION,
+        SFTIME, MFTIME,
+        SFCOLOR, MFCOLOR,
+        SFSTRING, MFSTRING,
+        SFNODE, MFNODE,
+        SFIMAGE,				// #####
     };
 
     typedef bool        SFBool;
@@ -48,12 +59,12 @@ namespace OpenHRP {
     typedef SFVec3f SFColor;
     typedef SFVec4f SFRotation;
 
-	typedef struct {
-		int				width;
-		int				height;
-		int				numComponents;
-		std::vector<unsigned char> pixels;
-	} SFImage;
+    typedef struct {
+        int				width;
+        int				height;
+        int				numComponents;
+        std::vector<unsigned char> pixels;
+    } SFImage;
 
 
     typedef std::vector<SFInt32>    MFInt32;
@@ -70,33 +81,33 @@ namespace OpenHRP {
     // see 4.6.3 - 4.6.10 of the VRML97 specification
     enum VrmlNodeCategory {
 
-      ANY_NODE = -1,
+        ANY_NODE = -1,
 
-      PROTO_DEF_NODE = 0,
-      PROTO_INSTANCE_NODE,
+        PROTO_DEF_NODE = 0,
+        PROTO_INSTANCE_NODE,
 
-      TOP_NODE,
-      BINDABLE_NODE,
-      GROUPING_NODE,
-      CHILD_NODE,
+        TOP_NODE,
+        BINDABLE_NODE,
+        GROUPING_NODE,
+        CHILD_NODE,
 
-      APPEARANCE_NODE,
-      MATERIAL_NODE,
-      TEXTURE_NODE,
-      TEXTURE_TRANSFORM_NODE,
+        APPEARANCE_NODE,
+        MATERIAL_NODE,
+        TEXTURE_NODE,
+        TEXTURE_TRANSFORM_NODE,
 
-      SHAPE_NODE,
-      GEOMETRY_NODE,
-      COORDINATE_NODE,
-      COLOR_NODE,
-      NORMAL_NODE,
-      TEXTURE_COORDINATE_NODE,
+        SHAPE_NODE,
+        GEOMETRY_NODE,
+        COORDINATE_NODE,
+        COLOR_NODE,
+        NORMAL_NODE,
+        TEXTURE_COORDINATE_NODE,
 
-      FONT_STYLE_NODE,
+        FONT_STYLE_NODE,
 
-      SENSOR_NODE,
+        SENSOR_NODE,
 
-      NUM_VRML_NODE_CATEGORIES
+        NUM_VRML_NODE_CATEGORIES
     };
 
     class VrmlNode;
@@ -105,9 +116,9 @@ namespace OpenHRP {
     inline void intrusive_ptr_release(VrmlNode* obj);
 
     //! Abstract base class of all vrml nodes.
-     class MODELPARSER_EXPORT VrmlNode
+    class MODELPARSER_EXPORT VrmlNode
     {
-    public:
+      public:
 
 	VrmlNode();
 	virtual ~VrmlNode();
@@ -118,10 +129,10 @@ namespace OpenHRP {
 
 	bool isCategoryOf(VrmlNodeCategory category);
 
-    protected:
+      protected:
 	std::bitset<NUM_VRML_NODE_CATEGORIES> categorySet;
 
-    private:
+      private:
 	int refCounter;
 
 	friend void intrusive_ptr_add_ref(VrmlNode* obj);
@@ -147,9 +158,9 @@ namespace OpenHRP {
 
     class MODELPARSER_EXPORT  VrmlUnsupportedNode : public VrmlNode
     {
-    public:
-      VrmlUnsupportedNode(const std::string& nodeTypeName);
-      std::string nodeTypeName;
+      public:
+        VrmlUnsupportedNode(const std::string& nodeTypeName);
+        std::string nodeTypeName;
     };
     typedef boost::intrusive_ptr<VrmlUnsupportedNode> VrmlUnsupportedNodePtr;
 
@@ -157,7 +168,7 @@ namespace OpenHRP {
     //! VRML Viewpoint node
     class MODELPARSER_EXPORT  VrmlViewpoint : public VrmlNode
     {
-    public:
+      public:
 	VrmlViewpoint();
 
 	SFFloat fieldOfView;
@@ -172,7 +183,7 @@ namespace OpenHRP {
     //! VRML NavigationInfo node
     class MODELPARSER_EXPORT  VrmlNavigationInfo : public VrmlNode
     {
-    public:
+      public:
 	VrmlNavigationInfo();
 
 	MFFloat avatarSize;
@@ -187,19 +198,19 @@ namespace OpenHRP {
     //! VRML Background node
     class MODELPARSER_EXPORT  VrmlBackground : public VrmlNode
     {
-    public:
-      VrmlBackground();
+      public:
+        VrmlBackground();
       
-      MFFloat groundAngle;
-      MFColor groundColor;
-      MFFloat skyAngle;
-      MFColor skyColor;
-      MFString backUrl;
-      MFString bottomUrl;
-      MFString frontUrl;
-      MFString leftUrl;
-      MFString rightUrl;
-      MFString topUrl;
+        MFFloat groundAngle;
+        MFColor groundColor;
+        MFFloat skyAngle;
+        MFColor skyColor;
+        MFString backUrl;
+        MFString bottomUrl;
+        MFString frontUrl;
+        MFString leftUrl;
+        MFString rightUrl;
+        MFString topUrl;
     };
     typedef boost::intrusive_ptr<VrmlBackground> VrmlBackgroundPtr;
 
@@ -207,7 +218,7 @@ namespace OpenHRP {
     //! VRML Group node
     class MODELPARSER_EXPORT  VrmlGroup : public VrmlNode
     {
-    public:
+      public:
 	VrmlGroup();
 
 	SFVec3f bboxCenter;    
@@ -220,7 +231,7 @@ namespace OpenHRP {
     //! VRML Transform node
     class MODELPARSER_EXPORT  VrmlTransform : public VrmlGroup
     {
-    public:
+      public:
 	VrmlTransform();
 
 	SFVec3f center;
@@ -242,10 +253,10 @@ namespace OpenHRP {
     //! VRML Shape node
     class MODELPARSER_EXPORT  VrmlShape : public VrmlNode
     {
-    public:
-      VrmlShape();
-      VrmlAppearancePtr appearance;
-      VrmlGeometryPtr geometry;
+      public:
+        VrmlShape();
+        VrmlAppearancePtr appearance;
+        VrmlGeometryPtr geometry;
     };
     typedef boost::intrusive_ptr<VrmlShape> VrmlShapePtr;
 
@@ -263,19 +274,19 @@ namespace OpenHRP {
     //! VRML Appearance node
     class MODELPARSER_EXPORT  VrmlAppearance : public VrmlNode
     {
-    public:
-      VrmlAppearance();
+      public:
+        VrmlAppearance();
       
-      VrmlMaterialPtr material;
-      VrmlTexturePtr texture;
-      VrmlTextureTransformPtr textureTransform;
+        VrmlMaterialPtr material;
+        VrmlTexturePtr texture;
+        VrmlTextureTransformPtr textureTransform;
     };
 
 
     //! VRML Material node
     class MODELPARSER_EXPORT  VrmlMaterial : public VrmlNode
     {
-    public:
+      public:
 	VrmlMaterial();
 
 	SFFloat ambientIntensity;
@@ -290,15 +301,15 @@ namespace OpenHRP {
     //! Base class of VRML Texture nodes
     class MODELPARSER_EXPORT  VrmlTexture : public VrmlNode
     {
-    public:
-      VrmlTexture();
+      public:
+        VrmlTexture();
     };
 
     
     //! VRML ImageTexture node
     class MODELPARSER_EXPORT  VrmlImageTexture : public VrmlTexture
     {
-    public:
+      public:
 	VrmlImageTexture();
 
 	MFString url;
@@ -311,7 +322,7 @@ namespace OpenHRP {
     //! VRML TextureTransform node
     class MODELPARSER_EXPORT  VrmlTextureTransform : public VrmlNode
     {
-    public:
+      public:
 	VrmlTextureTransform();
 
 	SFVec2f center;
@@ -323,14 +334,14 @@ namespace OpenHRP {
     //! Base class of VRML geometry nodes
     class MODELPARSER_EXPORT  VrmlGeometry : public VrmlNode
     {
-    public:
-      VrmlGeometry();
+      public:
+        VrmlGeometry();
     };
 
     //! VRML Box node
     class MODELPARSER_EXPORT  VrmlBox : public VrmlGeometry
     {
-    public:
+      public:
 	VrmlBox();
 	SFVec3f size;
     };
@@ -340,7 +351,7 @@ namespace OpenHRP {
     //! VRML Cone node
     class MODELPARSER_EXPORT  VrmlCone : public VrmlGeometry
     {
-    public:
+      public:
 	VrmlCone();
 
 	SFBool bottom;
@@ -354,7 +365,7 @@ namespace OpenHRP {
     //! VRML Cylinder node
     class MODELPARSER_EXPORT  VrmlCylinder : public VrmlGeometry
     {
-    public:
+      public:
 	VrmlCylinder();
 
 	SFBool bottom;
@@ -369,7 +380,7 @@ namespace OpenHRP {
     //! VRML Sphere node
     class MODELPARSER_EXPORT  VrmlSphere : public VrmlGeometry
     {
-    public:
+      public:
 	VrmlSphere();
 	SFFloat radius;
     };
@@ -379,7 +390,7 @@ namespace OpenHRP {
     //! VRML FontStyle node
     class MODELPARSER_EXPORT  VrmlFontStyle : public VrmlNode
     {
-    public:
+      public:
 	VrmlFontStyle();
 
 	MFString family;       
@@ -398,7 +409,7 @@ namespace OpenHRP {
     //! VRML Text node
     class MODELPARSER_EXPORT  VrmlText : public VrmlGeometry
     {
-    public:
+      public:
 	VrmlText();
 
 	MFString fstring;
@@ -418,7 +429,7 @@ namespace OpenHRP {
     //! VRML IndexedLineSet node
     class MODELPARSER_EXPORT  VrmlIndexedLineSet : public VrmlGeometry
     {
-    public: 
+      public: 
 	VrmlIndexedLineSet();
 
 	VrmlColorPtr color;
@@ -440,7 +451,7 @@ namespace OpenHRP {
     //! VRML IndexedFaseSet node
     class MODELPARSER_EXPORT  VrmlIndexedFaceSet : public VrmlIndexedLineSet
     {
-    public:
+      public:
 	VrmlIndexedFaceSet();
 
 	VrmlNormalPtr normal;
@@ -459,44 +470,44 @@ namespace OpenHRP {
     //! VRML Color node
     class MODELPARSER_EXPORT  VrmlColor : public VrmlNode
     {
-    public:
-      VrmlColor();
+      public:
+        VrmlColor();
       
-      MFColor color;
+        MFColor color;
     };
 
 
     //! VRML Coordinate node
     class MODELPARSER_EXPORT  VrmlCoordinate : public VrmlNode
     {
-    public:
-      VrmlCoordinate();
-      MFVec3f point;
+      public:
+        VrmlCoordinate();
+        MFVec3f point;
     };
 
 
     //! VRML TextureCoordinate node
     class MODELPARSER_EXPORT  VrmlTextureCoordinate : public VrmlNode
     {
-    public:
-      VrmlTextureCoordinate();
-      MFVec2f point;
+      public:
+        VrmlTextureCoordinate();
+        MFVec2f point;
     };
 
 
     //! VRML Normal node
     class MODELPARSER_EXPORT  VrmlNormal : public VrmlNode
     {
-    public:
-      VrmlNormal();
-      MFVec3f fvector;
+      public:
+        VrmlNormal();
+        MFVec3f fvector;
     };
 
 
     //! VRML CylinderSensor node
     class MODELPARSER_EXPORT  VrmlCylinderSensor : public VrmlNode
     {
-    public:
+      public:
 	VrmlCylinderSensor();
 
 	SFBool  autoOffset;
@@ -510,42 +521,42 @@ namespace OpenHRP {
 
 
 
-	// #####
-	//! VRML PointSet node
-	class MODELPARSER_EXPORT  VrmlPointSet : public VrmlGeometry
-	{
-	public:
+    // #####
+    //! VRML PointSet node
+    class MODELPARSER_EXPORT  VrmlPointSet : public VrmlGeometry
+    {
+      public:
 	VrmlPointSet();
 
 	VrmlCoordinatePtr	coord;
 	VrmlColorPtr		color;
-	};
+    };
 
-	typedef boost::intrusive_ptr<VrmlPointSet> VrmlPointSetPtr;
+    typedef boost::intrusive_ptr<VrmlPointSet> VrmlPointSetPtr;
 
 
 
-	// #####
-	//! VRML PixelTexture node
-	class MODELPARSER_EXPORT  VrmlPixelTexture : public VrmlTexture
-	{
-	public:
+    // #####
+    //! VRML PixelTexture node
+    class MODELPARSER_EXPORT  VrmlPixelTexture : public VrmlTexture
+    {
+      public:
 	VrmlPixelTexture();
 
 	SFImage			image;
 	SFBool			repeatS;
 	SFBool			repeatT;
-	};
+    };
 
-	typedef boost::intrusive_ptr<VrmlPixelTexture> VrmlPixelTexturePtr;
+    typedef boost::intrusive_ptr<VrmlPixelTexture> VrmlPixelTexturePtr;
 
 
 
-	// #####
-	//! VRML MovieTexture node
-	class MODELPARSER_EXPORT  VrmlMovieTexture : public VrmlTexture
-	{
-	public:
+    // #####
+    //! VRML MovieTexture node
+    class MODELPARSER_EXPORT  VrmlMovieTexture : public VrmlTexture
+    {
+      public:
 	VrmlMovieTexture();
 
 	MFString		url;
@@ -555,17 +566,17 @@ namespace OpenHRP {
 	SFTime			stopTime;
 	SFBool			repeatS;
 	SFBool			repeatT;
-	};
+    };
 
-	typedef boost::intrusive_ptr<VrmlMovieTexture> VrmlMovieTexturePtr;
+    typedef boost::intrusive_ptr<VrmlMovieTexture> VrmlMovieTexturePtr;
 
 
 
-	// #####
-	//! VRML ElevationGrid node
-	class MODELPARSER_EXPORT  VrmlElevationGrid : public VrmlGeometry
-	{
-	public:
+    // #####
+    //! VRML ElevationGrid node
+    class MODELPARSER_EXPORT  VrmlElevationGrid : public VrmlGeometry
+    {
+      public:
 	VrmlElevationGrid();
 
 	SFInt32			xDimension;
@@ -581,17 +592,17 @@ namespace OpenHRP {
 	VrmlColorPtr	color;
 	VrmlNormalPtr	normal;
 	VrmlTextureCoordinatePtr	texCoord;
-	};
+    };
 
-	typedef boost::intrusive_ptr<VrmlElevationGrid> VrmlElevationGridPtr;
+    typedef boost::intrusive_ptr<VrmlElevationGrid> VrmlElevationGridPtr;
 
 
 
-	// #####
-	//! VRML Extrusion node
-	class MODELPARSER_EXPORT  VrmlExtrusion : public VrmlGeometry
-	{
-	public:
+    // #####
+    //! VRML Extrusion node
+    class MODELPARSER_EXPORT  VrmlExtrusion : public VrmlGeometry
+    {
+      public:
 	VrmlExtrusion();
 
 	MFVec2f			crossSection;
@@ -604,192 +615,144 @@ namespace OpenHRP {
 	SFBool			ccw;
 	SFBool			convex;
 	SFFloat			creaseAngle;
-	};
+    };
 
-	typedef boost::intrusive_ptr<VrmlExtrusion> VrmlExtrusionPtr;
-
-
-
-	// #####
-	//! VRML Switch node
-	class MODELPARSER_EXPORT  VrmlSwitch : public VrmlNode
-	{
-	public:
-	VrmlSwitch();
-
-	MFNode		choice;
-	SFInt32		whichChoice;
-	};
-
-	typedef boost::intrusive_ptr<VrmlSwitch> VrmlSwitchPtr;
+    typedef boost::intrusive_ptr<VrmlExtrusion> VrmlExtrusionPtr;
 
 
 
-	// #####
-	//! VRML LOD node
-	class MODELPARSER_EXPORT  VrmlLOD : public VrmlNode
-	{
-	public:
-	VrmlLOD();
-
-	MFFloat		range;
-	SFVec3f		center;
-	MFNode		level;
-	};
-
-	typedef boost::intrusive_ptr<VrmlLOD> VrmlLODPtr;
-
-
-
-	// #####
-	//! VRML Collision node
-	class MODELPARSER_EXPORT  VrmlCollision : public VrmlNode
-	{
-	public:
-	VrmlCollision();
-
-	SFBool		collide;
-	MFNode		children;
-	SFNode		proxy;
-	SFVec3f		bboxCenter;
-	SFVec3f		bboxSize;
-	};
-
-	typedef boost::intrusive_ptr<VrmlCollision> VrmlCollisionPtr;
-
-
-
-	// #####
-	//! VRML Anchor node
-	class MODELPARSER_EXPORT  VrmlAnchor : public VrmlNode
-	{
-	public:
-	VrmlAnchor();
-
-	MFNode		children;
-	SFString	description;
-	MFString	parameter;
-	MFString	url;
-	SFVec3f		bboxCenter;
-	SFVec3f		bboxSize;
-	};
-
-	typedef boost::intrusive_ptr<VrmlAnchor> VrmlAnchorPtr;
-
-
-
-	// #####
-	//! VRML Fog node
-	class MODELPARSER_EXPORT  VrmlFog : public VrmlNode
-	{
-	public:
-	VrmlFog();
-
-	SFColor		color;
-	SFFloat		visibilityRange;
-	SFString	fogType;
-	};
-
-	typedef boost::intrusive_ptr<VrmlFog> VrmlFogPtr;
-
-
-
-	// #####
-	//! VRML Billboard node
-	class MODELPARSER_EXPORT  VrmlBillboard : public VrmlNode
-	{
-	public:
-	VrmlBillboard();
-
-	SFVec3f		axisOfRotation;
-	MFNode		children;
-	SFVec3f		bboxCenter;
-	SFVec3f		bboxSize;
-	};
-
-	typedef boost::intrusive_ptr<VrmlBillboard> VrmlBillboardPtr;
-
-
-
-	// #####
-	//! VRML WorldInfo node
-	class MODELPARSER_EXPORT  VrmlWorldInfo : public VrmlNode
-	{
-	public:
-	VrmlWorldInfo();
-
-	SFString	title;
-	MFString	info;
-	};
-
-	typedef boost::intrusive_ptr<VrmlWorldInfo> VrmlWorldInfoPtr;
-
-
-
-	// #####
-	//! VRML PointLight node
-	class MODELPARSER_EXPORT  VrmlPointLight : public VrmlNode
-	{
-	public:
-	VrmlPointLight();
-
-	SFVec3f		location;
-	SFBool		on;
-	SFFloat		intensity;
-	SFColor		color;
-	SFFloat		radius;
-	SFFloat		ambientIntensity;
-	SFVec3f		attenuation;
-	};
-
-	typedef boost::intrusive_ptr<VrmlPointLight> VrmlPointLightPtr;
-
-
-
-	// #####
-	//! VRML DirectionalLight node
-	class MODELPARSER_EXPORT  VrmlDirectionalLight : public VrmlNode
-	{
-	public:
-	VrmlDirectionalLight();
-
-	SFVec3f		direction;
-	SFBool		on;
-	SFFloat		intensity;
-	SFColor		color;
-	SFFloat		ambientIntensity;
-	};
-
-	typedef boost::intrusive_ptr<VrmlDirectionalLight> VrmlDirectionalLightPtr;
-
-
-
-	// #####
-	//! VRML SpotLight node
-	class MODELPARSER_EXPORT  VrmlSpotLight : public VrmlNode
-	{
-	public:
-	VrmlSpotLight();
-
-	SFVec3f		location;
-	SFVec3f		direction;
-	SFBool		on;
-	SFColor		color;
-	SFFloat		intensity;
-	SFFloat		radius;
-	SFFloat		ambientIntensity;
-	SFVec3f		attenuation;
-	SFFloat		beamWidth;
-	SFFloat		cutOffAngle;
-	};
-
-	typedef boost::intrusive_ptr<VrmlSpotLight> VrmlSpotLightPtr;
-
-
-
-	class MODELPARSER_EXPORT  VrmlVariantField
+    class MODELPARSER_EXPORT  VrmlSwitch : public VrmlNode
     {
-    private:
+      public:
+	VrmlSwitch();
+	MFNode	choice;
+	SFInt32	whichChoice;
+    };
+
+    typedef boost::intrusive_ptr<VrmlSwitch> VrmlSwitchPtr;
+
+
+    class MODELPARSER_EXPORT  VrmlLOD : public VrmlNode
+    {
+      public:
+	VrmlLOD();
+	MFFloat range;
+	SFVec3f center;
+	MFNode  level;
+    };
+
+    typedef boost::intrusive_ptr<VrmlLOD> VrmlLODPtr;
+
+
+    class MODELPARSER_EXPORT VrmlCollision : public VrmlGroup
+    {
+      public:
+	VrmlCollision();
+	SFBool collide;
+	SFNode proxy;
+    };
+
+    typedef boost::intrusive_ptr<VrmlCollision> VrmlCollisionPtr;
+
+
+    class MODELPARSER_EXPORT VrmlAnchor : public VrmlGroup
+    {
+      public:
+	VrmlAnchor();
+	SFString description;
+	MFString parameter;
+	MFString url;
+    };
+
+    typedef boost::intrusive_ptr<VrmlAnchor> VrmlAnchorPtr;
+
+
+    class MODELPARSER_EXPORT VrmlBillboard : public VrmlGroup
+    {
+      public:
+	VrmlBillboard();
+	SFVec3f axisOfRotation;
+    };
+
+    typedef boost::intrusive_ptr<VrmlBillboard> VrmlBillboardPtr;
+
+
+    class MODELPARSER_EXPORT VrmlFog : public VrmlNode
+    {
+      public:
+	VrmlFog();
+	SFColor  color;
+	SFFloat  visibilityRange;
+	SFString fogType;
+    };
+
+    typedef boost::intrusive_ptr<VrmlFog> VrmlFogPtr;
+
+
+    class MODELPARSER_EXPORT  VrmlWorldInfo : public VrmlNode
+    {
+      public:
+	VrmlWorldInfo();
+	SFString title;
+	MFString info;
+    };
+
+    typedef boost::intrusive_ptr<VrmlWorldInfo> VrmlWorldInfoPtr;
+
+
+    class MODELPARSER_EXPORT VrmlPointLight : public VrmlNode
+    {
+      public:
+	VrmlPointLight();
+	SFVec3f location;
+	SFBool  on;
+	SFFloat intensity;
+	SFColor color;
+	SFFloat radius;
+	SFFloat ambientIntensity;
+	SFVec3f attenuation;
+    };
+
+    typedef boost::intrusive_ptr<VrmlPointLight> VrmlPointLightPtr;
+
+
+    class MODELPARSER_EXPORT VrmlDirectionalLight : public VrmlNode
+    {
+      public:
+	VrmlDirectionalLight();
+	SFFloat ambientIntensity;
+	SFColor color;
+	SFVec3f direction;
+	SFFloat intensity;
+	SFBool  on;
+    };
+
+    typedef boost::intrusive_ptr<VrmlDirectionalLight> VrmlDirectionalLightPtr;
+
+
+    class MODELPARSER_EXPORT  VrmlSpotLight : public VrmlNode
+    {
+      public:
+	VrmlSpotLight();
+	SFVec3f location;
+	SFVec3f direction;
+	SFBool  on;
+	SFColor color;
+	SFFloat intensity;
+	SFFloat radius;
+	SFFloat ambientIntensity;
+	SFVec3f attenuation;
+	SFFloat beamWidth;
+	SFFloat cutOffAngle;
+    };
+
+    typedef boost::intrusive_ptr<VrmlSpotLight> VrmlSpotLightPtr;
+
+
+
+    class MODELPARSER_EXPORT  VrmlVariantField
+    {
+      private:
 
 	union {
 	    SFInt32    sfInt32;
@@ -810,7 +773,7 @@ namespace OpenHRP {
 	void copy(const VrmlVariantField& org);
 	void deleteObj();  
 
-    public:
+      public:
   
 	VrmlVariantField();
 	VrmlVariantField(VrmlFieldTypeId typeId);
@@ -852,7 +815,7 @@ namespace OpenHRP {
     //! VRML Proto definition
     class MODELPARSER_EXPORT  VrmlProto : public VrmlNode
     {
-    public:
+      public:
 	std::string protoName;
 	TProtoFieldMap fields;
 
@@ -876,10 +839,10 @@ namespace OpenHRP {
     //! VRML node which is instance of VRML Prototype
     class MODELPARSER_EXPORT  VrmlProtoInstance : public VrmlNode
     {
-    public:
-      VrmlProtoPtr proto;
-      TProtoFieldMap fields;
-      VrmlNodePtr actualNode;
+      public:
+        VrmlProtoPtr proto;
+        TProtoFieldMap fields;
+        VrmlNodePtr actualNode;
 
 	VrmlProtoInstance(VrmlProtoPtr proto0);
 

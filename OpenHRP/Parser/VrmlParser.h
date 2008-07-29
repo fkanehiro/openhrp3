@@ -1,10 +1,21 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
+
 /*! @file
-  @brief Header file of VRML97 Parser class
-  @author S.NAKAOKA
+  @author Shin'ichiro Nakaoka
+  @author K.Fukuda (Ergovision)
 */
 
-#ifndef VRML_PARSER_H_INCLUDED
-#define VRML_PARSER_H_INCLUDED
+
+#ifndef OPENHRP_PARSER_VRML_PARSER_H_INCLUDED
+#define OPENHRP_PARSER_VRML_PARSER_H_INCLUDED
 
 #include "ModelParserConfig.h"
 
@@ -81,7 +92,7 @@ namespace OpenHRP {
 
 	void init();
 	void setSymbols();
-	VrmlNodePtr readSpecificNode(VrmlNodeCategory nodeCategory, int symbol);
+	VrmlNodePtr readSpecificNode(VrmlNodeCategory nodeCategory, int symbol, const std::string& symbolString);
 	VrmlNodePtr readInlineNode(VrmlNodeCategory nodeCategory);
 	void newInlineSource(std::string filename);
 	VrmlProtoPtr defineProto();
