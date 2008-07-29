@@ -551,14 +551,6 @@ CollisionDetector_impl::queryContactDeterminationForDefinedPairs
         if (collisions[pCount].points.length() > 0) flag = true;
     }
 
-    //cerr << "CollisionDetector_impl::checkCollision(2)" << endl;
-
-//###### DEBUG
-	if( flag )
-	{
-		cout << "##### Collision!!!!" << endl;
-	}
-
     return flag;
 }
 
@@ -619,8 +611,6 @@ CollisionDetector_impl::queryContactDeterminationForGivenPairs
         delete rPair;
     }
 
-    //cerr << "CollisionDetector_impl::checkCollision(2)" << endl;
-
     return flag;
 }
 
@@ -650,11 +640,6 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForDefinedPairs
             break;
         }
     }
-
-    //情報作成
-
-    //cerr << "CollisionDetector_impl::checkCollision(2)" << endl;
-
 
     collidedPairs = new LinkPairSequence();
     collidedPairs->length(contactPairs.size());
@@ -733,11 +718,6 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForGivenPairs
             break;
         }
     }
-
-    //情報作成
-
-    //cerr << "CollisionDetector_impl::checkCollision(2)" << endl;
-
 
     collidedPairs = new LinkPairSequence();
     collidedPairs->length(contactPairs.size());

@@ -16,6 +16,7 @@
 #include "VrmlParser.h"
 #include "EasyScanner.h"
 
+#include <bitset>
 #include <iostream>
 #include <algorithm>
 
@@ -24,9 +25,10 @@ using namespace OpenHRP;
 using namespace std;
 using namespace boost;
 
+
 namespace {
 
-    typedef void (ModelNodeSet::*ProtoCheckFunc)(void);
+    typedef void (ModelNodeSetImpl::*ProtoCheckFunc)(void);
     
     struct ProtoInfo
     {
@@ -38,49 +40,138 @@ namespace {
     
     typedef map<string,ProtoInfo> ProtoNameToInfoMap;
     ProtoNameToInfoMap protoNameToInfoMap;
-
 }
 
 
+namespace OpenHRP {
+
+    class ModelNodeSetImpl
+    {
+    public:
+        ModelNodeSetImpl(ModelNodeSet* self);
+
+        bool loadModelFile(const std::string& filename);
+
+        ModelNodeSet* self;
+        
+        int numJointNodes;
+        VrmlProtoInstancePtr humanoidNode;
+        JointNodeSetPtr rootJointNodeSet;
+        int messageIndent;
+
+        VrmlProtoPtr protoToCheck;
+
+        enum {
+            PROTO_UNDEFINED = 0,
+            PROTO_HUMANOID,
+            PROTO_JOINT,
+            PROTO_SEGMENT,
+            PROTO_SENSOR,
+            PROTO_HARDWARECOMPONENT,
+            NUM_PROTOS
+        };
+
+        typedef std::bitset<NUM_PROTOS> ProtoIdSet;
+    
+        void extractHumanoidNode(VRMLParser& parser);
+
+        void throwExceptionOfIllegalField(const std::string& name, VrmlFieldTypeId typeId);
+        void requireField(const std::string& name, VrmlFieldTypeId type);
+        void checkFieldType(const std::string& name, VrmlFieldTypeId type);
+        VrmlVariantField* addField(const std::string& name, VrmlFieldTypeId type);
+        void addFloatField(const std::string& name, double defaultValue);
+		
+        void checkHumanoidProto();
+        void checkJointProto();
+        void checkSegmentProto();
+        void checkSensorProtoCommon();
+        void checkHardwareComponentProto();
+        void extractJointNodes();
+        JointNodeSetPtr addJointNodeSet(VrmlProtoInstancePtr jointNode);
+        void extractChildNodes
+            (JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds);
+
+        void putMessage(const std::string& message);
+    };
+}
 
 
 ModelNodeSet::ModelNodeSet()
 {
-    numJointNodes_ = 0;
-    humanoidNode_ = 0;
-    rootJointNodeSet_.reset();
-    messageIndent_ = 0;
-    flgMessageOutput_ = true;
+    impl = new ModelNodeSetImpl(this);
 }
 
 
-void ModelNodeSet::putMessage(const std::string& message)
+ModelNodeSetImpl::ModelNodeSetImpl(ModelNodeSet* self) : self(self)
 {
-    if(flgMessageOutput_) {
-        string space(messageIndent_, ' ');
-        signalOnStatusMessage(space + message + "\n");
+    numJointNodes = 0;
+    messageIndent = 0;
+
+    if(protoNameToInfoMap.empty()){
+
+        protoNameToInfoMap["Humanoid"]
+            = ProtoInfo(PROTO_HUMANOID, &ModelNodeSetImpl::checkHumanoidProto);
+
+        protoNameToInfoMap["Joint"]
+            = ProtoInfo(PROTO_JOINT, &ModelNodeSetImpl::checkJointProto);
+        
+        protoNameToInfoMap["Segment"]
+            = ProtoInfo(PROTO_SEGMENT, &ModelNodeSetImpl::checkSegmentProto);
+        
+        protoNameToInfoMap["ForceSensor"]
+            = ProtoInfo(PROTO_SENSOR, &ModelNodeSetImpl::checkSensorProtoCommon);
+        
+        protoNameToInfoMap["Gyro"]
+            = ProtoInfo(PROTO_SENSOR, &ModelNodeSetImpl::checkSensorProtoCommon);
+        
+        protoNameToInfoMap["AccelerationSensor"]
+            = ProtoInfo(PROTO_SENSOR, &ModelNodeSetImpl::checkSensorProtoCommon);
+        
+        protoNameToInfoMap["VisionSensor"]
+            = ProtoInfo(PROTO_SENSOR, &ModelNodeSetImpl::checkSensorProtoCommon);
+        
+        protoNameToInfoMap["HardwareComponent"]
+            = ProtoInfo(PROTO_HARDWARECOMPONENT, &ModelNodeSetImpl::checkHardwareComponentProto);
     }
 }
 
-    
-    
+
+ModelNodeSet::~ModelNodeSet()
+{
+    delete impl;
+}
+
+
+int ModelNodeSet::numJointNodes()
+{
+    return impl->numJointNodes;
+}
+
+
+VrmlProtoInstancePtr ModelNodeSet::humanoidNode()
+{
+    return impl->humanoidNode;
+}
+
+
+JointNodeSetPtr ModelNodeSet::rootJointNodeSet()
+{
+    return impl->rootJointNodeSet;
+}
+
+
 bool ModelNodeSet::loadModelFile(const std::string& filename)
 {
-    if(protoNameToInfoMap.empty()){
-        protoNameToInfoMap["Humanoid"]           = ProtoInfo( PROTO_HUMANOID,          &ModelNodeSet::checkHumanoidProto );
-        protoNameToInfoMap["Joint"]              = ProtoInfo( PROTO_JOINT,             &ModelNodeSet::checkJointProto );
-        protoNameToInfoMap["Segment"]            = ProtoInfo( PROTO_SEGMENT,           &ModelNodeSet::checkSegmentProto );
-        protoNameToInfoMap["ForceSensor"]        = ProtoInfo( PROTO_SENSOR,            &ModelNodeSet::checkSensorProtoCommon );
-        protoNameToInfoMap["Gyro"]               = ProtoInfo( PROTO_SENSOR,            &ModelNodeSet::checkSensorProtoCommon );
-        protoNameToInfoMap["AccelerationSensor"] = ProtoInfo( PROTO_SENSOR,            &ModelNodeSet::checkSensorProtoCommon );
-        protoNameToInfoMap["VisionSensor"]       = ProtoInfo( PROTO_SENSOR,            &ModelNodeSet::checkSensorProtoCommon );
-        protoNameToInfoMap["HardwareComponent"]  = ProtoInfo( PROTO_HARDWARECOMPONENT, &ModelNodeSet::checkHardwareComponentProto );
-    }
+    return impl->loadModelFile(filename);
+}
 
-    numJointNodes_ = 0;
-    humanoidNode_ = 0;
-    rootJointNodeSet_.reset();
-    messageIndent_ = 0;
+
+bool ModelNodeSetImpl::loadModelFile(const std::string& filename)
+{
+    numJointNodes = 0;
+    humanoidNode = 0;
+    rootJointNodeSet.reset();
+    messageIndent = 0;
 
     try {
 	VRMLParser parser;
@@ -91,11 +182,11 @@ bool ModelNodeSet::loadModelFile(const std::string& filename)
 	throw ModelNodeSet::Exception(ex.getFullMessage());
     }
 
-    return (humanoidNode_ && rootJointNodeSet_);
+    return (humanoidNode && rootJointNodeSet);
 }
 
 
-void ModelNodeSet::extractHumanoidNode(VRMLParser& parser)
+void ModelNodeSetImpl::extractHumanoidNode(VRMLParser& parser)
 {
     while(VrmlNodePtr node = parser.readNode()){
 		
@@ -113,33 +204,30 @@ void ModelNodeSet::extractHumanoidNode(VRMLParser& parser)
 			
             VrmlProtoInstancePtr instance = static_pointer_cast<VrmlProtoInstance>(node);
             if(instance->proto->protoName == "Humanoid") {
-                humanoidNode_ = instance;
+                humanoidNode = instance;
             }
         }
     }
 	
-    if(humanoidNode_){
-
+    if(humanoidNode){
         putMessage("Humanoid node");
-		
         extractJointNodes();
-		
     } else {
-        throw string("Humanoid node is not found");
+        throw ModelNodeSet::Exception("Humanoid node is not found");
     }
 }
 
 
-void ModelNodeSet::throwExceptionOfIllegalField(const std::string& name, VrmlFieldTypeId typeId)
+void ModelNodeSetImpl::throwExceptionOfIllegalField(const std::string& name, VrmlFieldTypeId typeId)
 {
     string message = "Proto \"";
-    message += protoToCheck->protoName + "\" must have field \"" + name + "\" of " +
+    message += protoToCheck->protoName + "\" must have the \"" + name + "\" field of " +
         VrmlNode::getLabelOfFieldType(typeId) + " type";
-    throw Exception(message);
+    throw ModelNodeSet::Exception(message);
 }
 
 
-void ModelNodeSet::requireField(const std::string& name, VrmlFieldTypeId typeId)
+void ModelNodeSetImpl::requireField(const std::string& name, VrmlFieldTypeId typeId)
 {
     VrmlVariantField* field = protoToCheck->getField(name);
     if(!field || field->typeId() != typeId){
@@ -148,7 +236,7 @@ void ModelNodeSet::requireField(const std::string& name, VrmlFieldTypeId typeId)
 }
 
 
-void ModelNodeSet::checkFieldType(const std::string& name, VrmlFieldTypeId typeId)
+void ModelNodeSetImpl::checkFieldType(const std::string& name, VrmlFieldTypeId typeId)
 {
     VrmlVariantField* field = protoToCheck->getField(name);
     if(field && field->typeId() != typeId){
@@ -157,7 +245,7 @@ void ModelNodeSet::checkFieldType(const std::string& name, VrmlFieldTypeId typeI
 }
 
 
-VrmlVariantField* ModelNodeSet::addField(const std::string& name, VrmlFieldTypeId typeId)
+VrmlVariantField* ModelNodeSetImpl::addField(const std::string& name, VrmlFieldTypeId typeId)
 {
     VrmlVariantField* field = protoToCheck->getField(name);
     if(!field){
@@ -169,7 +257,7 @@ VrmlVariantField* ModelNodeSet::addField(const std::string& name, VrmlFieldTypeI
 }
 
 
-void ModelNodeSet::addFloatField(const std::string& name, double defaultValue)
+void ModelNodeSetImpl::addFloatField(const std::string& name, double defaultValue)
 {
     VrmlVariantField* field = protoToCheck->getField(name);
     if(!field){
@@ -181,7 +269,7 @@ void ModelNodeSet::addFloatField(const std::string& name, double defaultValue)
 }
 
 
-void ModelNodeSet::checkHumanoidProto()
+void ModelNodeSetImpl::checkHumanoidProto()
 {
     // necessary fields
     requireField("center", SFVEC3F);
@@ -204,7 +292,7 @@ void ModelNodeSet::checkHumanoidProto()
 }
 
 
-void ModelNodeSet::checkJointProto()
+void ModelNodeSetImpl::checkJointProto()
 {
     // necessary fields
     requireField("center", SFVEC3F);
@@ -218,10 +306,12 @@ void ModelNodeSet::checkJointProto()
 
     field = protoToCheck->getField("jointAxis");
     if(!field){
-        throw Exception("Prototype of Humanoid does not have \"jointAxis\" field");
+        throw ModelNodeSet::Exception
+            ("Prototype of Humanoid must have the \"jointAxis\" field");
     }
     if(field->typeId() != SFSTRING && field->typeId() != SFVEC3F){
-        throw Exception("The type of \"jointAxis\" field in \"Humanoid\" prototype must be SFString or SFVec3f");
+        throw ModelNodeSet::Exception
+            ("The type of \"jointAxis\" field in \"Humanoid\" prototype must be SFString or SFVec3f");
     }
 
     // optional fields
@@ -238,7 +328,6 @@ void ModelNodeSet::checkJointProto()
     addFloatField("torqueConst", 1.0);
     addFloatField("encoderPulse", 1.0);
 
-    //#####
     addFloatField("jointValue", 0.0);
 
     if( (field = addField("scale", SFVEC3F)) != 0){
@@ -246,12 +335,13 @@ void ModelNodeSet::checkJointProto()
         std::fill(scale.begin(), scale.end(), 1.0);
     }
 
-    // ##### [Changed] ######
-    //checkFieldType("equivalentInertia", SFFLOAT);
+    if(protoToCheck->getField("equivalentInertia")){
+        putMessage("A field \"equivalentInertia\" of the Joint node is obsolete.");
+    }
 }
 
 
-void ModelNodeSet::checkSegmentProto()
+void ModelNodeSetImpl::checkSegmentProto()
 {
     requireField("centerOfMass", SFVEC3F);
     requireField("mass", SFFLOAT);
@@ -260,7 +350,7 @@ void ModelNodeSet::checkSegmentProto()
 }
 
 
-void ModelNodeSet::checkSensorProtoCommon()
+void ModelNodeSetImpl::checkSensorProtoCommon()
 {
     requireField("sensorId", SFINT32);
     requireField("translation", SFVEC3F);
@@ -268,7 +358,7 @@ void ModelNodeSet::checkSensorProtoCommon()
 }
 
 
-void ModelNodeSet::checkHardwareComponentProto()
+void ModelNodeSetImpl::checkHardwareComponentProto()
 {
     requireField("id", SFINT32);
     requireField("translation", SFVEC3F);
@@ -277,32 +367,33 @@ void ModelNodeSet::checkHardwareComponentProto()
 }
 
 
-void ModelNodeSet::extractJointNodes()
+void ModelNodeSetImpl::extractJointNodes()
 {
-    MFNode& nodes = humanoidNode_->fields["humanoidBody"].mfNode();
+    MFNode& nodes = humanoidNode->fields["humanoidBody"].mfNode();
 
-    if(nodes.empty()){
-	throw string("No Joint node in Humanoid node");
+    if(nodes.size() > 1){
+        throw ModelNodeSet::Exception
+            ("The Humanoid node must have a unique Joint node in its \"humanoidBody\" field.");
 
     } else if(nodes.size() == 1){
-
         if(nodes[0]->isCategoryOf(PROTO_INSTANCE_NODE)){
 	    VrmlProtoInstancePtr jointNode = dynamic_pointer_cast<VrmlProtoInstance>(nodes[0]);
 	    if(jointNode && jointNode->proto->protoName == "Joint"){
-                rootJointNodeSet_ = addJointNodeSet(jointNode);
+                rootJointNodeSet = addJointNodeSet(jointNode);
 	    }
 	}
     }
 
-    if(!rootJointNodeSet_){
-	throw string("Invalid entiy of humanoidBody field");
+    if(!rootJointNodeSet){
+        throw ModelNodeSet::Exception
+            ("The Humanoid node does not have a Joint node in its \"humanoidBody\" field.");
     }
 }
 
 
-JointNodeSetPtr ModelNodeSet::addJointNodeSet(VrmlProtoInstancePtr jointNode)
+JointNodeSetPtr ModelNodeSetImpl::addJointNodeSet(VrmlProtoInstancePtr jointNode)
 {
-    numJointNodes_++;
+    numJointNodes++;
 
     putMessage(string("Joint node") + jointNode->defName);
 
@@ -324,7 +415,7 @@ JointNodeSetPtr ModelNodeSet::addJointNodeSet(VrmlProtoInstancePtr jointNode)
 }
 
 
-void ModelNodeSet::extractChildNodes
+void ModelNodeSetImpl::extractChildNodes
 (JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds)
 {
     for(size_t i = 0; i < childNodes.size(); i++){
@@ -346,10 +437,10 @@ void ModelNodeSet::extractChildNodes
             }
 
             if(!acceptableProtoIds.test(id)){
-                throw Exception(protoName + " node is not in a correct place.");
+                throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
             } else {
 
-                messageIndent_ += 2;
+                messageIndent += 2;
 
                 switch(id){
                 
@@ -366,8 +457,9 @@ void ModelNodeSet::extractChildNodes
                     {
                         if(jointNodeSet->segmentNode){
                             const string& jointName = jointNodeSet->jointNode->defName;
-                            throw Exception((string("Joint node ") + jointName +
-                                             "includes multipe segment nodes, which is not supported."));
+                            throw ModelNodeSet::Exception
+                                ((string("Joint node ") + jointName +
+                                  "includes multipe segment nodes, which is not supported."));
                         }
                         jointNodeSet->segmentNode = protoInstance;
                         putMessage(string("Segment node ") + protoInstance->defName);
@@ -383,8 +475,17 @@ void ModelNodeSet::extractChildNodes
                     break;
                 }
 
-                messageIndent_ -= 2;
+                messageIndent -= 2;
             }
         }
+    }
+}
+
+
+void ModelNodeSetImpl::putMessage(const std::string& message)
+{
+    if(!self->sigMessage.empty()) {
+        string space(messageIndent, ' ');
+        self->sigMessage(space + message + "\n");
     }
 }
