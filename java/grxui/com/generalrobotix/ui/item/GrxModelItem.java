@@ -329,7 +329,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
 		// World Top TGroup
 		TransformGroup gTopgrp = new TransformGroup();
-        bgRoot_.addChild(gTopgrp);
+                bgRoot_.addChild(gTopgrp);
 
 		for (int i=0 ;i<lInfo_.length; i++) {
 			TransformGroup gTgrp = setTransformGroup(lInfo_[i]);
@@ -346,6 +346,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				int appIndex = (int)(shpInfo.appearanceIndex);
 				float creaseAngle=0.0f;
 				Appearance ap = new Appearance();;
+
 				if(appIndex != -1){
 					PolygonAttributes pa = new PolygonAttributes();
 					pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
@@ -365,7 +366,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 					}else{
 					}
 
-					int texIndex = (int)(appInfo.textureIndex);			
+					int texIndex = (int)(appInfo.textureIndex);
 					if(texIndex != -1){
 						TextureInfoLocal texInfo = new TextureInfoLocal(TextureInfo, texIndex);
 						Texture2D texture2d = setTexture(texInfo);
@@ -389,30 +390,32 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 						ap.setTextureAttributes(texAttrBase);
 					}else{
 					}
-			
+
+                                        if(false){ // <<-- temprary hack to avoid exception (added by nakaoka)
 					Color3f[] vcolors= new Color3f[shpInfo.indices.length];
 					if( setvcolors(shpInfo, appInfo, diffuseColor, vcolors) ){
 						triangleA.setColors(vcolors);
 						triangleA.setColorIndices(shpInfo.indices);
 					}
+                                        }
 
 					//From ModelLoader IDL Normal Vector Set  ( Debug Comment Out ! )
 					//Under IF Block Enable -> MoelLoader NormalVector Set
 					Vector3f[] normals = new Vector3f[shpInfo.indices.length];																
 					int[] normalIndices = new int[shpInfo.indices.length];
 					if( setnormals( shpInfo, appInfo, normals, normalIndices ) ){
-	                    triangleA.setNormals(normals);
+                                                triangleA.setNormals(normals);
 						triangleA.setNormalIndices(normalIndices);
 					}
 					creaseAngle = appInfo.creaseAngle;
 				}else{		//if(appIndex != -1)
-				}			
+				}
 				
 				PrimitiveType ptype = shpInfo.type;			
 				//Java3D NormalVector Generate
 				//Force Java3D NormalVector Generate! 
-                NormalGenerator ng = new NormalGenerator((double)creaseAngle);
-                ng.generateNormals(triangleA);
+                                NormalGenerator ng = new NormalGenerator((double)creaseAngle);
+                                ng.generateNormals(triangleA);
 				Shape3D shapeObj = new Shape3D(triangleA.getGeometryArray());
 				if(appIndex != -1){
 					shapeObj.setAppearance( ap );		
