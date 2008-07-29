@@ -5,7 +5,9 @@
   @if jp
   ModelLoader サーバ関連インターフェース
   @endif
- */
+
+  @author Shin'ichiro Nakaoka
+*/
 
 #include "OpenHRPCommon.idl"
 
