@@ -14,6 +14,7 @@ extern "C" {
 
 #include "png.h"
 #include "VrmlNodes.h"
+#include "ModelParserExportDef.h"
 
 using namespace std;
 
@@ -31,7 +32,7 @@ namespace OpenHRP
         ImageConverter(void){};
         virtual ~ImageConverter(void){};
 
-        bool convert( VrmlImageTexture & imageTexture, VrmlPixelTexture & pixelTexture, string dirPath = "" );
+        HRPMODELPARSER_EXPORTS bool convert( VrmlImageTexture & imageTexture, VrmlPixelTexture & pixelTexture, string dirPath = "" );
     };
 
 };

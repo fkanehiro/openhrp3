@@ -14,8 +14,7 @@
 #   define HRPMODELPARSER_EXPORTS __declspec(dllimport)
 # endif
 #else 
-# define HRPMODEL_EXPORT 
+# define HRPMODELPARSER_EXPORTS 
 #endif /* Windows */
-
 
 #endif

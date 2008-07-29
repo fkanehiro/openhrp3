@@ -13,9 +13,6 @@ macro(create_simple_controller CONTROLLER_NAME)
   
   if(WIN32)
 	add_definitions(${OPENRTM_DEFINITIONS})
-	add_definitions(-DMAKE_RTC_DLL;-DUSE_stub_in_nt_dll)
-	target_link_libraries(${CONTROLLER_NAME} hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} )
-	target_link_libraries(${CONTROLLER_NAME}Comp hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} )
   endif()
 
   set(controller_install_path ${RELATIVE_SAMPLE_INSTALL_PATH}/controller/${CONTROLLER_NAME})
@@ -28,12 +25,8 @@ macro(create_simple_controller CONTROLLER_NAME)
         CONFIGURATIONS Release )
   endif()  
 
-  if(UNIX)
-    install(PROGRAMS ${CONTROLLER_NAME}.sh DESTINATION ${controller_install_path})
-  elseif(WIN32)
-    install(PROGRAMS ${CONTROLLER_NAME}.bat DESTINATION ${controller_install_path})
-  endif()
-
+  install(PROGRAMS ${CONTROLLER_NAME}.${SH_SFX} DESTINATION ${controller_install_path})
+  
   install(FILES rtc.conf DESTINATION ${controller_install_path})
 
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/etc)

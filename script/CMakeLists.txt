@@ -10,15 +10,13 @@ set(script_list
 set(grxui_script_list
     openhrp-grxui
     openhrp-jython-prompt
+    openhrp-shutdown-servers
 )
 
 if(UNIX)
   set(subbin unix)
-  list(APPEND grxui_script_list openhrp-shutdown-servers ) 
-  set(sfx "sh")
 elseif(WIN32)
   set(subbin dos)
-  set(sfx "bat")
 endif()
 
 macro(create_bootscripts DESTINATION DO_INSTALL)
@@ -27,16 +25,16 @@ macro(create_bootscripts DESTINATION DO_INSTALL)
   set(DO_INSTALL ${DO_INSTALL})
 
   foreach(script ${script_list} )
-    configure_file(${script}.${sfx}.in ${DESTINATION}/${subbin}/${script}.${sfx} @ONLY)
+    configure_file(${script}.${SH_SFX}.in ${DESTINATION}/${subbin}/${script}.${SH_SFX} @ONLY)
     if(DO_INSTALL)
-	  install(PROGRAMS ${DESTINATION}/${subbin}/${script}.${sfx} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/${subbin})
+	  install(PROGRAMS ${DESTINATION}/${subbin}/${script}.${SH_SFX} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/${subbin})
     endif()
   endforeach()
 
   foreach(script ${grxui_script_list} )
-    configure_file(${script}.${sfx}.in ${DESTINATION}/${script}.${sfx} @ONLY)
+    configure_file(${script}.${SH_SFX}.in ${DESTINATION}/${script}.${SH_SFX} @ONLY)
     if(DO_INSTALL)
-      install(PROGRAMS ${DESTINATION}/${script}.${sfx} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+      install(PROGRAMS ${DESTINATION}/${script}.${SH_SFX} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
     endif()
   endforeach()
  
