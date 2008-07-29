@@ -152,6 +152,7 @@ class EasyScanner {
     void skipSpace();
 
     void throwException(const char* message);
+    void throwException(const std::string& message);
 
     /**
        The exception version of readInt().
