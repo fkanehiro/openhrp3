@@ -34,8 +34,8 @@ if(UNIX)
   target_link_libraries(hrpParser3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
     
 elseif(WIN32)
-  target_link_libraries(hrpParser3 ${PNG_LIBRARY} ${JPEG_LIBRARY})
-
+  add_definitions(-DHRPMODELPARSER_MAKE_DLL)
+  target_link_libraries(hrpParser3 ${PNG_LIBRARY} ${JPEG_LIBRARY} libpng zlib libjpeg )
 endif() 
 
 if(WIN32)

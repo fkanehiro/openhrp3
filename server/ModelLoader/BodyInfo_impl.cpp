@@ -699,8 +699,8 @@ void BodyInfo_impl::setVertices(ShapeInfo_var& shape, const vector<vector3d>& ve
     int i = 0;
     for(size_t v = 0 ; v < numVertices ; v++){
         const vector3d& vorg = vertices[v];
-        vector4d v(vorg(0), vorg(1), vorg(2), 1.0);
-        vector4d transformed(transform * v);
+        vector4d vor(vorg(0), vorg(1), vorg(2), 1.0);
+        vector4d transformed(transform * vor);
         shape->vertices[i++] = transformed[0];
         shape->vertices[i++] = transformed[1];
         shape->vertices[i++] = transformed[2];

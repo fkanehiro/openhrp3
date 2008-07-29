@@ -3,11 +3,20 @@
 
 
 if(NOT TVMET_DIR)
-  find_path(
-    TVMET_DIR
-    NAMES include/tvmet/Vector.h
-    PATHS /usr/local /usr
-    DOC "the top directory of tvmet")
+    if(UNIX)
+      find_path(
+        TVMET_DIR
+        NAMES include/tvmet/Vector.h
+        PATHS /usr/local /usr
+        DOC "the top directory of tvmet")
+    elseif(WIN32)
+      find_path(
+        TVMET_DIR 
+        NAMES include/tvmet/Vector.h
+        PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
+        PATH_SUFFIXES tvmet tvmet1.7.2 tvmet-1.7.2 
+        DOC "the top directory of tvmet")  
+     endif()
 endif()
 
 if(TVMET_DIR)
