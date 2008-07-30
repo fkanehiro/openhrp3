@@ -245,12 +245,16 @@ module OpenHRP {
     /**
        @if jp
        法線対応付けデータ。
-       VRMLのIndexedFaceSetにおけるnormalIndexと同様。
+       ShapeInfo の triangles の並びと対応させて、頂点ごとの法線を指定する。
        @endif
     */
     LongSequence  normalIndices;
 
+    /**
+       \todo 廃止する
+    */
     boolean       normalPerVertex;
+
     boolean       solid;
     float         creaseAngle;
 
@@ -265,12 +269,15 @@ module OpenHRP {
     /**
        @if jp
        色対応付けデータ。
-       VRMLのIndexedFaceSetにおけるcolorIndexと同様。
+       ShapeInfo の triangles の並びと対応させて、頂点ごとの色を指定する。
        @endif
     */
     LongSequence  colorIndices;
 
-    boolean       coloerPerVertex;
+    /**
+       \todo 廃止する
+    */
+    boolean       colorPerVertex;
 
     /**
        @if jp
@@ -291,6 +298,7 @@ module OpenHRP {
      @if jp
      表面材質情報を格納する構造体。
      各要素はVRMLのMaterialノードと同様。
+     全ての変数の値の範囲は 0.0 〜 1.0。
      @endif
   */
   struct MaterialInfo
@@ -298,7 +306,7 @@ module OpenHRP {
     float         ambientIntensity;
     FloatArray3   diffuseColor;
     FloatArray3   emissiveColor;
-    float         shininess;
+    float         shininess; 
     FloatArray3   specularColor;
     float         transparency;
   };

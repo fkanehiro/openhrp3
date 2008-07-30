@@ -15,3 +15,11 @@ Inlineは実はノードだったので、普通にノードとして読み込�
 
 読み込み時のエラーがでたときは、モデルローダサーバとしては例外を返すんじゃなくて、
 falseを返すとかで判定した方がいいような気もする。
+
+
+**** TODO *****
+
+ModelLoaderのIDLで、AppearanceInfo の normalPerVertexとcolorPerVertexは廃止する。
+その代わりに、normalIndices と colorIndices の並びは、ShapeInfo の triangles の並びと
+一致させるようにする。(Java3D の GoemetryInfo と同様の格納法)
+
