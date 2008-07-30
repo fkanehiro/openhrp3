@@ -10,13 +10,14 @@
 
 /*! @file
   @author Shin'ichiro Nakaoka
-  @author K.Fukuda (Ergovision)
+  @author K.Fukuda
 */
 
 
-#include <iostream>
-#include "EasyScanner.h"
 #include "VrmlParser.h"
+
+#include <iostream>
+#include <OpenHRP/Util/EasyScanner.h>
 
 using namespace std;
 using namespace boost;
@@ -56,7 +57,7 @@ namespace {
         T_SFNODE,
         T_MFNODE,
         T_SFBOOL,
-	T_SFIMAGE,		// #####
+	T_SFIMAGE,
 
         // Nodes
         N_PROTO,
@@ -84,7 +85,7 @@ namespace {
         N_TEXTURE_COORDINATE,
         N_NORMAL,
         N_CYLINDER_SENSOR,
-// #####
+
         N_POINTSET,
 	N_PIXEL_TEXTURE,
 	N_MOVIE_TEXTURE,
@@ -100,21 +101,21 @@ namespace {
 	N_POINT_LIGHT,
 	N_DIRECTIONAL_LIGHT,
 	N_SPOT_LIGHT,
-// #####
-        N_AUDIO_CLIP,				// #####
-        N_SOUND,					// #####
-        N_COLOR_INTERPOLATOR,		// #####
-        N_COORDINATE_INTERPOLATOR,	// #####
-        N_ORIENTATION_INTERPOLATOR,	// #####
-        N_NORMAL_INTERPOLATOR,		// #####
-        N_POSITION_INTERPOLATOR,	// #####
-        N_SCALAR_INTERPOLATOR,		// #####
-        N_PLANE_SENSOR,				// #####
-        N_PROXIMITY_SENSOR,			// #####
-        N_SPHERE_SENSOR,			// #####
+
+        N_AUDIO_CLIP,
+        N_SOUND,
+        N_COLOR_INTERPOLATOR,
+        N_COORDINATE_INTERPOLATOR,
+        N_ORIENTATION_INTERPOLATOR,
+        N_NORMAL_INTERPOLATOR,
+        N_POSITION_INTERPOLATOR,
+        N_SCALAR_INTERPOLATOR,
+        N_PLANE_SENSOR,
+        N_PROXIMITY_SENSOR,
+        N_SPHERE_SENSOR,
         N_TIME_SENSOR,
-        N_TOUCH_SENSOR,				// #####
-        N_VISIBILITY_SENSOR,		// #####
+        N_TOUCH_SENSOR,
+        N_VISIBILITY_SENSOR,
 
         // Fields
         F_IS,
@@ -226,48 +227,48 @@ namespace {
         F_MIN_ANGLE,
         F_OFFSET,
 
-	F_IMAGE,			// #####
+	F_IMAGE,
 
-	F_X_DIMENSION,		// #####
-	F_Z_DIMENSION,		// #####
-	F_X_SPACING,		// #####
-	F_Z_SPACING,		// #####
+	F_X_DIMENSION,
+	F_Z_DIMENSION,
+	F_X_SPACING,
+	F_Z_SPACING,
 
-	F_LOOP,				// #####
-	F_START_TIME,		// #####
-	F_STOP_TIME,		// #####
+	F_LOOP,
+	F_START_TIME,
+	F_STOP_TIME,
 
-	F_CROSS_SECTION,	// #####
-	F_SPINE,			// #####
-	F_BEGIN_CAP,		// #####
-	F_END_CAP,			// #####
+	F_CROSS_SECTION,
+	F_SPINE,
+	F_BEGIN_CAP,
+	F_END_CAP,
 
-	F_CHOICE,			// #####
-	F_WHICH_CHOICE,		// #####
+	F_CHOICE,
+	F_WHICH_CHOICE,
 
-	F_RANGE,			// #####
-	F_LEVEL,			// #####
+	F_RANGE,
+	F_LEVEL,
 
-	F_COLLIDE,			// #####
-	F_PROXY,			// #####
+	F_COLLIDE,
+	F_PROXY,
 
-	F_PARAMETER,		// #####
+	F_PARAMETER,
 
-	F_VISIBILITY_RANGE,	// #####
-	F_FOG_TYPE,			// #####
+	F_VISIBILITY_RANGE,
+	F_FOG_TYPE,
 
-	F_AXIS_OF_ROTATION,	// #####
+	F_AXIS_OF_ROTATION,
 
-	F_TITLE,			// #####
-	F_INFO,				// #####
+	F_TITLE,
+	F_INFO,
 
-	F_LOCATION,			// #####
-	F_ON,				// #####
-	F_INTENSITY,		// #####
-	F_ATTENUATION,		// #####
-	F_DIRECTION,		// #####
-	F_BEAM_WIDTH,		// #####
-	F_CUT_OFF_RANGE,	// #####
+	F_LOCATION,
+	F_ON,
+	F_INTENSITY,
+	F_ATTENUATION,
+	F_DIRECTION,
+	F_BEAM_WIDTH,
+	F_CUT_OFF_RANGE,
 
         // event type
         E_FIELD,
@@ -278,11 +279,11 @@ namespace {
         // def & route
         D_DEF,
         D_USE,
-        D_ROUTE,			// #####
+        D_ROUTE,
 
         // unsupported keywords
-        U_SCRIPT,			// #####
-        U_EXTERNPROTO		// #####
+        U_SCRIPT,
+        U_EXTERNPROTO
 
     };
 
@@ -368,14 +369,14 @@ namespace {
             { N_TEXTURE_COORDINATE, "TextureCoordinate" },
             { N_NORMAL, "Normal" },
             { N_CYLINDER_SENSOR, "CylinderSensor" },
-// #####
-            { N_POINTSET,				"PointSet" },
-            { N_PIXEL_TEXTURE,        "PixelTexture" },
-            { N_MOVIE_TEXTURE,        "MovieTexture" },
-            { N_ELEVATION_GRID,       "ElevationGrid" },
-            { N_EXTRUSION,			"Extrusion" },
-            { N_SWITCH,				"Switch" },
-            { N_LOD,                  "LOD" },
+
+            { N_POINTSET, "PointSet" },
+            { N_PIXEL_TEXTURE,"PixelTexture" },
+            { N_MOVIE_TEXTURE, "MovieTexture" },
+            { N_ELEVATION_GRID, "ElevationGrid" },
+            { N_EXTRUSION, "Extrusion" },
+            { N_SWITCH, "Switch" },
+            { N_LOD,"LOD" },
             { N_COLLISION,			"Collision" },
             { N_ANCHOR,				"Anchor" },
             { N_FOG,					"Fog" },
@@ -384,22 +385,22 @@ namespace {
             { N_POINT_LIGHT,			"PointLight" },
             { N_DIRECTIONAL_LIGHT,	"DirectionalLight" },
             { N_SPOT_LIGHT,			"SpotLight" },
-// #####
+
             // unsupported nodes
-            { N_AUDIO_CLIP,				"AudioClip" },				// #####
-            { N_SOUND,					"Sound" },					// #####
-            { N_COLOR_INTERPOLATOR,		"ColorInterpolator" },		// #####
-            { N_COORDINATE_INTERPOLATOR,	"CoordinateInterpolator" },	// #####
-            { N_ORIENTATION_INTERPOLATOR,	"OrientationInterpolator" },// #####
-            { N_NORMAL_INTERPOLATOR,		"NormalInterpolator" },		// #####
-            { N_POSITION_INTERPOLATOR,	"PositionInterpolator" },	// #####
-            { N_SCALAR_INTERPOLATOR,		"ScalarInterpolator" },		// #####
-            { N_PLANE_SENSOR,				"PlaneSensor" },			// #####
-            { N_PROXIMITY_SENSOR,			"ProximitySensor" },		// #####
-            { N_SPHERE_SENSOR,			"SphereSensor" },			// #####
+            { N_AUDIO_CLIP,				"AudioClip" },
+            { N_SOUND,					"Sound" },
+            { N_COLOR_INTERPOLATOR,		"ColorInterpolator" },
+            { N_COORDINATE_INTERPOLATOR,	"CoordinateInterpolator" },
+            { N_ORIENTATION_INTERPOLATOR,	"OrientationInterpolator" },
+            { N_NORMAL_INTERPOLATOR,		"NormalInterpolator" },
+            { N_POSITION_INTERPOLATOR,	"PositionInterpolator" },
+            { N_SCALAR_INTERPOLATOR,		"ScalarInterpolator" },
+            { N_PLANE_SENSOR,				"PlaneSensor" },
+            { N_PROXIMITY_SENSOR,			"ProximitySensor" },
+            { N_SPHERE_SENSOR,			"SphereSensor" },
             { N_TIME_SENSOR,				"TimeSensor" },
-            { N_TOUCH_SENSOR,				"TouchSensor" },			// #####
-            { N_VISIBILITY_SENSOR,		"VisibilitySensor" },		// #####
+            { N_TOUCH_SENSOR,				"TouchSensor" },
+            { N_VISIBILITY_SENSOR,		"VisibilitySensor" },
 
             // Fields
             { F_IS, "IS" },
@@ -526,8 +527,6 @@ namespace {
             { F_TITLE, "title" },
             { F_INFO, "info" },
 
-// #####
-
             // event type
             { E_FIELD, "field" },
             { E_EXPOSED_FIELD, "exposedField" },
@@ -537,11 +536,11 @@ namespace {
             // def & route
             { D_DEF, "DEF" },
             { D_USE, "USE" },
-            { D_ROUTE, "ROUTE" },	// #####
+            { D_ROUTE, "ROUTE" },
 
             // unsupported keywords
-            { U_SCRIPT, "Script" },	// #####
-            { U_EXTERNPROTO, "EXTERNPROTO" },	// #####
+            { U_SCRIPT, "Script" },
+            { U_EXTERNPROTO, "EXTERNPROTO" },
 
             { 0, "" }
         };

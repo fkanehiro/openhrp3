@@ -1,7 +1,17 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
+
 /*!
   @file CalculateNormal.cpp
-  @brief Implementation of Caluculate Normal class
   @author Y.TSUNODA
+  @author Shin'ichiro Nakaoka
 */
 
 #include <iostream>
@@ -13,6 +23,16 @@ using namespace boost;
 using namespace OpenHRP;
 
 static const double PI = 3.14159265358979323846;
+
+
+namespace {
+
+    double _length( vector3d a )
+    {
+	double length = sqrt( pow( a[0], 2 ) + pow( a[1], 2 ) + pow( a[2], 2 ) );
+	return length;
+    }
+}
 
 
 //==================================================================================================
@@ -109,7 +129,7 @@ CalculateNormal::calculateNormalsOfVertex(
 
 			// 頂点の法線ベクトルと，面の法線ベクトルのなす角は
 			double angle = acos( ( nM[0] * nV[0] + nM[1] * nV[1] + nM[2] * nV[2] ) 
-								/ ( PRIVATE::_length( nM ) * ( PRIVATE::_length( nV ) ) ) );
+								/ ( _length( nM ) * ( _length( nV ) ) ) );
 
 			// 折り目角度と比較する
 			if( angle <= creaseAngle )

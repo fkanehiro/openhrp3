@@ -11,8 +11,6 @@ set(sources
   ForwardDynamics.cpp
   ForwardDynamicsABM.cpp
   ForwardDynamicsCBM.cpp
-  tvmet3d.cpp
-  quaternion.cpp
   MatrixSolvers.cpp
   World.cpp
   ConstraintForceSolver.cpp
@@ -32,12 +30,9 @@ set(headers
   MatrixSolvers.h
   ModelLoaderUtil.h
   Sensor.h
-  TimeMeasure.h
   World.h
   hrpModelExportDef.h
-  quaternion.h
   tvmet3d.h
-  tvmetCommonTypes.h
   ublasCommonTypes.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
   )	
@@ -50,12 +45,15 @@ set_target_properties(hrpBase3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
   target_link_libraries(hrpBase3
-    hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
+    hrpUtil3 hrpCorbaStubSkel3
+    ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
     boost_filesystem boost_regex dl)
 
 elseif(WIN32)
   add_definitions(-DHRPMODEL_MAKE_DLL)
-  target_link_libraries(hrpBase3 hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES})  
+  target_link_libraries(hrpBase3
+    hrpUtil3 hrpCorbaStubSkel3
+    ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES})  
   set_target_properties(hrpBase3 PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT )
 
 endif()

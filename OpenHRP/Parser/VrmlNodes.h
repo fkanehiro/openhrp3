@@ -17,7 +17,7 @@
 #ifndef OPENHRP_PARSER_VRMLNODES_H_INCLUDED
 #define OPENHRP_PARSER_VRMLNODES_H_INCLUDED
 
-#include "ModelParserConfig.h"
+#include "config.h"
 
 #include <vector>
 #include <string>
@@ -116,7 +116,7 @@ namespace OpenHRP {
     inline void intrusive_ptr_release(VrmlNode* obj);
 
     //! Abstract base class of all vrml nodes.
-    class MODELPARSER_EXPORT VrmlNode
+    class HRP_PARSER_EXPORT VrmlNode
     {
       public:
 
@@ -156,7 +156,7 @@ namespace OpenHRP {
     typedef std::vector<SFNode> MFNode;
 
 
-    class MODELPARSER_EXPORT  VrmlUnsupportedNode : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlUnsupportedNode : public VrmlNode
     {
       public:
         VrmlUnsupportedNode(const std::string& nodeTypeName);
@@ -166,7 +166,7 @@ namespace OpenHRP {
 
 
     //! VRML Viewpoint node
-    class MODELPARSER_EXPORT  VrmlViewpoint : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlViewpoint : public VrmlNode
     {
       public:
 	VrmlViewpoint();
@@ -181,7 +181,7 @@ namespace OpenHRP {
 
 
     //! VRML NavigationInfo node
-    class MODELPARSER_EXPORT  VrmlNavigationInfo : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlNavigationInfo : public VrmlNode
     {
       public:
 	VrmlNavigationInfo();
@@ -196,7 +196,7 @@ namespace OpenHRP {
 
 
     //! VRML Background node
-    class MODELPARSER_EXPORT  VrmlBackground : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlBackground : public VrmlNode
     {
       public:
         VrmlBackground();
@@ -216,7 +216,7 @@ namespace OpenHRP {
 
 
     //! VRML Group node
-    class MODELPARSER_EXPORT  VrmlGroup : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlGroup : public VrmlNode
     {
       public:
 	VrmlGroup();
@@ -229,7 +229,7 @@ namespace OpenHRP {
 
 
     //! VRML Transform node
-    class MODELPARSER_EXPORT  VrmlTransform : public VrmlGroup
+    class HRP_PARSER_EXPORT  VrmlTransform : public VrmlGroup
     {
       public:
 	VrmlTransform();
@@ -251,7 +251,7 @@ namespace OpenHRP {
 
 
     //! VRML Shape node
-    class MODELPARSER_EXPORT  VrmlShape : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlShape : public VrmlNode
     {
       public:
         VrmlShape();
@@ -272,7 +272,7 @@ namespace OpenHRP {
 
 
     //! VRML Appearance node
-    class MODELPARSER_EXPORT  VrmlAppearance : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlAppearance : public VrmlNode
     {
       public:
         VrmlAppearance();
@@ -284,7 +284,7 @@ namespace OpenHRP {
 
 
     //! VRML Material node
-    class MODELPARSER_EXPORT  VrmlMaterial : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlMaterial : public VrmlNode
     {
       public:
 	VrmlMaterial();
@@ -299,7 +299,7 @@ namespace OpenHRP {
 
 
     //! Base class of VRML Texture nodes
-    class MODELPARSER_EXPORT  VrmlTexture : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlTexture : public VrmlNode
     {
       public:
         VrmlTexture();
@@ -307,7 +307,7 @@ namespace OpenHRP {
 
     
     //! VRML ImageTexture node
-    class MODELPARSER_EXPORT  VrmlImageTexture : public VrmlTexture
+    class HRP_PARSER_EXPORT  VrmlImageTexture : public VrmlTexture
     {
       public:
 	VrmlImageTexture();
@@ -320,7 +320,7 @@ namespace OpenHRP {
 
 
     //! VRML TextureTransform node
-    class MODELPARSER_EXPORT  VrmlTextureTransform : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlTextureTransform : public VrmlNode
     {
       public:
 	VrmlTextureTransform();
@@ -332,14 +332,14 @@ namespace OpenHRP {
     };
 
     //! Base class of VRML geometry nodes
-    class MODELPARSER_EXPORT  VrmlGeometry : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlGeometry : public VrmlNode
     {
       public:
         VrmlGeometry();
     };
 
     //! VRML Box node
-    class MODELPARSER_EXPORT  VrmlBox : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlBox : public VrmlGeometry
     {
       public:
 	VrmlBox();
@@ -349,7 +349,7 @@ namespace OpenHRP {
 
 
     //! VRML Cone node
-    class MODELPARSER_EXPORT  VrmlCone : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlCone : public VrmlGeometry
     {
       public:
 	VrmlCone();
@@ -363,7 +363,7 @@ namespace OpenHRP {
 
 
     //! VRML Cylinder node
-    class MODELPARSER_EXPORT  VrmlCylinder : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlCylinder : public VrmlGeometry
     {
       public:
 	VrmlCylinder();
@@ -378,7 +378,7 @@ namespace OpenHRP {
 
 
     //! VRML Sphere node
-    class MODELPARSER_EXPORT  VrmlSphere : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlSphere : public VrmlGeometry
     {
       public:
 	VrmlSphere();
@@ -388,7 +388,7 @@ namespace OpenHRP {
 
 
     //! VRML FontStyle node
-    class MODELPARSER_EXPORT  VrmlFontStyle : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlFontStyle : public VrmlNode
     {
       public:
 	VrmlFontStyle();
@@ -407,7 +407,7 @@ namespace OpenHRP {
 
 
     //! VRML Text node
-    class MODELPARSER_EXPORT  VrmlText : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlText : public VrmlGeometry
     {
       public:
 	VrmlText();
@@ -427,7 +427,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlCoordinate> VrmlCoordinatePtr;
 
     //! VRML IndexedLineSet node
-    class MODELPARSER_EXPORT  VrmlIndexedLineSet : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlIndexedLineSet : public VrmlGeometry
     {
       public: 
 	VrmlIndexedLineSet();
@@ -449,7 +449,7 @@ namespace OpenHRP {
 
 
     //! VRML IndexedFaseSet node
-    class MODELPARSER_EXPORT  VrmlIndexedFaceSet : public VrmlIndexedLineSet
+    class HRP_PARSER_EXPORT  VrmlIndexedFaceSet : public VrmlIndexedLineSet
     {
       public:
 	VrmlIndexedFaceSet();
@@ -468,7 +468,7 @@ namespace OpenHRP {
 
 
     //! VRML Color node
-    class MODELPARSER_EXPORT  VrmlColor : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlColor : public VrmlNode
     {
       public:
         VrmlColor();
@@ -478,7 +478,7 @@ namespace OpenHRP {
 
 
     //! VRML Coordinate node
-    class MODELPARSER_EXPORT  VrmlCoordinate : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlCoordinate : public VrmlNode
     {
       public:
         VrmlCoordinate();
@@ -487,7 +487,7 @@ namespace OpenHRP {
 
 
     //! VRML TextureCoordinate node
-    class MODELPARSER_EXPORT  VrmlTextureCoordinate : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlTextureCoordinate : public VrmlNode
     {
       public:
         VrmlTextureCoordinate();
@@ -496,7 +496,7 @@ namespace OpenHRP {
 
 
     //! VRML Normal node
-    class MODELPARSER_EXPORT  VrmlNormal : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlNormal : public VrmlNode
     {
       public:
         VrmlNormal();
@@ -505,7 +505,7 @@ namespace OpenHRP {
 
 
     //! VRML CylinderSensor node
-    class MODELPARSER_EXPORT  VrmlCylinderSensor : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlCylinderSensor : public VrmlNode
     {
       public:
 	VrmlCylinderSensor();
@@ -523,7 +523,7 @@ namespace OpenHRP {
 
     // #####
     //! VRML PointSet node
-    class MODELPARSER_EXPORT  VrmlPointSet : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlPointSet : public VrmlGeometry
     {
       public:
 	VrmlPointSet();
@@ -538,7 +538,7 @@ namespace OpenHRP {
 
     // #####
     //! VRML PixelTexture node
-    class MODELPARSER_EXPORT  VrmlPixelTexture : public VrmlTexture
+    class HRP_PARSER_EXPORT  VrmlPixelTexture : public VrmlTexture
     {
       public:
 	VrmlPixelTexture();
@@ -554,7 +554,7 @@ namespace OpenHRP {
 
     // #####
     //! VRML MovieTexture node
-    class MODELPARSER_EXPORT  VrmlMovieTexture : public VrmlTexture
+    class HRP_PARSER_EXPORT  VrmlMovieTexture : public VrmlTexture
     {
       public:
 	VrmlMovieTexture();
@@ -574,7 +574,7 @@ namespace OpenHRP {
 
     // #####
     //! VRML ElevationGrid node
-    class MODELPARSER_EXPORT  VrmlElevationGrid : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlElevationGrid : public VrmlGeometry
     {
       public:
 	VrmlElevationGrid();
@@ -600,7 +600,7 @@ namespace OpenHRP {
 
     // #####
     //! VRML Extrusion node
-    class MODELPARSER_EXPORT  VrmlExtrusion : public VrmlGeometry
+    class HRP_PARSER_EXPORT  VrmlExtrusion : public VrmlGeometry
     {
       public:
 	VrmlExtrusion();
@@ -621,7 +621,7 @@ namespace OpenHRP {
 
 
 
-    class MODELPARSER_EXPORT  VrmlSwitch : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlSwitch : public VrmlNode
     {
       public:
 	VrmlSwitch();
@@ -632,7 +632,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlSwitch> VrmlSwitchPtr;
 
 
-    class MODELPARSER_EXPORT  VrmlLOD : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlLOD : public VrmlNode
     {
       public:
 	VrmlLOD();
@@ -644,7 +644,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlLOD> VrmlLODPtr;
 
 
-    class MODELPARSER_EXPORT VrmlCollision : public VrmlGroup
+    class HRP_PARSER_EXPORT VrmlCollision : public VrmlGroup
     {
       public:
 	VrmlCollision();
@@ -655,7 +655,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlCollision> VrmlCollisionPtr;
 
 
-    class MODELPARSER_EXPORT VrmlAnchor : public VrmlGroup
+    class HRP_PARSER_EXPORT VrmlAnchor : public VrmlGroup
     {
       public:
 	VrmlAnchor();
@@ -667,7 +667,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlAnchor> VrmlAnchorPtr;
 
 
-    class MODELPARSER_EXPORT VrmlBillboard : public VrmlGroup
+    class HRP_PARSER_EXPORT VrmlBillboard : public VrmlGroup
     {
       public:
 	VrmlBillboard();
@@ -677,7 +677,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlBillboard> VrmlBillboardPtr;
 
 
-    class MODELPARSER_EXPORT VrmlFog : public VrmlNode
+    class HRP_PARSER_EXPORT VrmlFog : public VrmlNode
     {
       public:
 	VrmlFog();
@@ -689,7 +689,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlFog> VrmlFogPtr;
 
 
-    class MODELPARSER_EXPORT  VrmlWorldInfo : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlWorldInfo : public VrmlNode
     {
       public:
 	VrmlWorldInfo();
@@ -700,7 +700,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlWorldInfo> VrmlWorldInfoPtr;
 
 
-    class MODELPARSER_EXPORT VrmlPointLight : public VrmlNode
+    class HRP_PARSER_EXPORT VrmlPointLight : public VrmlNode
     {
       public:
 	VrmlPointLight();
@@ -716,7 +716,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlPointLight> VrmlPointLightPtr;
 
 
-    class MODELPARSER_EXPORT VrmlDirectionalLight : public VrmlNode
+    class HRP_PARSER_EXPORT VrmlDirectionalLight : public VrmlNode
     {
       public:
 	VrmlDirectionalLight();
@@ -730,7 +730,7 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlDirectionalLight> VrmlDirectionalLightPtr;
 
 
-    class MODELPARSER_EXPORT  VrmlSpotLight : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlSpotLight : public VrmlNode
     {
       public:
 	VrmlSpotLight();
@@ -750,7 +750,7 @@ namespace OpenHRP {
 
 
 
-    class MODELPARSER_EXPORT  VrmlVariantField
+    class HRP_PARSER_EXPORT  VrmlVariantField
     {
       private:
 
@@ -813,7 +813,7 @@ namespace OpenHRP {
 
     
     //! VRML Proto definition
-    class MODELPARSER_EXPORT  VrmlProto : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlProto : public VrmlNode
     {
       public:
 	std::string protoName;
@@ -837,7 +837,7 @@ namespace OpenHRP {
 
 
     //! VRML node which is instance of VRML Prototype
-    class MODELPARSER_EXPORT  VrmlProtoInstance : public VrmlNode
+    class HRP_PARSER_EXPORT VrmlProtoInstance : public VrmlNode
     {
       public:
         VrmlProtoPtr proto;

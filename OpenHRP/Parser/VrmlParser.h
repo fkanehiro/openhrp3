@@ -10,34 +10,30 @@
 
 /*! @file
   @author Shin'ichiro Nakaoka
-  @author K.Fukuda (Ergovision)
+  @author K.Fukuda
 */
-
 
 #ifndef OPENHRP_PARSER_VRML_PARSER_H_INCLUDED
 #define OPENHRP_PARSER_VRML_PARSER_H_INCLUDED
 
-#include "ModelParserConfig.h"
-
+#include "config.h"
+#include "VrmlNodes.h"
 #include <vector>
 #include <string>
 #include <boost/shared_ptr.hpp>
 
-#include "VrmlNodes.h"
-
-
-class EasyScanner;
-typedef boost::shared_ptr<EasyScanner> EasyScannerPtr;
-
 
 namespace OpenHRP {
+
+    class EasyScanner;
+    typedef boost::shared_ptr<EasyScanner> EasyScannerPtr;
 
     /**
        \brief Parser for VRML97 format
 
        The VrmlParser class reads a VRML97 file and extract its nodes.
     */
-    class MODELPARSER_EXPORT  VRMLParser
+    class HRP_PARSER_EXPORT VRMLParser
     {
     public:
 
@@ -51,7 +47,7 @@ namespace OpenHRP {
 
 	VRMLParser();
 
-	~VRMLParser();
+	virtual ~VRMLParser();
 
       void setProtoInstanceActualNodeExtractionMode(bool isOn);
 
@@ -101,8 +97,8 @@ namespace OpenHRP {
 	VrmlProtoInstancePtr readProtoInstanceNode(const std::string& proto_name, VrmlNodeCategory nodeCategory);
 	VrmlNodePtr evalProtoInstance(VrmlProtoInstancePtr proto, VrmlNodeCategory nodeCategory);
 	VrmlUnsupportedNodePtr readUnsupportedNode(const std::string& nodeTypeName);
-    VrmlUnsupportedNodePtr readScriptNode();	// #####
-	VrmlUnsupportedNodePtr readExternProto();	// #####
+        VrmlUnsupportedNodePtr readScriptNode();
+	VrmlUnsupportedNodePtr readExternProto();
 
 	VrmlViewpointPtr readViewpointNode();
 	VrmlNavigationInfoPtr readNavigationInfoNode();
@@ -114,7 +110,7 @@ namespace OpenHRP {
 	VrmlBoxPtr readBoxNode();
 	VrmlConePtr readConeNode();
 	VrmlCylinderPtr readCylinderNode();
-// #####
+
 	VrmlPointSetPtr			readPointSetNode();
 	VrmlPixelTexturePtr		readPixelTextureNode();
 	VrmlMovieTexturePtr		readMovieTextureNode();
@@ -130,7 +126,7 @@ namespace OpenHRP {
 	VrmlPointLightPtr		readPointLightNode();
 	VrmlDirectionalLightPtr	readDirectionalLightNode();
 	VrmlSpotLightPtr		readSpotLightNode();
-// #####
+
 	VrmlSpherePtr readSphereNode();
 	VrmlTextPtr readTextNode();
 	VrmlFontStylePtr readFontStyleNode();
@@ -168,7 +164,7 @@ namespace OpenHRP {
 	void readSFNode(SFNode& out_node, VrmlNodeCategory nodeCategory);
 	SFNode readSFNode(VrmlNodeCategory nodeCategory);
 	void readMFNode(MFNode& out_nodes, VrmlNodeCategory nodeCategory);
-	void readSFImage( SFImage& out_image );		// #####
+	void readSFImage( SFImage& out_image );
 
 	void eliminateUnusedVerticesIter(VrmlNodePtr node, int& numEliminated);
 	int eliminateFaceSetUnusedVertices(VrmlIndexedFaceSetPtr faceset);
