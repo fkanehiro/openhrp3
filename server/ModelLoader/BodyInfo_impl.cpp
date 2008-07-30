@@ -612,7 +612,7 @@ int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, UniformedShape& 
             {
                 VrmlIndexedFaceSetPtr faceSet = static_pointer_cast<VrmlIndexedFaceSet>(shapeNode->geometry);
                                 
-                appearance->coloerPerVertex = faceSet->colorPerVertex;
+                appearance->colorPerVertex = faceSet->colorPerVertex;
                 
                 if(faceSet->color){
                     size_t colorNum = faceSet->color->color.size();
@@ -646,7 +646,7 @@ int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, UniformedShape& 
             {
                 VrmlElevationGridPtr elevationGrid = static_pointer_cast<VrmlElevationGrid>(shapeNode->geometry);
                 
-                appearance->coloerPerVertex = elevationGrid->colorPerVertex;
+                appearance->colorPerVertex = elevationGrid->colorPerVertex;
                 
                 if(elevationGrid->color) {
                     size_t colorNum = elevationGrid->color->color.size();
