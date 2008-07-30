@@ -336,7 +336,7 @@ void ModelNodeSetImpl::checkJointProto()
     }
 
     if(protoToCheck->getField("equivalentInertia")){
-        putMessage("A field \"equivalentInertia\" of the Joint node is obsolete.");
+        putMessage("The \"equivalentInertia\" field of the Joint node is obsolete.");
     }
 }
 
@@ -426,57 +426,64 @@ void ModelNodeSetImpl::extractChildNodes
             extractChildNodes(jointNodeSet, groupNode->children, acceptableProtoIds);
 
         } else if(childNode->isCategoryOf(PROTO_INSTANCE_NODE)){
-            VrmlProtoInstance* protoInstance = static_cast<VrmlProtoInstance*>(childNode);
 
+            VrmlProtoInstance* protoInstance = static_cast<VrmlProtoInstance*>(childNode);
             int id = PROTO_UNDEFINED;
+            bool doTraverseChildren = false;
+            ProtoIdSet acceptableChildProtoIds(acceptableProtoIds);
+
             const string& protoName = protoInstance->proto->protoName;
             ProtoNameToInfoMap::iterator p = protoNameToInfoMap.find(protoName);
-			
-            if(p != protoNameToInfoMap.end()){
-                id = p->second.id;
-            }
 
-            if(!acceptableProtoIds.test(id)){
-                throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
+            if(p == protoNameToInfoMap.end()){
+                doTraverseChildren = true;
             } else {
-
-                messageIndent += 2;
-
-                switch(id){
-                
-                case PROTO_JOINT:
-                    jointNodeSet->childJointNodeSets.push_back(addJointNodeSet(protoInstance));
-                    break;
-
-                case PROTO_SENSOR:
-                    jointNodeSet->sensorNodes.push_back(protoInstance);
-                    putMessage(protoName + protoInstance->defName);
-                    break;
-
-                case PROTO_SEGMENT:
-                    {
-                        if(jointNodeSet->segmentNode){
-                            const string& jointName = jointNodeSet->jointNode->defName;
-                            throw ModelNodeSet::Exception
-                                ((string("Joint node ") + jointName +
-                                  "includes multipe segment nodes, which is not supported."));
-                        }
-                        jointNodeSet->segmentNode = protoInstance;
-                        putMessage(string("Segment node ") + protoInstance->defName);
-
-                        MFNode& childNodes = protoInstance->fields["children"].mfNode();
-                        ProtoIdSet acceptableChildProtoIds;
-                        acceptableChildProtoIds.set(PROTO_SENSOR);
-                        extractChildNodes(jointNodeSet, childNodes, acceptableChildProtoIds);
-                    }
-                    break;
-
-                default:
-                    break;
+                id = p->second.id;
+                if(!acceptableProtoIds.test(id)){
+                    throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
                 }
-
-                messageIndent -= 2;
             }
+
+            messageIndent += 2;
+
+            switch(id){
+                
+            case PROTO_JOINT:
+                jointNodeSet->childJointNodeSets.push_back(addJointNodeSet(protoInstance));
+                break;
+                
+            case PROTO_SENSOR:
+                jointNodeSet->sensorNodes.push_back(protoInstance);
+                putMessage(protoName + protoInstance->defName);
+                break;
+                
+            case PROTO_SEGMENT:
+                {
+                    if(jointNodeSet->segmentNode){
+                        const string& jointName = jointNodeSet->jointNode->defName;
+                        throw ModelNodeSet::Exception
+                            ((string("Joint node ") + jointName +
+                              "includes multipe segment nodes, which is not supported."));
+                    }
+                    jointNodeSet->segmentNode = protoInstance;
+                    putMessage(string("Segment node ") + protoInstance->defName);
+
+                    doTraverseChildren = true;
+                    acceptableChildProtoIds.reset();
+                    acceptableChildProtoIds.set(PROTO_SENSOR);
+                }
+                break;
+                
+            default:
+                break;
+            }
+
+            if(doTraverseChildren){
+                MFNode& childNodes = protoInstance->fields["children"].mfNode();
+                extractChildNodes(jointNodeSet, childNodes, acceptableChildProtoIds);
+            }
+
+            messageIndent -= 2;
         }
     }
 }
