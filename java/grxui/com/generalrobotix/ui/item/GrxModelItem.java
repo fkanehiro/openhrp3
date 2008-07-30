@@ -321,6 +321,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         Appearance appearance = new Appearance();
         PolygonAttributes pa = new PolygonAttributes();
         pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+        pa.setCullFace(PolygonAttributes.CULL_NONE);
+        pa.setBackFaceNormalFlip(true);
         appearance.setPolygonAttributes(pa);
 
         int appearanceIndex = shapeInfo.appearanceIndex;
@@ -1856,12 +1858,7 @@ return null;
         float r = materialInfo.ambientIntensity;
         material.setAmbientColor(new Color3f(r * dColor[0], r * dColor[1], r * dColor[2]));
         
-        float shininess = materialInfo.shininess * 128.0f;
-        if(shininess < 0.0f){
-            shininess = 0.0f;
-        } else if(shininess > 1.0f){
-            shininess = 1.0f;
-        }
+        float shininess = materialInfo.shininess * 127.0f + 1.0f;
         material.setShininess(shininess);
         
         return material;
