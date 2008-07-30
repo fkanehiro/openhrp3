@@ -24,10 +24,8 @@
 #include <OpenHRP/Corba/ModelLoader.h>
 
 #include <OpenHRP/Parser/ModelNodeSet.h>
-#include <OpenHRP/Parser/UniformedShape.h>
+#include <OpenHRP/Parser/TriangleMeshGenerator.h>
 #include <OpenHRP/Parser/VrmlNodes.h>
-
-using namespace std;
 
 namespace OpenHRP
 {
@@ -40,7 +38,7 @@ namespace OpenHRP
 
         void loadModelFile(const std::string& filename);
 
-        string& replace(string& str, const string sb, const string sa);
+        std::string& replace(std::string& str, const std::string sb, const std::string sa);
 
         void setLastUpdateTime(time_t time) { lastUpdate_ = time;};
         time_t getLastUpdateTime() { return lastUpdate_; }
@@ -86,7 +84,7 @@ namespace OpenHRP
           Map for sharing shapeInfo
           if it is node that has already stored in shape_, it has the corresponding index.
         */
-        typedef map<OpenHRP::VrmlShapePtr, ShapeObject> SharedShapeInfoMap;
+        typedef std::map<OpenHRP::VrmlShapePtr, ShapeObject> SharedShapeInfoMap;
 
         SharedShapeInfoMap sharedShapeInfoMap;
 
@@ -101,17 +99,17 @@ namespace OpenHRP
 
         void traverseShapeNodes(int index, MFNode& childNodes, const matrix44d& transform);
         int createShapeInfo(VrmlShapePtr shapeNode, const matrix44d& transform);
-        int createAppearanceInfo(VrmlShapePtr shapeNode, UniformedShape& uniformedShape, const matrix44d& transform);
+        int createAppearanceInfo(VrmlShapePtr shapeNode, TriangleMeshGenerator& uniformedShape, const matrix44d& transform);
 
-        void setVertices(ShapeInfo_var& shape, const vector<vector3d>& vertices, const matrix44d& transform);
-        void setTriangles(ShapeInfo_var& shape, const vector<vector3i>& triangles);
-        void setNormals(AppearanceInfo_var& appearance, const vector<vector3d>& vertexList,
-                        const vector<vector3i>& traiangleList, const matrix44d& transform);
-        void setShapeInfoType(ShapeInfo_var& shapeInfo, UniformedShape::ShapePrimitiveType type);
+        void setVertices(ShapeInfo_var& shape, const std::vector<vector3d>& vertices, const matrix44d& transform);
+        void setTriangles(ShapeInfo_var& shape, const std::vector<vector3i>& triangles);
+        void setNormals(AppearanceInfo_var& appearance, const std::vector<vector3d>& vertexList,
+                        const std::vector<vector3i>& traiangleList, const matrix44d& transform);
+        void setShapeInfoType(ShapeInfo_var& shapeInfo, TriangleMeshGenerator::ShapePrimitiveType type);
         int createTextureInfo(VrmlTexturePtr textureNode);
         int createMaterialInfo(VrmlMaterialPtr materialNode);
         void calcTransform(VrmlTransformPtr transform, matrix44d& out_matrix);
-        string getModelFileDirPath();        
+        std::string getModelFileDirPath();        
     };
 };
 

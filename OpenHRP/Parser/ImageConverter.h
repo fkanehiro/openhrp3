@@ -4,8 +4,10 @@
   @author K.FUKUDA
 */
 
-#ifndef IMAGECONVERTER_H_INCLUDED
-#define IMAGECONVERTER_H_INCLUDED
+#ifndef OPENHRP_PARSER_IMAGECONVERTER_H_INCLUDED
+#define OPENHRP_PARSER_IMAGECONVERTER_H_INCLUDED
+
+#include "config.h"
 
 extern "C" {
 #define XMD_H
@@ -14,7 +16,6 @@ extern "C" {
 
 #include "png.h"
 #include "VrmlNodes.h"
-#include "ModelParserExportDef.h"
 
 using namespace std;
 
@@ -32,9 +33,10 @@ namespace OpenHRP
         ImageConverter(void){};
         virtual ~ImageConverter(void){};
 
-        HRPMODELPARSER_EXPORTS bool convert( VrmlImageTexture & imageTexture, VrmlPixelTexture & pixelTexture, string dirPath = "" );
+        HRP_PARSER_EXPORT bool convert( VrmlImageTexture & imageTexture, VrmlPixelTexture & pixelTexture, string dirPath = "" );
     };
 
 };
 
-#endif	// IMAGECONVERTER_H_INCLUDED
+#endif
+

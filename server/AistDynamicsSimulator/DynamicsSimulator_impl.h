@@ -18,7 +18,7 @@
 
 #include <OpenHRP/Base/World.h>
 #include <OpenHRP/Base/ConstraintForceSolver.h>
-#include <OpenHRP/Base/TimeMeasure.h>
+#include <OpenHRP/Util/TimeMeasure.h>
 
 #include <boost/scoped_ptr.hpp>
 

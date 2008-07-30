@@ -59,7 +59,7 @@ namespace {
         const double sth = sin(q);
         const double vth = 1.0 - cos(q);
         
-	vector3d a = static_cast<vector3d>( tvmet::normalize( axis ) );
+	vector3d a(tvmet::normalize(axis));
         
         double ax = a(0);
         double ay = a(1);
@@ -558,7 +558,7 @@ int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const matrix44d& tran
     int shapeInfoIndex = -1;
     
     // 整形処理.ここの処理は OpenHRP/Parser ライブラリに移すべき
-    UniformedShape uniformShape;
+    TriangleMeshGenerator uniformShape;
     uniformShape.signalOnStatusMessage.connect(bind(&BodyInfo_impl::putMessage, this, _1));
     uniformShape.setMessageOutput(true);
 
@@ -595,7 +595,7 @@ int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const matrix44d& tran
 /**
    @return the index of a created AppearanceInfo object. The return value is -1 if the creation fails.
 */
-int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, UniformedShape& uniformedShape, const matrix44d& transform)
+int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, TriangleMeshGenerator& uniformedShape, const matrix44d& transform)
 {
     int appearanceIndex = -1;
     
@@ -608,7 +608,7 @@ int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, UniformedShape& 
 
         switch(uniformedShape.getShapeType()){
 
-        case UniformedShape::S_INDEXED_FACE_SET:
+        case TriangleMeshGenerator::S_INDEXED_FACE_SET:
             {
                 VrmlIndexedFaceSetPtr faceSet = static_pointer_cast<VrmlIndexedFaceSet>(shapeNode->geometry);
                                 
@@ -642,7 +642,7 @@ int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, UniformedShape& 
             }
             break;
 
-        case UniformedShape::S_ELEVATION_GRID:
+        case TriangleMeshGenerator::S_ELEVATION_GRID:
             {
                 VrmlElevationGridPtr elevationGrid = static_pointer_cast<VrmlElevationGrid>(shapeNode->geometry);
                 
@@ -811,29 +811,29 @@ void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<vect
   ShapeInfoにPrimitiveTypeを代入
   @endif
 */
-void BodyInfo_impl::setShapeInfoType(ShapeInfo_var& shapeInfo, UniformedShape::ShapePrimitiveType type)
+void BodyInfo_impl::setShapeInfoType(ShapeInfo_var& shapeInfo, TriangleMeshGenerator::ShapePrimitiveType type)
 {
     switch(type) {
 
-    case UniformedShape::S_BOX:
+    case TriangleMeshGenerator::S_BOX:
         shapeInfo->type = BOX;
         break;
 
-    case UniformedShape::S_CONE:
+    case TriangleMeshGenerator::S_CONE:
         shapeInfo->type = CONE;
         break;
 
-    case UniformedShape::S_CYLINDER:
+    case TriangleMeshGenerator::S_CYLINDER:
         shapeInfo->type = CYLINDER;
         break;
 
-    case UniformedShape::S_SPHERE:
+    case TriangleMeshGenerator::S_SPHERE:
         shapeInfo->type = SPHERE;
         break;
 
-    case UniformedShape::S_INDEXED_FACE_SET:
-    case UniformedShape::S_ELEVATION_GRID:
-    case UniformedShape::S_EXTRUSION:
+    case TriangleMeshGenerator::S_INDEXED_FACE_SET:
+    case TriangleMeshGenerator::S_ELEVATION_GRID:
+    case TriangleMeshGenerator::S_EXTRUSION:
         shapeInfo->type = MESH;
         break;
     }

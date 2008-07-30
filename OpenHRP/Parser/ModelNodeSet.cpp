@@ -14,8 +14,7 @@
 
 #include "ModelNodeSet.h"
 #include "VrmlParser.h"
-#include "EasyScanner.h"
-
+#include <OpenHRP/Util/EasyScanner.h>
 #include <bitset>
 #include <iostream>
 #include <algorithm>

@@ -1,18 +1,27 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
+ */
+
 /*! @file
-  @brief Header file of Uniformed Shape class
   @author Y.TSUNODA
+  @author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_PARSER_UNIFORMEDSHAPE_H_INCLUDED
-#define OPENHRP_PARSER_UNIFORMEDSHAPE_H_INCLUDED
 
+#ifndef OPENHRP_PARSER_TRIANGLE_MESH_GENERATOR_H_INCLUDED
+#define OPENHRP_PARSER_TRIANGLE_MESH_GENERATOR_H_INCLUDED
 
-#include <vector>
-
-#include "ModelUniformConfig.h"
-
+#include "config.h"
 #include "VrmlNodes.h"
 #include "ModelNodeSet.h"
+
+#include <vector>
 
 // for tvmet
 #ifdef _WIN32
@@ -23,7 +32,6 @@
 #include <tvmet/Matrix.h>
 #include <tvmet/Vector.h>
 
-using namespace std;
 
 namespace OpenHRP
 {
@@ -31,18 +39,10 @@ namespace OpenHRP
     typedef tvmet::Matrix<double, 4, 4>	matrix44d;
     typedef tvmet::Vector<double, 3>	vector3d;
     typedef tvmet::Vector<double, 4>	vector4d;
-    typedef tvmet::Vector<int, 3>		vector3i;
-
-    namespace PRIVATE
-    {
-        vector3d omegaFromRot( const matrix33d& r );
-        double   _distance( vector3d a, vector3d b );
-        double   _length( vector3d a );
-    };
-
+    typedef tvmet::Vector<int, 3>       vector3i;
 
     //! Uniformd Shape class
-    class MODELUNIFORM_EXPORT UniformedShape
+    class HRP_PARSER_EXPORT TriangleMeshGenerator
     {
       public:
         //! enumeration of primitive shape types
@@ -59,22 +59,22 @@ namespace OpenHRP
             SHAPE_TYPES_NUM
         };
 
-        UniformedShape();
+        TriangleMeshGenerator();
 
         bool setFlgUniformIndexedFaceSet( bool val );
         bool uniform( VrmlNodePtr node );
         bool uniform( ModelNodeSet& modelNodeSet );
         ShapePrimitiveType  getShapeType(){ return type_; };
-        const vector<vector3d>& getVertexList(){ return vertexList_; };
-        const vector<vector3i>& getTriangleList(){ return triangleList_; };
+        const std::vector<vector3d>& getVertexList(){ return vertexList_; };
+        const std::vector<vector3i>& getTriangleList(){ return triangleList_; };
 
         boost::signal<void(const std::string& message)> signalOnStatusMessage;
         bool setMessageOutput( bool val ) { return( flgMessageOutput_ = val ); }
 
       private:
         ShapePrimitiveType  type_;						//!< primitive type
-        vector<vector3d>	vertexList_;				//!< vertex list
-        vector<vector3i>	triangleList_;				//!< triangle mesh list
+        std::vector<vector3d>	vertexList_;				//!< vertex list
+        std::vector<vector3i>	triangleList_;				//!< triangle mesh list
         bool				flgUniformIndexedFaceSet_;
         bool				flgMessageOutput_;
 
@@ -93,11 +93,11 @@ namespace OpenHRP
         int _traverseJointNode(	JointNodeSetPtr, int&, int );
         void _traverseShapeNodes( MFNode& childNodes );
 
-        int _createTriangleMesh( vector<int> mesh, bool ccw );
+        int _createTriangleMesh( std::vector<int> mesh, bool ccw );
 
         void putMessage( const std::string& message );
     };
 };
 
-#endif	// OPENHRP_PARSER_UNIFORMEDSHAPE_H_INCLUDED
+#endif
 

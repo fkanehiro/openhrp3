@@ -17,7 +17,7 @@
 #define OPENHRP_BODY_CUSTOMIZER_INTERFACE_H_INCLUDED
 
 #include <string>
-#include "tvmetCommonTypes.h"
+#include "tvmet3d.h"
 #include "hrpModelExportDef.h"
 
 namespace OpenHRP {

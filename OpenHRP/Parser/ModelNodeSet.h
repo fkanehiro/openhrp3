@@ -15,13 +15,12 @@
 #ifndef OPENHRP_PARSER_MODEL_NODE_SET_H_INCLUDED
 #define OPENHRP_PARSER_MODEL_NODE_SET_H_INCLUDED
 
-#include "ModelParserConfig.h"
+#include "config.h"
+#include "VrmlNodes.h"
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <boost/signals.hpp>
-
-#include "VrmlNodes.h"
 
 
 namespace OpenHRP {
@@ -44,7 +43,7 @@ namespace OpenHRP {
 
     class ModelNodeSetImpl;
 
-    class MODELPARSER_EXPORT ModelNodeSet
+    class HRP_PARSER_EXPORT ModelNodeSet
     {
       public:
 
