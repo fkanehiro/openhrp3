@@ -24,7 +24,7 @@
 #include <OpenHRP/Corba/ViewSimulator.h>
 
 #include <OpenHRP/Parser/VrmlNodes.h>
-#include <OpenHRP/Parser/CalculateNormal.h>
+#include <OpenHRP/Parser/NormalGenerator.h>
 #include <OpenHRP/Parser/ImageConverter.h>
 
 #include "UtilFunctions.h"
@@ -50,37 +50,6 @@ namespace {
         }
         return true;
     }
-    
-    /**
-       This function was imported from tvmet3d.cpp in the Base library
-    */
-    static void rodrigues(matrix33d& out_R, const vector3d& axis, double q)
-    {
-        const double sth = sin(q);
-        const double vth = 1.0 - cos(q);
-        
-	vector3d a(tvmet::normalize(axis));
-        
-        double ax = a(0);
-        double ay = a(1);
-        double az = a(2);
-        
-        const double axx = ax*ax*vth;
-        const double ayy = ay*ay*vth;
-        const double azz = az*az*vth;
-        const double axy = ax*ay*vth;
-        const double ayz = ay*az*vth;
-        const double azx = az*ax*vth;
-        
-        ax *= sth;
-        ay *= sth;
-        az *= sth;
-        
-        out_R = 1.0 - azz - ayy, -az + axy,       ay + azx,
-            az + axy,        1.0 - azz - axx, -ax + ayz,
-            -ay + azx,       ax + ayz,        1.0 - ayy - axx;
-    }
-
 }
     
 
@@ -473,9 +442,8 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
             sensorInfo.specValues[5] = static_cast<CORBA::Double>(height);
         }
 
-        matrix33d mRotation;
-        vector3d axis(sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2]);
-        rodrigues(mRotation, axis, sensorInfo.rotation[3]);
+        Vector3 axis(sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2]);
+        Matrix33 mRotation(rodrigues(axis, sensorInfo.rotation[3]));
 
         matrix44d mTransform;
         mTransform =
@@ -691,14 +659,14 @@ int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, TriangleMeshGene
   transformとして与えられた回転・並進成分を全ての頂点に反映する.
   @endif
 */
-void BodyInfo_impl::setVertices(ShapeInfo_var& shape, const vector<vector3d>& vertices, const matrix44d& transform)
+void BodyInfo_impl::setVertices(ShapeInfo_var& shape, const vector<Vector3>& vertices, const matrix44d& transform)
 {
     size_t numVertices = vertices.size();
     shape->vertices.length(numVertices * 3);
 
     int i = 0;
     for(size_t v = 0 ; v < numVertices ; v++){
-        const vector3d& vorg = vertices[v];
+        const Vector3& vorg = vertices[v];
         vector4d vor(vorg(0), vorg(1), vorg(2), 1.0);
         vector4d transformed(transform * vor);
         shape->vertices[i++] = transformed[0];
@@ -734,17 +702,17 @@ void BodyInfo_impl::setTriangles(ShapeInfo_var& shape, const vector<vector3i>& t
   @todo この機能は整形部に移すべし
   @endif
 */
-void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<vector3d>& vertexList, const vector<vector3i>& traiangleList, const matrix44d& transform)
+void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<Vector3>& vertexList, const vector<vector3i>& traiangleList, const matrix44d& transform)
 {
     // ここの処理ってsetVerticesとダブってるよ。廃止！
-    vector<vector3d> transformedVertexList;
+    vector<Vector3> transformedVertexList;
     vector4d vertex4;				
     vector4d transformed4;			
 
     for(size_t v = 0; v < vertexList.size(); ++v){
         vertex4 = vertexList[v][0], vertexList[v][1], vertexList[v][2], 1; 
         transformed4 = transform * vertex4;
-        transformedVertexList.push_back(vector3d(transformed4[0], transformed4[1], transformed4[2]));
+        transformedVertexList.push_back(Vector3(transformed4[0], transformed4[1], transformed4[2]));
     }
 
 
@@ -757,7 +725,7 @@ void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<vect
     if(appearance->normalPerVertex) {
         calculateNormal.calculateNormalsOfVertex(transformedVertexList, traiangleList, appearance->creaseAngle);
 
-        const vector<vector3d>& normalsVertex = calculateNormal.getNormalsOfVertex();
+        const vector<Vector3>& normalsVertex = calculateNormal.getNormalsOfVertex();
         const vector<vector3i>& normalIndex = calculateNormal.getNormalIndex();
 
         // 法線データを代入する
@@ -766,7 +734,7 @@ void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<vect
 
         // AppearanceInfo のメンバに代入する
         for(size_t i = 0; i < normalsVertexNum; ++i) {
-            vector3d normal(tvmet::normalize(normalsVertex[i]));
+            Vector3 normal(tvmet::normalize(normalsVertex[i]));
             appearance->normals[3*i+0] = normal[0];
             appearance->normals[3*i+1] = normal[1];
             appearance->normals[3*i+2] = normal[2];
@@ -784,7 +752,7 @@ void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<vect
         }
     } else { // 面の法線
         // 算出した面の法線(のvector:配列)を取得する
-        const vector<vector3d>& normalsMesh = calculateNormal.getNormalsOfMesh();
+        const vector<Vector3>& normalsMesh = calculateNormal.getNormalsOfMesh();
         
         // 面の法線データ数を取得する
         size_t normalsMeshNum = normalsMesh.size();
@@ -795,7 +763,7 @@ void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<vect
         
         for(size_t i = 0 ; i < normalsMeshNum ; ++i){
             // 法線ベクトルを正規化する
-            vector3d normal(tvmet::normalize(normalsMesh[i]));
+            Vector3 normal(tvmet::normalize(normalsMesh[i]));
             // AppearanceInfo のメンバに代入する
             appearance->normals[3*i+0] = normal[0];
             appearance->normals[3*i+1] = normal[1];
@@ -937,11 +905,10 @@ int BodyInfo_impl::createMaterialInfo(VrmlMaterialPtr materialNode)
 void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, matrix44d& out_matrix)
 {
     // rotationロドリゲスの回転軸
-    vector3d axis(transform->rotation[0], transform->rotation[1], transform->rotation[2]);
+    Vector3 axis(transform->rotation[0], transform->rotation[1], transform->rotation[2]);
 
     // ロドリゲスrotationを3x3行列に変換する
-    matrix33d mRotation;
-    rodrigues(mRotation, axis, transform->rotation[3]);
+    Matrix33 mRotation(rodrigues(axis, transform->rotation[3]));
 
     // rotation, translation を4x4行列に代入する
     matrix44d mTransform;
@@ -953,11 +920,10 @@ void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, matrix44d& out_mat
 
 
     // ScaleOrientation
-    vector3d scaleOrientation(transform->scaleOrientation[0], transform->scaleOrientation[1], transform->scaleOrientation[2]);
+    Vector3 scaleOrientation(transform->scaleOrientation[0], transform->scaleOrientation[1], transform->scaleOrientation[2]);
 
     // ScaleOrientationを3x3行列に変換する
-    matrix33d mSO;
-    rodrigues(mSO, scaleOrientation, transform->scaleOrientation[3]);
+    Matrix33 mSO(rodrigues(scaleOrientation, transform->scaleOrientation[3]));
 
     // スケーリング中心 平行移動
     matrix44d mTranslation;

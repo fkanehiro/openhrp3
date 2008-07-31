@@ -14,13 +14,13 @@ set(sources
   VrmlParser.cpp
   VrmlWriter.cpp
   TriangleMeshGenerator.cpp
-  CalculateNormal.cpp
+  NormalGenerator.cpp
   ImageConverter.cpp
   ModelNodeSet.cpp)
 
 set(headers
   config.h
-  CalculateNormal.h
+  NormalGenerator.h
   TriangleMeshGenerator.h
   VrmlParser.h
   ModelNodeSet.h

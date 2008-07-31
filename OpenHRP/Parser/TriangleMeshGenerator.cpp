@@ -26,38 +26,6 @@ using namespace OpenHRP;
 static const double PI = 3.14159265358979323846;
 
 
-namespace {
-
-    double _distance( vector3d a, vector3d b )
-    {
-	double distance = sqrt( pow( a[0] - b[0], 2 ) + pow( a[1] - b[1], 2 ) + pow( a[2] - b[2], 2 ) );
-	return distance;
-    }
-
-    double _length( vector3d a )
-    {
-	double length = sqrt( pow( a[0], 2 ) + pow( a[1], 2 ) + pow( a[2], 2 ) );
-	return length;
-    }
-}
-
-
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief      コンストラクタ
-
-  @note       <BR>
-
-  @date       2008-04-15 Y.TSUNODA <BR>
-
-  @return     
-
-  @endif
-*/
-//==================================================================================================
 TriangleMeshGenerator::TriangleMeshGenerator()
 {
     type_ = S_UNKNOWN_TYPE;
@@ -69,29 +37,20 @@ TriangleMeshGenerator::TriangleMeshGenerator()
 
 
 
-
-//==================================================================================================
 /*!
   @if jp
+  IndexedFaceSet整形フラグ設定
 
-  @brief      IndexedFaceSet整形フラグ設定
+  IndexedFaceSet(入力データ)が三角メッシュであることが保障されたデータの場合，
+  整形処理をせず入力データをそのまま出力する。
 
-  @note       IndexedFaceSet(入力データ)が三角メッシュであることが保障されたデータの場合，
-  整形処理をせず入力データをそのまま出力する。<BR>
-  true : 整形処理をする，false : 整形処理をしない<BR>
-
-  @date       2008-04-15 Y.TSUNODA <BR>
-
-  @return     bool フラグに設定された値
-
+  @param val true : 整形処理をする，false : 整形処理をしない<BR>
+  @return bool フラグに設定された値
   @endif
 */
-//==================================================================================================
-bool
-TriangleMeshGenerator::setFlgUniformIndexedFaceSet(
-    bool val )
+bool TriangleMeshGenerator::setFlgUniformIndexedFaceSet(bool val)
 {
-    return( flgUniformIndexedFaceSet_ = val );
+    return (flgUniformIndexedFaceSet_ = val);
 }
 
 
@@ -222,11 +181,11 @@ void TriangleMeshGenerator::_traverseShapeNodes(
 			
                             // 整形処理後の頂点配列を VrmlIndexedFaceSetへ代入する
                             VrmlCoordinatePtr coordinate( new VrmlCoordinate );
-                            vector<vector3d> vertexList = this->getVertexList();
+                            vector<Vector3> vertexList = this->getVertexList();
                             for( size_t i = 0 ; i < vertexList.size() ; ++i )
 				{
                                     SFVec3f point;
-                                    vector3d vertex = vertexList[i];
+                                    Vector3 vertex = vertexList[i];
                                     point[0] = vertex[0];
                                     point[1] = vertex[1];
                                     point[2] = vertex[2];
@@ -367,7 +326,7 @@ TriangleMeshGenerator::uniformBox(
         }
 
     // BOX頂点生成
-    vector3d vertex;
+    Vector3 vertex;
 
     vertex = -width/2.0, -height/2.0, -depth/2.0;	// 頂点No.0
     _addVertexList( vertex );
@@ -460,7 +419,7 @@ TriangleMeshGenerator::uniformCone(
         }
 
     vector<int>			circularList;			// 底面円周上の頂点を格納するリスト(作業用)
-    vector3d			v;						// 頂点
+    Vector3			v;						// 頂点
     vector3i			tr;						// 三角メッシュ
 
     // CONE TOP ( = 0 番目の頂点 )
@@ -551,7 +510,7 @@ TriangleMeshGenerator::uniformCylinder(
     vector<int>			uCircularList;		// 上面円周上の頂点を格納するリスト(作業用)
     vector<int>			lCircularList;		// 底面円周上の頂点を格納するリスト(作業用)
 
-    vector3d			v;					// 頂点
+    Vector3			v;					// 頂点
     vector3i			tr;					// 三角メッシュ
 
     // CYLINDER 上面中心 ( = 0 番目の頂点 )
@@ -658,7 +617,7 @@ TriangleMeshGenerator::uniformIndexedFaceSet(
     // 頂点群 points(MFVec3f)を vertexList_に入れる (コピー)
     for( size_t i = 0 ; i < points.size() ; i++ )
 	{
-            vector3d v;
+            Vector3 v;
             v = ( points.at( i ) )[0], ( points.at( i ) )[1], ( points.at( i ) )[2];
             _addVertexList( v );
 	}
@@ -774,7 +733,7 @@ TriangleMeshGenerator::uniformSphere(
             return false;
         }
 
-    vector3d			v;					// 頂点
+    Vector3			v;					// 頂点
     vector3i			tr;					// 三角メッシュ
 
     // SPHERE 天頂座標 ( = 0 番目の頂点 )
@@ -903,7 +862,7 @@ TriangleMeshGenerator::uniformElevationGrid(
             return false;
 	}
 
-    vector3d			v;						// 頂点
+    Vector3			v;						// 頂点
     vector3i			tr;						// 三角メッシュ
 
     vector< vector<int> >	vertexIndexMatrix;	// 頂点インデックスを格納したマトリクス(一時作業用)
@@ -983,88 +942,60 @@ TriangleMeshGenerator::uniformExtrusion(
 
 
 
-//==================================================================================================
 /*!
   @if jp
-
-  @brief      三角メッシュ生成
-
-  @note       n角形のメッシュを三角形メッシュに分割する<BR>
-  ※ 現時点では，分割対象のメッシュは三角形・四角形のメッシュのみに対応<BR>
-
-  @date       2008-03-14 Y.TSUNODA <BR>
-
-  @return     int 分割した三角形の数 エラー時は負の整数
-
+  n角形のメッシュを三角形メッシュに分割する.
+  現時点では，分割対象のメッシュは三角形・四角形のメッシュのみに対応.
+  @param mesh 1つのメッシュを構成する頂点群リスト
+  @parm ccw CounterClockWise (反時計まわり)指定
+  @return int 分割した三角形の数 エラー時は負の整数
   @endif
 */
-//==================================================================================================
-int
-TriangleMeshGenerator::_createTriangleMesh(
-    vector<int> mesh,					//!< 1つのメッシュを構成する頂点群リスト
-    bool ccw )							//!< CounterClockWise (反時計まわり)指定
+int TriangleMeshGenerator::_createTriangleMesh(const vector<int>& mesh, bool ccw)
 {
-    int triangleCount = 0;				// 分割した三角形の数
+    int triangleCount = 0;		// 分割した三角形の数
     size_t vertexNumber = mesh.size();	// メッシュを構成する頂点数
 
-    if( vertexNumber == 3 )
-	{
-            triangleCount = 1;
+    if( vertexNumber == 3 ){
+        triangleCount = 1;
+        // そのまま triangleListに追加する
+        _addTriangleList( mesh[0], mesh[1], mesh[2], ccw );
+        
+    } else if( vertexNumber == 4 ){
+        triangleCount = 2;
 
-            // そのまま triangleListに追加する
+        // 対角線の長さが短い方で分割する
+        double distance02 = norm2(vertexList_[mesh[0]] - vertexList_[mesh[2]]);
+        double distance13 = norm2(vertexList_[mesh[1]] - vertexList_[mesh[3]]);
+
+        if(distance02 < distance13){
             _addTriangleList( mesh[0], mesh[1], mesh[2], ccw );
-	}
-    else if( vertexNumber == 4 )
-	{
-            triangleCount = 2;
-
-            // 対角線の長さが短い方で分割する
-            if( _distance( vertexList_.at( mesh[0] ), vertexList_.at( mesh[2] ) )
-                <	_distance( vertexList_.at( mesh[1] ), vertexList_.at( mesh[3] ) ) )
-		{
-                    _addTriangleList( mesh[0], mesh[1], mesh[2], ccw );
-                    _addTriangleList( mesh[0], mesh[2], mesh[3], ccw );
-		}
-            else
-		{
-                    _addTriangleList( mesh[0], mesh[1], mesh[3], ccw );
-                    _addTriangleList( mesh[1], mesh[2], mesh[3], ccw );
-		}
-	}
-    else
-	{
-            this->putMessage( "The number of vertex is 5 or more." );
-            return -1;
-	}
-
+            _addTriangleList( mesh[0], mesh[2], mesh[3], ccw );
+        } else {
+            _addTriangleList( mesh[0], mesh[1], mesh[3], ccw );
+            _addTriangleList( mesh[1], mesh[2], mesh[3], ccw );
+        }
+    } else {
+        this->putMessage( "The number of vertex is 5 or more." );
+        triangleCount = -1;
+    }
+    
     return triangleCount;
 }
 
 
 
 
-//==================================================================================================
 /*!
   @if jp
-
-  @brief      頂点リストに頂点を追加
-
-  @note       頂点リストに頂点を追加し，追加した位置(index)を返す <BR>
-
-  @date       2008-03-10 Y.TSUNODA <BR>
-  2008-03-27 K.FUKUDA  vertexList_ メンバ変数化に伴う変更<BR>
-
-  @return     size_t 頂点を頂点リストに追加した位置(index)
-
+  頂点リストに頂点を追加し，追加した位置(index)を返す.
+  @return size_t 頂点を頂点リストに追加した位置(index)
   @endif
 */
-//==================================================================================================
-size_t TriangleMeshGenerator::_addVertexList(
-    vector3d v )				//!< 頂点
+size_t TriangleMeshGenerator::_addVertexList(const Vector3& v)
 {
-    vertexList_.push_back( v );
-
-    return( vertexList_.size() - 1 );
+    vertexList_.push_back(v);
+    return (vertexList_.size() - 1);
 }
 
 

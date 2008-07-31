@@ -20,24 +20,13 @@
 #include "config.h"
 #include "VrmlNodes.h"
 #include "ModelNodeSet.h"
-
+#include <OpenHRP/Util/Tvmet3D.h>
 #include <vector>
-
-// for tvmet
-#ifdef _WIN32
-#pragma warning( disable : 4251 4275 4661 )
-#undef min
-#undef max
-#endif
-#include <tvmet/Matrix.h>
-#include <tvmet/Vector.h>
 
 
 namespace OpenHRP
 {
-    typedef tvmet::Matrix<double, 3, 3>	matrix33d;
     typedef tvmet::Matrix<double, 4, 4>	matrix44d;
-    typedef tvmet::Vector<double, 3>	vector3d;
     typedef tvmet::Vector<double, 4>	vector4d;
     typedef tvmet::Vector<int, 3>       vector3i;
 
@@ -65,7 +54,7 @@ namespace OpenHRP
         bool uniform( VrmlNodePtr node );
         bool uniform( ModelNodeSet& modelNodeSet );
         ShapePrimitiveType  getShapeType(){ return type_; };
-        const std::vector<vector3d>& getVertexList(){ return vertexList_; };
+        const std::vector<Vector3>& getVertexList(){ return vertexList_; };
         const std::vector<vector3i>& getTriangleList(){ return triangleList_; };
 
         boost::signal<void(const std::string& message)> signalOnStatusMessage;
@@ -73,7 +62,7 @@ namespace OpenHRP
 
       private:
         ShapePrimitiveType  type_;						//!< primitive type
-        std::vector<vector3d>	vertexList_;				//!< vertex list
+        std::vector<Vector3>	vertexList_;				//!< vertex list
         std::vector<vector3i>	triangleList_;				//!< triangle mesh list
         bool				flgUniformIndexedFaceSet_;
         bool				flgMessageOutput_;
@@ -86,14 +75,14 @@ namespace OpenHRP
         bool uniformElevationGrid( VrmlElevationGridPtr elevationGrid );
         bool uniformExtrusion( VrmlExtrusionPtr extrusion );
 
-        size_t _addVertexList( vector3d v );
+        size_t _addVertexList(const Vector3& v);
         size_t _addTriangleList( int v1, int v2, int v3, bool ccw = true );
         size_t _addTriangleList( vector3i t );
 
         int _traverseJointNode(	JointNodeSetPtr, int&, int );
         void _traverseShapeNodes( MFNode& childNodes );
 
-        int _createTriangleMesh( std::vector<int> mesh, bool ccw );
+        int _createTriangleMesh(const std::vector<int>& mesh, bool ccw);
 
         void putMessage( const std::string& message );
     };
