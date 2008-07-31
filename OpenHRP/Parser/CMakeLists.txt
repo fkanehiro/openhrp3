@@ -39,6 +39,7 @@ if(UNIX)
   target_link_libraries(hrpParser3 hrpUtil3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
     
 elseif(WIN32)
+  set_target_properties(hrpParser3 PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
   add_definitions(-DHRP_PARSER_MAKE_DLL)
   target_link_libraries(hrpParser3 hrpUtil3 ${PNG_LIBRARY} ${JPEG_LIBRARY} libpng zlib libjpeg )
 endif() 

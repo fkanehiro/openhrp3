@@ -25,7 +25,7 @@
 
 namespace OpenHRP {
 
-    HRP_UTIL_EXPORT class EasyScanner {
+    class HRP_UTIL_EXPORT  EasyScanner {
 
     public:
 
@@ -33,7 +33,7 @@ namespace OpenHRP {
             //int dummy;
         };
 
-        class Exception {
+        class HRP_UTIL_EXPORT Exception {
         public:
             std::string message;
             std::string filename;
@@ -261,12 +261,12 @@ namespace OpenHRP {
 
         SymbolMapPtr symbols;
 
-        friend EasyScanner& operator>>(EasyScanner& scanner, double& value);
-        friend EasyScanner& operator>>(EasyScanner& scanner, int& value);
-        friend EasyScanner& operator>>(EasyScanner& scanner, const char* matchString);
-        friend EasyScanner& operator>>(EasyScanner& scanner, char matchChar);
-        friend EasyScanner& operator>>(EasyScanner& scanner, std::string& str);
-        friend EasyScanner& operator>>(EasyScanner& scanner, EasyScanner::Endl endl);
+        friend HRP_UTIL_EXPORT EasyScanner& operator>>(EasyScanner& scanner, double& value);
+        friend HRP_UTIL_EXPORT EasyScanner& operator>>(EasyScanner& scanner, int& value);
+        friend HRP_UTIL_EXPORT EasyScanner& operator>>(EasyScanner& scanner, const char* matchString);
+        friend HRP_UTIL_EXPORT EasyScanner& operator>>(EasyScanner& scanner, char matchChar);
+        friend HRP_UTIL_EXPORT EasyScanner& operator>>(EasyScanner& scanner, std::string& str);
+        friend HRP_UTIL_EXPORT EasyScanner& operator>>(EasyScanner& scanner, EasyScanner::Endl endl);
 
     };
 

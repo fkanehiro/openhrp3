@@ -59,17 +59,17 @@ endif(UNIX)
 
 if(WIN32)
   set(LAPACK_LIBRARIES clapack.lib blas.lib libf2c.lib )
-    if(NOT LAPACK_TOP_DIR)
-        find_path(
-        LAPACK_TOP_DIR 
-        NAMES LIB/Win32/clapack.lib
-        PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
-        PATH_SUFFIXES CLAPACK CLAPACK3.1.1 CLAPACK-3.1.1
-        DOC "the top directory of clapack")
-    endif()
-    if(LAPACK_TOP_DIR)
-        set(LAPACK_LIBRARY_DIRS ${LAPACK_TOP_DIR}/LIB/Win32)
-    endif()
+  if(NOT LAPACK_TOP_DIR)
+      find_path(
+      LAPACK_TOP_DIR 
+      NAMES LIB/Win32/clapack.lib
+      PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
+      PATH_SUFFIXES CLAPACK CLAPACK3.1.1 CLAPACK-3.1.1
+      DOC "the top directory of clapack")
+  endif()
+  if(LAPACK_TOP_DIR)
+    set(LAPACK_LIBRARY_DIRS ${LAPACK_TOP_DIR}/LIB/Win32)
+  endif()
 endif(WIN32)
   
 
@@ -99,13 +99,14 @@ if(UNIX)
 endif(UNIX)
 
 if(WIN32)
-    if(LAPACK_TOP_DIR)
-        find_file(CLAPACK_H_FILE clapack.h
-            PATHS ${LAPACK_TOP_DIR}/INCLUDE )
-        if(CLAPACK_H_FILE)
-            set( LAPACK_INCLUDE_DIRS ${LAPACK_TOP_DIR}/INCLUDE )
-        endif()
-    endif()    
+  if(LAPACK_TOP_DIR)
+    find_file(CLAPACK_H_FILE clapack.h
+      PATHS ${LAPACK_TOP_DIR}/INCLUDE )
+    mark_as_advanced(CLAPACK_H_FILE)
+    if(CLAPACK_H_FILE)
+      set( LAPACK_INCLUDE_DIRS ${LAPACK_TOP_DIR}/INCLUDE )
+    endif()
+  endif()    
 endif(WIN32)
 
 endif()

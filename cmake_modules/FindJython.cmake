@@ -3,13 +3,16 @@
 
 if(NOT JYTHON)
   set(JYTHON)
-  FIND_PROGRAM(JYTHON jython)
+  if(UNIX)
+    FIND_PROGRAM(JYTHON jython)
+  elseif(WIN32)
+    FIND_PROGRAM(JYTHON jython.bat PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
+        PATH_SUFFIXES jython jython2.2.1 ) 
+  endif()
   if(NOT JYTHON)
     set(JYTHON_FOUND FALSE)
   endif()
 endif()
-
-
 
 if(JYTHON)
   set(JYTHON_FOUND TRUE)
@@ -18,35 +21,41 @@ if(JYTHON)
 
     execute_process(
       # "-Dpython.console= " is needed to avoid curses hang up when invoked by ccmake
-      COMMAND ${JYTHON} -Dpython.console= -c "import java; print java.lang.System.getProperty(\"java.class.path\")"
+      COMMAND ${JYTHON} -Dpython.console="" -c "import java; print java.lang.System.getProperty(\"java.class.path\")"
       OUTPUT_VARIABLE jython_classpath
       RESULT_VARIABLE RESULT
       OUTPUT_STRIP_TRAILING_WHITESPACE)
-
     if(NOT RESULT EQUAL 0)
       set(JYTHON_FOUND FALSE)
     endif()
     
     if(jython_classpath)
-      string(REPLACE ":" ";" jython_classpath ${jython_classpath})
+      if(UNIX)
+        string(REPLACE ":" ";" jython_classpath ${jython_classpath})
+      endif()
       set(JYTHON_JAR)
-      foreach(path ${jython_classpath})
-	if(NOT JYTHON_JAR)
-	  if(path MATCHES "(^|/)jython.*\\.jar")
-	    set(JYTHON_JAR ${path})
-	  endif()
-	endif()
+        foreach(path ${jython_classpath})
+	      if(NOT JYTHON_JAR)
+	        if(UNIX)      
+	          if(path MATCHES "(^|/)jython.*\\.jar")
+	            set(JYTHON_JAR ${path})
+	          endif()
+  	      elseif(WIN32)
+  	        if(path MATCHES "jython.jar")
+	            set(JYTHON_JAR ${path})
+	          endif()
+	        endif()  
+	      endif()
       endforeach()
-    endif()
-  endif()
+    endif(jython_classpath)
+  endif(NOT JYTHON_JAR)
 
   if(NOT JYTHON_HOME)
     execute_process(
-      COMMAND ${JYTHON} -Dpython.console= -c "import java; print java.lang.System.getProperty(\"python.home\")"
+      COMMAND ${JYTHON} -Dpython.console="" -c "import java; print java.lang.System.getProperty(\"python.home\")"
       OUTPUT_VARIABLE JYTHON_HOME
       RESULT_VARIABLE RESULT
       OUTPUT_STRIP_TRAILING_WHITESPACE)
-    
     if(NOT RESULT EQUAL 0)
       set(JYTHON_FOUND FALSE)
     endif()
