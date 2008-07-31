@@ -101,9 +101,9 @@ namespace OpenHRP
         int createShapeInfo(VrmlShapePtr shapeNode, const matrix44d& transform);
         int createAppearanceInfo(VrmlShapePtr shapeNode, TriangleMeshGenerator& uniformedShape, const matrix44d& transform);
 
-        void setVertices(ShapeInfo_var& shape, const std::vector<vector3d>& vertices, const matrix44d& transform);
+        void setVertices(ShapeInfo_var& shape, const std::vector<Vector3>& vertices, const matrix44d& transform);
         void setTriangles(ShapeInfo_var& shape, const std::vector<vector3i>& triangles);
-        void setNormals(AppearanceInfo_var& appearance, const std::vector<vector3d>& vertexList,
+        void setNormals(AppearanceInfo_var& appearance, const std::vector<Vector3>& vertexList,
                         const std::vector<vector3i>& traiangleList, const matrix44d& transform);
         void setShapeInfoType(ShapeInfo_var& shapeInfo, TriangleMeshGenerator::ShapePrimitiveType type);
         int createTextureInfo(VrmlTexturePtr textureNode);
