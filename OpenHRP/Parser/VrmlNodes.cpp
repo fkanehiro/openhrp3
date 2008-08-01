@@ -118,14 +118,46 @@ VrmlBackground::VrmlBackground()
 }
 
 
-VrmlGroup::VrmlGroup()
+AbstractVrmlGroup::AbstractVrmlGroup()
 {
     categorySet.set(TOP_NODE);
     categorySet.set(GROUPING_NODE);
     categorySet.set(CHILD_NODE);
-  
+}
+
+
+void AbstractVrmlGroup::removeChild(int childIndex)
+{
+    replaceChild(childIndex, 0);
+}
+
+
+VrmlGroup::VrmlGroup()
+{
     bboxCenter[0] = bboxCenter[1] = bboxCenter[2] = 0.0;
     bboxSize[0] = bboxSize[1] = bboxSize[2] = -1;
+}
+
+
+int VrmlGroup::countChildren()
+{
+    return children.size();
+}
+
+
+VrmlNode* VrmlGroup::getChild(int index)
+{
+    return children[index].get();
+}
+
+
+void VrmlGroup::replaceChild(int childIndex, VrmlNode* childNode)
+{
+    if(!childNode){
+        children.erase(children.begin() + childIndex);
+    } else {
+        children[childIndex] = childNode;
+    }
 }
 
 
@@ -379,21 +411,66 @@ VrmlExtrusion::VrmlExtrusion()
 
 VrmlSwitch::VrmlSwitch()
 {
-    categorySet.set(TOP_NODE);
-    categorySet.set(GROUPING_NODE);
-    categorySet.set(CHILD_NODE);
-  
     whichChoice = -1;
+}
+
+
+int VrmlSwitch::countChildren()
+{
+    return choice.size();
+}
+
+
+VrmlNode* VrmlSwitch::getChild(int index)
+{
+    return choice[index].get();
+}
+
+
+void VrmlSwitch::replaceChild(int childIndex, VrmlNode* childNode)
+{
+    if(!childNode){
+        choice.erase(choice.begin() + childIndex);
+        if(whichChoice == childIndex){
+            whichChoice = -1;
+        } else if(whichChoice > childIndex){
+            whichChoice -= 1;
+        }
+    } else {
+        choice[childIndex] = childNode;
+    }
 }
 
 
 VrmlLOD::VrmlLOD()
 {
-    categorySet.set(TOP_NODE);
-    categorySet.set(GROUPING_NODE);
-    categorySet.set(CHILD_NODE);
-
     center[0] = center[1] = center[2] = 0.0;
+}
+
+
+int VrmlLOD::countChildren()
+{
+    return level.size();
+}
+
+
+VrmlNode* VrmlLOD::getChild(int index)
+{
+    return level[index].get();
+}
+
+
+void VrmlLOD::replaceChild(int childIndex, VrmlNode* childNode)
+{
+    if(!childNode){
+        level.erase(level.begin() + childIndex);
+        if(!level.empty()){
+            int rangeIndexToRemove = (childIndex > 0) ? (childIndex - 1) : 0;
+            range.erase(range.begin() + rangeIndexToRemove);
+        }
+    } else {
+        level[childIndex] = childNode;
+    }
 }
 
 

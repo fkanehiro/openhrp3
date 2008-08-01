@@ -43,7 +43,7 @@ namespace OpenHRP {
         SFCOLOR, MFCOLOR,
         SFSTRING, MFSTRING,
         SFNODE, MFNODE,
-        SFIMAGE,				// #####
+        SFIMAGE,
     };
 
     typedef bool        SFBool;
@@ -215,11 +215,29 @@ namespace OpenHRP {
     typedef boost::intrusive_ptr<VrmlBackground> VrmlBackgroundPtr;
 
 
+    class HRP_PARSER_EXPORT  AbstractVrmlGroup : public VrmlNode
+    {
+      public:
+	AbstractVrmlGroup();
+        
+        virtual int countChildren() = 0;
+        virtual VrmlNode* getChild(int index) = 0;
+        virtual void replaceChild(int childIndex, VrmlNode* childNode) = 0;
+        
+        void removeChild(int childIndex);
+    };
+    typedef boost::intrusive_ptr<AbstractVrmlGroup> AbstractVrmlGroupPtr;
+    
+    
     //! VRML Group node
-    class HRP_PARSER_EXPORT  VrmlGroup : public VrmlNode
+    class HRP_PARSER_EXPORT VrmlGroup : public AbstractVrmlGroup
     {
       public:
 	VrmlGroup();
+
+        virtual int countChildren();
+        virtual VrmlNode* getChild(int index);
+        virtual void replaceChild(int childIndex, VrmlNode* childNode);
 
 	SFVec3f bboxCenter;    
 	SFVec3f bboxSize;  
@@ -621,21 +639,31 @@ namespace OpenHRP {
 
 
 
-    class HRP_PARSER_EXPORT  VrmlSwitch : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlSwitch : public AbstractVrmlGroup
     {
       public:
 	VrmlSwitch();
-	MFNode	choice;
+
+        virtual int countChildren();
+        virtual VrmlNode* getChild(int index);
+        virtual void replaceChild(int childIndex, VrmlNode* childNode);
+
+        MFNode	choice;
 	SFInt32	whichChoice;
     };
 
     typedef boost::intrusive_ptr<VrmlSwitch> VrmlSwitchPtr;
 
 
-    class HRP_PARSER_EXPORT  VrmlLOD : public VrmlNode
+    class HRP_PARSER_EXPORT  VrmlLOD : public AbstractVrmlGroup
     {
       public:
 	VrmlLOD();
+
+        virtual int countChildren();
+        virtual VrmlNode* getChild(int index);
+        virtual void replaceChild(int childIndex, VrmlNode* childNode);
+
 	MFFloat range;
 	SFVec3f center;
 	MFNode  level;

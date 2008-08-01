@@ -51,8 +51,10 @@ namespace OpenHRP
         TriangleMeshGenerator();
 
         bool setFlgUniformIndexedFaceSet( bool val );
+
+        int uniformShapeNodes(VrmlNode* node, bool removeImpossibleNodes = true);
+        
         bool uniform( VrmlNodePtr node );
-        bool uniform( ModelNodeSet& modelNodeSet );
         ShapePrimitiveType  getShapeType(){ return type_; };
         const std::vector<Vector3>& getVertexList(){ return vertexList_; };
         const std::vector<vector3i>& getTriangleList(){ return triangleList_; };
@@ -67,6 +69,8 @@ namespace OpenHRP
         bool				flgUniformIndexedFaceSet_;
         bool				flgMessageOutput_;
 
+        bool flagOfRemovingImpossibleNodes;
+
         bool uniformBox( VrmlBoxPtr box );
         bool uniformCone( VrmlConePtr cone, int divisionNumber = 20 );
         bool uniformCylinder( VrmlCylinderPtr cylinder, int divisionNumber = 20 );
@@ -79,7 +83,9 @@ namespace OpenHRP
         size_t _addTriangleList( int v1, int v2, int v3, bool ccw = true );
         size_t _addTriangleList( vector3i t );
 
-        int _traverseJointNode(	JointNodeSetPtr, int&, int );
+        int uniformShapeNodesSub(VrmlNode* node, AbstractVrmlGroup* parentNode, int indexInParent);
+        bool uniformShapeNode(VrmlShape* shapeNode);
+        
         void _traverseShapeNodes( MFNode& childNodes );
 
         int _createTriangleMesh(const std::vector<int>& mesh, bool ccw);
