@@ -11,5 +11,5 @@ if(WIN32)
 install(TARGETS ${program} DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release )
 endif()
 
-install(TARGETS ${program} DESTINATION bin)
+install(TARGETS ${program} DESTINATION bin CONFIGURATIONS Release)
 
