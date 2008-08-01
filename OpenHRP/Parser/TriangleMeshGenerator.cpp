@@ -56,169 +56,88 @@ bool TriangleMeshGenerator::setFlgUniformIndexedFaceSet(bool val)
 
 
 
-//==================================================================================================
 /*!
   @if jp
+  整形処理 (ModelNodeSet内のShape)
 
-  @brief      整形処理 (ModelNodeSet内のShape)
+  整形対象として引数で与えられたModelNodeSet中の，Shape(VRMLプリミティブ形状)を
+  整形処理にて三角形メッシュベースの統一的な幾何形状に変換する.
 
-  @note       整形対象として引数で与えられたModelNodeSet中の，Shape(VRMLプリミティブ形状)を
-  整形処理にて三角形メッシュベースの統一的な幾何形状に変換する<BR>
-
-  @date       2008-04-03 Y.TSUNODA <BR>
-
-  @return     bool true:成功 / false:失敗
-
+  @return 変換出来なかったGeometryノードの数を返す。
   @endif
 */
-//==================================================================================================
-bool
-TriangleMeshGenerator::uniform(
-    ModelNodeSet& modelNodeSet )
+int TriangleMeshGenerator::uniformShapeNodes(VrmlNode* node, bool removeImpossibleNodes)
 {
-    // JointNode数を取得する
-    int numJointNodes = modelNodeSet.numJointNodes();
-	
-    if( 0 < numJointNodes )
-	{
-            int currentIndex = 0;
+    int numImpossibleNodes = 0;
+    flagOfRemovingImpossibleNodes = removeImpossibleNodes;
+    numImpossibleNodes += uniformShapeNodesSub(node, 0, 0);
 
-            // JointNode を再帰的に辿り，LinkInfoを生成する
-            JointNodeSetPtr rootJointNodeSet = modelNodeSet.rootJointNodeSet();
-            _traverseJointNode( rootJointNodeSet, currentIndex, -1 );
+    return numImpossibleNodes;
+}
+
+
+int TriangleMeshGenerator::uniformShapeNodesSub(VrmlNode* node, AbstractVrmlGroup* parentNode, int indexInParent)
+{
+    int numImpossibleNodes = 0;
+    
+    if(node->isCategoryOf(GROUPING_NODE)){
+        AbstractVrmlGroup* group = static_cast<AbstractVrmlGroup*>(node);
+        int numChildren = group->countChildren();
+        for(int i = 0; i < numChildren; i++){
+            numImpossibleNodes += uniformShapeNodesSub(group->getChild(i), group, i);
         }
-
-    return true;
-}
-
-
-
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief      ModelNodeSet内のShapeの整形処理の下請け関数
-
-  @note       ModelNodeSet中のJointNodeを再帰的に辿る
-
-  @date       2008-04-03 Y.TSUNODA <BR>
-
-  @return     bool true:成功 / false:失敗
-
-  @endif
-*/
-//==================================================================================================
-int TriangleMeshGenerator::_traverseJointNode(
-    JointNodeSetPtr		jointNodeSet,	//!< 対象となる JointNodeSet
-    int&				currentIndex,	//!< このJointNodeSetのindex
-    int					parentIndex )	//!< 親Nodeのindex
-{
-    int index = currentIndex;
-    currentIndex++;
-
-    // 子JointNode数を取得する
-    size_t numChildren = jointNodeSet->childJointNodeSets.size();
-
-    // 子JointNodeを順に辿る
-    for( size_t i = 0 ; i < numChildren ; ++i )
-	{
-            // 親子関係のリンクを辿る
-            JointNodeSetPtr childJointNodeSet = jointNodeSet->childJointNodeSets[i];
-            _traverseJointNode( childJointNodeSet, currentIndex, index );
+    } else if(node->isCategoryOf(SHAPE_NODE)){
+        VrmlShape* shapeNode = static_cast<VrmlShape*>(node);
+        bool uniformed = uniformShapeNode(shapeNode);
+        if(!uniformed){
+            numImpossibleNodes += 1;
+            if(parentNode && flagOfRemovingImpossibleNodes){
+                parentNode->removeChild(indexInParent);
+            }
         }
+    }
 
-    // JointNodeSet の segmentNode
-    _traverseShapeNodes( jointNodeSet->segmentNode->fields["children"].mfNode() );
-
-    return index;
+    return numImpossibleNodes;
 }
 
 
-
-
-//==================================================================================================
-/*!
-  @if jp
-
-  @brief      ModelNodeSet内のShapeの整形処理の下請け関数
-
-  @note       JointNodeSet中のNodeを再帰的に辿る
-
-  @date       2008-04-03 Y.TSUNODA <BR>
-
-  @return     bool true:成功 / false:失敗
-
-  @endif
-*/
-//==================================================================================================
-void TriangleMeshGenerator::_traverseShapeNodes(
-    MFNode& childNodes )			//!< 子Node
+bool TriangleMeshGenerator::uniformShapeNode(VrmlShape* shapeNode)
 {
-    vector<SFNode>::iterator itr = childNodes.begin();
+    bool uniformed = uniform(shapeNode);
+    
+    if(uniformed) {
 
-    while( itr != childNodes.end() )
-	{
-            VrmlNodePtr node = *itr;
+        VrmlIndexedFaceSetPtr faceSet = new VrmlIndexedFaceSet;
+        
+        // 整形処理後の頂点配列を VrmlIndexedFaceSetへ代入する
+        VrmlCoordinatePtr coordinate( new VrmlCoordinate );
+        vector<Vector3> vertexList = this->getVertexList();
+        for( size_t i = 0 ; i < vertexList.size() ; ++i ) {
+            SFVec3f point;
+            Vector3 vertex = vertexList[i];
+            point[0] = vertex[0];
+            point[1] = vertex[1];
+            point[2] = vertex[2];
+            coordinate->point.push_back( point );
+        }
+        faceSet->coord = coordinate;
+        
+        // 整形処理後の三角メッシュ配列を VrmlIndexedFaceSetへ代入する
+        vector<vector3i> triangleList = this->getTriangleList();
+        for( size_t i = 0 ; i < triangleList.size() ; ++i ) {
+            vector3i triangle = triangleList[i];
+            faceSet->coordIndex.push_back( triangle[0] );
+            faceSet->coordIndex.push_back( triangle[1] );
+            faceSet->coordIndex.push_back( triangle[2] );
+            faceSet->coordIndex.push_back( -1 );
+        }
+        
+        // Geometryノードを入れ替える
+        shapeNode->geometry = faceSet;
+    }
 
-            // Groupノードとそれを継承したノードの場合を、子ノードを辿っていく
-            if( node->isCategoryOf( GROUPING_NODE ) )
-		{
-                    VrmlGroupPtr group = static_pointer_cast<VrmlGroup>( node );
-                    _traverseShapeNodes( group->children );
-
-                    ++itr;
-		}
-            // SHAPEノードならば
-            else if( node->isCategoryOf( SHAPE_NODE ) )
-		{
-                    cout << "SHAPENODE " << node->defName << endl;
-
-                    // 整形処理
-                    if( this->uniform( node ) )
-			{
-                            VrmlIndexedFaceSetPtr uniformedNode( new VrmlIndexedFaceSet );
-			
-                            // 整形処理後の頂点配列を VrmlIndexedFaceSetへ代入する
-                            VrmlCoordinatePtr coordinate( new VrmlCoordinate );
-                            vector<Vector3> vertexList = this->getVertexList();
-                            for( size_t i = 0 ; i < vertexList.size() ; ++i )
-				{
-                                    SFVec3f point;
-                                    Vector3 vertex = vertexList[i];
-                                    point[0] = vertex[0];
-                                    point[1] = vertex[1];
-                                    point[2] = vertex[2];
-                                    coordinate->point.push_back( point );
-				}
-                            uniformedNode->coord = coordinate;
-
-                            // 整形処理後の三角メッシュ配列を VrmlIndexedFaceSetへ代入する
-                            vector<vector3i> triangleList = this->getTriangleList();
-                            for( size_t i = 0 ; i < triangleList.size() ; ++i )
-				{
-                                    vector3i triangle = triangleList[i];
-                                    uniformedNode->coordIndex.push_back( triangle[0] );
-                                    uniformedNode->coordIndex.push_back( triangle[1] );
-                                    uniformedNode->coordIndex.push_back( triangle[2] );
-                                    uniformedNode->coordIndex.push_back( -1 );
-				}
-
-                            // Geometryノードを入れ替える
-                            VrmlShapePtr shapeNode = static_pointer_cast<VrmlShape>( node );
-                            shapeNode->geometry = uniformedNode;
-
-                            ++itr;
-			}
-                    else
-			{
-                            // 整形に失敗したノードは削除する
-                            itr = childNodes.erase( itr );
-			}
-		}
-	}
+    return uniformed;
 }
-
 
 
 

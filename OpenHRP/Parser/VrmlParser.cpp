@@ -16,6 +16,7 @@
 
 #include "VrmlParser.h"
 
+#include <cmath>
 #include <iostream>
 #include <OpenHRP/Util/EasyScanner.h>
 
@@ -2714,8 +2715,23 @@ void VRMLParser::readSFRotation(SFRotation& out_value)
         VrmlVariantField& field = readProtoField(SFROTATION);
         out_value = field.sfRotation();
     } else {
-        for(int i=0; i < 4; i++){
+        double len2 = 0.0;
+        // axis
+        for(int i=0; i < 3; i++){
             readSFFloat(out_value[i]);
+            len2 += out_value[i] * out_value[i];
+        }
+        readSFFloat(out_value[3]); // angle
+
+        const double len = sqrt(len2);
+
+        //if(fabs(len - 1.0) > 1.0e-4){
+        //    putMessage("Rotation axis is not normalized");
+        //}
+
+        // force normalize
+        for(int i=0; i < 3; i++){
+            out_value[i] /= len;
         }
     }
 }
