@@ -58,7 +58,7 @@ if(UNIX)
 endif(UNIX)
 
 if(WIN32)
-  set(LAPACK_LIBRARIES clapack.lib blas.lib libf2c.lib )
+  set(LAPACK_LIBRARIES clapack blas libf2c )
   if(NOT LAPACK_TOP_DIR)
       find_path(
       LAPACK_TOP_DIR 
