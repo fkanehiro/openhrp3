@@ -67,8 +67,10 @@ add_library(hrpCollision3 SHARED ${sources})
 set_target_properties(hrpCollision3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
+  if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
     # to avoid a bug which may be caused by the optimization
     set_source_files_properties(OPC_TreeCollider.cpp PROPERTIES COMPILE_FLAGS -O)
+  endif()
 
     target_link_libraries(hrpCollision3 m)
 endif()

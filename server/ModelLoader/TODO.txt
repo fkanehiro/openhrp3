@@ -46,3 +46,12 @@ SharedShapeInfoMap には VrmlNodePtr ではなくて VrmlShapePtr を入れる�
 なんで法線の計算をする setNormals が ModelLoader_impl にあるんじぁ。あれほど整形部って言ったじゃないかぁ。
 それに、Transformの適用処理がsetVerticesとダブってるよ。
 
+
+
+****
+
+IDLを変更して各ShapeInfoはLinkごとに独立して変換行列を設定できるようにする。
+こうするとプリミティブ情報を使ったり形状を共有したりすることがやりやすくなる。
+
+
+

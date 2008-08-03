@@ -5,17 +5,16 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
  */
 
 /*!
   @file BodyInfo_impl.h
   @author Shin'ichiro Nakaoka
-  @author Y.TSUNODA (Ergovision)
+  @author Y.TSUNODA
 */
 
-#ifndef OPENHRP_BODYINFO_IMPL_H_INCLUDED
-#define OPENHRP_BODYINFO_IMPL_H_INCLUDED
+#ifndef OPENHRP_MODEL_LOADER_BODYINFO_IMPL_H_INCLUDED
+#define OPENHRP_MODEL_LOADER_BODYINFO_IMPL_H_INCLUDED
 
 #include <string>
 #include <vector>
@@ -24,8 +23,12 @@
 #include <OpenHRP/Corba/ModelLoader.h>
 
 #include <OpenHRP/Parser/ModelNodeSet.h>
-#include <OpenHRP/Parser/TriangleMeshGenerator.h>
+#include <OpenHRP/Parser/TriangleMeshShaper.h>
 #include <OpenHRP/Parser/VrmlNodes.h>
+
+#include <OpenHRP/Util/Tvmet3d.h>
+#include <OpenHRP/Util/Tvmet4d.h>
+
 
 namespace OpenHRP
 {
@@ -34,14 +37,7 @@ namespace OpenHRP
     public:
 		
         BodyInfo_impl(PortableServer::POA_ptr poa);
-        ~BodyInfo_impl();
-
-        void loadModelFile(const std::string& filename);
-
-        std::string& replace(std::string& str, const std::string sb, const std::string sa);
-
-        void setLastUpdateTime(time_t time) { lastUpdate_ = time;};
-        time_t getLastUpdateTime() { return lastUpdate_; }
+        virtual ~BodyInfo_impl();
 
         virtual PortableServer::POA_ptr _default_POA();
 		
@@ -49,12 +45,16 @@ namespace OpenHRP
         virtual char* url();
         virtual StringSequence* info();
         virtual LinkInfoSequence* links();
-
         virtual AllLinkShapeIndices* linkShapeIndices();
         virtual ShapeInfoSequence* shapes();
         virtual AppearanceInfoSequence* appearances();
         virtual MaterialInfoSequence* materials();
         virtual TextureInfoSequence* textures();
+
+        void loadModelFile(const std::string& filename);
+
+        void setLastUpdateTime(time_t time) { lastUpdate_ = time;};
+        time_t getLastUpdateTime() { return lastUpdate_; }
 
     private:
         
@@ -66,17 +66,18 @@ namespace OpenHRP
         std::string url_;
         StringSequence info_;
         LinkInfoSequence links_;
-
         ShapeInfoSequence  shapes_;
         AppearanceInfoSequence appearances_;
         MaterialInfoSequence materials_;
         TextureInfoSequence textures_;
         AllLinkShapeIndices linkShapeIndices_;
+
+        TriangleMeshShaper triangleMeshShaper;
         
         /// ShapeInfoのindexと，そのshapeを算出したtransformのペア
         struct ShapeObject
         {
-            matrix44d transform;
+            Matrix44 transform;
             short     index;
         };
 
@@ -89,27 +90,23 @@ namespace OpenHRP
         SharedShapeInfoMap sharedShapeInfoMap;
 
         int readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIndex, int motherIndex);
-
-        void putMessage(const std::string& message);
-
         void setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr jointNode );
         void setSegmentParameters(int linkInfoIndex, VrmlProtoInstancePtr segmentNode );
         void setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet );
         void readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode);
 
-        void traverseShapeNodes(int index, MFNode& childNodes, const matrix44d& transform);
-        int createShapeInfo(VrmlShapePtr shapeNode, const matrix44d& transform);
-        int createAppearanceInfo(VrmlShapePtr shapeNode, TriangleMeshGenerator& uniformedShape, const matrix44d& transform);
-
-        void setVertices(ShapeInfo_var& shape, const std::vector<Vector3>& vertices, const matrix44d& transform);
-        void setTriangles(ShapeInfo_var& shape, const std::vector<vector3i>& triangles);
-        void setNormals(AppearanceInfo_var& appearance, const std::vector<Vector3>& vertexList,
-                        const std::vector<vector3i>& traiangleList, const matrix44d& transform);
-        void setShapeInfoType(ShapeInfo_var& shapeInfo, TriangleMeshGenerator::ShapePrimitiveType type);
-        int createTextureInfo(VrmlTexturePtr textureNode);
+        void traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, const Matrix44& transform);
+        void calcTransform(VrmlTransformPtr transform, Matrix44& out_T);
+        int createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& transform);
+        void setTriangleMesh(ShapeInfo_var& shapeInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& transform);
+        void setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePtr shapeNode);
+        int createAppearanceInfo(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode,
+                                 VrmlIndexedFaceSet* faceSet, const Matrix44& transform);
+        void setColors(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh);
+        void setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& transform);
         int createMaterialInfo(VrmlMaterialPtr materialNode);
-        void calcTransform(VrmlTransformPtr transform, matrix44d& out_matrix);
-        std::string getModelFileDirPath();        
+        int createTextureInfo(VrmlTexturePtr textureNode);
+        std::string getModelFileDirPath();
     };
 };
 

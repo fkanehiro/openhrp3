@@ -11,13 +11,15 @@
 
 set(sources
   EasyScanner.cpp
-  Tvmet3D.cpp
+  Tvmet3d.cpp
+  Tvmet4d.cpp
 )
 
 set(headers
   config.h
   EasyScanner.h
-  Tvmet3D.h
+  Tvmet3d.h
+  Tvmet4d.h
   TimeMeasure.h
 )
   

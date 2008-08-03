@@ -9,7 +9,7 @@
  */
 
 /*!
-  @file CalculateNormal.cpp
+  @file NormalGenerator.cpp
   @author Y.TSUNODA
   @author Shin'ichiro Nakaoka
 */
@@ -42,7 +42,7 @@ static const double PI = 3.14159265358979323846;
   @return bool true:成功 / false:失敗
   @endif
 */
-bool CalculateNormal::calculateNormalsOfVertex(
+bool NormalGenerator::calculateNormalsOfVertex(
     const vector<Vector3>& vertexList,
     const vector<vector3i>& triangleList,
     double creaseAngle)
@@ -157,7 +157,7 @@ bool CalculateNormal::calculateNormalsOfVertex(
 */
 //==================================================================================================
 bool
-CalculateNormal::calculateNormalsOfMesh( 
+NormalGenerator::calculateNormalsOfMesh( 
 	const vector<Vector3>& vertexList,		//!< 頂点群
 	const vector<vector3i>& triangleList )		//!< 三角メッシュ群
 {
@@ -216,7 +216,7 @@ CalculateNormal::calculateNormalsOfMesh(
 */
 //==================================================================================================
 Vector3
-CalculateNormal::_calculateNormalOfTraiangleMesh(
+NormalGenerator::_calculateNormalOfTraiangleMesh(
 	Vector3 a,		//!< 三角メッシュを構成する頂点1
 	Vector3 b,		//!< 三角メッシュを構成する頂点2
 	Vector3 c )	//!< 三角メッシュを構成する頂点3

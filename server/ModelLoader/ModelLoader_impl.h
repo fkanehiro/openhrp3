@@ -5,7 +5,6 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
  */
 
 /*! @file

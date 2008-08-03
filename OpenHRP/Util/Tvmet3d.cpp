@@ -8,7 +8,7 @@
  * General Robotix Inc. 
  */
 
-#include "Tvmet3D.h"
+#include "Tvmet3d.h"
 
 using namespace tvmet;
 using namespace OpenHRP;

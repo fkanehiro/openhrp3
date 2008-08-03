@@ -2414,7 +2414,7 @@ VrmlNormalPtr VRMLParser::readNormalNode()
     if(scanner->readSymbol()){
         if(scanner->symbolValue != F_VECTOR)
             scanner->throwException("Undefined field");
-        readMFVec3f(node->fvector);
+        readMFVec3f(node->vector);
     }
 
     return node;
