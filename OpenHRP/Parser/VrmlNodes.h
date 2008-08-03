@@ -518,7 +518,8 @@ namespace OpenHRP {
     {
       public:
         VrmlNormal();
-        MFVec3f fvector;
+        //MFVec3f fvector;
+        MFVec3f vector;
     };
 
 

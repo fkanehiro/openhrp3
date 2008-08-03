@@ -14,16 +14,16 @@
 */
 
 
-#ifndef OPENHRP_PARSER_CALCULATENORMAL_H_INCLUDED
-#define OPENHRP_PARSER_CALCULATENORMAL_H_INCLUDED
+#ifndef OPENHRP_PARSER_NORMAL_GENERATOR_H_INCLUDED
+#define OPENHRP_PARSER_NORMAL_GENERATOR_H_INCLUDED
 
 #include "config.h"
-#include "TriangleMeshGenerator.h"
+#include "TriangleMeshShaper.h"
 
 namespace OpenHRP
 {
     //! Calculate Normal class
-    class HRP_PARSER_EXPORT CalculateNormal
+    class HRP_PARSER_EXPORT NormalGenerator
     {
       public:
         bool calculateNormalsOfVertex

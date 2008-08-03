@@ -1054,7 +1054,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         long          materialIndex;
         public float[]		normals;
         public long[]		normalIndices;
-        public boolean		normalPerVertex;
         public boolean		solid;
         public float		creaseAngle;
         public float[]		colors;
@@ -1089,9 +1088,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                         normalIndices[i] = appinfo.normalIndices[i];
 //System.out.println( "   AppearanceInfoLocal.normalIndices[" + i + "]   = " + normalIndices[i] );
                     }
-
-                // set AppearanceInfo normalPerVertex
-                normalPerVertex = appinfo.normalPerVertex;
 
                 // set AppearanceInfo solid
                 solid = appinfo.solid;

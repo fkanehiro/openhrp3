@@ -136,10 +136,10 @@ module OpenHRP {
      物体形状情報を格納する構造体。
      @endif
   */
-  enum PrimitiveType { MESH, BOX, CYLINDER, CONE, SPHERE };
+  enum ShapePrimitiveType { SP_MESH, SP_BOX, SP_CYLINDER, SP_CONE, SP_SPHERE };
+
   struct ShapeInfo
   {
-
     /**
        @if jp
        オリジナルのVRMLモデルファイルにおけるプリミティブの種類を表す。
@@ -148,7 +148,7 @@ module OpenHRP {
        展開した際の幾何データ(verticesなど)は持っているものとする。
        @endif
     */
-    PrimitiveType type;
+    ShapePrimitiveType primitiveType;
 
     /**
        @if jp
@@ -245,14 +245,13 @@ module OpenHRP {
     /**
        @if jp
        法線対応付けデータ。
-       ShapeInfo の triangles の並びと対応させて、頂点ごとの法線を指定する。
+       normalPerVertex が true なら、ShapeInfo の vertices の並びと対応させる。
+       normalPerVertex が false なら、ShapeInfo における三角形ポリゴンの並びと対応させる。
+       normalsがあってnormalIndicesのサイズが０の場合、normalsの要素を頂点または面に1対1対応させる。
        @endif
     */
     LongSequence  normalIndices;
 
-    /**
-       \todo 廃止する
-    */
     boolean       normalPerVertex;
 
     boolean       solid;
@@ -260,7 +259,7 @@ module OpenHRP {
 
     /**
        @if jp
-       色データ。連続する３要素をR,G,Bとし一色に対応。
+       色データ。連続する３要素をR,G,Bとし一色に対応。各要素の値の範囲は 0 から 1.0。
        この配列のサイズが0の場合、色はmaterialInfoのものになる。
        @endif
     */
@@ -269,14 +268,13 @@ module OpenHRP {
     /**
        @if jp
        色対応付けデータ。
-       ShapeInfo の triangles の並びと対応させて、頂点ごとの色を指定する。
+       colorPerVertex が true なら、ShapeInfo の vertices の並びと対応させる。
+       colorPerVertex が false なら、ShapeInfo における三角形ポリゴンの並びと対応させる。
+       colorsがあってcolorIndicesのサイズが０の場合、colorsの要素を頂点または面に1対1対応させる。
        @endif
     */
     LongSequence  colorIndices;
 
-    /**
-       \todo 廃止する
-    */
     boolean       colorPerVertex;
 
     /**

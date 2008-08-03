@@ -5,13 +5,12 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
  */
 
 /*!
   @file BodyInfo_impl.h
   @author Shin'ichiro Nakaoka
-  @author Y.TSUNODA (Ergovision)
+  @author Y.TSUNODA
 */
 
 #include "BodyInfo_impl.h"
@@ -22,9 +21,7 @@
 #include <boost/bind.hpp>
 
 #include <OpenHRP/Corba/ViewSimulator.h>
-
 #include <OpenHRP/Parser/VrmlNodes.h>
-#include <OpenHRP/Parser/NormalGenerator.h>
 #include <OpenHRP/Parser/ImageConverter.h>
 
 #include "UtilFunctions.h"
@@ -40,7 +37,7 @@ namespace {
     typedef map<string, string> SensorTypeMap;
     SensorTypeMap sensorTypeMap;
     
-    bool operator != (const matrix44d& a, const matrix44d& b)
+    bool operator != (const Matrix44& a, const Matrix44& b)
     {
         for(int i = 0; i < 4; i++) {
             for(int j = 0; j < 4; j++) {
@@ -50,13 +47,38 @@ namespace {
         }
         return true;
     }
+
+    /**
+       @if jp
+       @brief 文字列置換
+       @return str 内の 特定文字列　sb を 別の文字列　sa に置換
+       @endif
+    */
+    string& replace(string& str, const string sb, const string sa)
+    {
+        string::size_type n, nb = 0;
+	
+        while ((n = str.find(sb,nb)) != string::npos){
+            str.replace(n,sb.size(),sa);
+            nb = n + sa.size();
+        }
+	
+        return str;
+    }
+
+    void putMessage(const std::string& message)
+    {
+        cout << message;
+    }
+
 }
     
-
 
 BodyInfo_impl::BodyInfo_impl( PortableServer::POA_ptr poa ) :
     poa(PortableServer::POA::_duplicate( poa ))
 {
+    triangleMeshShaper.sigMessage.connect(bind(&putMessage, _1));
+    
     lastUpdate_ = 0;
 }
 
@@ -127,31 +149,6 @@ TextureInfoSequence* BodyInfo_impl::textures()
 }
 
 
-void BodyInfo_impl::putMessage( const std::string& message )
-{
-    cout << message;
-}
-
-
-/**
-  @if jp
-  @brief 文字列置換
-  @return str 内の 特定文字列　sb を 別の文字列　sa に置換
-  @endif
-*/
-string& BodyInfo_impl::replace(string& str, const string sb, const string sa)
-{
-    string::size_type n, nb = 0;
-	
-    while ((n = str.find(sb,nb)) != string::npos){
-        str.replace(n,sb.size(),sa);
-        nb = n + sa.size();
-    }
-	
-    return str;
-}
-
-
 /*!
   @if jp
   @brief モデルファイルをロードし、BodyInfoを構築する。
@@ -171,15 +168,25 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     filename = url2;
 
     ModelNodeSet modelNodeSet;
-    modelNodeSet.sigMessage.connect(bind(&BodyInfo_impl::putMessage, this, _1));
+    modelNodeSet.sigMessage.connect(bind(&putMessage, _1));
+
+    bool result = false;
 
     try	{
-        modelNodeSet.loadModelFile( filename );
+        result = modelNodeSet.loadModelFile( filename );
+
+        if(result){
+            triangleMeshShaper.apply(modelNodeSet.humanoidNode());
+        }
         cout.flush();
     }
     catch(const ModelNodeSet::Exception& ex) {
         cout << ex.what() << endl;
         throw ModelLoader::ModelLoaderException(ex.what());
+    }
+
+    if(!result){
+        throw ModelLoader::ModelLoaderException("The model file cannot be loaded.");
     }
 
     url_ = CORBA::string_dup(url2.c_str());
@@ -208,7 +215,7 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
     int index = currentIndex;
     currentIndex++;
 
-    LinkInfo_var linkInfo( new LinkInfo() );
+    LinkInfo_var linkInfo(new LinkInfo());
     linkInfo->parentIndex = parentIndex;
 
     size_t numChildren = jointNodeSet->childJointNodeSets.size();
@@ -225,7 +232,7 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
     links_[index] = linkInfo;
 
     try	{
-        matrix44d unit4d( tvmet::identity<matrix44d>() );
+        Matrix44 unit4d(tvmet::identity<Matrix44>());
         traverseShapeNodes(index, jointNodeSet->segmentNode->fields["children"].mfNode(), unit4d);
 
         setJointParameters(index, jointNodeSet->jointNode);
@@ -445,7 +452,7 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
         Vector3 axis(sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2]);
         Matrix33 mRotation(rodrigues(axis, sensorInfo.rotation[3]));
 
-        matrix44d mTransform;
+        Matrix44 mTransform;
         mTransform =
             mRotation(0,0), mRotation(0,1), mRotation(0,2), sensorInfo.translation[0],
             mRotation(1,0), mRotation(1,1), mRotation(1,2), sensorInfo.translation[1],
@@ -474,12 +481,12 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
   shapes_に追加した位置(index)を LinkInfoのshapeIndicesに追加する。
   @endif
 */
-void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, const matrix44d& transform)
+void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, const Matrix44& transform)
 {
     LinkInfo& linkInfo = links_[linkInfoIndex];
 
     for(size_t i = 0; i < childNodes.size(); ++i) {
-        VrmlNodePtr node = childNodes[i];
+        VrmlNodePtr& node = childNodes[i];
 
         if(node->isCategoryOf(GROUPING_NODE)) {
             VrmlGroupPtr groupNode = static_pointer_cast<VrmlGroup>(node);
@@ -487,9 +494,9 @@ void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, co
             if(!transformNode){
                 traverseShapeNodes(linkInfoIndex, groupNode->children, transform);
             } else {
-                matrix44d localTransform;
+                Matrix44 localTransform;
                 calcTransform(transformNode, localTransform); // このノードで設定された transform (scaleも含む)
-                traverseShapeNodes(linkInfoIndex, groupNode->children, matrix44d(transform * localTransform));
+                traverseShapeNodes(linkInfoIndex, groupNode->children, Matrix44(transform * localTransform));
             }
 
         } else if(node->isCategoryOf(SHAPE_NODE)) {
@@ -518,31 +525,67 @@ void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, co
 }
 
 
+/*!
+  @if jp
+  transformノードで指定されたrotation,translation,scaleを計算し，4x4行列に代入する。
+  計算結果は第2引数に代入する。
+  @endif
+*/
+void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, Matrix44& out_T)
+{
+    Matrix44 R;
+    const SFRotation& r = transform->rotation;
+    rodrigues(R, Vector3(r[0], r[1], r[2]), r[3]);
+
+    const SFVec3f& center = transform->center;
+
+    Matrix44 SR;
+    const SFRotation& so = transform->scaleOrientation;
+    rodrigues(SR, Vector3(so[0], so[1], so[2]), so[3]);
+
+    const SFVec3f& s = transform->scale;
+
+    Matrix44 SinvSR;
+    SinvSR =
+        s[0] * SR(0,0), s[0] * SR(1,0), s[0] * SR(2,0), 0.0,
+        s[1] * SR(0,1), s[1] * SR(1,1), s[1] * SR(2,1), 0.0,
+        s[2] * SR(0,2), s[2] * SR(1,2), s[2] * SR(2,2), 0.0,
+        0.0,             0.0,           0.0,            1.0;
+    
+    const Vector4 c(center[0], center[1], center[2], 1.0);
+
+    out_T = R * Matrix44(SR * SinvSR);
+
+    const Vector4 c2(out_T * c);
+
+    for(int i=0; i < 3; ++i){
+        out_T(i, 3) -= c2(i);
+    }
+
+    for(int i=0; i < 3; ++i){
+        out_T(i, 3) += transform->translation[i] + center[i];
+    }
+}
+
+
 /**
    @return the index of a created ShapeInfo object. The return value is -1 if the creation fails.
 */
-int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const matrix44d& transform)
+int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& transform)
 {
     int shapeInfoIndex = -1;
-    
-    // 整形処理.ここの処理は OpenHRP/Parser ライブラリに移すべき
-    TriangleMeshGenerator uniformShape;
-    uniformShape.signalOnStatusMessage.connect(bind(&BodyInfo_impl::putMessage, this, _1));
-    uniformShape.setMessageOutput(true);
 
-    if(uniformShape.uniform(shapeNode)) {
-        // 整形処理結果を格納
+    VrmlIndexedFaceSet* triangleMesh = dynamic_cast<VrmlIndexedFaceSet*>(shapeNode->geometry.get());
+
+    if(triangleMesh){
+    
         ShapeInfo_var shapeInfo(new ShapeInfo);
+
+        setTriangleMesh(shapeInfo, triangleMesh, transform);
+
+        setPrimitiveProperties(shapeInfo, shapeNode);
         
-        // 頂点・メッシュを代入する
-        setVertices(shapeInfo, uniformShape.getVertexList(), transform);
-        setTriangles(shapeInfo, uniformShape.getTriangleList());
-        
-        // PrimitiveTypeを代入する
-        setShapeInfoType(shapeInfo, uniformShape.getShapeType());
-        
-        // AppearanceInfo
-        shapeInfo->appearanceIndex = createAppearanceInfo(shapeNode, uniformShape, transform);
+        shapeInfo->appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh, transform);
         
         // shapes_の最後に追加する
         shapeInfoIndex = shapes_.length();
@@ -560,215 +603,202 @@ int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const matrix44d& tran
 }
 
 
+void BodyInfo_impl::setTriangleMesh(ShapeInfo_var& shapeInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& transform)
+{
+    const MFVec3f& vertices = triangleMesh->coord->point;
+    size_t numVertices = vertices.size();
+    shapeInfo->vertices.length(numVertices * 3);
+
+    size_t pos = 0;
+    for(size_t i=0; i < numVertices; ++i){
+        const SFVec3f& v = vertices[i];
+        const Vector4 v4(v[0], v[1], v[2], 1.0);
+        const Vector4 vdash(transform * v4);
+        shapeInfo->vertices[pos++] = vdash[0];
+        shapeInfo->vertices[pos++] = vdash[1];
+        shapeInfo->vertices[pos++] = vdash[2];
+    }
+
+    const MFInt32& indices = triangleMesh->coordIndex;
+    const size_t numTriangles = indices.size() / 4;
+    shapeInfo->triangles.length(numTriangles * 3);
+	
+    int dpos = 0;
+    int spos = 0;
+    for(size_t i=0; i < numTriangles; ++i){
+        shapeInfo->triangles[dpos++] = indices[spos++];
+        shapeInfo->triangles[dpos++] = indices[spos++];
+        shapeInfo->triangles[dpos++] = indices[spos++];
+        spos++; // skip a terminater '-1'
+    }
+}
+
+
+void BodyInfo_impl::setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePtr shapeNode)
+{
+    shapeInfo->primitiveType = SP_MESH;
+    FloatSequence& param = shapeInfo->primitiveParameters;
+    
+    VrmlGeometry* originalGeometry = triangleMeshShaper.getOriginalGeometry(shapeNode).get();
+
+    if(originalGeometry){
+
+        VrmlIndexedFaceSet* faceSet = dynamic_cast<VrmlIndexedFaceSet*>(originalGeometry);
+
+        if(!faceSet){
+            
+            if(VrmlBox* box = dynamic_cast<VrmlBox*>(originalGeometry)){
+                shapeInfo->primitiveType = SP_BOX;
+                param.length(3);
+                for(int i=0; i < 3; ++i){
+                    param[i] = box->size[i];
+                }
+
+            } else if(VrmlCone* cone = dynamic_cast<VrmlCone*>(originalGeometry)){
+                shapeInfo->primitiveType = SP_CONE;
+                param.length(4);
+                param[0] = cone->bottomRadius;
+                param[1] = cone->height;
+                param[2] = cone->bottom ? 1.0 : 0.0;
+                param[3] = cone->side ? 1.0 : 0.0;
+                
+            } else if(VrmlCylinder* cylinder = dynamic_cast<VrmlCylinder*>(originalGeometry)){
+                shapeInfo->primitiveType = SP_CYLINDER;
+                param.length(5);
+                param[0] = cylinder->radius;
+                param[1] = cylinder->height;
+                param[2] = cylinder->top    ? 1.0 : 0.0;
+                param[3] = cylinder->bottom ? 1.0 : 0.0;
+                param[4] = cylinder->side   ? 1.0 : 0.0;
+                
+            
+            } else if(VrmlSphere* sphere = dynamic_cast<VrmlSphere*>(originalGeometry)){
+                shapeInfo->primitiveType = SP_SPHERE;
+                param.length(1);
+                param[0] = sphere->radius;
+            }
+        }
+    }
+}
+
+
 /**
    @return the index of a created AppearanceInfo object. The return value is -1 if the creation fails.
 */
-int BodyInfo_impl::createAppearanceInfo(VrmlShapePtr shapeNode, TriangleMeshGenerator& uniformedShape, const matrix44d& transform)
+int BodyInfo_impl::createAppearanceInfo
+(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet, const Matrix44& transform)
 {
     int appearanceIndex = -1;
     
-    VrmlAppearancePtr appearanceNode = shapeNode->appearance;
+    AppearanceInfo_var appInfo(new AppearanceInfo());
 
-    if(appearanceNode) {
+    appInfo->normalPerVertex = faceSet->normalPerVertex;
+    appInfo->colorPerVertex = faceSet->colorPerVertex;
+    appInfo->solid = faceSet->solid;
+    appInfo->creaseAngle = faceSet->creaseAngle;
+    appInfo->materialIndex = -1;
+    appInfo->textureIndex = -1;
 
-        AppearanceInfo_var appearance( new AppearanceInfo() );
-        appearance->creaseAngle = 3.14 / 2.0;
-
-        switch(uniformedShape.getShapeType()){
-
-        case TriangleMeshGenerator::S_INDEXED_FACE_SET:
-            {
-                VrmlIndexedFaceSetPtr faceSet = static_pointer_cast<VrmlIndexedFaceSet>(shapeNode->geometry);
-                                
-                appearance->colorPerVertex = faceSet->colorPerVertex;
-                
-                if(faceSet->color){
-                    size_t colorNum = faceSet->color->color.size();
-                    appearance->colors.length( colorNum * 3 );
-                    for(size_t i = 0 ; i < colorNum ; ++i){
-                        SFColor color = faceSet->color->color[i];
-                        appearance->colors[3*i+0] = color[0];
-                        appearance->colors[3*i+1] = color[1];
-                        appearance->colors[3*i+2] = color[2];
-                    }
-                    
-                    size_t colorIndexNum = faceSet->colorIndex.size();
-                    appearance->colorIndices.length( colorIndexNum );
-                    for( size_t i = 0 ; i < colorIndexNum ; ++i ){
-                        appearance->colorIndices[i] = faceSet->colorIndex[i];
-                    }
-                    
-                    appearance->normalPerVertex = faceSet->normalPerVertex;
-                    appearance->solid = faceSet->solid;
-                    appearance->creaseAngle = faceSet->creaseAngle;
-                    
-                    // ##### [TODO] #####
-                    //appearance->textureCoordinate = faceSet->texCood;
-                    
-                    setNormals(appearance, uniformedShape.getVertexList(), uniformedShape.getTriangleList(), transform);
-                }
-            }
-            break;
-
-        case TriangleMeshGenerator::S_ELEVATION_GRID:
-            {
-                VrmlElevationGridPtr elevationGrid = static_pointer_cast<VrmlElevationGrid>(shapeNode->geometry);
-                
-                appearance->colorPerVertex = elevationGrid->colorPerVertex;
-                
-                if(elevationGrid->color) {
-                    size_t colorNum = elevationGrid->color->color.size();
-                    appearance->colors.length( colorNum * 3 );
-                    for(size_t i = 0 ; i < colorNum ; ++i) {
-                        SFColor color = elevationGrid->color->color[i];
-                        appearance->colors[3*i+0] = color[0];
-                        appearance->colors[3*i+1] = color[1];
-                        appearance->colors[3*i+2] = color[2];
-                    }
-                }
-                
-                // appearance->colorIndices // ElevationGrid のメンバには無し
-                
-                appearance->normalPerVertex = elevationGrid->normalPerVertex;
-                appearance->solid = elevationGrid->solid;
-                appearance->creaseAngle = elevationGrid->creaseAngle;
-                
-                // ##### [TODO] #####
-                //appearance->textureCoordinate = elevationGrid->texCood;
-                
-                setNormals(appearance, uniformedShape.getVertexList(), uniformedShape.getTriangleList(), transform);
-            }
-            break;
-        }
-        
-        appearance->materialIndex = createMaterialInfo(appearanceNode->material);
-        appearance->textureIndex  = createTextureInfo (appearanceNode->texture);
-
-        appearanceIndex	= appearances_.length();
-        appearances_.length(appearanceIndex + 1);
-        appearances_[appearanceIndex] = appearance;
+    if(faceSet->color){
+        setColors(appInfo, faceSet);
     }
+
+    if(faceSet->normal){
+        setNormals(appInfo, faceSet, transform);
+    }
+    
+    VrmlAppearancePtr& appNode = shapeNode->appearance;
+
+    if(appNode) {
+        // todo
+        //appInfo->textureCoordinate = faceSet->texCood;
+        
+        appInfo->materialIndex = createMaterialInfo(appNode->material);
+        appInfo->textureIndex  = createTextureInfo (appNode->texture);
+    }
+
+    appearanceIndex = appearances_.length();
+    appearances_.length(appearanceIndex + 1);
+    appearances_[appearanceIndex] = appInfo;
 
     return appearanceIndex;
 }
 
-    
-/*!
-  @if jp
-  頂点リストに格納されている頂点座標をShapeInfo.verticesに代入する.
-  transformとして与えられた回転・並進成分を全ての頂点に反映する.
-  @endif
-*/
-void BodyInfo_impl::setVertices(ShapeInfo_var& shape, const vector<Vector3>& vertices, const matrix44d& transform)
-{
-    size_t numVertices = vertices.size();
-    shape->vertices.length(numVertices * 3);
 
-    int i = 0;
-    for(size_t v = 0 ; v < numVertices ; v++){
-        const Vector3& vorg = vertices[v];
-        vector4d vor(vorg(0), vorg(1), vorg(2), 1.0);
-        vector4d transformed(transform * vor);
-        shape->vertices[i++] = transformed[0];
-        shape->vertices[i++] = transformed[1];
-        shape->vertices[i++] = transformed[2];
+void BodyInfo_impl::setColors(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh)
+{
+    const MFColor& colors = triangleMesh->color->color;
+    int numColors = colors.size();
+    appInfo->colors.length(numColors * 3);
+
+    int pos = 0;
+    for(int i=0; i < numColors; ++i){
+        const SFColor& color = colors[i];
+        for(int j=0; j < 3; ++j){
+            appInfo->colors[pos++] = color[j];
+        }
+    }
+
+    const MFInt32& orgIndices = triangleMesh->colorIndex;
+    const int numOrgIndices = orgIndices.size();
+    if(numOrgIndices > 0){
+        if(triangleMesh->colorPerVertex){
+            const int numTriangles = numOrgIndices / 4; // considering delimiter element '-1'
+            appInfo->colorIndices.length(numTriangles * 3);
+            int dpos = 0;
+            int spos = 0;
+            for(int i=0; i < numTriangles; ++i){
+                appInfo->colorIndices[dpos++] = orgIndices[spos++];
+                appInfo->colorIndices[dpos++] = orgIndices[spos++];
+                appInfo->colorIndices[dpos++] = orgIndices[spos++];
+                spos++; // skip delimiter '-1'
+            }
+        } else { // color per face
+            appInfo->colorIndices.length(numOrgIndices);
+            for(int i=0; i < numOrgIndices; ++i){
+                appInfo->colorIndices[i] = orgIndices[i];
+            }
+        }
     }
 }
 
 
-/*!
-  @if jp
-  三角メッシュ情報をShapeInfo.trianglesに代入
-  @endif
-*/
-void BodyInfo_impl::setTriangles(ShapeInfo_var& shape, const vector<vector3i>& triangles)
+void BodyInfo_impl::setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& transform)
 {
-    const size_t numTriangles = triangles.size();
-    shape->triangles.length(numTriangles * 3);
-	
-    int i = 0;
-    for(size_t t = 0 ; t < numTriangles ; t++){
-        shape->triangles[i++] = triangles[t][0];
-        shape->triangles[i++] = triangles[t][1];
-        shape->triangles[i++] = triangles[t][2];
-    }
-}
+    const MFVec3f& normals = triangleMesh->normal->vector;
+    int numNormals = normals.size();
 
+    appInfo->normals.length(numNormals * 3);
 
-/*!
-  @if jp
-  頂点リスト・三角メッシュリストから法線を計算し，AppearanceInfoに代入する
-  @retval appearance 計算結果の法線を代入するAppearanceInfo
-  @todo この機能は整形部に移すべし
-  @endif
-*/
-void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<Vector3>& vertexList, const vector<vector3i>& traiangleList, const matrix44d& transform)
-{
-    // ここの処理ってsetVerticesとダブってるよ。廃止！
-    vector<Vector3> transformedVertexList;
-    vector4d vertex4;				
-    vector4d transformed4;			
-
-    for(size_t v = 0; v < vertexList.size(); ++v){
-        vertex4 = vertexList[v][0], vertexList[v][1], vertexList[v][2], 1; 
-        transformed4 = transform * vertex4;
-        transformedVertexList.push_back(Vector3(transformed4[0], transformed4[1], transformed4[2]));
+    int pos = 0;
+    for(int i=0; i < numNormals; ++i){
+        const SFVec3f& v = normals[i];
+        const Vector4 v4(v[0], v[1], v[2], 1.0);
+        const Vector4 vdash(transform * v4);
+        for(int j=0; j < 3; ++j){
+            appInfo->normals[pos++] = vdash[j];
+        }
     }
 
-
-    CalculateNormal calculateNormal;
-
-    // メッシュの法線(面の法線)を計算する
-    calculateNormal.calculateNormalsOfMesh(transformedVertexList, traiangleList);
-
-    // 頂点の法線
-    if(appearance->normalPerVertex) {
-        calculateNormal.calculateNormalsOfVertex(transformedVertexList, traiangleList, appearance->creaseAngle);
-
-        const vector<Vector3>& normalsVertex = calculateNormal.getNormalsOfVertex();
-        const vector<vector3i>& normalIndex = calculateNormal.getNormalIndex();
-
-        // 法線データを代入する
-        size_t normalsVertexNum = normalsVertex.size();
-        appearance->normals.length(normalsVertexNum * 3);
-
-        // AppearanceInfo のメンバに代入する
-        for(size_t i = 0; i < normalsVertexNum; ++i) {
-            Vector3 normal(tvmet::normalize(normalsVertex[i]));
-            appearance->normals[3*i+0] = normal[0];
-            appearance->normals[3*i+1] = normal[1];
-            appearance->normals[3*i+2] = normal[2];
-        }
-
-        // 法線対応付けデータ(インデックス列)を代入する
-        size_t normalIndexNum = normalIndex.size();
-        appearance->normalIndices.length( normalIndexNum * 4 );
-
-        for(size_t i = 0; i < normalIndexNum; ++i){
-            appearance->normalIndices[4*i+0] = normalIndex[i][0];
-            appearance->normalIndices[4*i+1] = normalIndex[i][1];
-            appearance->normalIndices[4*i+2] = normalIndex[i][2];
-            appearance->normalIndices[4*i+3] = -1;
-        }
-    } else { // 面の法線
-        // 算出した面の法線(のvector:配列)を取得する
-        const vector<Vector3>& normalsMesh = calculateNormal.getNormalsOfMesh();
-        
-        // 面の法線データ数を取得する
-        size_t normalsMeshNum = normalsMesh.size();
-        
-        // 代入する法線，法線インデックスのvector(配列)サイズを指定する
-        appearance->normals.length( normalsMeshNum * 3 );
-        appearance->normalIndices.length( normalsMeshNum );
-        
-        for(size_t i = 0 ; i < normalsMeshNum ; ++i){
-            // 法線ベクトルを正規化する
-            Vector3 normal(tvmet::normalize(normalsMesh[i]));
-            // AppearanceInfo のメンバに代入する
-            appearance->normals[3*i+0] = normal[0];
-            appearance->normals[3*i+1] = normal[1];
-            appearance->normals[3*i+2] = normal[2];
-            appearance->normalIndices[i] = i;
+    const MFInt32& orgIndices = triangleMesh->normalIndex;
+    const int numOrgIndices = orgIndices.size();
+    if(numOrgIndices > 0){
+        if(triangleMesh->normalPerVertex){
+            const int numTriangles = numOrgIndices / 4; // considering delimiter element '-1'
+            appInfo->normalIndices.length(numTriangles * 3);
+            int dpos = 0;
+            int spos = 0;
+            for(int i=0; i < numTriangles; ++i){
+                appInfo->normalIndices[dpos++] = orgIndices[spos++];
+                appInfo->normalIndices[dpos++] = orgIndices[spos++];
+                appInfo->normalIndices[dpos++] = orgIndices[spos++];
+                spos++; // skip delimiter '-1'
+            }
+        } else { // normal per face
+            appInfo->normalIndices.length(numOrgIndices);
+            for(int i=0; i < numOrgIndices; ++i){
+                appInfo->normalIndices[i] = orgIndices[i];
+            }
         }
     }
 }
@@ -776,35 +806,37 @@ void BodyInfo_impl::setNormals(AppearanceInfo_var& appearance, const vector<Vect
 
 /*!
   @if jp
-  ShapeInfoにPrimitiveTypeを代入
+  materialノードが存在すれば，MaterialInfoを生成，materials_に追加する。
+  materials_に追加した位置(インデックス)を戻り値として返す。
+
+  @return long MaterialInfo (materials_)のインデックス，materialノードが存在しない場合は -1
   @endif
 */
-void BodyInfo_impl::setShapeInfoType(ShapeInfo_var& shapeInfo, TriangleMeshGenerator::ShapePrimitiveType type)
+int BodyInfo_impl::createMaterialInfo(VrmlMaterialPtr materialNode)
 {
-    switch(type) {
+    int materialInfoIndex = -1;
 
-    case TriangleMeshGenerator::S_BOX:
-        shapeInfo->type = BOX;
-        break;
+    if(materialNode){
+        MaterialInfo_var material(new MaterialInfo());
 
-    case TriangleMeshGenerator::S_CONE:
-        shapeInfo->type = CONE;
-        break;
+        material->ambientIntensity = materialNode->ambientIntensity;
+        material->shininess = materialNode->shininess;
+        material->transparency = materialNode->transparency;
 
-    case TriangleMeshGenerator::S_CYLINDER:
-        shapeInfo->type = CYLINDER;
-        break;
+        for(int j = 0 ; j < 3 ; j++){
+            material->diffuseColor[j]  = materialNode->diffuseColor[j];
+            material->emissiveColor[j] = materialNode->emissiveColor[j];
+            material->specularColor[j] = materialNode->specularColor[j];
+        }
 
-    case TriangleMeshGenerator::S_SPHERE:
-        shapeInfo->type = SPHERE;
-        break;
+        // materials_に追加する
+        materialInfoIndex = materials_.length();
+        materials_.length(materialInfoIndex + 1 );
+        materials_[materialInfoIndex] = material;
 
-    case TriangleMeshGenerator::S_INDEXED_FACE_SET:
-    case TriangleMeshGenerator::S_ELEVATION_GRID:
-    case TriangleMeshGenerator::S_EXTRUSION:
-        shapeInfo->type = MESH;
-        break;
     }
+
+    return materialInfoIndex;
 }
 
 
@@ -862,116 +894,6 @@ int BodyInfo_impl::createTextureInfo(VrmlTexturePtr textureNode)
 
 /*!
   @if jp
-  materialノードが存在すれば，MaterialInfoを生成，materials_に追加する。
-  materials_に追加した位置(インデックス)を戻り値として返す。
-
-  @return long MaterialInfo (materials_)のインデックス，materialノードが存在しない場合は -1
-  @endif
-*/
-int BodyInfo_impl::createMaterialInfo(VrmlMaterialPtr materialNode)
-{
-    int materialInfoIndex = -1;
-
-    if(materialNode){
-        MaterialInfo_var material(new MaterialInfo());
-
-        material->ambientIntensity = materialNode->ambientIntensity;
-        material->shininess = materialNode->shininess;
-        material->transparency = materialNode->transparency;
-
-        for(int j = 0 ; j < 3 ; j++){
-            material->diffuseColor[j] = materialNode->diffuseColor[j];
-            material->emissiveColor[j] = materialNode->emissiveColor[j];
-            material->specularColor[j] = materialNode->specularColor[j];
-        }
-
-        // materials_に追加する
-        materialInfoIndex = materials_.length();
-        materials_.length(materialInfoIndex + 1 );
-        materials_[materialInfoIndex] = material;
-
-    }
-
-    return materialInfoIndex;
-}
-
-
-/*!
-  @if jp
-  transformノードで指定されたrotation,translation,scaleを計算し，4x4行列に代入する。
-  計算結果は第2引数に代入する。
-  @endif
-*/
-void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, matrix44d& out_matrix)
-{
-    // rotationロドリゲスの回転軸
-    Vector3 axis(transform->rotation[0], transform->rotation[1], transform->rotation[2]);
-
-    // ロドリゲスrotationを3x3行列に変換する
-    Matrix33 mRotation(rodrigues(axis, transform->rotation[3]));
-
-    // rotation, translation を4x4行列に代入する
-    matrix44d mTransform;
-    mTransform =
-        mRotation(0,0), mRotation(0,1), mRotation(0,2), transform->translation[0],
-        mRotation(1,0), mRotation(1,1), mRotation(1,2), transform->translation[1],
-        mRotation(2,0), mRotation(2,1), mRotation(2,2), transform->translation[2],
-        0.0,            0.0,            0.0,		    1.0;
-
-
-    // ScaleOrientation
-    Vector3 scaleOrientation(transform->scaleOrientation[0], transform->scaleOrientation[1], transform->scaleOrientation[2]);
-
-    // ScaleOrientationを3x3行列に変換する
-    Matrix33 mSO(rodrigues(scaleOrientation, transform->scaleOrientation[3]));
-
-    // スケーリング中心 平行移動
-    matrix44d mTranslation;
-    mTranslation =
-        1.0, 0.0, 0.0, transform->center[0],
-        0.0, 1.0, 0.0, transform->center[1],
-        0.0, 0.0, 1.0, transform->center[2],
-        0.0, 0.0, 0.0, 1.0;
-
-    // スケーリング中心 逆平行移動
-    matrix44d mTranslationInv;
-    mTranslationInv =
-        1.0, 0.0, 0.0, -transform->center[0],
-        0.0, 1.0, 0.0, -transform->center[1],
-        0.0, 0.0, 1.0, -transform->center[2],
-        0.0, 0.0, 0.0, 1.0;
-
-    // ScaleOrientation 回転
-    matrix44d mScaleOrientation;
-    mScaleOrientation =
-        mSO(0,0), mSO(0,1), mSO(0,2), 0,
-        mSO(1,0), mSO(1,1), mSO(1,2), 0,
-        mSO(2,0), mSO(2,1), mSO(2,2), 0,
-        0,        0,        0,        1;
-
-    // スケール(拡大・縮小率)
-    matrix44d mScale;
-    mScale =
-        transform->scale[0],    0.0,                    0.0,                    0.0,
-        0.0,                    transform->scale[1],    0.0,                    0.0,
-        0.0,                    0.0,                    transform->scale[2],    0.0,
-        0.0,                    0.0,                    0.0,                    1.0;
-
-    // ScaleOrientation 逆回転
-    matrix44d mScaleOrientationInv;
-    mScaleOrientationInv =
-	mSO(0,0), mSO(1,0), mSO(2,0), 0,
-        mSO(0,1), mSO(1,1), mSO(2,1), 0,
-        mSO(0,2), mSO(1,2), mSO(2,2), 0,
-        0,        0,        0,        1; 
-
-    // transform, scale, scaleOrientation で設定された回転・並進成分を合成する
-    out_matrix = mTransform * mScaleOrientation * mTranslationInv * mScale * mTranslation * mScaleOrientationInv;
-}
-
-
-/*!
-  @if jp
   @note url_のパスからURLスキーム，ファイル名を除去したディレクトリパス文字列を返す。
   @todo boost::filesystem で実装しなおす
   @return string ModelFile(.wrl)のディレクトリパス文字列
@@ -988,13 +910,11 @@ string BodyInfo_impl::getModelFileDirPath()
     string dirPath = "";
 
     // 存在すれば，
-    if( pos != string::npos )
-	{
-            // ディレクトリパス文字列
-            dirPath = filepath;
-            dirPath.resize( pos + 1 );
-	}
+    if(pos != string::npos){
+        // ディレクトリパス文字列
+        dirPath = filepath;
+        dirPath.resize(pos + 1);
+    }
 
     return dirPath;
 }
-

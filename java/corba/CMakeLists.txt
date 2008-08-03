@@ -1,5 +1,14 @@
 
+# Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+# All rights reserved. This program is made available under the terms of the
+# Eclipse Public License v1.0 which accompanies this distribution, and is
+# available at http://www.eclipse.org/legal/epl-v10.html
+# Contributors:
+# National Institute of Advanced Industrial Science and Technology (AIST)
+# General Robotix Inc. 
+
 # @author Shin'ichiro Nakaoka
+
 
 set(package jp.go.aist.hrp.simulator)
 string(REPLACE "." "/" package_path ${package})
@@ -9,14 +18,16 @@ include(${OPENHRP_IDL_DIR}/IDL_FILE_BASENAMES.cmake)
 set(idl_files)
 foreach(name ${IDL_FILE_BASENAMES})
   set(idl_file ${name}.idl)
-  set(src_idl_file ${OPENHRP_IDL_DIR}/${name}.idl)
+  set(src_idl_file ${OPENHRP_IDL_DIR}/${idl_file})
   add_custom_command(
     OUTPUT ${idl_file}
     COMMAND ${NATIVE2ASCII} -encoding UTF-8 ${src_idl_file} ${idl_file}
+    COMMAND ${RMDIR} src jp
     DEPENDS ${src_idl_file}
     )
   list(APPEND idl_files ${idl_file})
 endforeach()
+
 
 # TODO: '-pkgPrefix' option should be used instead of '-pkgTranslate'
 set(idlj_flags -fclient -fserver -pkgTranslate OpenHRP ${package} -td src)
@@ -32,6 +43,8 @@ foreach(idl_file ${idl_files})
    )
  list(APPEND idl_compiled_flag_files ${compiled_flag_file})
 endforeach()
+
+
 
 set(javac_flags -target 1.5 -d . -classpath ${package_path} -sourcepath src)
 
