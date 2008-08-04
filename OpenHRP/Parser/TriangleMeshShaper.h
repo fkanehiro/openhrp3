@@ -55,7 +55,6 @@ namespace OpenHRP
         // for normal generation
         std::vector<Vector3> faceNormals;
         std::vector< std::vector<int> > vertexIndexToFaceIndicesMap;
-        std::vector<int> faceIndexToFaceNormalIndexMap;
         std::vector< std::vector<int> > vertexIndexToNormalIndicesMap;
 
         enum RemapType { REMAP_COLOR, REMAP_NORMAL };
@@ -83,7 +82,7 @@ namespace OpenHRP
 
         void generateNormals(VrmlIndexedFaceSetPtr& triangleMesh);
         void calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
-        void calculateVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+        void setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh);
         void setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
 
         void putMessage(const std::string& message);
