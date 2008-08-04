@@ -679,7 +679,7 @@ void TriangleMeshShaper::generateNormals(VrmlIndexedFaceSetPtr& triangleMesh)
     calculateFaceNormals(triangleMesh);
 
     if(triangleMesh->normalPerVertex){
-        calculateVertexNormals(triangleMesh);
+        setVertexNormals(triangleMesh);
     } else {
         setFaceNormals(triangleMesh);
     }
@@ -690,42 +690,43 @@ void TriangleMeshShaper::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMes
 {
     const MFVec3f& vertices = triangleMesh->coord->point;
     const int numVertices = vertices.size();
-
     const MFInt32& triangles = triangleMesh->coordIndex;
     const int numFaces = triangles.size() / 4;
 
     faceNormals.clear();
 
     if(triangleMesh->normalPerVertex){
-        vertexIndexToNormalIndicesMap.clear();
-        vertexIndexToNormalIndicesMap.resize(numVertices);
+        vertexIndexToFaceIndicesMap.clear();
+        vertexIndexToFaceIndicesMap.resize(numVertices);
     }
 
-    Vector3 v[3];
-    
     for(int faceIndex=0; faceIndex < numFaces; ++faceIndex){
 
+        Vector3 v[3];
         for(int i=0; i < 3; ++i){
             int vertexIndex = triangles[faceIndex * 4 + i];
             const SFVec3f& vorg = vertices[vertexIndex];
             v[i] = vorg[0], vorg[1], vorg[2];
         }
-
-        Vector3 normal(tvmet::normalize(tvmet::cross(v[1] - v[0], v[2] - v[0])));
-
+        const Vector3 normal(tvmet::normalize(tvmet::cross(v[1] - v[0], v[2] - v[0])));
         faceNormals.push_back(normal);
 
         if(triangleMesh->normalPerVertex){
             for(int i=0; i < 3; ++i){
                 int vertexIndex = triangles[faceIndex * 4 + i];
-                vector<int>& facesOfVertex = vertexIndexToNormalIndicesMap[vertexIndex];
+                vector<int>& facesOfVertex = vertexIndexToFaceIndicesMap[vertexIndex];
+                bool isSameNormalFaceFound = false;
                 for(int j=0; j < facesOfVertex.size(); ++j){
                     const Vector3& otherNormal = faceNormals[facesOfVertex[j]];
                     const Vector3 d(otherNormal - normal);
                     // the same face is not appended
-                    if(tvmet::dot(d, d) > numeric_limits<double>::epsilon()){
-                        facesOfVertex.push_back(faceIndex);
+                    if(tvmet::dot(d, d) <= numeric_limits<double>::epsilon()){
+                    	isSameNormalFaceFound = true;
+                    	break;
                     }
+                }
+                if(!isSameNormalFaceFound){
+                    facesOfVertex.push_back(faceIndex);
                 }
             }
         }
@@ -733,11 +734,10 @@ void TriangleMeshShaper::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMes
 }
 
 
-void TriangleMeshShaper::calculateVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
+void TriangleMeshShaper::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 {
     const MFVec3f& vertices = triangleMesh->coord->point;
     const int numVertices = vertices.size();
-
     const MFInt32& triangles = triangleMesh->coordIndex;
     const int numFaces = triangles.size() / 4;
 
@@ -745,9 +745,6 @@ void TriangleMeshShaper::calculateVertexNormals(VrmlIndexedFaceSetPtr& triangleM
     MFInt32& normalIndices = triangleMesh->normalIndex;
     normalIndices.clear();
     normalIndices.reserve(triangles.size());
-
-    faceIndexToFaceNormalIndexMap.clear();
-    faceIndexToFaceNormalIndexMap.resize(numFaces, -1);
 
     vertexIndexToNormalIndicesMap.clear();
     vertexIndexToNormalIndicesMap.resize(numVertices);
@@ -759,60 +756,53 @@ void TriangleMeshShaper::calculateVertexNormals(VrmlIndexedFaceSetPtr& triangleM
         for(int i=0; i < 3; ++i){
 
             int vertexIndex = triangles[faceIndex * 4 + i];
-            vector<int>& facesOfVertex = vertexIndexToNormalIndicesMap[vertexIndex];
+            vector<int>& facesOfVertex = vertexIndexToFaceIndicesMap[vertexIndex];
             const Vector3& currentFaceNormal = faceNormals[faceIndex];
-            Vector3 normalSum = currentFaceNormal;
+            Vector3 normal = currentFaceNormal;
             bool normalIsFaceNormal = true;
 
             // avarage normals of the faces whose crease angle is below the 'creaseAngle' variable
             for(int j=0; j < facesOfVertex.size(); ++j){
                 int adjoingFaceIndex = facesOfVertex[j];
-                const Vector3& adjoingFaceNormal = faceNormals[adjoingFaceIndex];
-                double cosa = (tvmet::dot(currentFaceNormal, adjoingFaceNormal)
-                               / (tvmet::norm2(currentFaceNormal) * tvmet::norm2(adjoingFaceNormal)));
-                if(cosa > cosCreaseAngle){
-                    normalSum += adjoingFaceNormal;
-                    normalIsFaceNormal = false;
-                }
-            }
-
-            vector<int>& normalIndicesOfVertex = vertexIndexToNormalIndicesMap[vertexIndex];
-
-            if(normalIsFaceNormal){
-                int faceNormalIndex = faceIndexToFaceNormalIndexMap[faceIndex];
-                if(faceNormalIndex < 0){
-                    SFVec3f n;
-                    std::copy(currentFaceNormal.begin(), currentFaceNormal.end(), n.begin());
-                    faceNormalIndex = normals.size();
-                    normals.push_back(n);
-                    faceIndexToFaceNormalIndexMap[faceIndex] = faceNormalIndex;
-                    normalIndicesOfVertex.push_back(faceNormalIndex);
-                }
-                normalIndices.push_back(faceNormalIndex);
-
-            } else {
-                const Vector3 normal(normalize(normalSum));
-                int normalIndex = -1;
-
-                // find the same normal from the existing normals
-                for(int j=0; j < normalIndicesOfVertex.size(); ++j){
-                    int index = normalIndicesOfVertex[j];
-                    const SFVec3f& norg = normals[index];
-                    const Vector3 n(norg[0], norg[1], norg[2]);
-                    if(tvmet::norm2(n - normal) <= numeric_limits<double>::epsilon()){
-                        normalIndex = index;
-                        break;
+                if(adjoingFaceIndex != faceIndex){
+                    const Vector3& adjoingFaceNormal = faceNormals[adjoingFaceIndex];
+                    double cosa = (tvmet::dot(currentFaceNormal, adjoingFaceNormal)
+                                   / (tvmet::norm2(currentFaceNormal) * tvmet::norm2(adjoingFaceNormal)));
+                    if(cosa > cosCreaseAngle){
+                        normal += adjoingFaceNormal;
+                        normalIsFaceNormal = false;
                     }
                 }
-                if(normalIndex < 0){
-                    SFVec3f n;
-                    std::copy(normal.begin(), normal.end(), n.begin());
-                    normalIndex = normals.size();
-                    normals.push_back(n);
-                    normalIndicesOfVertex.push_back(normalIndex);
+            }
+            if(!normalIsFaceNormal){
+                alias(normal) = tvmet::normalize(normal);
+            }
+
+            int normalIndex = -1;
+
+            for(int j=0; j < 3; ++j){
+                int vertexIndex2 = triangles[faceIndex * 4 + j];
+                vector<int>& normalIndicesOfVertex = vertexIndexToNormalIndicesMap[vertexIndex2];
+                for(int k=0; k < normalIndicesOfVertex.size(); ++k){
+                    int index = normalIndicesOfVertex[k];
+                    const SFVec3f& norg = normals[index];
+                    const Vector3 d(Vector3(norg[0], norg[1], norg[2]) - normal);
+                    if(tvmet::dot(d, d) <= numeric_limits<double>::epsilon()){
+                        normalIndex = index;
+                        goto normalIndexFound;
+                    }
                 }
-                normalIndices.push_back(normalIndex);
-            } 
+            }
+            if(normalIndex < 0){
+                SFVec3f n;
+                std::copy(normal.begin(), normal.end(), n.begin());
+                normalIndex = normals.size();
+                normals.push_back(n);
+                vertexIndexToNormalIndicesMap[vertexIndex].push_back(normalIndex);
+            }
+            
+          normalIndexFound:
+            normalIndices.push_back(normalIndex);
         }
         normalIndices.push_back(-1);
     }
@@ -827,7 +817,7 @@ void TriangleMeshShaper::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
     MFVec3f& normals = triangleMesh->normal->vector;
     MFInt32& normalIndices = triangleMesh->normalIndex;
     normalIndices.clear();
-    normalIndices.reserve(triangles.size());
+    normalIndices.reserve(numFaces);
 
     const int numVertices = triangleMesh->coord->point.size();
     vertexIndexToNormalIndicesMap.clear();
@@ -848,11 +838,8 @@ void TriangleMeshShaper::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
                 const Vector3 n(norg[0], norg[1], norg[2]);
                 if(tvmet::norm2(n - normal) <= numeric_limits<double>::epsilon()){
                     normalIndex = index;
-                    break;
+                    goto normalIndexFound2;
                 }
-            }
-            if(normalIndex >= 0){
-                break;
             }
         }
         if(normalIndex < 0){
@@ -862,10 +849,10 @@ void TriangleMeshShaper::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
             normals.push_back(n);
             for(int i=0; i < 3; ++i){
                 int vertexIndex = triangles[faceIndex * 4 + i];
-                vector<int>& normalIndicesOfVertex = vertexIndexToNormalIndicesMap[vertexIndex];
-                normalIndicesOfVertex.push_back(normalIndex);
+                vertexIndexToNormalIndicesMap[vertexIndex].push_back(normalIndex);
             }
         }
+      normalIndexFound2:
         normalIndices.push_back(normalIndex);
     }
 }

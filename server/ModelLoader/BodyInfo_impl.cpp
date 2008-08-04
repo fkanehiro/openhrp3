@@ -77,7 +77,7 @@ namespace {
 BodyInfo_impl::BodyInfo_impl( PortableServer::POA_ptr poa ) :
     poa(PortableServer::POA::_duplicate( poa ))
 {
-    triangleMeshShaper.setNormalGenerationMode(false);
+    triangleMeshShaper.setNormalGenerationMode(true);
     triangleMeshShaper.sigMessage.connect(bind(&putMessage, _1));
     
     lastUpdate_ = 0;
