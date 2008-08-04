@@ -77,7 +77,8 @@ namespace {
 BodyInfo_impl::BodyInfo_impl( PortableServer::POA_ptr poa ) :
     poa(PortableServer::POA::_duplicate( poa ))
 {
-    triangleMeshShaper.setNormalGenerationMode(true);
+    //triangleMeshShaper.setNormalGenerationMode(true);
+    triangleMeshShaper.setNormalGenerationMode(false);
     triangleMeshShaper.sigMessage.connect(bind(&putMessage, _1));
     
     lastUpdate_ = 0;
@@ -234,7 +235,7 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
 
     try	{
         Matrix44 unit4d(tvmet::identity<Matrix44>());
-        traverseShapeNodes(index, jointNodeSet->segmentNode->fields["children"].mfNode(), unit4d);
+        traverseShapeNodes(index, jointNodeSet->segmentNode->fields["children"].mfNode(), unit4d, unit4d);
 
         setJointParameters(index, jointNodeSet->jointNode);
         setSegmentParameters(index, jointNodeSet->segmentNode);
@@ -460,8 +461,16 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
             mRotation(2,0), mRotation(2,1), mRotation(2,2), sensorInfo.translation[2],
             0.0,            0.0,            0.0,		    1.0;
 
+        Matrix44 mNormalTransform;
+        mNormalTransform =
+            mRotation(0,0), mRotation(0,1), mRotation(0,2), 0.0,
+            mRotation(1,0), mRotation(1,1), mRotation(1,2), 0.0,
+            mRotation(2,0), mRotation(2,1), mRotation(2,2), 0.0,
+            0.0,            0.0,            0.0,		    1.0;
+
+        
         if(NULL != sensorNode->getField("children")){
-            traverseShapeNodes( linkInfoIndex, sensorNode->fields["children"].mfNode(), mTransform );
+            traverseShapeNodes(linkInfoIndex, sensorNode->fields["children"].mfNode(), mTransform, mNormalTransform);
         }
 
     } catch(ModelLoader::ModelLoaderException& ex) {
@@ -482,7 +491,7 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
   shapes_に追加した位置(index)を LinkInfoのshapeIndicesに追加する。
   @endif
 */
-void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, const Matrix44& transform)
+void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, const Matrix44& transform, const Matrix44& normalTransform)
 {
     LinkInfo& linkInfo = links_[linkInfoIndex];
 
@@ -493,11 +502,13 @@ void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, co
             VrmlGroupPtr groupNode = static_pointer_cast<VrmlGroup>(node);
             VrmlTransformPtr transformNode = dynamic_pointer_cast<VrmlTransform>(groupNode);
             if(!transformNode){
-                traverseShapeNodes(linkInfoIndex, groupNode->children, transform);
+                traverseShapeNodes(linkInfoIndex, groupNode->children, transform, normalTransform);
             } else {
                 Matrix44 localTransform;
-                calcTransform(transformNode, localTransform); // このノードで設定された transform (scaleも含む)
-                traverseShapeNodes(linkInfoIndex, groupNode->children, Matrix44(transform * localTransform));
+                Matrix44 localNormalTransform;
+                calcTransform(transformNode, localTransform, localNormalTransform); // このノードで設定された transform (scaleも含む)
+                traverseShapeNodes(linkInfoIndex, groupNode->children,
+                                   Matrix44(transform * localTransform), Matrix44(normalTransform * localNormalTransform));
             }
 
         } else if(node->isCategoryOf(SHAPE_NODE)) {
@@ -512,7 +523,7 @@ void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, co
             if((itr != sharedShapeInfoMap.end()) && (itr->second.transform != transform)){
                 shapeInfoIndex = itr->second.index;
             } else {
-                shapeInfoIndex = createShapeInfo(shapeNode, transform);
+                shapeInfoIndex = createShapeInfo(shapeNode, transform, normalTransform);
             }
 
             if(shapeInfoIndex >= 0){
@@ -532,7 +543,7 @@ void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, co
   計算結果は第2引数に代入する。
   @endif
 */
-void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, Matrix44& out_T)
+void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, Matrix44& out_T, Matrix44& out_Tnormal)
 {
     Matrix44 R;
     const SFRotation& r = transform->rotation;
@@ -545,6 +556,7 @@ void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, Matrix44& out_T)
     rodrigues(SR, Vector3(so[0], so[1], so[2]), so[3]);
 
     const SFVec3f& s = transform->scale;
+    const Vector3 inv_s(1.0 / s[0], 1.0 / s[1], 1.0 / s[2]);
 
     Matrix44 SinvSR;
     SinvSR =
@@ -552,10 +564,21 @@ void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, Matrix44& out_T)
         s[1] * SR(0,1), s[1] * SR(1,1), s[1] * SR(2,1), 0.0,
         s[2] * SR(0,2), s[2] * SR(1,2), s[2] * SR(2,2), 0.0,
         0.0,             0.0,           0.0,            1.0;
+
+    Matrix44 invSinvSR;
+    invSinvSR =
+        inv_s[0] * SR(0,0), inv_s[0] * SR(1,0), inv_s[0] * SR(2,0), 0.0,
+        inv_s[1] * SR(0,1), inv_s[1] * SR(1,1), inv_s[1] * SR(2,1), 0.0,
+        inv_s[2] * SR(0,2), inv_s[2] * SR(1,2), inv_s[2] * SR(2,2), 0.0,
+        0.0,             0.0,           0.0,            1.0;
     
     const Vector4 c(center[0], center[1], center[2], 1.0);
 
-    out_T = R * Matrix44(SR * SinvSR);
+    Matrix44 RSR(R * SR);
+
+    out_T = RSR * SinvSR;
+
+    out_Tnormal = RSR * invSinvSR;
 
     const Vector4 c2(out_T * c);
 
@@ -572,7 +595,7 @@ void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, Matrix44& out_T)
 /**
    @return the index of a created ShapeInfo object. The return value is -1 if the creation fails.
 */
-int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& transform)
+int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& transform, const Matrix44& normalTransform)
 {
     int shapeInfoIndex = -1;
 
@@ -586,7 +609,7 @@ int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& trans
 
         setPrimitiveProperties(shapeInfo, shapeNode);
         
-        shapeInfo->appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh, transform);
+        shapeInfo->appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh, normalTransform);
         
         // shapes_の最後に追加する
         shapeInfoIndex = shapes_.length();
@@ -687,7 +710,7 @@ void BodyInfo_impl::setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePt
    @return the index of a created AppearanceInfo object. The return value is -1 if the creation fails.
 */
 int BodyInfo_impl::createAppearanceInfo
-(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet, const Matrix44& transform)
+(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet, const Matrix44& normalTransform)
 {
     int appearanceIndex = -1;
     
@@ -705,7 +728,7 @@ int BodyInfo_impl::createAppearanceInfo
     }
 
     if(faceSet->normal){
-        setNormals(appInfo, faceSet, transform);
+        setNormals(appInfo, faceSet, normalTransform);
     }
     
     VrmlAppearancePtr& appNode = shapeNode->appearance;
@@ -764,20 +787,23 @@ void BodyInfo_impl::setColors(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* t
 }
 
 
-void BodyInfo_impl::setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& transform)
+void BodyInfo_impl::setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& normalTransform)
 {
     const MFVec3f& normals = triangleMesh->normal->vector;
     int numNormals = normals.size();
 
     appInfo->normals.length(numNormals * 3);
 
+    /// \todo simpify the following transform operation
     int pos = 0;
     for(int i=0; i < numNormals; ++i){
         const SFVec3f& v = normals[i];
         const Vector4 v4(v[0], v[1], v[2], 1.0);
-        const Vector4 vdash(transform * v4);
+        const Vector4 vdash(normalTransform * v4);
+        // a normal vector must be normalized !
+        Vector3 vdash2(tvmet::normalize(Vector3(vdash[0], vdash[1], vdash[2])));
         for(int j=0; j < 3; ++j){
-            appInfo->normals[pos++] = vdash[j];
+            appInfo->normals[pos++] = vdash2[j];
         }
     }
 

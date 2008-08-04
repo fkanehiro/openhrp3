@@ -749,7 +749,7 @@ void TriangleMeshShaper::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
     vertexIndexToNormalIndicesMap.clear();
     vertexIndexToNormalIndicesMap.resize(numVertices);
 
-    const double cosCreaseAngle = cos(triangleMesh->creaseAngle);
+    //const double cosCreaseAngle = cos(triangleMesh->creaseAngle);
 
     for(int faceIndex=0; faceIndex < numFaces; ++faceIndex){
 
@@ -764,15 +764,14 @@ void TriangleMeshShaper::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
             // avarage normals of the faces whose crease angle is below the 'creaseAngle' variable
             for(int j=0; j < facesOfVertex.size(); ++j){
                 int adjoingFaceIndex = facesOfVertex[j];
-                if(adjoingFaceIndex != faceIndex){
-                    const Vector3& adjoingFaceNormal = faceNormals[adjoingFaceIndex];
-                    double cosa = (tvmet::dot(currentFaceNormal, adjoingFaceNormal)
-                                   / (tvmet::norm2(currentFaceNormal) * tvmet::norm2(adjoingFaceNormal)));
-                    if(cosa > cosCreaseAngle){
-                        normal += adjoingFaceNormal;
-                        normalIsFaceNormal = false;
-                    }
+                const Vector3& adjoingFaceNormal = faceNormals[adjoingFaceIndex];
+                double angle = acos(tvmet::dot(currentFaceNormal, adjoingFaceNormal)
+                                    / (tvmet::norm2(currentFaceNormal) * tvmet::norm2(adjoingFaceNormal)));
+                if(angle > 1.0e-6 && angle < triangleMesh->creaseAngle){
+                    normal += adjoingFaceNormal;
+                    normalIsFaceNormal = false;
                 }
+                
             }
             if(!normalIsFaceNormal){
                 alias(normal) = tvmet::normalize(normal);

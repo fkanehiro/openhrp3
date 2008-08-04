@@ -295,6 +295,111 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 info.daughter                       = info.childIndices[i];
             }
     }
+
+
+    private void setColors(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
+
+        int numColors = appearanceInfo.colors.length / 3;
+
+        if(numColors > 0){
+            float[] orgColors = appearanceInfo.colors;
+            Color3f[] colors = new Color3f[numColors];
+            for(int i=0; i < numColors; ++i){
+                colors[i] = new Color3f(orgColors[i*3], orgColors[i*3+1], orgColors[i*3+2]);
+            }
+            geometryInfo.setColors(colors);
+            
+            int[] orgColorIndices = appearanceInfo.colorIndices;
+            int numOrgColorIndices = orgColorIndices.length;
+            int numTriangles = shapeInfo.triangles.length / 3;
+            int[] colorIndices = new int[numTriangles * 3];
+                
+            if(numOrgColorIndices > 0){
+                if(appearanceInfo.colorPerVertex){
+                    colorIndices = orgColorIndices;
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        int colorIndex = orgColorIndices[i];
+                        for(int j=0; j < 3; ++j){
+                            colorIndices[pos++] = colorIndex;
+                        }
+                    }
+                }
+            } else {
+                if(appearanceInfo.colorPerVertex){
+                    for(int i=0; i < colorIndices.length; ++i){
+                        colorIndices[i] = shapeInfo.triangles[i];
+                    }
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        for(int j=0; j < 3; ++j){
+                            colorIndices[pos++] = i;
+                        }
+                    }                        
+                    
+                }
+            }
+            geometryInfo.setColorIndices(colorIndices);
+        }
+    }
+
+
+    private void setNormals(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
+
+        int numNormals = appearanceInfo.normals.length / 3;
+
+        if(numNormals == 0){
+        //if(true){
+            NormalGenerator ng = new NormalGenerator(appearanceInfo.creaseAngle);
+            ng.generateNormals(geometryInfo);
+            
+        } else {
+
+            float[] orgNormals = appearanceInfo.normals;
+            Vector3f[] normals = new Vector3f[numNormals];
+            for(int i=0; i < numNormals; ++i){
+                normals[i] = new Vector3f(orgNormals[i*3], orgNormals[i*3+1], orgNormals[i*3+2]);
+            }
+            geometryInfo.setNormals(normals);
+
+            int[] orgNormalIndices = appearanceInfo.normalIndices;
+            int numOrgNormalIndices = orgNormalIndices.length;
+            int numTriangles = shapeInfo.triangles.length / 3;
+            int[] normalIndices = new int[numTriangles * 3];
+                
+            if(numOrgNormalIndices > 0){
+                if(appearanceInfo.normalPerVertex){
+                    normalIndices = orgNormalIndices;
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        int normalIndex = orgNormalIndices[i];
+                        for(int j=0; j < 3; ++j){
+                            normalIndices[pos++] = normalIndex;
+                        }
+                    }
+                }
+            } else {
+                if(appearanceInfo.normalPerVertex){
+                    for(int i=0; i < normalIndices.length; ++i){
+                        normalIndices[i] = shapeInfo.triangles[i];
+                    }
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        for(int j=0; j < 3; ++j){
+                            normalIndices[pos++] = i;
+                        }
+                    }                        
+                    
+                }
+            }
+
+            geometryInfo.setNormalIndices(normalIndices);
+        }
+    }
     
     
     private Shape3D createLinkShape3D
@@ -311,13 +416,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         geometryInfo.setCoordinates(vertices);
         
         // set triangles (indices to the vertices)
-        int numTriangles = shapeInfo.triangles.length;
-        int[] triangles = new int[numTriangles];
-        for(int i=0; i < numTriangles; ++i){
-            triangles[i] = shapeInfo.triangles[i];
-        }
-        geometryInfo.setCoordinateIndices(triangles);
-
+        geometryInfo.setCoordinateIndices(shapeInfo.triangles);
+        
         Appearance appearance = new Appearance();
         PolygonAttributes pa = new PolygonAttributes();
         pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
@@ -327,54 +427,24 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         int appearanceIndex = shapeInfo.appearanceIndex;
         if(appearanceIndex >= 0){
+
             AppearanceInfo appearanceInfo = appearances[appearanceIndex];
 
-            // set colors of vertices
-            int numColorIndices = appearanceInfo.colorIndices.length;
-            if(false){
-//            if(numColorIndices > 0){
-                float[] colorData = appearanceInfo.colors;
-                int numColors = appearanceInfo.colors.length / 3;
-                Color3f[] colors = new Color3f[numColors];
-                for(int i=0; i < numColors; ++i){
-                    colors[i] = new Color3f(colorData[i*3], colorData[i*3+1], colorData[i*3+2]);
-                }
-                geometryInfo.setColors(colors);
+            setColors(geometryInfo, shapeInfo, appearanceInfo);
 
-                int[] colorIndices = new int[numColorIndices];
-                int[] indices = appearanceInfo.colorIndices;
-                for(int i=0; i < numColorIndices; ++i){
-                    colorIndices[i] = indices[i];
-                }
-                geometryInfo.setColorIndices(colorIndices);
-            }
-
-            // set normals
-            int numNormalIndices = appearanceInfo.normalIndices.length;
-            if(true){
-//            if(numNormalIndices == 0){
-                NormalGenerator ng = new NormalGenerator(appearanceInfo.creaseAngle);
-                ng.generateNormals(geometryInfo);
-            } else {
-                float[] normalData = appearanceInfo.normals;
-                int numNormals = appearanceInfo.normals.length / 3;
-                Vector3f[] normals = new Vector3f[numNormals];
-                for(int i=0; i < numNormals; ++i){
-                    normals[i] = new Vector3f(normalData[i*3], normalData[i*3+1], normalData[i*3+2]);
-                }
-                geometryInfo.setNormals(normals);
-
-                int[] normalIndices = new int[numNormalIndices];
-                int[] indices = appearanceInfo.normalIndices;
-                for(int i=0; i < numNormalIndices; ++i){
-                    normalIndices[i] = indices[i];
-                }
-                geometryInfo.setNormalIndices(normalIndices);
-            }
-            
+            MaterialInfo materialInfo = null;
             int materialIndex = appearanceInfo.materialIndex;
             if(materialIndex >= 0){
-                MaterialInfo materialInfo = materials[materialIndex];
+                materialInfo = materials[materialIndex];
+                if(materialInfo.transparency > 0.0f){
+                    TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
+                    appearance.setTransparencyAttributes(ta);
+                }
+            }
+
+            setNormals(geometryInfo, shapeInfo, appearanceInfo);
+
+            if(materialInfo != null){
                 appearance.setMaterial(createMaterial(materialInfo));
             }
 
@@ -1838,10 +1908,6 @@ return null;
 
         Material material = new Material();
         
-        float diffusecolR = 0.0f;
-        float diffusecolG = 0.0f;
-        float diffusecolB = 0.0f;
-
         float[] dColor = materialInfo.diffuseColor;
         material.setDiffuseColor(new Color3f(dColor[0], dColor[1], dColor[2]));
 
