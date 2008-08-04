@@ -14,19 +14,17 @@ set(sources
   VrmlParser.cpp
   VrmlWriter.cpp
   TriangleMeshShaper.cpp
-  NormalGenerator.cpp
   ImageConverter.cpp
   ModelNodeSet.cpp)
 
 set(headers
   config.h
-  NormalGenerator.h
-  TriangleMeshShaper.h
-  VrmlParser.h
-  ModelNodeSet.h
   VrmlNodes.h
+  VrmlParser.h
   VrmlWriter.h
+  TriangleMeshShaper.h
   ImageConverter.h
+  ModelNodeSet.h
 )
 
 

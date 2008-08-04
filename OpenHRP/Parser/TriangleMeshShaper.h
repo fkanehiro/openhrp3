@@ -25,11 +25,6 @@
 
 namespace OpenHRP
 {
-    typedef tvmet::Matrix<double, 4, 4>	matrix44d;
-    typedef tvmet::Vector<double, 4>	vector4d;
-    typedef tvmet::Vector<int, 3>       vector3i;
-
-    //! Uniformd Shape class
     class HRP_PARSER_EXPORT TriangleMeshShaper
     {
       public:
@@ -37,6 +32,7 @@ namespace OpenHRP
         TriangleMeshShaper();
 
         void setDivisionNumber(int n);
+        void setNormalGenerationMode(bool on);
         VrmlNodePtr apply(VrmlNodePtr topNode);
         VrmlGeometryPtr getOriginalGeometry(VrmlShapePtr shapeNode);
         
@@ -45,7 +41,7 @@ namespace OpenHRP
       private:
 
         int divisionNumber;
-        bool doRemoveInconvertibleShapeNodes;
+        bool isNormalGenerationMode;
 
         typedef std::map<VrmlShapePtr, VrmlGeometryPtr> ShapeToGeometryMap;
         ShapeToGeometryMap shapeToOriginalGeometryMap;
@@ -55,6 +51,12 @@ namespace OpenHRP
         std::vector<int> trianglesInPolygon;
         std::vector<int> indexPositionMap;
         std::vector<int> faceIndexMap;
+
+        // for normal generation
+        std::vector<Vector3> faceNormals;
+        std::vector< std::vector<int> > vertexIndexToFaceIndicesMap;
+        std::vector<int> faceIndexToFaceNormalIndexMap;
+        std::vector< std::vector<int> > vertexIndexToNormalIndicesMap;
 
         enum RemapType { REMAP_COLOR, REMAP_NORMAL };
 
@@ -78,6 +80,11 @@ namespace OpenHRP
         bool convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleMesh);
         bool convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPtr& triangleMesh);
         bool convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& triangleMesh);
+
+        void generateNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+        void calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+        void calculateVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+        void setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
 
         void putMessage(const std::string& message);
     };
