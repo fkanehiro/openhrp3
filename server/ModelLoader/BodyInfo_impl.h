@@ -95,15 +95,16 @@ namespace OpenHRP
         void setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet );
         void readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode);
 
-        void traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, const Matrix44& transform);
-        void calcTransform(VrmlTransformPtr transform, Matrix44& out_T);
-        int createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& transform);
+        void traverseShapeNodes(int linkInfoIndex, MFNode& childNodes,
+                                const Matrix44& transform, const Matrix44& normalTransform);
+        void calcTransform(VrmlTransformPtr transform, Matrix44& out_T, Matrix44& out_Tnormal);
+        int createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& transform, const Matrix44& normalTransform);
         void setTriangleMesh(ShapeInfo_var& shapeInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& transform);
         void setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePtr shapeNode);
         int createAppearanceInfo(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode,
-                                 VrmlIndexedFaceSet* faceSet, const Matrix44& transform);
+                                 VrmlIndexedFaceSet* faceSet, const Matrix44& normalTransform);
         void setColors(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh);
-        void setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& transform);
+        void setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& normalTransform);
         int createMaterialInfo(VrmlMaterialPtr materialNode);
         int createTextureInfo(VrmlTexturePtr textureNode);
         std::string getModelFileDirPath();
