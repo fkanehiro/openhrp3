@@ -23,6 +23,7 @@ ModelLoaderのIDLで、AppearanceInfo の normalPerVertexとcolorPerVertexは廃
 その代わりに、normalIndices と colorIndices の並びは、ShapeInfo の triangles の並びと
 一致させるようにする。(Java3D の GoemetryInfo と同様の格納法)
 
+SFVec3f とかは Vector3 にしちゃった方がいいかも。
 
 各フィールドの値の範囲のチェックもどこかでしたほうがよい。
 Transform の scale > 0.0 とか。

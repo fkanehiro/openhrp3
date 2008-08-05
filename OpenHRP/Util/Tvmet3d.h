@@ -45,29 +45,42 @@ namespace OpenHRP
 	typedef tvmet::Matrix<double, 3, 3> Matrix33;
 	typedef tvmet::Vector<double, 3> Vector3;
 
-	HRP_UTIL_EXPORT void rodrigues(Matrix33& out_R, const Vector3& axis, double q);
-	HRP_UTIL_EXPORT void rotFromRpy(Matrix33& out_R, double r, double p, double y);
+	HRP_UTIL_EXPORT void calcRodrigues(Matrix33& out_R, const Vector3& axis, double q);
+	HRP_UTIL_EXPORT void calcRotFromRpy(Matrix33& out_R, double r, double p, double y);
 
     inline Matrix33 rodrigues(const Vector3& axis, double q){
 		Matrix33 R;
-		rodrigues(R, axis, q);
+		calcRodrigues(R, axis, q);
 		return R;
 	}
 
 	inline Matrix33 rotFromRpy(const Vector3& rpy){
 		Matrix33 R;
-		rotFromRpy(R, rpy[0], rpy[1], rpy[2]);
+		calcRotFromRpy(R, rpy[0], rpy[1], rpy[2]);
 		return R;
 	}
 
 	inline Matrix33 rotFromRpy(double r, double p, double y){
 		Matrix33 R;
-		rotFromRpy(R, r, p, y);
+		calcRotFromRpy(R, r, p, y);
 		return R;
 	}
 	
     HRP_UTIL_EXPORT Vector3 omegaFromRot(const Matrix33& r);
 	HRP_UTIL_EXPORT Vector3 rpyFromRot(const Matrix33& m);
+
+	HRP_UTIL_EXPORT void calcInverse(Matrix33& inv, const Matrix33& m);
+
+	inline Matrix33 inverse(const Matrix33& m){
+		Matrix33 inv;
+		calcInverse(inv, m);
+		return inv;
+	}
+
+	// for backward compatibility (to be obsolete)
+	inline Matrix33 inverse33(const Matrix33& m) { return inverse(m); }
+
+	
 	HRP_UTIL_EXPORT Matrix33 inverse33(const Matrix33& m);
 
     inline Matrix33 hat(const Vector3& c) {

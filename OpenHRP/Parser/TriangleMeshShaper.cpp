@@ -174,6 +174,9 @@ bool TriangleMeshShaper::convertShapeNode(VrmlShape* shapeNode)
     }
     
     if(result && !triangleMesh->normal && isNormalGenerationMode){
+        // test
+        //triangleMesh->creaseAngle = 0.0;
+        
         generateNormals(triangleMesh);
     }
 
