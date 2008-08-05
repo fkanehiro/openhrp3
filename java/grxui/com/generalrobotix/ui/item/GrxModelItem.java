@@ -350,8 +350,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         int numNormals = appearanceInfo.normals.length / 3;
 
-        //if(numNormals == 0){
-        if(true){
+        if(numNormals == 0){
             NormalGenerator ng = new NormalGenerator(appearanceInfo.creaseAngle);
             ng.generateNormals(geometryInfo);
             
@@ -541,12 +540,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 linkTopTransformNode.addChild(linkShape3D);
 
                 /* normal visualization */
-                /*
-                NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f);
-                Shape3D nshape = new Shape3D(nrender.getLineArray());
-                linkTopTransformNode.addChild(nshape);
-                */
-                
+                if(false){
+                    NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f);
+                    Shape3D nshape = new Shape3D(nrender.getLineArray());
+                    linkTopTransformNode.addChild(nshape);
+                }
             }
 
             SensorInfoLocal[] sensors = lInfo_[linkIndex].sensors;

@@ -71,7 +71,10 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url0)
     }
 
     UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
-    if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime()){
+    // VRMLが複数のファイルからなる場合、inlineのファイルの更新時刻もみないことには、
+    // タイムスタンプの比較は完全ではない。
+    //if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime()){
+    if(false){
         bodyInfo = p->second;
         cout << string("cache found for ") + url << endl;
     } else {
