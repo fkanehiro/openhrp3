@@ -77,8 +77,8 @@ namespace {
 BodyInfo_impl::BodyInfo_impl( PortableServer::POA_ptr poa ) :
     poa(PortableServer::POA::_duplicate( poa ))
 {
-    //triangleMeshShaper.setNormalGenerationMode(true);
-    triangleMeshShaper.setNormalGenerationMode(false);
+    triangleMeshShaper.setNormalGenerationMode(true);
+    //triangleMeshShaper.setNormalGenerationMode(false);
     triangleMeshShaper.sigMessage.connect(bind(&putMessage, _1));
     
     lastUpdate_ = 0;
@@ -547,13 +547,13 @@ void BodyInfo_impl::calcTransform(VrmlTransformPtr transform, Matrix44& out_T, M
 {
     Matrix44 R;
     const SFRotation& r = transform->rotation;
-    rodrigues(R, Vector3(r[0], r[1], r[2]), r[3]);
+    calcRodrigues(R, Vector3(r[0], r[1], r[2]), r[3]);
 
     const SFVec3f& center = transform->center;
 
     Matrix44 SR;
     const SFRotation& so = transform->scaleOrientation;
-    rodrigues(SR, Vector3(so[0], so[1], so[2]), so[3]);
+    calcRodrigues(SR, Vector3(so[0], so[1], so[2]), so[3]);
 
     const SFVec3f& s = transform->scale;
     const Vector3 inv_s(1.0 / s[0], 1.0 / s[1], 1.0 / s[2]);
@@ -609,7 +609,7 @@ int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& trans
 
         setPrimitiveProperties(shapeInfo, shapeNode);
         
-        shapeInfo->appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh, normalTransform);
+        shapeInfo->appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh, transform);
         
         // shapes_の最後に追加する
         shapeInfoIndex = shapes_.length();
@@ -710,7 +710,7 @@ void BodyInfo_impl::setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePt
    @return the index of a created AppearanceInfo object. The return value is -1 if the creation fails.
 */
 int BodyInfo_impl::createAppearanceInfo
-(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet, const Matrix44& normalTransform)
+(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet, const Matrix44& transform)
 {
     int appearanceIndex = -1;
     
@@ -728,7 +728,7 @@ int BodyInfo_impl::createAppearanceInfo
     }
 
     if(faceSet->normal){
-        setNormals(appInfo, faceSet, normalTransform);
+        setNormals(appInfo, faceSet, transform);
     }
     
     VrmlAppearancePtr& appNode = shapeNode->appearance;
@@ -787,19 +787,35 @@ void BodyInfo_impl::setColors(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* t
 }
 
 
-void BodyInfo_impl::setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& normalTransform)
+void BodyInfo_impl::setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& T)
 {
     const MFVec3f& normals = triangleMesh->normal->vector;
     int numNormals = normals.size();
 
     appInfo->normals.length(numNormals * 3);
 
+    //Matrix44 invM;
+    //calcHomogeneousInverse(invM, transform);
+    //Matrix44 G(tvmet::trans(invM));
+
+    Matrix33 G;
+    G = T(0,0), T(0,1), T(0,2),
+        T(1,0), T(1,1), T(1,2),
+        T(2,0), T(2,1), T(2,2);
+    Matrix33 G2;
+    calcInverse(G2, G);
+    Matrix33 G3(tvmet::trans(G2));
+
+    cout << "G3: " << G3 << endl;
+
     /// \todo simpify the following transform operation
     int pos = 0;
     for(int i=0; i < numNormals; ++i){
         const SFVec3f& v = normals[i];
-        const Vector4 v4(v[0], v[1], v[2], 1.0);
-        const Vector4 vdash(normalTransform * v4);
+        //const Vector4 v4(v[0], v[1], v[2], 1.0);
+        //const Vector4 vdash(G3 * v4);
+        const Vector3 v3(v[0], v[1], v[2]);
+        const Vector3 vdash(G3 * v3);
         // a normal vector must be normalized !
         Vector3 vdash2(tvmet::normalize(Vector3(vdash[0], vdash[1], vdash[2])));
         for(int j=0; j < 3; ++j){

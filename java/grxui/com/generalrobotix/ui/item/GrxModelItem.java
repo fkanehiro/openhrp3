@@ -350,8 +350,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         int numNormals = appearanceInfo.normals.length / 3;
 
-        if(numNormals == 0){
-        //if(true){
+        //if(numNormals == 0){
+        if(true){
             NormalGenerator ng = new NormalGenerator(appearanceInfo.creaseAngle);
             ng.generateNormals(geometryInfo);
             
@@ -487,7 +487,35 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         return shape3D;
     }
-    
+
+
+    public class NormalRender {
+        private LineArray nline = null;
+        public NormalRender(GeometryArray geom) { this(geom, 1.0f); }
+        public NormalRender(GeometryArray geom, float scale) {
+            Point3f[] vertices = new Point3f[geom.getVertexCount()];
+            Vector3f[] normals = new Vector3f[geom.getVertexCount()];
+            for (int i=0; i<geom.getVertexCount(); i++) {
+                vertices[i] = new Point3f();
+                normals[i] = new Vector3f();
+            }
+            geom.getCoordinates(0, vertices);
+            geom.getNormals(0, normals);
+            Point3f[] nvertices = new Point3f[vertices.length * 2];
+            int n = 0;
+            for (int i=0; i<vertices.length; i++ ){
+                nvertices[n++] = new Point3f( vertices[i] );
+                nvertices[n++] = new Point3f( vertices[i].x + scale * normals[i].x,
+                                              vertices[i].y + scale * normals[i].y,
+                                              vertices[i].z + scale * normals[i].z );
+            }
+            nline = new LineArray(nvertices.length, GeometryArray.COORDINATES);
+            nline.setCoordinates(0, nvertices);
+        }
+        
+        public LineArray getLineArray() { return nline; }
+    }
+
 
     private void _loadVrmlScene(LinkInfo[] links) throws BadLinkStructureException {
 
@@ -509,7 +537,16 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 int shapeIndex = linkInfo.shapeIndices[localShapeIndex];
                 ShapeInfo shapeInfo = shapes[shapeIndex];
                 Shape3D linkShape3D = createLinkShape3D(shapeInfo, appearances, materials, textures);
+                
                 linkTopTransformNode.addChild(linkShape3D);
+
+                /* normal visualization */
+                /*
+                NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f);
+                Shape3D nshape = new Shape3D(nrender.getLineArray());
+                linkTopTransformNode.addChild(nshape);
+                */
+                
             }
 
             SensorInfoLocal[] sensors = lInfo_[linkIndex].sensors;

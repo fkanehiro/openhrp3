@@ -20,7 +20,9 @@ namespace OpenHRP
 	typedef tvmet::Matrix<double, 4, 4> Matrix44;
 	typedef tvmet::Vector<double, 4> Vector4;
 
-	HRP_UTIL_EXPORT void rodrigues(Matrix44& out_R, const Vector3& axis, double q);
+	HRP_UTIL_EXPORT void calcRodrigues(Matrix44& out_R, const Vector3& axis, double q);
+
+	HRP_UTIL_EXPORT void calcHomogeneousInverse(Matrix44& inv, const Matrix44& m);
 };
 
 #endif

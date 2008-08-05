@@ -17,7 +17,7 @@ using namespace OpenHRP;
 static const double PI = 3.14159265358979323846;
 
 
-void OpenHRP::rodrigues(Matrix33& out_R, const Vector3& axis, double q)
+void OpenHRP::calcRodrigues(Matrix33& out_R, const Vector3& axis, double q)
 {
     // E + a_hat*sin(q) + a_hat*a_hat*(1-cos(q))
     //
@@ -123,7 +123,7 @@ Vector3 OpenHRP::rpyFromRot(const Matrix33& m)
 }
 
 
-void OpenHRP::rotFromRpy(Matrix33& out_R, double r, double p, double y)
+void OpenHRP::calcRotFromRpy(Matrix33& out_R, double r, double p, double y)
 {
     const double cr = cos(r), sr = sin(r), cp = cos(p), sp = sin(p), cy = cos(y), sy = sin(y);
     out_R(0,0)= cp*cy;
@@ -137,23 +137,21 @@ void OpenHRP::rotFromRpy(Matrix33& out_R, double r, double p, double y)
     out_R(2,2)= cr*cp;
 }
 
-Matrix33 OpenHRP::inverse33( const Matrix33& m )
+void OpenHRP::calcInverse(Matrix33& inv, const Matrix33& m)
 {
   using ::std::numeric_limits;
 
-  Matrix33 minv;
-  
   double det = m(0,0)*(m(1,1)*m(2,2)-m(1,2)*m(2,1)) - m(0,1)*(m(1,0)*m(2,2)-m(1,2)*m(2,0)) + m(0,2)*(m(1,0)*m(2,1)-m(1,1)*m(2,0));
   
   if( fabs(det) < numeric_limits<double>::epsilon()){
-    minv = 0.0;
+    inv = 0.0;
   }
   else{
-    minv =
+    inv =
        (m(1,1)*m(2,2)-m(1,2)*m(2,1)) / det, -(m(0,1)*m(2,2)-m(0,2)*m(2,1)) / det,  (m(1,0)*m(2,1)-m(1,1)*m(2,0)) / det,
       -(m(1,0)*m(2,2)-m(1,2)*m(2,0)) / det,  (m(0,0)*m(2,2)-m(0,2)*m(2,0)) / det, -(m(0,0)*m(1,2)-m(0,2)*m(1,0)) / det,
        (m(0,1)*m(1,2)-m(0,2)*m(1,1)) / det, -(m(0,0)*m(2,1)-m(0,1)*m(2,0)) / det,  (m(0,0)*m(1,1)-m(0,1)*m(1,0)) / det;
   }
-
-  return minv;
 }
+
+
