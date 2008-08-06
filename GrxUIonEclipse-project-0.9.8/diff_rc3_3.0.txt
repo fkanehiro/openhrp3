@@ -1,0 +1,3481 @@
+diff -rwb --strip-trailing-cr ui/GrxPluginManager.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/GrxPluginManager.java
+72,74c82,88
+< 		String dir = System.getenv("ROBOT_DIR");
+< 		if (dir != null && new File(dir).isDirectory())
+< 			homePath_ = dir+File.separator;
+---
+> 		String robotDir = System.getenv("ROBOT_DIR");
+> 		String robot = System.getenv("ROBOT");
+> 		if (robotDir == null && robot != null)
+> 			robotDir = "../../Controller/IOserver/robot/"+robot;
+> 		
+> 		if (robotDir != null && new File(robotDir).isDirectory())
+> 			homePath_ = robotDir+File.separator;
+92,94c106,107
+< 		String defaultProject = System.getProperty("PROJECT", null);
+< 		if (defaultProject == null || 
+< 				!currentProject_.load(new File(GrxXmlUtil.expandEnvVal(defaultProject))))
+---
+> 		String defaultProject = homePath_+System.getProperty("PROJECT", null);
+> 		if (defaultProject == null || !currentProject_.load(new File(GrxXmlUtil.expandEnvVal(defaultProject))))
+103a117,119
+> 					SwingUtilities.invokeLater(
+> 						new Runnable() {
+> 							public void run() {
+104a121,123
+> 							}
+> 						}
+> 					);
+183c216
+< 		frame_.setVisible(true);
+---
+> //		frame_.setVisible(true);
+249a283
+> 		frame_.setVisible(false);
+253c287
+< 		Element el = currentProject_.getWindowConfigElement(currentMode_.getName());
+---
+> 		final Element el = currentProject_.getWindowConfigElement(currentMode_.getName());
+265c300
+< 		processingWindow_ = new GrxProcessingWindow(frame_, true);
+---
+> 		processingWindow_ = new GrxProcessingWindow(frame_, false);
+
+290c331,343
+< 				pi.lastDir = new File(homePath_+(String)GrxBasePlugin.getField(cls, "DEFAULT_DIR", ""));
+---
+> 				String default_dir = (String)GrxBasePlugin.getField(cls, "DEFAULT_DIR", "");
+> 				File dir = new File(homePath_+default_dir);
+> 				if (dir.isDirectory()) {
+> 					pi.lastDir = dir;
+> 				} else {
+> 					String user_dir = System.getProperty("user.dir","")+File.separator;
+> 					dir = new File(user_dir+default_dir);
+> 					if (dir.isDirectory()) {
+> 						pi.lastDir = dir;
+> 					} else {
+> 						pi.lastDir = new File(user_dir);
+> 					}
+> 				}
+ 
+424,425d480
+< 			//Constructor c = cls.getConstructor(new Class[] { String.class, GrxPluginManager.class });
+< 			//plugin = (GrxBasePlugin) c.newInstance(new Object[] { name, this });
+449,450c504
+< 			msg += "at " + trace[i].getClassName() + "."
+< 					+ trace[i].getMethodName() + "(";
+---
+> 			msg += "at " + trace[i].getClassName() + "." + trace[i].getMethodName() + "(";
+452c506
+< 			if (trace[i].isNativeMethod()) {
+---
+> 			if (trace[i].isNativeMethod())
+454c508
+< 			} else if (trace[i].getFileName() == null) {
+---
+> 			else if (trace[i].getFileName() == null) 
+456c510
+< 			} else {
+---
+> 			else
+459d512
+< 		}
+461,462c514,515
+< 		JOptionPane.showMessageDialog(getFrame(), msg, "Exception Occered",
+< 				JOptionPane.WARNING_MESSAGE, ROBOT_ICON);
+---
+> 		JOptionPane.showMessageDialog(getFrame(), 
+> 				msg, "Exception Occered", JOptionPane.WARNING_MESSAGE, ROBOT_ICON);
+465a519,521
+> 		if (item instanceof GrxModeInfoItem) 
+> 			return;
+> 
+483a540
+> 
+487c544
+< 			DefaultMutableTreeNode n = (DefaultMutableTreeNode) e.nextElement();
+---
+> 			final DefaultMutableTreeNode n = (DefaultMutableTreeNode) e.nextElement();
+489a547,549
+> 					SwingUtilities.invokeLater(
+> 						new Runnable() {
+> 							public void run() {
+490a551,553
+> 							}
+> 						}
+> 					);
+
+diff -rwb --strip-trailing-cr ui/item/GrxModelItem.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/item/GrxModelItem.java
+53a62
+> 	private List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
+66a76
+> 	private Vector3d v3d2 = new Vector3d();
+80a91
+> 				//manager_.processingWindow_.setVisible(false);
+107a119,129
+> 		
+> 		if (getDblAry(lInfo_[0].name+".translation", null) == null && 
+> 				getDblAry(lInfo_[0].name+".rotation", null) == null) 
+> 			updateInitialTransformRoot();
+> 		
+> 		for (int i=0; i<jointToLink_.length; i++) {
+> 			LinkInfoLocal l = lInfo_[jointToLink_[i]];
+> 			Double d = getDbl(l.name+".angle", null);
+> 			if (d == null) 
+> 				setDbl(l.name+".angle", 0.0);
+> 		}
+151a174
+> 
+153,156c176,179
+< 		double radious = getDbl("markRadious", DEFAULT_RADIOUS);
+< 		if (switchCom_ == null || radious != DEFAULT_RADIOUS) {
+< 			switchCom_ = createBall(radious, new Color3f(1.0f, 1.0f, 0.0f));
+< 			switchComZ0_= createBall(radious, new Color3f(0.0f, 1.0f, 0.0f)); 
+---
+> 		double radius = getDbl("markRadius", DEFAULT_RADIOUS);
+> 		if (switchCom_ == null || radius != DEFAULT_RADIOUS) {
+> 			switchCom_ = createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
+> 			switchComZ0_= createBall(radius, new Color3f(0.0f, 1.0f, 0.0f)); 
+174,176c197,198
+< 			ModelLoader mloader = ModelLoaderHelper.narrow(
+< 				GrxCorbaUtil.getReference("ModelLoader", "localhost", 2809));
+< 			cInfo_ = mloader.loadURL(url);
+---
+> 			ModelLoader ml = ModelLoaderHelper.narrow(GrxCorbaUtil.getReference("ModelLoader"));
+> 			cInfo_ = ml.loadURL(url);
+179a202,205
+> 			for (int i=0; i<cameraList.size(); i++)
+> 				cameraList.get(i).destroy();
+> 			cameraList.clear();
+> 			
+> 			setProperty("isRobot", Boolean.toString(isRobot_));
+
+264,266d295
+< 			Transform3D t3dOrg = new Transform3D();	
+< 			g.getTransform(t3dOrg);
+ 			
+274d302
+< 			g.setTransform(t3dOrg);
+308a337,340
+> 		setDblAry(lInfo_[0].name+".translation", lInfo_[0].translation);
+> 		setDblAry(lInfo_[0].name+".rotation", lInfo_[0].rotation);
+> 		propertyChanged();
+
+396c429
+< 	public void setCharacterPos(LinkPosition[] lpos, SensorState sensor) {
+---
+> 	public void setCharacterPos(LinkPosition[] lpos, double[] q) {
+399a433
+> 		boolean isAllPosProvided = true;
+401c435,437
+< 			if (lpos[i] != null) {
+---
+> 			if (lpos[i].p == null || lpos[i].R == null)
+> 				isAllPosProvided = false;
+> 			else
+404d439
+< 		}
+406,409c441,443
+< 		if (sensor != null && sensor.q != null)	{
+< 			for (int i=0; i<jointToLink_.length; i++) {
+< 				lInfo_[jointToLink_[i]].jointValue = sensor.q[i];
+< 			}
+---
+> 		if (q != null) {
+> 			for (int i=0; i<jointToLink_.length; i++)
+> 				lInfo_[jointToLink_[i]].jointValue = q[i];
+411a446
+> 		if (isAllPosProvided)
+412a448,449
+> 		else
+> 			calcForwardKinematics();
+453c495
+< 				if (l.jointValue < l.llimit[0]) {
+---
+> 				if (l.jointValue < l.llimit[0])
+455c497
+< 				}else if (l.ulimit[0] < l.jointValue) {
+---
+> 				else if (l.ulimit[0] < l.jointValue)
+460d501
+< 	}
+498a542,543
+> 			
+> 			if (l.jointType.equals("rotate") || l.jointType.equals("fixed")) {
+508c551,560
+> 			} else if(l.jointType.equals("slide")) {
+> 				v3d.set(l.translation[0], l.translation[1], l.translation[2]);
+> 				v3d2.set(l.jointAxis[0], l.jointAxis[1], l.jointAxis[2]);
+> 				v3d2.scale(lInfo_[linkId].jointValue);
+> 				v3d.add(v3d2);
+> 				t3d.setTranslation(v3d);
+> 				m3d.set(l.rotation);
+> 				m3d.mul(m3d);
+> 				t3d.setRotation(m3d);
+> 			}
+532d583
+< 	private void _globalToRoot(Vector3d pos) {
+533a585
+> 	private void _globalToRoot(Vector3d pos) {
+635a691,703
+> 	public int getDOF() {
+> 		if (jointToLink_ == null)
+> 			return 0;
+> 		return jointToLink_.length;
+> 	}
+> 
+> 	public String[] getJointNames() {
+> 		String[] names = new String[jointToLink_.length];
+> 		for (int i=0; i<jointToLink_.length; i++)
+> 			names[i] = lInfo_[jointToLink_[i]].name;
+> 		return names;
+> 	}
+> 
+662c733
+< 			ret[i] = mode.equals("Torque") ? 0.0 : 1.0;
+---
+> 			ret[i] = mode.equals("HighGain") ? 1.0 : 0.0;
+843d917
+< 	List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
+878a953,990
+> 	public void setJointColor(int jid, java.awt.Color color) {
+>         if (color == null) 
+> 			setAmbientColorRecursive(lInfo_[jointToLink_[jid]].tg, new Color3f(0.0f, 0.0f, 0.0f));
+> 		else
+> 			setAmbientColorRecursive(lInfo_[jointToLink_[jid]].tg, new Color3f(color));
+> 	}
+> 
+>     private void setAmbientColorRecursive(Node node, Color3f color) {
+>     	if (node instanceof BranchGroup) {
+>     		BranchGroup bg = (BranchGroup)node;
+>     		for (int i = 0; i < bg.numChildren(); i++)
+>     			setAmbientColorRecursive(bg.getChild(i), color);
+>     	} else if (node instanceof TransformGroup) {
+>     		TransformGroup tg = (TransformGroup)node;
+>     		for (int i = 0; i < tg.numChildren(); i++)
+>     			setAmbientColorRecursive(tg.getChild(i), color);
+>     	} else if (node instanceof Group) {	
+>     		Group g = (Group)node;
+>     		for (int i = 0; i < g.numChildren(); i++)
+>     		    setAmbientColorRecursive(g.getChild(i), color);
+>     	} else if (node instanceof Link) {
+>     	    Link l = (Link)node;
+>     	    SharedGroup sg = l.getSharedGroup();
+>     	    for (int i = 0; i < sg.numChildren(); i++) 
+>     	    	setAmbientColorRecursive(sg.getChild(i), color);
+>     	} else if (node instanceof Shape3D) { // Is the node Shape3D ?
+>     	    Shape3D s3d = (Shape3D)node;
+>     	    Appearance app = s3d.getAppearance();
+>     	    if (app != null){
+>         		Material ma = app.getMaterial();
+>         		if (ma != null)
+>         			ma.setAmbientColor(color);
+>       	    }
+>     	} else {
+>     	    GrxDebugUtil.print("* The node " + node.toString() + " is not supported.");
+>     	}
+>     }
+> 
+
+diff -rwb --strip-trailing-cr ui/item/GrxProjectItem.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/item/GrxProjectItem.java
+40c49
+176a186,200
+> 		Enumeration keys = propertyNames();
+> 		while (keys.hasMoreElements()) {
+> 			String key = (String)keys.nextElement();
+> 			String val = getProperty(key);
+> 			if (key == null || val == null)
+> 				continue;
+> 				
+> 			Element propEl = doc_.createElement(GrxProjectItem.PROPERTY_TAG);
+> 			propEl.setAttribute("name",  key);
+> 			propEl.setAttribute("value", val);
+> 			modeEl.appendChild(doc_.createTextNode(INDENT4+INDENT4));
+> 			modeEl.appendChild(propEl);
+> 			modeEl.appendChild(doc_.createTextNode("\n"));
+> 		}
+> 		
+376a401,407
+> 		// set PROJECT_DIR, which is referred to in a project file
+> 		String dir = f.getParent();
+> 		if (dir!=null) {
+> 		    System.setProperty("PROJECT_DIR", dir);
+> 		    System.out.println(dir);
+> 		}
+> 		
+428,429c459,460
+< 		if (file_ == null || !file_.isFile()) 
+< 			return;
+---
+> //		if (file_ == null || !file_.isFile()) 
+> //			return;
+435a467
+> 		manager_.processingWindow_.setVisible(false);
+453c485
+< 		
+---
+> 	/*	
+462a495
+> 		*/
+479a513,516
+> 		List<GrxBaseView> vl = manager_.getActiveViewList();
+> 		for (int i=0; i<vl.size(); i++) 
+> 			vl.get(i).restoreProperties();
+> 		
+525a563
+> 			manager_.processingWindow_.setVisible(false);
+565,567d602
+< 		setProperty("nsHost", "localhost");
+< 		setProperty("nsPort", "2809");
+< 
+
+diff -rwb --strip-trailing-cr ui/item/GrxWorldStateItem.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/item/GrxWorldStateItem.java
+54a64,66
+> 	private String tempDirBase_;
+> 	private String tempDir_;
+> 	
+57a70,72
+> 		tempDirBase_ = System.getProperty("java.io.tmpdir")+File.separator+"grxui-"+System.getProperty("user.name")+File.separator;
+> 		tempDir_ = tempDirBase_+getName();
+> 
+124c139
+< 		File oldDir = new File("log"+File.separator+getName());
+---
+> 		File oldDir = new File(tempDir_);
+126c141
+< 		File newDir = new File("log"+File.separator+getName());
+---
+> 		File newDir = new File(tempDirBase_+getName());
+135c150,151
+< 		logger_.setTempDir(newDir.getPath());
+---
+> 		tempDir_ = newDir.getPath();
+> 		logger_.setTempDir(tempDir_);
+295c311
+< 		saveCSV_.setEnabled(false);
+---
+> 		saveCSV_.setEnabled(true);
+308c324,327
+< 		File f = new File("log"+File.separator+getName());
+---
+> 		File f = new File(tempDir_);
+> 		File pf = f.getParentFile();
+> 		if (!pf.isDirectory())
+> 			pf.mkdir();
+341a361
+> 
+409c429
+<         saveCSV_.setEnabled(false);
+---
+> 		manager_.processingWindow_.setVisible(false);
+412d431
+< 		manager_.processingWindow_.setVisible(true);
+414a434
+> 				manager_.processingWindow_.setVisible(true);
+416a437
+>         		saveCSV_.setEnabled(true);
+420a442
+> 
+423c445,453
+< 			File dir = new File("log"+File.separator+getName());
+---
+> 			if (logFile == null) 
+> 				logFile = new File("log"+File.separator+getName()+".log");
+> 
+> 			if (!logFile.isFile())
+> 				return;
+> 
+>             String fname = logFile.getAbsolutePath();
+> 
+> 			File dir = new File(tempDir_);
+427,431c457
+< 			logger_.setTempDir("log"+File.separator+getName());
+< 
+< 			String fname = "log"+File.separator+getName()+".log";
+<             if (logFile != null && logFile.isFile()) 
+<                 fname = logFile.getAbsolutePath();
+---
+> 			logger_.setTempDir(tempDir_);
+444a471,472
+> 
+> 				// Check log size
+450d477
+<             	
+478a506
+>        				//sdata.dq = new double[jointCount];
+495,501c523
+< 		} catch (FileOpenFailException e) {
+< 			e.printStackTrace();
+< 		} catch (LogFileFormatException e) {
+< 			e.printStackTrace();
+< 		} catch (IOException e) {
+< 			e.printStackTrace();
+< 		} catch (InterruptedException e) {
+---
+> 		} catch (Exception e) {
+507c529
+<         saveCSV_.setEnabled(true);
+---
+>         save_.setEnabled(false);
+510d531
+< 		manager_.processingWindow_.setVisible(true);
+512a534
+> 				manager_.processingWindow_.setVisible(true);
+516,521c538,539
+< 					logger_.save("log"+File.separator+
+< 							GrxWorldStateItem.this.getName()+".log", getName()+".prj");
+< 					Thread.sleep(2000);
+< 				} catch (IOException e) {
+< 					e.printStackTrace();
+< 				} catch (InterruptedException e) {
+---
+> 					logger_.save("log"+File.separator+GrxWorldStateItem.this.getName()+".log", getName()+".prj");
+> 				} catch (Exception e) {
+523c541
+< 				}
+---
+> 				} finally {
+525a544
+> 			}
+530a550
+>         save_.setEnabled(false);
+533d552
+< 		manager_.processingWindow_.setVisible(true);
+535a555,563
+> 				try {
+> 					manager_.processingWindow_.setVisible(true);
+> 					String fname = "log"+File.separator+GrxWorldStateItem.this.getName()+".log";
+> 					File f = new File(fname);
+> 					if (!f.isFile()) {
+> 						logger_.closeAsWrite();
+> 						logger_.closeCollisionLogAsWrite();
+> 						logger_.save(fname, getName()+".prj");
+> 					}
+538,540c566
+< 					String fname = "log"+File.separator+
+< 							GrxWorldStateItem.this.getName()+File.separator+name+".csv";
+< 					try {
+---
+> 						fname = "log"+File.separator+GrxWorldStateItem.this.getName()+"_"+name+".csv";
+542,544d567
+< 					} catch (FileOpenFailException e) {
+< 						e.printStackTrace();
+< 					}
+545a569,571
+> 				} catch (Exception e) {
+> 					e.printStackTrace();
+> 				} finally {
+547a574
+> 			}
+639c666
+< 		public void setTagetState(String charName, double[] targets) {
+---
+> 		public void setTargetState(String charName, double[] targets) {
+
+diff -rwb --strip-trailing-cr ui/util/GrxCorbaUtil.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/util/GrxCorbaUtil.java
+15,17d23
+< //import jp.go.aist.hrp.simulator.Plugin;
+< //import jp.go.aist.hrp.simulator.PluginManager;
+< 
+23a30
+> 
+31,32d37
+<       //props.put("org.omg.CORBA.ORBClass","com.ooc.OBServer.ORB");
+<       //props.put("org.omg.CORBA.ORBSingletonClass","com.ooc.CORBA.ORBSingleton");
+42c47,48
+<   public static NamingContext getNamingContext() {   
+---
+> 	public static org.omg.CORBA.ORB regetORB() {
+> 		if (orb_ != null) {
+44,47c50,53
+<       org.omg.CORBA.Object obj = getORB().resolve_initial_references("NameService");
+<       return NamingContextHelper.narrow(obj);
+<     } catch (Exception excep) {     
+<       GrxDebugUtil.printErr("getNamingContext:NG"); 
+---
+> 				orb_.shutdown(true);
+> 			} catch(Exception e) {
+> 				e.printStackTrace();
+> 				System.out.println("regetORB(): orb reinitialized.");
+49c55,57
+<     return null;
+---
+> 			orb_ = null;
+> 		}
+> 		return getORB();
+52,56c60,71
+<   
+<   private static HashMap<String, NamingContext> getNamingContextList(){
+<     if (namingContextList_ == null)
+<       namingContextList_ = new HashMap<String, NamingContext>();
+<     return namingContextList_;
+---
+> 	public static NamingContext getNamingContext() {   
+> 		String nsHost = System.getenv("NS_HOST");
+> 		if (nsHost == null) {
+> 			nsHost = "localhost";
+> 		}
+> 		int nsPort = 2809;
+> 		try {
+> 			nsPort = Integer.parseInt(System.getenv("NS_PORT"));
+> 		} catch (Exception e) {
+> 			nsPort = 2809;
+> 		}
+> 		return getNamingContext(nsHost, nsPort);
+66d80
+<         if (!obj._non_existent()) {
+70d83
+< 			}
+74,75c87
+<       namingContextList_.remove(nameServiceURL);
+< 			//GrxDebugUtil.printErr("getNamingContext:NG("+nsHost+","+nsPort+")");	
+---
+> 			getNamingContextList().remove(nameServiceURL);
+79a92,113
+> 	private static HashMap<String, NamingContext> getNamingContextList() {
+> 		if (namingContextList_ == null)
+> 			namingContextList_ = new HashMap<String, NamingContext>();
+> 		return namingContextList_;
+> 	}
+> 
+> 
+> 	public static org.omg.CORBA.Object getReference(String id) {
+> 		String nsHost = System.getenv("NS_HOST");
+> 		if (nsHost == null) {
+> 			nsHost = "localhost";
+> 		}
+> 		int nsPort = 2809;
+> 		try {
+> 			nsPort = Integer.parseInt(System.getenv("NS_PORT"));
+> 		} catch (Exception e) {
+> 			nsPort = 2809;
+> 		}
+> 
+> 		return  getReference(id, nsHost, nsPort);
+> 	}
+> 
+94,115d127
+< /*	public static Plugin getPlugin(String id,String nsHost,int nsPort){
+< 		Plugin p = null;
+< 		try {
+< 			p = jp.go.aist.hrp.simulator.PluginHelper.narrow(getReference(id,nsHost,nsPort));
+< 			p._non_existent();
+< 		} catch (Exception e){
+< 			DebugUtil.printErr("getPlugin:NG("+id+","+nsHost+","+nsPort+")");
+< 		}
+< 		return p;
+< 	}
+< 	
+< 	public static PluginManager getPluginManager(String id,String nsHost,int nsPort){
+< 		PluginManager p = null;
+< 		try {
+< 			p = jp.go.aist.hrp.simulator.PluginManagerHelper.narrow(getReference(id,nsHost,nsPort));
+< 			p._non_existent();
+< 		} catch (Exception e){
+< 			DebugUtil.printErr("getPluginManager:NG("+id+","+nsHost+","+nsPort+")");
+< 		}
+< 		return p;
+< 	}
+< */	
+158a171,174
+> 	public static String[] getObjectNameList() {
+> 		return _getObjectNameList(getNamingContext());
+> 	}
+> 
+159a176,179
+> 		return _getObjectNameList(getNamingContext(nsHost, nsPort));
+> 	}
+> 
+> 	private static String[] _getObjectNameList(NamingContext cxt) {
+165c185
+< 			getNamingContext(nsHost,nsPort).list(a,bl,bi);
+---
+> 			cxt.list(a, bl, bi);
+167c187
+< 			for (int i=0;i<bl.value.length;i++)
+---
+> 			for (int i=0; i<bl.value.length; i++) {
+168a189
+> 			}
+171c192
+< 			GrxDebugUtil.println("getObjectList:NG("+nsHost+","+String.valueOf(nsPort)+")");
+---
+> 			GrxDebugUtil.printErr("getObjectList:NG", ex);
+176,177d196
+<   
+< 
+
+diff -rwb --strip-trailing-cr ui/util/GrxORBMonitor.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/util/GrxORBMonitor.java
+14a24
+> import java.awt.event.*;
+19,28c29,36
+< public class GrxORBMonitor extends JPanel {
+< 	private static GrxORBMonitor this_ = null;
+<     private JDialog dialog_ = null;
+<     
+< 	private JTextField jTextField = null;
+< 	private JTextField jTextField1 = null;
+< 	private JLabel jLabel2 = null;
+< 	private JPanel jPanel = null;
+< 	private JTextArea jTextArea = null;
+< 	//private JCheckBox checkActive = new JCheckBox("Check Active",true);
+---
+> public class GrxORBMonitor extends JPanel 
+> {
+> 	private static final KeyStroke KS_ENTER = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0);
+> 
+> 	private JComboBox  cmbHost_;
+> 	private JTextField fldHost_;
+> 	private JTextField fldPort_;
+> 	private JTextArea  area_;
+32d39
+< 		// Panel North
+34,43c41,44
+< 		jPanel = new JPanel(new GridLayout(2,1));
+< 		jPanel.add(new JLabel("NameService Host"), null);
+< 		jPanel.add(getJTextField(), null);
+< 		jPanel.add(new JLabel("NameService Port"), null);
+< 		jPanel.add(getJTextField1(), null);
+< 		
+< 		JButton jButton = new JButton("update");
+< 		jButton.setPreferredSize(new Dimension(100,26));
+< 		jButton.addActionListener(new java.awt.event.ActionListener() { 
+< 			public void actionPerformed(java.awt.event.ActionEvent e) {
+---
+> 		JButton btnUpdate = new JButton("update");
+> 		btnUpdate.setPreferredSize(new Dimension(120,20));
+> 		btnUpdate.addActionListener(new ActionListener() { 
+> 			public void actionPerformed(ActionEvent e) {
+47,60d47
+< 		JPanel jPanel2 = new JPanel(new BorderLayout());
+< 		jPanel2.add(jButton, BorderLayout.NORTH);
+< 		
+< 		JPanel northPane = new JPanel();
+< 		northPane.add(jButton, null);
+< 		northPane.add(jPanel, null);
+< 		add(northPane, BorderLayout.NORTH);
+< 		
+< 		// Panel Center
+< 		//JPanel jPanel3 = new JPanel();
+< 		//jPanel3.setLayout(new BoxLayout(jPanel3, BoxLayout.Y_AXIS));
+< 		//jPanel3.add(getJLabel2(), null);
+< 		//jPanel3.add(new JScrollPane(getJTextArea()), null);
+< 		add(new JScrollPane(getJTextArea()), BorderLayout.CENTER);
+62,64c49,57
+< 		add(getJLabel2(), BorderLayout.SOUTH);
+< 		
+< 		setSize(412, 280);
+---
+>  		cmbHost_ = new JComboBox(new String[]{"localhost"});
+> 		cmbHost_.setEditable(true);
+> 		cmbHost_.setPreferredSize(new Dimension(80, 20));
+> 		fldHost_ = (JTextField)cmbHost_.getEditor().getEditorComponent();
+> 		fldHost_.addKeyListener(new KeyAdapter() {
+> 			public void keyPressed(KeyEvent e) {
+> 				KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+> 				if (ks == KS_ENTER)
+> 					update();
+65a59
+> 		}); 
+67,91c61,67
+< 	private JTextField getJTextField() {
+< 		if(jTextField == null) {
+< 			jTextField = new JTextField("localhost");
+< 		}
+< 		return jTextField;
+< 	}
+< 	private JTextField getJTextField1() {
+< 		if(jTextField1 == null) {
+< 			jTextField1 = new JTextField("2809");
+< 		}
+< 		return jTextField1;
+< 	}
+< 	private JLabel getJLabel2() {
+< 		if(jLabel2 == null) {
+< 			jLabel2 = new JLabel("NS_URL:");
+< 			jLabel2.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+< 		}
+< 		return jLabel2;
+< 	}
+< 	private JTextArea getJTextArea() {
+< 		if(jTextArea == null) {
+< 			jTextArea = new JTextArea();
+< 			jTextArea.setEditable(false);
+< 		}
+< 		return jTextArea;
+---
+> 		fldPort_ = new JTextField("2809");
+> 		fldPort_.setPreferredSize(new Dimension(80,20));
+> 		fldPort_.addKeyListener(new KeyAdapter() {
+> 			public void keyPressed(KeyEvent e) {
+> 				KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+> 				if (ks == KS_ENTER)
+> 					update();
+92a69
+> 		}); 
+94,97c71,108
+< 	// public methods --------------------------------------------------------
+< 	public static GrxORBMonitor getInstance() {
+< 		if (this_ == null){
+< 			this_ =  new GrxORBMonitor();
+---
+> 		JPanel pnl = new JPanel();
+> 		pnl.add(new JLabel("Host"));
+> 		pnl.add(cmbHost_);
+> 		pnl.add(new JLabel("Port"));
+> 		pnl.add(fldPort_);
+> 		pnl.add(btnUpdate);
+> 		this.add(pnl, BorderLayout.NORTH);
+> 
+> 		area_ = new JTextArea();
+> 		area_.setEditable(false);
+> 		this.add(new JScrollPane(area_), BorderLayout.CENTER);
+> 	}
+> 
+> 	public void setHosts(String[] hosts) {
+> 		cmbHost_.removeAllItems();
+> 		for (int i=0; i<hosts.length; i++) 
+> 			cmbHost_.addItem(hosts[i]);
+> 	}
+> 	
+> 	private void update() {
+> 		String host = (String)fldHost_.getText();
+> 		if (host.equals(""))
+> 			host = "localhost";
+> 
+> 		int port = 2809;
+> 		try {
+> 			port = Integer.parseInt(fldPort_.getText());
+> 		} catch(Exception e) {
+> 			area_.setText("Can't parse port as integer : "+fldPort_.getText()+" .");
+> 			return;
+> 		}
+> 
+> 		boolean b = true;
+> 		for (int i=0; i<cmbHost_.getItemCount(); i++) {
+> 			String val = (String)cmbHost_.getItemAt(i);
+> 			if (host.equals(val)) {
+> 				b = false;
+> 				break;
+99d109
+< 		return this_;
+101,114c111,122
+< 	public void showDialog(JFrame frame){
+< 		if (dialog_ == null){
+< 			dialog_ = new JDialog(frame,"ORB Monitor",false);
+< 			dialog_.pack();
+< 			//GuiUtil.setWindowConfig("orbmonitor",dialog_,new Dimension(400,400));
+< 			dialog_.setContentPane(this);
+< 			dialog_.addWindowListener(new java.awt.event.WindowAdapter() { 
+< 				public void windowClosing(java.awt.event.WindowEvent e) {    
+< 					dialog_.setVisible(false);
+< 				}
+< 			});
+< 		}
+< 		getJTextArea().setText("");
+< 		dialog_.setVisible(true);
+---
+> 
+> 		area_.setText("accessing "+host+":"+port+" ...");
+> 		String s[] = GrxCorbaUtil.getObjectNameList(host, port);
+> 		if (s == null) {
+> 			area_.setText("Accessing to NameService( "+host+" : "+port+" ) ... failed.");
+> 			return;
+> 		}
+> 
+> 		area_.setText("");
+> 		if (b) {
+> 			cmbHost_.addItem(host);
+> 			cmbHost_.setSelectedItem(host);
+116,125d123
+< 	public void update(){
+< 		String nsHost = getJTextField().getText();   
+< 		String nsPort = getJTextField1().getText();
+< 		if (nsHost == null || nsPort == null) return;
+< 		int nsPortInt = Integer.parseInt(nsPort);
+< 		getJLabel2().setText("NS_URL: corbaloc:iiop:"+nsHost+":"+nsPort+"/NameService");
+< 		
+< 		String s[] = GrxCorbaUtil.getObjectNameList(nsHost,nsPortInt);
+< 		getJTextArea().setText("");
+< 		if (s==null) return;
+128,132c126,129
+< 			String str = null;
+< 			if (GrxCorbaUtil.isConnected(s[i],nsHost,nsPortInt)){
+< 				str = "(    Active    )  "+s[i]+"\n";
+< 			} else {
+< 				str = "( not Active )  "+s[i]+"\n";
+---
+> 			if (GrxCorbaUtil.isConnected(s[i], host, port))
+> 				area_.append("(    Active    )  "+s[i]+"\n");
+> 			else
+> 				area_.append("( not Active )  "+s[i]+"\n");
+134d130
+< 			jTextArea.append(str);
+136,137d131
+< 		
+< 		GrxDebugUtil.println("ObjectNum:"+s.length);
+139d132
+< }  //  @jve:visual-info  decl-index=0 visual-constraint="-123,-111"
+
+diff -rwb --strip-trailing-cr ui/util/GrxProcessingWindow.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/util/GrxProcessingWindow.java
+25a35
+> import javax.swing.SwingUtilities;
+32a43
+> 	private java.util.Timer timer_;
+36c47
+< 		setSize(new Dimension(400,150));
+---
+> 		setTitle("Processing...");
+38,40d48
+< 		robotIcons.add(new ImageIcon(java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getResource("/resources/images/grxrobot.png"))));
+< 		for (int i = 1; i < 14; i++)
+< 			robotIcons.add(new ImageIcon(java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getResource("/resources/images/grxrobot"+i+".png"))));
+42,44c50
+< 		setTitle("Processing...");
+< 		JPanel cPane = (JPanel)getContentPane();
+< 		cPane.setLayout(new BoxLayout(cPane, BoxLayout.X_AXIS));
+---
+> 		setAlwaysOnTop(true);
+46,47c52
+< 		labelIcon.setIcon(robotIcons.get(0));
+< 		labelIcon.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+---
+> 		JPanel cPane = (JPanel)getContentPane();
+51a57,63
+> 		robotIcons.add(new ImageIcon(java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getResource("/resources/images/grxrobot.png"))));
+> 		for (int i = 1; i < 14; i++)
+> 			robotIcons.add(new ImageIcon(java.awt.Toolkit.getDefaultToolkit().getImage(getClass().getResource("/resources/images/grxrobot"+i+".png"))));
+> 		labelIcon.setIcon(robotIcons.get(0));
+> 		labelIcon.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+> 		
+> 		cPane.setLayout(new BoxLayout(cPane, BoxLayout.X_AXIS));
+57,83d68
+< 		
+< 		setAlwaysOnTop(true);
+< 	}
+< 	
+< 	private java.util.Timer timer_;
+< 	private TimerTask task_;
+< 	private boolean isProcessing_ = false;
+< 	
+< 	public void setVisible(boolean b) {
+< 		if (b == isProcessing_)
+< 			return;
+< 		if (b) {
+< 			isProcessing_ = true;
+< 			_showDialog();
+< 		} else  if (isProcessing_) {
+< 			timer_.cancel();
+< 			timer_.purge();
+< 			while (!getOwner().isVisible()) {
+< 				try {
+< 					Thread.sleep(500);
+< 				} catch (InterruptedException e) {
+< 					e.printStackTrace();
+< 				}
+< 			}
+< 			super.setVisible(false);
+< 			isProcessing_ = false;
+< 		}
+88,89c73
+< 			message = "\n\n\n"+message;
+< 			area.setText(message);
+---
+> 			area.setText("\n\n\n" + message);
+93,100c77,82
+< 	private void _showDialog() {
+< 		setSize(new Dimension(400,150));
+< 		setLocationRelativeTo(getOwner());
+< 		while (!getOwner().isVisible()) {
+< 			try {
+< 				Thread.sleep(100);
+< 			} catch (InterruptedException e) {
+< 				e.printStackTrace();
+---
+> 	public void setVisible(boolean b) {
+> 		if (!b) {
+> 			SwingUtilities.invokeLater(
+> 				new Runnable() {
+> 					public void run() {
+> 						GrxProcessingWindow.super.setVisible(false);
+103,107c85,89
+< 		
+< 		if (isModal()) {
+< 			Thread t = new Thread() {
+< 				public void run() {
+< 					GrxProcessingWindow.super.setVisible(true);
+---
+> 			);
+> 			if (timer_ != null) {
+> 				timer_.cancel();
+> 				timer_.purge();
+> 				timer_ = null;
+109,112c91,93
+< 			};
+< 			t.start();
+< 		} else {
+< 			GrxProcessingWindow.super.setVisible(true);
+---
+> 			return;
+> 		} else if (timer_ != null) {
+> 			return;
+115c96,100
+< 		task_ = new TimerTask() {
+---
+> 		timer_ = new java.util.Timer();
+> 		TimerTask task_ = new TimerTask() {
+> 			public void run() {
+> 				SwingUtilities.invokeLater(
+> 					new Runnable() {
+119a105,107
+> 					}
+> 				);
+> 			}
+122,129c110,115
+< 		timer_ = new java.util.Timer();
+< 		timer_.scheduleAtFixedRate(task_, 0, 700);
+< 		
+< 		while (!isVisible()) {
+< 			try {
+< 				Thread.sleep(100);
+< 			} catch (InterruptedException e) {
+< 				e.printStackTrace();
+---
+> 		SwingUtilities.invokeLater(
+> 			new Runnable() {
+> 				public void run() {
+> 					setSize(new Dimension(400,150));
+> 					setLocationRelativeTo(getOwner());
+> 					GrxProcessingWindow.super.setVisible(true);
+131a118,120
+> 		);
+> 		
+> 		timer_.scheduleAtFixedRate(task_, 0, 700);
+
+diff -rwb --strip-trailing-cr ui/view/Grx3DView.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/Grx3DView.java
+14a24
+> import java.awt.Font;
+110a121,123
+> 	private JLabel lblMode_ = new JLabel("[VIEW]");
+> 	private JLabel lblTarget_ = new JLabel("");
+> 	private JLabel lblValue_  = new JLabel("");
+123a137,148
+> 		lblMode_.setForeground(Color.white);
+> 		lblMode_.setFont(new Font("Monospaced", Font.BOLD, 12));
+> 		lblMode_.setPreferredSize(new Dimension(300, 20));
+> 
+> 		lblTarget_.setForeground(Color.white);
+> 		lblTarget_.setFont(new Font("Monospaced", Font.BOLD, 12));
+> 		lblTarget_.setPreferredSize(new Dimension(500, 20));
+> 
+> 		lblValue_.setForeground(Color.white);
+> 		lblValue_.setFont(new Font("Monospaced", Font.BOLD, 12));
+> 		lblValue_.setPreferredSize(new Dimension(300, 20));
+> 
+128c153,158
+< 		contentPane.add(canvas_, BorderLayout.CENTER);
+---
+> 
+> 		JPanel mainPane = new JPanel(new BorderLayout());
+> 		mainPane.setBackground(Color.black);
+> 		mainPane.add(lblMode_, BorderLayout.NORTH);
+> 		mainPane.add(canvas_, BorderLayout.CENTER);
+> 		contentPane.add(mainPane, BorderLayout.CENTER);
+
+475a502
+> 		currentWorld_ = null;
+490,491c517,518
+< 		if (selectionChanged) 
+< 			behaviorManager.updateDynamicsSimulator(true);
+---
+> 		if (selectionChanged && isRunning()) 
+> 			behaviorManager.replaceWorld(itemList);
+501d527
+<         behaviorManager.setViewIndicator(viewToolBar_);
+503c529
+<         behaviorManager.replaceWorld(itemList);
+---
+>         behaviorManager.setViewIndicator(viewToolBar_);
+506a533
+> 		behaviorManager.replaceWorld(itemList);
+510,511c537,538
+<        	registerCORBA();
+< 		return true;
+---
+> 
+>        	return registerCORBA();
+515c542,550
+< 		if (currentWorld_ == null || currentModels_.size() == 0)
+---
+>  		if (currentModels_.size() == 0)
+> 			return;
+> 
+> 		if (behaviorManager.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE && btnCollision_.isSelected()) {
+> 			_showCollision(behaviorManager.getCollision(currentModels_));
+> 			return;
+> 		}
+> 
+>  		if (currentWorld_ == null)
+534,535c569,574
+< 			if (charStat != null) 
+< 				model.setCharacterPos(charStat.position, charStat.sensorState);
+---
+> 			if (charStat != null) {
+> 				if (charStat.sensorState != null)
+> 					model.setCharacterPos(charStat.position, charStat.sensorState.q);
+> 				else
+> 					model.setCharacterPos(charStat.position, null);
+> 			}
+546c585,598
+<     	if (dialog.showModalDialog() != ModalDialog.OK_BUTTON)
+---
+>     	if (dialog.showModalDialog() != ModalDialog.OK_BUTTON) {
+> 			btnRec_.setSelected(false);
+>     	    return;
+> 		}
+> 
+>     	String fileName = dialog.getFileName();
+> 		if (fileName.equals("")) {
+> 			JOptionPane.showMessageDialog(manager_.getFrame(), "Input file name.");
+> 			btnRec_.setSelected(false);
+> 			return;
+> 		}
+> 
+>     	if (!fileOverwriteDialog(fileName)) {
+> 			btnRec_.setSelected(false);
+547a600
+>     	}
+563,568d615
+<     	String fileName = dialog.getFileName();
+<     	if (new File(fileName).exists()) {
+<     		if (!fileOverwriteDialog(fileName))
+<     			return;
+<     	}
+< 
+576c623,624
+<     	if (format__ == null) 
+---
+>     	if (format__ == null) {
+> 			btnRec_.setSelected(false);
+577a626
+> 		}
+583a633
+> 			btnRec_.setSelected(false);
+599,600c649,652
+<         if  (new File(fileName).isDirectory())
+<         	return false;
+---
+> 		File file = new File(fileName);
+> 		if (!file.exists()) {
+> 			return true;
+> 		}
+601a654
+> 		if (file.isFile()) {
+605c658
+<     	if (ans == JOptionPane.YES_OPTION)
+---
+>     		if (ans == JOptionPane.YES_OPTION) {
+606a660,661
+> 			}
+> 		}
+780,781c835,836
+< 	public void registerCORBA() {
+< 		NamingContext rootnc = GrxCorbaUtil.getNamingContext("localhost",2809);
+---
+> 	public boolean registerCORBA() {
+> 		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+794d848
+< 			
+796,797c850,851
+< 			System.out.println("failed to bind");
+< 			return;
+---
+> 			GrxDebugUtil.println("3DVIEW : failed to bind to localhost NameService");
+> 			return false;
+798a853,855
+>  		
+> 		GrxDebugUtil.println("3DVIEW : successfully bound to localhost NameService");
+> 		return true;
+907c964
+< 							arg1.value[i] = CameraHelper.narrow(manager_.poa_.servant_to_reference(l.get(i)));
+---
+> 							arg1.value[j] = CameraHelper.narrow(manager_.poa_.servant_to_reference(l.get(j)));
+945c1002,1011
+< 
+---
+> 		public boolean getPosture(String name , DblSequenceHolder posture) {
+> 			Object obj = manager_.getItem(GrxModelItem.class, name);
+> 			if (obj != null) {
+> 				GrxModelItem model = (GrxModelItem)obj;
+> 				posture.value =	model.getJointValues();
+> 				return true;
+> 			}
+> 			posture.value = new double[0];
+> 			return false;
+> 		}
+1096c1162,1163
+< 				objectToolBar_.selectNone();
+---
+> 				//objectToolBar_.selectNone();
+> 				//lblMode_.setText("[ VIEW ]");
+1105c1172,1173
+< 				objectToolBar_.selectNone();
+---
+> 				//objectToolBar_.selectNone();
+> 				//lblMode_.setText("[ VIEW ]");
+1114c1182,1183
+<                 objectToolBar_.selectNone();
+---
+>                 //objectToolBar_.selectNone();
+> 				//lblMode_.setText("[ VIEW ]");
+1233a1303
+> 				lblMode_.setText("[ EDIT : Translate Object ]");
+1241a1312
+> 				lblMode_.setText("[ EDIT : Rotate Object ]");
+1248a1320
+> 				lblMode_.setText("[ EDIT : Move Joint ]");
+1256a1329
+> 				lblMode_.setText("[ EDIT : Object Placement Select ]");
+1264a1338
+> 				lblMode_.setText("[ EDIT : Object Placement Destination ]");
+1275a1350
+> 				lblMode_.setText("[ VIEW ]");
+1281d1355
+< 				if (behaviorManager.updateDynamicsSimulator(false)) {
+1284c1358
+< 				}
+---
+> 				lblMode_.setText("[ EDIT : Inverse Kinematics Base Link ]");
+1292a1367
+> 				lblMode_.setText("[ EDIT : Inverse Kinematics Translate ]");
+1300a1376
+> 				lblMode_.setText("[ EDIT : Inverse Kinematics Rotate ]");
+1309a1386
+> 				lblMode_.setText("[ VIEW ]");
+diff -rwb --strip-trailing-cr ui/view/GrxJythonPromptView.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/GrxJythonPromptView.java
+12a22
+> import java.awt.Insets;
+17a28
+> import java.awt.Component;
+32c43
+< import com.generalrobotix.ui.util.JTextAreaEx;
+---
+> import com.generalrobotix.ui.util.*;
+47d57
+< 	private String com_;
+50c60,61
+< 	private MenuDialog menuDialog;
+---
+> 	private JSplitPane spltPane_ = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+> 	private MenuDialog commandPane_;
+52d62
+< 	private String message_;
+58,76c68,78
+< 	private static final KeyStroke KS_SHIFT = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT, KeyEvent.SHIFT_MASK);
+< 	private static final KeyStroke KS_CONTROL = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_CONTROL, KeyEvent.CTRL_MASK);
+< 	
+< 	private static final KeyStroke KS_CTRL_U = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_MASK);
+< 	private static final KeyStroke KS_CTRL_A = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
+< 	private static final KeyStroke KS_CTRL_E = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_MASK);
+< 	private static final KeyStroke KS_CTRL_F = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
+< 	private static final KeyStroke KS_CTRL_B = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK);
+< 	private static final KeyStroke KS_CTRL_N = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_MASK);
+< 	private static final KeyStroke KS_CTRL_P = 
+< 		KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK);
+---
+> 	private static final KeyStroke KS_SHIFT = KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT, KeyEvent.SHIFT_MASK);
+> 	private static final KeyStroke KS_CTRL  = KeyStroke.getKeyStroke(KeyEvent.VK_CONTROL, KeyEvent.CTRL_MASK);
+> 	
+> 	private static final KeyStroke KS_CTRL_C = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK);
+> 	private static final KeyStroke KS_CTRL_U = KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_MASK);
+> 	private static final KeyStroke KS_CTRL_A = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
+> 	private static final KeyStroke KS_CTRL_E = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_MASK);
+> 	private static final KeyStroke KS_CTRL_F = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
+> 	private static final KeyStroke KS_CTRL_B = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK);
+> 	private static final KeyStroke KS_CTRL_N = KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_MASK);
+> 	private static final KeyStroke KS_CTRL_P = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK);
+77a80,81
+> 	private static final KeyStroke KS_BS  = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+> 	private static final KeyStroke KS_DEL = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+87,89d90
+< 	private static final KeyStroke KS_BACK_SPACE = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+< 	private static final KeyStroke KS_DELETE = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+< 	
+113a115,129
+> 					if (commandPane_ == null) {
+> 						if (JOptionPane.showConfirmDialog(manager_.getFrame(),
+> 								"Are you sure stop script ?\n",
+> 								"exec script",JOptionPane.OK_CANCEL_OPTION) 
+> 								== JOptionPane.CANCEL_OPTION) {
+> 							btnExec_.setSelected(true);
+> 							return;
+> 						}
+> 					} else {
+> 			   			if (!commandPane_.exit()) { 
+> 							btnExec_.setSelected(true);
+> 							return;
+> 						}
+> 					}
+> 
+117c133
+< 					interrupt();
+---
+> 					interrupt(thread_2_);
+124c140,141
+< 		contentPane.add(scArea_, BorderLayout.CENTER);
+---
+> 		contentPane.add(scArea_);
+> 
+135,136c152
+< 		writer_ = new BufferedWriter(new PrintWriter(
+< 				new JTextComponentWriter(area_)));
+---
+> 		writer_ = new BufferedWriter(new PrintWriter(new JTextComponentWriter(area_)));
+139a156
+> 
+141a159
+> 		interpreter_.exec("import rbimporter");
+147,148c165,169
+< 		//interpreter_.exec("sys.setClassLoader(uimanager.pluginLoader_)");
+< 		interpreter_.exec("import rbimporter");
+---
+> 
+> 		ClassLoader cl = this.getClass().getClassLoader();
+> 		interpreter_.set("auditorClassLoader", cl);
+> 		interpreter_.exec("sys.setClassLoader(auditorClassLoader)");
+> 		interpreter_.exec("del auditorClassLoader");
+156a178
+> 		interpreter_.exec("__builtin__.showCommandPane = view.waitInputMenuNoDialog");
+159a182
+> 
+168a192,193
+> 
+> 		spltPane_.setOneTouchExpandable(true);
+171,175c196,203
+< 	public void interrupt() {
+< 		if (thread_1_ != null) 
+< 			thread_1_.interrupt();
+< 		if (thread_2_ != null) 
+< 			thread_2_.interrupt();
+---
+> 	public void interrupt(Thread thread) {
+> 		if (thread != null) {
+> 			try {
+> 				thread.interrupt();
+> 			} catch (Exception e) {
+> 				GrxDebugUtil.printErr("interrupt thread:", e);
+> 			}
+> 		}
+183,185c211,213
+< 			com_ = getCommand();
+<             if (thread_1_ != null) {
+< 		        evt.consume();	
+---
+> 
+> 			if (ks == KS_CTRL_C) {
+> 				interrupt(thread_1_);
+188c216,218
+< 				try {
+---
+> 			    if (thread_1_ != null)  
+> 					return;
+> 
+191c221,223
+< 							if (com_.trim().length() <= 0)
+---
+> 						String com = getCommand();
+> 
+> 						if (com.trim().length() <= 0) {
+193c225
+< 							else {
+---
+> 						} else {
+195,197c227,229
+< 								//area_.setEditable(false);
+< 								btnExec_.setSelected(true);
+< 								btnExec_.setIcon(SIM_SCRIPT_STOP_ICON);
+---
+> 							area_.setCaretPosition(area_.getText().length());
+> 							if (com.startsWith("dir(")) 
+> 								com = "print "+com;
+199,206c231
+< 									if (com_.startsWith("dir(")) {
+< 										interpreter_.exec("__tmp__ = " + com_);
+< 										Object obj = interpreter_.eval("__tmp__");
+< 										if (obj != null) 
+<                                   			area_.append(obj.toString()+"\n"); 
+< 									} else {
+< 										interpreter_.exec(com_);
+< 									}
+---
+> 								interpreter_.exec(com);
+208c233
+< 									e.printStackTrace();
+---
+> 								showScriptError(e);
+210c235
+< 								history_.add(1, com_);
+---
+> 							history_.add(1, com);
+213,215d237
+< 								btnExec_.setSelected(false);
+< 								btnExec_.setIcon(SIM_SCRIPT_START_ICON);
+< 								//area_.setEditable(true);
+219d240
+< 							area_.setCaretPosition(area_.getText().length());
+221a243
+> 						area_.setCaretPosition(area_.getText().length());
+223a246,247
+> 
+> 				try {
+227a252,254
+> 			} else if (thread_1_ != null) {
+> 				return;
+> 		        //evt.consume();	
+229c256
+< 				area_.replaceRange("", len - com_.length(), len);
+---
+> 				area_.replaceRange("", len - getCommand().length(), len);
+231c258
+< 				area_.setCaretPosition(len - com_.length());
+---
+> 				area_.setCaretPosition(len - getCommand().length());
+239c266
+< 				if (len - com_.length() < cp)
+---
+> 				if (len - getCommand().length() < cp)
+243c270
+< 			} else if (ks == KS_CONTROL) { // and control key
+---
+> 			} else if (ks == KS_CTRL) { // and control key
+245c272
+< 			} else if (ks == KS_BACK_SPACE) {
+---
+> 			} else if (ks == KS_BS) {
+254c281
+< 			} else if (ks == KS_DELETE) {
+---
+> 			} else if (ks == KS_DEL) {
+299a327,338
+> 	private void showScriptError(Exception e) {
+> 		if (e.toString().indexOf("Script Canceled.") > 0) {
+> 			JOptionPane.showMessageDialog(manager_.getFrame(), "Script Canceled.");
+> 		} else if (e.toString().indexOf("org.omg.CORBA.COMM_FAILURE:") > 0) {
+> 			String err = e.toString().split("org.omg.CORBA.COMM_FAILURE:")[0];
+> 			JOptionPane.showMessageDialog(manager_.getFrame(), "Communication error occured."+err);
+> 			System.out.println(e.toString());
+> 		} else {
+> 			e.printStackTrace();
+> 		}	
+> 	}
+> 
+305c344,347
+< 			int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
+---
+> 			Component parent = commandPane_;
+> 		  	if (parent== null)
+> 				parent = manager_.getFrame();
+> 			int ans = JOptionPane.showConfirmDialog(parent,
+309a352,362
+> 			final String url = currentItem_.getURL(true);
+> 		}
+> 
+> 		execFile(currentItem_.getURL(true));
+> 	}
+> 		
+> 	public void execFile(final String url) {
+> 		if (thread_2_ != null) {
+> 			JOptionPane.showMessageDialog(manager_.getFrame(), 
+> 				"The previous script has been stil running.");
+> 			return;
+312d364
+< 		final String url = currentItem_.getURL(true);
+313a366,371
+> 		if (!f.isFile()) {
+> 			JOptionPane.showMessageDialog(manager_.getFrame(), 
+> 				"File " + f.getPath() + " is not exist.");
+> 			return;
+> 		}
+> 
+315a374
+> 		interpreter_.exec("rbimporter.refresh()");
+320,321c379,381
+< 			interpreter_.exec("print '"+com+"'");
+< 			interpreter_.exec(com);
+---
+> 			String com1=com.replace("\\","\\\\");
+> 			interpreter_.exec("print '"+com1+"'");
+> 			interpreter_.exec(com1);
+325a386
+> 				while(!isRunning()) {
+327,328c388
+< 					interpreter_.exec("print 'execfile("+url+")'");
+< 					interpreter_.execfile(url);
+---
+> 						Thread.sleep(100);
+331a392,406
+> 				}
+> 
+> 				btnExec_.setEnabled(true);
+> 				btnExec_.setSelected(true);
+> 				btnExec_.setIcon(SIM_SCRIPT_STOP_ICON);
+> 				btnExec_.setToolTipText("interrupt python threads");
+> 
+> 				interpreter_.exec("print 'execfile("+url+")'");
+> 				try {
+> 					interpreter_.execfile(url);
+> 				} catch (Exception e) {
+> 					showScriptError(e);
+> 				} finally {
+> 					if (currentItem_ == null) 
+> 						btnExec_.setEnabled(false);
+336a412,413
+> 					thread_2_ = null;
+> 				}
+352,354c429,433
+< 		String nsHost = manager_.getProjectProperty("nsHost");
+< 		String nsPort = manager_.getProjectProperty("nsPort");
+< 		if (nsHost == null)
+---
+> 		String nsHost = manager_.getProjectProperty("robotHost");
+> 		String nsPort = manager_.getProjectProperty("robotPort");
+> 		if (nsHost == null) {
+> 			nsHost = System.getenv("NS_HOST");
+> 			if (nsHost == null) {
+356c435,439
+< 		if (nsPort == null)
+---
+> 			}
+> 		}
+> 		if (nsPort == null) {
+> 			nsPort = System.getenv("NS_PORT");
+> 			if (nsPort == null) {
+357a441,442
+> 			}
+> 		}
+374d458
+< 		
+378a463
+> 			defaultScript = manager_.getHomePath() + defaultScript;
+382c467
+< 			manager_.loadItem(GrxPythonScriptItem.class, name, f.getAbsolutePath());
+---
+> 			currentItem_ = (GrxPythonScriptItem)manager_.loadItem(GrxPythonScriptItem.class, name, f.getAbsolutePath());
+392,411d476
+< 	public void control(List<GrxBaseItem> itemList) {
+< 		if (menuDialog != null && menuDialog.isWaiting()){
+< 			try {
+< 				Thread.sleep(200);
+< 			} catch (InterruptedException e1) {}
+< 		
+< 			if (!menuDialog.isIdle()){
+< 				try{
+< 					interpreter_.exec(menuDialog.getCommand());
+< 				} catch (Exception e) {
+< 					JOptionPane.showMessageDialog(manager_.getFrame(), e.toString());
+< 				}
+< 				
+< 				if (menuDialog.isWaiting())
+< 					menuDialog.setReadyToNext();
+< 				menuDialog.setMessage(message_);
+< 			}
+< 		}
+< 	}
+< 	
+413c478,481
+< 		JOptionPane.showMessageDialog(manager_.getFrame(), msg);
+---
+> 		Component parent = commandPane_;
+> 	  	if (parent == null)
+> 			parent = manager_.getFrame();
+> 		JOptionPane.showMessageDialog(parent, msg);
+415,419c483,489
+< 	public void waitInputConfirm(String msg) {
+< 		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
+< 			msg,"waitInputConfirm",
+< 			JOptionPane.OK_CANCEL_OPTION,
+< 			JOptionPane.INFORMATION_MESSAGE,
+---
+> 
+> 	public boolean waitInputConfirm(String msg) throws Exception { 
+> 		Component parent = commandPane_;
+> 	  	if (parent == null)
+> 			parent = manager_.getFrame();
+> 		int ans = JOptionPane.showConfirmDialog(parent, msg, "waitInputConfirm",
+> 			JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE,
+421,422c491,495
+< 		if (ans != JOptionPane.OK_OPTION)
+< 			interrupt();
+---
+> 
+> 		if (ans == JOptionPane.OK_OPTION)
+> 			return true;
+> 		
+> 		throw new Exception("Script Canceled.");
+424,428c497,503
+< 	public boolean waitInputSelect(String msg) {
+< 		int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
+< 			msg,"waitInputSelect",
+< 			JOptionPane.YES_NO_CANCEL_OPTION,
+< 			JOptionPane.INFORMATION_MESSAGE,
+---
+> 
+> 	public boolean waitInputSelect(String msg) throws Exception {
+> 		Component parent = commandPane_;
+> 	  	if (parent == null)
+> 			parent = manager_.getFrame();
+> 		int ans = JOptionPane.showConfirmDialog(parent, msg, "waitInputSelect",
+> 			JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE,
+429a505
+> 
+432,433c508,511
+< 		else if (ans != JOptionPane.NO_OPTION)
+< 			interrupt();
+---
+> 
+> 	    if (ans != JOptionPane.NO_OPTION) 
+> 			throw new Exception("Script Canceled.");
+> 
+436,440c514,525
+< 	public Object waitInputMessage(String msg) {
+< 		return JOptionPane.showInputDialog(manager_.getFrame(),
+< 				msg, "waitInputMessage",
+< 				JOptionPane.INFORMATION_MESSAGE,
+< 				manager_.ROBOT_ICON,null,null);
+---
+> 
+> 	public Object waitInputMessage(String msg) throws Exception {
+> 		Component p = commandPane_;
+> 	  	if (p == null)
+> 			p = manager_.getFrame();
+> 		Object ret = JOptionPane.showInputDialog(p, msg, "waitInputMessage",
+> 			JOptionPane.INFORMATION_MESSAGE, manager_.ROBOT_ICON, null, null);
+> 
+> 		if (ret == null) 
+> 			throw new Exception("Script Canceled.");
+> 
+> 		return ret;
+441a527
+> 
+443,444c529,533
+< 		menuDialog = new MenuDialog(menuList);
+< 		menuDialog.showDialog(manager_.getFrame(), currentItem_.getName(), false);
+---
+> 		waitInputMenu(menuList, false);
+> 	}
+> 
+> 	public void waitInputMenuNoDialog(String[][] menuList) {
+> 		waitInputMenu(menuList, true);
+445a535,569
+> 
+> 	public void waitInputMenu(String[][] menuList, boolean noDialog) {
+> 		commandPane_ = new MenuDialog(menuList);
+> 
+> 		JPanel cp = getContentPane();
+> 		if (noDialog) {
+> 			cp.setVisible(false);
+> 			cp.removeAll();
+> 			cp.add(spltPane_);
+> 			spltPane_.setLeftComponent(commandPane_);
+> 			spltPane_.setRightComponent(scArea_);
+> 			cp.setVisible(true);
+> 			spltPane_.setDividerLocation(0.7);
+> 
+> 			commandPane_.start(interpreter_);
+> 
+> 			cp.setVisible(false);
+> 			cp.removeAll();
+> 			cp.add(scArea_);
+> 			cp.setVisible(true);
+> 		} else {
+> 			JDialog dialog = new JDialog(manager_.getFrame(), "WaitInputMenu" ,false);	
+> 			dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+> 			dialog.setContentPane(commandPane_);
+> 			dialog.setSize(300, 400);
+> 			dialog.setVisible(true);
+> 
+> 			commandPane_.start(interpreter_);
+> 
+> 			dialog.setVisible(false);
+> 		}
+> 
+> 		commandPane_ = null;
+> 	}
+> 
+447c571,572
+< 		message_ = msg;
+---
+>         if (commandPane_ != null)
+> 			commandPane_.setMessage(msg);
+450c575
+< 	public class JTextComponentWriter extends Writer {
+---
+> 	private class JTextComponentWriter extends Writer {
+463d587
+< 				} else if (len == 0) {
+473c597
+< 					out.setText(out.getText() + str);//+ prompt_);
+---
+> 					out.setText(out.getText() + str);
+493c617
+< 				if (out == null) {
+---
+> 				if (out == null)
+499,503d622
+< 	
+< 	public void add(JPanel pnl) {
+< 		getContentPane().add(pnl, BorderLayout.SOUTH);
+< 	}
+< }
+diff -rwb --strip-trailing-cr ui/view/GrxLoggerView.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/GrxLoggerView.java
+404c412,415
+< 			tFldTime_.setText(String.format(timeFormat, t));
+---
+> 			String str = String.format(timeFormat, t);
+> 			if (!tFldTime_.getText().equals(str))
+> 				tFldTime_.setText(str);
+> 
+
+diff -rwb --strip-trailing-cr ui/view/GrxORBMonitorView.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/GrxORBMonitorView.java
+1a2,10
+12a22
+> import javax.swing.*;
+14,17c24
+< import javax.swing.JPanel;
+< 
+< import com.generalrobotix.ui.GrxBaseView;
+< import com.generalrobotix.ui.GrxPluginManager;
+---
+> import com.generalrobotix.ui.*;
+22a30,32
+> 	private GrxORBMonitor monitor_;
+> 	private String nsHost_;
+> 	private int    nsPort_;
+25a36,49
+> 		getContentPane().setLayout(new BorderLayout());
+> 		monitor_ = new GrxORBMonitor();
+> 		getContentPane().add(monitor_);
+> 
+> 		nsHost_ = System.getenv("NS_HOST");
+> 		if (nsHost_ == null) {
+> 			nsHost_ = "localhost";
+> 		}
+> 		try {
+> 			nsPort_ = Integer.parseInt(System.getenv("NS_PORT"));
+> 		} catch (Exception e) {
+> 			nsPort_ = 2809;
+> 		}
+> 	}
+27,30c51,56
+< 		GrxORBMonitor monitor = new GrxORBMonitor();
+< 		JPanel contentPane = getContentPane();
+< 		contentPane.setLayout(new BorderLayout());
+< 		contentPane.add(monitor);
+---
+> 	public void restoreProperties() {
+> 		if (nsHost_.equals("localhost")) {
+> 			monitor_.setHosts(new String[]{"localhost"});
+> 		} else {
+> 			monitor_.setHosts(new String[]{nsHost_, "localhost"});
+> 		}
+
+diff -rwb --strip-trailing-cr ui/view/GrxOpenHRPView.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/GrxOpenHRPView.java
+82a90,118
+
+171,175c171,175
+< 		/* CREATE MENU */
+< /*		JMenuItem start = new JMenuItem("start");
+< 		start.addActionListener(new ActionListener() {
+< 			public void actionPerformed(ActionEvent arg0) {
+< 				startSimulation(true);
+---
+> 	public void restoreProperties() {
+> 		super.restoreProperties();
+> 		nsHost_ = System.getenv("NS_HOST");
+> 		if (nsHost_ == null) {
+> 			nsHost_ = "localhost";
+177,178d176
+< 		});
+< 		setMenuItem(start);
+180,183c178,181
+< 		JMenuItem stop = new JMenuItem("stop");
+< 		stop.addActionListener(new ActionListener() {
+< 			public void actionPerformed(ActionEvent arg0) {
+< 				stopSimulation();
+---
+> 		try {
+> 			nsPort_ = Integer.parseInt(System.getenv("NS_PORT"));
+> 		} catch (Exception e) {
+> 		 	nsPort_ = 2809;
+185,187d182
+< 		});
+< 		setMenuItem(stop);
+< */
+223d217
+< 		currentWorld_.clearLog();
+225c219,230
+< 			if (!initDynamicsSimulator()) {
+---
+> 			List<GrxBaseItem> modelList = manager_.getSelectedItemList(GrxModelItem.class);
+> 			initLogger(modelList);
+> 			if (currentDynamics_ != null) {
+> 				try {
+> 					currentDynamics_.destroy();
+> 				} catch (Exception e) {
+> 					GrxDebugUtil.printErr("", e);
+> 				}
+> 				currentDynamics_ = null;
+> 			}
+> 			currentDynamics_ = initDynamicsSimulator(modelList);
+> 			if (currentDynamics_ == null) {
+227,228c232
+< 				JOptionPane.showMessageDialog(manager_.getFrame(),
+< 						"Failed to initialize DynamicsSimulator.");
+---
+> 				JOptionPane.showMessageDialog(manager_.getFrame(), "Failed to initialize DynamicsSimulator.");
+233,234c237
+< 				JOptionPane.showMessageDialog(manager_.getFrame(),
+< 						"Failed to initialize Controller.");
+---
+> 				JOptionPane.showMessageDialog(manager_.getFrame(), "Failed to initialize Controller.");
+239c242
+< 			GrxDebugUtil.printErr("SimulationLoop:", e);
+---
+> 			GrxDebugUtil.printErr("got exception in startSimulation():", e);
+241a245
+> 
+261d264
+< 					GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
+262a266
+> 					GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
+266c270,271
+< 		simThread_.setPriority(Thread.currentThread().getPriority() - 1);
+---
+> 		simThread_.setPriority(Thread.currentThread().getPriority() + getInt("threadPriority", -1));
+> 		System.out.println("sim.thread priority : "+getInt("threadPriority", -1));
+276a282
+> 
+293c299
+< 			System.out.println(new java.util.Date()+msg.replace(" ", "").replace("\n", " : "));
+---
+> 			System.out.println(getName()+" : "+new Date()+msg.replace(" ", "").replace("\n", " : "));
+295d300
+< 				isInteractive_ = false;
+332a338
+> 		// check time
+337a344
+> 		// log
+351,365c358,364
+< 	    for (int i = 0; i<controllers_.size(); i++) {
+< 	    	ControllerAttribute attr = 
+< 	    		(ControllerAttribute)controllers_.get(i);
+< 			if (attr.doCount_ <= simTime_ / attr.stepTime_) {
+< 				attr.doFlag_ = true;
+< 				try {
+< 					attr.controller_.input();
+< 				} catch (Exception e) {
+< 					GrxDebugUtil.printErr("Exception in input", e);
+< 				}
+< 			}
+< 	    }
+< 	    
+< 		simTime_ += stepTime_;
+< 
+---
+> 		// input
+> 	    for (int i=0; i<controllers_.size(); i++)
+> 	    	controllers_.get(i).input(simTime_);
+> 
+> 		// control
+> 		for (int i=0; i<controllers_.size(); i++) 
+> 	    	controllers_.get(i).control();
+367,378c366,367
+< 		for (int i = 0; i < controllers_.size(); i++) {
+< 			ControllerAttribute attr = controllers_.get(i);
+< 			if (attr.doFlag_) {
+< 				try {
+< 					attr.controller_.control();
+< 				} catch (Exception e) {
+< 					GrxDebugUtil.printErr("Exception in control", e);
+< 				}
+< 			}
+< 		}
+< 		
+< 		if (isIntegrate_) {
+---
+> 		// integrate or calculate forward kinematics
+> 		if (isIntegrate_) 
+380c369
+< 		} else {
+---
+> 		else 
+382d370
+< 		}
+383a372,374
+> 		// output
+> 		for (int i=0; i<controllers_.size(); i++) 
+> 	    	controllers_.get(i).output();
+385,396c376
+< 		for (int i = 0; i < controllers_.size(); i++) {
+< 			ControllerAttribute attr = controllers_.get(i);
+< 			if (attr.doFlag_) {
+< 				try {
+< 					attr.controller_.output();
+< 				} catch (Exception e) {
+< 					GrxDebugUtil.printErr("Exception in output", e);
+< 				}
+< 				attr.doCount_++;
+< 				attr.doFlag_ = false;
+< 			}
+< 		}
+---
+> 		simTime_ += stepTime_;
+411,415c391,392
+< 	public boolean initDynamicsSimulator() {
+< 		getDynamicsSimulator(true);
+< 
+< 		try {
+< 			List modelList = manager_.getSelectedItemList(GrxModelItem.class);
+---
+> 	private void initLogger(List<GrxBaseItem> modelList) {
+> 		currentWorld_.clearLog();
+419,421c396
+< 				if (model.lInfo_ == null)
+< 					continue;
+< 
+---
+> 			if (model.cInfo_ != null) {
+423,424c398
+< 				currentDynamics_.registerCharacter(model.getName(), model.cInfo_);
+< 				if (model.isRobot()) {
+---
+> 				if (model.isRobot()) 
+427a402,424
+> 	}
+> 
+> 	private DynamicsSimulator initDynamicsSimulator(List<GrxBaseItem> modelList) {
+> 		DynamicsSimulator dynamics;	
+> 		try {
+> 			org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory", nsHost_, nsPort_);
+> 			DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper.narrow(obj);
+> 			dynamics = ifactory.create();
+> 		} catch (Exception e) {
+> 			GrxDebugUtil.printErr("initDynamicsSimulator: create failed.", e);
+> 			return null;
+> 		}
+> 
+> 		try {
+> 			// Register robot to dynamics
+> 			for (int i=0; i<modelList.size(); i++) {
+> 				GrxBaseItem item = modelList.get(i);
+> 				if (item instanceof GrxModelItem) {
+> 					GrxModelItem model = (GrxModelItem) item;
+> 					if (model.cInfo_ != null)
+> 						dynamics.registerCharacter(model.getName(), model.cInfo_);
+> 				}
+> 			}
+428a426
+> 			// Initialize Simulation
+431a430,431
+> 			dynamics.init(simParamPane_.getStepTime(), m, SensorOption.ENABLE_SENSOR);
+> 			dynamics.setGVector(new double[] { 0.0, 0.0, simParamPane_.getGravity() });
+433,435c433
+< 			currentDynamics_.init(simParamPane_.getStepTime(), m, SensorOption.ENABLE_SENSOR);
+< 			currentDynamics_.setGVector(new double[] { 0.0, 0.0, simParamPane_.getGravity() });
+< 			
+---
+> 			// Initialize robot state
+436a435,436
+> 				GrxBaseItem item = modelList.get(i);
+> 				if (item instanceof GrxModelItem) {
+440c440
+< 				
+---
+> 					String name = model.getName();
+442,444d441
+< 				currentDynamics_.setCharacterLinkData(
+< 					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
+< 					model.getInitialTransformArray(base));
+446,447c443,446
+< 				currentDynamics_.setCharacterAllJointModes(
+< 					model.getName(), JointDriveMode.TORQUE_MODE);
+---
+> 					// Set initial robot position and attitude
+> 					dynamics.setCharacterLinkData(
+> 							name, base, LinkDataType.ABS_TRANSFORM, 
+> 							model.getInitialTransformArray(base));
+449,450c448,450
+< 				currentDynamics_.setCharacterAllLinkData(
+< 					model.getName(), LinkDataType.JOINT_VALUE, 
+---
+> 					// Set joint values
+> 					dynamics.setCharacterAllLinkData(
+> 							name, LinkDataType.JOINT_VALUE, 
+452,453d451
+< 			}
+< 			currentDynamics_.calcWorldForwardKinematics();
+455,466c453,460
+< 			List<GrxBaseItem> collisionPair = manager_.getSelectedItemList(GrxCollisionPairItem.class);
+< 			for (int i=0; i<collisionPair.size(); i++) {
+< 				GrxCollisionPairItem item = (GrxCollisionPairItem) collisionPair.get(i);
+< 				currentDynamics_.registerCollisionCheckPair(
+< 						item.getStr("objectName1", ""), 
+< 						item.getStr("jointName1", ""), 
+< 						item.getStr("objectName2", ""),
+< 						item.getStr("jointName2", ""), 
+< 						item.getDbl("staticFriction", 0.5),
+< 						item.getDbl("slidingFriction", 0.5),
+< 						item.getDblAry("springConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}), 
+< 						item.getDblAry("damperConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0})); 
+---
+> 					// Set joint mode
+> 					JointDriveMode jm = JointDriveMode.TORQUE_MODE;
+>                 	if (isIntegrate_) {
+>                 		double[] jms = model.getInitialJointMode();
+> 						for (int j=0; j<jms.length; j++) {
+>                   			if (jms[j] > 0) {
+> 								jm = JointDriveMode.HIGH_GAIN_MODE;
+> 								break;
+468,473d461
+< 			currentDynamics_.initSimulation();
+< 			
+< 			stateH_.value = null;
+< 		} catch (Exception e) {
+< 			GrxDebugUtil.printErr("initDynamicsSimulator:", e);
+< 			return false;
+475c463,464
+< 		return true;
+---
+> 					} else {
+> 						jm = JointDriveMode.HIGH_GAIN_MODE;
+477,483c466
+< 
+< 	private DynamicsSimulator getDynamicsSimulator(boolean update) {
+< 		if (update && currentDynamics_ != null) {
+< 			try {
+< 				currentDynamics_.destroy();
+< 			} catch (Exception e) {
+< 				GrxDebugUtil.printErr("", e);
+---
+> 					dynamics.setCharacterAllJointModes(name, jm);
+485d467
+< 			currentDynamics_ = null;
+486a469
+> 			dynamics.calcWorldForwardKinematics();
+488,494c471,483
+< 		if (currentDynamics_ == null) {
+< 			try {
+< 				org.omg.CORBA.Object obj = //process_.get(DynamicsSimulatorID_).getReference();
+< 				GrxCorbaUtil.getReference("DynamicsSimulatorFactory", nsHost_, nsPort_);
+< 				DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper.narrow(obj);
+< 				currentDynamics_ = ifactory.create();
+< 				currentDynamics_._non_existent();
+---
+>             // Set collision pair 
+> 			List<GrxBaseItem> collisionPair = manager_.getSelectedItemList(GrxCollisionPairItem.class);
+> 			for (int i=0; i<collisionPair.size(); i++) {
+> 				GrxBaseItem pair = collisionPair.get(i);
+> 				dynamics.registerCollisionCheckPair(
+> 						pair.getStr("objectName1", ""), pair.getStr("jointName1", ""), 
+> 						pair.getStr("objectName2", ""), pair.getStr("jointName2", ""), 
+> 						pair.getDbl("staticFriction", 0.5), 
+> 						pair.getDbl("slidingFriction", 0.5),
+> 						pair.getDblAry("springConstant", new double[]{0, 0, 0, 0, 0, 0}), 
+> 						pair.getDblAry("damperConstant", new double[]{0, 0, 0, 0, 0, 0})
+> 				); 
+> 			}
+495a485,488
+> 			// Initialize server
+> 			dynamics.initSimulation();
+> 			
+> 			stateH_.value = null;
+497,499c490,491
+< 				GrxDebugUtil.printErr("getDynamicsSimulator: create failed.");
+< 				currentDynamics_ = null;
+< 			}
+---
+> 			GrxDebugUtil.printErr("initDynamicsSimulator:", e);
+> 			return null;
+501c493
+< 		return currentDynamics_;
+---
+> 		return dynamics;
+
+diff -rwb --strip-trailing-cr ui/view/GrxRobotStatView.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/GrxRobotStatView.java
+55c64
+< 	//private long[] 	     currentCbStat_;
+---
+> 	private long[] 	     currentCbStat_;
+83,84c92,93
+< 				currentModel_ = (GrxModelItem) comboModelName_.getSelectedItem();
+< 				if (currentModel_ == null)
+---
+> 				GrxModelItem item = (GrxModelItem)comboModelName_.getSelectedItem();
+> 				if (item == null || item == currentModel_)
+85a95,96
+> 
+> 				currentModel_ = item;
+203c205
+< //					currentCbStat_ = charStat.calibState;
+---
+> 					currentCbStat_ = charStat.calibState;
+217c219
+< 		getContentPane().setVisible(false);
+---
+> 		//getContentPane().setVisible(false);
+220d221
+< 				scPanes_[i].setVisible(true);
+224a226
+> 				scPanes_[i].setVisible(true);
+228c230
+< 		getContentPane().setVisible(true);
+---
+> 		//getContentPane().setVisible(true);
+232,233d233
+< 		currentWorld_ = null;
+< 		currentModel_ = null;
+327c327
+< 					} else
+---
+> 					} else {
+328a329
+> 					}
+335,336c336
+< 					if (currentSvStat_ != null
+< 							&& !_isSwitchOn(row, currentSvStat_)) {
+---
+> 					if (currentSvStat_ != null && _isSwitchOn(row, currentSvStat_)) {
+338a339,345
+> 					//	currentModel_.setJointColor(row, Color.red);
+> 					} else if (currentCbStat_ != null && !_isSwitchOn(row, currentCbStat_)) {
+> 						state_.fgColor = Color.yellow;
+> 						state_.font = MONO_BOLD_12;
+> 					//	currentModel_.setJointColor(row, Color.yellow);
+> 					} else {
+> 					//	currentModel_.setJointColor(row, null);
+392c399,400
+< 		if ((state[ch / 64] & a) > 0)
+---
+> 		int idx = ch/64;
+> 		if (state.length > idx && (state[idx] & a) > 0)
+
+diff -rwb --strip-trailing-cr ui/view/MenuDialog.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/MenuDialog.java
+16a26,29
+> import java.awt.Font;
+> import java.awt.Color;
+> import java.awt.event.ActionEvent;
+> import java.awt.event.ActionListener;
+23,33c36
+< import javax.swing.BoxLayout;
+< import javax.swing.JButton;
+< import javax.swing.JCheckBox;
+< import javax.swing.JDialog;
+< import javax.swing.JFrame;
+< import javax.swing.JLabel;
+< import javax.swing.JPanel;
+< import javax.swing.JScrollPane;
+< import javax.swing.JTabbedPane;
+< import javax.swing.JTextArea;
+< import javax.swing.JTextField;
+---
+> import javax.swing.*;
+38,39c41,44
+< import com.generalrobotix.ui.util.GrxDebugUtil;
+< import com.generalrobotix.ui.util.GrxGuiUtil;
+---
+> import org.python.util.PythonInterpreter;
+> 
+> import com.generalrobotix.ui.*;
+> import com.generalrobotix.ui.util.*;
+48,55d52
+< 	private static MenuDialog currentMenuPanel_ = null;
+< 	private JDialog dialog_ = null;
+< 	private JPanel  jPanel_localMenu = null;
+< 	private JButton jButton_previous = null;
+< 	private JButton jButton_next = null;
+< 	private JLabel 	jLabel = null;
+< 	private JCheckBox jCheckBoxSequential = null;
+< 	private JTextArea jTextArea = null;
+57,58c54,74
+< 	private JCheckBox jCheckBoxContinuous = null;
+< 	private JButton currentGoNextButton_ = null;
+---
+> 	public static final int BOTH = 0;
+> 	public static final int ALWAYS = 1;
+> 	public static final int SEQUENTIAL = 2;
+> 
+> 	private JScrollPane sclAlways_;
+> 	private JScrollPane sclSequence_;
+> 	private JPanel    pnlAlways_   = new JPanel();
+> 	private JPanel    pnlSequence_ = new JPanel();
+> 	private JPanel    pnlLowerC_   = new JPanel();
+> 	private ImageIcon icnUp_       = new ImageIcon(getClass().getResource("/resources/images/arrow_up.png"));
+> 	private ImageIcon icnDn_       = new ImageIcon(getClass().getResource("/resources/images/arrow_down.png"));
+> 	private JButton   btnSwitch_   = new JButton(icnUp_);
+> 	private JButton   btnNext_     = new JButton(new ImageIcon(getClass().getResource("/resources/images/playback.png")));
+> 	private JButton   btnPrevious_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/arrow_left.png")));
+> 	private JButton   btnQuit_     = new JButton(new ImageIcon(getClass().getResource("/resources/images/batsu.png")));
+> 	private JButton   btnRetry_    = new JButton(new ImageIcon(getClass().getResource("/resources/images/undo.png")));
+> 	private JLabel 	  lblStep_     = new JLabel("  1 / 1  ");
+> 	private JLabel 	  lblMode_     = new JLabel("Commands Always Enabled");
+> 	private JCheckBox cbxSequential_ = new JCheckBox("Sequential", true);
+> 	private JCheckBox cbxContinuous_ = new JCheckBox("continuous", false);
+> 
+60c76
+< 	private boolean isClickedButtonGoNext_ = false;
+---
+> 	private JButton currentGoBtn_;
+65c81
+< 	private String command_ = null;
+---
+> 	private String executingCommand_ = null;
+66a83,85
+> 	private String message_;
+> 	private Thread thread_;
+> 
+68,69d86
+< 	private static final String QUITBUTTON_TITLE  = "Quit";
+< 	private HashMap<String, String> exceptMap = new HashMap<String, String>();
+71a89,96
+> 		this(src, BOTH);
+> 	}
+> 
+> 	public MenuDialog(String[][] src, int initialMode) {
+> 		this(src, initialMode, true, true);
+> 	}
+> 
+> 	public MenuDialog(String[][] src, int initialMode, boolean showSwitch, boolean showQuit) {
+73c98,114
+< 		initialize();
+---
+> 		isWaiting_ = false;
+> 
+> 		pnlAlways_.setLayout(new BoxLayout(pnlAlways_, BoxLayout.Y_AXIS));
+> 		sclAlways_   = new JScrollPane(pnlAlways_);
+> 
+> 		pnlSequence_.setLayout(new BoxLayout(pnlSequence_, BoxLayout.Y_AXIS));
+> 		sclSequence_ = new JScrollPane(pnlSequence_);
+> 
+> 		//
+> 		btnSwitch_.setPreferredSize(GrxBaseView.getDefaultButtonSize());
+> 		btnSwitch_.setMaximumSize(GrxBaseView.getDefaultButtonSize());
+> 		btnSwitch_.addActionListener(new ActionListener() { 
+> 			public void actionPerformed(ActionEvent e) {
+> 				if (btnSwitch_.getIcon() == icnUp_) 
+> 					switchPanel(ALWAYS);
+> 				else
+> 					switchPanel(SEQUENTIAL);
+75,99c116,124
+< 	private void initialize() {
+< 		exceptMap.put(QUITBUTTON_TITLE,QUITBUTTON_TITLE);
+< 		// set panel configuration
+< 		// local panel
+< 		JPanel localPanel = new JPanel(new BorderLayout());
+< 		localPanel.add(new JScrollPane(getLocalMenuPanel()),BorderLayout.CENTER);
+< 		
+< 		JPanel localPanelLower = new JPanel();
+< 		localPanelLower.add(getPreviousButton(), null);
+< 		jLabel = new JLabel("  1 / 1  ");
+< 		localPanelLower.add(jLabel, null);
+< 		localPanelLower.add(getNextButton(), null);
+< 		localPanelLower.add(getJCheckBoxSequential(), null);
+< 		localPanel.add(localPanelLower,BorderLayout.SOUTH);
+< 
+< 		// main tab
+< 		JTabbedPane tabbedPane = new JTabbedPane();
+< 		tabbedPane.addTab("Local",  null, localPanel, null);
+< 		tabbedPane.addTab("Global", null, new JScrollPane(getGlobalMenuPanel()), null);
+< 		tabbedPane.addTab("History",null, new JScrollPane(getJTextArea()), null);
+< 		tabbedPane.addChangeListener(new ChangeListener(){
+< 			public void stateChanged(ChangeEvent e){
+< 				JTabbedPane jtp = (JTabbedPane)e.getSource();
+< 				if (jtp.getSelectedIndex() != 2)
+< 					_clearTextComponentRecursive((Container)jtp.getSelectedComponent());
+---
+> 		});
+> 
+> 		btnPrevious_.setPreferredSize(GrxBaseView.getDefaultButtonSize());
+> 		btnPrevious_.setMaximumSize(GrxBaseView.getDefaultButtonSize());
+> 		btnPrevious_.setToolTipText("show previous menu");
+> 		btnPrevious_.addActionListener(new ActionListener() { 
+> 			public void actionPerformed(ActionEvent e) {
+> 				showingStage_--;
+> 				updateSequentialMenu();
+103,105c128,136
+< 		// content pane
+< 		setLayout(new BorderLayout());
+< 		add(tabbedPane,BorderLayout.CENTER);
+---
+> 		btnNext_.setPreferredSize(GrxBaseView.getDefaultButtonSize());
+> 		btnNext_.setMaximumSize(GrxBaseView.getDefaultButtonSize());
+> 		btnNext_.setToolTipText("show next menu");
+> 		btnNext_.addActionListener(new ActionListener() { 
+> 			public void actionPerformed(ActionEvent e) {    
+> 				showingStage_++;
+> 				updateSequentialMenu();
+> 			}
+> 		});
+107c138,143
+< 		isWaiting_ = false;
+---
+> 		btnQuit_.setToolTipText("quit this menu");
+> 		btnQuit_.setPreferredSize(GrxBaseView.getDefaultButtonSize());
+> 		btnQuit_.setMaximumSize(GrxBaseView.getDefaultButtonSize());
+> 		btnQuit_.addActionListener(new ActionListener() { 
+> 			public void actionPerformed(ActionEvent e) {    
+> 				exit();
+108a145,146
+> 		});	
+> 		btnQuit_.setVisible(showQuit);
+110,113c148,160
+< 	void setReadyToNext(){
+< 		command_ = null;
+< 		if (getJCheckBoxSequential().isSelected()){
+< 			if (currentStage_ < menu_.length){
+---
+> 		btnRetry_.setToolTipText("retry from first");
+> 		btnRetry_.setPreferredSize(GrxBaseView.getDefaultButtonSize());
+> 		btnRetry_.setMaximumSize(GrxBaseView.getDefaultButtonSize());
+> 		btnRetry_.addActionListener(new ActionListener() { 
+> 			public void actionPerformed(ActionEvent e) {    
+> 				retry();
+> 			}
+> 		});	
+> 
+> 		cbxSequential_.setToolTipText("enable sequential execution");
+> 		cbxSequential_.addActionListener(new ActionListener() { 
+> 			public void actionPerformed(ActionEvent e) {
+> 				if (cbxSequential_.isSelected()) {
+115,119c162,163
+< 				boolean doClick = (getJCheckBoxContinuous().isSelected()) && 
+< 				                  isClickedButtonGoNext_;
+< 				currentGoNextButton_ = showLocalMenu();
+< 				if (doClick)
+< 					currentGoNextButton_.doClick();
+---
+> 					updateSequentialMenu();
+> 					setContinuous(true);
+121,124c165,168
+< 				showingStage_ = menu_.length;
+< 				showLocalMenu();
+< 				_setTabSelected(getGlobalMenuPanel());
+< 				getGlobalMenuPanel().setVisible(true);
+---
+> 					if (executingCommand_ == null)
+> 						GrxGuiUtil.setEnableRecursive(true, pnlSequence_, null);
+> 					setContinuous(false);
+> 				}
+125a170,204
+> 		});
+> 
+> 		cbxContinuous_.setToolTipText("excecute continuously");
+> 
+> 		JPanel pnlLowerL = new JPanel();
+> 		JPanel pnlLowerR = new JPanel();
+> 		pnlLowerL.add(btnSwitch_);
+> 		pnlLowerR.add(btnRetry_);
+> 		pnlLowerR.add(btnQuit_);
+> 
+> 		pnlLowerC_.add(btnPrevious_);
+> 		pnlLowerC_.add(lblStep_);
+> 		pnlLowerC_.add(btnNext_);
+> 		pnlLowerC_.add(cbxSequential_);
+> 		pnlLowerC_.add(lblMode_);
+> 		lblMode_.setVisible(false);
+> 		lblMode_.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+> 
+> 		JPanel pnlLower = new JPanel(new BorderLayout());
+> 		pnlLower.add(pnlLowerL,  BorderLayout.WEST);
+> 		pnlLower.add(pnlLowerC_, BorderLayout.CENTER);
+> 		pnlLower.add(pnlLowerR,  BorderLayout.EAST);
+> 
+> 
+> 		this.setLayout(new BorderLayout());
+> 		this.add(sclSequence_, BorderLayout.CENTER);
+> 		this.add(pnlLower, BorderLayout.SOUTH);
+> 
+> 		updateAlwaysMenu();
+> 
+> 		refresh();
+> 
+> 		if (menu_.length == 1) {
+> 			switchPanel(ALWAYS);
+> 			btnSwitch_.setVisible(false);
+127c206,207
+< 			showLocalMenu();
+---
+> 			switchPanel(initialMode);
+> 			btnSwitch_.setVisible(showSwitch);
+131,140c211,212
+< 	// Global Menu Panel -------------------------
+< 	JPanel jpanel_globalMenu = null;
+< 	private void showGlobalMenu(){
+< 		getGlobalMenuPanel().removeAll();
+< 		
+< 		JPanel  jpanel = new JPanel();
+< 		JButton buttonQuit = new JButton(QUITBUTTON_TITLE);
+< 		buttonQuit.addActionListener(new java.awt.event.ActionListener() { 
+< 			public void actionPerformed(java.awt.event.ActionEvent e) {    
+< 				exit();
+---
+> 	public JPanel getAlwaysPanel() {
+> 		return pnlAlways_;
+142,144d213
+< 		});	
+< 		jpanel.add(buttonQuit);
+< 		getGlobalMenuPanel().add(jpanel);
+146,152c215,254
+< 		jpanel = new JPanel();
+< 		JButton buttonRetry = new JButton("RETRY(from first)");
+< 		buttonRetry.addActionListener(new java.awt.event.ActionListener() { 
+< 			public void actionPerformed(java.awt.event.ActionEvent e) {    
+< 				refresh();
+< 				_setTabSelected(getLocalMenuPanel());
+< 				getLocalMenuPanel().setVisible(true);
+---
+> 	private void switchPanel(int mode) {
+> 		this.setVisible(false);
+> 		boolean b = (mode != ALWAYS);
+> 
+> 		if (b) {
+> 			btnSwitch_.setIcon(icnUp_);
+> 			btnSwitch_.setToolTipText("show buttons always enabled");
+> 			this.remove(sclAlways_);
+> 			this.add(sclSequence_);
+> 
+> 		} else {
+> 			btnSwitch_.setIcon(icnDn_);
+> 			btnSwitch_.setToolTipText("show buttons executed sequentially");
+> 			this.remove(sclSequence_);
+> 			this.add(sclAlways_);
+> 		}
+> 
+> 		btnPrevious_.setVisible(b);
+> 		lblStep_.setVisible(b);
+> 		btnNext_.setVisible(b);
+> 		cbxSequential_.setVisible(b);
+> 		btnRetry_.setVisible(b);
+> 		lblMode_.setVisible(!b);
+> 
+> 		this.setVisible(true);
+> 	}
+> 
+> 	private void updateAlwaysMenu() {
+> 		pnlAlways_.removeAll();
+> 		pnlAlways_.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+> 		pnlAlways_.setAlignmentY(JPanel.CENTER_ALIGNMENT);
+> 		
+> 		if (menu_[0].length < 1) {
+> 			JLabel lbl = new JLabel("There is no buttons.");
+> 			lbl.setFont(new Font("Monospaced", Font.BOLD, 20));
+> 			lbl.setForeground(Color.gray);
+> 			lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+> 			lbl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+> 			pnlAlways_.add(lbl);
+> 			return;
+154,156d255
+< 		});	
+< 		jpanel.add(buttonRetry);	
+< 		getGlobalMenuPanel().add(jpanel);
+157a257,259
+> 		//for (int i=1; i<menu_[0].length; i=i+2) {
+> 			//pnlAlways_.add(new CommandButton(menu_[0][i-1], menu_[0][i], false));
+> 		//}
+159,161c261,272
+< 			if (!(menu_[0][i-1].trim()).equals(""))
+< 				addButton(getGlobalMenuPanel(),menu_[0][i-1],menu_[0][i],false);
+< 		}
+---
+> 			String m1 = menu_[0][i-1].trim();
+> 			String m2 = menu_[0][i].trim();
+> 			if (m2.equals("#label")) {
+> 				JLabel lbl = new JLabel(m1);
+> 				lbl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+> 				lbl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+> 				pnlAlways_.add(lbl);
+> 			} else {
+> 				JPanel bPnl = new CommandButton(m1, m2, (i<=1));
+> 				bPnl.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+> 				bPnl.setAlignmentY(JLabel.CENTER_ALIGNMENT);
+> 				pnlAlways_.add(bPnl);
+163,166d273
+< 	private JPanel getGlobalMenuPanel() {
+< 		if (jpanel_globalMenu == null){
+< 			jpanel_globalMenu = new JPanel();
+< 			jpanel_globalMenu.setLayout(new BoxLayout(jpanel_globalMenu, BoxLayout.Y_AXIS));
+168d274
+< 		return jpanel_globalMenu;
+171,175c277,279
+< 	// Local Menu Panel -------------------------
+< 	private JButton showLocalMenu(){
+< 		getLocalMenuPanel().setVisible(false);
+< 		getLocalMenuPanel().removeAll();
+< 		getLocalMenuPanel().setVisible(true);
+---
+> 	private void updateSequentialMenu() {
+> 		pnlSequence_.setVisible(false);
+> 
+178c282
+< 			getNextButton().setEnabled(false);
+---
+> 			btnNext_.setEnabled(false);
+180c284
+< 			getNextButton().setEnabled(true);
+---
+> 			btnNext_.setEnabled(true);
+184c288
+< 			getPreviousButton().setEnabled(false);
+---
+> 			btnPrevious_.setEnabled(false);
+186c290
+< 			getPreviousButton().setEnabled(true);
+---
+> 			btnPrevious_.setEnabled(true);
+190,191c294,296
+< 		JButton goNextButton = addButton(getLocalMenuPanel(),menu_[showingStage_][0],menu_[showingStage_][1],true);
+< 		for(int i=3;i<menu_[showingStage_].length;i=i+2){
+---
+> 		pnlSequence_.removeAll();
+> 
+> 		for (int i=1; i<menu_[showingStage_].length; i=i+2) {
+194,198c299,302
+< 			if (m1.equals("#label")){
+< 				getLocalMenuPanel().add(new JLabel(m2));
+< 			} else if (!m1.equals("")){
+< 				addButton(getLocalMenuPanel(),m1,m2,false);
+< 			}
+---
+> 			if (m2.equals("#label"))
+> 				pnlSequence_.add(new JLabel(m1));
+> 			else 
+> 				pnlSequence_.add(new CommandButton(m1, m2, (i<=1)));
+201c305
+< 		jLabel.setText(showingStage_+" / "+(menu_.length-1));
+---
+> 		lblStep_.setText(showingStage_+" / "+(menu_.length-1));
+203,245c307,312
+< 		if (command_ != null){
+< 			GrxGuiUtil.setEnableRecursive(false,getLocalMenuPanel(),null);
+< 			GrxGuiUtil.setEnableRecursive(false,getGlobalMenuPanel(),exceptMap);
+< 		} else {
+< 			if (getJCheckBoxSequential().isSelected() && showingStage_ != currentStage_)
+< 				GrxGuiUtil.setEnableRecursive(false,getLocalMenuPanel(),null);
+< 			GrxGuiUtil.setEnableRecursive(true,getGlobalMenuPanel(),null);
+< 		}
+< 		getLocalMenuPanel().add(javax.swing.Box.createVerticalGlue());
+< 		//getLocalMenuPanel().setVisible(true);
+< 		//setVisible(true);
+< 		return goNextButton;
+< 	}
+< 	private JPanel getLocalMenuPanel() {
+< 		if (jPanel_localMenu == null) {
+< 			jPanel_localMenu = new JPanel();
+< 			jPanel_localMenu.setLayout(new BoxLayout(jPanel_localMenu, BoxLayout.Y_AXIS));
+< 		}
+< 		return jPanel_localMenu;
+< 	}
+< 	private JButton getPreviousButton() {
+< 		if (jButton_previous == null) {
+< 			jButton_previous = new JButton("Previous");
+< 			jButton_previous.setToolTipText("show previous menu");
+< 			jButton_previous.addActionListener(new java.awt.event.ActionListener() { 
+< 				public void actionPerformed(java.awt.event.ActionEvent e) {
+< 					showingStage_--;
+< 					showLocalMenu();
+< 				}
+< 			});
+< 		}
+< 		return jButton_previous;
+< 	}
+< 	private JButton getNextButton() {
+< 		if (jButton_next == null) {
+< 			jButton_next = new JButton("    Next    ");
+< 			jButton_next.setToolTipText("show next menu");
+< 			jButton_next.addActionListener(new java.awt.event.ActionListener() { 
+< 				public void actionPerformed(java.awt.event.ActionEvent e) {    
+< 					showingStage_++;
+< 					showLocalMenu();
+< 				}
+< 			});
+---
+> 		if (executingCommand_ != null || 
+> 				(cbxSequential_.isSelected() && showingStage_ != currentStage_))
+> 			GrxGuiUtil.setEnableRecursive(false, pnlSequence_, null);
+> 
+> 		//pnlSequence_.add(javax.swing.Box.createVerticalGlue());
+> 		pnlSequence_.setVisible(true);
+247c314,322
+< 		return jButton_next;
+---
+> 
+>  	private class CommandButton extends JPanel {
+> 		private String command_;
+> 
+> 		private JButton button_;
+> 		private ArrayList<JTextField> fieldList_ = new ArrayList<JTextField>();
+> 
+> 		public CommandButton(String name, String command) {
+> 			this(name, command, false);
+249,258c324,339
+< 	private JCheckBox getJCheckBoxSequential() {
+< 		if (jCheckBoxSequential == null) {
+< 			jCheckBoxSequential = new JCheckBox("Sequential",true);
+< 			jCheckBoxSequential.setToolTipText("enable only current button");
+< 			jCheckBoxSequential.addActionListener(new java.awt.event.ActionListener() { 
+< 				public void actionPerformed(java.awt.event.ActionEvent e) {
+< 					if (jCheckBoxSequential.isSelected()){
+< 						showingStage_ = currentStage_;
+< 						showLocalMenu();
+< 						getJCheckBoxContinuous().setEnabled(true);
+---
+> 
+> 		public CommandButton(String name, String command, final boolean goNext) {
+> 			super();
+> 
+> 			if (name.trim().equals(""))
+> 				name = "untitled";
+> 
+> 			button_ = new JButton(name);
+> 			this.add(button_);
+> 
+> 			command_ = command;
+> 
+> 			if (goNext) {
+> 				if (command.indexOf("#continuous")!=-1) {
+> 					setContinuous(true);
+> 					this.add(cbxContinuous_);
+260,291c341
+< 						if (isIdle()){
+< 							GrxGuiUtil.setEnableRecursive(true,getLocalMenuPanel(),null);
+< 						}
+< 						getJCheckBoxContinuous().setEnabled(false);
+< 					}
+< 				}
+< 			});
+< 		}
+< 		return jCheckBoxSequential;
+< 	}
+< 	private JCheckBox getJCheckBoxContinuous() {
+< 		if (jCheckBoxContinuous == null) {
+< 			jCheckBoxContinuous = new JCheckBox("continuous",false);
+< 			jCheckBoxContinuous.setToolTipText("excecute continuously");
+< 		}
+< 		return jCheckBoxContinuous;
+< 	}
+< 	private JButton addButton(JPanel pnl,final String name,final String com,final boolean goNext){
+< 		JPanel  jpanel = new JPanel();
+< 		JButton button = new JButton(name);	
+< 		jpanel.add(button);
+< 		
+< 		final String[] str = parseCommand(com);
+< 		int len = 1;
+< 		if (str!=null) len = str.length;
+< 		final JTextField[] fields = new JTextField[len];
+< 		if (str!= null && len > 0){
+< 			for (int i=0;i<len;i++){
+< 				fields[i] = new JTextField();
+< 				fields[i].setPreferredSize(new Dimension(60,20));
+< 				jpanel.add(fields[i]);
+< 				currentFields_.add(fields[i]);
+---
+> 					setContinuous(false);
+295,301c345,353
+< 		if (goNext){
+< 			currentGoNextButton_ = button;
+< 			if (com.indexOf("#continuous")!=-1){
+< 				getJCheckBoxContinuous().setSelected(true);
+< 				jpanel.add(getJCheckBoxContinuous());
+< 			} else {
+< 				getJCheckBoxContinuous().setSelected(false);
+---
+> 			int idx = -1;
+> 			while ( (idx = command.indexOf("#", idx+1)) != -1 ) {
+> 				char c = command.charAt(idx + 1);
+> 				if (c == 'D' || c == 'I' || c == 'T') {
+> 					JTextField f = new JTextField();
+> 					f.setName("#"+c);
+> 					f.setPreferredSize(new Dimension(60,20));
+> 					fieldList_.add(f);
+> 					this.add(f);
+305,309c357,362
+< 		button.addActionListener(new java.awt.event.ActionListener() { 
+< 			public void actionPerformed(java.awt.event.ActionEvent e) {    
+< 				if (command_ == null){
+< 					String rcom = com;
+< 					//DebugUtil.print("command:"+rcom);
+---
+> 			button_.addActionListener(new ActionListener() { 
+> 				public void actionPerformed(ActionEvent e) {    
+> 					if (executingCommand_ != null) 
+> 						return;
+> 
+> 					String com = new String(command_);
+311,312c364,375
+< 						if (com.indexOf("#appendlog") < 0){
+< 							//BodyStatPanel.getInstance().saveData();
+---
+> 						for (int i=0; i<fieldList_.size(); i++) {
+> 							String type = fieldList_.get(i).getName();
+> 							String argc = fieldList_.get(i).getText();
+> 							if (type.equals("#D"))
+> 								Double.parseDouble(argc);
+> 							else if (type.equals("#I"))
+> 								Integer.parseInt(argc);
+>  							else if (type.equals("#T"))
+> 								argc = "\'"+argc+"\'";
+> 							else 
+> 								continue;
+> 							com = com.replaceFirst(type, argc);
+314,329d376
+< 						if (str!=null && str.length > 0){
+< 							for (int i=0;i<str.length;i++){
+< 								char c = str[i].charAt(1);
+< 								String s = fields[i].getText();
+< 								if (c == 'd' || c == 'D'){
+< 									Double.parseDouble(s);
+< 								} else if (c == 'i' || c == 'I'){
+< 									Integer.parseInt(s);
+< 								}
+< 								rcom = rcom.replaceFirst(str[i],s);
+< 							}
+< 							//DebugUtil.print("replaced command:"+rcom);
+< 						}
+< 						command_ = rcom;
+< 						String comLog = dateFormat_.format(new Date())+" : "+name+" : "+command_+"\n";
+< 						getJTextArea().append(comLog);
+331,332c378
+< 						if (getJCheckBoxSequential().isSelected() && goNext){
+< 							isClickedButtonGoNext_ = true;
+---
+> 						if (cbxSequential_.isSelected() && goNext) {
+333a380
+> 							currentGoBtn_ = button_;
+335c382
+< 							isClickedButtonGoNext_ = false;
+---
+> 							currentGoBtn_ = null;
+337,339c384,388
+< 						GrxGuiUtil.setEnableRecursive(false,getLocalMenuPanel(),null);
+< 						GrxGuiUtil.setEnableRecursive(false,getGlobalMenuPanel(),exceptMap);
+< 						//clearTextComponent((Container)(getJTabbedPane().getSelectedComponent()));
+---
+> 						executingCommand_ = com;
+> 
+> 						GrxGuiUtil.setEnableRecursive(false, pnlSequence_, null);
+> 						GrxGuiUtil.setEnableRecursive(false, pnlAlways_,   null);
+> 
+344d392
+< 			}
+346,347d393
+< 		pnl.add(jpanel);
+< 		return button;
+349,356c395,397
+< 	private String[] parseCommand(String com){
+< 		StringBuffer sb = new StringBuffer();
+< 		int idx = -1;
+< 		while((idx = com.indexOf("#",idx+1)) != -1){
+< 			char c = com.charAt(idx+1);
+< 			if (c =='d' || c =='D'||
+< 				c =='i' || c =='I') {
+< 				sb.append("#"+c+" ");
+---
+> 
+> 		public JButton getButton() {
+> 			return button_;
+357a399,401
+> 
+> 		public String getCommand() {
+> 			return command_;
+359,361d402
+< 		if (sb.toString().trim().equals(""))
+< 		  return null;
+< 		return sb.toString().split(" ");
+364,368c405,410
+< 	// Log Panel------------------------------------  
+< 	private JTextArea getJTextArea() {
+< 		if (jTextArea == null) {
+< 			jTextArea = new JTextArea();
+< 			jTextArea.setEditable(false);
+---
+> 	private void retry() {
+> 		int ans = JOptionPane.showConfirmDialog(this,
+> 			"Retry from first ?",
+> 			"Retry", JOptionPane.OK_CANCEL_OPTION);
+> 		if (ans == JOptionPane.OK_OPTION)
+> 			refresh();
+370c412,417
+< 		return jTextArea;
+---
+> 
+> 	private void refresh(){
+> 		currentStage_ = showingStage_ = 1;
+> 		isWaiting_ = true;
+> 		if (menu_.length > 1)
+> 			updateSequentialMenu();
+373,380c420,421
+< 	private static void _clearTextComponentRecursive(Container container){
+< 		Component[] components = container.getComponents();
+< 		for (int i=0;i<components.length;i++){
+< 			Component c = components[i];
+< 			if (c instanceof JTextComponent){
+< 				((JTextComponent)c).setText("");
+< 			} else if (c instanceof Container) {	
+< 				_clearTextComponentRecursive((Container)c);
+---
+> 	public void setMessage(String msg) {
+> 		message_ = msg;
+381a423,425
+> 
+> 	public void setContinuous(boolean b) {
+> 		cbxContinuous_.setSelected(b);
+382a427,431
+> 
+> 	public void createThread(final PythonInterpreter interpreter) {
+> 		Thread t = new Thread() {
+> 			public void run() {
+> 				MenuDialog.this.start(interpreter);
+384,391c433,434
+< 	private static void _setTabSelected(Component c){
+< 		Component parent = c.getParent();
+< 		if (parent == null)
+< 			return;
+< 		if (parent instanceof JTabbedPane){
+< 			JTabbedPane tabpane = (JTabbedPane)parent;
+< 			tabpane.setSelectedComponent(c);
+< 			return;
+---
+> 		};
+> 		t.start();
+393c436,438
+< 		_setTabSelected(parent);	
+---
+> 
+> 	public void start() {
+> 		start(new PythonInterpreter());
+395,402c440,444
+< 	// Public Methods
+< 	public void showDialog(JFrame owner, String title, boolean modal){
+< 		if (dialog_ == null ){
+< 			dialog_ = new JDialog(owner,title,modal);
+< 			//GrxGuiUtil.setWindowConfig("menudialog",dialog_,new Dimension(300,400));
+< 			dialog_.setSize(new Dimension(400, 400));
+< 			dialog_.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+< 			dialog_.setContentPane(this);
+---
+> 
+> 	public void start(PythonInterpreter interpreter) {
+> 		if (thread_ != null) {
+> 			JOptionPane.showMessageDialog(this, "This menu already running.");
+> 			return;
+404a447
+> 		thread_ = Thread.currentThread();
+405a449,454
+> 		while (isWaiting_) {
+> 			try {
+> 				Thread.sleep(200);
+> 			} catch (InterruptedException e1) {}
+> 			if (executingCommand_ == null) 
+> 				continue;
+406a456,465
+> 			try {
+> 				interpreter.exec(executingCommand_);
+> 			} catch (Exception e) {
+> 				if (e.toString().indexOf("Script Canceled.") > 0) {
+> 					JOptionPane.showMessageDialog(this, "Script Canceled.");
+> 				} else {
+> 					if (e.toString().indexOf("org.omg.CORBA.COMM_FAILURE:") > 0) {
+> 						String err = e.toString().split("org.omg.CORBA.COMM_FAILURE:")[0];
+> 						JOptionPane.showMessageDialog(this, "Communication error occured."+err);
+> 						System.out.println(e.toString());
+408,423c467
+< 	private void refresh(){
+< 		dialog_.setVisible(true);
+< 		currentStage_ = showingStage_ = 1;
+< 		isWaiting_ = true;
+< 		currentMenuPanel_ = this;
+< 		showGlobalMenu();
+< 		showLocalMenu();
+<     }
+< 	public boolean isWaiting(){
+< 		return isWaiting_;
+< 	}
+< 	public boolean isIdle(){
+< 		return (command_ == null);
+< 	}
+< 	public String getCommand(){
+< 		return command_;
+---
+> 					System.out.println(e.toString());
+425,426c469
+< 	public static MenuDialog getCurrentMenuDialog(){
+< 		return currentMenuPanel_;
+---
+> 				setContinuous(false);
+428,432c471,487
+< 	public String getCurrentMenuItem(){
+< 		if (getJCheckBoxSequential().isSelected()){
+< 			if (command_ != null) 
+< 				return command_;
+< 			return menu_[Math.min(currentStage_,menu_.length-1)][0];
+---
+> 			executingCommand_ = null;
+> 	
+> 			if (!isWaiting_) 
+> 				break;
+> 	
+> 			// For continuous execution
+> 			if (menu_.length > 1) {
+> 				if (cbxSequential_.isSelected()) {
+> 					if (currentStage_ < menu_.length) {
+> 						showingStage_ = currentStage_;
+> 						updateSequentialMenu();
+> 						if (cbxContinuous_.isSelected() && currentGoBtn_ != null)
+> 							currentGoBtn_.doClick();
+> 		
+> 					} else {
+> 						showingStage_ = menu_.length;
+> 						updateSequentialMenu();
+434c489,490
+< 		return menu_[Math.min(showingStage_,menu_.length-1)][0];
+---
+> 				} else {
+> 					updateSequentialMenu();
+436,439d491
+< 	public boolean isAllDone(){
+< 		if (currentStage_ >= menu_.length-1)
+< 			return true;
+< 		return false;
+441c493,497
+< 	public void setMessage(String msg){
+---
+> 			GrxGuiUtil.setEnableRecursive(true, pnlAlways_, null);
+> 
+> 			// Fill text field if there are any message
+> 			if (message_ == null)
+> 				continue;
+443,448c499,502
+< 		if (currentFields_ != null && msg != null){
+< 			//DebugUtil.print("setMessage:"+msg);
+< 			while((idx = msg.indexOf("$",idx+1)) != -1){
+< 				int idx2 = msg.indexOf("=",idx+1);
+< 				String s = msg.substring(idx+1,idx2);
+< 				int idx3 = msg.indexOf(" ",idx2+1);
+---
+> 			while ((idx = message_.indexOf("$", idx+1)) != -1) {
+> 				int idx2 = message_.indexOf("=", idx+1);
+> 				String s = message_.substring(idx+1, idx2);
+> 				int idx3 = message_.indexOf(" ", idx2+1);
+450,451c504,505
+< 					idx3 = msg.length();
+< 				String val = msg.substring(idx2+1,idx3);
+---
+> 					idx3 = message_.length();
+> 				String val = message_.substring(idx2+1, idx3);
+454,455c508
+< 					((JTextField)(currentFields_.get(i))).setText(val);
+< 					//DebugUtil.print("setMessage:$"+i+"="+val);
+---
+> 					currentFields_.get(i).setText(val);
+463,464c516,530
+< 	public void setContinuous(boolean b){
+< 		getJCheckBoxContinuous().setSelected(b);
+---
+> 
+> 	public boolean exit() {
+> 		int ans = JOptionPane.showConfirmDialog(this,
+> 			"Are you sure quit menu ?",
+> 			"Quit Menu", JOptionPane.OK_CANCEL_OPTION);
+> 		if (ans != JOptionPane.OK_OPTION)
+> 			return false;
+> 
+> 		if (thread_ != null)  {
+> 			try {
+> 				thread_.interrupt();
+> 			} catch (Exception e) {
+> 				GrxDebugUtil.printErr("", e);
+> 			}
+> 			thread_ = null;
+466,467c532,535
+< 	public void exit(){
+< 		dialog_.setVisible(false);
+---
+> 
+> 		Container c = this.getParent();
+> 		if (c != null)
+> 			c.remove(this);
+469c537
+< 		currentMenuPanel_ = null;
+---
+> 		return true;
+
+diff -rwb --strip-trailing-cr ui/view/simulation/ControllerPanel.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/simulation/ControllerPanel.java
+166,179c172
+<         editorPanel_ = new ControllerEditorPanel(list.toArray(new Object[0]));
+---
+>         editorPanel_ = new ControllerEditorPanel();
+235d227
+<         public ControllerEditorPanel(Object[] controllers) {
+---
+>         public ControllerEditorPanel() {
+279c264,265
+<                 String[] names = GrxCorbaUtil.getObjectNameList("localhost",2809);
+---
+>                 String[] names = GrxCorbaUtil.getObjectNameList();
+> 				Object obj = boxController_.getSelectedItem();
+280a267
+> 				boxController_.addItem(obj);
+282a270
+> 				boxController_.setSelectedIndex(0);
+299,310c283,300
+>             boxSetupCommand_ = new JComboBox();
+>             boxSetupCommand_.setBounds(120+6, 30+30+30, 180, 24);
+>             boxSetupCommand_.setLightWeightPopupEnabled(false);
+>             boxSetupCommand_.setEditable(true);
+>             boxSetupCommand_.addPopupMenuListener(new PopupMenuListener(){
+314,315c304,309
+<                 String[] names = GrxCorbaUtil.getObjectNameList("localhost",2809);
+<                 boxImageProcessor_.removeAllItems();
+---
+> 				File setupDir = new File(GrxXmlUtil.expandEnvVal(tfSetupDirectory_.getText()));
+>                 String[] names = setupDir.list(new SetupCommandFilter());
+> 				Object obj = boxSetupCommand_.getSelectedItem();
+>                 boxSetupCommand_.removeAllItems();
+> 				boxSetupCommand_.addItem(obj);
+> 				if (names != null) {
+317c311,313
+<                   boxImageProcessor_.addItem(names[i]);
+---
+>                     boxSetupCommand_.addItem(names[i]);
+> 				}
+> 				boxSetupCommand_.setSelectedIndex(0);
+320,332c316
+<             this.add(boxImageProcessor_);
+<             
+<             lblImageProcessTime_ =
+<                 new JLabel(
+<                     MessageBundle.get("panel.controller.imageProcessTime"),
+<                     JLabel.RIGHT
+<                 );
+<             lblImageProcessTime_.setBounds(0,30+30+30,120,24);
+<             add(lblImageProcessTime_);
+<             
+<             spinImageProcessTime_ = new SEDoubleTextWithSpin(0,10,0.001);
+<             spinImageProcessTime_.setBounds(120 + 6,30+30+30,180,24);
+<             this.add(spinImageProcessTime_);
+---
+>             this.add(boxSetupCommand_);
+
+405,432c390,393
+<                 String controlName = node.getProperty(ATTRIBUTE_CONTROLLER);
+<                 if (controlName != null) {
+<                 	for (int i = 0; i < boxController_.getItemCount(); i ++) {
+<                 	    if (controlName.equals(boxController_.getItemAt(i).toString())) {
+<                 	        boxController_.setSelectedIndex(i);
+<                 	        break;
+<                 	    }
+<                 	}
+<                 	spinControlTime_.setValue(
+<                 	    node.getProperty(ATTRIBUTE_CONTROL_TIME, "0.001")
+<                 	);
+<                 }
+<                 
+< 
+<                 controlName = node.getProperty(ATTRIBUTE_IMAGEPROCESSOR);
+<                 if (controlName != null) {
+<                 	for (int i = 0; i < boxImageProcessor_.getItemCount(); i ++) {
+<                 	    if (controlName.equals(boxImageProcessor_.getItemAt(i).toString())) {
+<                 	        boxImageProcessor_.setSelectedIndex(i);
+<                 	        break;
+<                 	    }
+<                 	}
+<                 	spinImageProcessTime_.setValue(
+<                 	    node.getProperty(ATTRIBUTE_IMAGEPROCESS_TIME, "0.033")
+<                 	);
+<                 }
+<                 
+<                 
+---
+>                 boxController_.setSelectedItem(node.getProperty(ATTRIBUTE_CONTROLLER, ""));
+>                	spinControlTime_.setValue(node.getProperty(ATTRIBUTE_CONTROL_TIME, "0.001"));
+> 				tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,"$(BIN_DIR)"));
+>                 boxSetupCommand_.setSelectedItem(node.getProperty(ATTRIBUTE_SETUP_COMMAND, ""));
+489a451,458
+> 
+>   private static class SetupCommandFilter implements FilenameFilter {
+>     public  boolean accept(File dir, String name) {
+>       if (!name.startsWith(".") && (name.endsWith(".sh") || name.endsWith(".bat")))
+>         return true;
+>       return false;
+>     }
+>   }
+
+diff -rwb --strip-trailing-cr ui/view/tdview/BehaviorManager.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/tdview/BehaviorManager.java
+10c19
+< import java.util.List;
+---
+> import java.util.*;
+16,22c25,29
+< import jp.go.aist.hrp.simulator.DynamicsSimulator;
+< import jp.go.aist.hrp.simulator.DynamicsSimulatorFactory;
+< import jp.go.aist.hrp.simulator.DynamicsSimulatorFactoryHelper;
+< import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.IntegrateMethod;
+< import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.JointDriveMode;
+< import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.LinkDataType;
+< import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.SensorOption;
+---
+> import jp.go.aist.hrp.simulator.*;
+> import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.*;
+> 
+> import com.sun.j3d.utils.picking.PickCanvas;
+> import com.sun.j3d.utils.picking.PickTool;
+27,28c34,35
+< import com.generalrobotix.ui.util.GrxCorbaUtil;
+< import com.generalrobotix.ui.util.GrxDebugUtil;
+---
+> import com.generalrobotix.ui.item.GrxCollisionPairItem;
+> import com.generalrobotix.ui.util.*;
+30,31d36
+< import com.sun.j3d.utils.picking.PickCanvas;
+< import com.sun.j3d.utils.picking.PickTool;
+66a72,74
+> 
+>     private DynamicsSimulator currentDynamics_;
+> 	private CollisionDetector collisionDetector_;
+114c122
+<         indicator_ = handler;
+---
+>        	handler_.setViewIndicator(handler);
+153,168c161,168
+<         //handler_ = new IseBehaviorHandler();
+<         //behavior_ = new IseBehavior(handler_);
+<  
+<         //BranchGroup bg = new BranchGroup();
+<         //bg.addChild(behavior_);
+< 
+<         //BranchGroup bgRoot = viewer_.getBranchGroupRoot();
+<         //bgRoot.addChild(bg);
+< 
+<         //InvKinemaResolver resolver = new InvKinemaResolver(world_);
+<         //ProjectManager project = ProjectManager.getInstance();
+<         //resolver.setDynamicsSimulator(project.getDynamicsSimulator());
+<         //handler_.setInvKinemaResolver(resolver);
+<         
+<         if (handler_ != null) 
+<         	handler_.setViewIndicator(indicator_);
+---
+> 		try {
+> 			if (currentDynamics_ != null) {
+> 				try {
+> 					currentDynamics_.destroy();
+> 				} catch (Exception e) {
+> 					GrxDebugUtil.printErr("getDynamicsSimulator: destroy failed.");
+> 				}
+> 				currentDynamics_ = null;
+171,175c171
+<     public boolean updateDynamicsSimulator(boolean force) {
+<     	if (currentDynamics_ == null || force) {
+<     		try {
+<     			if (handler_ != null) {
+<     				initDynamicsSimulator();
+---
+> 			currentDynamics_ = initDynamicsSimulator(list);
+179d174
+<     			}
+181d175
+<     			currentDynamics_ = null;
+183d176
+<     			return false;
+186,193c179,181
+<     	return true;
+<     }
+<     DynamicsSimulator currentDynamics_;
+< 	DynamicsSimulator getDynamicsSimulator(boolean update) {
+< 		//currentDynamics_ = dynamicsMap_.get(currentWorld_);
+< 		if (update && currentDynamics_ != null) {
+< 			currentDynamics_.destroy();
+< 			currentDynamics_ = null;
+---
+> 
+> 	public int getOperationMode() {
+> 		return operationMode_;
+196c184,185
+< 		if (currentDynamics_ == null) {
+---
+> 	private DynamicsSimulator initDynamicsSimulator(List<GrxBaseItem> modelList) {
+> 		DynamicsSimulator dynamics;
+198,206c187,189
+< 				org.omg.CORBA.Object obj = //process_.get(DynamicsSimulatorID_).getReference();
+< 				GrxCorbaUtil.getReference("DynamicsSimulatorFactory",
+< 						"localhost", 2809);
+< 				DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper
+< 						.narrow(obj);
+< 				currentDynamics_ = ifactory.create();
+< 				currentDynamics_._non_existent();
+< 				//dynamicsMap_.put(currentWorld_, currentDynamics_);
+< 
+---
+> 			org.omg.CORBA.Object obj = GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
+> 			DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper.narrow(obj);
+> 			dynamics = ifactory.create();
+208,209c191,192
+< 				GrxDebugUtil.printErr("getDynamicsSimulator: create failed.");
+< 				currentDynamics_ = null;
+---
+> 			GrxDebugUtil.printErr("initDynamicsSimulator: create failed.", e);
+> 			return null;
+211,216d193
+< 		}
+< 		return currentDynamics_;
+< 	}
+< 
+< 	public boolean initDynamicsSimulator() {
+< 		getDynamicsSimulator(true);
+219d195
+< 			List modelList = manager_.getSelectedItemList(GrxModelItem.class);
+221c197,199
+< 				GrxModelItem model = (GrxModelItem)modelList.get(i);
+---
+> 				GrxBaseItem item = modelList.get(i);
+> 				if (item instanceof GrxModelItem) {
+> 					GrxModelItem model = (GrxModelItem)item;
+223c201,202
+< 					currentDynamics_.registerCharacter(model.getName(), model.cInfo_);
+---
+> 						dynamics.registerCharacter(model.getName(), model.cInfo_);
+> 				}
+227,228c206,207
+< 			currentDynamics_.init(0.005, m, SensorOption.ENABLE_SENSOR);
+< 			currentDynamics_.setGVector(new double[] { 0.0, 0.0, 9.8});
+---
+> 			dynamics.init(0.005, m, SensorOption.ENABLE_SENSOR);
+> 			dynamics.setGVector(new double[] { 0.0, 0.0, 9.8});
+231c210,212
+< 				GrxModelItem model = (GrxModelItem) modelList.get(i);
+---
+> 				GrxBaseItem item = modelList.get(i);
+> 				if (item instanceof GrxModelItem) {
+> 					GrxModelItem model = (GrxModelItem)item;
+234c215
+< 				
+---
+> 					String name = model.getName();
+236,237c217,219
+< 				currentDynamics_.setCharacterLinkData(
+< 					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
+---
+> 					// Set initial robot position and attitude
+> 					dynamics.setCharacterLinkData(
+> 						name, base, LinkDataType.ABS_TRANSFORM, 
+240,244c222,224
+< 				currentDynamics_.setCharacterAllJointModes(
+< 					model.getName(), JointDriveMode.TORQUE_MODE);
+< 					
+< 				currentDynamics_.setCharacterAllLinkData(
+< 					model.getName(), LinkDataType.JOINT_VALUE, 
+---
+> 					// Set joint values
+> 					dynamics.setCharacterAllLinkData(
+> 						name, LinkDataType.JOINT_VALUE, 
+246a227,228
+> 			}
+> 			dynamics.calcWorldForwardKinematics();
+248,262c230,245
+< 			/*
+< 			  double[] K = new double[] { 100000, 100000, 100000, 800, 800, 800 };
+< 			  double[] C = new double[] { 6000, 6000, 6000, 5, 5, 5 };
+< 			  List<GrxBaseItem> collisionPair = manager_
+< 					.getSelectedItemList(GrxCollisionPairItem.class);
+< 			it = collisionPair.iterator();
+< 			while (it.hasNext()) {
+< 				GrxCollisionPairItem item = (GrxCollisionPairItem) it.next();
+< 				currentDynamics_.registerCollisionCheckPair(
+< 						item.getProperty("objectName1",""), 
+< 						item.getProperty("jointName1",""), 
+< 						item.getProperty("objectName2",""), 
+< 						item.getProperty("jointName2",""), 0.5, 0.5, K, C);
+< 			}*/
+<             //state_.value = null;
+---
+>             // Set collision pair 
+> 			List<GrxBaseItem> collisionPair = manager_.getSelectedItemList(GrxCollisionPairItem.class);
+> 			for (int i=0; i<collisionPair.size(); i++) {
+> 				GrxBaseItem pair = collisionPair.get(i);
+> 				dynamics.registerCollisionCheckPair(
+> 						pair.getStr("objectName1", ""), pair.getStr("jointName1", ""), 
+> 						pair.getStr("objectName2", ""), pair.getStr("jointName2", ""), 
+> 						pair.getDbl("staticFriction", 0.5), 
+> 						pair.getDbl("slidingFriction", 0.5),
+> 						pair.getDblAry("springConstant", new double[]{0, 0, 0, 0, 0, 0}), 
+> 						pair.getDblAry("damperConstant", new double[]{0, 0, 0, 0, 0, 0})
+> 				); 
+> 			}
+> 
+> 			// Initialize server
+> 			dynamics.initSimulation();
+265c248,250
+< 			return false;
+---
+> 			return null;
+> 		}
+> 		return dynamics;
+267c252,266
+< 		return true;
+---
+> 
+> 	public Collision[] getCollision(List<GrxModelItem> modelList) {
+> 		for (int i=0; i<modelList.size(); i++)  {
+> 			GrxModelItem model = modelList.get(i);
+> 			String name = model.getName();
+> 			String base = model.lInfo_[0].name;
+> 			double[] data = model.getTransformArray(base);
+> 			currentDynamics_.setCharacterLinkData(name, base, LinkDataType.ABS_TRANSFORM, data);
+> 			data = model.getJointValues();
+> 			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
+> 		}
+> 		currentDynamics_.checkCollision();
+> 		WorldStateHolder wsH = new WorldStateHolder();
+> 		currentDynamics_.getWorldState(wsH);
+> 		return wsH.value.collisions;
+
+diff -rwb --strip-trailing-cr ui/view/tdview/SceneGraphModifier.java /home/kawasumi/src/OpenHRP3/client/gui//com/generalrobotix/ui/view/tdview/SceneGraphModifier.java
+111,138d110
+142d113
+<     //public void resizeBounds(SimulationElementNode node) {
+148,156c119,128
+<         //TransformGroup tg = node.getTransformGroupRoot();
+<         BranchGroup tg = node.bgRoot_;
+<         for (int i = 0; i < tg.numChildren(); i++) {
+<             try {
+<                 _calcUpperLower(tg.getChild(i), new Transform3D());
+<             } catch (CapabilityNotSetException ex) {
+<                 ex.printStackTrace();
+<             }
+<         }
+---
+>         TransformGroup tg = node.getTransformGroupRoot();
+>         Transform3D t3dLocal = new Transform3D();
+>         tg.getTransform(t3dLocal);
+> 		t3dLocal.invert();
+> 		for (int i=0; i<node.lInfo_.length; i++) 
+>         	_calcUpperLower(node.lInfo_[i].tg, t3dLocal);
+> 
+>     	Hashtable userdata = getHashtableFromTG(tg);
+> 		if (userdata == null) 
+> 			return;
+158,159c130
+<         // BoundingBox????��
+<         // Switch_Node?򸡺?
+---
+> 		Switch sw = (Switch)userdata.get("fullBoundingBoxSwitch");
+162c133
+<             if (childNode instanceof Switch) {
+---
+>             if (childNode instanceof Switch && childNode == sw) {
+163a135
+> 				if (group.getChild(0) instanceof Shape3D) {
+171d142
+<                 }  								// added for GrxUI
+172a144
+>                 }  								// added for GrxUI
+175,187d146
+< /*
+<     public void changeShadingMode(SimulationElementNode node, int mode) {
+<         mode_ = SHADING_MODE;
+< 
+<         switch (mode) {
+<         case SHADING:
+<             polygonMode_ = PolygonAttributes.POLYGON_FILL;
+<             cullFace_ = PolygonAttributes.CULL_BACK;
+<             break;
+<         case WIRE_FRAME:
+<             polygonMode_ = PolygonAttributes.POLYGON_LINE;
+<             cullFace_ = PolygonAttributes.CULL_BACK;
+<             break;
+190,203d148
+<         // ?Ρ??ɤ?Root??TransformGroup??????
+<         TransformGroup tg = node.getTransformGroupRoot();
+< 
+<         for (int i = 0; i < tg.numChildren(); i++) {
+<             try {
+<                 _calcUpperLower(tg.getChild(i), new Transform3D());
+<             } catch (CapabilityNotSetException ex) {
+<                 ex.printStackTrace();
+<             }
+<         }
+<     }
+< */
+<     //--------------------------------------------------------------------
+<     // ?ץ饤?١??ȥ᥽?å?
+219a165
+> 
+228,231c174,175
+<             for (int i = 0; i < 3; i  ++) {
+<                 upper_[i] = 0.0f;
+<                 lower_[i] = 0.0f;
+<             }
+---
+>             for (int i = 0; i < 3; i  ++) 
+>                 upper_[i] = lower_[i] = 0.0f;
+234d177
+<         	// added for GrxUI
+237c180
+<                 for (int i = 0; i < bg.numChildren(); i++) {
+---
+>                 for (int i = 0; i < bg.numChildren(); i++)
+239,243c182,183
+<                 }
+<             } else 
+<             // added for GrxUI	
+<             if (node instanceof TransformGroup) {
+<                 Transform3D t3dLocal = new Transform3D();
+---
+> 
+>             } else if (node instanceof TransformGroup) {
+245c185
+<                 if (mode_ == CREATE_BOUNDS) {
+---
+>                 if (mode_ == CREATE_BOUNDS)
+247c187,188
+<                 }
+---
+> 
+>                 Transform3D t3dLocal = new Transform3D();
+251c192
+<                 for (int i = 0; i < tg.numChildren(); i++) {
+---
+>                 for (int i = 0; i < tg.numChildren(); i++) 
+253,263c194,195
+<                 }
+<             }else{
+<                 boolean flag = true;
+<                 if ((node instanceof Switch)) {
+<                     //Object obj = node.getUserData();
+<                     //if(!(obj instanceof String && USERDATA_SWITCH.equals(obj)))
+<                     //{
+<                         flag = false;
+<                     //}
+<                 }
+<                 if(flag){
+---
+> 
+>             } else if (!(node instanceof Switch)) {
+265c197
+<                     if (mode_ == CREATE_BOUNDS) {
+---
+>                 if (mode_ == CREATE_BOUNDS)
+267,268c199,200
+<                     }
+<                     for (int i = 0; i < group.numChildren(); i++) {
+---
+> 
+>                 for (int i = 0; i < group.numChildren(); i++)
+271,272d202
+<                 }
+<             }
+275c205
+<             if (mode_ == CREATE_BOUNDS) {
+---
+>             if (mode_ == CREATE_BOUNDS) 
+277c207
+<             }
+---
+>             
+279c209
+<             if (mode_ == CREATE_BOUNDS) {
+---
+>             if (mode_ == CREATE_BOUNDS) 
+281c211
+<             }
+---
+>             
+283c213
+<             for (int i = 0; i < group.numChildren(); i++) {
+---
+>             for (int i = 0; i < group.numChildren(); i++) 
+285c215
+<             }
+---
+>             
+300,305c230,231
+< 		    appearance.setCapability(
+<                         Appearance.ALLOW_POLYGON_ATTRIBUTES_READ
+<                     );
+< 		    appearance.setCapability(
+<                         Appearance.ALLOW_POLYGON_ATTRIBUTES_WRITE
+<                     );
+---
+>                     appearance.setCapability(Appearance.ALLOW_POLYGON_ATTRIBUTES_READ);
+>                     appearance.setCapability(Appearance.ALLOW_POLYGON_ATTRIBUTES_WRITE);
+351,354c277,278
+<             for (int i = 0; i < 3; i++) {
+<                 upper_[i] = point[i];
+<                 lower_[i] = point[i];
+<             }
+---
+>             for (int i = 0; i < 3; i++)
+>                 upper_[i] = lower_[i] = point[i];
+358,359c282,285
+<                 if (point[i] > upper_[i]) upper_[i] = point[i];
+<                 else if (point[i] < lower_[i]) lower_[i] = point[i];
+---
+>                 if (point[i] > upper_[i]) 
+>                     upper_[i] = point[i];
+> 				else if (point[i] < lower_[i])
+>                     lower_[i] = point[i];
+567,615d492
+<     // <<=== (Thu Apr 11 2002) =====
+< 
+<     //--------------------------------------------------------------------
+<     // BoundingBoxCreator
+<     /*
+<     class BoundingBoxCreator implements TraverseOperation {
+<         public void operation(
+<             Node node,
+<             Node parent
+<         ) {
+<     		if (node instanceof JointNode) {
+<                 JointNode jointNode = (JointNode)node;
+<                 TransformGroup tgJoint = jointNode.getTransformGroupRoot();
+<                 _setCapabilities(tgJoint);
+<             } else if (node instanceof SegmentNode) {
+<                 if (!(parent instanceof JointNode)) return;
+<                 SegmentNode segmentNode = (SegmentNode)node;
+<                 JointNode jointNode = (JointNode)parent;
+<                 Group scene = (Group)segmentNode.getRootNode();
+<                 scene.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+<                 scene.setCapability(Group.ALLOW_CHILDREN_READ);
+<                 // SceneGraph??é??Shape3D??????
+<                 init_ = true;            // upper_,lower_?????������?
+<                 Transform3D tr = new Transform3D();
+<                 tr.setIdentity();
+<                 _calcUpperLower(scene, tr);  // upper_,lower_???׻?????
+< 
+<                 // ?Х????ǥ??󥰥ܥå????κ?��
+<                 Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+<                 Switch bbSwitch = _makeSwitchNode(_makeBoundingBox(color));
+<                 scene.addChild(bbSwitch);
+< 
+<                 // ?????å��Ρ??ɤλ??Ȥ?TG?Υ桼?????ǡ????ΰ??Υ??ȥ?
+<                 jointNode.setUserData("boundingBoxSwitch", bbSwitch);
+< 
+<                 // ???κ?��
+<                 Vector3d jointAxis = jointNode.getJointAxis();
+<                 if (jointAxis != null) {
+<                     Switch axisSwitch =
+<                         _makeSwitchNode(_makeAxisLine(jointAxis));
+<                     scene.addChild(axisSwitch);
+<                  
+<                     jointNode.setUserData("axisLineSwitch", axisSwitch);
+<                     jointNode.setUserData("jointAxis",jointNode.getJointAxis());
+<                 }
+<             }
+<         }
+<     }
