@@ -530,14 +530,23 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
             TransformGroup linkTopTransformNode = new TransformGroup();
             lInfo_[linkIndex].tg = linkTopTransformNode;
-            
+
             int numShapes = linkInfo.shapeIndices.length;
-            for(int localShapeIndex = 0; localShapeIndex < numShapes; localShapeIndex++) {					
-                int shapeIndex = linkInfo.shapeIndices[localShapeIndex];
+            for(int localShapeIndex = 0; localShapeIndex < numShapes; localShapeIndex++) {
+                TransformedShapeIndex tsi = linkInfo.shapeIndices[localShapeIndex];
+                int shapeIndex = tsi.shapeIndex;
                 ShapeInfo shapeInfo = shapes[shapeIndex];
                 Shape3D linkShape3D = createLinkShape3D(shapeInfo, appearances, materials, textures);
-                
-                linkTopTransformNode.addChild(linkShape3D);
+
+                TransformGroup shapeTransform = new TransformGroup();
+                double[] m = tsi.transformMatrix;
+                Matrix4d M = new Matrix4d(m[0], m[1], m[2],  m[3],
+                                          m[4], m[5], m[6],  m[7],
+                                          m[8], m[9], m[10], m[11],
+                                          0.0,  0.0,  0.0,   1.0);
+                shapeTransform.setTransform(new Transform3D(M));
+                shapeTransform.addChild(linkShape3D);
+                linkTopTransformNode.addChild(shapeTransform);
 
                 /* normal visualization */
                 if(false){
@@ -1577,16 +1586,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			
                 jointValue = 0.0;
 			
-
-                // #######[Changed] ShapeIndices For NewModelLoader.IDL
-
-                int shapeCnts = info.shapeIndices.length;
-                shapeIndices = new short[shapeCnts];
-                for (int i=0; i<shapeCnts; i++){
-                    shapeIndices[i] = info.shapeIndices[i];
-                }
-                // #######[Changed]
-
                 SensorInfo[] sinfo = info.sensors;
                 sensors = new SensorInfoLocal[sinfo.length];
                 for (int i=0; i<sensors.length; i++) {

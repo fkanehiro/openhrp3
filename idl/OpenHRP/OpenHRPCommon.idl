@@ -32,6 +32,7 @@ module OpenHRP {
 	typedef double DblArray3[3];
 	typedef double DblArray6[6];
 	typedef double DblArray9[9];
+	typedef double DblArray12[12];
 
 	typedef sequence<double, 3> DblSequence3;
 	typedef sequence<double, 6> DblSequence6;

@@ -137,14 +137,13 @@ void OpenHRP::calcRotFromRpy(Matrix33& out_R, double r, double p, double y)
     out_R(2,2)= cr*cp;
 }
 
+
 void OpenHRP::calcInverse(Matrix33& inv, const Matrix33& m)
 {
-  using ::std::numeric_limits;
-
   double det = m(0,0)*(m(1,1)*m(2,2)-m(1,2)*m(2,1)) - m(0,1)*(m(1,0)*m(2,2)-m(1,2)*m(2,0)) + m(0,2)*(m(1,0)*m(2,1)-m(1,1)*m(2,0));
   
-  if( fabs(det) < numeric_limits<double>::epsilon()){
-    inv = 0.0;
+  if(fabs(det) < std::numeric_limits<double>::epsilon()){
+      throw std::string("Invrse matrix cannot be calculated.");
   }
   else{
     inv =
@@ -153,5 +152,3 @@ void OpenHRP::calcInverse(Matrix33& inv, const Matrix33& m)
        (m(1,0)*m(2,1)-m(1,1)*m(2,0)) / det, (m(0,1)*m(2,0)-m(0,0)*m(2,1)) / det, (m(0,0)*m(1,1)-m(0,1)*m(1,0)) / det;
   }
 }
-
-
