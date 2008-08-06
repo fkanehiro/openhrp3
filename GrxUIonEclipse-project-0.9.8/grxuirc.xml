@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grxui>
+    <processmanagerconfig>
+        <process dir="$(BIN_DIR)" nshost="localhost" nsport="2809" waitcount="500"/>
+        <process com="$(BIN_DIR)/NameServer$(BIN_SFX)" id="NameService"/>
+        <process com="$(BIN_DIR)/ModelLoader$(BIN_SFX)" hasshutdown="true" id="ModelLoader"/>
+        <process com="$(BIN_DIR)/CollisionDetector$(BIN_SFX)" hasshutdown="true" id="CollisionDetectorFactory"/>
+        <process com="$(BIN_DIR)/CollisionDetector$(BIN_SFX)" hasshutdown="true" id="CollisionDetectorFactory"/>
+        <process com="$(BIN_DIR)/DynamicsSimulator$(BIN_SFX)" hasshutdown="true" id="DynamicsSimulatorFactory" waitcount="1000"/>
+    </processmanagerconfig>
+
+    <mode name="Simulation" select="true">
+        <item class="com.generalrobotix.ui.item.GrxModelItem"/>
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem"/>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem"/>
+        <item class="com.generalrobotix.ui.item.GrxGraphItem"/>
+        <item class="com.generalrobotix.ui.item.GrxPythonScriptItem"/>
+    </mode>
+</grxui>
