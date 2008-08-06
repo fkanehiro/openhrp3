@@ -14,26 +14,6 @@
 
 module OpenHRP {
 
-/********* TEST ***********/
-  /**
-   * @if jp
-   * センサ種別
-   * @else
-   * Definition of Sensor Types
-   * @endif
-   */
-  //enum SensorType {
-  //  FORCE_SENSOR,         ///< 6-axis force sensor
-  //  RATE_GYRO, 
-  //  ACCELERATION_SENSOR, 
-  //  PRESSURE_SENSOR, 
-  //  PHOTO_INTERRUPTER,
-  //  VISION_SENSOR,
-  //  TORQUE_SENSOR         ///< joint torque sensor
-  //};
-/********* TEST ***********/
-
-
   /**
      @if jp
      センサ情報を格納する構造体。

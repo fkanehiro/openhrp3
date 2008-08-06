@@ -72,7 +72,7 @@ namespace OpenHRP {
 
         typedef std::bitset<NUM_PROTOS> ProtoIdSet;
     
-        void extractHumanoidNode(VRMLParser& parser);
+        void extractHumanoidNode(VrmlParser& parser);
 
         void throwExceptionOfIllegalField(const std::string& name, VrmlFieldTypeId typeId);
         void requireField(const std::string& name, VrmlFieldTypeId type);
@@ -173,7 +173,7 @@ bool ModelNodeSetImpl::loadModelFile(const std::string& filename)
     messageIndent = 0;
 
     try {
-	VRMLParser parser;
+	VrmlParser parser;
 	parser.load(filename);
 	extractHumanoidNode(parser);
 
@@ -185,7 +185,7 @@ bool ModelNodeSetImpl::loadModelFile(const std::string& filename)
 }
 
 
-void ModelNodeSetImpl::extractHumanoidNode(VRMLParser& parser)
+void ModelNodeSetImpl::extractHumanoidNode(VrmlParser& parser)
 {
     while(VrmlNodePtr node = parser.readNode()){
 		

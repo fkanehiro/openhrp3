@@ -297,225 +297,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
 
-    private void setColors(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
-
-        int numColors = appearanceInfo.colors.length / 3;
-
-        if(numColors > 0){
-            float[] orgColors = appearanceInfo.colors;
-            Color3f[] colors = new Color3f[numColors];
-            for(int i=0; i < numColors; ++i){
-                colors[i] = new Color3f(orgColors[i*3], orgColors[i*3+1], orgColors[i*3+2]);
-            }
-            geometryInfo.setColors(colors);
-            
-            int[] orgColorIndices = appearanceInfo.colorIndices;
-            int numOrgColorIndices = orgColorIndices.length;
-            int numTriangles = shapeInfo.triangles.length / 3;
-            int[] colorIndices = new int[numTriangles * 3];
-                
-            if(numOrgColorIndices > 0){
-                if(appearanceInfo.colorPerVertex){
-                    colorIndices = orgColorIndices;
-                } else {
-                    int pos = 0;
-                    for(int i=0; i < numTriangles; ++i){
-                        int colorIndex = orgColorIndices[i];
-                        for(int j=0; j < 3; ++j){
-                            colorIndices[pos++] = colorIndex;
-                        }
-                    }
-                }
-            } else {
-                if(appearanceInfo.colorPerVertex){
-                    for(int i=0; i < colorIndices.length; ++i){
-                        colorIndices[i] = shapeInfo.triangles[i];
-                    }
-                } else {
-                    int pos = 0;
-                    for(int i=0; i < numTriangles; ++i){
-                        for(int j=0; j < 3; ++j){
-                            colorIndices[pos++] = i;
-                        }
-                    }                        
-                    
-                }
-            }
-            geometryInfo.setColorIndices(colorIndices);
-        }
-    }
-
-
-    private void setNormals(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
-
-        int numNormals = appearanceInfo.normals.length / 3;
-
-        if(numNormals == 0){
-            NormalGenerator ng = new NormalGenerator(appearanceInfo.creaseAngle);
-            ng.generateNormals(geometryInfo);
-            
-        } else {
-
-            float[] orgNormals = appearanceInfo.normals;
-            Vector3f[] normals = new Vector3f[numNormals];
-            for(int i=0; i < numNormals; ++i){
-                normals[i] = new Vector3f(orgNormals[i*3], orgNormals[i*3+1], orgNormals[i*3+2]);
-            }
-            geometryInfo.setNormals(normals);
-
-            int[] orgNormalIndices = appearanceInfo.normalIndices;
-            int numOrgNormalIndices = orgNormalIndices.length;
-            int numTriangles = shapeInfo.triangles.length / 3;
-            int[] normalIndices = new int[numTriangles * 3];
-                
-            if(numOrgNormalIndices > 0){
-                if(appearanceInfo.normalPerVertex){
-                    normalIndices = orgNormalIndices;
-                } else {
-                    int pos = 0;
-                    for(int i=0; i < numTriangles; ++i){
-                        int normalIndex = orgNormalIndices[i];
-                        for(int j=0; j < 3; ++j){
-                            normalIndices[pos++] = normalIndex;
-                        }
-                    }
-                }
-            } else {
-                if(appearanceInfo.normalPerVertex){
-                    for(int i=0; i < normalIndices.length; ++i){
-                        normalIndices[i] = shapeInfo.triangles[i];
-                    }
-                } else {
-                    int pos = 0;
-                    for(int i=0; i < numTriangles; ++i){
-                        for(int j=0; j < 3; ++j){
-                            normalIndices[pos++] = i;
-                        }
-                    }                        
-                    
-                }
-            }
-
-            geometryInfo.setNormalIndices(normalIndices);
-        }
-    }
-    
-    
-    private Shape3D createLinkShape3D
-    (ShapeInfo shapeInfo, AppearanceInfo[] appearances, MaterialInfo[] materials, TextureInfo[] textures){
-        
-        GeometryInfo geometryInfo = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
-
-        // set vertices
-        int numVertices = shapeInfo.vertices.length / 3;
-        Point3f[] vertices = new Point3f[numVertices];
-        for(int i=0; i < numVertices; ++i){
-            vertices[i] = new Point3f(shapeInfo.vertices[i*3], shapeInfo.vertices[i*3+1], shapeInfo.vertices[i*3+2]);
-        }
-        geometryInfo.setCoordinates(vertices);
-        
-        // set triangles (indices to the vertices)
-        geometryInfo.setCoordinateIndices(shapeInfo.triangles);
-        
-        Appearance appearance = new Appearance();
-        PolygonAttributes pa = new PolygonAttributes();
-        pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-        pa.setCullFace(PolygonAttributes.CULL_NONE);
-        pa.setBackFaceNormalFlip(true);
-        appearance.setPolygonAttributes(pa);
-
-        int appearanceIndex = shapeInfo.appearanceIndex;
-        if(appearanceIndex >= 0){
-
-            AppearanceInfo appearanceInfo = appearances[appearanceIndex];
-
-            setColors(geometryInfo, shapeInfo, appearanceInfo);
-
-            MaterialInfo materialInfo = null;
-            int materialIndex = appearanceInfo.materialIndex;
-            if(materialIndex >= 0){
-                materialInfo = materials[materialIndex];
-                if(materialInfo.transparency > 0.0f){
-                    TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
-                    appearance.setTransparencyAttributes(ta);
-                }
-            }
-
-            setNormals(geometryInfo, shapeInfo, appearanceInfo);
-
-            if(materialInfo != null){
-                appearance.setMaterial(createMaterial(materialInfo));
-            }
-
-            int textureIndex = appearanceInfo.textureIndex;
-            if(textureIndex >= 0){
-                
-                TextureInfoLocal texInfo = new TextureInfoLocal(textures[textureIndex]);
-
-                Texture2D texture2d = null;
-                if((texInfo.width != 0) && (texInfo.height != 0)){
-                    ImageComponent2D icomp2d = texInfo.readImage;
-                    texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
-                    texture2d.setImage(0, icomp2d);
-                }
-
-                if(texture2d != null){
-                    appearance.setTexture(texture2d);
-                }
-                
-                int vTris = (shapeInfo.triangles.length)/3;
-                Point2f[] TexPoints = new Point2f[vTris * 3];
-                for(int vi=0; vi<vTris; vi++){
-                    TexPoints[vi*3] = new Point2f( 0.0f , 0.0f );
-                    TexPoints[vi*3+1] = new Point2f( 1.0f , 0.0f );
-                    TexPoints[vi*3+2] = new Point2f( 1.0f , 1.0f );
-                }
-                geometryInfo.setTextureCoordinates(TexPoints);
-                geometryInfo.setTextureCoordinateIndices(shapeInfo.triangles);
-                //TextureAttributes Set
-                TextureAttributes texAttrBase =  new TextureAttributes();
-                //TextureAttributes Property Set
-                texAttrBase.setTextureMode(TextureAttributes.MODULATE);
-                //Appearance <- TextureAttributes 
-                appearance.setTextureAttributes(texAttrBase);
-            }
-        }
-
-        Shape3D shape3D = new Shape3D(geometryInfo.getGeometryArray());
-        shape3D.setAppearance(appearance);
-
-        return shape3D;
-    }
-
-
-    public class NormalRender {
-        private LineArray nline = null;
-        public NormalRender(GeometryArray geom) { this(geom, 1.0f); }
-        public NormalRender(GeometryArray geom, float scale) {
-            Point3f[] vertices = new Point3f[geom.getVertexCount()];
-            Vector3f[] normals = new Vector3f[geom.getVertexCount()];
-            for (int i=0; i<geom.getVertexCount(); i++) {
-                vertices[i] = new Point3f();
-                normals[i] = new Vector3f();
-            }
-            geom.getCoordinates(0, vertices);
-            geom.getNormals(0, normals);
-            Point3f[] nvertices = new Point3f[vertices.length * 2];
-            int n = 0;
-            for (int i=0; i<vertices.length; i++ ){
-                nvertices[n++] = new Point3f( vertices[i] );
-                nvertices[n++] = new Point3f( vertices[i].x + scale * normals[i].x,
-                                              vertices[i].y + scale * normals[i].y,
-                                              vertices[i].z + scale * normals[i].z );
-            }
-            nline = new LineArray(nvertices.length, GeometryArray.COORDINATES);
-            nline.setCoordinates(0, nvertices);
-        }
-        
-        public LineArray getLineArray() { return nline; }
-    }
-
-
     private void _loadVrmlScene(LinkInfo[] links) throws BadLinkStructureException {
 
         ShapeInfo[] shapes = bInfo_.shapes();
@@ -550,7 +331,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
                 /* normal visualization */
                 if(false){
-                    NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f);
+                    NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f, M);
                     Shape3D nshape = new Shape3D(nrender.getLineArray());
                     linkTopTransformNode.addChild(nshape);
                 }
@@ -735,6 +516,255 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             GrxDebugUtil.println("* The node " + node.toString() + " is not supported.");
         }
     }
+
+
+    private Shape3D createLinkShape3D
+    (ShapeInfo shapeInfo, AppearanceInfo[] appearances, MaterialInfo[] materials, TextureInfo[] textures){
+        
+        GeometryInfo geometryInfo = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
+
+        // set vertices
+        int numVertices = shapeInfo.vertices.length / 3;
+        Point3f[] vertices = new Point3f[numVertices];
+        for(int i=0; i < numVertices; ++i){
+            vertices[i] = new Point3f(shapeInfo.vertices[i*3], shapeInfo.vertices[i*3+1], shapeInfo.vertices[i*3+2]);
+        }
+        geometryInfo.setCoordinates(vertices);
+        
+        // set triangles (indices to the vertices)
+        geometryInfo.setCoordinateIndices(shapeInfo.triangles);
+        
+        Appearance appearance = new Appearance();
+        PolygonAttributes pa = new PolygonAttributes();
+        pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+        pa.setCullFace(PolygonAttributes.CULL_NONE);
+        pa.setBackFaceNormalFlip(true);
+        appearance.setPolygonAttributes(pa);
+
+        int appearanceIndex = shapeInfo.appearanceIndex;
+        if(appearanceIndex >= 0){
+
+            AppearanceInfo appearanceInfo = appearances[appearanceIndex];
+
+            setColors(geometryInfo, shapeInfo, appearanceInfo);
+
+            MaterialInfo materialInfo = null;
+            int materialIndex = appearanceInfo.materialIndex;
+            if(materialIndex >= 0){
+                materialInfo = materials[materialIndex];
+                if(materialInfo.transparency > 0.0f){
+                    TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
+                    appearance.setTransparencyAttributes(ta);
+                }
+            }
+
+            setNormals(geometryInfo, shapeInfo, appearanceInfo);
+
+            if(materialInfo != null){
+                appearance.setMaterial(createMaterial(materialInfo));
+            }
+
+            int textureIndex = appearanceInfo.textureIndex;
+            if(textureIndex >= 0){
+                
+                TextureInfoLocal texInfo = new TextureInfoLocal(textures[textureIndex]);
+
+                Texture2D texture2d = null;
+                if((texInfo.width != 0) && (texInfo.height != 0)){
+                    ImageComponent2D icomp2d = texInfo.readImage;
+                    texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
+                    texture2d.setImage(0, icomp2d);
+                }
+
+                if(texture2d != null){
+                    appearance.setTexture(texture2d);
+                }
+                
+                int vTris = (shapeInfo.triangles.length)/3;
+                Point2f[] TexPoints = new Point2f[vTris * 3];
+                for(int vi=0; vi<vTris; vi++){
+                    TexPoints[vi*3] = new Point2f( 0.0f , 0.0f );
+                    TexPoints[vi*3+1] = new Point2f( 1.0f , 0.0f );
+                    TexPoints[vi*3+2] = new Point2f( 1.0f , 1.0f );
+                }
+                geometryInfo.setTextureCoordinates(TexPoints);
+                geometryInfo.setTextureCoordinateIndices(shapeInfo.triangles);
+                //TextureAttributes Set
+                TextureAttributes texAttrBase =  new TextureAttributes();
+                //TextureAttributes Property Set
+                texAttrBase.setTextureMode(TextureAttributes.MODULATE);
+                //Appearance <- TextureAttributes 
+                appearance.setTextureAttributes(texAttrBase);
+            }
+        }
+
+        Shape3D shape3D = new Shape3D(geometryInfo.getGeometryArray());
+        shape3D.setAppearance(appearance);
+
+        return shape3D;
+    }
+
+
+    public class NormalRender {
+        private LineArray nline = null;
+
+        public NormalRender(GeometryArray geom, float scale, Matrix4d T) {
+            
+            Point3f[] vertices = new Point3f[geom.getVertexCount()];
+            Vector3f[] normals = new Vector3f[geom.getVertexCount()];
+            for (int i=0; i<geom.getVertexCount(); i++) {
+                vertices[i] = new Point3f();
+                normals[i] = new Vector3f();
+            }
+            geom.getCoordinates(0, vertices);
+            geom.getNormals(0, normals);
+            Point3f[] nvertices = new Point3f[vertices.length * 2];
+            int n = 0;
+            for (int i=0; i<vertices.length; i++ ){
+
+                T.transform(normals[i]);
+                normals[i].normalize();
+                T.transform(vertices[i]);
+                
+                nvertices[n++] = new Point3f( vertices[i] );
+                nvertices[n++] = new Point3f( vertices[i].x + scale * normals[i].x,
+                                              vertices[i].y + scale * normals[i].y,
+                                              vertices[i].z + scale * normals[i].z );
+            }
+            nline = new LineArray(nvertices.length, GeometryArray.COORDINATES);
+            nline.setCoordinates(0, nvertices);
+        }
+        
+        public LineArray getLineArray() { return nline; }
+    }
+
+
+    private void setColors(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
+
+        int numColors = appearanceInfo.colors.length / 3;
+
+        if(numColors > 0){
+            float[] orgColors = appearanceInfo.colors;
+            Color3f[] colors = new Color3f[numColors];
+            for(int i=0; i < numColors; ++i){
+                colors[i] = new Color3f(orgColors[i*3], orgColors[i*3+1], orgColors[i*3+2]);
+            }
+            geometryInfo.setColors(colors);
+            
+            int[] orgColorIndices = appearanceInfo.colorIndices;
+            int numOrgColorIndices = orgColorIndices.length;
+            int numTriangles = shapeInfo.triangles.length / 3;
+            int[] colorIndices = new int[numTriangles * 3];
+                
+            if(numOrgColorIndices > 0){
+                if(appearanceInfo.colorPerVertex){
+                    colorIndices = orgColorIndices;
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        int colorIndex = orgColorIndices[i];
+                        for(int j=0; j < 3; ++j){
+                            colorIndices[pos++] = colorIndex;
+                        }
+                    }
+                }
+            } else {
+                if(appearanceInfo.colorPerVertex){
+                    for(int i=0; i < colorIndices.length; ++i){
+                        colorIndices[i] = shapeInfo.triangles[i];
+                    }
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        for(int j=0; j < 3; ++j){
+                            colorIndices[pos++] = i;
+                        }
+                    }                        
+                    
+                }
+            }
+            geometryInfo.setColorIndices(colorIndices);
+        }
+    }
+
+
+    private void setNormals(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
+
+        int numNormals = appearanceInfo.normals.length / 3;
+
+        if(numNormals == 0){
+            NormalGenerator ng = new NormalGenerator(appearanceInfo.creaseAngle);
+            ng.generateNormals(geometryInfo);
+            
+        } else {
+
+            float[] orgNormals = appearanceInfo.normals;
+            Vector3f[] normals = new Vector3f[numNormals];
+            for(int i=0; i < numNormals; ++i){
+                normals[i] = new Vector3f(orgNormals[i*3], orgNormals[i*3+1], orgNormals[i*3+2]);
+            }
+            geometryInfo.setNormals(normals);
+
+            int[] orgNormalIndices = appearanceInfo.normalIndices;
+            int numOrgNormalIndices = orgNormalIndices.length;
+            int numTriangles = shapeInfo.triangles.length / 3;
+            int[] normalIndices = new int[numTriangles * 3];
+                
+            if(numOrgNormalIndices > 0){
+                if(appearanceInfo.normalPerVertex){
+                    normalIndices = orgNormalIndices;
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        int normalIndex = orgNormalIndices[i];
+                        for(int j=0; j < 3; ++j){
+                            normalIndices[pos++] = normalIndex;
+                        }
+                    }
+                }
+            } else {
+                if(appearanceInfo.normalPerVertex){
+                    for(int i=0; i < normalIndices.length; ++i){
+                        normalIndices[i] = shapeInfo.triangles[i];
+                    }
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        for(int j=0; j < 3; ++j){
+                            normalIndices[pos++] = i;
+                        }
+                    }                        
+                    
+                }
+            }
+
+            geometryInfo.setNormalIndices(normalIndices);
+        }
+    }
+
+
+    private Material createMaterial(MaterialInfo materialInfo){
+
+        Material material = new Material();
+        
+        float[] dColor = materialInfo.diffuseColor;
+        material.setDiffuseColor(new Color3f(dColor[0], dColor[1], dColor[2]));
+
+        float[] sColor = materialInfo.specularColor;
+        material.setSpecularColor(new Color3f(sColor[0], sColor[1], sColor[2]));
+
+        float[] eColor = materialInfo.emissiveColor;
+        material.setEmissiveColor(new Color3f(eColor[0], eColor[1], eColor[2]));
+
+        float r = materialInfo.ambientIntensity;
+        material.setAmbientColor(new Color3f(r * dColor[0], r * dColor[1], r * dColor[2]));
+        
+        float shininess = materialInfo.shininess * 127.0f + 1.0f;
+        material.setShininess(shininess);
+        
+        return material;
+    }
+    
 
     public void setCharacterPos(LinkPosition[] lpos, double[] q) {
         if (!update_)
@@ -1148,103 +1178,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
 
-    // ##### [Changed] NewModelLoader.IDL
-    //==================================================================================================
-    /*!
-      @brief		"AppearanceInfoLocal" class
-      @author		ErgoVision
-      @version	0.00
-      @date		200?-0?-0?
-      @note		2008-03-26 M.YASUKAWA modify <BR>
-      @note		"AppearanceInfoLocal" class
-    */
-    //==================================================================================================
-    public class AppearanceInfoLocal
-    {
-        //public float[]	vertices;
-        //public long[]	triangles;
-        //public long	appearanceIndex;
-
-        long          materialIndex;
-        public float[]		normals;
-        public long[]		normalIndices;
-        public boolean		solid;
-        public float		creaseAngle;
-        public float[]		colors;
-        public long[]		colorIndices;
-        public boolean		coloerPerVertex;
-        public long			textureIndex;
-        public float[]		textureCoordinate;
-
-
-
-        public AppearanceInfoLocal(AppearanceInfo AppearanceInfo_)
-            {
-                AppearanceInfo appinfo = AppearanceInfo_;
-
-                // set materialIndex
-                materialIndex = (long)(appinfo.materialIndex);
-
-                // set AppearanceInfo normals
-                int nCnts = appinfo.normals.length;
-                normals = new float[nCnts];
-                for( int i=0; i<nCnts; i++ )
-                    {
-                        normals[i] = appinfo.normals[i];
-//System.out.println( "   AppearanceInfoLocal.normals[" + i + "]   = " + normals[i] );
-                    }
-
-                // set AppearanceInfo normalIndices
-                int nICnts = appinfo.normalIndices.length;
-                normalIndices = new long[nICnts];
-                for( int i=0; i<nICnts; i++ )
-                    {
-                        normalIndices[i] = appinfo.normalIndices[i];
-//System.out.println( "   AppearanceInfoLocal.normalIndices[" + i + "]   = " + normalIndices[i] );
-                    }
-
-                // set AppearanceInfo solid
-                solid = appinfo.solid;
-
-                // set AppearanceInfo creaseAngle
-                creaseAngle = appinfo.creaseAngle;
-
-                // set AppearanceInfo colors
-                int clCnts = appinfo.colors.length;
-                colors = new float[clCnts];
-                for( int i=0; i<clCnts; i++ )
-                    {
-                        colors[i] = appinfo.colors[i];
-//System.out.println( "   AppearanceInfoLocal.colors[" + i + "]   = " + colors[i] );
-                    }
-
-                // set AppearanceInfo colorIndices
-                int nCliCnts = appinfo.colorIndices.length;
-                colorIndices = new long[nCliCnts];
-                for( int i=0; i<nCliCnts; i++ )
-                    {
-                        colorIndices[i] = appinfo.colorIndices[i];
-//System.out.println( "   AppearanceInfoLocal.colorIndices[" + i + "]   = " + colorIndices[i] );
-                    }
-
-                // set AppearanceInfo textureIndex
-                textureIndex = appinfo.textureIndex;
-
-                // set AppearanceInfo textureCoordinate
-                int txcCnts = appinfo.textureCoordinate.length;
-                textureCoordinate = new float[txcCnts];
-                for( int i=0; i<txcCnts; i++ )
-                    {
-                        textureCoordinate[i] = appinfo.textureCoordinate[i];
-//System.out.println( "   AppearanceInfoLocal.textureCoordinate[" + i + "]   = " + textureCoordinate[i] );
-                    }
-
-            }
-
-
-    }
-    // ##### [Changed]
-
 
     // ##### [Changed] NewModelLoader.IDL
     //==================================================================================================
@@ -1500,13 +1433,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         final public String		name;
         final public int		jointId;
 
-        // ##### [Changed] NewModelLoader.IDL
         // member properties as BinaryTree (neccessary to rebuild)
         /*final*/ public int	mother;			// mother LinkInfoLocal instance
         /*final*/ public int	daughter;		// daughter LinkInfoLocal for BinaryTree
         /*final*/ public int	sister;			// sister LinkInfoLocal for BinaryTree
 
-        // ##### [Changed] NewModelLoader.IDL
         // member properties as NaryTree (receive)
         public short			myLinkID;		// index of this LinkInfoLocal in LinkInfoSequence of BodyInfo
         public short			parentIndex;	// parent's index in LinkInfoSequence of BodyInfo
@@ -1525,7 +1456,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         final public double[]	lvlimit;
         final public SensorInfoLocal[]	sensors;
 
-        // ##### [Changed] NewModelLoader.IDL
         public short[]			shapeIndices;
 
 
@@ -1535,92 +1465,95 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         //public int	topTGroupFlg;
 
 
-        public LinkInfoLocal(LinkInfo info)
-            {
-                // #######[Changed] mother <= parentID
-                parentIndex = info.parentIndex;
-                //childIndices = info.childIndices;
-                int childIndicesLen = info.childIndices.length;
-//System.out.println( "   LinkInfoLocal.childIndices Counts = " +  childIndicesLen);
+        public LinkInfoLocal(LinkInfo info) {
 
-                childIndices = new short[childIndicesLen];
-                for(int i=0; i<childIndicesLen; i++){
-//System.out.println( "   LinkInfoLocal.childIndices[" + i + "]   = " + info.childIndices[i] );
+            // #######[Changed] mother <= parentID
+            parentIndex = info.parentIndex;
+            //childIndices = info.childIndices;
+            int childIndicesLen = info.childIndices.length;
+            
+            childIndices = new short[childIndicesLen];
+            for(int i=0; i<childIndicesLen; i++){
+                childIndices[i] = info.childIndices[i];
+            }
 
-                    childIndices[i] = info.childIndices[i];
-                }
-
-
-                mother = info.parentIndex;
-                daughter = -1;	// ##### should be -1 for release version
-                sister   = -1;	// ##### should be -1 for release version
-                // mother   = info.mother();	// ##### original
-                // daughter = info.daughter();	// ##### original
-                // sister   = info.sister();	// ##### original
-                name = info.name;
-                jointId = info.jointId;
-                jointType = info.jointType;
-                jointAxis = info.jointAxis;
-                translation    = info.translation;
-                // #######[Changed] rotation DblArray9 -> DblArray4 Changed For NewModelLoader.IDL
-                //rotation    = info.rotation;
-                ConvRotation4to9 rotation4_9 = new ConvRotation4to9(info.rotation);
-                rotation = rotation4_9.getConvRotation4to9();
-                // #######[Changed]
-                centerOfMass = info.centerOfMass;
-                mass    = info.mass;
-                inertia = info.inertia;
-
-                if (info.ulimit == null || info.ulimit.length == 0)
-                    ulimit = new double[]{0.0};
-                else
-                    ulimit  = info.ulimit;
-
-                if (info.llimit == null || info.llimit.length == 0)
-                    llimit = new double[]{0.0};
-                else
-                    llimit = info.llimit;
-
-                uvlimit = info.uvlimit;
-                lvlimit = info.lvlimit;
-			
-                jointValue = 0.0;
-			
-                SensorInfo[] sinfo = info.sensors;
-                sensors = new SensorInfoLocal[sinfo.length];
-                for (int i=0; i<sensors.length; i++) {
-                    sensors[i] = new SensorInfoLocal(sinfo[i], LinkInfoLocal.this);
-                    List<SensorInfoLocal> l = sensorMap_.get(sensors[i].type);
-                    if (l == null) {
-                        l = new ArrayList<SensorInfoLocal>();
-                        sensorMap_.put(sensors[i].type, l);
-                    }
-                    l.add(sensors[i]);
-				
-                    if (sensors[i].type.equals("Vision")) {
-                        CameraParameter prm = new CameraParameter();
-                        prm.defName = new String(sensors[i].name);
-                        prm.sensorName = new String(sensors[i].name);
-                        prm.sensorId = sensors[i].id;
-					
-                        prm.frontClipDistance = (float)sensors[i].maxValue[0];
-                        prm.backClipDistance = (float)sensors[i].maxValue[1];
-                        prm.fieldOfView = (float)sensors[i].maxValue[2];
-                        try {
-                            prm.type = CameraType.from_int((int)sensors[i].maxValue[3]);
-                        } catch (Exception e) {
-                            prm.type = CameraType.NONE;
-                        }
-                        prm.width  = (int)sensors[i].maxValue[4];
-                        prm.height = (int)sensors[i].maxValue[5];
-                        boolean offScreen = false;
-                        //if (prm.type.equals(CameraType.DEPTH))
-                        //		offScreen = true;
-                        Camera_impl camera = new Camera_impl(prm, offScreen);
-                        cameraList.add(camera);
-                    }
+            mother = info.parentIndex;
+            daughter = -1;	// ##### should be -1 for release version
+            sister   = -1;	// ##### should be -1 for release version
+            // mother   = info.mother();	// ##### original
+            // daughter = info.daughter();	// ##### original
+            // sister   = info.sister();	// ##### original
+            name = info.name;
+            jointId = info.jointId;
+            jointType = info.jointType;
+            jointAxis = info.jointAxis;
+            translation    = info.translation;
+            
+            rotation = new double[9];
+            Matrix3d R = new Matrix3d();
+            R.set(new AxisAngle4d(info.rotation));
+            for(int row=0; row < 3; ++row){
+                for(int col=0; col < 3; ++col){
+                    rotation[row * 3 + col] = R.getElement(row, col);
                 }
             }
+            
+            centerOfMass = info.centerOfMass;
+            mass    = info.mass;
+            inertia = info.inertia;
+            
+            if (info.ulimit == null || info.ulimit.length == 0) {
+                ulimit = new double[]{0.0};
+            } else {
+                ulimit  = info.ulimit;
+            }
+            
+            if (info.llimit == null || info.llimit.length == 0){
+                llimit = new double[]{0.0};
+            } else {
+                llimit = info.llimit;
+            }
+
+            uvlimit = info.uvlimit;
+            lvlimit = info.lvlimit;
+            
+            jointValue = 0.0;
+            
+            SensorInfo[] sinfo = info.sensors;
+            sensors = new SensorInfoLocal[sinfo.length];
+            for (int i=0; i<sensors.length; i++) {
+                sensors[i] = new SensorInfoLocal(sinfo[i], LinkInfoLocal.this);
+                List<SensorInfoLocal> l = sensorMap_.get(sensors[i].type);
+                if (l == null) {
+                    l = new ArrayList<SensorInfoLocal>();
+                    sensorMap_.put(sensors[i].type, l);
+                }
+                l.add(sensors[i]);
+		
+                if (sensors[i].type.equals("Vision")) {
+                    CameraParameter prm = new CameraParameter();
+                    prm.defName = new String(sensors[i].name);
+                    prm.sensorName = new String(sensors[i].name);
+                    prm.sensorId = sensors[i].id;
+                    
+                    prm.frontClipDistance = (float)sensors[i].maxValue[0];
+                    prm.backClipDistance = (float)sensors[i].maxValue[1];
+                    prm.fieldOfView = (float)sensors[i].maxValue[2];
+                    try {
+                        prm.type = CameraType.from_int((int)sensors[i].maxValue[3]);
+                    } catch (Exception e) {
+                        prm.type = CameraType.NONE;
+                    }
+                    prm.width  = (int)sensors[i].maxValue[4];
+                    prm.height = (int)sensors[i].maxValue[5];
+                    boolean offScreen = false;
+                    //if (prm.type.equals(CameraType.DEPTH))
+                    //		offScreen = true;
+                    Camera_impl camera = new Camera_impl(prm, offScreen);
+                    cameraList.add(camera);
+                }
+            }
+        }
     }
 
     public List<Camera_impl> getCameraSequence () {
@@ -1709,54 +1642,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     }
 
-    // ######[Changed] DblArray4 -> DblArray9 Convert For NewModelLoader.IDL
-    //  Rotation <DbalArray4> (x y z a) => <DblArray9>  3x3 Rotation 
-    //  [tx2+c    txy+sz    txz-sy
-    //  txy-sz   ty2+c     tyz+sx
-    //  txz+sy   tyz-sx    tz2+c  ]
-    //  where c = cos(a), s = sin(a), and t = 1-c
-    public class ConvRotation4to9
-    {
-        double [] rotaton_Array4_;
-        double [] rotaton_Array9_;
-
-        public  ConvRotation4to9( double[] rotaton_Array4 )
-            {
-                rotaton_Array4_ = new double[4];
-                rotaton_Array9_ = new double[9];
-
-                for( int i = 0 ; i < 4  ; i++ )
-                    {
-                        rotaton_Array4_[i] = rotaton_Array4[i];
-                    }
-
-                double rotX  = rotaton_Array4[0];
-                double rotY  = rotaton_Array4[1];
-                double rotZ  = rotaton_Array4[2];
-                double angle = rotaton_Array4[3];
-
-                double c,s,t;
-
-                c = Math.cos(angle);
-                s = Math.sin(angle);
-
-                rotaton_Array9_[0] = c + (1-c) * rotX * rotX;
-                rotaton_Array9_[1] = (1-c) * rotX * rotY + s * rotZ;
-                rotaton_Array9_[2] = (1-c) * rotX * rotZ - s * rotY;
-                rotaton_Array9_[3] = (1-c) * rotX * rotY - s * rotZ;
-                rotaton_Array9_[4] = c + (1-c) * rotY * rotY;
-                rotaton_Array9_[5] = (1-c) * rotY * rotZ + s * rotX;
-                rotaton_Array9_[6] = (1-c) * rotX * rotZ + s * rotY;
-                rotaton_Array9_[7] = (1-c) * rotY * rotZ - s * rotX;
-                rotaton_Array9_[8] = c + (1-c) * rotZ * rotZ;
-
-            }
-
-        public double[] getConvRotation4to9 ()
-            {
-                return( rotaton_Array9_ );
-            }
-    }
 
     public void setJointColor(int jid, java.awt.Color color) {
         if (color == null) 
@@ -1764,6 +1649,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         else
             setAmbientColorRecursive(lInfo_[jointToLink_[jid]].tg, new Color3f(color));
     }
+    
 
     private void setAmbientColorRecursive(Node node, Color3f color) {
     	if (node instanceof BranchGroup) {
@@ -1937,27 +1823,5 @@ return null;
             return;
 
 	}
-
-    private Material createMaterial(MaterialInfo materialInfo){
-
-        Material material = new Material();
-        
-        float[] dColor = materialInfo.diffuseColor;
-        material.setDiffuseColor(new Color3f(dColor[0], dColor[1], dColor[2]));
-
-        float[] sColor = materialInfo.specularColor;
-        material.setSpecularColor(new Color3f(sColor[0], sColor[1], sColor[2]));
-
-        float[] eColor = materialInfo.emissiveColor;
-        material.setEmissiveColor(new Color3f(eColor[0], eColor[1], eColor[2]));
-
-        float r = materialInfo.ambientIntensity;
-        material.setAmbientColor(new Color3f(r * dColor[0], r * dColor[1], r * dColor[2]));
-        
-        float shininess = materialInfo.shininess * 127.0f + 1.0f;
-        material.setShininess(shininess);
-        
-        return material;
-    }
 
 }

@@ -13,10 +13,10 @@
   @author K.Fukuda
 */
 
-
 #include "VrmlParser.h"
 
 #include <cmath>
+#include <vector>
 #include <iostream>
 #include <OpenHRP/Util/EasyScanner.h>
 
@@ -342,7 +342,7 @@ namespace {
             { T_SFNODE, "SFNode" },
             { T_MFNODE, "MFNode" },
             { T_SFBOOL, "SFBool" },
-            { T_SFIMAGE, "SFImage" },		//#####
+            { T_SFIMAGE, "SFImage" },
 
             // Nodes
             { N_PROTO, "PROTO" },
@@ -502,7 +502,6 @@ namespace {
             { F_MIN_ANGLE, "minAngle" },
             { F_OFFSET, "offset" },
 
-// #####
             { F_IMAGE, "image" },
 
             { F_X_DIMENSION, "xDimension" },
@@ -550,33 +549,162 @@ namespace {
             prototypeScanner->registerSymbol(symbols[i].id, symbols[i].symbol);
         }
     }
-  
 }
 
 
-VRMLParser::VRMLParser()
+namespace OpenHRP {
+
+    class VrmlParserImpl
+    {
+    public:
+        VrmlParserImpl(VrmlParser* self);
+
+        VrmlParser* self;
+
+	struct TSourceInfo{
+	    EasyScannerPtr scanner;
+	    MFString inlineUrls;
+	    VrmlNodeCategory inlineNodeCategory;
+	};
+	typedef boost::shared_ptr<TSourceInfo> TSourceInfoPtr;
+
+	std::vector<TSourceInfoPtr> sources;
+	EasyScannerPtr scanner; // for the current source
+	VrmlProtoInstancePtr currentProtoInstance;
+
+        bool protoInstanceActualNodeExtractionMode;
+
+        typedef map<VrmlProto*, EasyScannerPtr> ProtoToEntityScannerMap;
+        ProtoToEntityScannerMap protoToEntityScannerMap;
+
+	typedef map<string, VrmlNodePtr> TDefNodeMap;
+	typedef pair<string, VrmlNodePtr> TDefNodePair;
+	typedef map<string, VrmlProtoPtr> TProtoMap;
+	typedef pair<string, VrmlProtoPtr> TProtoPair;
+
+	TProtoMap protoMap;
+	TDefNodeMap defNodeMap;
+
+        void load(const string& filename);
+	void setSymbols();
+	VrmlNodePtr readSpecificNode(VrmlNodeCategory nodeCategory, int symbol, const std::string& symbolString);
+	VrmlNodePtr readInlineNode(VrmlNodeCategory nodeCategory);
+	void newInlineSource(std::string filename);
+	VrmlProtoPtr defineProto();
+  
+	VrmlNodePtr readNode(VrmlNodeCategory nodeCategory);
+	VrmlProtoInstancePtr readProtoInstanceNode(const std::string& proto_name, VrmlNodeCategory nodeCategory);
+	VrmlNodePtr evalProtoInstance(VrmlProtoInstancePtr proto, VrmlNodeCategory nodeCategory);
+	VrmlUnsupportedNodePtr skipUnsupportedNode(const std::string& nodeTypeName);
+        VrmlUnsupportedNodePtr skipScriptNode();
+	VrmlUnsupportedNodePtr skipExternProto();
+
+	VrmlViewpointPtr readViewpointNode();
+	VrmlNavigationInfoPtr readNavigationInfoNode();
+	VrmlBackgroundPtr readBackgroundNode();
+	VrmlGroupPtr readGroupNode();
+	VrmlTransformPtr readTransformNode();
+	VrmlShapePtr readShapeNode();
+	VrmlCylinderSensorPtr readCylinderSensorNode();
+	VrmlBoxPtr readBoxNode();
+	VrmlConePtr readConeNode();
+	VrmlCylinderPtr readCylinderNode();
+
+	VrmlPointSetPtr readPointSetNode();
+	VrmlPixelTexturePtr readPixelTextureNode();
+	VrmlMovieTexturePtr readMovieTextureNode();
+	VrmlElevationGridPtr readElevationGridNode();
+	VrmlExtrusionPtr readExtrusionNode();
+	VrmlSwitchPtr readSwitchNode();
+	VrmlLODPtr readLODNode();
+	VrmlCollisionPtr readCollisionNode();
+	VrmlAnchorPtr readAnchorNode();
+	VrmlFogPtr readFogNode();
+	VrmlBillboardPtr readBillboardNode();
+	VrmlWorldInfoPtr readWorldInfoNode();
+	VrmlPointLightPtr readPointLightNode();
+	VrmlDirectionalLightPtr	readDirectionalLightNode();
+	VrmlSpotLightPtr readSpotLightNode();
+
+	VrmlSpherePtr readSphereNode();
+	VrmlTextPtr readTextNode();
+	VrmlFontStylePtr readFontStyleNode();
+	VrmlIndexedLineSetPtr readIndexedLineSetNode();
+	VrmlIndexedFaceSetPtr readIndexedFaceSetNode();
+	void checkIndexedFaceSet(VrmlIndexedFaceSetPtr node);
+	VrmlCoordinatePtr readCoordNode();
+	VrmlTextureCoordinatePtr readTextureCoordinateNode();
+	VrmlColorPtr readColorNode();
+	VrmlAppearancePtr readAppearanceNode();
+	VrmlMaterialPtr readMaterialNode();
+	VrmlImageTexturePtr readImageTextureNode();
+	VrmlTextureTransformPtr readTextureTransformNode();
+	VrmlNormalPtr readNormalNode();
+  
+	VrmlVariantField& readProtoField(VrmlFieldTypeId fieldTypeId);
+  
+	void readSFInt32(SFInt32& out_value);
+	void readSFFloat(SFFloat& out_value);
+	void readSFString(SFString& out_value);
+	void readMFInt32(MFInt32& out_value);
+	void readMFFloat(MFFloat& out_value);
+	void readSFColor(SFColor& out_value); 
+	void readMFColor(MFColor& out_value); 
+	void readMFString(MFString& out_value);
+	void readSFVec2f(SFVec2f& out_value);
+	void readMFVec2f(MFVec2f& out_value);
+	void readSFVec3f(SFVec3f& out_value);
+	void readMFVec3f(MFVec3f& out_value);
+	void readSFRotation(SFRotation& out_value);
+	void readMFRotation(MFRotation& out_value);
+	void readSFBool(SFBool& out_value);
+	void readSFTime(SFTime& out_value);
+	void readMFTime(MFTime& out_value);
+	void readSFNode(SFNode& out_node, VrmlNodeCategory nodeCategory);
+	SFNode readSFNode(VrmlNodeCategory nodeCategory);
+	void readMFNode(MFNode& out_nodes, VrmlNodeCategory nodeCategory);
+	void readSFImage( SFImage& out_image );
+    };
+}
+
+
+VrmlParser::VrmlParser()
 {
     init();
 }
 
 
-VRMLParser::VRMLParser(const string& filename)
+VrmlParser::VrmlParser(const string& filename)
 {
     init();
     load(filename);
 }
 
 
-void VRMLParser::init()
+void VrmlParser::init()
 {
+    impl = new VrmlParserImpl(this);
+}
+
+
+VrmlParserImpl::VrmlParserImpl(VrmlParser* self) : self(self)
+{
+    this->self = self;
+    
     currentProtoInstance = 0;
     protoInstanceActualNodeExtractionMode = true;
 }
 
 
-void VRMLParser::setProtoInstanceActualNodeExtractionMode(bool isOn)
+VrmlParser::~VrmlParser()
 {
-    protoInstanceActualNodeExtractionMode = isOn;
+    delete impl;
+}
+
+
+void VrmlParser::setProtoInstanceActualNodeExtractionMode(bool isOn)
+{
+    impl->protoInstanceActualNodeExtractionMode = isOn;
 }
 
 
@@ -584,7 +712,13 @@ void VRMLParser::setProtoInstanceActualNodeExtractionMode(bool isOn)
 /**
    This function throws EasyScanner::Exception when an error occurs.
 */
-void VRMLParser::load(const string& filename)
+void VrmlParser::load(const string& filename)
+{
+    impl->load(filename);
+}
+
+
+void VrmlParserImpl::load(const string& filename)
 {
     sources.clear();
 
@@ -610,19 +744,13 @@ void VRMLParser::load(const string& filename)
 }
 
 
-VrmlNodePtr VRMLParser::readNode()
+VrmlNodePtr VrmlParser::readNode()
 {
-    return readNode(TOP_NODE);
+    return impl->readNode(TOP_NODE);
 }
 
 
-VRMLParser::~VRMLParser()
-{
-
-}
-
-
-VrmlNodePtr VRMLParser::readNode(VrmlNodeCategory nodeCategory)
+VrmlNodePtr VrmlParserImpl::readNode(VrmlNodeCategory nodeCategory)
 {
     VrmlNodePtr node;
 
@@ -681,7 +809,6 @@ VrmlNodePtr VRMLParser::readNode(VrmlNodeCategory nodeCategory)
             }
         }
 
-        // #####
         // ROUTE has 3 parameters to skip
         // return as VrmlUnsupportedNode
         if(symbol == D_ROUTE){
@@ -693,16 +820,15 @@ VrmlNodePtr VRMLParser::readNode(VrmlNodeCategory nodeCategory)
             return readNode( nodeCategory );
         }
 
-        // #####
         // unsupported keywords
         if(symbol == U_SCRIPT){
             cerr << "Script is not supported. " << endl;
-            readScriptNode();
+            skipScriptNode();
             return readNode( nodeCategory );
         }
         if(symbol == U_EXTERNPROTO){
             cerr << "ExternProto is not supported." << endl;
-            readExternProto();
+            skipExternProto();
             return readNode( nodeCategory );
         }
 
@@ -740,7 +866,7 @@ VrmlNodePtr VRMLParser::readNode(VrmlNodeCategory nodeCategory)
 }
 
 
-VrmlNodePtr VRMLParser::readSpecificNode(VrmlNodeCategory nodeCategory, int symbol, const string& nodeTypeName)
+VrmlNodePtr VrmlParserImpl::readSpecificNode(VrmlNodeCategory nodeCategory, int symbol, const string& nodeTypeName)
 {
     VrmlNodePtr node;
 
@@ -754,7 +880,7 @@ VrmlNodePtr VRMLParser::readSpecificNode(VrmlNodeCategory nodeCategory, int symb
     case N_TRANSFORM:          node = readTransformNode();         break;
     case N_SHAPE:              node = readShapeNode();             break;
     case N_CYLINDER_SENSOR:    node = readCylinderSensorNode();    break;
-// ######
+
     case N_POINTSET:           node = readPointSetNode();          break;
     case N_PIXEL_TEXTURE:      node = readPixelTextureNode();      break;
     case N_MOVIE_TEXTURE:      node = readMovieTextureNode();      break;
@@ -770,7 +896,6 @@ VrmlNodePtr VRMLParser::readSpecificNode(VrmlNodeCategory nodeCategory, int symb
     case N_POINT_LIGHT:        node = readPointLightNode();        break;
     case N_DIRECTIONAL_LIGHT:  node = readDirectionalLightNode();  break;
     case N_SPOT_LIGHT:         node = readSpotLightNode();         break;
-// ######
 
     case N_MATERIAL:           node = readMaterialNode();          break;
     case N_APPEARANCE:         node = readAppearanceNode();        break;
@@ -792,20 +917,20 @@ VrmlNodePtr VRMLParser::readSpecificNode(VrmlNodeCategory nodeCategory, int symb
     case N_FONT_STYLE:         node = readFontStyleNode();         break;
 
         // unsupported nodes
-    case N_AUDIO_CLIP:         node = readUnsupportedNode("AudioClip");          break;	// #####
-    case N_SOUND:              node = readUnsupportedNode("Sound");              break;	// #####
-    case N_COLOR_INTERPOLATOR: node = readUnsupportedNode("ColorInterpolator");  break;	// #####
-    case N_COORDINATE_INTERPOLATOR:  node = readUnsupportedNode("CoordinateInterpolator");  break;	// #####
-    case N_ORIENTATION_INTERPOLATOR: node = readUnsupportedNode("OrientationInterpolator"); break;	// #####
-    case N_NORMAL_INTERPOLATOR:      node = readUnsupportedNode("NormalInterpolator");      break;	// #####
-    case N_POSITION_INTERPOLATOR:    node = readUnsupportedNode("PositionInterpolator");    break;	// #####
-    case N_SCALAR_INTERPOLATOR:      node = readUnsupportedNode("ScalarInterpolator");      break;	// #####
-    case N_PLANE_SENSOR:       node = readUnsupportedNode("PlaneSensor");        break;	// #####
-    case N_PROXIMITY_SENSOR:   node = readUnsupportedNode("ProximitySensor");    break;	// #####
-    case N_SPHERE_SENSOR:      node = readUnsupportedNode("SphereSensor");       break;	// #####
-    case N_TIME_SENSOR:        node = readUnsupportedNode("TimeSensor");         break;
-    case N_TOUCH_SENSOR:       node = readUnsupportedNode("TouchSensor");        break;	// #####
-    case N_VISIBILITY_SENSOR:  node = readUnsupportedNode("VisibilitySensor");   break;	// #####
+    case N_AUDIO_CLIP:         node = skipUnsupportedNode("AudioClip");          break;
+    case N_SOUND:              node = skipUnsupportedNode("Sound");              break;
+    case N_COLOR_INTERPOLATOR: node = skipUnsupportedNode("ColorInterpolator");  break;
+    case N_COORDINATE_INTERPOLATOR:  node = skipUnsupportedNode("CoordinateInterpolator");  break;
+    case N_ORIENTATION_INTERPOLATOR: node = skipUnsupportedNode("OrientationInterpolator"); break;
+    case N_NORMAL_INTERPOLATOR:      node = skipUnsupportedNode("NormalInterpolator");      break;
+    case N_POSITION_INTERPOLATOR:    node = skipUnsupportedNode("PositionInterpolator");    break;
+    case N_SCALAR_INTERPOLATOR:      node = skipUnsupportedNode("ScalarInterpolator");      break;
+    case N_PLANE_SENSOR:       node = skipUnsupportedNode("PlaneSensor");        break;
+    case N_PROXIMITY_SENSOR:   node = skipUnsupportedNode("ProximitySensor");    break;
+    case N_SPHERE_SENSOR:      node = skipUnsupportedNode("SphereSensor");       break;
+    case N_TIME_SENSOR:        node = skipUnsupportedNode("TimeSensor");         break;
+    case N_TOUCH_SENSOR:       node = skipUnsupportedNode("TouchSensor");        break;
+    case N_VISIBILITY_SENSOR:  node = skipUnsupportedNode("VisibilitySensor");   break;
 
     default: scanner->throwException
             (string("Node type \"") + nodeTypeName + "\" is not supported");
@@ -821,111 +946,58 @@ VrmlNodePtr VRMLParser::readSpecificNode(VrmlNodeCategory nodeCategory, int symb
 }
 
 
-
-//==================================================================================================
-/*!
-  @brief      read unsupported node
-
-  @note       this method is for OpenHRP unsupported VRML elements <BR>
-
-  @date       2008-03-01 S.NAKAOKA <BR>
-
-  @return     VrmlUnsupportedNodePtr
-*/
-//==================================================================================================
-VrmlUnsupportedNodePtr VRMLParser::readUnsupportedNode(
-    const std::string&	nodeTypeName )
+VrmlUnsupportedNodePtr VrmlParserImpl::skipUnsupportedNode(const std::string& nodeTypeName)
 {
-    while( true )
-	{
-            if( !scanner->readQuotedString() )
-		{
-                    if( scanner->peekChar() == '}' )
-			{
-                            break;
-			}
-                    if( !scanner->readChar() )
-			{
-                            scanner->throwException( "Node is not closed." );
-			}
-		}
-	}
+    while(true){
+        if(!scanner->readQuotedString()){
+            if(scanner->peekChar() == '}'){
+                break;
+            } if(!scanner->readChar()){
+                scanner->throwException( "Node is not closed." );
+            }
+        }
+    }
     return new VrmlUnsupportedNode( nodeTypeName );
 }
 
 
-
-//==================================================================================================
-/*!
-  @brief      read "Script" node
-
-  @note       "Script" node is not supported by OpenHRP. <BR>
-  This method skips reading currentry. 
-
-  @date       2008-03-19 K.FUKUDA <BR>
-
-  @return     VrmlUnsupportedNodePtr - always NULL currently
-*/
-//==================================================================================================
-VrmlUnsupportedNodePtr VRMLParser::readScriptNode()
+VrmlUnsupportedNodePtr VrmlParserImpl::skipScriptNode()
 {
     // '}' appears twice in "Script" node
-    for( int i=0; i<1; i++ )
-	{
-            while( true )
-		{
-                    if( !scanner->readQuotedString() )
-			{
-                            if( scanner->peekChar() == '}' )
-				{
-                                    scanner->readChar();
-                                    break;
-				}
-                            if( !scanner->readChar() )
-				{
-                                    scanner->throwException( "Script is not closed." );
-				}
-			}
-		}
-	}
+    for(int i=0; i<1; i++){
+        while(true){
+            if(!scanner->readQuotedString()){
+                if(scanner->peekChar() == '}'){
+                    scanner->readChar();
+                    break;
+                }
+                if(!scanner->readChar()){
+                    scanner->throwException( "Script is not closed." );
+                }
+            }
+        }
+    }
 
     //	return new VrmlUnsupportedNode( "Script" );
     return NULL;
 }
 
 
-
-//==================================================================================================
-/*!
-  @brief      read "EXTERNPROTO"
-
-  @note       "EXTERNPROTO" is not supported by OpenHRP. <BR>
-  This method skips reading currentry. 
-
-  @date       2008-03-19 K.FUKUDA <BR>
-
-  @return     VrmlUnsupportedNodePtr - always NULL currently
-*/
-//==================================================================================================
-VrmlUnsupportedNodePtr VRMLParser::readExternProto()
+VrmlUnsupportedNodePtr VrmlParserImpl::skipExternProto()
 {
     // read untill ']' appears
-    while( true )
-	{
-            if( !scanner->readQuotedString() )
-		{
-                    if( scanner->peekChar() == ']' )
-			{
-                            // read found ']' and break this loop
-                            scanner->readChar();
-                            break;
-			}
-                    if( !scanner->readChar() )
-			{
-                            scanner->throwException( "EXTERNPROTO is not closed." );
-			}
-		}
-	}
+    while(true){
+        if(!scanner->readQuotedString()){
+            if( scanner->peekChar() == ']' ){
+                // read found ']' and break this loop
+                scanner->readChar();
+                break;
+            }
+            if(!scanner->readChar()){
+                scanner->throwException( "EXTERNPROTO is not closed." );
+            }
+        }
+    }
     // read URL after ']'
     SFString url;
     readSFString( url );
@@ -935,8 +1007,7 @@ VrmlUnsupportedNodePtr VRMLParser::readExternProto()
 }
 
 
-
-VrmlNodePtr VRMLParser::readInlineNode(VrmlNodeCategory nodeCategory)
+VrmlNodePtr VrmlParserImpl::readInlineNode(VrmlNodeCategory nodeCategory)
 {
     scanner->readChar('{');
 
@@ -954,7 +1025,7 @@ VrmlNodePtr VRMLParser::readInlineNode(VrmlNodeCategory nodeCategory)
 }
 
 
-void VRMLParser::newInlineSource(string filename)
+void VrmlParserImpl::newInlineSource(string filename)
 {
     TSourceInfoPtr new_source(new TSourceInfo);
     new_source->scanner.reset(new EasyScanner(*scanner, false));
@@ -978,7 +1049,7 @@ void VRMLParser::newInlineSource(string filename)
 }
 
 
-VrmlProtoPtr VRMLParser::defineProto()
+VrmlProtoPtr VrmlParserImpl::defineProto()
 {
     string proto_name = scanner->readWordEx("illegal PROTO name");
     scanner->readCharEx('[', "syntax error 3");
@@ -1015,7 +1086,7 @@ VrmlProtoPtr VRMLParser::defineProto()
             case T_SFBOOL:     field.setType(SFBOOL);     readSFBool(field.sfBool());           break;
             case T_SFNODE:     field.setType(SFNODE);     readSFNode(field.sfNode(), ANY_NODE); break;
             case T_MFNODE:     field.setType(MFNODE);     readMFNode(field.mfNode(), ANY_NODE); break;
-            case T_SFIMAGE:    field.setType(SFIMAGE);    readSFImage(field.sfImage());         break;	// #####
+            case T_SFIMAGE:    field.setType(SFIMAGE);    readSFImage(field.sfImage());         break;
 
 
             default: scanner->throwException("illegal field type");
@@ -1042,7 +1113,7 @@ VrmlProtoPtr VRMLParser::defineProto()
             case T_SFBOOL:     field.setType(SFBOOL);     break;
             case T_SFNODE:     field.setType(SFNODE);     break;
             case T_MFNODE:     field.setType(MFNODE);     break;
-            case T_SFIMAGE:    field.setType(SFIMAGE);    break;	// #####
+            case T_SFIMAGE:    field.setType(SFIMAGE);    break;
             }
             break;
 
@@ -1081,7 +1152,7 @@ VrmlProtoPtr VRMLParser::defineProto()
 }
 
 
-VrmlProtoInstancePtr VRMLParser::readProtoInstanceNode(const string& proto_name, VrmlNodeCategory nodeCategory)
+VrmlProtoInstancePtr VrmlParserImpl::readProtoInstanceNode(const string& proto_name, VrmlNodeCategory nodeCategory)
 {
     TProtoMap::iterator p = protoMap.find(proto_name);
     if(p == protoMap.end()){
@@ -1118,7 +1189,7 @@ VrmlProtoInstancePtr VRMLParser::readProtoInstanceNode(const string& proto_name,
         case SFBOOL:     readSFBool(field.sfBool());           break;
         case SFNODE:     readSFNode(field.sfNode(), ANY_NODE); break;
         case MFNODE:     readMFNode(field.mfNode(), ANY_NODE); break;
-        case SFIMAGE:    readSFImage(field.sfImage());         break;	// #####
+        case SFIMAGE:    readSFImage(field.sfImage());         break;
         default:
             break;
         }
@@ -1132,7 +1203,7 @@ VrmlProtoInstancePtr VRMLParser::readProtoInstanceNode(const string& proto_name,
 }
 
 
-VrmlNodePtr VRMLParser::evalProtoInstance(VrmlProtoInstancePtr protoInstance, VrmlNodeCategory nodeCategory)
+VrmlNodePtr VrmlParserImpl::evalProtoInstance(VrmlProtoInstancePtr protoInstance, VrmlNodeCategory nodeCategory)
 {
     EasyScannerPtr orgScanner = scanner;
     ProtoToEntityScannerMap::iterator p;
@@ -1156,7 +1227,7 @@ VrmlNodePtr VRMLParser::evalProtoInstance(VrmlProtoInstancePtr protoInstance, Vr
 }
 
 
-VrmlViewpointPtr VRMLParser::readViewpointNode()
+VrmlViewpointPtr VrmlParserImpl::readViewpointNode()
 {
     VrmlViewpointPtr node(new VrmlViewpoint);
 
@@ -1178,7 +1249,7 @@ VrmlViewpointPtr VRMLParser::readViewpointNode()
 }
 
 
-VrmlNavigationInfoPtr VRMLParser::readNavigationInfoNode()
+VrmlNavigationInfoPtr VrmlParserImpl::readNavigationInfoNode()
 {
     VrmlNavigationInfoPtr node(new VrmlNavigationInfo);
 
@@ -1200,7 +1271,7 @@ VrmlNavigationInfoPtr VRMLParser::readNavigationInfoNode()
 }
 
 
-VrmlBackgroundPtr VRMLParser::readBackgroundNode()
+VrmlBackgroundPtr VrmlParserImpl::readBackgroundNode()
 {
     VrmlBackgroundPtr node(new VrmlBackground);
 
@@ -1227,7 +1298,7 @@ VrmlBackgroundPtr VRMLParser::readBackgroundNode()
 }
 
 
-VrmlGroupPtr VRMLParser::readGroupNode()
+VrmlGroupPtr VrmlParserImpl::readGroupNode()
 {
     VrmlGroupPtr node(new VrmlGroup);
 
@@ -1255,7 +1326,7 @@ VrmlGroupPtr VRMLParser::readGroupNode()
 }
 
 
-VrmlTransformPtr VRMLParser::readTransformNode()
+VrmlTransformPtr VrmlParserImpl::readTransformNode()
 {
     VrmlTransformPtr node(new VrmlTransform);
 
@@ -1281,7 +1352,7 @@ VrmlTransformPtr VRMLParser::readTransformNode()
 }
 
 
-VrmlShapePtr VRMLParser::readShapeNode()
+VrmlShapePtr VrmlParserImpl::readShapeNode()
 {
     VrmlShapePtr node(new VrmlShape);
 
@@ -1300,7 +1371,7 @@ VrmlShapePtr VRMLParser::readShapeNode()
 }
 
 
-VrmlCylinderSensorPtr VRMLParser::readCylinderSensorNode()
+VrmlCylinderSensorPtr VrmlParserImpl::readCylinderSensorNode()
 {
     VrmlCylinderSensorPtr node(new VrmlCylinderSensor);
 
@@ -1323,680 +1394,471 @@ VrmlCylinderSensorPtr VRMLParser::readCylinderSensorNode()
 }
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "PointSet" node
-
-  @note       <BR>
-
-  @date       2008-02-29 Y.TSUNODA    create skeleton <BR>
-  2008-02-29 K.FUKUDA     implement <BR>
-
-  @return     VrmlPointSetPtr
-*/
-//==================================================================================================
-VrmlPointSetPtr VRMLParser::readPointSetNode()
+VrmlPointSetPtr VrmlParserImpl::readPointSetNode()
 {
-    VrmlPointSetPtr node( new VrmlPointSet );
+    VrmlPointSetPtr node(new VrmlPointSet);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_COORD:
-                    node->coord = dynamic_pointer_cast<VrmlCoordinate>( readSFNode( COORDINATE_NODE ) );
-                    break;
-
-		case F_COLOR:
-                    node->color = dynamic_pointer_cast<VrmlColor>( readSFNode( COLOR_NODE ) );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_COORD:
+            node->coord = dynamic_pointer_cast<VrmlCoordinate>( readSFNode( COORDINATE_NODE ) );
+            break;
+            
+        case F_COLOR:
+            node->color = dynamic_pointer_cast<VrmlColor>( readSFNode( COLOR_NODE ) );
+            break;
+            
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
 
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "PixelTexture" node
-
-  @note       <BR>
-
-  @date       2008-03-07 K.FUKUDA <BR>
-
-  @return     VrmlPixelTexturePtr
-*/
-//==================================================================================================
-VrmlPixelTexturePtr VRMLParser::readPixelTextureNode()
+VrmlPixelTexturePtr VrmlParserImpl::readPixelTextureNode()
 {
-    VrmlPixelTexturePtr node( new VrmlPixelTexture );
+    VrmlPixelTexturePtr node(new VrmlPixelTexture);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_IMAGE:
-                    readSFImage( node->image );
-                    break;
-
-		case F_REPEAT_S:
-                    readSFBool( node->repeatS );
-                    break;
-
-		case F_REPEAT_T:
-                    readSFBool( node->repeatT );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_IMAGE:
+            readSFImage( node->image );
+            break;
+            
+        case F_REPEAT_S:
+            readSFBool( node->repeatS );
+            break;
+            
+        case F_REPEAT_T:
+            readSFBool( node->repeatT );
+            break;
+            
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "MovieTexture" node
-
-  @note       <BR>
-
-  @date       2008-03-07 K.FUKUDA <BR>
-
-  @return     VrmlMovieTexturePtr
-*/
-//==================================================================================================
-VrmlMovieTexturePtr VRMLParser::readMovieTextureNode()
+VrmlMovieTexturePtr VrmlParserImpl::readMovieTextureNode()
 {
-    VrmlMovieTexturePtr node( new VrmlMovieTexture );
+    VrmlMovieTexturePtr node(new VrmlMovieTexture);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_URL:
-                    readMFString( node->url );
-                    break;
-
-		case F_LOOP:
-                    readSFBool( node->loop );
-                    break;
-
-		case F_SPEED:
-                    readSFFloat( node->speed );
-                    break;
-
-		case F_START_TIME:
-                    readSFTime( node->startTime );
-                    break;
-
-		case F_STOP_TIME:
-                    readSFTime( node->stopTime );
-                    break;
-
-		case F_REPEAT_S:
-                    readSFBool( node->repeatS );
-                    break;
-
-		case F_REPEAT_T:
-                    readSFBool( node->repeatT );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_URL:
+            readMFString( node->url );
+            break;
+            
+        case F_LOOP:
+            readSFBool( node->loop );
+            break;
+            
+        case F_SPEED:
+            readSFFloat( node->speed );
+            break;
+            
+        case F_START_TIME:
+            readSFTime( node->startTime );
+            break;
+            
+        case F_STOP_TIME:
+            readSFTime( node->stopTime );
+            break;
+            
+        case F_REPEAT_S:
+            readSFBool( node->repeatS );
+            break;
+            
+        case F_REPEAT_T:
+            readSFBool( node->repeatT );
+            break;
+            
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "ElevationGrid" node
-
-  @note       <BR>
-
-  @date       2008-03-07 K.FUKUDA <BR>
-
-  @return     VrmlElevationGridPtr
-*/
-//==================================================================================================
-VrmlElevationGridPtr VRMLParser::readElevationGridNode()
+VrmlElevationGridPtr VrmlParserImpl::readElevationGridNode()
 {
-    VrmlElevationGridPtr node( new VrmlElevationGrid );
+    VrmlElevationGridPtr node(new VrmlElevationGrid);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_X_DIMENSION:
-                    readSFInt32( node->xDimension );
-                    break;
-
-		case F_Z_DIMENSION:
-                    readSFInt32( node->zDimension );
-                    break;
-
-		case F_X_SPACING:
-                    readSFFloat( node->xSpacing );
-                    break;
-
-		case F_Z_SPACING:
-                    readSFFloat( node->zSpacing );
-                    break;
-
-		case F_HEIGHT:
-                    readMFFloat( node->height );
-                    break;
-
-		case F_CCW:
-                    readSFBool( node->ccw );
-                    break;
-
-		case F_COLOR_PER_VERTEX:
-                    readSFBool( node->colorPerVertex );
-                    break;
-
-		case F_CREASE_ANGLE:
-                    readSFFloat( node->creaseAngle );
-                    break;
-
-		case F_NORMAL_PER_VERTEX:
-                    readSFBool( node->normalPerVertex );
-                    break;
-
-		case F_SOLID:
-                    readSFBool( node->solid );
-                    break;
-
-		case F_COLOR:
-                    node->color = dynamic_pointer_cast<VrmlColor>( readSFNode( COLOR_NODE ) );
-                    break;
-
-		case F_NORMAL:
-                    node->normal = dynamic_pointer_cast<VrmlNormal>( readSFNode( NORMAL_NODE ) );
-                    break;
-
-                case F_TEX_COORD:
-                    node->texCoord = dynamic_pointer_cast<VrmlTextureCoordinate>( readSFNode( TEXTURE_COORDINATE_NODE ) );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_X_DIMENSION:
+            readSFInt32( node->xDimension );
+            break;
+            
+        case F_Z_DIMENSION:
+            readSFInt32( node->zDimension );
+            break;
+            
+        case F_X_SPACING:
+            readSFFloat( node->xSpacing );
+            break;
+            
+        case F_Z_SPACING:
+            readSFFloat( node->zSpacing );
+            break;
+            
+        case F_HEIGHT:
+            readMFFloat( node->height );
+            break;
+            
+        case F_CCW:
+            readSFBool( node->ccw );
+            break;
+            
+        case F_COLOR_PER_VERTEX:
+            readSFBool( node->colorPerVertex );
+            break;
+            
+        case F_CREASE_ANGLE:
+            readSFFloat( node->creaseAngle );
+            break;
+            
+        case F_NORMAL_PER_VERTEX:
+            readSFBool( node->normalPerVertex );
+            break;
+            
+        case F_SOLID:
+            readSFBool( node->solid );
+            break;
+            
+        case F_COLOR:
+            node->color = dynamic_pointer_cast<VrmlColor>( readSFNode( COLOR_NODE ) );
+            break;
+            
+        case F_NORMAL:
+            node->normal = dynamic_pointer_cast<VrmlNormal>( readSFNode( NORMAL_NODE ) );
+            break;
+            
+        case F_TEX_COORD:
+            node->texCoord = dynamic_pointer_cast<VrmlTextureCoordinate>( readSFNode( TEXTURE_COORDINATE_NODE ) );
+            break;
+            
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "Extrusion" node
-
-  @note       <BR>
-
-  @date       2008-02-29 K.FUKUDA <BR>
-
-  @return     VrmlExtrusionPtr
-*/
-//==================================================================================================
-VrmlExtrusionPtr VRMLParser::readExtrusionNode()
+VrmlExtrusionPtr VrmlParserImpl::readExtrusionNode()
 {
     VrmlExtrusionPtr node( new VrmlExtrusion );
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_CROSS_SECTION:
-                    readMFVec2f( node->crossSection );
-                    break;
-
-		case F_SPINE:
-                    readMFVec3f( node->spine );
-                    break;
-
-		case F_SCALE:
-                    readMFVec2f( node->scale );
-                    break;
-
-		case F_ORIENTATION:
-                    readMFRotation( node->orientation );
-                    break;
-
-		case F_BEGIN_CAP:
-                    readSFBool( node->beginCap );
-                    break;
-
-		case F_END_CAP:
-                    readSFBool( node->endCap );
-                    break;
-
-		case F_SOLID:
-                    readSFBool( node->solid );
-                    break;
-
-		case F_CCW:
-                    readSFBool( node->ccw );
-                    break;
-
-		case F_CONVEX:
-                    readSFBool( node->convex );
-                    break;
-
-		case F_CREASE_ANGLE:
-                    readSFFloat( node->creaseAngle );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_CROSS_SECTION:
+            readMFVec2f( node->crossSection );
+            break;
+            
+        case F_SPINE:
+            readMFVec3f( node->spine );
+            break;
+            
+        case F_SCALE:
+            readMFVec2f( node->scale );
+            break;
+            
+        case F_ORIENTATION:
+            readMFRotation( node->orientation );
+            break;
+            
+        case F_BEGIN_CAP:
+            readSFBool( node->beginCap );
+            break;
+            
+        case F_END_CAP:
+            readSFBool( node->endCap );
+            break;
+            
+        case F_SOLID:
+            readSFBool( node->solid );
+            break;
+            
+        case F_CCW:
+            readSFBool( node->ccw );
+            break;
+            
+        case F_CONVEX:
+            readSFBool( node->convex );
+            break;
+            
+        case F_CREASE_ANGLE:
+            readSFFloat( node->creaseAngle );
+            break;
+            
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "Switch" node
-
-  @note       <BR>
-
-  @date       2008-02-29 K.FUKUDA <BR>
-
-  @return	    VrmlSwitchPtr
-*/
-//==================================================================================================
-VrmlSwitchPtr VRMLParser::readSwitchNode()
+VrmlSwitchPtr VrmlParserImpl::readSwitchNode()
 {
     VrmlSwitchPtr node( new VrmlSwitch );
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_CHOICE:
-                    readMFNode( node->choice, SHAPE_NODE );
-                    break;
-
-		case F_WHICH_CHOICE:
-                    readSFInt32( node->whichChoice );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_CHOICE:
+            readMFNode(node->choice, SHAPE_NODE);
+            break;
+            
+        case F_WHICH_CHOICE:
+            readSFInt32(node->whichChoice);
+            break;
+            
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "LOD" node
-
-  @note       <BR>
-
-  @date       2008-03-07 K.FUKUDA <BR>
-
-  @return     VrmlLODPtr
-*/
-//==================================================================================================
-VrmlLODPtr VRMLParser::readLODNode()
+VrmlLODPtr VrmlParserImpl::readLODNode()
 {
     VrmlLODPtr node( new VrmlLOD );
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_RANGE:
-                    readMFFloat( node->range );
-                    break;
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_RANGE:
+            readMFFloat(node->range);
+            break;
 
-		case F_CENTER:
-                    readSFVec3f( node->center );
-                    break;
+        case F_CENTER:
+            readSFVec3f(node->center);
+            break;
 
-		case F_LEVEL:
-                    readMFNode( node->level, ANY_NODE );
-                    break;
+        case F_LEVEL:
+            readMFNode(node->level, ANY_NODE);
+            break;
 
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
+        default:
+            scanner->throwException("Undefined field");
+        }
+    }
 
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "Collision" node
-
-  @note       <BR>
-
-  @date       2008-03-02 K.FUKUDA <BR>
-
-  @return     VrmlCollisionPtr
-*/
-//==================================================================================================
-VrmlCollisionPtr VRMLParser::readCollisionNode()
+VrmlCollisionPtr VrmlParserImpl::readCollisionNode()
 {
-    VrmlCollisionPtr node( new VrmlCollision );
+    VrmlCollisionPtr node(new VrmlCollision);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_COLLIDE:
-                    readSFBool( node->collide );
-                    break;
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_COLLIDE:
+            readSFBool(node->collide);
+            break;
 
-		case F_CHILDREN:
-                    readMFNode( node->children, CHILD_NODE );
-                    break;
+        case F_CHILDREN:
+            readMFNode(node->children, CHILD_NODE);
+            break;
 
-		case F_PROXY:
-                    readSFNode( node->proxy, SHAPE_NODE );
-                    break;
-
-                case F_BBOX_CENTER:
-                    readSFVec3f( node->bboxCenter );
-                    break;
-
-                case F_BBOX_SIZE:
-                    readSFVec3f( node->bboxSize );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+        case F_PROXY:
+            readSFNode(node->proxy, SHAPE_NODE);
+            break;
+            
+        case F_BBOX_CENTER:
+            readSFVec3f(node->bboxCenter);
+            break;
+            
+        case F_BBOX_SIZE:
+            readSFVec3f(node->bboxSize);
+            break;
+            
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "Anchor" node
-
-  @note       <BR>
-
-  @date       2008-03-03 K.FUKUDA <BR>
-
-  @return     VrmlAnchorPtr
-*/
-//==================================================================================================
-VrmlAnchorPtr VRMLParser::readAnchorNode()
+VrmlAnchorPtr VrmlParserImpl::readAnchorNode()
 {
-    VrmlAnchorPtr node( new VrmlAnchor );
+    VrmlAnchorPtr node(new VrmlAnchor);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_CHILDREN:
-                    readMFNode( node->children, SHAPE_NODE );
-                    break;
+    while(scanner->readSymbol()){
+        switch( scanner->symbolValue){
+        case F_CHILDREN:
+            readMFNode(node->children, SHAPE_NODE);
+            break;
+            
+        case F_DESCRIPTION:
+            readSFString(node->description);
+            break;
+            
+        case F_PARAMETER:
+            readMFString(node->parameter);
+            break;
+            
+        case F_URL:
+            readMFString(node->url);
+            break;
+            
+        case F_BBOX_CENTER:
+            readSFVec3f(node->bboxCenter);
+            break;
+            
+        case F_BBOX_SIZE:
+            readSFVec3f(node->bboxSize);
+            break;
 
-		case F_DESCRIPTION:
-                    readSFString( node->description );
-                    break;
-
-		case F_PARAMETER:
-                    readMFString( node->parameter );
-                    break;
-
-		case F_URL:
-                    readMFString( node->url );
-                    break;
-
-                case F_BBOX_CENTER:
-                    readSFVec3f( node->bboxCenter );
-                    break;
-
-                case F_BBOX_SIZE:
-                    readSFVec3f( node->bboxSize );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "Fog" node
-
-  @note       <BR>
-
-  @date       2008-03-05 K.FUKUDA <BR>
-
-  @return     VrmlFogPtr
-*/
-//==================================================================================================
-VrmlFogPtr VRMLParser::readFogNode()
+VrmlFogPtr VrmlParserImpl::readFogNode()
 {
-    VrmlFogPtr node( new VrmlFog );
+    VrmlFogPtr node(new VrmlFog);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_COLOR:
-                    readSFColor( node->color );
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_COLOR:
+            readSFColor(node->color);
+            break;
+            
+        case F_VISIBILITY_RANGE:
+            readSFFloat(node->visibilityRange);
+            break;
+            
+        case F_FOG_TYPE:
+            readSFString(node->fogType);
                     break;
-
-		case F_VISIBILITY_RANGE:
-                    readSFFloat( node->visibilityRange );
-                    break;
-
-		case F_FOG_TYPE:
-                    readSFString( node->fogType );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+                    
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "Billboard" node
-
-  @note       <BR>
-
-  @date       2008-03-05 K.FUKUDA <BR>
-
-  @return     BillboardPtr
-*/
-//==================================================================================================
-VrmlBillboardPtr VRMLParser::readBillboardNode()
+VrmlBillboardPtr VrmlParserImpl::readBillboardNode()
 {
     VrmlBillboardPtr node( new VrmlBillboard );
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_AXIS_OF_ROTATION:
-                    readSFVec3f( node->axisOfRotation );
-                    break;
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_AXIS_OF_ROTATION:
+            readSFVec3f(node->axisOfRotation);
+            break;
 
-		case F_CHILDREN:
-                    readMFNode( node->children, CHILD_NODE );
-                    break;
+        case F_CHILDREN:
+            readMFNode(node->children, CHILD_NODE);
+            break;
 
-                case F_BBOX_CENTER:
-                    readSFVec3f( node->bboxCenter );
-                    break;
+        case F_BBOX_CENTER:
+            readSFVec3f(node->bboxCenter);
+            break;
 
-                case F_BBOX_SIZE:
-                    readSFVec3f( node->bboxSize );
-                    break;
+        case F_BBOX_SIZE:
+            readSFVec3f(node->bboxSize);
+            break;
 
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read WorldInfo node
-
-  @note       <BR>
-
-  @date       2008-03-05 K.FUKUDA <BR>
-
-  @return	    read WorldInfoPtr
-*/
-//==================================================================================================
-VrmlWorldInfoPtr VRMLParser::readWorldInfoNode()
+VrmlWorldInfoPtr VrmlParserImpl::readWorldInfoNode()
 {
-    VrmlWorldInfoPtr node( new VrmlWorldInfo );
+    VrmlWorldInfoPtr node(new VrmlWorldInfo);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_TITLE:
-                    readSFString( node->title );
-                    break;
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_TITLE:
+            readSFString(node->title);
+            break;
 
-		case F_INFO:
-                    readMFString( node->info );
-                    break;
+        case F_INFO:
+            readMFString(node->info);
+            break;
 
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
+        default:
+            scanner->throwException("Undefined field");
+        }
+    }
 
     return node;
 }
-// #####
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read PointLight node
-
-  @note       <BR>
-
-  @date       2008-03-06 K.FUKUDA <BR>
-
-  @return     read PointLightPtr
-*/
-//==================================================================================================
-VrmlPointLightPtr VRMLParser::readPointLightNode()
+VrmlPointLightPtr VrmlParserImpl::readPointLightNode()
 {
     VrmlPointLightPtr node( new VrmlPointLight );
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_LOCATION:
-                    readSFVec3f( node->location );
-                    break;
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_LOCATION:
+            readSFVec3f(node->location);
+            break;
 
-		case F_ON:
-                    readSFBool( node->on );
-                    break;
+        case F_ON:
+            readSFBool(node->on);
+            break;
 
-		case F_INTENSITY:
-                    readSFFloat( node->intensity );
-                    break;
+        case F_INTENSITY:
+            readSFFloat(node->intensity);
+            break;
+            
+        case F_COLOR:
+            readSFColor(node->color);
+            break;
+            
+        case F_RADIUS:
+            readSFFloat(node->radius);
+            break;
+            
+        case F_AMBIENT_INTENSITY:
+            readSFFloat(node->ambientIntensity);
+            break;
+            
+        case F_ATTENUATION:
+            readSFVec3f(node->attenuation);
+            break;
 
-		case F_COLOR:
-                    readSFColor( node->color );
-                    break;
-
-		case F_RADIUS:
-                    readSFFloat( node->radius );
-                    break;
-
-		case F_AMBIENT_INTENSITY:
-                    readSFFloat( node->ambientIntensity );
-                    break;
-
-		case F_ATTENUATION:
-                    readSFVec3f( node->attenuation );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
 
-VrmlDirectionalLightPtr VRMLParser::readDirectionalLightNode()
+VrmlDirectionalLightPtr VrmlParserImpl::readDirectionalLightNode()
 {
     VrmlDirectionalLightPtr node(new VrmlDirectionalLight);
 
@@ -2018,79 +1880,62 @@ VrmlDirectionalLightPtr VRMLParser::readDirectionalLightNode()
 }
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read SpotLight node
-
-  @note       <BR>
-
-  @date       2008-03-06 K.FUKUDA <BR>
-
-  @return     read SpotLightPtr
-*/
-//==================================================================================================
-VrmlSpotLightPtr VRMLParser::readSpotLightNode()
+VrmlSpotLightPtr VrmlParserImpl::readSpotLightNode()
 {
-    VrmlSpotLightPtr node( new VrmlSpotLight );
+    VrmlSpotLightPtr node(new VrmlSpotLight);
 
-    while( scanner->readSymbol() )
-	{
-            switch( scanner->symbolValue )
-		{
-		case F_LOCATION:
-                    readSFVec3f( node->location );
-                    break;
-
-		case F_DIRECTION:
-                    readSFVec3f( node->direction );
-                    break;
-
-		case F_ON:
-                    readSFBool( node->on );
-                    break;
-
-		case F_COLOR:
-                    readSFColor( node->color );
-                    break;
-
-		case F_INTENSITY:
-                    readSFFloat( node->intensity );
-                    break;
-
-		case F_RADIUS:
-                    readSFFloat( node->radius );
-                    break;
-
-		case F_AMBIENT_INTENSITY:
-                    readSFFloat( node->ambientIntensity );
-                    break;
-
-		case F_ATTENUATION:
-                    readSFVec3f( node->attenuation );
-                    break;
-
-		case F_BEAM_WIDTH:
-                    readSFFloat( node->beamWidth );
-                    break;
-
-		case F_CUT_OFF_RANGE:
-                    readSFFloat( node->cutOffAngle );
-                    break;
-
-		default:
-                    scanner->throwException( "Undefined field" );
-		}
-	}
-
+    while(scanner->readSymbol()){
+        switch(scanner->symbolValue){
+        case F_LOCATION:
+            readSFVec3f(node->location);
+            break;
+            
+        case F_DIRECTION:
+            readSFVec3f(node->direction);
+            break;
+            
+        case F_ON:
+            readSFBool(node->on);
+            break;
+            
+        case F_COLOR:
+            readSFColor(node->color);
+            break;
+            
+        case F_INTENSITY:
+            readSFFloat(node->intensity);
+            break;
+            
+        case F_RADIUS:
+            readSFFloat(node->radius);
+            break;
+            
+        case F_AMBIENT_INTENSITY:
+            readSFFloat(node->ambientIntensity);
+            break;
+            
+        case F_ATTENUATION:
+            readSFVec3f(node->attenuation);
+            break;
+            
+        case F_BEAM_WIDTH:
+            readSFFloat(node->beamWidth);
+            break;
+            
+        case F_CUT_OFF_RANGE:
+            readSFFloat(node->cutOffAngle);
+            break;
+            
+        default:
+            scanner->throwException( "Undefined field" );
+        }
+    }
+    
     return node;
 }
-// #####
 
 
-
-VrmlBoxPtr VRMLParser::readBoxNode()
+VrmlBoxPtr VrmlParserImpl::readBoxNode()
 {
     VrmlBoxPtr node(new VrmlBox);
 
@@ -2104,7 +1949,7 @@ VrmlBoxPtr VRMLParser::readBoxNode()
 }
 
 
-VrmlConePtr VRMLParser::readConeNode()
+VrmlConePtr VrmlParserImpl::readConeNode()
 {
     VrmlConePtr node(new VrmlCone);
 
@@ -2125,7 +1970,7 @@ VrmlConePtr VRMLParser::readConeNode()
 }
 
 
-VrmlCylinderPtr VRMLParser::readCylinderNode()
+VrmlCylinderPtr VrmlParserImpl::readCylinderNode()
 {
     VrmlCylinderPtr node(new VrmlCylinder);
 
@@ -2147,7 +1992,7 @@ VrmlCylinderPtr VRMLParser::readCylinderNode()
 }
 
 
-VrmlSpherePtr VRMLParser::readSphereNode()
+VrmlSpherePtr VrmlParserImpl::readSphereNode()
 {
     VrmlSpherePtr node(new VrmlSphere);
 
@@ -2161,7 +2006,7 @@ VrmlSpherePtr VRMLParser::readSphereNode()
 }
 
 
-VrmlTextPtr VRMLParser::readTextNode()
+VrmlTextPtr VrmlParserImpl::readTextNode()
 {
     VrmlTextPtr node(new VrmlText);
 
@@ -2182,7 +2027,7 @@ VrmlTextPtr VRMLParser::readTextNode()
 }
 
 
-VrmlFontStylePtr VRMLParser::readFontStyleNode()
+VrmlFontStylePtr VrmlParserImpl::readFontStyleNode()
 {
     VrmlFontStylePtr node(new VrmlFontStyle);
 
@@ -2208,7 +2053,7 @@ VrmlFontStylePtr VRMLParser::readFontStyleNode()
 }
 
 
-VrmlIndexedLineSetPtr VRMLParser::readIndexedLineSetNode()
+VrmlIndexedLineSetPtr VrmlParserImpl::readIndexedLineSetNode()
 {
     VrmlIndexedLineSetPtr node(new VrmlIndexedLineSet);
 
@@ -2230,7 +2075,7 @@ VrmlIndexedLineSetPtr VRMLParser::readIndexedLineSetNode()
 }
 
 
-VrmlIndexedFaceSetPtr VRMLParser::readIndexedFaceSetNode()
+VrmlIndexedFaceSetPtr VrmlParserImpl::readIndexedFaceSetNode()
 {
     VrmlIndexedFaceSetPtr node(new VrmlIndexedFaceSet);
 
@@ -2270,7 +2115,7 @@ VrmlIndexedFaceSetPtr VRMLParser::readIndexedFaceSetNode()
 }
 
 
-void VRMLParser::checkIndexedFaceSet(VrmlIndexedFaceSetPtr node)
+void VrmlParserImpl::checkIndexedFaceSet(VrmlIndexedFaceSetPtr node)
 {
     MFInt32& index = node->coordIndex;
     MFVec3f& coord = node->coord->point;
@@ -2365,7 +2210,7 @@ void VRMLParser::checkIndexedFaceSet(VrmlIndexedFaceSetPtr node)
 }
 
 
-VrmlCoordinatePtr VRMLParser::readCoordNode()
+VrmlCoordinatePtr VrmlParserImpl::readCoordNode()
 {
     VrmlCoordinatePtr node(new VrmlCoordinate);
 
@@ -2379,7 +2224,7 @@ VrmlCoordinatePtr VRMLParser::readCoordNode()
 }
 
 
-VrmlTextureCoordinatePtr VRMLParser::readTextureCoordinateNode()
+VrmlTextureCoordinatePtr VrmlParserImpl::readTextureCoordinateNode()
 {
     VrmlTextureCoordinatePtr node(new VrmlTextureCoordinate);
 
@@ -2393,7 +2238,7 @@ VrmlTextureCoordinatePtr VRMLParser::readTextureCoordinateNode()
 }
 
 
-VrmlColorPtr VRMLParser::readColorNode()
+VrmlColorPtr VrmlParserImpl::readColorNode()
 {
     VrmlColorPtr node(new VrmlColor);
 
@@ -2407,7 +2252,7 @@ VrmlColorPtr VRMLParser::readColorNode()
 }
 
 
-VrmlNormalPtr VRMLParser::readNormalNode()
+VrmlNormalPtr VrmlParserImpl::readNormalNode()
 {
     VrmlNormalPtr node(new VrmlNormal);
 
@@ -2421,7 +2266,7 @@ VrmlNormalPtr VRMLParser::readNormalNode()
 }
 
 
-VrmlAppearancePtr VRMLParser::readAppearanceNode()
+VrmlAppearancePtr VrmlParserImpl::readAppearanceNode()
 {
     VrmlAppearancePtr node(new VrmlAppearance);
 
@@ -2442,7 +2287,7 @@ VrmlAppearancePtr VRMLParser::readAppearanceNode()
 }
 
 
-VrmlMaterialPtr VRMLParser::readMaterialNode()
+VrmlMaterialPtr VrmlParserImpl::readMaterialNode()
 {
     VrmlMaterialPtr node(new VrmlMaterial);
 
@@ -2465,7 +2310,7 @@ VrmlMaterialPtr VRMLParser::readMaterialNode()
 }
 
 
-VrmlImageTexturePtr VRMLParser::readImageTextureNode()
+VrmlImageTexturePtr VrmlParserImpl::readImageTextureNode()
 {
     VrmlImageTexturePtr node = new VrmlImageTexture;
 
@@ -2484,7 +2329,7 @@ VrmlImageTexturePtr VRMLParser::readImageTextureNode()
 }
 
 
-VrmlTextureTransformPtr VRMLParser::readTextureTransformNode()
+VrmlTextureTransformPtr VrmlParserImpl::readTextureTransformNode()
 {
     VrmlTextureTransformPtr node(new VrmlTextureTransform);
 
@@ -2504,7 +2349,7 @@ VrmlTextureTransformPtr VRMLParser::readTextureTransformNode()
 }
 
 
-VrmlVariantField& VRMLParser::readProtoField(VrmlFieldTypeId fieldTypeId)
+VrmlVariantField& VrmlParserImpl::readProtoField(VrmlFieldTypeId fieldTypeId)
 {
     if(!currentProtoInstance){
         scanner->throwException("cannot use proto field value here");
@@ -2523,7 +2368,7 @@ VrmlVariantField& VRMLParser::readProtoField(VrmlFieldTypeId fieldTypeId)
 }
 
 
-void VRMLParser::readSFInt32(SFInt32& out_value)
+void VrmlParserImpl::readSFInt32(SFInt32& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFINT32);
@@ -2534,7 +2379,7 @@ void VRMLParser::readSFInt32(SFInt32& out_value)
 }
 
 
-void VRMLParser::readMFInt32(MFInt32& out_value)
+void VrmlParserImpl::readMFInt32(MFInt32& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(MFINT32);
@@ -2555,7 +2400,7 @@ void VRMLParser::readMFInt32(MFInt32& out_value)
 }
 
 
-void VRMLParser::readSFFloat(SFFloat& out_value)
+void VrmlParserImpl::readSFFloat(SFFloat& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFFLOAT);
@@ -2566,7 +2411,7 @@ void VRMLParser::readSFFloat(SFFloat& out_value)
 }
 
 
-void VRMLParser::readMFFloat(MFFloat& out_value)
+void VrmlParserImpl::readMFFloat(MFFloat& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(MFFLOAT);
@@ -2587,7 +2432,7 @@ void VRMLParser::readMFFloat(MFFloat& out_value)
 }
 
 
-void VRMLParser::readSFString(SFString& out_value)
+void VrmlParserImpl::readSFString(SFString& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFSTRING);
@@ -2598,7 +2443,7 @@ void VRMLParser::readSFString(SFString& out_value)
 }
 
 
-void VRMLParser::readMFString(MFString& out_value)
+void VrmlParserImpl::readMFString(MFString& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(MFSTRING);
@@ -2619,7 +2464,7 @@ void VRMLParser::readMFString(MFString& out_value)
 }
 
 
-void VRMLParser::readSFVec2f(SFVec2f& out_value)
+void VrmlParserImpl::readSFVec2f(SFVec2f& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFVEC2F);
@@ -2631,7 +2476,7 @@ void VRMLParser::readSFVec2f(SFVec2f& out_value)
 }
 
 
-void VRMLParser::readMFVec2f(MFVec2f& out_value)
+void VrmlParserImpl::readMFVec2f(MFVec2f& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(MFVEC2F);
@@ -2652,7 +2497,7 @@ void VRMLParser::readMFVec2f(MFVec2f& out_value)
 }
 
 
-void VRMLParser::readSFVec3f(SFVec3f& out_value)
+void VrmlParserImpl::readSFVec3f(SFVec3f& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFVEC3F);
@@ -2665,7 +2510,7 @@ void VRMLParser::readSFVec3f(SFVec3f& out_value)
 }
 
 
-void VRMLParser::readMFVec3f(MFVec3f& out_value)
+void VrmlParserImpl::readMFVec3f(MFVec3f& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(MFVEC3F);
@@ -2686,7 +2531,7 @@ void VRMLParser::readMFVec3f(MFVec3f& out_value)
 }
 
 
-void VRMLParser::readSFColor(SFColor& out_value)
+void VrmlParserImpl::readSFColor(SFColor& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFCOLOR);
@@ -2698,7 +2543,7 @@ void VRMLParser::readSFColor(SFColor& out_value)
 
 
 
-void VRMLParser::readMFColor(MFColor& out_value)
+void VrmlParserImpl::readMFColor(MFColor& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(MFCOLOR);
@@ -2709,7 +2554,7 @@ void VRMLParser::readMFColor(MFColor& out_value)
 }
 
 
-void VRMLParser::readSFRotation(SFRotation& out_value)
+void VrmlParserImpl::readSFRotation(SFRotation& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFROTATION);
@@ -2737,7 +2582,7 @@ void VRMLParser::readSFRotation(SFRotation& out_value)
 }
 
 
-void VRMLParser::readMFRotation(MFRotation& out_value)
+void VrmlParserImpl::readMFRotation(MFRotation& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(MFROTATION);
@@ -2758,7 +2603,7 @@ void VRMLParser::readMFRotation(MFRotation& out_value)
 }
 
 
-void VRMLParser::readSFBool(SFBool& out_value)
+void VrmlParserImpl::readSFBool(SFBool& out_value)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFBOOL);
@@ -2787,7 +2632,7 @@ void VRMLParser::readSFBool(SFBool& out_value)
   @return     void
 */
 //==================================================================================================
-void VRMLParser::readSFImage(
+void VrmlParserImpl::readSFImage(
     SFImage& out_image )		//!< to return read SFImage
 {
     if( scanner->readSymbol( F_IS ) )
@@ -2829,80 +2674,40 @@ void VRMLParser::readSFImage(
 }
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "SFTime" node
-
-  @note       <BR>
-
-  @date       2008-03-07 K.FUKUDA <BR>
-
-  @return     void
-*/
-//==================================================================================================
-void VRMLParser::readSFTime(
-    SFTime& out_value )		//!< to return read SFTime value
+void VrmlParserImpl::readSFTime(SFTime& out_value)
 {
-    if( scanner->readSymbol( F_IS ) )
-	{
-            VrmlVariantField& field = readProtoField( SFTIME );
-            out_value = field.sfFloat();
-	}
-    else
-	{
-            out_value = scanner->readDoubleEx( "illegal time value" );
-	}
+    if(scanner->readSymbol( F_IS )){
+        VrmlVariantField& field = readProtoField( SFTIME );
+        out_value = field.sfFloat();
+    } else {
+        out_value = scanner->readDoubleEx( "illegal time value" );
+    }
 }
 
 
-
-// #####
-//==================================================================================================
-/*!
-  @brief      read "MFTime" node
-
-  @note       <BR>
-
-  @date       2008-03-07 K.FUKUDA <BR>
-
-  @return     void
-*/
-//==================================================================================================
-void VRMLParser::readMFTime(
-    MFTime& out_value )		//!< to return read MFTime values
+void VrmlParserImpl::readMFTime(MFTime& out_value)
 {
-    if( scanner->readSymbol( F_IS ) )
-	{
-            VrmlVariantField& field = readProtoField( MFTIME );
-            out_value = field.mfFloat();
-	}
-    else
-	{
-            SFFloat v;
-            out_value.clear();
-            if( !scanner->readChar( '[' ) )
-		{
-                    readSFTime( v );
-                    out_value.push_back( v );
-		}
-            else
-		{
-                    while( !scanner->readChar( ']' ) )
-			{
-                            readSFTime( v );
-                            out_value.push_back( v );
-			}
-		}
-	}
+    if(scanner->readSymbol(F_IS)){
+        VrmlVariantField& field = readProtoField( MFTIME );
+        out_value = field.mfFloat();
+    } else {
+        SFFloat v;
+        out_value.clear();
+        if(!scanner->readChar('[' )){
+            readSFTime( v );
+            out_value.push_back( v );
+        } else {
+            while(!scanner->readChar(']')){
+                readSFTime(v);
+                out_value.push_back(v);
+            }
+        }
+    }
 }
-
-
 
 
 // This API should be obsolete
-void VRMLParser::readSFNode(SFNode& out_node, VrmlNodeCategory nodeCategory)
+void VrmlParserImpl::readSFNode(SFNode& out_node, VrmlNodeCategory nodeCategory)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFNODE);
@@ -2915,7 +2720,7 @@ void VRMLParser::readSFNode(SFNode& out_node, VrmlNodeCategory nodeCategory)
 }
 
 
-SFNode VRMLParser::readSFNode(VrmlNodeCategory nodeCategory)
+SFNode VrmlParserImpl::readSFNode(VrmlNodeCategory nodeCategory)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(SFNODE);
@@ -2928,7 +2733,7 @@ SFNode VRMLParser::readSFNode(VrmlNodeCategory nodeCategory)
 }
 
 
-void VRMLParser::readMFNode(MFNode& out_nodes, VrmlNodeCategory nodeCategory)
+void VrmlParserImpl::readMFNode(MFNode& out_nodes, VrmlNodeCategory nodeCategory)
 {
     if(scanner->readSymbol(F_IS)){
         VrmlVariantField& field = readProtoField(MFNODE);
@@ -2955,76 +2760,4 @@ void VRMLParser::readMFNode(MFNode& out_nodes, VrmlNodeCategory nodeCategory)
             }
         }
     }
-}
-
-
-
-
-
-int VRMLParser::eliminateUnusedVertices(VrmlNodePtr node)
-{
-    int numEliminated = 0;
-
-    eliminateUnusedVerticesIter(node, numEliminated);
-
-    return numEliminated;
-}
-
-
-void VRMLParser::eliminateUnusedVerticesIter(VrmlNodePtr node, int& io_numEliminated)
-{
-    VrmlGroupPtr group = dynamic_pointer_cast<VrmlGroup>(node);
-    if(group){
-        for(size_t i=0; i < group->children.size(); i++){
-            eliminateUnusedVerticesIter(group->children[i], io_numEliminated);
-        }
-    } else {
-        VrmlShapePtr shape = dynamic_pointer_cast<VrmlShape>(node);
-        if(shape){
-            VrmlIndexedFaceSetPtr faceset = dynamic_pointer_cast<VrmlIndexedFaceSet>(shape->geometry);
-            if(faceset){
-                io_numEliminated += eliminateFaceSetUnusedVertices(faceset);
-            }
-        }
-    }
-}
-
-
-int VRMLParser::eliminateFaceSetUnusedVertices(VrmlIndexedFaceSetPtr faceset)
-{
-    MFInt32& index = faceset->coordIndex;
-    MFVec3f& vertex = faceset->coord->point;
-
-    int numVertex = vertex.size();
-    vector<bool> validIndex(numVertex, false);
-    vector<int> newIndex(numVertex);
-
-    int numIndex = index.size();
-    for(int i=0; i < numIndex; i++){
-        if(index[i] >= 0){
-            validIndex[index[i]] = true;
-        }
-    }
-
-    VrmlCoordinatePtr newCoord = new VrmlCoordinate;
-    MFVec3f& newVertex = newCoord->point;
-  
-    int j = 0;
-    for(int i=0; i < numVertex; i++){
-        if(validIndex[i]){
-            newVertex.push_back(vertex[i]);
-            newIndex[i] = j;
-            j++;
-        }
-    }
-  
-    for(int i=0; i < numIndex; i++){
-        if(index[i] >= 0){
-            index[i] = newIndex[index[i]];
-        }
-    }
-
-    faceset->coord = newCoord;
-
-    return numVertex - j;
 }
