@@ -37,17 +37,6 @@ namespace {
     typedef map<string, string> SensorTypeMap;
     SensorTypeMap sensorTypeMap;
     
-    bool operator != (const Matrix44& a, const Matrix44& b)
-    {
-        for(int i = 0; i < 4; i++) {
-            for(int j = 0; j < 4; j++) {
-                if(a( i, j ) != b( i, j ))
-                    return false;
-            }
-        }
-        return true;
-    }
-
     /**
        @if jp
        @brief 文字列置換
@@ -120,9 +109,9 @@ LinkInfoSequence* BodyInfo_impl::links()
 }
 
 
-AllLinkShapeIndices* BodyInfo_impl::linkShapeIndices()
+AllLinkShapeIndexSequence* BodyInfo_impl::linkShapeIndices()
 {
-    return new AllLinkShapeIndices( linkShapeIndices_ );
+    return new AllLinkShapeIndexSequence(linkShapeIndices_);
 }
 
 
@@ -503,20 +492,24 @@ void BodyInfo_impl::traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, co
             VrmlShapePtr shapeNode = static_pointer_cast<VrmlShape>(node);
             short shapeInfoIndex;
 
-            // すでに生成済みのShapeノードか？
-            //! \todo Transform の比較をファジーにした方がよい
-            SharedShapeInfoMap::iterator itr = sharedShapeInfoMap.find(shapeNode);
-            if((itr != sharedShapeInfoMap.end()) && (itr->second.transform != T)){
-                shapeInfoIndex = itr->second.index;
+            ShapeNodeToShapeInfoIndexMap::iterator p = shapeInfoIndexMap.find(shapeNode);
+            if(p != shapeInfoIndexMap.end()){
+                shapeInfoIndex = p->second;
             } else {
-                shapeInfoIndex = createShapeInfo(shapeNode, T);
+                shapeInfoIndex = createShapeInfo(shapeNode);
             }
 
             if(shapeInfoIndex >= 0){
-                // indexを LinkInfo の shapeIndices に追加する
-                long shapeIndicesLength = linkInfo.shapeIndices.length();
-                linkInfo.shapeIndices.length( shapeIndicesLength + 1 );
-                linkInfo.shapeIndices[shapeIndicesLength] = shapeInfoIndex;
+                long length = linkInfo.shapeIndices.length();
+                linkInfo.shapeIndices.length(length + 1);
+                TransformedShapeIndex& tsi = linkInfo.shapeIndices[length];
+                tsi.shapeIndex = shapeInfoIndex;
+                int p = 0;
+                for(int row=0; row < 3; ++row){
+                    for(int col=0; col < 4; ++col){
+                        tsi.transformMatrix[p++] = T(row, col);
+                    }
+                }
             }
         }
     }
@@ -570,72 +563,62 @@ void BodyInfo_impl::calcTransformMatrix(VrmlTransformPtr transform, Matrix44& ou
 /**
    @return the index of a created ShapeInfo object. The return value is -1 if the creation fails.
 */
-int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& T)
+int BodyInfo_impl::createShapeInfo(VrmlShapePtr shapeNode)
 {
     int shapeInfoIndex = -1;
 
     VrmlIndexedFaceSet* triangleMesh = dynamic_cast<VrmlIndexedFaceSet*>(shapeNode->geometry.get());
 
     if(triangleMesh){
-    
-        ShapeInfo_var shapeInfo(new ShapeInfo);
 
-        setTriangleMesh(shapeInfo, triangleMesh, T);
-
-        setPrimitiveProperties(shapeInfo, shapeNode);
-        
-        shapeInfo->appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh, T);
-        
-        // shapes_の最後に追加する
         shapeInfoIndex = shapes_.length();
         shapes_.length(shapeInfoIndex + 1);
-        shapes_[shapeInfoIndex] = shapeInfo;
-        
-        // shapeInfo共有マップに このshapeInfo(node)とindex,transformの情報を登録(挿入)する
-        ShapeObject shapeObject;
-        shapeObject.index = shapeInfoIndex;
-        shapeObject.transform = T;
-        sharedShapeInfoMap.insert(make_pair(shapeNode, shapeObject));
+        ShapeInfo& shapeInfo = shapes_[shapeInfoIndex];
+
+        setTriangleMesh(shapeInfo, triangleMesh);
+        setPrimitiveProperties(shapeInfo, shapeNode);
+        shapeInfo.appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh);
+
+        shapeInfoIndexMap.insert(make_pair(shapeNode, shapeInfoIndex));
     }
         
     return shapeInfoIndex;
 }
 
 
-void BodyInfo_impl::setTriangleMesh(ShapeInfo_var& shapeInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& T)
+void BodyInfo_impl::setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet* triangleMesh)
 {
     const MFVec3f& vertices = triangleMesh->coord->point;
     size_t numVertices = vertices.size();
-    shapeInfo->vertices.length(numVertices * 3);
+    shapeInfo.vertices.length(numVertices * 3);
 
     size_t pos = 0;
     for(size_t i=0; i < numVertices; ++i){
         const SFVec3f& v = vertices[i];
-        const Vector4 vdash(T * Vector4(v[0], v[1], v[2], 1.0));
-        shapeInfo->vertices[pos++] = vdash[0];
-        shapeInfo->vertices[pos++] = vdash[1];
-        shapeInfo->vertices[pos++] = vdash[2];
+        shapeInfo.vertices[pos++] = v[0];
+        shapeInfo.vertices[pos++] = v[1];
+        shapeInfo.vertices[pos++] = v[2];
     }
 
     const MFInt32& indices = triangleMesh->coordIndex;
     const size_t numTriangles = indices.size() / 4;
-    shapeInfo->triangles.length(numTriangles * 3);
+    shapeInfo.triangles.length(numTriangles * 3);
 	
     int dpos = 0;
     int spos = 0;
     for(size_t i=0; i < numTriangles; ++i){
-        shapeInfo->triangles[dpos++] = indices[spos++];
-        shapeInfo->triangles[dpos++] = indices[spos++];
-        shapeInfo->triangles[dpos++] = indices[spos++];
+        shapeInfo.triangles[dpos++] = indices[spos++];
+        shapeInfo.triangles[dpos++] = indices[spos++];
+        shapeInfo.triangles[dpos++] = indices[spos++];
         spos++; // skip a terminater '-1'
     }
 }
 
 
-void BodyInfo_impl::setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePtr shapeNode)
+void BodyInfo_impl::setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShapePtr shapeNode)
 {
-    shapeInfo->primitiveType = SP_MESH;
-    FloatSequence& param = shapeInfo->primitiveParameters;
+    shapeInfo.primitiveType = SP_MESH;
+    FloatSequence& param = shapeInfo.primitiveParameters;
     
     VrmlGeometry* originalGeometry = triangleMeshShaper.getOriginalGeometry(shapeNode).get();
 
@@ -646,14 +629,14 @@ void BodyInfo_impl::setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePt
         if(!faceSet){
             
             if(VrmlBox* box = dynamic_cast<VrmlBox*>(originalGeometry)){
-                shapeInfo->primitiveType = SP_BOX;
+                shapeInfo.primitiveType = SP_BOX;
                 param.length(3);
                 for(int i=0; i < 3; ++i){
                     param[i] = box->size[i];
                 }
 
             } else if(VrmlCone* cone = dynamic_cast<VrmlCone*>(originalGeometry)){
-                shapeInfo->primitiveType = SP_CONE;
+                shapeInfo.primitiveType = SP_CONE;
                 param.length(4);
                 param[0] = cone->bottomRadius;
                 param[1] = cone->height;
@@ -661,7 +644,7 @@ void BodyInfo_impl::setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePt
                 param[3] = cone->side ? 1.0 : 0.0;
                 
             } else if(VrmlCylinder* cylinder = dynamic_cast<VrmlCylinder*>(originalGeometry)){
-                shapeInfo->primitiveType = SP_CYLINDER;
+                shapeInfo.primitiveType = SP_CYLINDER;
                 param.length(5);
                 param[0] = cylinder->radius;
                 param[1] = cylinder->height;
@@ -671,7 +654,7 @@ void BodyInfo_impl::setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePt
                 
             
             } else if(VrmlSphere* sphere = dynamic_cast<VrmlSphere*>(originalGeometry)){
-                shapeInfo->primitiveType = SP_SPHERE;
+                shapeInfo.primitiveType = SP_SPHERE;
                 param.length(1);
                 param[0] = sphere->radius;
             }
@@ -684,25 +667,25 @@ void BodyInfo_impl::setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePt
    @return the index of a created AppearanceInfo object. The return value is -1 if the creation fails.
 */
 int BodyInfo_impl::createAppearanceInfo
-(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet, const Matrix44& T)
+(ShapeInfo& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet)
 {
-    int appearanceIndex = -1;
-    
-    AppearanceInfo_var appInfo(new AppearanceInfo());
+    int appearanceIndex = appearances_.length();
+    appearances_.length(appearanceIndex + 1);
+    AppearanceInfo& appInfo = appearances_[appearanceIndex];
 
-    appInfo->normalPerVertex = faceSet->normalPerVertex;
-    appInfo->colorPerVertex = faceSet->colorPerVertex;
-    appInfo->solid = faceSet->solid;
-    appInfo->creaseAngle = faceSet->creaseAngle;
-    appInfo->materialIndex = -1;
-    appInfo->textureIndex = -1;
+    appInfo.normalPerVertex = faceSet->normalPerVertex;
+    appInfo.colorPerVertex = faceSet->colorPerVertex;
+    appInfo.solid = faceSet->solid;
+    appInfo.creaseAngle = faceSet->creaseAngle;
+    appInfo.materialIndex = -1;
+    appInfo.textureIndex = -1;
 
     if(faceSet->color){
         setColors(appInfo, faceSet);
     }
 
     if(faceSet->normal){
-        setNormals(appInfo, faceSet, T);
+        setNormals(appInfo, faceSet);
     }
     
     VrmlAppearancePtr& appNode = shapeNode->appearance;
@@ -711,29 +694,25 @@ int BodyInfo_impl::createAppearanceInfo
         // todo
         //appInfo->textureCoordinate = faceSet->texCood;
         
-        appInfo->materialIndex = createMaterialInfo(appNode->material);
-        appInfo->textureIndex  = createTextureInfo (appNode->texture);
+        appInfo.materialIndex = createMaterialInfo(appNode->material);
+        appInfo.textureIndex  = createTextureInfo (appNode->texture);
     }
-
-    appearanceIndex = appearances_.length();
-    appearances_.length(appearanceIndex + 1);
-    appearances_[appearanceIndex] = appInfo;
 
     return appearanceIndex;
 }
 
 
-void BodyInfo_impl::setColors(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh)
+void BodyInfo_impl::setColors(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh)
 {
     const MFColor& colors = triangleMesh->color->color;
     int numColors = colors.size();
-    appInfo->colors.length(numColors * 3);
+    appInfo.colors.length(numColors * 3);
 
     int pos = 0;
     for(int i=0; i < numColors; ++i){
         const SFColor& color = colors[i];
         for(int j=0; j < 3; ++j){
-            appInfo->colors[pos++] = color[j];
+            appInfo.colors[pos++] = color[j];
         }
     }
 
@@ -742,44 +721,36 @@ void BodyInfo_impl::setColors(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* t
     if(numOrgIndices > 0){
         if(triangleMesh->colorPerVertex){
             const int numTriangles = numOrgIndices / 4; // considering delimiter element '-1'
-            appInfo->colorIndices.length(numTriangles * 3);
+            appInfo.colorIndices.length(numTriangles * 3);
             int dpos = 0;
             int spos = 0;
             for(int i=0; i < numTriangles; ++i){
-                appInfo->colorIndices[dpos++] = orgIndices[spos++];
-                appInfo->colorIndices[dpos++] = orgIndices[spos++];
-                appInfo->colorIndices[dpos++] = orgIndices[spos++];
+                appInfo.colorIndices[dpos++] = orgIndices[spos++];
+                appInfo.colorIndices[dpos++] = orgIndices[spos++];
+                appInfo.colorIndices[dpos++] = orgIndices[spos++];
                 spos++; // skip delimiter '-1'
             }
         } else { // color per face
-            appInfo->colorIndices.length(numOrgIndices);
+            appInfo.colorIndices.length(numOrgIndices);
             for(int i=0; i < numOrgIndices; ++i){
-                appInfo->colorIndices[i] = orgIndices[i];
+                appInfo.colorIndices[i] = orgIndices[i];
             }
         }
     }
 }
 
 
-void BodyInfo_impl::setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& T)
+void BodyInfo_impl::setNormals(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh)
 {
     const MFVec3f& normals = triangleMesh->normal->vector;
     int numNormals = normals.size();
-    appInfo->normals.length(numNormals * 3);
-
-    Matrix33 G0; // inverse transform matrix for normal transform
-    G0 = T(0,0), T(0,1), T(0,2),
-         T(1,0), T(1,1), T(1,2),
-         T(2,0), T(2,1), T(2,2);
-    Matrix33 G1(inverse(G0));
-    Matrix33 G(tvmet::trans(G1));
+    appInfo.normals.length(numNormals * 3);
 
     int pos = 0;
     for(int i=0; i < numNormals; ++i){
-        const SFVec3f& v = normals[i];
-        Vector3 n(tvmet::normalize(Vector3(G * Vector3(v[0], v[1], v[2]))));
+        const SFVec3f& n = normals[i];
         for(int j=0; j < 3; ++j){
-            appInfo->normals[pos++] = n[j];
+            appInfo.normals[pos++] = n[j];
         }
     }
 
@@ -788,19 +759,19 @@ void BodyInfo_impl::setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* 
     if(numOrgIndices > 0){
         if(triangleMesh->normalPerVertex){
             const int numTriangles = numOrgIndices / 4; // considering delimiter element '-1'
-            appInfo->normalIndices.length(numTriangles * 3);
+            appInfo.normalIndices.length(numTriangles * 3);
             int dpos = 0;
             int spos = 0;
             for(int i=0; i < numTriangles; ++i){
-                appInfo->normalIndices[dpos++] = orgIndices[spos++];
-                appInfo->normalIndices[dpos++] = orgIndices[spos++];
-                appInfo->normalIndices[dpos++] = orgIndices[spos++];
+                appInfo.normalIndices[dpos++] = orgIndices[spos++];
+                appInfo.normalIndices[dpos++] = orgIndices[spos++];
+                appInfo.normalIndices[dpos++] = orgIndices[spos++];
                 spos++; // skip delimiter '-1'
             }
         } else { // normal per face
-            appInfo->normalIndices.length(numOrgIndices);
+            appInfo.normalIndices.length(numOrgIndices);
             for(int i=0; i < numOrgIndices; ++i){
-                appInfo->normalIndices[i] = orgIndices[i];
+                appInfo.normalIndices[i] = orgIndices[i];
             }
         }
     }

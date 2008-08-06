@@ -71,6 +71,33 @@ module OpenHRP {
 
   /**
      @if jp
+     ShapeInfo へのインデックス。ShapeInfo に対しては transformMatrix に格納された
+     座標変換を適用する。
+     @endif
+  */
+  struct TransformedShapeIndex 
+  {
+    /**
+	@if jp
+	変換行列。4x4同次変換行列の上3行分を Row Major Array で格納したもの。
+	@endif
+    */
+    DblArray12	transformMatrix;
+
+    /** 
+	@if jp
+	BodyInfo::shapes における ShapeInfo のインデックス。
+	@endif
+    */
+    short	shapeIndex;
+  };
+
+  typedef sequence<TransformedShapeIndex> TransformedShapeIndexSequence;
+  typedef sequence<TransformedShapeIndexSequence> AllLinkShapeIndexSequence;
+
+
+  /**
+     @if jp
      各リンクの情報を格納する構造体。
      旧IDLでは interface としていたが、新IDLでは struct となることに注意。
      equivalentInertia は廃止。
@@ -114,7 +141,8 @@ module OpenHRP {
 
     ShortSequence childIndices; ///< 子リンクインデックス列  
 
-    ShortSequence shapeIndices;  ///< 本リンクに対応する表面情報のインデックス列  
+    /// 本リンクに対応する形状情報の変換行列付きインデックス列  
+    TransformedShapeIndexSequence shapeIndices;  
 
     SensorInfoSequence sensors; ///< 本リンクに設置されたセンサの情報  
 
@@ -211,7 +239,7 @@ module OpenHRP {
   };
 
   typedef sequence<ShapeInfo>     ShapeInfoSequence;
-  typedef sequence<ShortSequence> AllLinkShapeIndices;
+
 
 
   /**
@@ -393,7 +421,7 @@ module OpenHRP {
        リンクの並びはlinkIndexの順とする。
        @endif
     */
-    readonly attribute AllLinkShapeIndices linkShapeIndices;
+    readonly attribute AllLinkShapeIndexSequence linkShapeIndices;
     
     /**
        @if jp

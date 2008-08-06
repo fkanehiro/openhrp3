@@ -18,6 +18,7 @@
 
 #include "CollisionDetector_impl.h"
 #include <OpenHRP/Collision/CdCache.h>
+#include <OpenHRP/Util/Tvmet4d.h>
 
 #include <time.h>
 #include <iostream>
@@ -64,295 +65,90 @@ CollisionDetector_impl::destroy()
 
 
 
-void CollisionDetector_impl::addModel(
-	const char* charName,
-	BodyInfo_ptr binfo)
+void CollisionDetector_impl::addModel(const char* charName,	BodyInfo_ptr bodyInfo)
 {
 #ifdef COLLISIONDETECTOR_DEBUG
     cerr << "CollisionDetector_impl::addModel() " << charName <<endl;
 #endif
 
-// #define READTRI_COUNT 1000
-
     CdModelCache* cachedModel;
 
     //既にキャッシュに入ってる？
-    CORBA::String_var url = binfo->url();
+    CORBA::String_var url = bodyInfo->url();
 
-    if( cache_->exist( url ) )
-	{
+    if(cache_->exist(url)){
         cachedModel = cache_->getChar( url );
-    }
-	else
-	{
+    } else {
         cerr << "creating Cd object..." << endl;
 
         //ロード
-        LinkInfoSequence_var jList = binfo->links();
+        LinkInfoSequence_var links = bodyInfo->links();
+		ShapeInfoSequence_var shapes = bodyInfo->shapes();
+		AllLinkShapeIndexSequence_var allLinkShapeIndices = bodyInfo->linkShapeIndices(); 
+		
         cachedModel = new CdModelCache();
 
-        double p[3][3];
-        // DblSequence tris;
-		vector<double> triangles;
-        CORBA::String_var jName;
-
         // ジョイントごとに三角形集合追加
-		for( unsigned int i = 0 ; i < jList->length() ; ++i )
-		{
-			jName = jList[i].name;
-            int ntri = 0;
-	
-			// このリンクのShapeInfoの頂点座標群を取得する
-			triangles = getTrianglesOfLink( i, binfo );
-
-			// 頂点数が9の倍数でなければ，
-			//  ( ∵三角メッシュなので，頂点数が9の倍数であるはず)
-			if( triangles.size() % 9 )
-			{
-				// ##### [TODO] ##### エラーを投げる
-				cerr << "There is a probrem in the number of vertices.";
-				continue;
-			}
-			size_t trianglesNumber = triangles.size() / 9;
-
-			CdModelSet* modelSet = 0;
-
-			// 空ジョイントでははないか
-			if( 0 < trianglesNumber )
-			{
-				modelSet = new CdModelSet();
-				modelSet->linkIndex = i;
-
-				for( size_t j = 0 ; j < trianglesNumber ; j++ )
-				{
-					p[0][0] = triangles[j*9+0];
-					p[0][1] = triangles[j*9+1];
-					p[0][2] = triangles[j*9+2];
-					p[1][0] = triangles[j*9+3];
-					p[1][1] = triangles[j*9+4];
-					p[1][2] = triangles[j*9+5];
-					p[2][0] = triangles[j*9+6];
-					p[2][1] = triangles[j*9+7];
-					p[2][2] = triangles[j*9+8];
-// ##### DEBUG
-//cout << "( " << p[0][0] << ", " << p[0][1] << ", " << p[0][2] << ") ";
-//cout << "( " << p[1][0] << ", " << p[1][1] << ", " << p[1][2] << ") ";
-//cout << "( " << p[2][0] << ", " << p[2][1] << ", " << p[2][2] << ") ";
-//if( ! ( j % 9 ) ) cout << endl;
-// ##### DEBUG
-					modelSet->addTriangle( p[0], p[1], p[2] );					
-
-				}
-				modelSet->endModel();
-			}
-
-			//キャラクタにジョイントを追加
-			cachedModel->addModel(jName, modelSet);
+		for(int linkIndex = 0; linkIndex < links->length(); ++linkIndex){
 			
-			cerr << jName << " has "<< trianglesNumber << " triangles." << endl;
+			const TransformedShapeIndexSequence& shapeIndices = allLinkShapeIndices[linkIndex];
+			
+			CdModelSet* modelSet = new CdModelSet();
+			modelSet->linkIndex = linkIndex;
+
+			int numTriangles = addTriangleVertices(modelSet, shapeIndices, shapes);
+
+			if(numTriangles > 0){
+				modelSet->endModel();
+			} else {
+				delete modelSet;
+				modelSet = 0;
+			}
+			const char* linkName = links[linkIndex].name;
+			cachedModel->addModel(linkName, modelSet);
+			cout << linkName << " has "<< numTriangles << " triangles." << endl;
         }
-
-		cerr << "finished." << endl;
-
-		//キャッシュにキャラクタを追加
-		cache_->addChar(url,cachedModel);
-
+		cache_->addChar(url, cachedModel);
+		cout << "finished." << endl;
 	}
 
-	scene_->addChar(charName, new CdChar(cachedModel,charName) );
-
+	scene_->addChar(charName, new CdChar(cachedModel, charName));
 }
 
 
-vector<double> CollisionDetector_impl::getTrianglesOfLink(
-	int linkIndex,
-	BodyInfo_ptr binfo )
+int CollisionDetector_impl::addTriangleVertices
+(CdModelSet* modelSet, const TransformedShapeIndexSequence& shapeIndices, ShapeInfoSequence_var& shapes)
 {
-	vector<double> triangles;
-
-	ShapeInfoSequence_var	shapes				= binfo->shapes(); 
-	AllLinkShapeIndices_var	allLinkShapeIndices	= binfo->linkShapeIndices(); 
-
-	// linkIndex番目のリンクのShapeIndices
-	ShortSequence shapeIndices = allLinkShapeIndices[linkIndex];
+	int totalNumTriangles = 0;
 	
-	// このLinkのShapeInfoの数分ループする
-	for( size_t i = 0 ; i < shapeIndices.length() ; i++ )
-	{
-		// shapeIndices中で指定された shapeInfo のインデックスは
-		short shapeIndex = shapeIndices[i];
-		ShapeInfo shapeInfo = shapes[shapeIndex];
+	for(int i=0; i < shapeIndices.length(); i++){
+		const TransformedShapeIndex& tsi = shapeIndices[i];
+		short shapeIndex = tsi.shapeIndex;
+		const DblArray12& M = tsi.transformMatrix;;
+		Matrix44 T;
+		T = M[0], M[1], M[2],  M[3],
+			M[4], M[5], M[6],  M[7],
+			M[8], M[9], M[10], M[11],
+			0.0,  0.0,  0.0,   1.0;
 
-		// trianglesが指し示す頂点順にループする
-		for( size_t t = 0 ; t < shapeInfo.triangles.length() ; t++ )
-		{
-			// 頂点番号は，
-			long vertexIndex = shapeInfo.triangles[t];
+		const ShapeInfo& shapeInfo = shapes[shapeIndex];
+		const FloatSequence& vertices = shapeInfo.vertices;
+		const int numTriangles = shapeInfo.triangles.length() / 3;
+		totalNumTriangles += numTriangles;
 
-			// 頂点座標は，
-			//  [NOTE] verticesには XYZXYZ...のように頂点座標が格納されているので，
-			//         頂点番号(vertexIndex)に対応する(vertices中の)頂点座標の配列添字は
-			//             X座標 = vertexIndex*3
-			//             Y座標 = vertexIndex*3+1
-			//             Z座標 = vertexIndex*3+2
-			//         で取得(アクセス)可能である。
-			double x = static_cast<double>(shapeInfo.vertices[vertexIndex*3+0]);
-			double y = static_cast<double>(shapeInfo.vertices[vertexIndex*3+1]);
-			double z = static_cast<double>(shapeInfo.vertices[vertexIndex*3+2]);
-
-			triangles.push_back( x );
-			triangles.push_back( y );
-			triangles.push_back( z );
-			
-			// 上記の処理は以下記述が可能であるが，解り易くする目的で 3座標にして記述した。
-			//	for( int c = 0 ; c < 3 ; c++ )
-			//	{
-			//		triangles.push_back( static_cast<double>(shapeInfo.vertices[vertexIndex*3+c]) );
-			//	}
+		for(int triangleIndex=0; triangleIndex < numTriangles; ++triangleIndex){
+			Vector4 v[3];
+			for(int j=0; j < 3; ++j){
+				long vertexIndex = shapeInfo.triangles[triangleIndex * 3 + j];
+				int p = vertexIndex * 3;
+				v[j] = T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0);
+			}
+			modelSet->addTriangle(v[0].data(), v[1].data(), v[2].data());
 		}
 	}
 
-	return triangles;
+	return totalNumTriangles;
 }
-
-
-#if 0 // 改造前
-
-void CollisionDetector_impl::addModel(
-	const char* charName,
-	BodyInfo_ptr binfo)
-{
-#ifdef COLLISIONDETECTOR_DEBUG
-    cerr << "CollisionDetector_impl::addModel() " << charName <<endl;
-#endif
-
-#define READTRI_COUNT 1000
-
-    CdModelCache* cachedModel;
-
-    //既にキャッシュに入ってる？
-    CORBA::String_var url = binfo->url();
-
-    if(cache_->exist(url)){
-        cachedModel = cache_->getChar(url);
-    }else{
-        cerr << "creating Cd object..." << endl;
-
-        //ロード
-        LinkInfoSequence_var jList = binfo->links();
-        cachedModel = new CdModelCache();
-
-        double p[3][3];
-        DblSequence tris;
-        CORBA::String_var jName;
-
-        // ジョイントごとに三角形集合追加
-		for( unsigned int i = 0 ; i < jList->length() ; ++i )
-		{
-			jName = jList[i].name;
-            int ntri = 0;
-
-// ###### [TODO] readTriangles は NewModelLoader には無い。
-//               ShapeInfo から生成する同等の処理をここに。 
-//            tris = jList[i]->readTriangles(ntri, READTRI_COUNT);
-
-			// linkShapeIndices に全リンクに属するSahpeInfo (shapesのIndex)
-			//が、リンク順にセットされているので、リンク順を指定して取得する。
-			AllLinkShapeIndices_var alllinkShapeIndices = binfo->linkShapeIndices(); 
-
-			//１リンクのShape数
-			int shapeCountsByLink = alllinkShapeIndices[i].length();
-
-			//第 i リンクのShapeIndices のシーケンスデータ
-			ShortSequence shapeIndicesSeqByLink = alllinkShapeIndices[i];
-			short shapeIndex;		// 処理すべき ShapeInfoの shapeIndicesSeqByLink の中のIndex
-			int triCountsSum = 0;	// tri データサイズ
-			int triInsertIndex = 0;	// tri データ 挿入位置
-
-			// １リンクのShape数分 ループし 三角メッシュデータを tris[] にセットする。
-			for(unsigned int k=0; k < shapeCountsByLink; k++){
-
-				// (triangle)面情報の 第 k 頂点の shapes中の Index取得する。
-				shapeIndex = shapeIndicesSeqByLink[k];	
-				// BodyInfoから shapesデータ列取得
-				ShapeInfoSequence_var shapeIndicesByLink = binfo->shapes(); 
-				// shapesデータ列から第 k 番目要素の ShapeInfo(k) 取得
-				ShapeInfo shapeInfoByLink = shapeIndicesByLink[k];
-
-				// ShapeInfo(k) の三角メッシュ数×３ を取得する
-				int meshVertexCounts = shapeInfoByLink.triangles.length();
-
-				// ShapeInfo(k)の三角パッチデータ数（三角メッシュ数×３×３）算出
-				int triCounts = meshVertexCounts * 3;
-
-				// tris の長さ設定
-				triInsertIndex = triCountsSum;	//tri データ 挿入位置
-				triCountsSum += triCounts;		//tri データ リサイズサイズ
-				tris.length( triCountsSum );
-
-				// trisに頂点ごとに（XYZ)座標値格納する
-				for(unsigned int m=0; m < meshVertexCounts; m++){ 
-					int vNo = shapeInfoByLink.triangles[m];
-					int vindex_X = vNo * 3;
-					tris[triInsertIndex + m + 0] = shapeInfoByLink.vertices[vindex_X];
-					tris[triInsertIndex + m + 1] = shapeInfoByLink.vertices[vindex_X + 1];
-					tris[triInsertIndex + m + 2] = shapeInfoByLink.vertices[vindex_X + 2];
-				}
-			}
-
-			CdModelSet* modelSet = 0;
-			
-            //空ジョイントでははないか
-			if(tris.length())
-			{
-                modelSet = new CdModelSet();
-				modelSet->linkIndex = i;
-				
-				int trisCnts = tris.length()/9;
-
-                while (trisCnts > 0){
-                    ntri += tris.length()/9;	//新IDLでは、未使用
-					trisCnts -= 1;
-                    for(unsigned int j=0;j<tris.length();j+=9){
-                        p[0][0]=tris[j+0];
-                        p[0][1]=tris[j+1];
-                        p[0][2]=tris[j+2];
-                        p[1][0]=tris[j+3];
-                        p[1][1]=tris[j+4];
-                        p[1][2]=tris[j+5];
-                        p[2][0]=tris[j+6];
-                        p[2][1]=tris[j+7];
-                        p[2][2]=tris[j+8];
-                        modelSet->addTriangle(p[0],p[1],p[2]);					
-                    }
-                    //旧trisは自動的に解放される
-
-					// ###### [TODO] readTriangles は NewModelLoader には無い。
-					//               ShapeInfo から生成する同等の処理をここに。
-                    // tris=jList[i]->readTriangles(ntri, READTRI_COUNT);
-                }
-                modelSet->endModel();
-			}
-
-			//キャラクタにジョイントを追加
-			cachedModel->addModel(jName, modelSet);
-			
-            cerr << jName << " has "<< ntri << " tris." << endl;
-        }
-
-        cerr << "finished." << endl;
-
-        //キャッシュにキャラクタを追加
-        cache_->addChar(url,cachedModel);
-
-    }
-
-    scene_->addChar(charName, new CdChar(cachedModel,charName) );
-
-}
-
-#endif // 改造前
-
 
 
 void CollisionDetector_impl::addCollisionPair(const LinkPair& colPair,

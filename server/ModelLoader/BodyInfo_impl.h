@@ -45,7 +45,7 @@ namespace OpenHRP
         virtual char* url();
         virtual StringSequence* info();
         virtual LinkInfoSequence* links();
-        virtual AllLinkShapeIndices* linkShapeIndices();
+        virtual AllLinkShapeIndexSequence* linkShapeIndices();
         virtual ShapeInfoSequence* shapes();
         virtual AppearanceInfoSequence* appearances();
         virtual MaterialInfoSequence* materials();
@@ -70,24 +70,12 @@ namespace OpenHRP
         AppearanceInfoSequence appearances_;
         MaterialInfoSequence materials_;
         TextureInfoSequence textures_;
-        AllLinkShapeIndices linkShapeIndices_;
+        AllLinkShapeIndexSequence linkShapeIndices_;
 
         TriangleMeshShaper triangleMeshShaper;
         
-        /// ShapeInfoのindexと，そのshapeを算出したtransformのペア
-        struct ShapeObject
-        {
-            Matrix44 transform;
-            short     index;
-        };
-
-        /**
-          Map for sharing shapeInfo
-          if it is node that has already stored in shape_, it has the corresponding index.
-        */
-        typedef std::map<OpenHRP::VrmlShapePtr, ShapeObject> SharedShapeInfoMap;
-
-        SharedShapeInfoMap sharedShapeInfoMap;
+        typedef std::map<OpenHRP::VrmlShapePtr, int> ShapeNodeToShapeInfoIndexMap;
+        ShapeNodeToShapeInfoIndexMap shapeInfoIndexMap;
 
         int readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIndex, int motherIndex);
         void setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr jointNode );
@@ -97,13 +85,12 @@ namespace OpenHRP
 
         void traverseShapeNodes(int linkInfoIndex, MFNode& childNodes, const Matrix44& T);
         void calcTransformMatrix(VrmlTransformPtr transform, Matrix44& out_T);
-        int createShapeInfo(VrmlShapePtr shapeNode, const Matrix44& T);
-        void setTriangleMesh(ShapeInfo_var& shapeInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& T);
-        void setPrimitiveProperties(ShapeInfo_var& shapeInfo, VrmlShapePtr shapeNode);
-        int createAppearanceInfo(ShapeInfo_var& shapeInfo, VrmlShapePtr& shapeNode,
-                                 VrmlIndexedFaceSet* faceSet, const Matrix44& T);
-        void setColors(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh);
-        void setNormals(AppearanceInfo_var& appInfo, VrmlIndexedFaceSet* triangleMesh, const Matrix44& T);
+        int createShapeInfo(VrmlShapePtr shapeNode);
+        void setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet* triangleMesh);
+        void setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShapePtr shapeNode);
+        int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet);
+        void setColors(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
+        void setNormals(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
         int createMaterialInfo(VrmlMaterialPtr materialNode);
         int createTextureInfo(VrmlTexturePtr textureNode);
         std::string getModelFileDirPath();

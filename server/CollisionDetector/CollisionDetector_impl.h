@@ -70,8 +70,7 @@ namespace OpenHRP {
 		//
 		// IDL:CollisionDetector/addModel:1.0
 		//
-		virtual void addModel(const char* charName,
-							  BodyInfo_ptr model);
+		virtual void addModel(const char* charName,	BodyInfo_ptr bodyInfo);
 
 		//
 		// IDL:CollisionDetector/addCollisionPair:1.0
@@ -139,7 +138,9 @@ namespace OpenHRP {
 
 		int _contactIntersection(CdCheckPair* rPair);
 
-		vector<double> getTrianglesOfLink( int linkIndex, BodyInfo_ptr binfo );
+		int addTriangleVertices(CdModelSet* modelSet,
+								const TransformedShapeIndexSequence& shapeIndices,
+								ShapeInfoSequence_var& shapes);
 
 		vector<CdJoint *> joints;
 	};
