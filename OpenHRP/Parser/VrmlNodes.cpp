@@ -40,7 +40,7 @@ const char* VrmlNode::getLabelOfFieldType(int type)
     case SFNODE: return "SFNode";
     case MFNODE: return "MFNode";
     case SFBOOL: return "SFBool";
-    case SFIMAGE: return "SFImage";		// #####
+    case SFIMAGE: return "SFImage";
     default: return "Unknown Field Type";
         break;
     }
@@ -602,7 +602,7 @@ void VrmlVariantField::copy(const VrmlVariantField& org)
         case MFSTRING:   valueObj = new MFString(*((MFString*)org.valueObj));     break;
         case SFNODE:     valueObj = new SFNode(*((SFNode*)org.valueObj));         break;
         case MFNODE:     valueObj = new MFNode(*((MFNode*)org.valueObj));         break;
-	case SFIMAGE:    valueObj = new SFImage(*((SFImage*)org.valueObj));       break;	// #####
+	case SFIMAGE:    valueObj = new SFImage(*((SFImage*)org.valueObj));       break;
         default:
             break;
         }
@@ -628,7 +628,7 @@ void VrmlVariantField::setType(VrmlFieldTypeId typeId0)
         case MFSTRING:   valueObj = new MFString;   break;
         case SFNODE:     valueObj = new SFNode;     break;
         case MFNODE:     valueObj = new MFNode;     break;
-	case SFIMAGE:    valueObj = new SFImage;    break;	// #####
+	case SFIMAGE:    valueObj = new SFImage;    break;
         default:
             break;
         } 
@@ -651,7 +651,7 @@ void VrmlVariantField::deleteObj()
         case MFSTRING:   delete (MFString*)valueObj;   break;
         case SFNODE:     delete (SFNode*)valueObj;     break;
         case MFNODE:     delete (MFNode*)valueObj;     break;
-	case SFIMAGE:    delete (SFImage*)valueObj;    break;	// #####
+	case SFIMAGE:    delete (SFImage*)valueObj;    break;
         default:
             break;
         }

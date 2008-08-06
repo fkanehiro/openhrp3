@@ -25,7 +25,7 @@
 
 namespace OpenHRP {
 
-    class VRMLParser;
+    class VrmlParser;
 
     class JointNodeSet;
     typedef boost::shared_ptr<JointNodeSet> JointNodeSetPtr;

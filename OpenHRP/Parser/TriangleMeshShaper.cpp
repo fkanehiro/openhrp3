@@ -16,7 +16,11 @@
 #include "TriangleMeshShaper.h"
 
 #include <iostream>
-#include <math.h>
+#include <cmath>
+#include <vector>
+#include <map>
+#include <OpenHRP/Util/Tvmet3d.h>
+
 
 using namespace std;
 using namespace boost;
@@ -28,10 +32,83 @@ namespace {
 }
 
 
+namespace OpenHRP {
+
+    class TMSImpl
+    {
+    public:
+        TMSImpl(TriangleMeshShaper* self);
+
+        TriangleMeshShaper* self;
+
+        int divisionNumber;
+        bool isNormalGenerationMode;
+
+        typedef std::map<VrmlShapePtr, VrmlGeometryPtr> ShapeToGeometryMap;
+        ShapeToGeometryMap shapeToOriginalGeometryMap;
+
+        // for triangulation
+        std::vector<int> polygon;
+        std::vector<int> trianglesInPolygon;
+        std::vector<int> indexPositionMap;
+        std::vector<int> faceIndexMap;
+
+        // for normal generation
+        std::vector<Vector3> faceNormals;
+        std::vector< std::vector<int> > vertexIndexToFaceIndicesMap;
+        std::vector< std::vector<int> > vertexIndexToNormalIndicesMap;
+
+        enum RemapType { REMAP_COLOR, REMAP_NORMAL };
+
+
+        VrmlGeometryPtr getOriginalGeometry(VrmlShapePtr shapeNode);
+        bool traverseShapeNodes(VrmlNode* node, AbstractVrmlGroup* parentNode, int indexInParent);
+        bool convertShapeNode(VrmlShape* shapeNode);
+        bool convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet);
+
+        int addTrianglesDividedFromPolygon(const std::vector<int>& polygon, const MFVec3f& vertices,
+                                           std::vector<int>& out_trianglesInPolygon);
+
+        template <class TArray>
+            bool remapDirectMapObjectsPerFaces(TArray& objects, const char* objectName);
+        
+        bool checkAndRemapIndices(RemapType type, int numElements, MFInt32& indices, bool perVertex,
+                                  VrmlIndexedFaceSet* triangleMesh);
+        void putError1(const char* valueName);
+        
+        bool convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh);
+        bool convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& triangleMesh);
+        bool convertCylinder(VrmlCylinder* cylinder, VrmlIndexedFaceSetPtr& triangleMesh);
+        bool convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleMesh);
+        bool convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPtr& triangleMesh);
+        bool convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& triangleMesh);
+
+        void generateNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+        void calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+        void setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+        void setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+
+        void putMessage(const std::string& message);
+    };
+}
+
+
 TriangleMeshShaper::TriangleMeshShaper()
+{
+    impl = new TMSImpl(this);
+}
+
+
+TMSImpl::TMSImpl(TriangleMeshShaper* self) : self(self)
 {
     divisionNumber = 20;
     isNormalGenerationMode = true;
+}
+
+
+TriangleMeshShaper::~TriangleMeshShaper()
+{
+    delete impl;
 }
 
 
@@ -44,7 +121,7 @@ TriangleMeshShaper::TriangleMeshShaper()
 */
 void TriangleMeshShaper::setDivisionNumber(int n)
 {
-    divisionNumber = n;
+    impl->divisionNumber = n;
 }
 
 
@@ -55,7 +132,7 @@ void TriangleMeshShaper::setDivisionNumber(int n)
 */
 void TriangleMeshShaper::setNormalGenerationMode(bool on)
 {
-    isNormalGenerationMode = on;
+    impl->isNormalGenerationMode = on;
 }
 
 
@@ -67,6 +144,12 @@ void TriangleMeshShaper::setNormalGenerationMode(bool on)
   @endif
 */
 VrmlGeometryPtr TriangleMeshShaper::getOriginalGeometry(VrmlShapePtr shapeNode)
+{
+    return impl->getOriginalGeometry(shapeNode);
+}
+
+
+VrmlGeometryPtr TMSImpl::getOriginalGeometry(VrmlShapePtr shapeNode)
 {
     VrmlGeometryPtr originalGeometryNode;
     ShapeToGeometryMap::iterator p = shapeToOriginalGeometryMap.find(shapeNode);
@@ -91,14 +174,12 @@ VrmlGeometryPtr TriangleMeshShaper::getOriginalGeometry(VrmlShapePtr shapeNode)
 */
 VrmlNodePtr TriangleMeshShaper::apply(VrmlNodePtr topNode)
 {
-    int numInconvertibleNodes = 0;
-    bool resultOfTopNode = traverseShapeNodes(topNode.get(), 0, 0);
-
+    bool resultOfTopNode = impl->traverseShapeNodes(topNode.get(), 0, 0);
     return resultOfTopNode ? topNode : VrmlNodePtr();
 }
 
 
-bool TriangleMeshShaper::traverseShapeNodes(VrmlNode* node, AbstractVrmlGroup* parentNode, int indexInParent)
+bool TMSImpl::traverseShapeNodes(VrmlNode* node, AbstractVrmlGroup* parentNode, int indexInParent)
 {
     bool result = true;
 
@@ -130,7 +211,7 @@ bool TriangleMeshShaper::traverseShapeNodes(VrmlNode* node, AbstractVrmlGroup* p
 }
 
 
-bool TriangleMeshShaper::convertShapeNode(VrmlShape* shapeNode)
+bool TMSImpl::convertShapeNode(VrmlShape* shapeNode)
 {
     bool result = false;
     
@@ -187,7 +268,7 @@ bool TriangleMeshShaper::convertShapeNode(VrmlShape* shapeNode)
 /**
    \todo local vector variables should be member variables to increase the performance
 */
-bool TriangleMeshShaper::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
+bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
 {
     MFVec3f& vertices = faceSet->coord->point;
     int numVertices = vertices.size();
@@ -293,7 +374,7 @@ namespace {
   @note 一般的な三角形分割のアルゴリズムについては "triangulation algorithm" や "polygon triangulation" で検索するべし
   @endif
 */
-int TriangleMeshShaper::addTrianglesDividedFromPolygon
+int TMSImpl::addTrianglesDividedFromPolygon
 (const vector<int>& polygon, const MFVec3f& vertices, vector<int>& out_trianglesInPolygon)
 {
     int numTriangles = -1;
@@ -337,7 +418,7 @@ int TriangleMeshShaper::addTrianglesDividedFromPolygon
 
 
 template <class TArray>
-bool TriangleMeshShaper::remapDirectMapObjectsPerFaces(TArray& values, const char* valueName)
+bool TMSImpl::remapDirectMapObjectsPerFaces(TArray& values, const char* valueName)
 {
     const TArray orgValues = values;
     int numOrgValues = orgValues.size();
@@ -355,7 +436,7 @@ bool TriangleMeshShaper::remapDirectMapObjectsPerFaces(TArray& values, const cha
 }
 
 
-bool TriangleMeshShaper::checkAndRemapIndices
+bool TMSImpl::checkAndRemapIndices
 (RemapType type, int numElements, MFInt32& indices, bool perVertex, VrmlIndexedFaceSet* triangleMesh)
 {
     const char* valueName = (type==REMAP_COLOR) ? "colors" : "normals";
@@ -426,14 +507,14 @@ bool TriangleMeshShaper::checkAndRemapIndices
 }
 
 
-void TriangleMeshShaper::putError1(const char* valueName)
+void TMSImpl::putError1(const char* valueName)
 {
     putMessage(string("There is an index of ") + valueName +
                " beyond the size of " + valueName + ".");
 }
 
     
-bool TriangleMeshShaper::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh)
+bool TMSImpl::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh)
 {
     const double x = box->size[0] / 2.0;
     const double y = box->size[1] / 2.0;
@@ -487,7 +568,7 @@ bool TriangleMeshShaper::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangl
 }
 
 
-bool TriangleMeshShaper::convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& triangleMesh)
+bool TMSImpl::convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& triangleMesh)
 {
     const double radius = cone->bottomRadius;
     
@@ -524,7 +605,7 @@ bool TriangleMeshShaper::convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& tria
 }
 
 
-bool TriangleMeshShaper::convertCylinder(VrmlCylinder* cylinder, VrmlIndexedFaceSetPtr& triangleMesh)
+bool TMSImpl::convertCylinder(VrmlCylinder* cylinder, VrmlIndexedFaceSetPtr& triangleMesh)
 {
     if(cylinder->height < 0.0 || cylinder->radius < 0.0){
         putMessage("CYLINDER : wrong value.");
@@ -570,7 +651,7 @@ bool TriangleMeshShaper::convertCylinder(VrmlCylinder* cylinder, VrmlIndexedFace
 }
 
 
-bool TriangleMeshShaper::convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleMesh)
+bool TMSImpl::convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleMesh)
 {
     const double r = sphere->radius;
 
@@ -631,7 +712,7 @@ bool TriangleMeshShaper::convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr
 /**
    \todo copy colors and color indices to triangleMesh
 */
-bool TriangleMeshShaper::convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPtr& triangleMesh)
+bool TMSImpl::convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPtr& triangleMesh)
 {
     if(grid->xDimension * grid->zDimension != static_cast<SFInt32>(grid->height.size())){
         putMessage("ELEVATIONGRID : wrong value.");
@@ -668,13 +749,13 @@ bool TriangleMeshShaper::convertElevationGrid(VrmlElevationGrid* grid, VrmlIndex
 /*!
   \todo implement this function
 */
-bool TriangleMeshShaper::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& triangleMesh)
+bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& triangleMesh)
 {
     return false;
 }
 
 
-void TriangleMeshShaper::generateNormals(VrmlIndexedFaceSetPtr& triangleMesh)
+void TMSImpl::generateNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 {
     triangleMesh->normal = new VrmlNormal();
     triangleMesh->normalPerVertex = (triangleMesh->creaseAngle > 0.0) ? true : false;
@@ -689,7 +770,7 @@ void TriangleMeshShaper::generateNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 }
 
 
-void TriangleMeshShaper::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
+void TMSImpl::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 {
     const MFVec3f& vertices = triangleMesh->coord->point;
     const int numVertices = vertices.size();
@@ -737,7 +818,7 @@ void TriangleMeshShaper::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMes
 }
 
 
-void TriangleMeshShaper::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
+void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 {
     const MFVec3f& vertices = triangleMesh->coord->point;
     const int numVertices = vertices.size();
@@ -811,7 +892,7 @@ void TriangleMeshShaper::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 }
 
 
-void TriangleMeshShaper::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
+void TMSImpl::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 {
     const MFInt32& triangles = triangleMesh->coordIndex;
     const int numFaces = triangles.size() / 4;
@@ -860,9 +941,9 @@ void TriangleMeshShaper::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 }
     
 
-void TriangleMeshShaper::putMessage(const std::string& message)
+void TMSImpl::putMessage(const std::string& message)
 {
-    if(!sigMessage.empty()){
-        sigMessage(message + "\n" );
+    if(!self->sigMessage.empty()){
+        self->sigMessage(message + "\n" );
     }
 }

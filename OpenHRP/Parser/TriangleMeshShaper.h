@@ -18,18 +18,19 @@
 
 #include "config.h"
 #include "VrmlNodes.h"
-#include "ModelNodeSet.h"
-#include <OpenHRP/Util/Tvmet3d.h>
-#include <vector>
-
+#include <string>
+#include <boost/signal.hpp>
 
 namespace OpenHRP
 {
+    class TMSImpl;
+    
     class HRP_PARSER_EXPORT TriangleMeshShaper
     {
       public:
 
         TriangleMeshShaper();
+        ~TriangleMeshShaper();
 
         void setDivisionNumber(int n);
         void setNormalGenerationMode(bool on);
@@ -39,53 +40,7 @@ namespace OpenHRP
         boost::signal<void(const std::string& message)> sigMessage;
 
       private:
-
-        int divisionNumber;
-        bool isNormalGenerationMode;
-
-        typedef std::map<VrmlShapePtr, VrmlGeometryPtr> ShapeToGeometryMap;
-        ShapeToGeometryMap shapeToOriginalGeometryMap;
-
-        // for triangulation
-        std::vector<int> polygon;
-        std::vector<int> trianglesInPolygon;
-        std::vector<int> indexPositionMap;
-        std::vector<int> faceIndexMap;
-
-        // for normal generation
-        std::vector<Vector3> faceNormals;
-        std::vector< std::vector<int> > vertexIndexToFaceIndicesMap;
-        std::vector< std::vector<int> > vertexIndexToNormalIndicesMap;
-
-        enum RemapType { REMAP_COLOR, REMAP_NORMAL };
-
-        bool traverseShapeNodes(VrmlNode* node, AbstractVrmlGroup* parentNode, int indexInParent);
-        bool convertShapeNode(VrmlShape* shapeNode);
-        bool convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet);
-
-        int addTrianglesDividedFromPolygon(const std::vector<int>& polygon, const MFVec3f& vertices,
-                                           std::vector<int>& out_trianglesInPolygon);
-
-        template <class TArray>
-            bool remapDirectMapObjectsPerFaces(TArray& objects, const char* objectName);
-        
-        bool checkAndRemapIndices(RemapType type, int numElements, MFInt32& indices, bool perVertex,
-                                  VrmlIndexedFaceSet* triangleMesh);
-        void putError1(const char* valueName);
-        
-        bool convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh);
-        bool convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& triangleMesh);
-        bool convertCylinder(VrmlCylinder* cylinder, VrmlIndexedFaceSetPtr& triangleMesh);
-        bool convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleMesh);
-        bool convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPtr& triangleMesh);
-        bool convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& triangleMesh);
-
-        void generateNormals(VrmlIndexedFaceSetPtr& triangleMesh);
-        void calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
-        void setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh);
-        void setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
-
-        void putMessage(const std::string& message);
+        TMSImpl* impl;
     };
 };
 

@@ -230,8 +230,6 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
         setSensors(index, jointNodeSet);
     }
     catch( ModelLoader::ModelLoaderException& ex ) {
-        //CORBA::String_var cName = linkInfo->name;
-        //string name( cName );
         string name(linkInfo->name);
         string error = name.empty() ? "Unnamed JoitNode" : name;
         error += ": ";
@@ -298,8 +296,6 @@ void BodyInfo_impl::setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr j
     copyVrmlField( fmap, "torqueConst",   linkInfo.torqueConst );
     copyVrmlField( fmap, "encoderPulse",  linkInfo.encoderPulse );
     copyVrmlField( fmap, "jointValue",    linkInfo.jointValue );
-
-    // equivalentInertia は廃止
 }
 
 
@@ -345,7 +341,6 @@ void BodyInfo_impl::setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet)
 void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode)
 {
     if(sensorTypeMap.empty()) {
-        // initSensorTypeMap();
         sensorTypeMap["ForceSensor"]        = "Force";
         sensorTypeMap["Gyro"]               = "RateGyro";
         sensorTypeMap["AccelerationSensor"] = "Acceleration";
