@@ -22,7 +22,8 @@ foreach(name ${IDL_FILE_BASENAMES})
   add_custom_command(
     OUTPUT ${idl_file}
     COMMAND ${NATIVE2ASCII} -encoding UTF-8 ${src_idl_file} ${idl_file}
-    COMMAND if [ -e src ]\; then ${RMDIR} src\; fi\; if [ -e jp ]\; then ${RMDIR} jp\; fi
+#    COMMAND if [ -e src ]\; then ${RMDIR} src\; fi\; if [ -e jp ]\; then ${RMDIR} jp\; fi
+    COMMAND ${RMDIR} src jp
     DEPENDS ${src_idl_file}
     )
   list(APPEND idl_files ${idl_file})
@@ -77,4 +78,3 @@ add_custom_target(JavaSutbSkel ALL DEPENDS ${jarfile})
 # set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "src;jp")
 
 install(FILES ${jarfile} DESTINATION ${RELATIVE_JAVA_INSTALL_PATH})
-
