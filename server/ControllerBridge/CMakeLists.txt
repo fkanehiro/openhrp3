@@ -16,8 +16,10 @@ if(UNIX)
     boost_filesystem boost_program_options boost_regex)
 elseif(WIN32)
   add_definitions(${OPENRTM_DEFINITIONS})
+  set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d )
   target_link_libraries(
-    ${program} hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES})
+    ${program} optimized hrpCorbaStubSkel3 debug hrpCorbaStubSkel3d 
+    ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES})
 endif()
 
 if(WIN32)

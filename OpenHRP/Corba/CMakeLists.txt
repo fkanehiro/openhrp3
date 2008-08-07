@@ -32,6 +32,10 @@ endforeach()
 add_library(hrpCorbaStubSkel3 STATIC ${idl_cpp_files})
 
 if(WIN32)
+  set_target_properties(hrpCorbaStubSkel3 PROPERTIES DEBUG_POSTFIX d )
+endif() 
+
+if(WIN32)
 install(TARGETS hrpCorbaStubSkel3
 	RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release
 	LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release

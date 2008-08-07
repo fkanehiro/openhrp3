@@ -39,7 +39,10 @@ if(UNIX)
 elseif(WIN32)
   set_target_properties(hrpParser3 PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
   add_definitions(-DHRP_PARSER_MAKE_DLL)
-  target_link_libraries(hrpParser3 hrpUtil3 ${PNG_LIBRARY} ${JPEG_LIBRARY} libpng zlib libjpeg )
+  target_link_libraries(hrpParser3 
+    optimized hrpUtil3 debug hrpUtil3d  
+    ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY} )
+  set_target_properties(hrpParser3 PROPERTIES DEBUG_POSTFIX d )
 endif() 
 
 if(WIN32)

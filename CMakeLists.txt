@@ -105,6 +105,7 @@ elseif(WIN32)
 	if(NOT JPEG_INCLUDE_DIR OR NOT JPEG_LIBRARY_DIR)
     message(FATAL_ERROR "JPEG library required, please specify it's location.")
   endif()
+  set(JPEG_LIBRARY libjpeg)
   link_directories(${JPEG_LIBRARY_DIR})
 endif()
 
@@ -119,6 +120,7 @@ elseif(WIN32)
 	if(NOT PNG_INCLUDE_DIR OR NOT PNG_LIBRARY_DIR)
     message(FATAL_ERROR "PNG library required, please specify it's location.")
   endif()
+  set(PNG_LIBRARY libpng)
 	link_directories(${PNG_LIBRARY_DIR})
 endif()
 
@@ -133,6 +135,7 @@ if(WIN32)
   endif()
   include_directories(${ZLIB_INCLUDE_DIR})
   link_directories(${ZLIB_LIBRARY_DIR})
+  set(ZLIB_LIBRARY zlib)
 endif()
 
 
