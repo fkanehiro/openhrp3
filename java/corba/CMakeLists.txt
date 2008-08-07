@@ -22,7 +22,7 @@ foreach(name ${IDL_FILE_BASENAMES})
   add_custom_command(
     OUTPUT ${idl_file}
     COMMAND ${NATIVE2ASCII} -encoding UTF-8 ${src_idl_file} ${idl_file}
-    COMMAND ${RMDIR} src jp
+    COMMAND if [ -e src ]\; then ${RMDIR} src\; fi\; if [ -e jp ]\; then ${RMDIR} jp\; fi
     DEPENDS ${src_idl_file}
     )
   list(APPEND idl_files ${idl_file})
