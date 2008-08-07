@@ -1,10 +1,18 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+
+/*
  *  GrxModelItem.java
  *
- *  Copyright (C) 2007 GeneralRobotix, Inc.
- *  All Rights Reserved
- *
  *  @author Yuichiro Kawasumi (General Robotix, Inc.)
+ *  @author Shin'ichiro Nakaoka (AIST)
  */
 
 package com.generalrobotix.ui.item;
@@ -18,6 +26,7 @@ import java.util.*;
 import javax.swing.ImageIcon;
 //import javax.swing.JMenuItem;
 //import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
@@ -28,6 +37,8 @@ import org.eclipse.swt.SWT;
 import com.sun.j3d.loaders.vrml97.VrmlLoader;
 import com.sun.j3d.loaders.vrml97.VrmlScene;
 import com.sun.j3d.utils.geometry.Sphere;
+import com.sun.j3d.utils.geometry.*;
+import java.awt.image.*;
 import com.sun.j3d.utils.picking.PickTool;
 
 import com.generalrobotix.ui.*;
@@ -38,6 +49,9 @@ import com.generalrobotix.ui.view.vsensor.Camera_impl;
 import jp.go.aist.hrp.simulator.*;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraParameter;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraType;
+import java.awt.image.BufferedImage;
+import jp.go.aist.hrp.simulator.ImageData;
+import jp.go.aist.hrp.simulator.PixelFormat;
 
 @SuppressWarnings("serial")
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {
@@ -49,14 +63,15 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	public boolean update_ = true;
 	
 	public BranchGroup bgRoot_;
-	public CharacterInfo cInfo_;
+    public BodyInfo bInfo_;
 	public LinkInfoLocal[] lInfo_;
 	public LinkInfoLocal activeLinkInfo_;
 	private int[] jointToLink_; // length = joint number
 	private final Map<String, LinkInfoLocal> lInfoMap_ = new HashMap<String, LinkInfoLocal>();
 	private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
-	private final Map<SensorType, List<SensorInfoLocal>> sensorMap_ = new HashMap<SensorType, List<SensorInfoLocal>>();
-
+	private final Map<String , List<SensorInfoLocal>> sensorMap_ = new HashMap<String , List<SensorInfoLocal>>();
+	private List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
+	
 	private Switch switchCom_;
 	private TransformGroup tgCom_;
 	private Switch switchComZ0_;
@@ -216,18 +231,38 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		try {
 			ModelLoader mloader = ModelLoaderHelper.narrow(
 				GrxCorbaUtil.getReference("ModelLoader", loaderName, 2809));
-			cInfo_ = mloader.loadURL(url);
-			lInfo_ = new LinkInfoLocal[cInfo_.links().length];
+			bInfo_ = mloader.getBodyInfo(url);
+            LinkInfo[] linkInfoList = bInfo_.links();
+			lInfo_ = new LinkInfoLocal[bInfo_.links().length];
 			lInfoMap_.clear();
 			
 			int jointCount = 0;
 			for (int i = 0; i < lInfo_.length; i++) {
-				lInfo_[i] = new LinkInfoLocal(cInfo_.links()[i]);
+				lInfo_[i] = new LinkInfoLocal(linkInfoList[i]);
+                lInfo_[i].myLinkID = (short)i;
 				lInfoMap_.put(lInfo_[i].name, lInfo_[i]);
 				if (lInfo_[i].jointId >= 0) {
 					jointCount++;
 				}
 			}
+
+			// Search root node.
+            int rootIndex = -1;
+            for( int i = 0 ; i < lInfo_.length ; i++ ) {
+                if( lInfo_[i].parentIndex < 0 ){
+                    if( rootIndex < 0 ) {
+                        rootIndex = i;
+                    } else {
+                        System.out.println( "Error. Two or more root node exist." );
+                    }
+                }
+            }
+            if( rootIndex < 0 ){
+                System.out.println( "Error, root node doesn't exist." );
+            }
+            
+            createLink( rootIndex );
+
 			
 			jointToLink_ = new int[jointCount];
 			for (int i=0; i<jointCount; i++) {
@@ -243,9 +278,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				Collections.sort(it.next());
 			}
 			
-			_loadVrmlScene(url);
-			setURL(url);
-			manager_.setSelectedItem(this, true);
+            long stime = System.currentTimeMillis();
+            _loadVrmlScene(linkInfoList);
+            long etime = System.currentTimeMillis();
+            System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms");
+            setURL(url);
+            manager_.setSelectedItem(this, true);
+            setProperty("isRobot", Boolean.toString(isRobot_));
+
 		} catch (Exception ex) {
             System.out.println("Failed to load vrml model:" + url);
 			//ex.printStackTrace();
@@ -253,116 +293,380 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		}
 		return true;
 	}
-	private void _loadVrmlScene(String url) throws BadLinkStructureException {
-		VrmlScene scene;
-		try {
-			scene = (VrmlScene) new VrmlLoader().load(new URL(url));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
-		
-		Map nodeMap = scene.getNamedObjects();
-		for (int i=0 ;i<lInfo_.length; i++) {
-			LinkInfoLocal info = lInfo_[i];
-			Link l = (Link) nodeMap.get(info.name);
-			SharedGroup sg = l.getSharedGroup();
-			if (sg.numChildren() > 0) {
-				TransformGroup g = (TransformGroup)sg.getChild(0);
-				sg.removeChild(0);
-				if (i ==0) {
-					bgRoot_.addChild(g);
-				} else {
-					new BranchGroup().addChild(g);
-				}
-				info.tg = g;
-				for (int j=0; j<info.sensors.length; j++) {
-					SensorInfoLocal si = info.sensors[j];
-					if (si.type.equals(SensorType.VISION_SENSOR)) {
-						Camera_impl camera = cameraList.get(si.id);
-						g.addChild(camera.getBranchGraph());
-						double[] pos = si.translation;
-						double[] rot = si.rotation;
-						Transform3D t3d = new Transform3D();
-						t3d.setTranslation(new Vector3d(pos));
-						t3d.setRotation(new Matrix3d(rot));
-						camera.getTransformGroup().setTransform(t3d);
-					}
-				}
-			}
-		}
-		
-		SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-		for (int i = 0; i < lInfo_.length; i++) {
-			Map<String, Object> userData = new Hashtable<String, Object>();
-			LinkInfoLocal info = lInfo_[i];
-			userData.put("object", this);
-			userData.put("linkInfo", info);
-			userData.put("objectName", this.getName());
-			userData.put("jointName", info.name);
-			Vector3d jointAxis = new Vector3d(info.jointAxis);
-			LinkInfoLocal itmp = info;
-			while (itmp.jointId == -1 && itmp.mother != -1) {
-				itmp = lInfo_[itmp.mother];
-			}
-			userData.put("controllableJoint", itmp.name);
-	        
-			TransformGroup g = lInfo_[i].tg;
-			Transform3D t3dOrg = new Transform3D();	
-			g.getTransform(t3dOrg);
+    private void createLink( int index ){
+        
+        LinkInfoLocal info = lInfo_[index];
+        
+        for( int i = 0 ; i < info.childIndices.length ; i++ ) 
+            {
+                // call recursively
+                int childIndex = info.childIndices[i];
+                createLink( childIndex );
+            }
+        
+        for( int i = info.childIndices.length - 1 ; 0 <= i ; i-- )
+            {
+                // add child in sequence.
+                //     Added node is referred to daughter invariably, 
+                //     and past daughter is new daughter's sister.
+                // child(daughter) -> sisiter.
+                lInfo_[info.childIndices[i]].sister = info.daughter;
+                lInfo_[info.childIndices[i]].mother = index;
+                info.daughter                       = info.childIndices[i];
+            }
+    }
+
+    private void setColors(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
+
+        int numColors = appearanceInfo.colors.length / 3;
+
+        if(numColors > 0){
+            float[] orgColors = appearanceInfo.colors;
+            Color3f[] colors = new Color3f[numColors];
+            for(int i=0; i < numColors; ++i){
+                colors[i] = new Color3f(orgColors[i*3], orgColors[i*3+1], orgColors[i*3+2]);
+            }
+            geometryInfo.setColors(colors);
+            
+            int[] orgColorIndices = appearanceInfo.colorIndices;
+            int numOrgColorIndices = orgColorIndices.length;
+            int numTriangles = shapeInfo.triangles.length / 3;
+            int[] colorIndices = new int[numTriangles * 3];
+                
+            if(numOrgColorIndices > 0){
+                if(appearanceInfo.colorPerVertex){
+                    colorIndices = orgColorIndices;
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        int colorIndex = orgColorIndices[i];
+                        for(int j=0; j < 3; ++j){
+                            colorIndices[pos++] = colorIndex;
+                        }
+                    }
+                }
+            } else {
+                if(appearanceInfo.colorPerVertex){
+                    for(int i=0; i < colorIndices.length; ++i){
+                        colorIndices[i] = shapeInfo.triangles[i];
+                    }
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        for(int j=0; j < 3; ++j){
+                            colorIndices[pos++] = i;
+                        }
+                    }                        
+                    
+                }
+            }
+            geometryInfo.setColorIndices(colorIndices);
+        }
+    }
+
+
+    private void setNormals(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
+
+        int numNormals = appearanceInfo.normals.length / 3;
+
+        if(numNormals == 0){
+            NormalGenerator ng = new NormalGenerator(appearanceInfo.creaseAngle);
+            ng.generateNormals(geometryInfo);
+            
+        } else {
+
+            float[] orgNormals = appearanceInfo.normals;
+            Vector3f[] normals = new Vector3f[numNormals];
+            for(int i=0; i < numNormals; ++i){
+                normals[i] = new Vector3f(orgNormals[i*3], orgNormals[i*3+1], orgNormals[i*3+2]);
+            }
+            geometryInfo.setNormals(normals);
+
+            int[] orgNormalIndices = appearanceInfo.normalIndices;
+            int numOrgNormalIndices = orgNormalIndices.length;
+            int numTriangles = shapeInfo.triangles.length / 3;
+            int[] normalIndices = new int[numTriangles * 3];
+                
+            if(numOrgNormalIndices > 0){
+                if(appearanceInfo.normalPerVertex){
+                    normalIndices = orgNormalIndices;
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        int normalIndex = orgNormalIndices[i];
+                        for(int j=0; j < 3; ++j){
+                            normalIndices[pos++] = normalIndex;
+                        }
+                    }
+                }
+            } else {
+                if(appearanceInfo.normalPerVertex){
+                    for(int i=0; i < normalIndices.length; ++i){
+                        normalIndices[i] = shapeInfo.triangles[i];
+                    }
+                } else {
+                    int pos = 0;
+                    for(int i=0; i < numTriangles; ++i){
+                        for(int j=0; j < 3; ++j){
+                            normalIndices[pos++] = i;
+                        }
+                    }                        
+                    
+                }
+            }
+
+            geometryInfo.setNormalIndices(normalIndices);
+        }
+    }
+    
+    
+    private Shape3D createLinkShape3D
+    (ShapeInfo shapeInfo, AppearanceInfo[] appearances, MaterialInfo[] materials, TextureInfo[] textures){
+        
+        GeometryInfo geometryInfo = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
+
+        // set vertices
+        int numVertices = shapeInfo.vertices.length / 3;
+        Point3f[] vertices = new Point3f[numVertices];
+        for(int i=0; i < numVertices; ++i){
+            vertices[i] = new Point3f(shapeInfo.vertices[i*3], shapeInfo.vertices[i*3+1], shapeInfo.vertices[i*3+2]);
+        }
+        geometryInfo.setCoordinates(vertices);
+        
+        // set triangles (indices to the vertices)
+        geometryInfo.setCoordinateIndices(shapeInfo.triangles);
+        
+        Appearance appearance = new Appearance();
+        PolygonAttributes pa = new PolygonAttributes();
+        pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+        pa.setCullFace(PolygonAttributes.CULL_NONE);
+        pa.setBackFaceNormalFlip(true);
+        appearance.setPolygonAttributes(pa);
+
+        int appearanceIndex = shapeInfo.appearanceIndex;
+        if(appearanceIndex >= 0){
+
+            AppearanceInfo appearanceInfo = appearances[appearanceIndex];
+
+            setColors(geometryInfo, shapeInfo, appearanceInfo);
+
+            MaterialInfo materialInfo = null;
+            int materialIndex = appearanceInfo.materialIndex;
+            if(materialIndex >= 0){
+                materialInfo = materials[materialIndex];
+                if(materialInfo.transparency > 0.0f){
+                    TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
+                    appearance.setTransparencyAttributes(ta);
+                }
+            }
+
+            setNormals(geometryInfo, shapeInfo, appearanceInfo);
+
+            if(materialInfo != null){
+                appearance.setMaterial(createMaterial(materialInfo));
+            }
+
+            int textureIndex = appearanceInfo.textureIndex;
+            if(textureIndex >= 0){
+                
+                TextureInfoLocal texInfo = new TextureInfoLocal(textures[textureIndex]);
+
+                Texture2D texture2d = null;
+                if((texInfo.width != 0) && (texInfo.height != 0)){
+                    ImageComponent2D icomp2d = texInfo.readImage;
+                    texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
+                    texture2d.setImage(0, icomp2d);
+                }
+
+                if(texture2d != null){
+                    appearance.setTexture(texture2d);
+                }
+                
+                int vTris = (shapeInfo.triangles.length)/3;
+                Point2f[] TexPoints = new Point2f[vTris * 3];
+                for(int vi=0; vi<vTris; vi++){
+                    TexPoints[vi*3] = new Point2f( 0.0f , 0.0f );
+                    TexPoints[vi*3+1] = new Point2f( 1.0f , 0.0f );
+                    TexPoints[vi*3+2] = new Point2f( 1.0f , 1.0f );
+                }
+                geometryInfo.setTextureCoordinates(TexPoints);
+                geometryInfo.setTextureCoordinateIndices(shapeInfo.triangles);
+                //TextureAttributes Set
+                TextureAttributes texAttrBase =  new TextureAttributes();
+                //TextureAttributes Property Set
+                texAttrBase.setTextureMode(TextureAttributes.MODULATE);
+                //Appearance <- TextureAttributes 
+                appearance.setTextureAttributes(texAttrBase);
+            }
+        }
+
+        Shape3D shape3D = new Shape3D(geometryInfo.getGeometryArray());
+        shape3D.setAppearance(appearance);
+
+        return shape3D;
+    }
+
+
+    public class NormalRender {
+        private LineArray nline = null;
+        public NormalRender(GeometryArray geom) { this(geom, 1.0f); }
+        public NormalRender(GeometryArray geom, float scale) {
+            Point3f[] vertices = new Point3f[geom.getVertexCount()];
+            Vector3f[] normals = new Vector3f[geom.getVertexCount()];
+            for (int i=0; i<geom.getVertexCount(); i++) {
+                vertices[i] = new Point3f();
+                normals[i] = new Vector3f();
+            }
+            geom.getCoordinates(0, vertices);
+            geom.getNormals(0, normals);
+            Point3f[] nvertices = new Point3f[vertices.length * 2];
+            int n = 0;
+            for (int i=0; i<vertices.length; i++ ){
+                nvertices[n++] = new Point3f( vertices[i] );
+                nvertices[n++] = new Point3f( vertices[i].x + scale * normals[i].x,
+                                              vertices[i].y + scale * normals[i].y,
+                                              vertices[i].z + scale * normals[i].z );
+            }
+            nline = new LineArray(nvertices.length, GeometryArray.COORDINATES);
+            nline.setCoordinates(0, nvertices);
+        }
+        
+        public LineArray getLineArray() { return nline; }
+    }
+
+	private void _loadVrmlScene(LinkInfo[] links) throws BadLinkStructureException {
+
+        ShapeInfo[] shapes = bInfo_.shapes();
+        AppearanceInfo[] appearances = bInfo_.appearances();
+        MaterialInfo[] materials = bInfo_.materials();
+        TextureInfo[] textures = bInfo_.textures();
+
+        int numLinks = links.length;
+        for(int linkIndex = 0; linkIndex < numLinks; linkIndex++) {
+
+            LinkInfo linkInfo = links[linkIndex];
+
+            TransformGroup linkTopTransformNode = new TransformGroup();
+            lInfo_[linkIndex].tg = linkTopTransformNode;
+            
+            int numShapes = linkInfo.shapeIndices.length;
+            for(int localShapeIndex = 0; localShapeIndex < numShapes; localShapeIndex++) {					
+                int shapeIndex = linkInfo.shapeIndices[localShapeIndex];
+                ShapeInfo shapeInfo = shapes[shapeIndex];
+                Shape3D linkShape3D = createLinkShape3D(shapeInfo, appearances, materials, textures);
+                
+                linkTopTransformNode.addChild(linkShape3D);
+
+                /* normal visualization */
+                if(false){
+                    NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f);
+                    Shape3D nshape = new Shape3D(nrender.getLineArray());
+                    linkTopTransformNode.addChild(nshape);
+                }
+            }
+
+            SensorInfoLocal[] sensors = lInfo_[linkIndex].sensors;
+            for (int j=0; j < sensors.length; j++) {
+                SensorInfoLocal si = sensors[j];
+
+                //if (si.type.equals(SensorType.VISION_SENSOR)) {
+                if (si.type.equals("Vision")) {
+
+                    Camera_impl camera = cameraList.get(si.id);
+                    //g.addChild(camera.getBranchGraph());
+                    linkTopTransformNode.addChild(camera.getBranchGraph());
+
+                    double[] pos = si.translation;
+                    // #####[Changed] From BODYINFO Convert 			
+                    double[] rot = si.rotation;
+
+                    Transform3D t3d = new Transform3D();
+                    t3d.setTranslation(new Vector3d(pos));
+                    t3d.setRotation(new AxisAngle4d(rot));
+                    camera.getTransformGroup().setTransform(t3d);
+                }
+            }
+        }
+
+        if(numLinks > 0){
+            bgRoot_.addChild(lInfo_[0].tg);
+            for(int i=1; i < numLinks; ++i){
+                new BranchGroup().addChild(lInfo_[i].tg);
+            }
+        }
+
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+        for (int i = 0; i < lInfo_.length; i++) {
+            Map<String, Object> userData = new Hashtable<String, Object>();
+            LinkInfoLocal info = lInfo_[i];
+            userData.put("object", this);
+            userData.put("linkInfo", info);
+            userData.put("objectName", this.getName());
+            userData.put("jointName", info.name);
+            Vector3d jointAxis = new Vector3d(info.jointAxis);
+            LinkInfoLocal itmp = info;
+            while (itmp.jointId == -1 && itmp.mother != -1) {
+                itmp = lInfo_[itmp.mother];
+            }
+            userData.put("controllableJoint", itmp.name);
+			 
+            TransformGroup g = lInfo_[i].tg;
+            Transform3D tr = new Transform3D();
+            tr.setIdentity();
+            g.setTransform(tr);
 			
-	        Transform3D tr = new Transform3D();
-			tr.setIdentity();
-	        g.setTransform(tr);
-	        
-		    modifier.init_ = true;	
-	        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
-			modifier._calcUpperLower(g, tr);
-			g.setTransform(t3dOrg);
+            modifier.init_ = true;
+            modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+            modifier._calcUpperLower(g, tr);
 			
-			Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-			Switch bbSwitch =  modifier._makeSwitchNode(modifier._makeBoundingBox(color));
-			bbSwitch.setCapability(Switch.ALLOW_SWITCH_READ);
-			bbSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-			bbSwitch.setCapability(Switch.ALLOW_CHILDREN_READ);
-			bbSwitch.setCapability(Switch.ALLOW_CHILDREN_WRITE);
-			g.addChild(bbSwitch);
+            Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+            Switch bbSwitch =  modifier._makeSwitchNode(modifier._makeBoundingBox(color));
+            bbSwitch.setCapability(Switch.ALLOW_SWITCH_READ);
+            bbSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+            bbSwitch.setCapability(Switch.ALLOW_CHILDREN_READ);
+            bbSwitch.setCapability(Switch.ALLOW_CHILDREN_WRITE);
+            g.addChild(bbSwitch);
 			
-			userData.put("boundingBoxSwitch", bbSwitch);
-			if (jointAxis != null) {
-				Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
-				g.addChild(axisSwitch);
-				userData.put("axisLineSwitch", axisSwitch);
-			}
+            userData.put("boundingBoxSwitch", bbSwitch);
+            if (jointAxis != null) {
+                Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
+                g.addChild(axisSwitch);
+                userData.put("axisLineSwitch", axisSwitch);
+            }
 			
-			g.setUserData(userData);
-			g.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
-			g.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+            g.setUserData(userData);
+            g.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
+            g.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
 			
-			int mid = lInfo_[i].mother;
-			if (mid != -1) {
-				Group mg = (Group)lInfo_[mid].tg.getParent();
-				mg.addChild(g.getParent());
-			} 
-		}
+            int mid = lInfo_[i].mother;
+            if (mid != -1) {
+                Group mg = (Group)lInfo_[mid].tg.getParent();
+                mg.addChild(g.getParent());
+            } 
+        }
 		
-		lInfo_[0].tg.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-		_setupMarks();
+        lInfo_[0].tg.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+        _setupMarks();
 		
-		_traverse(bgRoot_, 0);
+        _traverse(bgRoot_, 0);
 		
-		modifier.modifyRobot(this);
+        modifier.modifyRobot(this);
 		
-		for (int i = 0; i < lInfo_.length; i++) {
-			Node n = lInfo_[i].tg.getChild(0);
-			if (n.getCapability(Node.ENABLE_PICK_REPORTING))
-				n.clearCapability(Node.ENABLE_PICK_REPORTING);
-		}
-		calcForwardKinematics();
-		updateInitialTransformRoot();
-		updateInitialJointValues();
-	}
-	private void _traverse(Node node, int depth) {
+        setDblAry(lInfo_[0].name+".translation", lInfo_[0].translation);
+        setDblAry(lInfo_[0].name+".rotation", lInfo_[0].rotation);
+        propertyChanged();
+
+        for (int i=0; i<lInfo_.length; i++) {
+            Node n = lInfo_[i].tg.getChild(0);
+            if (n.getCapability(Node.ENABLE_PICK_REPORTING))
+                n.clearCapability(Node.ENABLE_PICK_REPORTING);
+        }
+        calcForwardKinematics();
+        updateInitialTransformRoot();
+        updateInitialJointValues();
+    }
+
+    private void _traverse(Node node, int depth) {
 		if (node instanceof Switch) {
 			return;
 		} else if (node instanceof BranchGroup) {
@@ -622,7 +926,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		pos.scale(1.0 / totalMass);
 	}
 
-	public String[] getSensorNames(SensorType type) {
+	public String[] getSensorNames(String type) {
 		List<SensorInfoLocal> l = sensorMap_.get(type);
 		if (l == null)
 			return null;
@@ -818,13 +1122,249 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		
 		return ret;
 	}
+    //==================================================================================================
+    /*!
+      @brief		"TextureInfoLocal" class
+      @author		ErgoVision
+      @version	0.00
+      @date		2008-04-06 M.YASUKAWA <BR>
+      @note		2008-04-06 M.YASUKAWA modify <BR>
+      @note		"TextureInfoLocal" class
+    */
+    //==================================================================================================
+    public class TextureInfoLocal
+    {
+//		public	ImageData		image;
+        public	short			numComponents;
+        public	short			width;
+        public	short			height;
+        public	boolean			repeatS;
+        public	boolean			repeatT;
+        private  BufferedImage	bimageRead;
+        public  ImageComponent2D readImage;
+
+        public TextureInfoLocal(TextureInfo texinfo) {
+//				image = new ImageData();
+            
+            // set TextureInfo width
+            width = texinfo.width;
+//				image.width = texinfo.width;
+//System.out.println( "   TextureInfo.width   = " + width );
+            
+                    // set TextureInfo height
+            height = texinfo.height;
+//				image.height = texinfo.height;
+//System.out.println( "   TextureInfo.height   = " + height );
+            
+//				image.octetData = new byte[1];
+//				image.longData = new int[1];
+//				image.floatData = new float[1];
+            
+//				image.format = PixelFormat.RGB;
+            
+            // set TextureInfo numComponents
+            numComponents = texinfo.numComponents;
+            // numComponents=1 ...  8bit
+            //              =2 ... 16bit
+            //              =3 ... 24bit
+            //              =4 ... 32bit
+//System.out.println( "   TextureInfo.numComponents   = " + numComponents );
+            
+            if((width == 0) || (height == 0)){
+//System.out.println( "   TextureInfoLocal width = 0  & height = 0  => No Generate " );
+                numComponents = 3;
+                repeatS = false;
+                repeatT = false;
+                bimageRead = null;
+                width = 0;
+                height = 0;
+                return;
+            }
+            
+            // set TextureInfo image
+//System.out.println( "   TextureInfo.image  " );
+            // create color infomation for reading color buffer
+            // type int, (Alpha:8bit,) R:8bit, G:8bit, B:8bit
+            BufferedImage bimageRead = null;
+            readImage = null;
+            
+            bimageRead = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            
+            //int[] imagefield =((DataBufferInt)bimageRead.getRaster().getDataBuffer()).getData();
+            //System.out.println( "   imagefield =((DataBufferInt)bimageRead.getRaster().getDataBuffer()).getData()" );			
+            byte mByteCode;
+            byte rByteCode;
+            byte gByteCode;
+            byte bByteCode;
+            byte aByteCode;
+            int mCode;
+            int rCode;
+            int gCode;
+            int bCode;
+            int aCode;
+            int rgbCode;
+            int[] pixels;
+            pixels = ( (DataBufferInt)bimageRead.getRaster().getDataBuffer() ).getData();
+            int img_i=0;
+            int img_j=0;
+            int imgsize = texinfo.image.length;
+            int imgrgbsize = imgsize/3;
+            //System.out.println( "   texinfo.image.length   = " + imgsize + " imgrgbsize = " + imgrgbsize );
+            
+            for(int img_a=0; img_a<imgrgbsize; img_a++){
+                
+                switch (numComponents) {
+                    
+                    // 1byte:Kido MonoColor
+                case 1:
+                    
+                    mByteCode = (byte)(texinfo.image[img_a]);
+                    mCode = mByteCode & 0xFF;
+                    rCode = mCode;
+                    gCode = mCode;
+                    bCode = mCode;
+                    
+                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;	
+                    
+                    //            rgbCode =(  ( ((mByteCode) & 0xE0) << 16 ) | ( ((mByteCode) & 0xE0) << 13 ) | ( ((mByteCode) & 0x00C0) << 10 ) | 
+                    //( ((mByteCode) & 0x1C) << 11 ) | ( ((mByteCode) & 0x1C) <<  8 ) | ( ((mByteCode) & 0x0018) <<  5 ) | 
+                    //( ((mByteCode) & 0x03) <<  6 ) | ( ((mByteCode) & 0x03) <<  4 ) | 
+                    //( ((mByteCode) & 0x03) <<  2 ) | ( ((mByteCode) & 0x03)       ) );
+                    
+//System.out.println( "   bimageRead numComponents = 1 rgbCode: " + rgbCode );
+                    
+                    
+                    //bimageRead.setRGB(img_i, img_j, rgbCode);
+                    pixels[ (width * img_j) + img_i ] = rgbCode;
+                    
+                    break;
+                    
+                    // 1byte:Kido 2byte:Transparency
+                case 2:
+                    mByteCode = (byte)(texinfo.image[img_a]);
+                    mCode = mByteCode & 0xFF;
+                    aByteCode = (byte)(texinfo.image[img_a * 2 + 1]);
+                    aCode = aByteCode & 0xFF;
+                    rCode = mCode;
+                    gCode = mCode;
+                    bCode = mCode;
+                    
+                    //            rgbCode =(  ( ((mByteCode) & 0xE0) << 16 ) | ( ((mByteCode) & 0xE0) << 13 ) | ( ((mByteCode) & 0x00C0) << 10 ) | 
+                    //( ((mByteCode) & 0x1C) << 11 ) | ( ((mByteCode) & 0x1C) <<  8 ) | ( ((mByteCode) & 0x0018) <<  5 ) | 
+                    //( ((mByteCode) & 0x03) <<  6 ) | ( ((mByteCode) & 0x03) <<  4 ) | 
+                    //( ((mByteCode) & 0x03) <<  2 ) | ( ((mByteCode) & 0x03)       ) );
+                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;	
+                    
+                    rgbCode = aCode * 0x1000000 + rgbCode;
+                    
+//System.out.println( "   bimageRead numComponents = 2 rgbCode: " + rgbCode );
+                    
+                    //bimageRead.setRGB(img_i, img_j, rgbCode);
+                    pixels[ (width * img_j) + img_i ] = rgbCode;
+                    break;
+                    
+                    // RGB
+                case 3:
+                    rByteCode = (byte)(texinfo.image[img_a * 3]);
+                    rCode = rByteCode & 0xFF;
+                    gByteCode = (byte)(texinfo.image[img_a * 3 + 1]);
+                    gCode = gByteCode & 0xFF;
+                    bByteCode = (byte)(texinfo.image[img_a * 3 + 2]);
+                    bCode = bByteCode & 0xFF;
+//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ")");
+                    
+                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;
+                    
+                    //bimageRead.setRGB(img_i, img_j, rgbCode);
+                    pixels[ (width * img_j) + img_i ] = rgbCode;
+                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
+                    //img_i++;
+                    //if(img_i >= width){
+                    //    img_i = 0;
+                    //    img_j++;
+                    //}			
+                    
+                    break;
+                    
+                    // RGB+Transparency
+                case 4:
+                    rByteCode = (byte)(texinfo.image[img_a * 4]);
+                    rCode = rByteCode & 0xFF;
+                    gByteCode = (byte)(texinfo.image[img_a * 4 + 1]);
+                    gCode = gByteCode & 0xFF;
+                    bByteCode = (byte)(texinfo.image[img_a * 4 + 2]);
+                    bCode = bByteCode & 0xFF;
+                    aByteCode = (byte)(texinfo.image[img_a * 4 + 3]);
+                    aCode = aByteCode & 0xFF;
+//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ", Alfa: " + aCode + ")");
+                    
+                    rgbCode =  aCode * 0x1000000 + rCode * 0x10000 + gCode * 0x100 + bCode;
+                    
+                    //bimageRead.setRGB(img_i, img_j, rgbCode);
+                    pixels[ (width * img_j) + img_i ] = rgbCode;
+                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
+                    //img_i++;
+                    //if(img_i >= width){
+                    //    img_i = 0;
+                    //    img_j++;
+                    //}	
+                    
+                    break;
+                    
+                default:
+                    rByteCode = (byte)(texinfo.image[img_a * 3]);
+                    rCode = rByteCode & 0xFF;
+                    gByteCode = (byte)(texinfo.image[img_a * 3 + 1]);
+                    gCode = gByteCode & 0xFF;
+                    bByteCode = (byte)(texinfo.image[img_a * 3 + 2]);
+                    bCode = bByteCode & 0xFF;
+//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ")");
+                    
+                    rgbCode = rCode * 65536 + gCode * 256 + bCode;
+                    
+                    //bimageRead.setRGB(img_i, img_j, rgbCode);
+                    pixels[ (width * img_j) + img_i ] = rgbCode;
+                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
+                    //img_i++;
+                    //if(img_i >= width){
+                    //    img_i = 0;
+                    //    img_j++;
+                    //}		
+                    break;		
+                }
+                
+                img_i++;
+                if(img_i >= width){
+                    img_i = 0;
+                    img_j++;
+                }			
+            }
+            
+            
+            readImage = new ImageComponent2D(ImageComponent.FORMAT_RGB, bimageRead);
+//System.out.println( "   new ImageComponent2D(ImageComponent.FORMAT_RGB, bimageRead)"  );
+            
+            
+            // set TextureInfo repeatS
+            repeatS = texinfo.repeatS;
+//System.out.println( "   TextureInfo.repeatS   = " + repeatS );
+            
+            // set TextureInfo repeatT
+            repeatT = texinfo.repeatT;
+//System.out.println( "   TextureInfo.repeatT   = " + repeatT );
+        }
+    }
+    // ##### [Changed]
 	
 	public class LinkInfoLocal {
 		final public String name;
 		final public int jointId;
-		final public int mother;
-		final public int daughter;
-		final public int sister;
+		/*final*/ public int mother;
+		/*final*/ public int daughter;
+		/*final*/ public int sister;
+		public short	myLinkID;
+		public short	parentIndex;
+		final public short [] childIndices;
 		final public String jointType;
 		final public double[] jointAxis;
 		final public double[] translation;
@@ -837,32 +1377,55 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		final public double[] uvlimit;
 		final public double[] lvlimit;
 		final public SensorInfoLocal[] sensors;
-		
+		public short[]	shapeIndices;
 		public double  jointValue;
 		public TransformGroup tg;
 		
 		public LinkInfoLocal(LinkInfo info) {
-			name = info.name();
-			jointId = info.jointId();
-			mother = info.mother();
-			daughter = info.daughter();
-			sister = info.sister();
-
-			jointType = info.jointType();
-			jointAxis = info.jointAxis();
-			translation    = info.translation();
-			rotation    = info.rotation();
-			centerOfMass = info.centerOfMass();
-			mass    = info.mass();
-			inertia = info.inertia();
-			ulimit  = info.ulimit();
-			llimit  = info.llimit();
-			uvlimit = info.uvlimit();
-			lvlimit = info.lvlimit();
+			parentIndex = info.parentIndex;
+			int childIndicesLen = info.childIndices.length;
+			childIndices = new short[childIndicesLen];
+			for(int i=0; i<childIndicesLen; i++){
+				childIndices[i] = info.childIndices[i];
+			}
+			mother = info.parentIndex;
+			daughter = -1;
+			sister   = -1;
+			//mother = info.mother();
+			//daughter = info.daughter();
+			//sister = info.sister();
+			name = info.name;
+			jointId = info.jointId;
+			jointType = info.jointType;
+			jointAxis = info.jointAxis;
+			translation    = info.translation;
+			ConvRotation4to9 rotation4_9 = new ConvRotation4to9(info.rotation);
+			rotation    = rotation4_9.getConvRotation4to9();
+			centerOfMass = info.centerOfMass;
+			mass    = info.mass;
+			inertia = info.inertia;
+			
+			if(info.ulimit == null || info.ulimit.length == 0)
+				ulimit  = new double[]{0.0};
+			else
+				ulimit = info.ulimit;
+			
+			if(info.llimit == null || info.llimit.length == 0)
+				llimit  = new double[]{0.0};
+			else
+				llimit = info.llimit;
+			
+			uvlimit = info.uvlimit;
+			lvlimit = info.lvlimit;
 			
 			jointValue = 0.0;
-			
-			SensorInfo[] sinfo = info.sensors();
+	        int shapeCnts = info.shapeIndices.length;
+            shapeIndices = new short[shapeCnts];
+            for (int i=0; i<shapeCnts; i++){
+                shapeIndices[i] = info.shapeIndices[i];
+            }
+     			
+			SensorInfo[] sinfo = info.sensors;
 			sensors = new SensorInfoLocal[sinfo.length];
 			for (int i=0; i<sensors.length; i++) {
 				sensors[i] = new SensorInfoLocal(sinfo[i], LinkInfoLocal.this);
@@ -873,68 +1436,274 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				}
 				l.add(sensors[i]);
 				
-				if (sensors[i].type.equals(SensorType.VISION_SENSOR)) {
-					CameraParameter prm = new CameraParameter();
-					prm.defName = new String(sensors[i].name);
-					prm.sensorName = new String(sensors[i].name);
-					prm.sensorId = sensors[i].id;
-					
-					prm.frontClipDistance = (float)sensors[i].maxValue[0];
-					prm.backClipDistance = (float)sensors[i].maxValue[1];
-					prm.fieldOfView = (float)sensors[i].maxValue[2];
-					try {
-						prm.type = CameraType.from_int((int)sensors[i].maxValue[3]);
-					} catch (Exception e) {
-						prm.type = CameraType.NONE;
-					}
-					prm.width  = (int)sensors[i].maxValue[4];
-					prm.height = (int)sensors[i].maxValue[5];
-					boolean offScreen = false;
-					//if (prm.type.equals(CameraType.DEPTH))
-				    //		offScreen = true;
-					Camera_impl camera = new Camera_impl(prm, offScreen);
-					cameraList.add(camera);
-				}
+                if (sensors[i].type.equals("Vision")) {
+                    CameraParameter prm = new CameraParameter();
+                    prm.defName = new String(sensors[i].name);
+                    prm.sensorName = new String(sensors[i].name);
+                    prm.sensorId = sensors[i].id;
+				
+                    prm.frontClipDistance = (float)sensors[i].maxValue[0];
+                    prm.backClipDistance = (float)sensors[i].maxValue[1];
+                    prm.fieldOfView = (float)sensors[i].maxValue[2];
+                    try {
+                        prm.type = CameraType.from_int((int)sensors[i].maxValue[3]);
+                    } catch (Exception e) {
+                        prm.type = CameraType.NONE;
+                    }
+                    prm.width  = (int)sensors[i].maxValue[4];
+                    prm.height = (int)sensors[i].maxValue[5];
+                    boolean offScreen = false;
+                    //if (prm.type.equals(CameraType.DEPTH))
+                    //		offScreen = true;
+                    Camera_impl camera = new Camera_impl(prm, offScreen);
+                    cameraList.add(camera);
+                }
 			}
 		}
 	}
 	
-	List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
+//	List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
 	public List<Camera_impl> getCameraSequence () {
 		return cameraList;
 	}
 	
 	private class SensorInfoLocal implements Comparable {
 		final String name;
-		final public SensorType type;
+		public String type;
 		final int id;
 		final public double[] translation;
 		final public double[] rotation;
-		final public double[] maxValue;
+		final public float[] maxValue;
 		final public LinkInfoLocal parent_;
 		
 		public SensorInfoLocal(SensorInfo info, LinkInfoLocal parentLink) {
-			name = info.name();
-			type = info.type();
-			id = info.id();
-			translation = info.translation();
-			rotation = info.rotation();
-			maxValue = info.maxValue();
+			name = info.name;
+			type = info.type;
+			id = info.id;
+			translation = info.translation;
+			rotation = info.rotation;
+			maxValue = info.specValues;
 			parent_ = parentLink;
 		}
 
 		public int compareTo(Object o) {
 			if (o instanceof SensorInfoLocal) {
 				SensorInfoLocal s = (SensorInfoLocal) o;
-				if (type.value() < s.type.value())
+				//if (type.value() < s.type.value())
+				//	return -1;
+				//else if (type == s.type && id < s.id)
+				//	return -1;
+				if(getOrder(type) < getOrder(s.type))
 					return -1;
-				else if (type == s.type && id < s.id)
-					return -1;
+				else{
+					if(id < s.id)
+						return -1;
+				}
 			}
 			return 1;
 		}
-	}
 
+        private int getOrder(String type) {
+            if (type.equals("Force")) 
+                return 0;
+            else if (type.equals("RateGyro")) 
+                return 1;
+            else if (type.equals("Acceleration")) 
+                return 2;
+            else if (type.equals("Vision")) 
+                return 3;
+            else
+                return -1;
+
+        }
+	
+	}
+    //  Rotation <DbalArray4> (x y z a) => <DblArray9>  3x3 Rotation 
+    //  [tx2+c    txy+sz    txz-sy
+    //  txy-sz   ty2+c     tyz+sx
+    //  txz+sy   tyz-sx    tz2+c  ]
+    //  where c = cos(a), s = sin(a), and t = 1-c
+    public class ConvRotation4to9
+    {
+        double [] rotaton_Array4_;
+        double [] rotaton_Array9_;
+
+        public  ConvRotation4to9( double[] rotaton_Array4 )
+            {
+                rotaton_Array4_ = new double[4];
+                rotaton_Array9_ = new double[9];
+
+                for( int i = 0 ; i < 4  ; i++ )
+                    {
+                        rotaton_Array4_[i] = rotaton_Array4[i];
+                    }
+
+                double rotX  = rotaton_Array4[0];
+                double rotY  = rotaton_Array4[1];
+                double rotZ  = rotaton_Array4[2];
+                double angle = rotaton_Array4[3];
+
+                double c,s,t;
+
+                c = Math.cos(angle);
+                s = Math.sin(angle);
+
+                rotaton_Array9_[0] = c + (1-c) * rotX * rotX;
+                rotaton_Array9_[1] = (1-c) * rotX * rotY + s * rotZ;
+                rotaton_Array9_[2] = (1-c) * rotX * rotZ - s * rotY;
+                rotaton_Array9_[3] = (1-c) * rotX * rotY - s * rotZ;
+                rotaton_Array9_[4] = c + (1-c) * rotY * rotY;
+                rotaton_Array9_[5] = (1-c) * rotY * rotZ + s * rotX;
+                rotaton_Array9_[6] = (1-c) * rotX * rotZ + s * rotY;
+                rotaton_Array9_[7] = (1-c) * rotY * rotZ - s * rotX;
+                rotaton_Array9_[8] = c + (1-c) * rotZ * rotZ;
+
+            }
+
+        public double[] getConvRotation4to9 ()
+            {
+                return( rotaton_Array9_ );
+            }
+    }
+
+    public void setJointColor(int jid, java.awt.Color color) {
+        if (color == null) 
+            setAmbientColorRecursive(lInfo_[jointToLink_[jid]].tg, new Color3f(0.0f, 0.0f, 0.0f));
+        else
+            setAmbientColorRecursive(lInfo_[jointToLink_[jid]].tg, new Color3f(color));
+    }
+
+    private void setAmbientColorRecursive(Node node, Color3f color) {
+    	if (node instanceof BranchGroup) {
+            BranchGroup bg = (BranchGroup)node;
+            for (int i = 0; i < bg.numChildren(); i++)
+                setAmbientColorRecursive(bg.getChild(i), color);
+    	} else if (node instanceof TransformGroup) {
+            TransformGroup tg = (TransformGroup)node;
+            for (int i = 0; i < tg.numChildren(); i++)
+                setAmbientColorRecursive(tg.getChild(i), color);
+    	} else if (node instanceof Group) {	
+            Group g = (Group)node;
+            for (int i = 0; i < g.numChildren(); i++)
+                setAmbientColorRecursive(g.getChild(i), color);
+    	} else if (node instanceof Link) {
+    	    Link l = (Link)node;
+    	    SharedGroup sg = l.getSharedGroup();
+    	    for (int i = 0; i < sg.numChildren(); i++) 
+    	    	setAmbientColorRecursive(sg.getChild(i), color);
+    	} else if (node instanceof Shape3D) { // Is the node Shape3D ?
+    	    Shape3D s3d = (Shape3D)node;
+    	    Appearance app = s3d.getAppearance();
+    	    if (app != null){
+                Material ma = app.getMaterial();
+                if (ma != null)
+                    ma.setAmbientColor(color);
+      	    }
+    	} else {
+    	    GrxDebugUtil.print("* The node " + node.toString() + " is not supported.");
+    	}
+    }
+
+   /*!
+     @brief		ConvNTreeToBTree
+     @author		M.YASUKAWA
+     @version	0.00
+     @date		2008-03-03
+     @note		2008-03-03 M.YASUKAWA create <BR>
+     @note		2008-03-03 K.FUKUDA modify <BR>
+     @note		Convert NaryTree To BinaryTree
+   */
+   public void ConvNTreeToBTree(
+       short				parentIndex,		// index no of parent node
+       short				currentIndex,		// index no of this LinkInof
+       short []			sisterIndices )		// indeces of sister nodes( includes this node )
+	{
+//    	System.out.println( "# in ConvNTreeToBTree()." );
+       // identify this node
+       LinkInfoLocal info = lInfo_[currentIndex];
+
+       int nSisters = sisterIndices.length - 1;
+//    	System.out.println( "#  nSisters = " + nSisters );
+       int myID = info.myLinkID;	// shoud be equal to currentIndex
+
+        // set parent node index
+        if( parentIndex == -1 )
+		{
+            info.parentIndex =  -1;		// = root node
+		}
+        else
+        {
+    	    info.parentIndex = parentIndex;
+    	}
+    			
+    	// set daughter
+    	int nChildren = info.childIndices.length;
+    	if( 0 == nChildren )
+    	{
+    	    // no daughters
+    	    info.daughter = -1;
+    	    // and no "sistersOfDaughter"
+    	}
+    	else
+    	{
+    	    // set daughter
+    	    info.daughter = info.childIndices[0];
+    	    short [] sistersOfDaughter = new short[nSisters];
+    	    for( int i=0; i<nSisters; i++ )
+    		{
+    	        sistersOfDaughter[i] = sisterIndices[i+1];
+    		}
+//    	System.out.println( "#  set daughter." );
+    	    ConvNTreeToBTree( (short)myID, sistersOfDaughter[0], sistersOfDaughter );
+    	}
+
+    	// set sister
+    	if( 0 == nSisters )
+    	{
+    	    info.sister =  -1;
+    	    // and no more sisters
+    	}
+    	else
+    	{
+    	    // set sister
+    	    // sisterIndices[0] means this node itself
+    	    info.sister = sisterIndices[1];
+    	    short [] otherSisters = new short[nSisters-1];
+    	    for( int i=0; i<nSisters-1; i++ )
+    		{
+    	         otherSisters[i] = sisterIndices[i+2];
+    		}
+//    	System.out.println( "#  set sister." );
+    	    ConvNTreeToBTree( (short)myID, otherSisters[0], otherSisters );
+    	}
+
+//    	System.out.println( "# out ConvNTreeToBTree()." );
+    	return;
+
+    }
+
+    private Material createMaterial(MaterialInfo materialInfo){
+
+        Material material = new Material();
+    	        
+        float[] dColor = materialInfo.diffuseColor;
+        material.setDiffuseColor(new Color3f(dColor[0], dColor[1], dColor[2]));
+
+        float[] sColor = materialInfo.specularColor;
+        material.setSpecularColor(new Color3f(sColor[0], sColor[1], sColor[2]));
+
+        float[] eColor = materialInfo.emissiveColor;
+        material.setEmissiveColor(new Color3f(eColor[0], eColor[1], eColor[2]));
+
+        float r = materialInfo.ambientIntensity;
+        material.setAmbientColor(new Color3f(r * dColor[0], r * dColor[1], r * dColor[2]));
+    	        
+        float shininess = materialInfo.shininess * 127.0f + 1.0f;
+        material.setShininess(shininess);
+    	        
+        return material;
+    }
+	
 /* for future use
 	private Map<String, vrml.node.Node> def2NodeMap_ = new HashMap<String, vrml.node.Node>();
 	private Map<SceneGraphObject, String> node2DefMap_ = new HashMap<SceneGraphObject, String>();

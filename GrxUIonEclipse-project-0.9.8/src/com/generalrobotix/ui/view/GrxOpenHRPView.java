@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxOpenHRPView.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -468,8 +477,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 				if (model.lInfo_ == null)
 					continue;
 
-				currentWorld_.registerCharacter(model.getName(), model.cInfo_);
-				currentDynamics_.registerCharacter(model.getName(), model.cInfo_);
+				currentWorld_.registerCharacter(model.getName(), model.bInfo_);
+				currentDynamics_.registerCharacter(model.getName(), model.bInfo_);
 				if (model.isRobot()) {
 					robotEntry_.add(model.getName());
 				}

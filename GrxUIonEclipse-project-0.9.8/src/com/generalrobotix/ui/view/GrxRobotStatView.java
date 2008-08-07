@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxRobotStatView.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -15,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import jp.go.aist.hrp.simulator.SensorState;
-import jp.go.aist.hrp.simulator.SensorType;
+//import jp.go.aist.hrp.simulator.SensorType;
 
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -285,7 +294,7 @@ public class GrxRobotStatView extends GrxBaseView {
                 }
                 
                 if (forceName_ == null) {
-                    forceName_ = currentModel_.getSensorNames(SensorType.FORCE_SENSOR);
+                    forceName_ = currentModel_.getSensorNames("Force");
                     _resizeTables();
                 }
             }
