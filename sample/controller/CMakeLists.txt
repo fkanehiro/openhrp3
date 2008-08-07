@@ -12,7 +12,8 @@ macro(create_simple_controller CONTROLLER_NAME)
   target_link_libraries(${CONTROLLER_NAME}Comp ${OPENRTM_LIBRARIES})
   
   if(WIN32)
-	add_definitions(${OPENRTM_DEFINITIONS})
+	  add_definitions(${OPENRTM_DEFINITIONS})
+	  set_target_properties(${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp PROPERTIES DEBUG_POSTFIX d )
   endif()
 
   set(controller_install_path ${RELATIVE_SAMPLE_INSTALL_PATH}/controller/${CONTROLLER_NAME})

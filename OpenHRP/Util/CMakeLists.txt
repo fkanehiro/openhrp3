@@ -31,6 +31,7 @@ set_target_properties(hrpUtil3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 if(WIN32)
   add_definitions(-DHRP_UTIL_MAKE_DLL)
   set_target_properties(hrpUtil3 PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
+  set_target_properties(hrpUtil3 PROPERTIES DEBUG_POSTFIX d )
 endif()
 
 if(WIN32)

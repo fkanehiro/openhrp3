@@ -73,6 +73,8 @@ if(UNIX)
   endif()
 
     target_link_libraries(hrpCollision3 m)
+elseif(WIN32)
+  set_target_properties(hrpCollision3 PROPERTIES DEBUG_POSTFIX d )
 endif()
 
 if(WIN32)
