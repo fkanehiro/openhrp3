@@ -45,6 +45,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -68,6 +69,7 @@ public class SWTMoviePlayer implements ControllerListener{
     Frame frame_;
     Composite comp_;
     JPanel contentPane_;
+    int frameX,frameY;
     
     /**
      * コンストラクタ
@@ -84,13 +86,13 @@ public class SWTMoviePlayer implements ControllerListener{
 		
 		FillLayout layout = new FillLayout();
 		window_.setLayout(layout);
-        
+
 		//----
         // Linuxでリサイズイベントが発行されない問題対策
         // https://bugs.eclipse.org/bugs/show_bug.cgi?id=168330
 		comp_ = new Composite( window_, SWT.EMBEDDED );
 		frame_ = SWT_AWT.new_Frame( comp_ );
-		
+
 		comp_.addControlListener( new ControlListener() {
 			public void controlMoved(ControlEvent e) {}
 			public void controlResized(ControlEvent e) {
@@ -102,12 +104,33 @@ public class SWTMoviePlayer implements ControllerListener{
         contentPane_ = new JPanel();
         frame_.add(contentPane_);
 		
+        window_.open();
+        window_.setSize(contentPane_.getPreferredSize().width, contentPane_.getPreferredSize().height);
+
+        //枠線サイズを取得する
+        frameX = window_.getSize().x - comp_.getSize().x;
+		frameY = window_.getSize().y - comp_.getSize().y;
+		System.out.println("frame size="+frameX+"-"+frameY);
+
         //指定ファイルオープン
         if(_load(fileName)==false)_load(null);
-        
-        window_.open();
     }
 
+    private void resizeWindow(){
+		Display display = Display.getDefault();
+		
+		if ( display!=null && !display.isDisposed())
+			// TODO: syncExecではこけるのだがなぜ？
+			display.asyncExec(
+				new Runnable(){
+					public void run() {
+						window_.setSize(contentPane_.getPreferredSize().width+frameX, contentPane_.getPreferredSize().height+frameY);
+					}
+				}
+			);
+
+    }
+    
     private void createMenu() {
 		Menu menubar = new Menu(window_,SWT.BAR);
 		window_.setMenuBar(menubar);
@@ -377,7 +400,6 @@ public class SWTMoviePlayer implements ControllerListener{
                 }
             }
 
-
             // Display the visual & control component if there's one.
             newVisual = p_.getVisualComponent();
             
@@ -413,18 +435,13 @@ public class SWTMoviePlayer implements ControllerListener{
             contentPane_.add("South", cmpOpe_);
         }
 
-        //this.pack();
-        frame_.pack();
-        contentPane_.setBounds(0, 0,200,150);
-        contentPane_.repaint();
-        frame_.setBounds(0, 0,200,150);
-        frame_.repaint();
-        
         //はじめの画面を表示
         if(frameCtrl_!=null){
             frameCtrl_.skip(1);
             frameCtrl_.skip(-1);
          }
+
+        resizeWindow();
 
         return true;
     }

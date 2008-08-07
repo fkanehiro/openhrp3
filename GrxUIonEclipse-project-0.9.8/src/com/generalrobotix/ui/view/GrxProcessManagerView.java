@@ -9,6 +9,7 @@
 
 package com.generalrobotix.ui.view;
 
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.jface.action.Action;
@@ -17,9 +18,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
@@ -36,7 +39,7 @@ public class GrxProcessManagerView extends GrxBaseView {
 		isScrollable_ = false;
 		processManager.createThread();
 	}
-	
+
 	public void loadProcessList(Element root) {
 		NodeList processList = root.getElementsByTagName("processmanagerconfig");
 		if (processList == null || processList.getLength() == 0)
@@ -99,7 +102,16 @@ public class GrxProcessManagerView extends GrxBaseView {
 		return new String[]{"Tools"};
 	}
 
+	// プラグイン初期化時にはビューが無いためプロセス初期化に失敗するため、
+	// ビューが初期化されたさいに再度プロセスをリストアする
+	public boolean setup(List<GrxBaseItem> itemList){
+		GrxDebugUtil.println("[ProcessManagerView] restore process");
+		manager_.restoreProcess();
+		return true;
+	}
+
 	public void shutdown() {
+		GrxDebugUtil.println("[ProcessManagerView] stop process");
 		processManager.autoStop();
 	}
 }

@@ -186,7 +186,8 @@ public class GrxPluginManager
 		        		iv.updateTree();
 		        	isItemModelChanged_ = false;
                 }
-				_control();
+				if( isPerspectiveVisible() )
+					_control();
 				if ( ! display.isDisposed() )
 					display.timerExec(delay_, this);
 			}
@@ -197,6 +198,21 @@ public class GrxPluginManager
 		// TODO: 「grxuirc.xmlが見つからないとexit()」の代替だが、もっとスマートな方法を考えよう
 		initSucceed = true;
 	}
+
+	private boolean isPerspectiveVisible(){
+  		IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        if( window == null )
+        	return false;
+       	IWorkbenchPage page = window.getActivePage();
+       	if( page==null )
+       		return false;
+   		IPerspectiveDescriptor pers = page.getPerspective();
+   		if( ! pers.getId().equals( GrxUIPerspectiveFactory.ID ) )
+   			return false;
+		return true;
+	}
+
 	
 	private void _updateItemSelection() {
 		GrxDebugUtil.println("[PM THREAD] update Item Selections");
@@ -911,13 +927,22 @@ public class GrxPluginManager
 		return menu;
 	}
 
-	void shutdown() {
+	public void shutdown() {
+		GrxDebugUtil.println("[PM] shutdown.");
+
 		Iterator it = pluginMap_.values().iterator();
 		for (; it.hasNext();) {
 			Iterator it2 = ((Map) it.next()).values().iterator();
 			for (; it2.hasNext();)
 				((GrxBasePlugin) it2.next()).shutdown();
 		}
+
+		/* この時点ですでにビューは閉じられている
+		 * いまはViewPartのdisposeメソッドからViewのshutdownを呼んでいる
+		updateViewList();
+		for( GrxBaseView v : selectedViewList_ )
+			v.shutdown();
+		*/
 		
 		try {
 			GrxCorbaUtil.getORB().shutdown(false);
@@ -925,7 +950,7 @@ public class GrxPluginManager
 			e.printStackTrace();
 		}
 		
-		System.exit(0);
+		//System.exit(0);
 	}
 
 	public void setProjectProperty(String key, String val) {

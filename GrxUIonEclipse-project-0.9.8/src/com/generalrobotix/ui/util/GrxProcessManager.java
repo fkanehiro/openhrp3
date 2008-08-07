@@ -19,11 +19,14 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import jp.go.aist.hrp.simulator.ServerObject;
 import jp.go.aist.hrp.simulator.ServerObjectHelper;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -39,6 +42,8 @@ public class GrxProcessManager {
 	private StyledText outputArea_;
 	private StringBuffer outputBuffer_;
     
+	private ConcurrentLinkedQueue<String> lineQueue = new ConcurrentLinkedQueue<String>();
+	
 	public GrxProcessManager(Composite output) {
         initialize(output);
     }
@@ -68,12 +73,20 @@ public class GrxProcessManager {
         outputComposite_ = output;
         outputArea_ = new StyledText(outputComposite_,SWT.MULTI|SWT.BORDER|SWT.V_SCROLL|SWT.H_SCROLL);
         outputArea_.setEditable(false);
+        //outputArea_.setWordWrap(true);
+
         outputBuffer_ = new StringBuffer();
         
+        // 右クリックメニューを自動再生成させる
         MenuManager manager = new MenuManager();
-        for(Action action : getOutputMenu()){
-            manager.add(action);
-        }
+        manager.setRemoveAllWhenShown(true);
+        manager.addMenuListener(new IMenuListener() {
+        	public void menuAboutToShow(IMenuManager menu) {
+                for(Action action : getOutputMenu()){
+                    menu.add(action);
+                }
+            }
+        } );
         outputArea_.setMenu(manager.createContextMenu(outputArea_));
     }
     
@@ -234,18 +247,13 @@ public class GrxProcessManager {
 		Thread t = new Thread() {
 			public void run() {
 				while (!isEnd_) {
-					// SWTEDT(イベントディスパッチスレッド)外からの呼び出しなので、SWTEDTに通知してやってもらう
-					Display.getDefault().syncExec(new Thread(){
-	                    public void run(){
-	    					updateIO();
-	                    }
-					} );
+   					updateIO();
 				}
 			}
 		};
 		t.start();
 	}
-
+	
 	public void updateIO() {
 		for (int i = 0; i < size(); i++) {
 			AProcess p = process_.get(i);
@@ -256,17 +264,30 @@ public class GrxProcessManager {
 			if (outputArea_ == null || sb == null || sb.length() == 0)
 				continue;
 
-			String line = sb.toString();
+			String newLine = sb.toString(); 
 			if (outputBuffer_.length() > 50000) {
-				outputBuffer_.delete(0, line.length());
+				outputBuffer_.delete(0, newLine.length());
 			}
+			outputBuffer_.append(newLine);
+			lineQueue.offer( newLine );
 
-			outputBuffer_.append(line);
 			if (p.showOutput_) {
-              	outputArea_.append(line);
-               	outputArea_.setCaretOffset(outputArea_.getText().length());
+				// SWTEDT(イベントディスパッチスレッド)外からの呼び出しなので、SWTEDTに通知してやってもらう
+				Display display = Display.getDefault();
+				if( display != null && ! display.isDisposed() ) {
+					display.asyncExec( new Runnable(){
+	                    public void run(){
+	                    	String newLine=null;
+	                    	while( ( newLine = lineQueue.poll() ) != null ) {
+	                    		outputArea_.append( newLine );
+	                    	}
+	                    	outputArea_.setTopIndex( outputArea_.getLineCount() );
+	                    }
+	                } );
+				}
 			}
 		}
+
 		try {
 			Thread.sleep(10);
 		} catch (InterruptedException e) {
@@ -290,14 +311,15 @@ public class GrxProcessManager {
             vector.add(action);
         }
         
-        Action actionClearAll = new Action("Clear All",Action.AS_PUSH_BUTTON){
+        Action actionClearAll = new Action("Clear All!",Action.AS_PUSH_BUTTON){
             public void run(){
                 outputArea_.setText("");
                 outputBuffer_ = new StringBuffer();
             }
         };
         vector.add(actionClearAll);
-		return vector;
+
+        return vector;
 	}
     
 	public Composite getOutputComposite() {

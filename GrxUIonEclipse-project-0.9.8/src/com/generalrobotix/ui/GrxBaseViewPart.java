@@ -9,7 +9,7 @@ public class GrxBaseViewPart extends ViewPart {
 
 	protected GrxBaseView v=null;
 
-	public GrxBaseViewPart(){System.out.println(this);}
+	//public GrxBaseViewPart(){System.out.println(this);}
 
 	public GrxBaseView getGrxBaseView() {
 		return v;
@@ -33,4 +33,8 @@ public class GrxBaseViewPart extends ViewPart {
 	
 	@Override
 	public void setFocus() {}
+	
+	public void dispose(){
+		v.shutdown();
+	}
 } 

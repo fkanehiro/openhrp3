@@ -5,7 +5,6 @@
         <process com="$(BIN_DIR)/NameServer$(BIN_SFX)" id="NameService"/>
         <process com="$(BIN_DIR)/ModelLoader$(BIN_SFX)" hasshutdown="true" id="ModelLoader"/>
         <process com="$(BIN_DIR)/CollisionDetector$(BIN_SFX)" hasshutdown="true" id="CollisionDetectorFactory"/>
-        <process com="$(BIN_DIR)/CollisionDetector$(BIN_SFX)" hasshutdown="true" id="CollisionDetectorFactory"/>
         <process com="$(BIN_DIR)/DynamicsSimulator$(BIN_SFX)" hasshutdown="true" id="DynamicsSimulatorFactory" waitcount="1000"/>
     </processmanagerconfig>
 
