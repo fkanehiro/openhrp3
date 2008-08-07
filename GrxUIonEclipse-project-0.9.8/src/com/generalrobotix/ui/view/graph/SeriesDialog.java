@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+
 package com.generalrobotix.ui.view.graph;
 
 import java.awt.*;
@@ -9,7 +19,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import jp.go.aist.hrp.simulator.SensorType;
+//import jp.go.aist.hrp.simulator.SensorType;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -299,14 +309,16 @@ public class SeriesDialog extends JDialog {
 						for (int i = 0; i < li.length; i++) 
 							comboLink_.addItem(li[i].name);
 					} else {
-						SensorType t = null;
-						if (type.equals("ForceSensor"))
-							t = SensorType.FORCE_SENSOR;
-						else if (type.equals("Gyro"))
-							t = SensorType.RATE_GYRO;
-						else if (type.equals("AccelerationSensor"))
-							t = SensorType.ACCELERATION_SENSOR;
-						String[] snames = model.getSensorNames(t);
+						//SensorType t = null;
+						//if (type.equals("ForceSensor"))
+						//	t = SensorType.FORCE_SENSOR;
+						//else if (type.equals("Gyro"))
+						//	t = SensorType.RATE_GYRO;
+						//else if (type.equals("AccelerationSensor"))
+						//	t = SensorType.ACCELERATION_SENSOR;
+						//String[] snames = model.getSensorNames(t);
+						String[] snames = model.getSensorNames((String)type);
+
 						if (snames != null) {
 							for (int i=0; i<snames.length; i++) {
 								comboLink_.addItem(snames[i]);

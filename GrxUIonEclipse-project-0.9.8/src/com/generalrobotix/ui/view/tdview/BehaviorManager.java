@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
 /**
  * BehaviorManager.java
  *
@@ -225,8 +234,8 @@ public class BehaviorManager implements WorldReplaceListener {
 			List modelList = manager_.getSelectedItemList(GrxModelItem.class);
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem)modelList.get(i);
-				if (model.cInfo_ != null)
-					currentDynamics_.registerCharacter(model.getName(), model.cInfo_);
+				if (model.bInfo_ != null)
+					currentDynamics_.registerCharacter(model.getName(), model.bInfo_);
 			}
 
 			IntegrateMethod m = IntegrateMethod.EULER;
