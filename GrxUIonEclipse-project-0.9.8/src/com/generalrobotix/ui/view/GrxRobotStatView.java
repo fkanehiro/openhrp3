@@ -393,11 +393,13 @@ public class GrxRobotStatView extends GrxBaseView {
         public String getColumnText(Object element, int columnIndex) {
             int rowIndex = ((Integer)element).intValue();
             
-            if (currentModel_ != null) {
+            /*
+			if (currentModel_ != null) {
                 if (jointList_.get(rowIndex) == currentModel_.activeLinkInfo_) {
                     return "---";
                 }
             }
+            */
             switch (columnIndex) {
                 case 0:
                     return Integer.toString(rowIndex);

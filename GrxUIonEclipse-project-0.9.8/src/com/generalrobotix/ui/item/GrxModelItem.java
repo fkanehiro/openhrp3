@@ -56,7 +56,7 @@ import jp.go.aist.hrp.simulator.PixelFormat;
 @SuppressWarnings("serial")
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	public static final String TITLE = "Model";
-	public static final String DEFAULT_DIR = "../../etc";
+//	public static final String DEFAULT_DIR = "../../etc";
 	public static final String FILE_EXTENSION = "wrl";
 		
 	private boolean isRobot_ = true;
