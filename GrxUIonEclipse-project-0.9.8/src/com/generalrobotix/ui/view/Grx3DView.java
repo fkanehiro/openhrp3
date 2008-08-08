@@ -287,29 +287,38 @@ public class Grx3DView
 		BranchGroup bg = new BranchGroup();
 	    DirectionalLight[] light = new DirectionalLight[4];
 	    TransformGroup[] tg = new TransformGroup[4];
-	    BoundingSphere bounds = new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
+	    BoundingSphere bounds =
+	    new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
 	   
-		//DirectionalLight dlight = new DirectionalLight(new Color3f(1.0f, 1.0f, 1.0f), new Vector3f(-0.8f, -1.2f, -1.5f));
-		//dlight.setInfluencingBounds(bounds);
- 		//tgView_.addChild(dlight);
+		// light
+		/*BoundingSphere bounds = new BoundingSphere(
+				new Point3d(0.0, 0.0, 0.0), 100.0);
+		AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
+		alight.setInfluencingBounds(bounds);
+		tgView_.addChild(alight);
+		
+		DirectionalLight dlight = new DirectionalLight(
+				new Color3f(1.0f, 1.0f, 1.0f), new Vector3f(-0.8f, -1.2f, -1.5f));
+		dlight.setInfluencingBounds(bounds);
+		tgView_.addChild(dlight);*/
 
 	    light[0] = new DirectionalLight(true,   // lightOn
-	            new Color3f(0.7f, 0.7f, 0.7f),  // color
+	            new Color3f(0.6f, 0.6f, 0.6f),  // color
 	            new Vector3f(0.0f, 0.0f, -1.0f) // direction
 	    );
 	    
 	    light[1] = new DirectionalLight(true,   // lightOn
-	            new Color3f(0.4f, 0.4f, 0.4f),  // color
+	            new Color3f(0.3f, 0.3f, 0.3f),  // color
 	            new Vector3f(0.0f, 0.0f, -1.0f) // direction
 	    );
 	    
 	    light[2] = new DirectionalLight(true,   // lightOn
-	            new Color3f(0.7f, 0.7f, 0.7f),  // color
+	            new Color3f(0.6f, 0.6f, 0.6f),  // color
 	            new Vector3f(0.0f, 0.0f, -1.0f) // direction
 	    );
 	    
 	    light[3] = new DirectionalLight(true,   // lightOn
-	            new Color3f(0.4f, 0.4f, 0.4f),  // color
+	            new Color3f(0.3f, 0.3f, 0.3f),  // color
 	            new Vector3f(0.0f, 0.0f, -1.0f) // direction
 	    );
 	    
@@ -326,25 +335,25 @@ public class Grx3DView
         
         pos.set(10.0, 10.0, 5.0);
         transform.set(pos);
-        rot.set(-0.5, 0.5, 0.0, 1.2);
+        rot.set(-0.5, 0.5, 0.0, 0.7);
         transform.set(rot);
         tg[0].setTransform(transform);
         
         pos.set(10.0, -10.0, -5.0);
         transform.set(pos);
-        rot.set(0.5, 0.5, 0.0, 3.14 - 1.2);
+        rot.set(0.5, 0.5, 0.0, 2.4);
         transform.set(rot);
         tg[1].setTransform(transform);
         
         pos.set(-10.0, -10.0, 5.0);
         transform.set(pos);
-        rot.set(0.5, -0.5, 0.0, 1.2);
+        rot.set(0.5, -0.5, 0.0, 0.7);
         transform.set(rot);
         tg[2].setTransform(transform);
         
         pos.set(-10.0, 10.0, -5.0);
         transform.set(pos);
-        rot.set(-0.5, -0.5, 0.0, 3.14 - 1.2);
+        rot.set(-0.5, -0.5, 0.0, 2.4);
         transform.set(rot);
         tg[3].setTransform(transform);
 
@@ -353,11 +362,6 @@ public class Grx3DView
 		backGround_.setCapability(Background.ALLOW_COLOR_WRITE);
 		backGround_.setApplicationBounds(bounds);
 		bg.addChild(backGround_);
-		
- 		// Ambient Light for Alert
- 		//AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
- 		//alight.setInfluencingBounds(bounds);
- 		//tg[0].addChild(alight);
 		
 		return bg;
 	}
