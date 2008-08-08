@@ -1,0 +1,207 @@
+#VRML V2.0 utf8
+
+#pole front center
+Transform {
+  children [
+    Inline {
+      url "pass_under_pole.wrl"
+    }
+  ]
+}
+
+#pole front right
+Transform {
+  translation 0 0.925 0
+  children [
+    Inline {
+      url "pass_under_pole.wrl"
+    }
+  ]
+}
+
+#pole front left
+Transform {
+  translation 0 -0.925 0
+  children [
+    Inline {
+      url "pass_under_pole.wrl"
+    }
+  ]
+}
+
+#pole back center
+Transform {
+  translation -0.451 0 0
+  children [
+    Inline {
+      url "pass_under_pole.wrl"
+    }
+  ]
+}
+
+#pole back right
+Transform {
+  translation -0.451 0.925 0
+  children [
+    Inline {
+      url "pass_under_pole.wrl"
+    }
+  ]
+}
+
+#pole back left
+Transform {
+  translation -0.451 -0.925 0
+  children [
+    Inline {
+      url "pass_under_pole.wrl"
+    }
+  ]
+}
+
+#long bar front
+Transform {
+  translation -0.075 0 1.45
+  rotation 0 1 0 3.141594
+  children [
+    Inline {
+      url "pass_under_long_bar.wrl"
+    }
+  ]
+}
+
+#long bar back
+Transform {
+  translation -0.376 0 1.45
+  children [
+    Inline {
+      url "pass_under_long_bar.wrl"
+    }
+  ]
+}
+
+#short bar front right
+Transform {
+  translation -0.075 0.4625 0.8243 # Please change Z_value to changing the vertical position of the bar.
+  rotation 0 1 0 3.141594
+  children [
+    Inline {
+      url "pass_under_short_bar.wrl"
+    }
+  ]
+}
+
+
+#short bar front left
+Transform {
+  translation -0.075 -0.4625 0.5243 # Please change Z_value to changing the vertical position of the bar.
+  rotation 0 1 0 3.141594
+  children [
+    Inline {
+      url "pass_under_short_bar.wrl"
+    }
+  ]
+}
+
+#short bar back right
+Transform {
+  translation -0.376 0.4625 0.8243 # Please change Z_value to changing the vertical position of the bar.
+  children [
+    Inline {
+      url "pass_under_short_bar.wrl"
+    }
+  ]
+}
+
+#short bar back left
+Transform {
+  translation -0.376 -0.4625 0.5243 # Please change Z_value to changing the vertical position of the bar.
+  children [
+    Inline {
+      url "pass_under_short_bar.wrl"
+    }
+  ]
+}
+
+#joint bar center middle
+Transform {
+  translation -0.2255 -0.075 0.7 # Please change Z_value to changing the vertical position of the bar.
+  children [
+    Inline {
+      url "pass_under_joint_bar.wrl"
+    }
+  ]
+}
+
+#joint bar center bottom
+Transform {
+  translation -0.2255 -0.075 0.07 # Please change Z_value to changing the vertical position of the bar.
+  children [
+    Inline {
+      url "pass_under_joint_bar.wrl"
+    }
+  ]
+}
+
+#joint bar right top
+Transform {
+  translation -0.2255 1 1.3 # Please change Z_value to changing the vertical position of the bar.
+  rotation 1 0 0 3.141594
+  children [
+    Inline {
+      url "pass_under_joint_bar.wrl"
+    }
+  ]
+}
+
+#joint bar right middle
+Transform {
+  translation -0.2255 1 0.7 # Please change Z_value to changing the vertical position of the bar.
+  rotation 1 0 0 3.141594
+  children [
+    Inline {
+      url "pass_under_joint_bar.wrl"
+    }
+  ]
+}
+
+#joint bar right buttom
+Transform {
+  translation -0.2255 1 0.07 # Please change Z_value to changing the vertical position of the bar.
+  rotation 1 0 0 3.141594
+  children [
+    Inline {
+      url "pass_under_joint_bar.wrl"
+    }
+  ]
+}
+
+#joint bar left top
+Transform {
+  translation -0.2255 -1 1.3 # Please change Z_value to changing the vertical position of the bar.
+  children [
+    Inline {
+      url "pass_under_joint_bar.wrl"
+    }
+  ]
+}
+
+#joint bar left middle
+Transform {
+  translation -0.2255 -1 0.7 # Please change Z_value to changing the vertical position of the bar.
+  children [
+    Inline {
+      url "pass_under_joint_bar.wrl"
+    }
+  ]
+}
+
+#joint bar left buttom
+Transform {
+  translation -0.2255 -1 0.07 # Please change Z_value to changing the vertical position of the bar.
+  children [
+    Inline {
+      url "pass_under_joint_bar.wrl"
+    }
+  ]
+}

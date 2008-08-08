@@ -1,0 +1,180 @@
+#VRML V2.0 utf8
+
+#protection railing base
+Transform {
+  children [
+    Inline {
+      url "protection_base.wrl"
+    }
+  ]
+}
+
+#newel center
+Transform {
+  translation -0.025 0 0.105
+  children [
+    Inline {
+      url "protection_newel.wrl"
+    }
+  ]
+}
+
+#bolt center right front
+Transform {
+  translation 0.025 -0.036 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt center left front
+Transform {
+  translation -0.075 -0.036 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt center right back
+Transform {
+  translation 0.025 0.036 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt center left back
+Transform {
+  translation -0.075 0.036 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#newel back
+Transform {
+  translation -0.025 1.3 0.105
+  children [
+    Inline {
+      url "protection_newel.wrl"
+    }
+  ]
+}
+
+#bolt back right front
+Transform {
+  translation 0.025 1.264 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt back left front
+Transform {
+  translation -0.075 1.264 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt back right back
+Transform {
+  translation 0.025 1.336 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt back left back
+Transform {
+  translation -0.075 1.336 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#newel front
+Transform {
+  translation -0.025 -1.3 0.105
+  children [
+    Inline {
+      url "protection_newel.wrl"
+    }
+  ]
+}
+
+#bolt front right front
+Transform {
+  translation 0.025 -1.336 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt front left front
+Transform {
+  translation -0.075 -1.336 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt front right back
+Transform {
+  translation 0.025 -1.264 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#bolt front left back
+Transform {
+  translation -0.075 -1.264 0.125
+  children [
+    Inline {
+      url "protection_bolt.wrl"
+    }
+  ]
+}
+
+#parapet big
+Transform {
+  translation 0.065 0 0.785
+  children [
+    Inline {
+      url "protection_parapet_big.wrl"
+    }
+  ]
+}
+
+#parapet small
+Transform {
+  translation 0.08 0 0.455
+  children [
+    Inline {
+      url "protection_parapet_small.wrl"
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+#VRML V2.0 utf8
+
+#pole long right front
+Transform {
+  translation 0 0 0
+  children [
+    Inline {
+      url "scaffolding_pole_long.wrl"
+    }
+  ]
+}
+
+#pole long left front
+Transform {
+  translation -0.6 0 0
+  children [
+    Inline {
+      url "scaffolding_pole_long.wrl"
+    }
+  ]
+}
+
+#pole long right back
+Transform {
+  translation 0 1.2486 0
+  children [
+    Inline {
+      url "scaffolding_pole_long.wrl"
+    }
+  ]
+}
+
+#pole long left back
+Transform {
+  translation -0.6 1.2486 0
+  children [
+    Inline {
+      url "scaffolding_pole_long.wrl"
+    }
+  ]
+}
+
+#pole nobase front
+Transform {
+  translation 0.6 0 0.2
+  children [
+    Inline {
+      url "scaffolding_pole_nobase.wrl"
+    }
+  ]
+}
+
+#pole nobase back
+Transform {
+  translation 0.6 1.2486 0.2
+  children [
+    Inline {
+      url "scaffolding_pole_nobase.wrl"
+    }
+  ]
+}
+
+#pole short front
+Transform {
+  translation 1.9 -0.15 0.2
+  children [
+    Inline {
+      url "scaffolding_pole_short.wrl"
+    }
+  ]
+}
+
+#pole short back
+Transform {
+  translation 1.9 1.3986 0.2
+  children [
+    Inline {
+      url "scaffolding_pole_short.wrl"
+    }
+  ]
+}
+
+#slope long front
+Transform {
+  translation 0.95 -0.075 1
+  children [
+    Inline {
+      url "scaffolding_slope_long_A.wrl"
+    }
+  ]
+}
+
+#slope long back
+Transform {
+  translation 0.95 1.3236 1
+  children [
+    Inline {
+      url "scaffolding_slope_long_B.wrl"
+    }
+  ]
+}
+
+#slope short front
+Transform {
+  translation 1.25 -0.075 1.25
+  children [
+    Inline {
+      url "scaffolding_slope_short_A.wrl"
+    }
+  ]
+}
+
+#slope short back
+Transform {
+  translation 1.25 1.3236 1.25
+  children [
+    Inline {
+      url "scaffolding_slope_short_B.wrl"
+    }
+  ]
+}
+
+#step board1
+Transform {
+  translation 1.73 0.6243 0.4
+  children [
+    Inline {
+      url "scaffolding_step_board.wrl"
+    }
+  ]
+}
+
+#step board2
+Transform {
+  translation 1.47 0.6243 0.6
+  children [
+    Inline {
+      url "scaffolding_step_board.wrl"
+    }
+  ]
+}
+
+#step board3
+Transform {
+  translation 1.21 0.6243 0.8
+  children [
+    Inline {
+      url "scaffolding_step_board.wrl"
+    }
+  ]
+}
+
+#step board4
+Transform {
+  translation 0.95 0.6243 1
+  children [
+    Inline {
+      url "scaffolding_step_board.wrl"
+    }
+  ]
+}
+
+#scaffolding panel
+Transform {
+  translation 0.1 0.6243 1.2
+  children [
+    Inline {
+      url "scaffolding_panel.wrl"
+    }
+  ]
+}
+
+#brace long front top upward
+Transform {
+  translation -0.3 -0.075 1.25
+  rotation 0 0 1 3.141592
+  children [
+    Inline {
+      url "scaffolding_brace_long.wrl"
+    }
+  ]
+}
+
+#brace long front top downward
+
+#brace long front bottom upward
+Transform {
+  translation -0.3 -0.075 0.45
+  rotation 0 0 1 3.141592
+  children [
+    Inline {
+      url "scaffolding_brace_long.wrl"
+    }
+  ]
+}
+
+#brace long front bottom downward
+Transform {
+  translation -0.3 0.075 0.45
+  children [
+    Inline {
+      url "scaffolding_brace_long.wrl"
+    }
+  ]
+}
+
+#brace long back top upward
+
+#brace long back top downward
+Transform {
+  translation -0.3 1.3236 1.25
+  children [
+    Inline {
+      url "scaffolding_brace_long.wrl"
+    }
+  ]
+}
+
+#brace long back bottom upward
+Transform {
+  translation -0.3 1.1736 0.45
+  rotation 0 0 1 3.141592
+  children [
+    Inline {
+      url "scaffolding_brace_long.wrl"
+    }
+  ]
+}
+
+#brace long back bottom downward
+Transform {
+  translation -0.3 1.3236 0.45
+  children [
+    Inline {
+      url "scaffolding_brace_long.wrl"
+    }
+  ]
+}
+
+#brace short front
+Transform {
+  translation 0.3 0.075 1.47
+  children [
+    Inline {
+      url "scaffolding_brace_short_B.wrl"
+    }
+  ]
+}
+
+#brace short back
+Transform {
+  translation 0.3 1.1736 1.47
+  children [
+    Inline {
+      url "scaffolding_brace_short_A.wrl"
+    }
+  ]
+}

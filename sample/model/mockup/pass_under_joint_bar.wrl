@@ -1,0 +1,132 @@
+#VRML V2.0 utf8
+
+#joint bar
+Transform {
+  translation 0 0 0
+  rotation 0 0 1 1.570797
+  children  Shape {
+    appearance DEF PIPE_APP Appearance {
+      material  Material {
+        ambientIntensity  0
+        diffuseColor  0.28 0.4 0.48
+        specularColor 0.3 0.3 0.3
+        emissiveColor 0 0 0
+        shininess 0.08
+        transparency  0
+      }
+    }
+    geometry  Cylinder {
+      radius  0.0243
+      height  0.53
+    }
+  }
+}
+
+#cap1
+Transform {
+  translation 0.2685 0 0
+  rotation 0 0 1 1.570797
+  children  Shape {
+    appearance DEF CAP_APP Appearance {
+      material  Material {
+        ambientIntensity  0
+        diffuseColor  0.11 0.12 0.16
+        specularColor 0.5 0.5 0.5
+        emissiveColor 0 0.12 0.15
+        shininess 0.2
+        transparency  0
+      }
+    }
+    geometry  Cylinder {
+      radius  0.0243
+      height  0.007
+    }
+  }
+}
+
+#cap2
+Transform {
+  translation -0.2685 0 0
+  rotation 0 0 1 1.570797
+  children  Shape {
+    appearance USE CAP_APP
+    geometry  Cylinder {
+      radius  0.0243
+      height  0.007
+    }
+  }
+}
+
+#clamp1
+Transform {
+  translation 0.2255 0 0
+  children [
+    #joint1
+    Transform {
+      translation 0 0 0
+      rotation 0 0 1 1.570797
+      children  Shape {
+        appearance  DEF CLAMP_APP Appearance {
+          material  Material {
+            ambientIntensity  0.0322581
+            diffuseColor  0.88 0.76 0.55
+            specularColor 0.73 0.65 0
+            emissiveColor 0 0 0
+            shininess 0.03
+            transparency  0
+          }
+        }
+        geometry  Cylinder {
+          radius  0.0375
+          height  0.05
+        }
+      }
+    }
+    
+    #joint2
+    Transform {
+      translation 0 0.075 0
+      rotation 1 0 0 1.570797
+      children  Shape {
+        appearance  USE CLAMP_APP
+        geometry  Cylinder {
+          radius  0.0375
+          height  0.05
+        }
+      }
+    }
+  ]
+}
+
+#clamp2
+Transform {
+  translation -0.2255 0 0
+  children [
+
+    #joint1
+    Transform {
+      translation 0 0 0
+      rotation 0 0 1 1.570797
+      children  Shape {
+        appearance  USE CLAMP_APP
+        geometry  Cylinder {
+          radius  0.0375
+          height  0.05
+        }
+      }
+    }
+    
+    #joint2
+    Transform {
+      translation 0 0.075 0
+      rotation 1 0 0 1.570797
+      children  Shape {
+        appearance  USE CLAMP_APP
+        geometry  Cylinder {
+          radius  0.0375
+          height  0.05
+        }
+      }
+    }
+  ]
+}

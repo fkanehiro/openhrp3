@@ -1,0 +1,38 @@
+#VRML V2.0 utf8
+
+#back ground bord
+Transform {
+  translation 0 0 2.5
+  children [
+    Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url "blue.jpg"
+        }
+      }
+      geometry IndexedFaceSet {
+        coord Coordinate {
+          point [
+            0 8 2.5
+            0 -8 2.5
+            0 8 -2.5
+            0 -8 -2.5
+          ]
+        }
+        coordIndex [
+          2 1 0 -1
+          2 3 1 -1
+        ]
+        texCoord TextureCoordinate {
+          point [
+            0 1
+            1 1
+            0 0
+            1 0
+          ]
+        }
+        creaseAngle 0.5
+      }
+    }
+  ]
+}

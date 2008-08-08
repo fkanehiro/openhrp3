@@ -1,0 +1,21 @@
+#VRML V2.0 utf8
+
+#parapet big
+Transform {
+  children  Shape {
+    appearance  DEF PARAPET Appearance {
+      material  Material {
+        ambientIntensity  0
+        diffuseColor  0.35 0.16 0.12
+        specularColor 0.3 0.3 0.3
+        emissiveColor 0 0 0
+        shininess 0.08
+        transparency  0
+      }
+    }
+    geometry  Cylinder {
+      radius  0.0699
+      height  3.1
+    }
+  }
+}
