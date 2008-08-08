@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
 /**
  * JointRecover.java
  *
@@ -157,7 +166,7 @@ public class InvKinemaResolver {
         	}
         }
         try {
-			if (robot_ == null || from_ == null || to_ == null) 
+			if (robot_ == null || from_ == null || to_ == null)
 				return false;
 
         	if (!integrator_.calcCharacterInverseKinematics(robot_.getName(), from_.name, to_.name, tr)) {

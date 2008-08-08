@@ -7,7 +7,6 @@
  * General Robotix Inc.
  * National Institute of Advanced Industrial Science and Technology (AIST) 
  */
-
 package com.generalrobotix.ui.view.graph;
 
 import java.awt.*;
