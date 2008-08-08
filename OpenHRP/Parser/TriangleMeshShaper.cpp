@@ -255,9 +255,6 @@ bool TMSImpl::convertShapeNode(VrmlShape* shapeNode)
     }
     
     if(result && !triangleMesh->normal && isNormalGenerationMode){
-        // test
-        //triangleMesh->creaseAngle = 0.0;
-        
         generateNormals(triangleMesh);
     }
 
@@ -306,10 +303,18 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
             if(numTriangles > 0){
                 // \todo ここで3頂点に重なりはないか、距離が短すぎないかなどのチェックを行った方がよい
                 for(int j=0; j < numTriangles; ++j){
-                    for(int k=0; k < 3; ++k){
-                        int indexInPolygon = trianglesInPolygon[j*3 + k];
-                        indices.push_back(polygon[indexInPolygon]);
-                        indexPositionMap.push_back(polygonTopIndexPosition + indexInPolygon);
+                    if(faceSet->ccw){
+                        for(int k=0; k < 3; ++k){
+                            int indexInPolygon = trianglesInPolygon[j*3 + k];
+                            indices.push_back(polygon[indexInPolygon]);
+                            indexPositionMap.push_back(polygonTopIndexPosition + indexInPolygon);
+                        }
+                    } else {
+                        for(int k=2; k >= 0; --k){
+                            int indexInPolygon = trianglesInPolygon[j*3 + k];
+                            indices.push_back(polygon[indexInPolygon]);
+                            indexPositionMap.push_back(polygonTopIndexPosition + indexInPolygon);
+                        }
                     }
                     indices.push_back(-1);
                     indexPositionMap.push_back(-1);
@@ -334,6 +339,19 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
     int numNormals = faceSet->normal ? faceSet->normal->vector.size() : 0;
     result &= checkAndRemapIndices
         (REMAP_NORMAL, numNormals, faceSet->normalIndex, faceSet->normalPerVertex, faceSet);
+
+    if(numNormals > 0 && !faceSet->ccw){
+        // flip normal vectors
+         MFVec3f& normals = faceSet->normal->vector;
+         for(int i=0; i < normals.size(); ++i){
+             SFVec3f& n = normals[i];
+             n[0] = -n[0];
+             n[1] = -n[1];
+             n[2] = -n[2];
+         }
+    }
+
+    faceSet->ccw = true;
 
     return (result && !indices.empty());
 }
