@@ -622,8 +622,12 @@ public class Grx3DView
 		for (int i=0; i<currentModels_.size(); i++) {
 			GrxModelItem model = currentModels_.get(i);
 			CharacterStateEx charStat = state.get(model.getName());
-			if (charStat != null) 
-				model.setCharacterPos(charStat.position, charStat.sensorState);
+			if (charStat != null) {
+				if (charStat.sensorState != null)
+					model.setCharacterPos(charStat.position, charStat.sensorState.q);
+				else
+					model.setCharacterPos(charStat.position, null);
+			}
 		}
 		_doRecording();
 		prevTime_ = state.time;
