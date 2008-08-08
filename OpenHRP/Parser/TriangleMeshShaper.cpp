@@ -686,7 +686,7 @@ bool TMSImpl::convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleM
     }
 
     // side faces
-    for(int i=0; i < vdn - 1; ++i){
+    for(int i=1; i < vdn - 2; ++i){
         const int upper = i * hdn;
         const int lower = (i + 1) * hdn;
         for(int j=0; j < hdn; ++j) {
