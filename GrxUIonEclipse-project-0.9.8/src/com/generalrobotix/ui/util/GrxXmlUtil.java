@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxXmlUtil.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -170,13 +179,15 @@ public class GrxXmlUtil {
 	}
 
 	public static Double getDouble(Element e, String atr) {
-		String str = expandEnvVal(e.getAttribute(atr));
-		if (!str.equals("")) {
+		if (e != null) {
+			String str = expandEnvVal(e.getAttribute(atr));
+			if (!str.equals("")) {
 				try {
 					return Double.parseDouble(str);
 				} catch (Exception ex) {
 					return null;
 				}
+			}
 		}
 		return null;
 	}
@@ -195,16 +206,16 @@ public class GrxXmlUtil {
 	}
 
 	public static Integer getInteger(Element e, String atr, int defaultValue) {
-        if (e != null) {
-            String str = expandEnvVal(e.getAttribute(atr));
-            if (!str.equals("")) {
-                try {
-                    return Integer.parseInt(str);
-                } catch (Exception ex) {
-                    return defaultValue;
-                }
-            }
-        }
+		if (e != null) {
+			String str = expandEnvVal(e.getAttribute(atr));
+			if (!str.equals("")) {
+				try {
+					return Integer.parseInt(str);
+				} catch (Exception ex) {
+					return defaultValue;
+				}
+			}
+		}
 		return defaultValue;
 	}
 
@@ -213,9 +224,8 @@ public class GrxXmlUtil {
 	}
 
 	public static void setInteger(Element e, String atr, int val) {
-		if (e != null) {
+		if (e != null)
 			e.setAttribute(atr, String.valueOf(val));
-		}
 	}
 
 	public static Boolean getBoolean(String[] path, String atr,
@@ -224,15 +234,15 @@ public class GrxXmlUtil {
 	}
 
 	public static Boolean getBoolean(Element e, String atr, boolean defaultValue) {
-		String str = expandEnvVal(e.getAttribute(atr));
- 		if (!str.equals("")) {
- 			try {
-				if (!str.equals("")) {
+		if (e != null) {
+			String str = expandEnvVal(e.getAttribute(atr));
+			if (!str.equals("")) {
+				try {
 					return Boolean.parseBoolean(str);
-				} 
-			} catch (Exception ex) {
- 				return defaultValue;
- 			}
+				} catch (Exception ex) {
+					return defaultValue;
+				}
+			}
 		}
 		return defaultValue;
 	}
@@ -242,8 +252,9 @@ public class GrxXmlUtil {
 	}
 
 	public static void setBoolean(Element e, String atr, boolean b) {
-		if (e != null)
+		if (e != null) {
 			e.setAttribute(atr, String.valueOf(b));
+		}
 	}
 
 	public static String getString(String[] path, String atr,

@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
 /**
  * SceneGraphModifier.java
  *
@@ -53,13 +62,13 @@ public class SceneGraphModifier {
     }
 
     public static Hashtable getHashtableFromTG(TransformGroup tg) {
-        if (tg == null) { 
-            return null; 
-        }
+        if (tg == null) 
+			return null; 
+
         Object userData = tg.getUserData();
-        if (userData instanceof Hashtable) {
+        if (userData instanceof Hashtable) 
             return (Hashtable)userData;
-        }
+
         return null;
     }
 
@@ -81,11 +90,11 @@ public class SceneGraphModifier {
         mode_ = CREATE_BOUNDS;
         
         // 全体を囲む
- 	    /*for (int i=0; i<robot.lInfo_.length; i++) {
- 			Transform3D t3d = new Transform3D();
- 			robot.lInfo_[i].tg.getTransform(t3d);
-         	_calcUpperLower(robot.lInfo_[i].tg, t3d);
- 		}*/
+	/*	for (int i=0; i<robot.lInfo_.length; i++) {
+			Transform3D t3d = new Transform3D();
+			robot.lInfo_[i].tg.getTransform(t3d);
+        	_calcUpperLower(robot.lInfo_[i].tg, t3d);
+		}*/
         
         Color3f color = new Color3f(0.0f, 1.0f, 0.0f);
         Switch bbSwitch = _makeSwitchNode(_makeBoundingBox(color));
@@ -101,7 +110,6 @@ public class SceneGraphModifier {
      *
      * @param  node         SimulationElementNode
      */
-    //public void resizeBounds(SimulationElementNode node) {
     public void resizeBounds(GrxModelItem node) {
         init_  = true;
         mode_ = RESIZE_BOUNDS;

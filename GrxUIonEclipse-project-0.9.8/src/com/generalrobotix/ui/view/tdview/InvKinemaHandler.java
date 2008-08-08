@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
 /**
  * InvKinemaHandler.java
  *
@@ -107,14 +116,12 @@ class InvKinemaHandler extends OperationHandler {
 
         info.pickCanvas.setShapeLocation(startPoint_.x, startPoint_.y);
         PickResult pickResult = info.pickCanvas.pickClosest();
-        if (pickResult == null) {
+        if (pickResult == null) 
             return;
-        }
 
         TransformGroup tg = (TransformGroup)pickResult.getNode(PickResult.TRANSFORM_GROUP);
-        if (tg == null) {
+        if (tg == null) 
             return;
-        }
 
         Point3d startPoint = info.pickCanvas.getStartPosition();
         PickIntersection intersection = pickResult.getClosestIntersection(startPoint);
@@ -127,7 +134,7 @@ class InvKinemaHandler extends OperationHandler {
             //evt.consume();
         } else {
             intersect_ = null;
-	    normal_ = null;
+	    	normal_ = null;
         }
     }
 

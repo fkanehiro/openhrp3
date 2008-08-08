@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
 /**
  * ViewToolBar.java
  *
@@ -48,7 +57,6 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
     protected int mode_;
 
     protected JComboBox cmb_;
-    Choice choice;
     protected JToggleButton pan_;
     protected JToggleButton zoom_;
     protected JToggleButton rotate_;
@@ -85,14 +93,6 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
 
         cmb_.addItemListener(this);
         add(cmb_);
-
-        /*
-        choice = new Choice();
-        choice.add("A");
-        choice.add("B");
-        choice.add("C");
-        add( choice );
-        */
         
         addSeparator();
 

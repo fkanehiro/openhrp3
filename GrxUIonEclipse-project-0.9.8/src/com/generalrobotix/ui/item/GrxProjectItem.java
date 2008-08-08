@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxProjectItem.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -61,9 +70,6 @@ public class GrxProjectItem extends GrxBaseItem {
     private Transformer transformer_;
     
     private Map<String, ModeNodeInfo> modeInfoMap_ = new HashMap<String, ModeNodeInfo>();
-
-    
-    
     
     private class ModeNodeInfo {
     	Element  root;
@@ -206,7 +212,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				modeEl.appendChild(doc_.createTextNode("\n"));
 			}
 		}
-
+		
 		modeEl.appendChild(doc_.createTextNode(INDENT4));
 	}
 	
@@ -258,7 +264,7 @@ public class GrxProjectItem extends GrxBaseItem {
 
 		return menu_;
 	}
-
+	
 	public void save(File f) {
 		if (f.exists()) {
 			if (!f.isFile())
@@ -269,7 +275,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			if (ans == false)
 				return;
 		}
-
+		
 		String mode = manager_.getCurrentModeName();
 		storeMode(mode);
 
@@ -287,7 +293,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				manager_.ROBOT_ICON);
 		if (ans == JOptionPane.CANCEL_OPTION)
 			return;
-
+		
 		if (ans == JOptionPane.YES_OPTION) {
 			Element we = getWindowConfigElement(mode);
             if (we == null) 
@@ -367,6 +373,13 @@ public class GrxProjectItem extends GrxBaseItem {
 			return false;
 		manager_.removeAllItems();
 		setName(f.getName().split("[.]")[0]);
+
+		// set PROJECT_DIR, which is referred to in a project file
+		String dir = f.getParent();
+		if (dir!=null) {
+		    System.setProperty("PROJECT_DIR", dir);
+		    System.out.println(dir);
+		}
 		
     	try {
       		doc_ = builder_.parse(f);
@@ -386,8 +399,9 @@ public class GrxProjectItem extends GrxBaseItem {
 		for (int i=0; i<list.getLength(); i++) {
 			Element modeEl = (Element) list.item(i);
 			String modeName = modeEl.getAttribute("name");
-			if (modeName == null)
+			if (modeName == null) 
 				continue;
+			
 			GrxBaseItem item = manager_.createItem(GrxModeInfoItem.class, modeName);
 			if (item != null)  {
 				item.setElement(modeEl);
@@ -398,7 +412,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				}
 			}
 		}
-
+		
 		if (selectedMode != null)
 			manager_.setSelectedItem(selectedMode, true);
 		
@@ -540,7 +554,7 @@ public class GrxProjectItem extends GrxBaseItem {
 
         return plugin;
 	}
-
+	
 	private static final File DEFAULT_ISE_PROJECT_DIR = new File("../ISE/Projects");
 	public void importISEProject() {
 

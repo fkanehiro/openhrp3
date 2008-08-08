@@ -1,4 +1,13 @@
 /*
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
+ */
+/*
  *  GrxConfigBundle.java
  *
  *  Copyright (C) 2007 GeneralRobotix, Inc.
@@ -76,7 +85,7 @@ public class GrxConfigBundle extends Properties {
 		return buf.toString();
 	}
 	
-	public final String getStr(String key,String defaultVal){
+	public final String getStr(String key, String defaultVal) {
 		String ret = null;
 		if ((ret= getStr(key)) == null)
 			ret = defaultVal;
@@ -88,8 +97,8 @@ public class GrxConfigBundle extends Properties {
 		try {
 			ret = Integer.parseInt(getStr(key));
 		} catch(Exception e){
-			ret = defaultVal;
-		}
+			ret = defaultVal;	
+	   	}
 		return ret;
 	}
 	
@@ -109,7 +118,7 @@ public class GrxConfigBundle extends Properties {
 		return ret;
 	}
 	
-	public final Double getDbl(String key,Double defaultVal){
+	public final Double getDbl(String key, Double defaultVal) {
 		Double ret;
 		try {
 			ret = Double.parseDouble(getStr(key));

@@ -55,35 +55,35 @@ import jp.go.aist.hrp.simulator.PixelFormat;
 
 @SuppressWarnings("serial")
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {
-	public static final String TITLE = "Model";
-//	public static final String DEFAULT_DIR = "../../etc";
-	public static final String FILE_EXTENSION = "wrl";
-		
-	private boolean isRobot_ = true;
-	public boolean update_ = true;
+    public static final String TITLE = "Model";
+    public static final String DEFAULT_DIR = "../../etc";
+    public static final String FILE_EXTENSION = "wrl";
+
+    private boolean isRobot_ = true;
+    public boolean update_ = true;
 	
-	public BranchGroup bgRoot_;
+    public BranchGroup bgRoot_;
     public BodyInfo bInfo_;
-	public LinkInfoLocal[] lInfo_;
-	public LinkInfoLocal activeLinkInfo_;
-	private int[] jointToLink_; // length = joint number
-	private final Map<String, LinkInfoLocal> lInfoMap_ = new HashMap<String, LinkInfoLocal>();
-	private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
-	private final Map<String , List<SensorInfoLocal>> sensorMap_ = new HashMap<String , List<SensorInfoLocal>>();
-	private List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
+    public LinkInfoLocal[] lInfo_;
+    public LinkInfoLocal activeLinkInfo_;
+    private int[] jointToLink_; // length = joint number
+    private final Map<String, LinkInfoLocal> lInfoMap_ = new HashMap<String, LinkInfoLocal>();
+    private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
+    private final Map<String, List<SensorInfoLocal>> sensorMap_ = new HashMap<String, List<SensorInfoLocal>>();
+    private List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
 	
-	private Switch switchCom_;
-	private TransformGroup tgCom_;
-	private Switch switchComZ0_;
-	private TransformGroup tgComZ0_;
-	private static final double DEFAULT_RADIOUS = 0.05;
+    private Switch switchCom_;
+    private TransformGroup tgCom_;
+    private Switch switchComZ0_;
+    private TransformGroup tgComZ0_;
+    private static final double DEFAULT_RADIOUS = 0.05;
     
-	private Transform3D t3d = new Transform3D(); 
-	private Transform3D t3dm = new Transform3D(); 
-	private Vector3d v3d = new Vector3d();
-	private AxisAngle4d a4d = new AxisAngle4d();
-	private Matrix3d m3d = new Matrix3d();
-	private Matrix3d m3d2 = new Matrix3d();
+    private Transform3D t3d = new Transform3D(); 
+    private Transform3D t3dm = new Transform3D(); 
+    private Vector3d v3d = new Vector3d();
+    private AxisAngle4d a4d = new AxisAngle4d();
+    private Matrix3d m3d = new Matrix3d();
+    private Matrix3d m3d2 = new Matrix3d();
     private Vector3d v3d2 = new Vector3d();
 
     /*
@@ -149,7 +149,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		});
 
         setMenuItem(menuChangeType_);
-	}
+    }
 
 	public void restoreProperties() {
 		super.restoreProperties();
@@ -178,10 +178,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			R = new double[]{1, 0 ,0 , 0, 1, 0, 0, 0, 1};
 		}
 		
-		_setTransform(0, p, R);
+        _setTransform(0, p, R);
 		
-		for (int j = 0; j < lInfo_.length; j++) 
-			lInfo_[j].jointValue = getDbl(lInfo_[j].name + ".angle", 0.0);
+        for (int j = 0; j < lInfo_.length; j++) 
+            lInfo_[j].jointValue = getDbl(lInfo_[j].name + ".angle", 0.0);
 		
 		calcForwardKinematics();
 	}
@@ -202,10 +202,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		manager_.reselectItems();
 	}
 	private void _setupMarks() {
-		double radious = getDbl("markRadious", DEFAULT_RADIOUS);
-		if (switchCom_ == null || radious != DEFAULT_RADIOUS) {
-			switchCom_ = createBall(radious, new Color3f(1.0f, 1.0f, 0.0f));
-			switchComZ0_= createBall(radious, new Color3f(0.0f, 1.0f, 0.0f)); 
+		double radius = getDbl("markRadius", DEFAULT_RADIOUS);
+		if (switchCom_ == null || radius != DEFAULT_RADIOUS) {
+			switchCom_ = createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
+			switchComZ0_= createBall(radius, new Color3f(0.0f, 1.0f, 0.0f)); 
 			tgCom_ = (TransformGroup)switchCom_.getChild(0);
 			tgComZ0_ = (TransformGroup)switchComZ0_.getChild(0);
 			lInfo_[0].tg.addChild(switchCom_);
@@ -233,20 +233,25 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				GrxCorbaUtil.getReference("ModelLoader", loaderName, 2809));
 			bInfo_ = mloader.getBodyInfo(url);
             LinkInfo[] linkInfoList = bInfo_.links();
-			lInfo_ = new LinkInfoLocal[bInfo_.links().length];
-			lInfoMap_.clear();
-			
-			int jointCount = 0;
-			for (int i = 0; i < lInfo_.length; i++) {
-				lInfo_[i] = new LinkInfoLocal(linkInfoList[i]);
+            lInfo_ = new LinkInfoLocal[linkInfoList.length];
+            lInfoMap_.clear();
+            
+            for (int i=0; i<cameraList.size(); i++){
+                cameraList.get(i).destroy();
+            }
+            cameraList.clear();
+            
+            int jointCount = 0;
+            for (int i = 0; i < lInfo_.length; i++) {
+                lInfo_[i] = new LinkInfoLocal(linkInfoList[i]);
                 lInfo_[i].myLinkID = (short)i;
-				lInfoMap_.put(lInfo_[i].name, lInfo_[i]);
-				if (lInfo_[i].jointId >= 0) {
-					jointCount++;
-				}
-			}
-
-			// Search root node.
+                lInfoMap_.put(lInfo_[i].name, lInfo_[i]);
+                if (lInfo_[i].jointId >= 0){
+                    jointCount++;
+                }
+            }
+            
+            // Search root node.
             int rootIndex = -1;
             for( int i = 0 ; i < lInfo_.length ; i++ ) {
                 if( lInfo_[i].parentIndex < 0 ){
@@ -263,21 +268,19 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             
             createLink( rootIndex );
 
-			
-			jointToLink_ = new int[jointCount];
-			for (int i=0; i<jointCount; i++) {
-				for (int j=0; j<lInfo_.length; j++) {
-					if (lInfo_[j].jointId == i) {
-						jointToLink_[i] = j;
-					}
-				}
-			}
-			
-			Iterator<List<SensorInfoLocal>> it = sensorMap_.values().iterator();
-			while (it.hasNext()) {
-				Collections.sort(it.next());
-			}
-			
+            jointToLink_ = new int[jointCount];
+            for (int i=0; i<jointCount; i++) {
+                for (int j=0; j<lInfo_.length; j++) {
+                    if (lInfo_[j].jointId == i) {
+                        jointToLink_[i] = j;
+                    }
+                }
+            }
+            
+            Iterator<List<SensorInfoLocal>> it = sensorMap_.values().iterator();
+            while (it.hasNext()) {
+                Collections.sort(it.next());
+            }
             long stime = System.currentTimeMillis();
             _loadVrmlScene(linkInfoList);
             long etime = System.currentTimeMillis();
@@ -286,7 +289,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             manager_.setSelectedItem(this, true);
             setProperty("isRobot", Boolean.toString(isRobot_));
 
-		} catch (Exception ex) {
+        } catch (Exception ex) {
             System.out.println("Failed to load vrml model:" + url);
 			//ex.printStackTrace();
 			return false;
@@ -315,6 +318,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 info.daughter                       = info.childIndices[i];
             }
     }
+
 
     private void setColors(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
 
@@ -534,7 +538,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         public LineArray getLineArray() { return nline; }
     }
 
-	private void _loadVrmlScene(LinkInfo[] links) throws BadLinkStructureException {
+
+    private void _loadVrmlScene(LinkInfo[] links) throws BadLinkStructureException {
 
         ShapeInfo[] shapes = bInfo_.shapes();
         AppearanceInfo[] appearances = bInfo_.appearances();
@@ -666,98 +671,101 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         updateInitialJointValues();
     }
 
+    
     private void _traverse(Node node, int depth) {
-		if (node instanceof Switch) {
-			return;
-		} else if (node instanceof BranchGroup) {
-			BranchGroup bg = (BranchGroup) node;
-			bg.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-			bg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-			for (int i = 0; i < bg.numChildren(); i++)
-				_traverse(bg.getChild(i), depth + 1);
+        if (node instanceof Switch) {
+            return;
+        } else if (node instanceof BranchGroup) {
+            BranchGroup bg = (BranchGroup) node;
+            bg.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+            bg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
+            for (int i = 0; i < bg.numChildren(); i++)
+                _traverse(bg.getChild(i), depth + 1);
 			
-		} else if (node instanceof TransformGroup) {
-			TransformGroup tg = (TransformGroup) node;
-			tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
-			tg.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
-			tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-			tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-			tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
-			for (int i = 0; i < tg.numChildren(); i++)
-				_traverse(tg.getChild(i), depth + 1);
+        } else if (node instanceof TransformGroup) {
+            TransformGroup tg = (TransformGroup) node;
+            tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+            tg.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+            tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+            tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+            tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
+            for (int i = 0; i < tg.numChildren(); i++)
+                _traverse(tg.getChild(i), depth + 1);
 			
-		} else if (node instanceof Group) {
-			Group g = (Group) node;
-			g.setCapability(Group.ALLOW_CHILDREN_READ);
-			g.setCapability(Group.ALLOW_CHILDREN_WRITE);
-			for (int i = 0; i < g.numChildren(); i++)
-				_traverse(g.getChild(i), depth + 1);
+        } else if (node instanceof Group) {
+            Group g = (Group) node;
+            g.setCapability(Group.ALLOW_CHILDREN_READ);
+            g.setCapability(Group.ALLOW_CHILDREN_WRITE);
+            for (int i = 0; i < g.numChildren(); i++)
+                _traverse(g.getChild(i), depth + 1);
 			
-		} else if (node instanceof Link) {
-			Link l = (Link) node;
-			l.setCapability(Link.ALLOW_SHARED_GROUP_READ);
-			SharedGroup sg = l.getSharedGroup();
-			sg.setCapability(SharedGroup.ALLOW_CHILDREN_READ);
-			for (int i = 0; i < sg.numChildren(); i++)
-				_traverse(sg.getChild(i), depth + 1);
+        } else if (node instanceof Link) {
+            Link l = (Link) node;
+            l.setCapability(Link.ALLOW_SHARED_GROUP_READ);
+            SharedGroup sg = l.getSharedGroup();
+            sg.setCapability(SharedGroup.ALLOW_CHILDREN_READ);
+            for (int i = 0; i < sg.numChildren(); i++)
+                _traverse(sg.getChild(i), depth + 1);
 			
-		} else if (node instanceof Shape3D) {
-			Shape3D s3d = (Shape3D) node;
-			s3d.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
-			s3d.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
-			s3d.setCapability(GeometryArray.ALLOW_COORDINATE_READ);
-			s3d.setCapability(GeometryArray.ALLOW_COUNT_READ);
-			PickTool.setCapabilities(s3d, PickTool.INTERSECT_FULL);
+        } else if (node instanceof Shape3D) {
+            Shape3D s3d = (Shape3D) node;
+            s3d.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+            s3d.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+            s3d.setCapability(GeometryArray.ALLOW_COORDINATE_READ);
+            s3d.setCapability(GeometryArray.ALLOW_COUNT_READ);
+            PickTool.setCapabilities(s3d, PickTool.INTERSECT_FULL);
 			
-			Appearance app = s3d.getAppearance();
-			if (app != null) {
-				app.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_READ);
-				TransparencyAttributes ta = app.getTransparencyAttributes();
-				if (ta != null) {
-					ta.setCapability(TransparencyAttributes.ALLOW_MODE_READ);
-					ta.setCapability(TransparencyAttributes.ALLOW_MODE_WRITE);
-					ta.setCapability(TransparencyAttributes.ALLOW_VALUE_READ);
-					ta.setCapability(TransparencyAttributes.ALLOW_VALUE_WRITE);
-				}
+            Appearance app = s3d.getAppearance();
+            if (app != null) {
+                app.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_READ);
+                TransparencyAttributes ta = app.getTransparencyAttributes();
+                if (ta != null) {
+                    ta.setCapability(TransparencyAttributes.ALLOW_MODE_READ);
+                    ta.setCapability(TransparencyAttributes.ALLOW_MODE_WRITE);
+                    ta.setCapability(TransparencyAttributes.ALLOW_VALUE_READ);
+                    ta.setCapability(TransparencyAttributes.ALLOW_VALUE_WRITE);
+                }
+				
+                app.setCapability(Appearance.ALLOW_POLYGON_ATTRIBUTES_READ);
+                PolygonAttributes pa = app.getPolygonAttributes();
+                if (pa == null) {
+                    pa = new PolygonAttributes();
+                    pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+                    app.setPolygonAttributes(pa);
+                }
+                pa.setCapability(PolygonAttributes.ALLOW_MODE_READ);
+                pa.setCapability(PolygonAttributes.ALLOW_MODE_WRITE);
+				
+                app.setCapability(Appearance.ALLOW_MATERIAL_READ);
+                Material ma = app.getMaterial();
 
-				app.setCapability(Appearance.ALLOW_POLYGON_ATTRIBUTES_READ);
-				PolygonAttributes pa = app.getPolygonAttributes();
-				if (pa == null) {
-					pa = new PolygonAttributes();
-					pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-					app.setPolygonAttributes(pa);
-				}
-				pa.setCapability(PolygonAttributes.ALLOW_MODE_READ);
-				pa.setCapability(PolygonAttributes.ALLOW_MODE_WRITE);
+                if (ma != null) {
+                    ma.setCapability(Material.ALLOW_COMPONENT_READ);
+                    ma.setCapability(Material.ALLOW_COMPONENT_WRITE);
+                }	
+            }
+            shapeVector_.add(s3d);
+        } else {
+            GrxDebugUtil.println("* The node " + node.toString() + " is not supported.");
+        }
+    }
 
-				app.setCapability(Appearance.ALLOW_MATERIAL_READ);
-				Material ma = app.getMaterial();
-				if (ma != null) {
-					ma.setCapability(Material.ALLOW_COMPONENT_READ);
-					ma.setCapability(Material.ALLOW_COMPONENT_WRITE);
-				}
-			}
-			shapeVector_.add(s3d);
-		} else {
-			GrxDebugUtil.println("* The node " + node.toString() + " is not supported.");
-		}
-	}
-
-	public void setCharacterPos(LinkPosition[] lpos, SensorState sensor) {
-		if (!update_)
-			return;
+    public void setCharacterPos(LinkPosition[] lpos, double[] q) {
+        if (!update_)
+            return;
 		
-		for (int i=0; i<lInfo_.length; i++) {
-			if (lpos[i] != null) {
-				_setTransform(i, lpos[i].p, lpos[i].R);
-			}
-		}
+        boolean isAllPosProvided = true;
+        for (int i=0; i<lInfo_.length; i++) {
+            if (lpos[i].p == null || lpos[i].R == null)
+                isAllPosProvided = false;
+            else
+                _setTransform(i, lpos[i].p, lpos[i].R);
+        }
 		
-		if (sensor != null && sensor.q != null)	{
-			for (int i=0; i<jointToLink_.length; i++) {
-				lInfo_[jointToLink_[i]].jointValue = sensor.q[i];
-			}
-		}
+        if (q != null) {
+            for (int i=0; i<jointToLink_.length; i++)
+                lInfo_[jointToLink_[i]].jointValue = q[i];
+        }
 		
 		_updateCoM();
 	}
@@ -814,11 +822,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         Transform3D t3d = new Transform3D();
         Matrix3d m3d = new Matrix3d();
         Vector3d v3d = new Vector3d();
-        
+		
         lInfo_[0].tg.getTransform(t3d);
         t3d.get(m3d, v3d);
         setDblAry(lInfo_[0].name+".translation", new double[]{v3d.x, v3d.y, v3d.z});
-        
+		
         AxisAngle4d a4d = new AxisAngle4d();
         a4d.set(m3d);
         setDblAry(lInfo_[0].name+".rotation", new double[]{a4d.x, a4d.y, a4d.z, a4d.angle});
@@ -1009,14 +1017,15 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		return vals;
 	}
     public double[] getInitialJointValues() {
-    	double[] ret = new double[jointToLink_.length];
-		for (int i=0; i<ret.length; i++) {
-			LinkInfoLocal l = lInfo_[jointToLink_[i]];
-			String jname = l.name;
-			ret[i] = getDbl(jname+".angle", l.jointValue);
-		}
-		return ret;
+        double[] ret = new double[jointToLink_.length];
+        for (int i=0; i<ret.length; i++) {
+            LinkInfoLocal l = lInfo_[jointToLink_[i]];
+            String jname = l.name;
+            ret[i] = getDbl(jname+".angle", l.jointValue);
+        }
+        return ret;
     }
+
     public double[] getInitialJointMode() {
     	double[] ret = new double[jointToLink_.length];
 		for (int i=0; i<ret.length; i++) {
@@ -1093,35 +1102,136 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	}
     }
     
-	private Switch createBall(double radius, Color3f c) {
-		Material m = new Material();
-		m.setDiffuseColor(c);
-		m.setSpecularColor(0.01f, 0.10f, 0.02f);
-		m.setLightingEnable(true);
-		Appearance app = new Appearance();
-		app.setMaterial(m);
-		Node sphere = new Sphere((float)radius, Sphere.GENERATE_NORMALS, app);
-		sphere.setPickable(false);
+    private Switch createBall(double radius, Color3f c) {
+        Material m = new Material();
+        m.setDiffuseColor(c);
+        m.setSpecularColor(0.01f, 0.10f, 0.02f);
+        m.setLightingEnable(true);
+        Appearance app = new Appearance();
+        app.setMaterial(m);
+        Node sphere = new Sphere((float)radius, Sphere.GENERATE_NORMALS, app);
+        sphere.setPickable(false);
 		
-		Transform3D trans = new Transform3D();
-		trans.setTranslation(new Vector3d(0.0, 0.0, 0.0));
-		trans.setRotation(new AxisAngle4d(1.0, 0.0, 0.0, 0.0));
-		TransformGroup tg = new TransformGroup(trans);
-		tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-		tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-		tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
-		tg.addChild(sphere);
+        Transform3D trans = new Transform3D();
+        trans.setTranslation(new Vector3d(0.0, 0.0, 0.0));
+        trans.setRotation(new AxisAngle4d(1.0, 0.0, 0.0, 0.0));
+        TransformGroup tg = new TransformGroup(trans);
+        tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+        tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+        tg.addChild(sphere);
 		
-		Switch ret = new Switch();
+        Switch ret = new Switch();
         ret.setCapability(Switch.ALLOW_CHILDREN_EXTEND);
         ret.setCapability(Switch.ALLOW_CHILDREN_READ);
         ret.setCapability(Switch.ALLOW_CHILDREN_WRITE);
-		ret.setCapability(Switch.ALLOW_SWITCH_READ);
-		ret.setCapability(Switch.ALLOW_SWITCH_WRITE);
-		ret.addChild(tg);
+        ret.setCapability(Switch.ALLOW_SWITCH_READ);
+        ret.setCapability(Switch.ALLOW_SWITCH_WRITE);
+        ret.addChild(tg);
 		
-		return ret;
-	}
+        return ret;
+    }
+
+
+    // ##### [Changed] NewModelLoader.IDL
+    //==================================================================================================
+    /*!
+      @brief		"AppearanceInfoLocal" class
+      @author		ErgoVision
+      @version	0.00
+      @date		200?-0?-0?
+      @note		2008-03-26 M.YASUKAWA modify <BR>
+      @note		"AppearanceInfoLocal" class
+    */
+    //==================================================================================================
+    public class AppearanceInfoLocal
+    {
+        //public float[]	vertices;
+        //public long[]	triangles;
+        //public long	appearanceIndex;
+
+        long          materialIndex;
+        public float[]		normals;
+        public long[]		normalIndices;
+        public boolean		solid;
+        public float		creaseAngle;
+        public float[]		colors;
+        public long[]		colorIndices;
+        public boolean		coloerPerVertex;
+        public long			textureIndex;
+        public float[]		textureCoordinate;
+
+
+
+        public AppearanceInfoLocal(AppearanceInfo AppearanceInfo_)
+            {
+                AppearanceInfo appinfo = AppearanceInfo_;
+
+                // set materialIndex
+                materialIndex = (long)(appinfo.materialIndex);
+
+                // set AppearanceInfo normals
+                int nCnts = appinfo.normals.length;
+                normals = new float[nCnts];
+                for( int i=0; i<nCnts; i++ )
+                    {
+                        normals[i] = appinfo.normals[i];
+//System.out.println( "   AppearanceInfoLocal.normals[" + i + "]   = " + normals[i] );
+                    }
+
+                // set AppearanceInfo normalIndices
+                int nICnts = appinfo.normalIndices.length;
+                normalIndices = new long[nICnts];
+                for( int i=0; i<nICnts; i++ )
+                    {
+                        normalIndices[i] = appinfo.normalIndices[i];
+//System.out.println( "   AppearanceInfoLocal.normalIndices[" + i + "]   = " + normalIndices[i] );
+                    }
+
+                // set AppearanceInfo solid
+                solid = appinfo.solid;
+
+                // set AppearanceInfo creaseAngle
+                creaseAngle = appinfo.creaseAngle;
+
+                // set AppearanceInfo colors
+                int clCnts = appinfo.colors.length;
+                colors = new float[clCnts];
+                for( int i=0; i<clCnts; i++ )
+                    {
+                        colors[i] = appinfo.colors[i];
+//System.out.println( "   AppearanceInfoLocal.colors[" + i + "]   = " + colors[i] );
+                    }
+
+                // set AppearanceInfo colorIndices
+                int nCliCnts = appinfo.colorIndices.length;
+                colorIndices = new long[nCliCnts];
+                for( int i=0; i<nCliCnts; i++ )
+                    {
+                        colorIndices[i] = appinfo.colorIndices[i];
+//System.out.println( "   AppearanceInfoLocal.colorIndices[" + i + "]   = " + colorIndices[i] );
+                    }
+
+                // set AppearanceInfo textureIndex
+                textureIndex = appinfo.textureIndex;
+
+                // set AppearanceInfo textureCoordinate
+                int txcCnts = appinfo.textureCoordinate.length;
+                textureCoordinate = new float[txcCnts];
+                for( int i=0; i<txcCnts; i++ )
+                    {
+                        textureCoordinate[i] = appinfo.textureCoordinate[i];
+//System.out.println( "   AppearanceInfoLocal.textureCoordinate[" + i + "]   = " + textureCoordinate[i] );
+                    }
+
+            }
+
+
+    }
+    // ##### [Changed]
+
+
+    // ##### [Changed] NewModelLoader.IDL
     //==================================================================================================
     /*!
       @brief		"TextureInfoLocal" class
@@ -1436,72 +1546,101 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				}
 				l.add(sensors[i]);
 				
-                if (sensors[i].type.equals("Vision")) {
-                    CameraParameter prm = new CameraParameter();
-                    prm.defName = new String(sensors[i].name);
-                    prm.sensorName = new String(sensors[i].name);
-                    prm.sensorId = sensors[i].id;
-				
-                    prm.frontClipDistance = (float)sensors[i].maxValue[0];
-                    prm.backClipDistance = (float)sensors[i].maxValue[1];
-                    prm.fieldOfView = (float)sensors[i].maxValue[2];
-                    try {
-                        prm.type = CameraType.from_int((int)sensors[i].maxValue[3]);
-                    } catch (Exception e) {
-                        prm.type = CameraType.NONE;
+                    if (sensors[i].type.equals("Vision")) {
+                        CameraParameter prm = new CameraParameter();
+                        prm.defName = new String(sensors[i].name);
+                        prm.sensorName = new String(sensors[i].name);
+                        prm.sensorId = sensors[i].id;
+					
+                        prm.frontClipDistance = (float)sensors[i].maxValue[0];
+                        prm.backClipDistance = (float)sensors[i].maxValue[1];
+                        prm.fieldOfView = (float)sensors[i].maxValue[2];
+                        try {
+                            prm.type = CameraType.from_int((int)sensors[i].maxValue[3]);
+                        } catch (Exception e) {
+                            prm.type = CameraType.NONE;
+                        }
+                        prm.width  = (int)sensors[i].maxValue[4];
+                        prm.height = (int)sensors[i].maxValue[5];
+                        boolean offScreen = false;
+                        //if (prm.type.equals(CameraType.DEPTH))
+                        //		offScreen = true;
+                        Camera_impl camera = new Camera_impl(prm, offScreen);
+                        cameraList.add(camera);
                     }
-                    prm.width  = (int)sensors[i].maxValue[4];
-                    prm.height = (int)sensors[i].maxValue[5];
-                    boolean offScreen = false;
-                    //if (prm.type.equals(CameraType.DEPTH))
-                    //		offScreen = true;
-                    Camera_impl camera = new Camera_impl(prm, offScreen);
-                    cameraList.add(camera);
                 }
-			}
-		}
-	}
-	
-//	List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
-	public List<Camera_impl> getCameraSequence () {
-		return cameraList;
-	}
-	
-	private class SensorInfoLocal implements Comparable {
-		final String name;
-		public String type;
-		final int id;
-		final public double[] translation;
-		final public double[] rotation;
-		final public float[] maxValue;
-		final public LinkInfoLocal parent_;
-		
-		public SensorInfoLocal(SensorInfo info, LinkInfoLocal parentLink) {
-			name = info.name;
-			type = info.type;
-			id = info.id;
-			translation = info.translation;
-			rotation = info.rotation;
-			maxValue = info.specValues;
-			parent_ = parentLink;
-		}
+            }
+    }
 
-		public int compareTo(Object o) {
-			if (o instanceof SensorInfoLocal) {
-				SensorInfoLocal s = (SensorInfoLocal) o;
-				//if (type.value() < s.type.value())
-				//	return -1;
-				//else if (type == s.type && id < s.id)
-				//	return -1;
-				if(getOrder(type) < getOrder(s.type))
-					return -1;
-				else{
-					if(id < s.id)
-						return -1;
-				}
-			}
-			return 1;
-		}
+    public List<Camera_impl> getCameraSequence () {
+        return cameraList;
+    }
+
+    private class SensorInfoLocal implements Comparable {
+        final String name;
+        //final public SensorType type;
+        // ##### [Changed] NewModelLoader.ID
+        //public SensorType type;
+        public String type;
+        final int id;
+        final public double[] translation;
+        final public double[] rotation;
+        // ##### [Changed] NewModelLoader.IDL
+        //    double[] maxValue -> float[] specValues
+        final public float[] maxValue;
+        final public LinkInfoLocal parent_;
+		
+        public SensorInfoLocal(SensorInfo info, LinkInfoLocal parentLink) {
+            name = info.name;
+            // ##### [Changed] NewModelLoader.IDL
+
+            //type = SensorType.FORCE_SENSOR;
+
+            //if( info.type.equals("Force") )
+            //{
+            //    type = SensorType.FORCE_SENSOR; 
+            //}
+            //else if( info.type.equals("RateGyro") )
+            //{
+            //    type = SensorType.RATE_GYRO; 
+            //}
+            //else if( info.type.equals("Acceleration") )
+            //{
+            //    type = SensorType.ACCELERATION_SENSOR; 
+            //}
+            type = info.type;
+
+
+            id = info.id;
+            translation = info.translation;
+            // #######[Changed] rotation DblArray9 -> DblArray4 Changed For NewModelLoader.IDL
+            rotation = info.rotation;
+//			Not Convert!
+//            ConvRotation4to9 rotation4_9 = new ConvRotation4to9(info.rotation);
+//            rotation = rotation4_9.getConvRotation4to9();
+
+            // ##### [Changed] NewModelLoader.IDL
+            // [Changed] double[] maxValue -> float[] specValues
+            maxValue = info.specValues;
+            parent_ = parentLink;
+        }
+
+        public int compareTo(Object o) {
+            if (o instanceof SensorInfoLocal) {
+                SensorInfoLocal s = (SensorInfoLocal) o;
+                //#####[Changed] int -> string
+                //if (type < s.type)
+                //    return -1;
+                //else 
+                if (getOrder(type) < getOrder(s.type)) 
+                    return -1;
+                else{
+                    if (id < s.id)
+                        return -1;
+                }
+            }
+            return 1;
+        }
 
         private int getOrder(String type) {
             if (type.equals("Force")) 
@@ -1516,8 +1655,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 return -1;
 
         }
-	
-	}
+
+    }
+
+    // ######[Changed] DblArray4 -> DblArray9 Convert For NewModelLoader.IDL
     //  Rotation <DbalArray4> (x y z a) => <DblArray9>  3x3 Rotation 
     //  [tx2+c    txy+sz    txz-sy
     //  txy-sz   ty2+c     tyz+sx
@@ -1618,74 +1759,74 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
        short				currentIndex,		// index no of this LinkInof
        short []			sisterIndices )		// indeces of sister nodes( includes this node )
 	{
-//    	System.out.println( "# in ConvNTreeToBTree()." );
-       // identify this node
-       LinkInfoLocal info = lInfo_[currentIndex];
+//System.out.println( "# in ConvNTreeToBTree()." );
+            // identify this node
+            LinkInfoLocal info = lInfo_[currentIndex];
 
-       int nSisters = sisterIndices.length - 1;
-//    	System.out.println( "#  nSisters = " + nSisters );
-       int myID = info.myLinkID;	// shoud be equal to currentIndex
+            int nSisters = sisterIndices.length - 1;
+//System.out.println( "#  nSisters = " + nSisters );
+            int myID = info.myLinkID;	// shoud be equal to currentIndex
 
-        // set parent node index
-        if( parentIndex == -1 )
+            // set parent node index
+            if( parentIndex == -1 )
 		{
-            info.parentIndex =  -1;		// = root node
+                    info.parentIndex =  -1;		// = root node
 		}
-        else
-        {
-    	    info.parentIndex = parentIndex;
-    	}
-    			
-    	// set daughter
-    	int nChildren = info.childIndices.length;
-    	if( 0 == nChildren )
-    	{
-    	    // no daughters
-    	    info.daughter = -1;
-    	    // and no "sistersOfDaughter"
-    	}
-    	else
-    	{
-    	    // set daughter
-    	    info.daughter = info.childIndices[0];
-    	    short [] sistersOfDaughter = new short[nSisters];
-    	    for( int i=0; i<nSisters; i++ )
-    		{
-    	        sistersOfDaughter[i] = sisterIndices[i+1];
-    		}
-//    	System.out.println( "#  set daughter." );
-    	    ConvNTreeToBTree( (short)myID, sistersOfDaughter[0], sistersOfDaughter );
-    	}
+            else
+		{
+                    info.parentIndex = parentIndex;
+		}
+		
+            // set daughter
+            int nChildren = info.childIndices.length;
+            if( 0 == nChildren )
+		{
+                    // no daughters
+                    info.daughter = -1;
+                    // and no "sistersOfDaughter"
+		}
+            else
+		{
+                    // set daughter
+                    info.daughter = info.childIndices[0];
+                    short [] sistersOfDaughter = new short[nSisters];
+                    for( int i=0; i<nSisters; i++ )
+			{
+                            sistersOfDaughter[i] = sisterIndices[i+1];
+			}
+//System.out.println( "#  set daughter." );
+                    ConvNTreeToBTree( (short)myID, sistersOfDaughter[0], sistersOfDaughter );
+		}
 
-    	// set sister
-    	if( 0 == nSisters )
-    	{
-    	    info.sister =  -1;
-    	    // and no more sisters
-    	}
-    	else
-    	{
-    	    // set sister
-    	    // sisterIndices[0] means this node itself
-    	    info.sister = sisterIndices[1];
-    	    short [] otherSisters = new short[nSisters-1];
-    	    for( int i=0; i<nSisters-1; i++ )
-    		{
-    	         otherSisters[i] = sisterIndices[i+2];
-    		}
-//    	System.out.println( "#  set sister." );
-    	    ConvNTreeToBTree( (short)myID, otherSisters[0], otherSisters );
-    	}
+            // set sister
+            if( 0 == nSisters )
+		{
+                    info.sister =  -1;
+                    // and no more sisters
+		}
+            else
+		{
+                    // set sister
+                    // sisterIndices[0] means this node itself
+                    info.sister = sisterIndices[1];
+                    short [] otherSisters = new short[nSisters-1];
+                    for( int i=0; i<nSisters-1; i++ )
+			{
+                            otherSisters[i] = sisterIndices[i+2];
+			}
+//System.out.println( "#  set sister." );
+                    ConvNTreeToBTree( (short)myID, otherSisters[0], otherSisters );
+		}
 
-//    	System.out.println( "# out ConvNTreeToBTree()." );
-    	return;
+//System.out.println( "# out ConvNTreeToBTree()." );
+            return;
 
-    }
+	}
 
     private Material createMaterial(MaterialInfo materialInfo){
 
         Material material = new Material();
-    	        
+        
         float[] dColor = materialInfo.diffuseColor;
         material.setDiffuseColor(new Color3f(dColor[0], dColor[1], dColor[2]));
 
@@ -1697,10 +1838,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         float r = materialInfo.ambientIntensity;
         material.setAmbientColor(new Color3f(r * dColor[0], r * dColor[1], r * dColor[2]));
-    	        
+        
         float shininess = materialInfo.shininess * 127.0f + 1.0f;
         material.setShininess(shininess);
-    	        
+        
         return material;
     }
 	
