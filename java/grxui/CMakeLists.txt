@@ -162,16 +162,14 @@ set(sources_short
 
 set(sources)
 foreach(source ${sources_short})
-  list(APPEND sources com/generalrobotix/ui/${source})
+  list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/com/generalrobotix/ui/${source})
 endforeach()
 
 if(UNIX)
-set(classpath
-  "${CLASSPATH}:${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar:${OpenHRP_BINARY_DIR}/java/vrml97.jar")
+set(classpath "${CLASSPATH}:${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar")
   set(javac_flags -target 1.5 -encoding EUCJIS -classpath ${classpath} -d classes)
 elseif(WIN32)
-set(classpath
-  "${CLASSPATH}\;${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar\;${OpenHRP_BINARY_DIR}/java/vrml97.jar")
+set(classpath "${CLASSPATH}\;${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar")
   set(javac_flags -target 1.5 -encoding EUCJIS -d classes)
 endif()
 
@@ -186,7 +184,8 @@ add_custom_command(
   OUTPUT  ${grxui_jar} classes
   COMMAND ${CMAKE_COMMAND} -E make_directory classes
   COMMAND ${JAVAC} ${javac_flags} ${sources}
-  COMMAND ${JAR} cmf Manifest.mf ${grxui_jar} resources -C classes com
+  COMMAND ${JAR} cmf ${CMAKE_CURRENT_SOURCE_DIR}/Manifest.mf ${grxui_jar} -C classes com
+  COMMAND ${JAR} uf ${grxui_jar} -C ${CMAKE_CURRENT_SOURCE_DIR} resources 
   DEPENDS ${sources}
 )
 elseif(WIN32)
@@ -199,7 +198,8 @@ elseif(WIN32)
     OUTPUT  ${grxui_jar} ${classes}
     COMMAND ${CMAKE_COMMAND} -E make_directory classes
     COMMAND ${JAVAC} ${javac_flags} -classpath ${classpath} ${sources}
-    COMMAND ${JAR} cmf Manifest.mf ${grxui_jar} resources -C classes com
+    COMMAND ${JAR} cmf ${CMAKE_CURRENT_SOURCE_DIR}/Manifest.mf ${grxui_jar} -C classes com
+    COMMAND ${JAR} uf ${grxui_jar} -C ${CMAKE_CURRENT_SOURCE_DIR} resources 
     DEPENDS ${sources}
 )
 endif()

@@ -278,6 +278,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
   add_definitions(-DTVMET_OPTIMIZE)
 endif()
 
+include_directories(${OpenHRP_BINARY_DIR})
 include_directories(${OpenHRP_SOURCE_DIR})
 
 # TODO: remove this later

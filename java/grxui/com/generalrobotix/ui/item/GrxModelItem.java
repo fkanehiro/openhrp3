@@ -27,8 +27,6 @@ import javax.swing.*;
 import javax.vecmath.*;
 import javax.media.j3d.*;
 
-import com.sun.j3d.loaders.vrml97.VrmlLoader;
-import com.sun.j3d.loaders.vrml97.VrmlScene;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.geometry.*;
 import java.awt.Image;
