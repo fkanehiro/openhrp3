@@ -1,0 +1,23 @@
+#VRML V2.0 utf8
+
+#protection railing base
+Transform {
+  translation 0 0 0.0525
+  children [
+    Shape {
+      appearance  DEF BASE Appearance {
+        material  Material {
+          ambientIntensity  0
+          diffuseColor  0.8 0.8 0.8
+          specularColor 0 0 0
+          emissiveColor 0 0 0
+          shininess 0
+          transparency  0
+        }
+      }
+      geometry Box {
+        size 0.4 3.25 0.105
+      }
+    }
+  ]
+}

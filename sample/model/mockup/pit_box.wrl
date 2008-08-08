@@ -1,0 +1,20 @@
+#VRML V2.0 utf8
+
+#pit panel
+Transform {
+  children [
+    Inline {
+      url "pit_panel.wrl"
+    }
+  ]
+}
+
+
+#pit
+Transform {
+  children [
+    Inline {
+      url "pit.wrl"
+    }
+  ]
+}

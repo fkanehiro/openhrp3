@@ -1,0 +1,67 @@
+#VRML V2.0 utf8
+
+#washer
+Transform {
+  translation 0 0 0.0015
+  rotation 1 0 0 1.570797
+  children  Shape {
+    appearance DEF BOLT Appearance {
+      material  Material {
+        ambientIntensity  0
+        diffuseColor  0.61 0.61 0.61
+        specularColor 0.3 0.3 0.3
+        emissiveColor 0 0 0
+        shininess 0.08
+        transparency  0
+      }
+    }
+    geometry  Cylinder {
+      radius  0.022
+      height  0.003
+    }
+  }
+}
+
+#nut
+Transform {
+  translation 0 0 0.0115
+  rotation 1 0 0 1.570797
+  children  Shape {
+    appearance DEF BOLT Appearance {
+      material  Material {
+        ambientIntensity  0
+        diffuseColor  0.61 0.61 0.61
+        specularColor 0.3 0.3 0.3
+        emissiveColor 0 0 0
+        shininess 0.08
+        transparency  0
+      }
+    }
+    geometry  Cylinder {
+      radius  0.0145
+      height  0.023
+    }
+  }
+}
+
+#bolt
+Transform {
+  translation 0 0 0.022
+  rotation 1 0 0 1.570797
+  children  Shape {
+    appearance DEF BOLT Appearance {
+      material  Material {
+        ambientIntensity  0
+        diffuseColor  0.61 0.61 0.61
+        specularColor 0.3 0.3 0.3
+        emissiveColor 0 0 0
+        shininess 0.08
+        transparency  0
+      }
+    }
+    geometry  Cylinder {
+      radius  0.0095
+      height  0.044
+    }
+  }
+}

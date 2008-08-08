@@ -1,0 +1,89 @@
+#VRML V2.0 utf8
+
+#pole middle
+Transform {
+  children [
+    Inline {
+      url "hand_railing_pole.wrl"
+    }
+  ]
+}
+
+#pole right
+Transform {
+  translation 0 1.226 0
+  children [
+    Inline {
+      url "hand_railing_pole.wrl"
+    }
+  ]
+}
+
+#pole left
+Transform {
+  translation 0 -1.026 0
+  children [
+    Inline {
+      url "hand_railing_pole.wrl"
+    }
+  ]
+}
+
+#pole short
+Transform {
+  translation 0 -1.75 0
+  children [
+    Inline {
+      url "hand_railing_pole_short.wrl"
+    }
+  ]
+}
+
+#bar long
+Transform {
+  translation -0.075 0 0.98 # Please change Z_value to changing the vertical position of the bar.
+  rotation 0 1 0 3.141594
+  children [
+    Inline {
+      url "hand_railing_bar.wrl"
+    }
+  ]
+}
+
+#bat short right
+Transform {
+  translation 0.075 0.613 0.47 # Please change Z_value to changing the vertical position of the bar.
+  rotation 1 0 0 0.344573205
+  children [
+    Inline {
+      url "hand_railing_bar_short_R.wrl"
+    }
+  ]
+}
+
+#bat short center
+Transform {
+  translation 0.075 -0.513 0.555 # Please change Z_value to changing the vertical position of the bar.
+  rotation 1 0 0 -0.413330405
+  children [
+    Inline {
+      url "hand_railing_bar_short_C.wrl"
+    }
+  ]
+}
+
+#bat short left
+Transform {
+  translation -0.075 -1.388 0.574 # Please change Z_value to changing the vertical position of the bar.
+  rotation 1 0 0 0.685428578
+  children [
+    Transform {
+      rotation 0 1 0 3.141594
+      children [
+        Inline {
+          url "hand_railing_bar_short_L.wrl"
+        }
+      ]
+    }
+  ]
+}
