@@ -20,12 +20,11 @@ if(UNIX)
     DEPENDS ${idl_files}
    )
 elseif(WIN32)
-   add_custom_command(
+  add_custom_command(
     OUTPUT ${idl_basename}.h ${idl_basename}Sk.cpp
-    COMMAND set PATH=${OMNIORB_DIR}/bin/x86_win32
-    COMMAND omniidl ${idl_flags} ${idl_file}
+    COMMAND for %%A in \("${OMNIORB_DIR}/bin/x86_win32"\) do %%~sA\\omniidl ${idl_flags} ${idl_file}
     DEPENDS ${idl_files}
-   )
+  )
 endif()
 endforeach()
 

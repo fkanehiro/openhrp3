@@ -19,13 +19,23 @@ set(idl_files)
 foreach(name ${IDL_FILE_BASENAMES})
   set(idl_file ${name}.idl)
   set(src_idl_file ${OPENHRP_IDL_DIR}/${idl_file})
-  add_custom_command(
-    OUTPUT ${idl_file}
-    COMMAND ${NATIVE2ASCII} -encoding UTF-8 ${src_idl_file} ${idl_file}
-#    COMMAND if [ -e src ]\; then ${RMDIR} src\; fi\; if [ -e jp ]\; then ${RMDIR} jp\; fi
-    COMMAND ${RMDIR} src jp
-    DEPENDS ${src_idl_file}
+  if(UNIX) 
+    add_custom_command(
+      OUTPUT ${idl_file}
+      COMMAND ${NATIVE2ASCII} -encoding UTF-8 ${src_idl_file} ${idl_file}
+#     COMMAND if [ -e src ]\; then ${RMDIR} src\; fi\; if [ -e jp ]\; then ${RMDIR} jp\; fi
+      COMMAND ${RMDIR} src jp
+      DEPENDS ${src_idl_file}
     )
+  elseif(WIN32)
+    add_custom_command(
+      OUTPUT ${idl_file}
+      COMMAND ${NATIVE2ASCII} -encoding UTF-8 ${src_idl_file} ${idl_file}
+      COMMAND if exist src ${RMDIR} src
+      COMMAND if exist jp ${RMDIR} jp
+      DEPENDS ${src_idl_file}
+    )
+  endif() 
   list(APPEND idl_files ${idl_file})
 endforeach()
 
