@@ -12,7 +12,7 @@
 #ifndef OPENHRP_BASE_TVMET3D_H_INCLUDED
 #define OPENHRP_BASE_TVMET3D_H_INCLUDED
 
-#include <OpenHRP/Util/Tvmet3d.h>
+#include <hrpUtil/Tvmet3d.h>
 
 namespace hrp {
 	// defined for backward compatibility

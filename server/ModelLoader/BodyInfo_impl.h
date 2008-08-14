@@ -19,15 +19,15 @@
 #include <string>
 #include <vector>
 
-#include <OpenHRP/Corba/ORBwrap.h>
-#include <OpenHRP/Corba/ModelLoader.h>
+#include <hrpCorba/ORBwrap.h>
+#include <hrpCorba/ModelLoader.h>
 
-#include <OpenHRP/Parser/ModelNodeSet.h>
-#include <OpenHRP/Parser/TriangleMeshShaper.h>
-#include <OpenHRP/Parser/VrmlNodes.h>
+#include <hrpParser/ModelNodeSet.h>
+#include <hrpParser/TriangleMeshShaper.h>
+#include <hrpParser/VrmlNodes.h>
 
-#include <OpenHRP/Util/Tvmet3d.h>
-#include <OpenHRP/Util/Tvmet4d.h>
+#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Tvmet4d.h>
 
 using namespace OpenHRP;
 using namespace hrp;

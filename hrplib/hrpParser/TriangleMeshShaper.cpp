@@ -19,7 +19,7 @@
 #include <cmath>
 #include <vector>
 #include <map>
-#include <OpenHRP/Util/Tvmet3d.h>
+#include <hrpUtil/Tvmet3d.h>
 
 
 using namespace std;

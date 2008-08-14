@@ -18,7 +18,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
-#include <OpenHRP/Util/EasyScanner.h>
+#include <hrpUtil/EasyScanner.h>
 
 using namespace std;
 using namespace boost;

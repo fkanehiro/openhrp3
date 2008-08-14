@@ -6,8 +6,8 @@
 #define OPENHRP_MODEL_LOADER_UTIL_FUNCTIONS_H_INCLUDED
 
 #include <string>
-#include <OpenHRP/Corba/ModelLoader.h>
-#include <OpenHRP/Parser/VrmlNodes.h>
+#include <hrpCorba/ModelLoader.h>
+#include <hrpParser/VrmlNodes.h>
 
 using namespace hrp;
 using namespace OpenHRP;

@@ -15,10 +15,10 @@
 #ifndef OPENHRP_COLISIONDETECTOR_IMPL_H_INCLUDED
 #define OPENHRP_COLISIONDETECTOR_IMPL_H_INCLUDED
 
-#include <OpenHRP/Corba/ORBwrap.h>
-#include <OpenHRP/Corba/CollisionDetector.h>
-#include <OpenHRP/Collision/CdCache.h>
-#include <OpenHRP/Collision/CdScene.h>
+#include <hrpCorba/ORBwrap.h>
+#include <hrpCorba/CollisionDetector.h>
+#include <hrpCollision/CdCache.h>
+#include <hrpCollision/CdScene.h>
 
 using namespace OpenHRP;
 
