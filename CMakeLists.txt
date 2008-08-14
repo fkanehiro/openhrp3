@@ -301,7 +301,7 @@ set(RELATIVE_DOC_INSTALL_PATH share/doc/${OPENHRP_INSTALL_SUB_DIR})
 
 
 add_subdirectory(idl/OpenHRP)
-add_subdirectory(OpenHRP)
+add_subdirectory(hrplib)
 add_subdirectory(server)
 add_subdirectory(java)
 add_subdirectory(script)
