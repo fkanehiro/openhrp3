@@ -17,8 +17,6 @@
 #include "Controller_impl.h"
 
 using namespace RTC;
-using namespace OpenHRP;
-using namespace OpenHRP::ControllerBridge;
 
 namespace {
 

@@ -51,7 +51,7 @@ extern "C" void dgeev_(char const*jobvl, char const*jobvr, int *n, double *A,
 // originally in hrpCLAPACK.{cpp,h}
 // solveLinearEquation()
 // b = a * x, x = b^(-1) * a
-namespace OpenHRP {
+namespace hrp {
 		
 		static inline int max(int a, int b) { return (a >= b) ? a : b; }
 		static inline int min(int a, int b) { return (a <= b) ? a : b; }
@@ -383,4 +383,4 @@ namespace OpenHRP {
 				return det;
 		}
 
-} // namespace OpenHRP
+} // namespace hrp

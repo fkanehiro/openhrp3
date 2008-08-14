@@ -22,7 +22,7 @@
 #include "Link.h"
 
 using namespace std;
-using namespace OpenHRP;
+using namespace hrp;
 using namespace tvmet;
 
 

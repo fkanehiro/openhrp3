@@ -22,7 +22,7 @@
 #include "Sensor.h"
 #include "ForwardDynamicsCBM.h"
 
-using namespace OpenHRP;
+using namespace hrp;
 using namespace std;
 using namespace tvmet;
 using namespace boost::numeric;

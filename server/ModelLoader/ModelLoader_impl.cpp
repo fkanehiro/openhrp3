@@ -21,8 +21,6 @@
 #include "UtilFunctions.h"
 
 using namespace std;
-using namespace OpenHRP;
-
 
 
 ModelLoader_impl::ModelLoader_impl(CORBA::ORB_ptr orb, PortableServer::POA_ptr poa)

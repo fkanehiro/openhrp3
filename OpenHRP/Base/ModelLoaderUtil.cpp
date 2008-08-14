@@ -22,8 +22,9 @@
 #include "Sensor.h"
 #include "tvmet3d.h"
 
-using namespace OpenHRP;
 using namespace std;
+using namespace hrp;
+using namespace OpenHRP;
 
 
 namespace {
@@ -162,13 +163,12 @@ namespace {
     }
 
 
-    OpenHRP::Link* createLink(BodyPtr body, int index, LinkInfoSequence_var& linkInfoSeq, const matrix33& parentRs)
+    Link* createLink(BodyPtr body, int index, LinkInfoSequence_var& linkInfoSeq, const matrix33& parentRs)
     {
         const LinkInfo& linkInfo = linkInfoSeq[index];
         int jointId = linkInfo.jointId;
         
-        OpenHRP::Link* link = NULL;
-        link = new Link;
+        Link* link = new Link();
         
         CORBA::String_var name0 = linkInfo.name;
         link->name = string( name0 );
@@ -268,7 +268,7 @@ namespace {
 
 
 
-BodyPtr OpenHRP::loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo)
+BodyPtr hrp::loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo)
 {
     if(debugMode){
         dumpBodyInfo(bodyInfo);
@@ -311,7 +311,7 @@ BodyPtr OpenHRP::loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo)
 }
 
 
-BodyPtr OpenHRP::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt)
+BodyPtr hrp::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt)
 {
     CosNaming::Name ncName;
     ncName.length(1);
@@ -360,7 +360,7 @@ BodyPtr OpenHRP::loadBodyFromModelLoader(const char *url, CosNaming::NamingConte
 }
 
 
-BodyPtr OpenHRP::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
+BodyPtr hrp::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
 {
     CosNaming::NamingContext_var cxt;
     try {
@@ -375,14 +375,14 @@ BodyPtr OpenHRP::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
 }
 
 
-BodyPtr OpenHRP::loadBodyFromModelLoader(const char *url, int argc, char *argv[])
+BodyPtr hrp::loadBodyFromModelLoader(const char *url, int argc, char *argv[])
 {
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
     return loadBodyFromModelLoader(url, orb);
 }
 
 
-BodyPtr OpenHRP::loadBodyFromModelLoader(const char *URL, istringstream &strm)
+BodyPtr hrp::loadBodyFromModelLoader(const char *URL, istringstream &strm)
 {
     vector<string> argvec;
     while (!strm.eof()){

@@ -23,7 +23,7 @@
 #include <ostream>
 
 
-namespace OpenHRP {
+namespace hrp {
 
     class VrmlWriter;
 

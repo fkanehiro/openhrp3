@@ -29,106 +29,103 @@
 
 #include "BridgeConf.h"
 
-namespace OpenHRP {
+using namespace OpenHRP;
 
-	namespace ControllerBridge {
 
-		class BridgeConf;
-		class VirtualRobotRTC;
+class BridgeConf;
+class VirtualRobotRTC;
 
-		class Controller_impl
-			: virtual public POA_OpenHRP::Controller,
-			  virtual public PortableServer::RefCountServantBase
-		{
-		public:
-			Controller_impl(BridgeConf* bridgeConf, const char* robotName, VirtualRobotRTC* virtualRobotRTC);
-			~Controller_impl();
+class Controller_impl
+	: virtual public POA_OpenHRP::Controller,
+	  virtual public PortableServer::RefCountServantBase
+{
+public:
+	Controller_impl(BridgeConf* bridgeConf, const char* robotName, VirtualRobotRTC* virtualRobotRTC);
+	~Controller_impl();
 
-			SensorState& getCurrentSensorState();
-			DblSequence* getLinkDataFromSimulator
-			(const std::string& linkName, DynamicsSimulator::LinkDataType linkDataType);
-			DblSequence* getSensorDataFromSimulator(const std::string& sensorName);
-			ImageData* getCameraImageFromSimulator(int cameraId);
-			DblSequence& getJointDataSeqRef(DynamicsSimulator::LinkDataType linkDataType);
-			void flushJointDataSeqToSimulator(DynamicsSimulator::LinkDataType linkDataType);
+	SensorState& getCurrentSensorState();
+	DblSequence* getLinkDataFromSimulator
+	(const std::string& linkName, DynamicsSimulator::LinkDataType linkDataType);
+	DblSequence* getSensorDataFromSimulator(const std::string& sensorName);
+	ImageData* getCameraImageFromSimulator(int cameraId);
+	DblSequence& getJointDataSeqRef(DynamicsSimulator::LinkDataType linkDataType);
+	void flushJointDataSeqToSimulator(DynamicsSimulator::LinkDataType linkDataType);
   
-			virtual void setDynamicsSimulator(DynamicsSimulator_ptr dynamicsSimulator);
-			virtual void setViewSimulator(ViewSimulator_ptr viewSimulator);
+	virtual void setDynamicsSimulator(DynamicsSimulator_ptr dynamicsSimulator);
+	virtual void setViewSimulator(ViewSimulator_ptr viewSimulator);
 		
-			virtual void start();
-			virtual void control();
-			virtual void input();
-			virtual void output();
-			virtual void stop();
+	virtual void start();
+	virtual void control();
+	virtual void input();
+	virtual void output();
+	virtual void stop();
 
-			virtual void destroy();
+	virtual void destroy();
   
-		private:
-			BridgeConf* bridgeConf;
+private:
+	BridgeConf* bridgeConf;
 
-			std::string robotName;
-			VirtualRobotRTC* virtualRobotRTC;
+	std::string robotName;
+	VirtualRobotRTC* virtualRobotRTC;
 
-			typedef std::map<std::string, RTC::Port_var> PortMap;
+	typedef std::map<std::string, RTC::Port_var> PortMap;
 
-			struct RtcInfo
-			{
-				RTC::RTObject_var rtcRef;
-				PortMap portMap;
-				RTC::ExtTrigExecutionContextService_var execContext;
-				double timeRate;
-				double timeRateCounter;
-			};
-			typedef boost::shared_ptr<RtcInfo> RtcInfoPtr;
+	struct RtcInfo
+	{
+		RTC::RTObject_var rtcRef;
+		PortMap portMap;
+		RTC::ExtTrigExecutionContextService_var execContext;
+		double timeRate;
+		double timeRateCounter;
+	};
+	typedef boost::shared_ptr<RtcInfo> RtcInfoPtr;
 
-			typedef std::map<std::string, RtcInfoPtr> RtcInfoMap;
-			RtcInfoMap rtcInfoMap;
+	typedef std::map<std::string, RtcInfoPtr> RtcInfoMap;
+	RtcInfoMap rtcInfoMap;
 
-			RTC::CorbaNaming* naming;
+	RTC::CorbaNaming* naming;
 
-			DynamicsSimulator_var dynamicsSimulator;
-			ViewSimulator_var viewSimulator;
+	DynamicsSimulator_var dynamicsSimulator;
+	ViewSimulator_var viewSimulator;
 
-			SensorState_var sensorState;
-			bool sensorStateUpdated;
+	SensorState_var sensorState;
+	bool sensorStateUpdated;
 
-			struct JointValueSeqInfo {
-				bool flushed;
-				DblSequence values;
-			};
+	struct JointValueSeqInfo {
+		bool flushed;
+		DblSequence values;
+	};
 			
-			typedef std::map<DynamicsSimulator::LinkDataType, JointValueSeqInfo> JointValueSeqInfoMap;
-			JointValueSeqInfoMap outputJointValueSeqInfos;
+	typedef std::map<DynamicsSimulator::LinkDataType, JointValueSeqInfo> JointValueSeqInfoMap;
+	JointValueSeqInfoMap outputJointValueSeqInfos;
 
-			CameraSequence_var cameras;
-			Camera::CameraParameter_var cparam;
+	CameraSequence_var cameras;
+	Camera::CameraParameter_var cparam;
 
-			void detectRtcs();
-			void makePortMap(RtcInfoPtr& rtcInfo);
-			void addRtcWithConnection(RTC::RTObject_var rtcRef);
-			void setupRtcConnections();
-			bool connectPorts(RTC::Port_ptr outPort, RTC::Port_ptr inPort);
-		};
+	void detectRtcs();
+	void makePortMap(RtcInfoPtr& rtcInfo);
+	void addRtcWithConnection(RTC::RTObject_var rtcRef);
+	void setupRtcConnections();
+	bool connectPorts(RTC::Port_ptr outPort, RTC::Port_ptr inPort);
+};
 
 
-		class ControllerFactory_impl : virtual public POA_OpenHRP::ControllerFactory
-		{
-		public:
-			ControllerFactory_impl(RTC::Manager* rtcManager, BridgeConf* bridgeConf);
-			~ControllerFactory_impl();
+class ControllerFactory_impl : virtual public POA_OpenHRP::ControllerFactory
+{
+public:
+	ControllerFactory_impl(RTC::Manager* rtcManager, BridgeConf* bridgeConf);
+	~ControllerFactory_impl();
 
-			virtual Controller_ptr create(const char* robotName);
-			virtual void shutdown();
+	virtual Controller_ptr create(const char* robotName);
+	virtual void shutdown();
 
-		private:
-			RTC::Manager* rtcManager;
-			BridgeConf* bridgeConf;
+private:
+	RTC::Manager* rtcManager;
+	BridgeConf* bridgeConf;
 
-			VirtualRobotRTC* createVirtualRobotRTC();
-			VirtualRobotRTC* currentVirtualRobotRTC;
-		};
-	}
-}
+	VirtualRobotRTC* createVirtualRobotRTC();
+	VirtualRobotRTC* currentVirtualRobotRTC;
+};
 
 
 #endif

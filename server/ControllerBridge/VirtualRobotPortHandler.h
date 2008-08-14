@@ -27,136 +27,131 @@
 
 #include "BridgeConf.h"
 
-
-namespace OpenHRP {
-
-  namespace ControllerBridge {
-
-    class Controller_impl;
-
-    class PortHandler
-    {
-    public:
-      virtual ~PortHandler();
-      RTC::Port_var portRef;
-    };
-
-    typedef boost::shared_ptr<PortHandler> PortHandlerPtr;
+using namespace OpenHRP;
 
 
-    class OutPortHandler : public PortHandler
-    {
-    public:
-      virtual void inputDataFromSimulator(Controller_impl* controller) = 0;
-      virtual void writeDataToPort() = 0;
-    };
+class Controller_impl;
 
-    typedef boost::shared_ptr<OutPortHandler> OutPortHandlerPtr;
+class PortHandler
+{
+public:
+    virtual ~PortHandler();
+    RTC::Port_var portRef;
+};
 
-
-    class InPortHandler : public PortHandler
-    {
-    public:
-      virtual void outputDataToSimulator(Controller_impl* controller) = 0;
-      virtual void readDataFromPort(Controller_impl* controller) = 0;
-    };
-
-    typedef boost::shared_ptr<InPortHandler> InPortHandlerPtr;
+typedef boost::shared_ptr<PortHandler> PortHandlerPtr;
 
 
-    class SensorStateOutPortHandler : public OutPortHandler
-    {
-    public:
-      SensorStateOutPortHandler(PortInfo& info);
-      virtual void inputDataFromSimulator(Controller_impl* controller);
-      virtual void writeDataToPort();
-      RTC::OutPort<RTC::TimedDoubleSeq> outPort;
-    private:
-      RTC::TimedDoubleSeq values;
-      DataTypeId dataTypeId;
-    };
+class OutPortHandler : public PortHandler
+{
+public:
+    virtual void inputDataFromSimulator(Controller_impl* controller) = 0;
+    virtual void writeDataToPort() = 0;
+};
+
+typedef boost::shared_ptr<OutPortHandler> OutPortHandlerPtr;
 
 
-    class LinkDataOutPortHandler : public OutPortHandler
-    {
-    public:
-      LinkDataOutPortHandler(PortInfo& info);
-      virtual void inputDataFromSimulator(Controller_impl* controller);
-      virtual void writeDataToPort();
-      RTC::OutPort<RTC::TimedDoubleSeq> outPort;
-    private:
-      std::string linkName;
-      DynamicsSimulator::LinkDataType linkDataType;
-      RTC::TimedDoubleSeq value;
-    };
+class InPortHandler : public PortHandler
+{
+public:
+    virtual void outputDataToSimulator(Controller_impl* controller) = 0;
+    virtual void readDataFromPort(Controller_impl* controller) = 0;
+};
+
+typedef boost::shared_ptr<InPortHandler> InPortHandlerPtr;
 
 
-    class SensorDataOutPortHandler : public OutPortHandler
-    {
-    public:
-      SensorDataOutPortHandler(PortInfo& info);
-      virtual void inputDataFromSimulator(Controller_impl* controller);
-      virtual void writeDataToPort();
-      RTC::OutPort<RTC::TimedDoubleSeq> outPort;
-    private:
-      RTC::TimedDoubleSeq value;
-      std::string sensorName;
-    };
+class SensorStateOutPortHandler : public OutPortHandler
+{
+public:
+    SensorStateOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedDoubleSeq> outPort;
+private:
+    RTC::TimedDoubleSeq values;
+    DataTypeId dataTypeId;
+};
 
 
-    class ColorImageOutPortHandler : public OutPortHandler
-    {
-    public:
-      ColorImageOutPortHandler(PortInfo& info);
-      virtual void inputDataFromSimulator(Controller_impl* controller);
-      virtual void writeDataToPort();
-      RTC::OutPort<RTC::TimedLongSeq> outPort;
-    private:
-      RTC::TimedLongSeq image;
-      int cameraId;
-    };
+class LinkDataOutPortHandler : public OutPortHandler
+{
+public:
+    LinkDataOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedDoubleSeq> outPort;
+private:
+    std::string linkName;
+    DynamicsSimulator::LinkDataType linkDataType;
+    RTC::TimedDoubleSeq value;
+};
 
 
-    class GrayScaleImageOutPortHandler : public OutPortHandler
-    {
-    public:
-      GrayScaleImageOutPortHandler(PortInfo& info);
-      virtual void inputDataFromSimulator(Controller_impl* controller);
-      virtual void writeDataToPort();
-      RTC::OutPort<RTC::TimedOctetSeq> outPort;
-    private:
-      RTC::TimedOctetSeq image;
-      int cameraId;
-    };
+class SensorDataOutPortHandler : public OutPortHandler
+{
+public:
+    SensorDataOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedDoubleSeq> outPort;
+private:
+    RTC::TimedDoubleSeq value;
+    std::string sensorName;
+};
 
 
-    class DepthImageOutPortHandler : public OutPortHandler
-    {
-    public:
-      DepthImageOutPortHandler(PortInfo& info);
-      virtual void inputDataFromSimulator(Controller_impl* controller);
-      virtual void writeDataToPort();
-      RTC::OutPort<RTC::TimedFloatSeq> outPort;
-    private:
-      RTC::TimedFloatSeq image;
-      int cameraId;
-    };
+class ColorImageOutPortHandler : public OutPortHandler
+{
+public:
+    ColorImageOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedLongSeq> outPort;
+private:
+    RTC::TimedLongSeq image;
+    int cameraId;
+};
+
+
+class GrayScaleImageOutPortHandler : public OutPortHandler
+{
+public:
+    GrayScaleImageOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedOctetSeq> outPort;
+private:
+    RTC::TimedOctetSeq image;
+    int cameraId;
+};
+
+
+class DepthImageOutPortHandler : public OutPortHandler
+{
+public:
+    DepthImageOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedFloatSeq> outPort;
+private:
+    RTC::TimedFloatSeq image;
+    int cameraId;
+};
     
   
-    class JointDataSeqInPortHandler : public InPortHandler
-    {
-    public:
-      JointDataSeqInPortHandler(PortInfo& info);
-      virtual void outputDataToSimulator(Controller_impl* controller);
-      virtual void readDataFromPort(Controller_impl* controller);
-      RTC::InPort<RTC::TimedDoubleSeq> inPort;
-    private:
-      RTC::TimedDoubleSeq values;
-      DynamicsSimulator::LinkDataType linkDataType;
-    };
+class JointDataSeqInPortHandler : public InPortHandler
+{
+public:
+    JointDataSeqInPortHandler(PortInfo& info);
+    virtual void outputDataToSimulator(Controller_impl* controller);
+    virtual void readDataFromPort(Controller_impl* controller);
+    RTC::InPort<RTC::TimedDoubleSeq> inPort;
+private:
+    RTC::TimedDoubleSeq values;
+    DynamicsSimulator::LinkDataType linkDataType;
+};
 
-  }
 
-}
-    
 #endif

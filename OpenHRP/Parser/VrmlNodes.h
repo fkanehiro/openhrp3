@@ -28,7 +28,7 @@
 #include <boost/array.hpp>
 
 
-namespace OpenHRP {
+namespace hrp {
 
     enum VrmlFieldTypeId {
         UNDETERMINED_FIELD_TYPE = 0,

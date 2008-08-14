@@ -24,7 +24,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace OpenHRP;
+using namespace hrp;
 
 
 namespace {
@@ -32,7 +32,7 @@ namespace {
 }
 
 
-namespace OpenHRP {
+namespace hrp {
 
     class TMSImpl
     {

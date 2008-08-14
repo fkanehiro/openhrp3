@@ -40,7 +40,7 @@ using std::atan2;
 #include <tvmet/Matrix.h>
 #include <tvmet/Vector.h>
 
-namespace OpenHRP
+namespace hrp
 {
 	typedef tvmet::Matrix<double, 3, 3> Matrix33;
 	typedef tvmet::Vector<double, 3> Vector3;

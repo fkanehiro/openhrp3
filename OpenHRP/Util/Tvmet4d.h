@@ -15,7 +15,7 @@
 #include "config.h"
 #include "Tvmet3d.h"
 
-namespace OpenHRP
+namespace hrp
 {
 	typedef tvmet::Matrix<double, 4, 4> Matrix44;
 	typedef tvmet::Vector<double, 4> Vector4;

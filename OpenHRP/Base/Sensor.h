@@ -23,7 +23,7 @@
 
 #include "hrpModelExportDef.h"
 
-namespace OpenHRP {
+namespace hrp {
 
 	class Link;
 

@@ -21,7 +21,7 @@
 #include <string>
 #include <boost/signal.hpp>
 
-namespace OpenHRP
+namespace hrp
 {
     class TMSImpl;
     

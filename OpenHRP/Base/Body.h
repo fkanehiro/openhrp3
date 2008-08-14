@@ -27,7 +27,7 @@
 #include "hrpModelExportDef.h"
 
 
-namespace OpenHRP {
+namespace hrp {
     class Sensor;
 	class Body;
 	class JointPath;
@@ -35,11 +35,11 @@ namespace OpenHRP {
 }
 
 namespace boost {
-	void intrusive_ptr_add_ref(OpenHRP::Body* body);
-	void intrusive_ptr_release(OpenHRP::Body* body);
+	void intrusive_ptr_add_ref(hrp::Body* body);
+	void intrusive_ptr_release(hrp::Body* body);
 }
 
-namespace OpenHRP {
+namespace hrp {
 
 	struct BodyHandleEntity {
 		Body* body;
@@ -257,8 +257,8 @@ namespace OpenHRP {
 		BodyHandle bodyHandle;
 
 		// for boost::intrusive_ptr
-		friend void ::boost::intrusive_ptr_add_ref(OpenHRP::Body* body);
-		friend void ::boost::intrusive_ptr_release(OpenHRP::Body* body);
+		friend void ::boost::intrusive_ptr_add_ref(hrp::Body* body);
+		friend void ::boost::intrusive_ptr_release(hrp::Body* body);
 		int refCounter;
 
 		void initialize();
@@ -274,10 +274,10 @@ namespace OpenHRP {
 
 namespace boost
 {
-  inline void intrusive_ptr_add_ref(OpenHRP::Body* body){
+  inline void intrusive_ptr_add_ref(hrp::Body* body){
 	  body->refCounter++;
   }
-  inline void intrusive_ptr_release(OpenHRP::Body* body){
+  inline void intrusive_ptr_release(hrp::Body* body){
 	  if(--body->refCounter == 0){
 		  delete body;
 	  }
@@ -286,7 +286,7 @@ namespace boost
 
 
 
-HRPMODEL_EXPORT std::ostream &operator<< (std::ostream& out, OpenHRP::Body& body);
+HRPMODEL_EXPORT std::ostream &operator<< (std::ostream& out, hrp::Body& body);
 
 
 #endif

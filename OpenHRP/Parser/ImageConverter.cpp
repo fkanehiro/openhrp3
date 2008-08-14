@@ -8,7 +8,7 @@
 #include "ImageConverter.h"
 
 using namespace std;
-using namespace OpenHRP;
+using namespace hrp;
 
 
 

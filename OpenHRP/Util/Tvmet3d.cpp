@@ -11,13 +11,13 @@
 #include "Tvmet3d.h"
 
 using namespace tvmet;
-using namespace OpenHRP;
+using namespace hrp;
 
 
 static const double PI = 3.14159265358979323846;
 
 
-void OpenHRP::calcRodrigues(Matrix33& out_R, const Vector3& axis, double q)
+void hrp::calcRodrigues(Matrix33& out_R, const Vector3& axis, double q)
 {
     // E + a_hat*sin(q) + a_hat*a_hat*(1-cos(q))
     //
@@ -58,7 +58,7 @@ void OpenHRP::calcRodrigues(Matrix33& out_R, const Vector3& axis, double q)
 }
 
 
-Vector3 OpenHRP::omegaFromRot(const Matrix33& r)
+Vector3 hrp::omegaFromRot(const Matrix33& r)
 {
     using ::std::numeric_limits;
 
@@ -84,7 +84,7 @@ Vector3 OpenHRP::omegaFromRot(const Matrix33& r)
 }
 
 
-Vector3 OpenHRP::rpyFromRot(const Matrix33& m)
+Vector3 hrp::rpyFromRot(const Matrix33& m)
 {
     double roll, pitch, yaw;
     
@@ -123,7 +123,7 @@ Vector3 OpenHRP::rpyFromRot(const Matrix33& m)
 }
 
 
-void OpenHRP::calcRotFromRpy(Matrix33& out_R, double r, double p, double y)
+void hrp::calcRotFromRpy(Matrix33& out_R, double r, double p, double y)
 {
     const double cr = cos(r), sr = sin(r), cp = cos(p), sp = sin(p), cy = cos(y), sy = sin(y);
     out_R(0,0)= cp*cy;
@@ -138,7 +138,7 @@ void OpenHRP::calcRotFromRpy(Matrix33& out_R, double r, double p, double y)
 }
 
 
-void OpenHRP::calcInverse(Matrix33& inv, const Matrix33& m)
+void hrp::calcInverse(Matrix33& inv, const Matrix33& m)
 {
   double det = m(0,0)*(m(1,1)*m(2,2)-m(1,2)*m(2,1)) - m(0,1)*(m(1,0)*m(2,2)-m(1,2)*m(2,0)) + m(0,2)*(m(1,0)*m(2,1)-m(1,1)*m(2,0));
   

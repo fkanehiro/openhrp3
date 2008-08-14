@@ -24,7 +24,7 @@
 #include <boost/intrusive_ptr.hpp>
 
 
-namespace OpenHRP
+namespace hrp
 {
     class Body;
     typedef boost::intrusive_ptr<Body> BodyPtr;

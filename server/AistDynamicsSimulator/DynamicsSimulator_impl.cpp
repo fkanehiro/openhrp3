@@ -26,8 +26,8 @@
 #include <map>
 #include <algorithm>
 
-using namespace OpenHRP;
 using namespace std;
+using namespace hrp;
 
 
 // #define INTEGRATOR_DEBUG

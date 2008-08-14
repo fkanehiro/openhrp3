@@ -26,8 +26,6 @@
 
 using namespace std;
 using namespace boost;
-using namespace OpenHRP;
-using namespace OpenHRP::ControllerBridge;
 
 namespace {
   const bool CONTROLLER_BRIDGE_DEBUG = false;

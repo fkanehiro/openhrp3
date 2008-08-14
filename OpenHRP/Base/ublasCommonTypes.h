@@ -18,7 +18,7 @@
 #include <boost/numeric/ublas/io.hpp>
 
 
-namespace OpenHRP {
+namespace hrp {
     
     namespace ublas = boost::numeric::ublas;
     

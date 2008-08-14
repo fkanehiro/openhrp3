@@ -15,7 +15,7 @@
 
 #include "Sensor.h"
 
-using namespace OpenHRP;
+using namespace hrp;
 
 
 Sensor::Sensor()

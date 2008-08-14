@@ -94,14 +94,15 @@ static const bool CFS_MCP_DEBUG_SHOW_ITERATION_STOP = false;
 static const bool CFS_PUT_NUM_CONTACT_POINTS = false;
 
 
-using namespace OpenHRP;
+using namespace std;
 using namespace boost;
 using namespace tvmet;
 using namespace boost::numeric::ublas;
-using namespace std;
+using namespace hrp;
+using namespace OpenHRP;
 
 
-namespace OpenHRP
+namespace hrp
 {
 	class CFSImpl
 	{

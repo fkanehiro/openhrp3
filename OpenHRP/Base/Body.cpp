@@ -23,7 +23,7 @@
 #include "Sensor.h"
 #include "BodyCustomizerInterface.h"
 
-using namespace OpenHRP;
+using namespace hrp;
 using namespace tvmet;
 using namespace std;
 
@@ -35,7 +35,7 @@ static bool pluginsInDefaultDirectoriesLoaded = false;
 typedef unsigned int uint;
 #endif
 
-namespace OpenHRP {
+namespace hrp {
 	
 	class CustomizedJointPath : public JointPath
 	{
@@ -637,7 +637,7 @@ static double* getJointTorqueForcePtr(BodyHandle bodyHandle, int linkIndex)
 
 
 static BodyInterface bodyInterfaceEntity = {
-	OpenHRP::BODY_INTERFACE_VERSION,
+	hrp::BODY_INTERFACE_VERSION,
 	getLinkIndexFromName,
 	getLinkName,
 	getJointValuePtr,

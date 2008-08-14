@@ -28,7 +28,7 @@
 #include "hrpModelExportDef.h"
 
 
-namespace OpenHRP {
+namespace hrp {
 
 	class HRPMODEL_EXPORT LinkPath : public LinkTraverse
 	{
@@ -125,7 +125,7 @@ namespace OpenHRP {
 };
 
 
-HRPMODEL_EXPORT std::ostream& operator<<(std::ostream& os, OpenHRP::LinkTraverse& traverse);
+HRPMODEL_EXPORT std::ostream& operator<<(std::ostream& os, hrp::LinkTraverse& traverse);
 
 
 #endif

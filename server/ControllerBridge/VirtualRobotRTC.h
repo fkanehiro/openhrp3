@@ -23,71 +23,65 @@
 
 #include "VirtualRobotPortHandler.h"
 
-namespace OpenHRP {
 
-  namespace ControllerBridge {
+class Controller_impl;
 
-    class Controller_impl;
+class VirtualRobotRTC : public RTC::DataFlowComponentBase
+{
+public:
 
-    class VirtualRobotRTC : public RTC::DataFlowComponentBase
-    {
-    public:
+    static void registerFactory(RTC::Manager* manager, const char* componentTypeName);
 
-      static void registerFactory(RTC::Manager* manager, const char* componentTypeName);
+    VirtualRobotRTC(RTC::Manager* manager);
+    ~VirtualRobotRTC();
 
-      VirtualRobotRTC(RTC::Manager* manager);
-      ~VirtualRobotRTC();
+    PortHandlerPtr getPortHandler(const std::string& name);
 
-      PortHandlerPtr getPortHandler(const std::string& name);
-
-      RTC::RTCList* getConnectedRtcs();
+    RTC::RTCList* getConnectedRtcs();
     
-      void inputDataFromSimulator(Controller_impl* controller);
-      void outputDataToSimulator(Controller_impl* controller);
+    void inputDataFromSimulator(Controller_impl* controller);
+    void outputDataToSimulator(Controller_impl* controller);
 
-      void writeDataToOutPorts();
-      void readDataFromInPorts(Controller_impl* controller);
+    void writeDataToOutPorts();
+    void readDataFromInPorts(Controller_impl* controller);
 
-      virtual RTC::ReturnCode_t onExecute(RTC::UniqueId ex_id);
+    virtual RTC::ReturnCode_t onExecute(RTC::UniqueId ex_id);
 
-      bool isOwnedByController;
+    bool isOwnedByController;
 
-    private:
+private:
 
-      typedef std::map<std::string, OutPortHandlerPtr> OutPortHandlerMap;
-      OutPortHandlerMap outPortHandlers;
+    typedef std::map<std::string, OutPortHandlerPtr> OutPortHandlerMap;
+    OutPortHandlerMap outPortHandlers;
 
-      typedef std::map<std::string, InPortHandlerPtr> InPortHandlerMap;
-      InPortHandlerMap inPortHandlers;
+    typedef std::map<std::string, InPortHandlerPtr> InPortHandlerMap;
+    InPortHandlerMap inPortHandlers;
 
-      void createOutPortHandler(PortInfo& portInfo);
-      void createInPortHandler(PortInfo& portInfo);
+    void createOutPortHandler(PortInfo& portInfo);
+    void createInPortHandler(PortInfo& portInfo);
 
-      template <class TOutPortHandler>
-      void registerOutPortHandler(TOutPortHandler* handler) {
+    template <class TOutPortHandler>
+    void registerOutPortHandler(TOutPortHandler* handler) {
 	const char* name = handler->outPort.name();
 	if(!getPortHandler(name)){
-	  registerOutPort(name, handler->outPort);
-	  outPortHandlers.insert(std::make_pair(name, OutPortHandlerPtr(handler)));
+            registerOutPort(name, handler->outPort);
+            outPortHandlers.insert(std::make_pair(name, OutPortHandlerPtr(handler)));
 	}
-      }
+    }
 
-      template <class TInPortHandler>
-      void registerInPortHandler(TInPortHandler* handler) {
+    template <class TInPortHandler>
+    void registerInPortHandler(TInPortHandler* handler) {
 	const char* name = handler->inPort.name();
 	if(!getPortHandler(name)){
-	  registerInPort(name, handler->inPort);
-	  inPortHandlers.insert(std::make_pair(name, InPortHandlerPtr(handler)));
+            registerInPort(name, handler->inPort);
+            inPortHandlers.insert(std::make_pair(name, InPortHandlerPtr(handler)));
 	}
-      }
+    }
 
-      void updatePortObjectRefs();
+    void updatePortObjectRefs();
 
-      void addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcList, std::set<std::string>& foundRtcNames);
-    };
-
-  }
-}
+    void addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcList, std::set<std::string>& foundRtcNames);
+};
 
 
 #endif

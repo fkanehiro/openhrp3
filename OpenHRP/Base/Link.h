@@ -25,7 +25,7 @@
 #include "hrpModelExportDef.h"
 
 
-namespace OpenHRP {
+namespace hrp {
 
 	class Body;
 
@@ -164,7 +164,7 @@ namespace OpenHRP {
 };
 	
 
-HRPMODEL_EXPORT std::ostream& operator<<(std::ostream &out, OpenHRP::Link& link);
+HRPMODEL_EXPORT std::ostream& operator<<(std::ostream &out, hrp::Link& link);
 
 
 #endif

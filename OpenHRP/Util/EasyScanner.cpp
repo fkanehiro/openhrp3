@@ -15,7 +15,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace OpenHRP;
+using namespace hrp;
 
 
 // Replacement for 'strtod()' function in Visual C++

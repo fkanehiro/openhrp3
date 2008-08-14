@@ -19,7 +19,7 @@ extern "C" {
 
 using namespace std;
 
-namespace OpenHRP
+namespace hrp
 {
 
     class ImageConverter

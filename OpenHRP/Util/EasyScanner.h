@@ -23,7 +23,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-namespace OpenHRP {
+namespace hrp {
 
     class HRP_UTIL_EXPORT  EasyScanner {
 

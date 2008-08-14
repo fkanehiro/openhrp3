@@ -7,7 +7,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace OpenHRP;
+using namespace hrp;
 
 
 
