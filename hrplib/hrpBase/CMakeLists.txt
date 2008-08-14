@@ -45,15 +45,15 @@ set_target_properties(hrpBase3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
   target_link_libraries(hrpBase3
-    hrpUtil3 hrpCorbaStubSkel3
+    hrpUtil3 hrpCorbaStubSkel3 hrpCollision3
     ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
     boost_filesystem boost_regex dl)
 
 elseif(WIN32)
   add_definitions(-DHRPMODEL_MAKE_DLL)
   target_link_libraries(hrpBase3
-    optimized hrpUtil3 optimized hrpCorbaStubSkel3
-    debug hrpUtil3d debug hrpCorbaStubSkel3d
+    optimized hrpUtil3 optimized hrpCorbaStubSkel3 optimized hrpCollision3
+    debug hrpUtil3d debug hrpCorbaStubSkel3d debug hrpCollision3d
     ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES})  
   set_target_properties(hrpBase3 PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT )
   set_target_properties(hrpBase3 PROPERTIES DEBUG_POSTFIX d )

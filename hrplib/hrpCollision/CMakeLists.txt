@@ -11,6 +11,7 @@
 
 set(sources
   ColdetModel.cpp
+  ColdetModelPair.cpp
   CdCache.cpp
   CdScene.cpp
   CdWrapper.cpp
@@ -40,6 +41,7 @@ set(sources
 set(headers
   config.h
   ColdetModel.h
+  ColdetModelPair.h
   CdCache.h
   CdWrapper.h
   CdScene.h

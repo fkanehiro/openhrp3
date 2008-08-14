@@ -16,11 +16,13 @@
 #include "ModelLoaderUtil.h"
 
 #include <stack>
+#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Tvmet4d.h>
 #include <hrpCorba/OpenHRPCommon.h>
+#include <hrpCollision/ColdetModel.h>
 
 #include "Link.h"
 #include "Sensor.h"
-#include "tvmet3d.h"
 
 using namespace std;
 using namespace hrp;
@@ -116,171 +118,53 @@ namespace {
         cout.flush();
     }
 
-
-    void createSensors(BodyPtr body, Link* link, const SensorInfoSequence& sensorInfoSeq, const matrix33& Rs)
-    {
-        int numSensors = sensorInfoSeq.length();
-
-        for(int i=0 ; i < numSensors ; ++i ) {
-            const SensorInfo& sensorInfo = sensorInfoSeq[i];
-
-            int id = sensorInfo.id;
-            if(id < 0) {
-                std::cerr << "Warning:  sensor ID is not given to sensor " << sensorInfo.name
-                          << "of model " << body->modelName << "." << std::endl;
-            } else {
-                int sensorType = Sensor::COMMON;
-
-                CORBA::String_var type0 = sensorInfo.type;
-                string type(type0);
-
-                if(type == "Force")             { sensorType = Sensor::FORCE; }
-                else if(type == "RateGyro")     { sensorType = Sensor::RATE_GYRO; }
-                else if(type == "Acceleration")	{ sensorType = Sensor::ACCELERATION; }
-                else if(type == "Vision")       { sensorType = Sensor::VISION; }
-
-                CORBA::String_var name0 = sensorInfo.name;
-                string name(name0);
-
-                Sensor* sensor = body->createSensor(link, sensorType, id, name);
-
-                if(sensor) {
-                    const DblArray3& p = sensorInfo.translation;
-                    sensor->localPos = Rs * vector3(p[0], p[1], p[2]);
-
-                    const vector3 axis(sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2]);
-                    const matrix33 R(rodrigues(axis, sensorInfo.rotation[3]));
-                    sensor->localR = Rs * R;
-                }
-            }
-        }
-    }
-
-
     inline double getLimitValue(DblSequence limitseq, double defaultValue)
     {
         return (limitseq.length() == 0) ? defaultValue : limitseq[0];
     }
 
-
-    Link* createLink(BodyPtr body, int index, LinkInfoSequence_var& linkInfoSeq, const matrix33& parentRs)
+    class ModelLoaderHelper
     {
-        const LinkInfo& linkInfo = linkInfoSeq[index];
-        int jointId = linkInfo.jointId;
-        
-        Link* link = new Link();
-        
-        CORBA::String_var name0 = linkInfo.name;
-        link->name = string( name0 );
-        link->jointId = jointId;
-        
-        vector3 relPos(linkInfo.translation[0], linkInfo.translation[1], linkInfo.translation[2]);
-        link->b = parentRs * relPos;
-
-        vector3 rotAxis(linkInfo.rotation[0], linkInfo.rotation[1], linkInfo.rotation[2]);
-        matrix33 R = rodrigues(rotAxis, linkInfo.rotation[3]);
-        link->Rs = (parentRs * R);
-        const matrix33& Rs = link->Rs;
-
-        CORBA::String_var jointType = linkInfo.jointType;
-        const std::string jt( jointType );
-
-        if(jt == "fixed" ){
-            link->jointType = Link::FIXED_JOINT;
-        } else if(jt == "free" ){
-            link->jointType = Link::FREE_JOINT;
-        } else if(jt == "rotate" ){
-            link->jointType = Link::ROTATIONAL_JOINT;
-        } else if(jt == "slide" ){
-            link->jointType = Link::SLIDE_JOINT;
-        } else {
-            link->jointType = Link::FREE_JOINT;
+    public:
+        ModelLoaderHelper() {
+            collisionDetectionModelLoading = false;
         }
 
-        if(jointId < 0){
-            if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
-                std::cerr << "Warning:  Joint ID is not given to joint " << link->name
-                          << " of model " << body->modelName << "." << std::endl;
-            }
-        }
+        void enableCollisionDetectionModelLoading(bool isEnabled) {
+            collisionDetectionModelLoading = isEnabled;
+        };
 
-        link->a = 0.0;
-        link->d = 0.0;
+        BodyPtr createBody(BodyInfo_ptr bodyInfo);
 
-        vector3 axis( Rs * vector3(linkInfo.jointAxis[0], linkInfo.jointAxis[1], linkInfo.jointAxis[2]));
+    private:
 
-        if(link->jointType == Link::ROTATIONAL_JOINT){
-            link->a = axis;
-        } else if(link->jointType == Link::SLIDE_JOINT){
-            link->d = axis;
-        }
+        BodyPtr body;
+        LinkInfoSequence_var linkInfoSeq;
+        ShapeInfoSequence_var shapeInfoSeq;
+        bool collisionDetectionModelLoading;
 
-        link->m  = linkInfo.mass;
-        link->Ir = linkInfo.rotorInertia;
-
-        link->gearRatio     = linkInfo.gearRatio;
-        link->rotorResistor = linkInfo.rotorResistor;
-        link->torqueConst   = linkInfo.torqueConst;
-        link->encoderPulse  = linkInfo.encoderPulse;
-
-        link->Jm2 = link->Ir * link->gearRatio * link->gearRatio;
-
-        DblSequence ulimit  = linkInfo.ulimit;
-        DblSequence llimit  = linkInfo.llimit;
-        DblSequence uvlimit = linkInfo.uvlimit;
-        DblSequence lvlimit = linkInfo.lvlimit;
-
-        double maxlimit = numeric_limits<double>::max();
-
-        link->ulimit  = getLimitValue(ulimit,  +maxlimit);
-        link->llimit  = getLimitValue(llimit,  -maxlimit);
-        link->uvlimit = getLimitValue(uvlimit, +maxlimit);
-        link->lvlimit = getLimitValue(lvlimit, -maxlimit);
-
-        link->c = Rs * vector3(linkInfo.centerOfMass[0], linkInfo.centerOfMass[1], linkInfo.centerOfMass[2]);
-
-        matrix33 Io;
-        getMatrix33FromRowMajorArray(Io, linkInfo.inertia);
-        link->I = Rs * Io;
-
-        // a stack is used for keeping the same order of children
-        std::stack<Link*> children;
-	
-        //##### [Changed] Link Structure (convert NaryTree to BinaryTree).
-        int childNum = linkInfo.childIndices.length();
-        for(int i = 0 ; i < childNum ; i++) {
-            int childIndex = linkInfo.childIndices[i];
-            Link* childLink = createLink(body, childIndex, linkInfoSeq, Rs);
-            if(childLink) {
-                children.push(childLink);
-            }
-        }
-        while(!children.empty()){
-            link->addChild(children.top());
-            children.pop();
-        }
-        
-        createSensors(body, link, linkInfo.sensors, Rs);
-
-        return link;
-    }
+        Link* createLink(int index, const Matrix33& parentRs);
+        void createSensors(Link* link, const SensorInfoSequence& sensorInfoSeq, const Matrix33& Rs);
+        void createColdetModel(Link* link, const LinkInfo& linkInfo);
+        void addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const LinkInfo& linkInfo);
+    };
 }
 
 
-
-BodyPtr hrp::loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo)
+BodyPtr ModelLoaderHelper::createBody(BodyInfo_ptr bodyInfo)
 {
     if(debugMode){
         dumpBodyInfo(bodyInfo);
     }
 	
-    BodyPtr body(new Body());
+    body = new Body();
 
     CORBA::String_var name = bodyInfo->name();
     body->modelName = name;
 
     int n = bodyInfo->links()->length();
-    LinkInfoSequence_var linkInfoSeq = bodyInfo->links();
+    linkInfoSeq = bodyInfo->links();
+    shapeInfoSeq = bodyInfo->shapes();
 
     int rootIndex = -1;
 
@@ -298,8 +182,8 @@ BodyPtr hrp::loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo)
     }
 
     if(body){
-        matrix33 Rs(tvmet::identity<matrix33>());
-        Link* rootLink = createLink(body, rootIndex, linkInfoSeq, Rs);
+        Matrix33 Rs(tvmet::identity<Matrix33>());
+        Link* rootLink = createLink(rootIndex, Rs);
         body->setRootLink(rootLink);
         body->setDefaultRootPosition(rootLink->b, rootLink->Rs);
 
@@ -311,8 +195,226 @@ BodyPtr hrp::loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo)
 }
 
 
+Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
+{
+    const LinkInfo& linkInfo = linkInfoSeq[index];
+    int jointId = linkInfo.jointId;
+        
+    Link* link = new Link();
+        
+    CORBA::String_var name0 = linkInfo.name;
+    link->name = string( name0 );
+    link->jointId = jointId;
+        
+    Vector3 relPos(linkInfo.translation[0], linkInfo.translation[1], linkInfo.translation[2]);
+    link->b = parentRs * relPos;
+
+    Vector3 rotAxis(linkInfo.rotation[0], linkInfo.rotation[1], linkInfo.rotation[2]);
+    Matrix33 R = rodrigues(rotAxis, linkInfo.rotation[3]);
+    link->Rs = (parentRs * R);
+    const Matrix33& Rs = link->Rs;
+
+    CORBA::String_var jointType = linkInfo.jointType;
+    const std::string jt( jointType );
+
+    if(jt == "fixed" ){
+        link->jointType = Link::FIXED_JOINT;
+    } else if(jt == "free" ){
+        link->jointType = Link::FREE_JOINT;
+    } else if(jt == "rotate" ){
+        link->jointType = Link::ROTATIONAL_JOINT;
+    } else if(jt == "slide" ){
+        link->jointType = Link::SLIDE_JOINT;
+    } else {
+        link->jointType = Link::FREE_JOINT;
+    }
+
+    if(jointId < 0){
+        if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
+            std::cerr << "Warning:  Joint ID is not given to joint " << link->name
+                      << " of model " << body->modelName << "." << std::endl;
+        }
+    }
+
+    link->a = 0.0;
+    link->d = 0.0;
+
+    Vector3 axis( Rs * Vector3(linkInfo.jointAxis[0], linkInfo.jointAxis[1], linkInfo.jointAxis[2]));
+
+    if(link->jointType == Link::ROTATIONAL_JOINT){
+        link->a = axis;
+    } else if(link->jointType == Link::SLIDE_JOINT){
+        link->d = axis;
+    }
+
+    link->m  = linkInfo.mass;
+    link->Ir = linkInfo.rotorInertia;
+
+    link->gearRatio     = linkInfo.gearRatio;
+    link->rotorResistor = linkInfo.rotorResistor;
+    link->torqueConst   = linkInfo.torqueConst;
+    link->encoderPulse  = linkInfo.encoderPulse;
+
+    link->Jm2 = link->Ir * link->gearRatio * link->gearRatio;
+
+    DblSequence ulimit  = linkInfo.ulimit;
+    DblSequence llimit  = linkInfo.llimit;
+    DblSequence uvlimit = linkInfo.uvlimit;
+    DblSequence lvlimit = linkInfo.lvlimit;
+
+    double maxlimit = numeric_limits<double>::max();
+
+    link->ulimit  = getLimitValue(ulimit,  +maxlimit);
+    link->llimit  = getLimitValue(llimit,  -maxlimit);
+    link->uvlimit = getLimitValue(uvlimit, +maxlimit);
+    link->lvlimit = getLimitValue(lvlimit, -maxlimit);
+
+    link->c = Rs * Vector3(linkInfo.centerOfMass[0], linkInfo.centerOfMass[1], linkInfo.centerOfMass[2]);
+
+    Matrix33 Io;
+    getMatrix33FromRowMajorArray(Io, linkInfo.inertia);
+    link->I = Rs * Io;
+
+    // a stack is used for keeping the same order of children
+    std::stack<Link*> children;
+	
+    //##### [Changed] Link Structure (convert NaryTree to BinaryTree).
+    int childNum = linkInfo.childIndices.length();
+    for(int i = 0 ; i < childNum ; i++) {
+        int childIndex = linkInfo.childIndices[i];
+        Link* childLink = createLink(childIndex, Rs);
+        if(childLink) {
+            children.push(childLink);
+        }
+    }
+    while(!children.empty()){
+        link->addChild(children.top());
+        children.pop();
+    }
+        
+    createSensors(link, linkInfo.sensors, Rs);
+
+    if(collisionDetectionModelLoading){
+        createColdetModel(link, linkInfo);
+    }
+
+    return link;
+}
+
+
+void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sensorInfoSeq, const Matrix33& Rs)
+{
+    int numSensors = sensorInfoSeq.length();
+
+    for(int i=0 ; i < numSensors ; ++i ) {
+        const SensorInfo& sensorInfo = sensorInfoSeq[i];
+
+        int id = sensorInfo.id;
+        if(id < 0) {
+            std::cerr << "Warning:  sensor ID is not given to sensor " << sensorInfo.name
+                      << "of model " << body->modelName << "." << std::endl;
+        } else {
+            int sensorType = Sensor::COMMON;
+
+            CORBA::String_var type0 = sensorInfo.type;
+            string type(type0);
+
+            if(type == "Force")             { sensorType = Sensor::FORCE; }
+            else if(type == "RateGyro")     { sensorType = Sensor::RATE_GYRO; }
+            else if(type == "Acceleration")	{ sensorType = Sensor::ACCELERATION; }
+            else if(type == "Vision")       { sensorType = Sensor::VISION; }
+
+            CORBA::String_var name0 = sensorInfo.name;
+            string name(name0);
+
+            Sensor* sensor = body->createSensor(link, sensorType, id, name);
+
+            if(sensor) {
+                const DblArray3& p = sensorInfo.translation;
+                sensor->localPos = Rs * Vector3(p[0], p[1], p[2]);
+
+                const Vector3 axis(sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2]);
+                const Matrix33 R(rodrigues(axis, sensorInfo.rotation[3]));
+                sensor->localR = Rs * R;
+            }
+        }
+    }
+}
+
+
+void ModelLoaderHelper::createColdetModel(Link* link, const LinkInfo& linkInfo)
+{
+    int totalNumVertices = 0;
+    int totalNumTriangles = 0;
+    const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
+    for(int i=0; i < shapeIndices.length(); i++){
+        short shapeIndex = shapeIndices[i].shapeIndex;
+        const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
+        totalNumVertices += shapeInfo.vertices.length() / 3;
+        totalNumTriangles += shapeInfo.triangles.length() / 3;
+    }
+
+    ColdetModelPtr coldetModel(new ColdetModel());
+    coldetModel->setNumVertices(totalNumVertices);
+    coldetModel->setNumTriangles(totalNumTriangles);
+    addLinkVerticesAndTriangles(coldetModel, linkInfo);
+    coldetModel->build();
+
+    link->coldetModel = coldetModel;
+}
+
+
+void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const LinkInfo& linkInfo)
+{
+    int vertexIndex = 0;
+    int triangleIndex = 0;
+
+    const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
+    
+    for(int i=0; i < shapeIndices.length(); i++){
+        const TransformedShapeIndex& tsi = shapeIndices[i];
+        short shapeIndex = tsi.shapeIndex;
+        const DblArray12& M = tsi.transformMatrix;;
+        Matrix44 T;
+        T = M[0], M[1], M[2],  M[3],
+            M[4], M[5], M[6],  M[7],
+            M[8], M[9], M[10], M[11],
+            0.0,  0.0,  0.0,   1.0;
+
+        const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
+
+        const FloatSequence& vertices = shapeInfo.vertices;
+        const int numVertices = vertices.length() / 3;
+        for(int j=0; j < numVertices; ++j){
+            Vector4 v(T * Vector4(vertices[j*3], vertices[j*3+1], vertices[j*3+2]));
+            coldetModel->setVertex(vertexIndex++, v[0], v[1], v[2]);
+        }
+
+        const LongSequence& triangles = shapeInfo.triangles;
+        const int numTriangles = triangles.length() / 3;
+
+        for(int j=0; j < numTriangles; ++j){
+            coldetModel->setTriangle(triangleIndex++, triangles[j*3], triangles[j*3+1], triangles[j*3+2]);
+        }
+    }
+}
+
+
+BodyPtr hrp::loadBodyFromBodyInfo(OpenHRP::BodyInfo_ptr bodyInfo)
+{
+    BodyPtr body;
+    if(!CORBA::is_nil(bodyInfo)){
+        ModelLoaderHelper helper;
+        body = helper.createBody(bodyInfo);
+    }
+    return body;
+}
+
+
 BodyPtr hrp::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt)
 {
+    BodyPtr body;
+    
     CosNaming::Name ncName;
     ncName.length(1);
     ncName[0].id = CORBA::string_dup("ModelLoader");
@@ -332,31 +434,30 @@ BodyPtr hrp::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_v
             std::cerr << "Not Object" << std::endl;
             break;
         }
-        return BodyPtr();
+        return body;
     } catch(CosNaming::NamingContext::CannotProceed &exc) {
         std::cerr << "Resolve ModelLoader CannotProceed" << std::endl;
+        return body;
     } catch(CosNaming::NamingContext::AlreadyBound &exc) {
         std::cerr << "Resolve ModelLoader InvalidName" << std::endl;
+        return body;
     }
 
     BodyInfo_var bodyInfo;
-
-    try
-	{
-            bodyInfo = modelLoader->getBodyInfo( url );
-	} catch( CORBA::SystemException& ex ) {
+    try {        
+        bodyInfo = modelLoader->getBodyInfo(url);
+    } catch(CORBA::SystemException& ex) {
         std::cerr << "CORBA::SystemException raised by ModelLoader: " << ex._rep_id() << std::endl;
-        return BodyPtr();
     } catch(ModelLoader::ModelLoaderException& ex){
         std::cerr << "ModelLoaderException : " << ex.description << std::endl;
     }
 
-    if( CORBA::is_nil( bodyInfo ) )
-	{
-            return BodyPtr();
-	}
+    if(!CORBA::is_nil(bodyInfo)){
+        ModelLoaderHelper helper;
+        body = helper.createBody(bodyInfo);
+    }
 
-    return loadBodyFromBodyInfo( bodyInfo );
+    return body;
 }
 
 
@@ -364,7 +465,7 @@ BodyPtr hrp::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
 {
     CosNaming::NamingContext_var cxt;
     try {
-        CORBA::Object_var	nS = orb->resolve_initial_references("NameService");
+        CORBA::Object_var nS = orb->resolve_initial_references("NameService");
         cxt = CosNaming::NamingContext::_narrow(nS);
     } catch(CORBA::SystemException& ex) {
         std::cerr << "NameService doesn't exist" << std::endl;
