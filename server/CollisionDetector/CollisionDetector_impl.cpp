@@ -85,14 +85,15 @@ void CollisionDetector_impl::addModel(const char* charName,	BodyInfo_ptr bodyInf
         //ロード
         LinkInfoSequence_var links = bodyInfo->links();
 		ShapeInfoSequence_var shapes = bodyInfo->shapes();
-		AllLinkShapeIndexSequence_var allLinkShapeIndices = bodyInfo->linkShapeIndices(); 
 		
         cachedModel = new CdModelCache();
 
         // ジョイントごとに三角形集合追加
 		for(int linkIndex = 0; linkIndex < links->length(); ++linkIndex){
+
+			LinkInfo& linkInfo = links[linkIndex];
 			
-			const TransformedShapeIndexSequence& shapeIndices = allLinkShapeIndices[linkIndex];
+			const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
 			
 			CdModelSet* modelSet = new CdModelSet();
 			modelSet->linkIndex = linkIndex;
@@ -105,7 +106,7 @@ void CollisionDetector_impl::addModel(const char* charName,	BodyInfo_ptr bodyInf
 				delete modelSet;
 				modelSet = 0;
 			}
-			const char* linkName = links[linkIndex].name;
+			const char* linkName = linkInfo.name;
 			cachedModel->addModel(linkName, modelSet);
 			cout << linkName << " has "<< numTriangles << " triangles." << endl;
         }

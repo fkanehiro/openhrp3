@@ -1,0 +1,28 @@
+
+
+
+CdModelSet リンク一つの頂点データセットを格納する
+　CdModelCache へ "addModel" で名前とともに追加される
+
+ CdModelCache CdModelSetを追加していくクラス。おそらくロボット一体に対応。
+
+ CdCharaCache CdModelCacheを追加していくクラス。Worldがもつ複数ロボット分を格納
+
+
+
+
+CdScene CdCharを格納する
+
+CdChar cacheModelから作る、実際の計算用のクラス？ ロボット一体に対応
+
+CdJoint　実際の計算用。リンク一体に対応。	
+ translation_, rotation_ に位置姿勢をセットしておく。  
+
+CdCheckPair 干渉チェックペア。CdScene へ追加。
+ collide() メソッドで衝突判定。結果は collision_data 型に格納。
+
+
+
+cdContact はグローバル変数 utilities.h で定義されている。
+
+主に、InsertCollisionPair.cpp にて内容をセットされている。
