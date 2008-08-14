@@ -48,4 +48,4 @@ install(TARGETS hrpUtil3
   ARCHIVE DESTINATION lib CONFIGURATIONS Release
 )
 
-install(FILES ${headers} DESTINATION include/OpenHRP/Util)
+install(FILES ${headers} DESTINATION include/hrpUtil)

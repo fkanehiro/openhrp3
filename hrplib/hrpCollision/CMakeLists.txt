@@ -91,5 +91,5 @@ install(TARGETS hrpCollision3
 	ARCHIVE DESTINATION lib CONFIGURATIONS Release
 )
 
-install(FILES ${headers} DESTINATION include/OpenHRP/Collision)
+install(FILES ${headers} DESTINATION include/hrpCollision)
 

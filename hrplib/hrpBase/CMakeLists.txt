@@ -72,4 +72,4 @@ install(TARGETS hrpBase3
   LIBRARY DESTINATION lib CONFIGURATIONS Release
   ARCHIVE DESTINATION lib CONFIGURATIONS Release )
 
-install(FILES ${headers} DESTINATION include/OpenHRP/Base)
+install(FILES ${headers} DESTINATION include/hrpBase)
