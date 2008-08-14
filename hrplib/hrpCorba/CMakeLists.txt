@@ -50,6 +50,6 @@ install(TARGETS hrpCorbaStubSkel3
 
 set(given_headers ORBwrap.h)
 
-install(FILES ${given_headers} ${CMAKE_CURRENT_BINARY_DIR}/${idl_h_files} DESTINATION include/OpenHRP/Corba)
+install(FILES ${given_headers} ${CMAKE_CURRENT_BINARY_DIR}/${idl_h_files} DESTINATION include/hrpCorba)
 
 
