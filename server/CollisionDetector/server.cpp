@@ -23,9 +23,7 @@
 
 #include <iostream>
 
-using namespace OpenHRP;
 using namespace std;
-
 
 /**
  * サーバスタートアップ

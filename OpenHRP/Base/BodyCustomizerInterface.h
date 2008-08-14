@@ -20,7 +20,7 @@
 #include "tvmet3d.h"
 #include "hrpModelExportDef.h"
 
-namespace OpenHRP {
+namespace hrp {
 
     typedef void* BodyHandle;
     typedef void* BodyCustomizerHandle;

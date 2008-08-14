@@ -18,7 +18,7 @@
 #include "Link.h"
 #include "Sensor.h"
 
-using namespace OpenHRP;
+using namespace hrp;
 using namespace tvmet;
 
 

@@ -17,10 +17,12 @@
 
 #include "hrpModelExportDef.h"
 
-namespace OpenHRP
-{
+namespace OpenHRP {
 	class CollisionSequence;
-	
+}
+
+namespace hrp
+{
 	class Link;
 	class CFSImpl;
 	class WorldBase;
@@ -41,7 +43,7 @@ namespace OpenHRP
 		bool enableVelocityOverwriting(bool isEnabled);
 
 		void initialize(void);
-        void solve(CollisionSequence& corbaCollisionSequence);
+        void solve(OpenHRP::CollisionSequence& corbaCollisionSequence);
 		void clearExternalForces();
 	};
 };

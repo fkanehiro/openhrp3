@@ -29,8 +29,6 @@
 
 using namespace std;
 using namespace boost;
-using namespace OpenHRP;
-
 
 namespace {
 

@@ -26,7 +26,8 @@
 #include <vector>
 
 using namespace std;
-using namespace OpenHRP;
+using namespace hrp;
+
 
 //#define COLLISIONDETECTOR_DEBUG
 

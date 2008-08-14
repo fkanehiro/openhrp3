@@ -29,7 +29,7 @@
 
 #include "BodyCustomizerInterface.h"
 
-using namespace OpenHRP;
+using namespace hrp;
 using namespace std;
 using namespace boost;
 
@@ -133,11 +133,11 @@ static bool loadCustomizerDll(BodyInterface* bodyInterface, const std::string fi
    they are registered to the customizer repository.
 
    The loaded customizers can be obtained by using
-   OpenHRP::findBodyCustomizer() function.
+   hrp::findBodyCustomizer() function.
 
    \param pathString the path to a DLL file or a directory that contains DLLs
 */
-int OpenHRP::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyInterface)
+int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyInterface)
 {
 	pluginLoadingFunctionsCalled = true;
 	
@@ -176,7 +176,7 @@ int OpenHRP::loadBodyCustomizers(const std::string pathString, BodyInterface* bo
    The function loads the customizers in the directories specified
    by the environmental variable LIBHRPMODEL_PLUGINS_PATH.
 */
-int OpenHRP::loadBodyCustomizersInDefaultDirectories(BodyInterface* bodyInterface)
+int hrp::loadBodyCustomizersInDefaultDirectories(BodyInterface* bodyInterface)
 {
     int numLoaded = 0;
 
@@ -201,7 +201,7 @@ int OpenHRP::loadBodyCustomizersInDefaultDirectories(BodyInterface* bodyInterfac
 }
 
 
-BodyCustomizerInterface* OpenHRP::findBodyCustomizer(std::string modelName)
+BodyCustomizerInterface* hrp::findBodyCustomizer(std::string modelName)
 {
     BodyCustomizerInterface* customizerInterface = 0;
 

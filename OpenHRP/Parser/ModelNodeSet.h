@@ -23,7 +23,7 @@
 #include <boost/signals.hpp>
 
 
-namespace OpenHRP {
+namespace hrp {
 
     class VrmlParser;
 

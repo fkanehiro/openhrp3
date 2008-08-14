@@ -23,11 +23,12 @@
 
 #include "hrpModelExportDef.h"
 
-
 namespace OpenHRP {
-
 	class CollisionSequence;
-	
+}
+
+namespace hrp {
+
     class Body;
     typedef boost::intrusive_ptr<Body> BodyPtr;
     
@@ -128,7 +129,7 @@ namespace OpenHRP {
 			contactForceSolver.initialize();
 		}
 
-		virtual void calcNextState(CollisionSequence& corbaCollisionSequence) {
+		virtual void calcNextState(OpenHRP::CollisionSequence& corbaCollisionSequence) {
 			contactForceSolver.solve(corbaCollisionSequence);
 			WorldBase::calcNextState();
 		}

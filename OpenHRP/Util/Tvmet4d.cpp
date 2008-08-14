@@ -11,10 +11,10 @@
 #include "Tvmet4d.h"
 
 using namespace tvmet;
-using namespace OpenHRP;
+using namespace hrp;
 
 
-void OpenHRP::calcRodrigues(Matrix44& out_R, const Vector3& axis, double q)
+void hrp::calcRodrigues(Matrix44& out_R, const Vector3& axis, double q)
 {
     const double sth = sin(q);
     const double vth = 1.0 - cos(q);

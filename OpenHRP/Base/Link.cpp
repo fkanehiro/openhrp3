@@ -45,7 +45,7 @@
 
 
 using namespace std;
-using namespace OpenHRP;
+using namespace hrp;
 
 
 Link::Link()

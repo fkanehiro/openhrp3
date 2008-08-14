@@ -15,7 +15,7 @@
 
 #include "VrmlNodes.h"
 
-using namespace OpenHRP;
+using namespace hrp;
 
 
 const char* VrmlNode::getLabelOfFieldType(int type)

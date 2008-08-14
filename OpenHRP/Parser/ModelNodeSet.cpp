@@ -20,7 +20,7 @@
 #include <algorithm>
 
 
-using namespace OpenHRP;
+using namespace hrp;
 using namespace std;
 using namespace boost;
 
@@ -42,7 +42,7 @@ namespace {
 }
 
 
-namespace OpenHRP {
+namespace hrp {
 
     class ModelNodeSetImpl
     {

@@ -22,36 +22,36 @@
 
 #include "BodyInfo_impl.h"
 
+using namespace OpenHRP;
 
-namespace OpenHRP {
 
-    class ModelLoader_impl : public POA_OpenHRP::ModelLoader
-    {
-        CORBA::ORB_var orb;
-        PortableServer::POA_var poa;
+class ModelLoader_impl : public POA_OpenHRP::ModelLoader
+{
+    CORBA::ORB_var orb;
+    PortableServer::POA_var poa;
 		
-        typedef std::map<std::string, BodyInfo_impl*> UrlToBodyInfoMap;
-        UrlToBodyInfoMap urlToBodyInfoMap;
+    typedef std::map<std::string, BodyInfo_impl*> UrlToBodyInfoMap;
+    UrlToBodyInfoMap urlToBodyInfoMap;
 
-        BodyInfo_impl* loadBodyInfoFromModelFile(const std::string url);
+    BodyInfo_impl* loadBodyInfoFromModelFile(const std::string url);
 		
-    public:
+  public:
 		
-        ModelLoader_impl(CORBA::ORB_ptr orb, PortableServer::POA_ptr poa);
-        virtual ~ModelLoader_impl();
+    ModelLoader_impl(CORBA::ORB_ptr orb, PortableServer::POA_ptr poa);
+    virtual ~ModelLoader_impl();
 		
-        virtual PortableServer::POA_ptr _default_POA();
+    virtual PortableServer::POA_ptr _default_POA();
 		
-        virtual BodyInfo_ptr getBodyInfo(const char* url)
-            throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
+    virtual BodyInfo_ptr getBodyInfo(const char* url)
+        throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 
-        virtual BodyInfo_ptr loadBodyInfo(const char* url)
-            throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
+    virtual BodyInfo_ptr loadBodyInfo(const char* url)
+        throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 		
-        virtual void clearData();
+    virtual void clearData();
 		
-        void shutdown();
-    };
+    void shutdown();
 };
+
 
 #endif

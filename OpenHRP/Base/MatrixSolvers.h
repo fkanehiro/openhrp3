@@ -15,7 +15,7 @@
 #include "hrpModelExportDef.h"
 
 
-namespace OpenHRP {
+namespace hrp {
 
 	/**
 	   b = a * x, x = b^(-1) * a

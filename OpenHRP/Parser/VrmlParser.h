@@ -19,7 +19,7 @@
 #include "VrmlNodes.h"
 #include <string>
 
-namespace OpenHRP {
+namespace hrp {
 
     class VrmlParserImpl;
 

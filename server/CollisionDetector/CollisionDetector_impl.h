@@ -20,175 +20,172 @@
 #include <OpenHRP/Collision/CdCache.h>
 #include <OpenHRP/Collision/CdScene.h>
 
+using namespace OpenHRP;
 
-namespace OpenHRP {
+/**
+ *
+ * CollisionDetector_impl class
+ * @version 0.2
+ * @date    2002/02/18
+ *
+ */
+class CollisionDetector_impl : virtual public POA_OpenHRP::CollisionDetector,
+							   virtual public PortableServer::RefCountServantBase
+{
+
+private:
 
 	/**
-	 *
-	 * CollisionDetector_impl class
-	 * @version 0.2
-	 * @date    2002/02/18
-	 *
+	 * ORB
 	 */
-	class CollisionDetector_impl : virtual public POA_OpenHRP::CollisionDetector,
-								   virtual public PortableServer::RefCountServantBase
-	{
-
-	private:
-
-		/**
-		 * ORB
-		 */
-		CORBA_ORB_var orb_;
+	CORBA_ORB_var orb_;
         
-		// cache of models
-		CdCharCache* cache_;
+	// cache of models
+	CdCharCache* cache_;
         
-		// scene
-		CdScene* scene_;
+	// scene
+	CdScene* scene_;
         
-	public:
+public:
 
-		/**
-		 * constructor
-		 * @param   orb         reference to ORB
-		 * @param   cache
-		 */
-		CollisionDetector_impl(CORBA_ORB_ptr orb, CdCharCache* cache);
+	/**
+	 * constructor
+	 * @param   orb         reference to ORB
+	 * @param   cache
+	 */
+	CollisionDetector_impl(CORBA_ORB_ptr orb, CdCharCache* cache);
 
-		/**
-		 * destructor
-		 */
-		~CollisionDetector_impl();
+	/**
+	 * destructor
+	 */
+	~CollisionDetector_impl();
 
-		/**
-		 * object destruction
-		 */
-		virtual void destroy();
-
-
-		//
-		// IDL:CollisionDetector/addModel:1.0
-		//
-		virtual void addModel(const char* charName,	BodyInfo_ptr bodyInfo);
-
-		//
-		// IDL:CollisionDetector/addCollisionPair:1.0
-		//
-		virtual void addCollisionPair(
-									  const LinkPair& colPair,
-									  CORBA::Boolean convexsize1,
-									  CORBA::Boolean convexsize2
-									  );
+	/**
+	 * object destruction
+	 */
+	virtual void destroy();
 
 
-		//
-		// IDL:CollisionDetector/removeCollisionPair:1.0
-		//
-		virtual void removeCollisionPair(const LinkPair& colPair);
+	//
+	// IDL:CollisionDetector/addModel:1.0
+	//
+	virtual void addModel(const char* charName,	BodyInfo_ptr bodyInfo);
+
+	//
+	// IDL:CollisionDetector/addCollisionPair:1.0
+	//
+	virtual void addCollisionPair(
+		const LinkPair& colPair,
+		CORBA::Boolean convexsize1,
+		CORBA::Boolean convexsize2
+		);
 
 
-		//
-		// IDL:CollisionDetector/queryIntersectionForDefinedPairs:1.0
-		//
-		virtual CORBA::Boolean queryIntersectionForDefinedPairs(
-																CORBA::Boolean checkAll,
-																const CharacterPositionSequence& characterPositions,
-																LinkPairSequence_out collidedPairs
-																);
+	//
+	// IDL:CollisionDetector/removeCollisionPair:1.0
+	//
+	virtual void removeCollisionPair(const LinkPair& colPair);
 
 
-		//
-		// IDL:CollisionDetector/queryIntersectionForGivenPairs:1.0
-		//
-		virtual CORBA::Boolean queryIntersectionForGivenPairs(CORBA::Boolean checkAll,
-															  const LinkPairSequence& checkPairs,
-															  const CharacterPositionSequence& characterPositions,
-															  LinkPairSequence_out collidedPairs);
+	//
+	// IDL:CollisionDetector/queryIntersectionForDefinedPairs:1.0
+	//
+	virtual CORBA::Boolean queryIntersectionForDefinedPairs(
+		CORBA::Boolean checkAll,
+		const CharacterPositionSequence& characterPositions,
+		LinkPairSequence_out collidedPairs
+		);
 
-		//
-		// IDL:CollisionDetector/queryContactDeterminationForDefinedPairs:1.0
-		//
-		virtual CORBA::Boolean queryContactDeterminationForDefinedPairs
-		(const CharacterPositionSequence& characterPositions,
-		 CollisionSequence_out collisions);
 
-		//
-		// IDL:CollisionDetector/queryContactDeterminationForGivenPairs:1.0
-		//
-		virtual CORBA::Boolean queryContactDeterminationForGivenPairs(const LinkPairSequence& checkPairs,
-																	  const CharacterPositionSequence& characterPositions,
-																	  CollisionSequence_out collisions);
+	//
+	// IDL:CollisionDetector/queryIntersectionForGivenPairs:1.0
+	//
+	virtual CORBA::Boolean queryIntersectionForGivenPairs(CORBA::Boolean checkAll,
+														  const LinkPairSequence& checkPairs,
+														  const CharacterPositionSequence& characterPositions,
+														  LinkPairSequence_out collidedPairs);
+
+	//
+	// IDL:CollisionDetector/queryContactDeterminationForDefinedPairs:1.0
+	//
+	virtual CORBA::Boolean queryContactDeterminationForDefinedPairs
+	(const CharacterPositionSequence& characterPositions,
+	 CollisionSequence_out collisions);
+
+	//
+	// IDL:CollisionDetector/queryContactDeterminationForGivenPairs:1.0
+	//
+	virtual CORBA::Boolean queryContactDeterminationForGivenPairs(const LinkPairSequence& checkPairs,
+																  const CharacterPositionSequence& characterPositions,
+																  CollisionSequence_out collisions);
 		
-		//
-		// IDL:CollisionDetector/clearCache:1.0
-		//
-		virtual void clearCache(const char* url);
+	//
+	// IDL:CollisionDetector/clearCache:1.0
+	//
+	virtual void clearCache(const char* url);
 
-		//
-		// IDL:CollisionDetector/clearAllCache:1.0
-		//
-		virtual void clearAllCache();
+	//
+	// IDL:CollisionDetector/clearAllCache:1.0
+	//
+	virtual void clearAllCache();
 
-	private:
+private:
 
-		void _contactDetermination(CdCheckPair* rPair, Collision& collision);
+	void _contactDetermination(CdCheckPair* rPair, Collision& collision);
 
-		void _setCharacterData(const CharacterPositionSequence& characterPositions);
+	void _setCharacterData(const CharacterPositionSequence& characterPositions);
 
-		int _contactIntersection(CdCheckPair* rPair);
+	int _contactIntersection(CdCheckPair* rPair);
 
-		int addTriangleVertices(CdModelSet* modelSet,
-								const TransformedShapeIndexSequence& shapeIndices,
-								ShapeInfoSequence_var& shapes);
+	int addTriangleVertices(CdModelSet* modelSet,
+							const TransformedShapeIndexSequence& shapeIndices,
+							ShapeInfoSequence_var& shapes);
 
-		vector<CdJoint *> joints;
-	};
+	vector<CdJoint *> joints;
+};
+
+/**
+ *
+ * CollisionDetectorFactory class
+ *
+ * @version 0.1
+ * @date    2002/02/12
+ *
+ */
+class CollisionDetectorFactory_impl
+	: virtual public POA_OpenHRP::CollisionDetectorFactory,
+	  virtual public PortableServer::RefCountServantBase
+{
+
+private:
+	/**
+	 * ORB
+	 */
+	CORBA_ORB_var orb_;
+
+	// cache of models
+	CdCharCache* cache_;
+        
+public:
 
 	/**
-	 *
-	 * CollisionDetectorFactory class
-	 *
-	 * @version 0.1
-	 * @date    2002/02/12
-	 *
+	 * constructor
+	 * @param   orb     reference to ORB
 	 */
-	class CollisionDetectorFactory_impl
-		: virtual public POA_OpenHRP::CollisionDetectorFactory,
-		  virtual public PortableServer::RefCountServantBase
-	{
+	CollisionDetectorFactory_impl(CORBA_ORB_ptr orb);
 
-	private:
-		/**
-		 * ORB
-		 */
-		CORBA_ORB_var orb_;
+	/**
+	 * destructor
+	 */
+	~CollisionDetectorFactory_impl();
 
-		// cache of models
-		CdCharCache* cache_;
-        
-	public:
+	/**
+	 * creation
+	 * @return 
+	 */
+	CollisionDetector_ptr create();
 
-		/**
-		 * constructor
-		 * @param   orb     reference to ORB
-		 */
-		CollisionDetectorFactory_impl(CORBA_ORB_ptr orb);
-
-		/**
-		 * destructor
-		 */
-		~CollisionDetectorFactory_impl();
-
-		/**
-		 * creation
-		 * @return 
-		 */
-		CollisionDetector_ptr create();
-
-		void shutdown();
-	};
-
-}
+	void shutdown();
+};
 
 #endif

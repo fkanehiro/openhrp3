@@ -26,9 +26,9 @@
 #include "Body.h"
 
 
-namespace OpenHRP
+namespace hrp
 {
-    HRPMODEL_EXPORT BodyPtr loadBodyFromBodyInfo(BodyInfo_ptr bodyInfo);
+    HRPMODEL_EXPORT BodyPtr loadBodyFromBodyInfo(OpenHRP::BodyInfo_ptr bodyInfo);
     HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb);
     HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt);
     HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, int argc, char *argv[]);

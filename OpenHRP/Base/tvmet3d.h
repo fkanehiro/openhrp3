@@ -14,7 +14,7 @@
 
 #include <OpenHRP/Util/Tvmet3d.h>
 
-namespace OpenHRP {
+namespace hrp {
 	// defined for backward compatibility
 	typedef Matrix33 matrix33;
 	typedef Vector3 vector3;

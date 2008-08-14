@@ -27,8 +27,6 @@
 
 
 using namespace std;
-using namespace OpenHRP;
-using namespace OpenHRP::ControllerBridge;
 
 namespace RTC {
 
