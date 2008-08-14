@@ -11,14 +11,14 @@
 #define OPENHRP_DYNAMICS_SIMULATOR_IMPL_H_INCLUDED
 
 
-#include <OpenHRP/Corba/ORBwrap.h>
-#include <OpenHRP/Corba/ModelLoader.h>
-#include <OpenHRP/Corba/CollisionDetector.h>
-#include <OpenHRP/Corba/DynamicsSimulator.h>
+#include <hrpCorba/ORBwrap.h>
+#include <hrpCorba/ModelLoader.h>
+#include <hrpCorba/CollisionDetector.h>
+#include <hrpCorba/DynamicsSimulator.h>
 
-#include <OpenHRP/Base/World.h>
-#include <OpenHRP/Base/ConstraintForceSolver.h>
-#include <OpenHRP/Util/TimeMeasure.h>
+#include <hrpBase/World.h>
+#include <hrpBase/ConstraintForceSolver.h>
+#include <hrpUtil/TimeMeasure.h>
 
 #include <boost/scoped_ptr.hpp>
 

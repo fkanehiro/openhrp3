@@ -278,8 +278,8 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
   add_definitions(-DTVMET_OPTIMIZE)
 endif()
 
-include_directories(${OpenHRP_BINARY_DIR})
-include_directories(${OpenHRP_SOURCE_DIR})
+include_directories(${PROJECT_BINARY_DIR}/hrplib)
+include_directories(${PROJECT_SOURCE_DIR}/hrplib)
 
 # TODO: remove this later
 # include_directories(${PROJECT_SOURCE_DIR}/OpenHRP/Corba)

@@ -20,7 +20,7 @@
 #include <rtm/RTObject.h>
 #include <rtm/NVUtil.h>
 
-#include <OpenHRP/Corba/ORBwrap.h>
+#include <hrpCorba/ORBwrap.h>
 
 #include "VirtualRobotRTC.h"
 

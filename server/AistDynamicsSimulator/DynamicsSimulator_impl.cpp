@@ -11,14 +11,14 @@
 
 #include "DynamicsSimulator_impl.h"
 
-#include <OpenHRP/Base/Body.h>
-#include <OpenHRP/Base/Link.h>
-#include <OpenHRP/Base/LinkTraverse.h>
-#include <OpenHRP/Base/LinkPath.h>
-#include <OpenHRP/Base/Sensor.h>
-#include <OpenHRP/Base/ModelLoaderUtil.h>
-#include <OpenHRP/Base/tvmet3d.h>
-#include <OpenHRP/Base/ublasCommonTypes.h>
+#include <hrpBase/Body.h>
+#include <hrpBase/Link.h>
+#include <hrpBase/LinkTraverse.h>
+#include <hrpBase/LinkPath.h>
+#include <hrpBase/Sensor.h>
+#include <hrpBase/ModelLoaderUtil.h>
+#include <hrpBase/tvmet3d.h>
+#include <hrpBase/ublasCommonTypes.h>
 
 // #include "OpenHRP/Base/quaternion.h"
 

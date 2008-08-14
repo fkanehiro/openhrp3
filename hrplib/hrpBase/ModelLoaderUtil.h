@@ -20,8 +20,8 @@
 #include <string>
 #include <sstream>
 
-#include <OpenHRP/Corba/ORBwrap.h>
-#include <OpenHRP/Corba/ModelLoader.h>
+#include <hrpCorba/ORBwrap.h>
+#include <hrpCorba/ModelLoader.h>
 
 #include "Body.h"
 

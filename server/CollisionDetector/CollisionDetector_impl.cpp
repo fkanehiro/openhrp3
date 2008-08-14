@@ -17,8 +17,8 @@
  */
 
 #include "CollisionDetector_impl.h"
-#include <OpenHRP/Collision/CdCache.h>
-#include <OpenHRP/Util/Tvmet4d.h>
+#include <hrpCollision/CdCache.h>
+#include <hrpUtil/Tvmet4d.h>
 
 #include <time.h>
 #include <iostream>

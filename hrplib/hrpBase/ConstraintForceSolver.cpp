@@ -34,7 +34,7 @@
 #include <boost/numeric/ublas/triangular.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
-#include <OpenHRP/Corba/OpenHRPCommon.h>
+#include <hrpCorba/OpenHRPCommon.h>
 
 
 // Is LCP solved by Iterative or Pivoting method ?

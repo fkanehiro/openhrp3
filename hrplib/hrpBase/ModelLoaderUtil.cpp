@@ -16,7 +16,7 @@
 #include "ModelLoaderUtil.h"
 
 #include <stack>
-#include <OpenHRP/Corba/OpenHRPCommon.h>
+#include <hrpCorba/OpenHRPCommon.h>
 
 #include "Link.h"
 #include "Sensor.h"
