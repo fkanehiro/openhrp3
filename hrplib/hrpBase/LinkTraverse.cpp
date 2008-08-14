@@ -17,9 +17,9 @@
   
 
 #include "LinkTraverse.h"
-
-#include <algorithm>
 #include "Link.h"
+#include <hrpUtil/Tvmet3d.h>
+#include <algorithm>
 
 using namespace std;
 using namespace hrp;
@@ -81,7 +81,7 @@ void LinkTraverse::traverse(Link* link, bool doUpward, bool doDownward, bool isU
 
 void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleration) const
 {
-    vector3 arm;
+    Vector3 arm;
     int i;
     for(i=1; i <= numUpwardConnections; ++i){
 

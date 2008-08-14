@@ -5,88 +5,83 @@
 
 
 #include "ColdetModel.h"
+#include "ColdetModelSharedDataSet.h"
+
 #include "Opcode.h"
-#include <vector>
 
 
 using namespace std;
 using namespace hrp;
 
 
-namespace hrp {
-
-    class ColdetModelImpl
-    {
-    public:
-        ColdetModelImpl();
-
-        void update();
-
-        // need two instances ?
-        Opcode::Model model;
-
-	Opcode::MeshInterface iMesh;
-	Opcode::OPCODECREATE OPCC;
-
-	vector<IceMaths::Point> vertices;
-	vector<IceMaths::IndexedTriangle> triangles;
-    };
-}
-
-
 ColdetModel::ColdetModel()
 {
-    impl = new ColdetModelImpl();
+    dataSet = new ColdetModelSharedDataSet();
+    dataSet->refCounter++;
+    transform = new IceMaths::Matrix4x4();
 }
 
 
-ColdetModelImpl::ColdetModelImpl()
+ColdetModel::ColdetModel(const ColdetModel& org)
 {
- 
+    dataSet = org.dataSet;
+    dataSet->refCounter++;
+    transform = new IceMaths::Matrix4x4();
+}
+
+
+ColdetModelSharedDataSet::ColdetModelSharedDataSet()
+{
+    refCounter = 0;
 }    
 
 
 ColdetModel::~ColdetModel()
 {
-    delete impl;
+    if(--dataSet->refCounter <= 0){
+        delete dataSet;
+    }
+    delete transform;
 }
 
 
 void ColdetModel::setNumVertices(int n)
 {
-    impl->vertices.resize(n);
+    dataSet->vertices.resize(n);
 }
 
 
 void ColdetModel::setNumTriangles(int n)
 {
-    impl->triangles.resize(n);
+    dataSet->triangles.resize(n);
 }
 
         
 void ColdetModel::setVertex(int index, float x, float y, float z)
 {
-    impl->vertices[index].Set(x, y, z);
+    dataSet->vertices[index].Set(x, y, z);
 }
 
         
 void ColdetModel::setTriangle(int index, int v1, int v2, int v3)
 {
-    udword* mVRef = impl->triangles[index].mVRef;
+    udword* mVRef = dataSet->triangles[index].mVRef;
     mVRef[0] = v1;
     mVRef[1] = v2;
     mVRef[2] = v3;
 }
 
 
-void ColdetModel::update()
+void ColdetModel::build()
 {
-    impl->update();
+    dataSet->build();
 }
 
 
-void ColdetModelImpl::update()
+void ColdetModelSharedDataSet::build()
 {
+    Opcode::OPCODECREATE OPCC;
+
     iMesh.SetPointers(&triangles[0], &vertices[0]);
     iMesh.SetNbTriangles(triangles.size());
     iMesh.SetNbVertices(vertices.size());
@@ -98,4 +93,22 @@ void ColdetModelImpl::update()
     OPCC.mKeepOriginal = false;
         
     model.Build(OPCC);
+}
+
+
+void ColdetModel::setTransform(const Matrix33& R, const Vector3& p)
+{
+    transform->Set((float)R(0,0), (float)R(1,0), (float)R(2,0), 0.0f,
+                   (float)R(0,1), (float)R(1,1), (float)R(2,1), 0.0f,
+                   (float)R(0,2), (float)R(1,2), (float)R(2,2), 0.0f,
+                   (float)p(0),   (float)p(1),   (float)p(2),   1.0f);
+}
+
+
+void ColdetModel::setTransform(const double* R, const double* p)
+{
+    transform->Set((float)R[0], (float)R[3], (float)R[6], 0.0f,
+                   (float)R[1], (float)R[4], (float)R[7], 0.0f,
+                   (float)R[2], (float)R[5], (float)R[8], 0.0f,
+                   (float)p[0], (float)p[1], (float)p[2], 1.0f);
 }

@@ -3,27 +3,32 @@
    @author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_COLLISION_COLDET_PAIR_SET_H_INCLUDED
-#define OPENHRP_COLLISION_COLDET_PAIR_SET_H_INCLUDED
+#ifndef HRP_COLLISION_COLDET_MODEL_PAIR_H_INCLUDED
+#define HRP_COLLISION_COLDET_MODEL_PAIR_H_INCLUDED
 
 #include "config.h"
+#include "utilities.h"
+#include "ColdetModel.h"
 
 namespace hrp {
 
-    class ColdetPairSetImpl;
+    class ColdetModelPairImpl;
 
-    class HRP_COLLISION_EXPORT ColdetPairSet
+    class HRP_COLLISION_EXPORT ColdetModelPair
     {
       public:
-        ColdetPairSet();
-        ~ColdetPairSet();
+        ColdetModelPair();
+        ColdetModelPair(ColdetModelPtr model1, ColdetModelPtr model2);
+        virtual ~ColdetModelPair();
 
-        int numPairs();
+        void set(ColdetModelPtr model1, ColdetModelPtr model2);
+        
+        collision_data* detectCollisions();
 
-        void addPair(ColdetModelPtr model1, ColdetModelPtr model2);
+        bool checkCollision();
 
       private:
-        ColdetPairSetImpl* impl;
+        ColdetModelPairImpl* impl;
     };
 }
 

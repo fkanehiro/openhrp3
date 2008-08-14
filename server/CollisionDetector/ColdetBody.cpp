@@ -36,7 +36,7 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
 
         addLinkVerticesAndTriangles(coldetModel, linkInfo, shapes);
 
-        coldetModel->update();
+        coldetModel->build();
 
         linkColdetModels[linkIndex] = coldetModel;
         linkNameToColdetModelMap.insert(make_pair(linkInfo.name, coldetModel));
