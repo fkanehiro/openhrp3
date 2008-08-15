@@ -205,6 +205,13 @@ namespace hrp {
 			}
 		}
 
+		/**
+		   This function must be called before the collision detection.
+		   It updates the positions and orientations of the models
+		   for detecting collisions between links.
+		*/
+		void updateLinkColdetModelPositions();
+
 		void putInformation(std::ostream &out);
 
 		bool installCustomizer();
