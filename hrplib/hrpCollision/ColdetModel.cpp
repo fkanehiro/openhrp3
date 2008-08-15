@@ -96,7 +96,7 @@ void ColdetModelSharedDataSet::build()
 }
 
 
-void ColdetModel::setTransform(const Matrix33& R, const Vector3& p)
+void ColdetModel::setPosition(const Matrix33& R, const Vector3& p)
 {
     transform->Set((float)R(0,0), (float)R(1,0), (float)R(2,0), 0.0f,
                    (float)R(0,1), (float)R(1,1), (float)R(2,1), 0.0f,
@@ -105,7 +105,7 @@ void ColdetModel::setTransform(const Matrix33& R, const Vector3& p)
 }
 
 
-void ColdetModel::setTransform(const double* R, const double* p)
+void ColdetModel::setPosition(const double* R, const double* p)
 {
     transform->Set((float)R[0], (float)R[3], (float)R[6], 0.0f,
                    (float)R[1], (float)R[4], (float)R[7], 0.0f,

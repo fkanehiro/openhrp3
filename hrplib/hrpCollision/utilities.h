@@ -22,13 +22,11 @@
 # define DllImport
 #endif
 
-#include<boost/numeric/ublas/vector.hpp>
-#include<boost/numeric/ublas/matrix.hpp>
-#include<boost/numeric/ublas/io.hpp>
+#include "CollisionData.h"
 #include "Opcode.h"
+#include <boost/numeric/ublas/matrix.hpp>
 #include <math.h>
 
-typedef boost::numeric::ublas::bounded_vector<double,3> dvector3;
 typedef boost::numeric::ublas::bounded_matrix<double,3,3,boost::numeric::ublas::column_major> dmatrix33;
 
 #define vecProd(mat,vec) boost::numeric::ublas::prod(mat, vec)
@@ -47,7 +45,6 @@ typedef boost::numeric::ublas::bounded_matrix<double,3,3,boost::numeric::ublas::
   }
 
 
-
 class tri
 {
 public:
@@ -63,35 +60,10 @@ public:
   dvector3 n;
 };
 
-// this is for the client
-class collision_data
-{
-public:
-  int id1;
-  int id2;
-
-  int num_of_i_points;
-  dvector3 i_points[4];
-  int i_point_new[4];
-
-  dvector3 n_vector;
-  double depth;
-
-  dvector3 n; // normal vector of triangle id1
-  dvector3 m; // normal vector of triangle id2
-  int c_type; // c_type=1 for vertex-face contact, c_type=2 for edge-edge contact
-
-};
-
 const int CD_OK = 0;
 const int CD_ALL_CONTACTS = 1;
 const int CD_FIRST_CONTACT = 2;
 const int CD_ERR_COLLIDE_OUT_OF_MEMORY = 2;
-
-extern  int cdBoxTestsCount;
-extern  int cdTriTestsCount;
-extern  int cdContactsCount;
-extern  collision_data *cdContact;
 
 enum {
   FV = 1,

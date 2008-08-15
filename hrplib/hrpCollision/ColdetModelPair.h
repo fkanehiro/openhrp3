@@ -7,7 +7,7 @@
 #define HRP_COLLISION_COLDET_MODEL_PAIR_H_INCLUDED
 
 #include "config.h"
-#include "utilities.h"
+#include "CollisionData.h"
 #include "ColdetModel.h"
 
 namespace hrp {
@@ -19,6 +19,7 @@ namespace hrp {
       public:
         ColdetModelPair();
         ColdetModelPair(ColdetModelPtr model1, ColdetModelPtr model2);
+        ColdetModelPair(const ColdetModelPair& org);
         virtual ~ColdetModelPair();
 
         void set(ColdetModelPtr model1, ColdetModelPtr model2);

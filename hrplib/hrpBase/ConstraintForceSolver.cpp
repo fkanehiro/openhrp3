@@ -1,4 +1,3 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -11,7 +10,7 @@
 
 /** \file
 	\brief Implementation of ContactForceSolver class
-	\author S.NAKAOKA
+	\author Shin'ichiro Nakaoka
 */
 
 #ifdef __WIN32__
@@ -27,6 +26,9 @@
 #include "ForwardDynamicsCBM.h"
 #include "ConstraintForceSolver.h"
 
+#include <hrpCorba/OpenHRPCommon.h>
+#include <hrpCollision/ColdetModelPair.h>
+
 #include <limits>
 #include <boost/format.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -34,7 +36,6 @@
 #include <boost/numeric/ublas/triangular.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 
-#include <hrpCorba/OpenHRPCommon.h>
 
 
 // Is LCP solved by Iterative or Pivoting method ?
@@ -49,6 +50,8 @@ static const bool usePivotingLCP = false;
 
 // settings
 
+static const bool USE_INTERNAL_COLLISION_DETECTOR = true;
+
 static const double VEL_THRESH_OF_DYNAMIC_FRICTION = 1.0e-4;
 
 static const bool ENABLE_STATIC_FRICTION = true;
@@ -58,7 +61,6 @@ static const bool IGNORE_CURRENT_VELOCITY_IN_STATIC_FRICTION = false;
 
 static const bool ENABLE_TRUE_FRICTION_CONE =
 	(true && ONLY_STATIC_FRICTION_FORMULATION && STATIC_FRICTION_BY_TWO_CONSTRAINTS);
-
 
 static const bool ENABLE_CONTACT_POINT_THINNING = true;
 static const double	THINNING_DISTANCE_THRESH = 0.01;
@@ -71,14 +73,12 @@ static const int DEFAULT_NUM_GAUSS_SEIDEL_INITIAL_ITERATION = 0;
 static const double DEFAULT_GAUSS_SEIDEL_MAX_REL_ERROR = 1.0e-3;
 static const bool USE_PREVIOUS_LCP_SOLUTION = true;
 
-
 static const bool ALLOW_SUBTLE_PENETRATION_FOR_STABILITY = true;
 static const double ALLOWED_PENETRATION_DEPTH = 0.0001;
 static const double NEGATIVE_VELOCITY_RATIO_FOR_ALLOWING_PENETRATION = 10.0;
 
 // experimental options
 static const bool PROPORTIONAL_DYNAMIC_FRICTION = false;
-
 static const bool ENABLE_RANDOM_STATIC_FRICTION_BASE = false;
 
 
@@ -187,8 +187,9 @@ namespace hrp
 
 		std::vector<BodyData> bodiesData;
 
-		struct LinkPair {
-
+		class LinkPair : public ColdetModelPair
+		{
+		public:
 			int index;
 			bool isSameBodyPair;
 			int bodyIndex[2];
@@ -385,6 +386,9 @@ bool CFSImpl::addCollisionCheckLinkPair
 
 		LinkPair& linkPair = collisionCheckLinkPairs[index];
 
+		// initialize super class ColdetModelPair
+		linkPair.set(link1->coldetModel, link2->coldetModel);
+
 		linkPair.isSameBodyPair = (bodyIndex1 == bodyIndex2);
 		linkPair.bodyIndex[0] = bodyIndex1;
 		linkPair.link[0] = link1;
@@ -513,6 +517,9 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
 
     for(size_t i=0; i < bodiesData.size(); ++i){
 		bodiesData[i].hasConstrainedLinks = false;
+		if(USE_INTERNAL_COLLISION_DETECTOR){
+			bodiesData[i].body->updateLinkColdetModelPositions();
+		}
     }
 
 	globalNumConstraintVectors = 0;
@@ -601,18 +608,58 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
 
 void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
 {
-    for(size_t i=0; i < collisionCheckLinkPairs.size(); ++i){
+	static CollisionPointSequence collisionPoints;
+	CollisionPointSequence* pCollisionPoints;
+	
+	for(size_t i=0; i < collisionCheckLinkPairs.size(); ++i){
+		pCollisionPoints = 0;
+		LinkPair& linkPair = collisionCheckLinkPairs[i];
 
-        LinkPair& linkPair = collisionCheckLinkPairs[i];
-		CollisionPointSequence& points = collisions[i].points;
-
-		if(points.length() > 0){
+		if( ! USE_INTERNAL_COLLISION_DETECTOR){
+			CollisionPointSequence& points = collisions[i].points;
+			if(points.length() > 0){
+				pCollisionPoints = &points;
+			}
+		} else {
+			collision_data* cdata = linkPair.detectCollisions();
+			if(cdata){
+				int npoints = 0;
+				for(int i = 0; i < cdContactsCount; i++) {
+					for(int j = 0; j < cdata[i].num_of_i_points; j++){
+						if(cdata[i].i_point_new[j]) npoints ++;
+					}
+				}
+				if(npoints > 0){
+					collisionPoints.length(npoints);
+					int idx = 0;
+					for (int i = 0; i < cdContactsCount; i++) {
+						collision_data& cd = cdata[i];
+						for(int j=0; j < cd.num_of_i_points; j++){
+							if (cd.i_point_new[j]){
+								CollisionPoint& point = collisionPoints[idx];
+								for(int k=0; k < 3; k++){
+									point.position[k] = cd.i_points[j][k];
+								}
+								for(int k=0; k < 3; k++){
+									point.normal[k] = cd.n_vector[k];
+								}
+								point.idepth = cd.depth;
+								idx++;
+							}
+						}
+					}
+					pCollisionPoints = &collisionPoints;
+				}
+			}
+		}
+		if(pCollisionPoints){
 			constrainedLinkPairs.push_back(&linkPair);
-			setContactConstraintPoints(linkPair, points);
+			setContactConstraintPoints(linkPair, *pCollisionPoints);
 			linkPair.bodyData[0]->hasConstrainedLinks = true;
 			linkPair.bodyData[1]->hasConstrainedLinks = true;
 		}
-    }
+	}
+
 	globalNumContactNormalVectors = globalNumConstraintVectors;
 
 	for(size_t i=0; i < connectedLinkPairs.size(); ++i){
@@ -722,6 +769,7 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
 		}
 	}
 }
+
 
 
 void CFSImpl::setFrictionVectors(ConstraintPoint& contact)

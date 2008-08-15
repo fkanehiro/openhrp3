@@ -31,6 +31,7 @@ using namespace hrp;
 
 
 // #define INTEGRATOR_DEBUG
+static const bool USE_INTERNAL_COLLISION_DETECTOR = true;
 static const int debugMode = false;
 static const bool enableTimeMeasure = false;
 
@@ -121,20 +122,22 @@ DynamicsSimulator_impl::DynamicsSimulator_impl(CORBA::ORB_ptr orb)
     // default integration method
     world.setRungeKuttaMethod();
 
-    // resolve collisionchecker object
-    CollisionDetectorFactory_var collisionDetectorFactory;
-
-    CORBA::Object_var nS = orb->resolve_initial_references("NameService");
-    CosNaming::NamingContext_var cxT;
-    cxT = CosNaming::NamingContext::_narrow(nS);
-    collisionDetectorFactory =
-        checkCorbaServer<CollisionDetectorFactory,
-        CollisionDetectorFactory_var>("CollisionDetectorFactory", cxT);
-    if (CORBA::is_nil(collisionDetectorFactory)) {
-        std::cerr << "CollisionDetectorFactory not found" << std::endl;
+    if(!USE_INTERNAL_COLLISION_DETECTOR){
+        // resolve collisionchecker object
+        CollisionDetectorFactory_var collisionDetectorFactory;
+        
+        CORBA::Object_var nS = orb->resolve_initial_references("NameService");
+        CosNaming::NamingContext_var cxT;
+        cxT = CosNaming::NamingContext::_narrow(nS);
+        collisionDetectorFactory =
+            checkCorbaServer<CollisionDetectorFactory,
+            CollisionDetectorFactory_var>("CollisionDetectorFactory", cxT);
+        if (CORBA::is_nil(collisionDetectorFactory)) {
+            std::cerr << "CollisionDetectorFactory not found" << std::endl;
+        }
+        
+        collisionDetector = collisionDetectorFactory->create();
     }
-
-    collisionDetector = collisionDetectorFactory->create();
 
     collisions = new CollisionSequence;
     allCharacterPositions = new CharacterPositionSequence;
@@ -176,14 +179,16 @@ void DynamicsSimulator_impl::registerCharacter
              << name << ", " << bodyInfo << " )" << std::endl;
     }
 
-    BodyPtr body = loadBodyFromBodyInfo(bodyInfo);
+    BodyPtr body = loadBodyFromBodyInfo(bodyInfo, USE_INTERNAL_COLLISION_DETECTOR);
 
     if(body){
         body->name = name;
         if(debugMode){
             std::cout << "Loaded Model:\n" << *body << std::endl;
         }
-        collisionDetector->addModel(name, bodyInfo);
+        if(!USE_INTERNAL_COLLISION_DETECTOR){
+            collisionDetector->addModel(name, bodyInfo);
+        }
         world.addBody(body);
     }
 }
@@ -307,15 +312,13 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
                     bool ok = world.contactForceSolver.addCollisionCheckLinkPair
                         (bodyIndex1, link1, bodyIndex2, link2, staticFriction, slipFriction, epsilon);
 
-                    if(ok){
+                    if(ok && !USE_INTERNAL_COLLISION_DETECTOR){
                         LinkPair_var linkPair = new LinkPair();
                         linkPair->charName1  = CORBA::string_dup(charName1);
                         linkPair->linkName1 = CORBA::string_dup(link1->name.c_str());
                         linkPair->charName2  = CORBA::string_dup(charName2);
                         linkPair->linkName2 = CORBA::string_dup(link2->name.c_str());
-
                         collisionDetector->addCollisionPair(linkPair, false, false);
-
                     }
                 }
             }
@@ -468,7 +471,10 @@ void DynamicsSimulator_impl::initSimulation()
     world.initialize();
 
     _updateCharacterPositions();
-    collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+
+    if(!USE_INTERNAL_COLLISION_DETECTOR){
+        collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+    }
 
     if(enableTimeMeasure){
         timeMeasureFinished = false;
@@ -495,7 +501,9 @@ void DynamicsSimulator_impl::stepSimulation()
 
     _updateCharacterPositions();
 
-    collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+    if(!USE_INTERNAL_COLLISION_DETECTOR){
+        collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+    }
 
     world.contactForceSolver.clearExternalForces();
 
@@ -959,7 +967,9 @@ void DynamicsSimulator_impl::checkCollision()
 {
     calcWorldForwardKinematics();
     _updateCharacterPositions();
-    collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+    if(!USE_INTERNAL_COLLISION_DETECTOR){
+        collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+    }
 }
 
 

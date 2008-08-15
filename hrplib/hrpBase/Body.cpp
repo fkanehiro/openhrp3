@@ -14,14 +14,15 @@
 */
 
 #include "Body.h"
-
-#include <map>
-#include <cstdlib>
-
 #include "Link.h"
 #include "LinkPath.h"
 #include "Sensor.h"
 #include "BodyCustomizerInterface.h"
+#include <hrpCollision/ColdetModel.h>
+
+#include <map>
+#include <cstdlib>
+
 
 using namespace hrp;
 using namespace tvmet;
@@ -539,6 +540,19 @@ void Body::clearExternalForces()
         link->tauext = 0.0;
     }
 }
+
+
+void Body::updateLinkColdetModelPositions()
+{
+	const int n = linkTraverse_.numLinks();
+	for(int i=0; i < n; ++i){
+		Link* link = linkTraverse_[i];
+		if(link->coldetModel){
+			link->coldetModel->setPosition(link->segmentAttitude(), link->p);
+		}
+	}
+}
+
 
 
 void Body::putInformation(std::ostream &out)

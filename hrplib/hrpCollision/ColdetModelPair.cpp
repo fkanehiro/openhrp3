@@ -36,9 +36,26 @@ ColdetModelPair::ColdetModelPair(ColdetModelPtr model1, ColdetModelPtr model2)
 }
 
 
+ColdetModelPair::ColdetModelPair(const ColdetModelPair& org)
+{
+    impl = new ColdetModelPairImpl();
+    impl->model1 = org.impl->model1;
+    impl->model2 = org.impl->model2;
+}
+
+
 ColdetModelPair::~ColdetModelPair()
 {
+    delete impl;
+}
 
+
+void ColdetModelPair::set(ColdetModelPtr model1, ColdetModelPtr model2)
+{
+    // inverse order because of historical background
+    // this should be fixed.(note that the direction of normal is inversed when the order inversed 
+    impl->model1 = model2;
+    impl->model2 = model1;
 }
 
 
@@ -58,23 +75,26 @@ collision_data* ColdetModelPairImpl::detectCollisions(bool detectAllContacts)
         cdContactsCount = 0;
     }
 
-    Opcode::BVTCache colCache;
-    colCache.Model0 = &model1->dataSet->model;
-    colCache.Model1 = &model2->dataSet->model;
+    if(model1 && model2){
 
-    Opcode::AABBTreeCollider collider;
-
-    if(!detectAllContacts){
-        collider.SetFirstContact(true);
-    }
-    
-    bool isOK = collider.Collide(colCache, model1->transform, model2->transform);
-
-    cdBoxTestsCount = collider.GetNbBVBVTests();
-    cdTriTestsCount = collider.GetNbPrimPrimTests();
-    
-    if(isOK){
-        result = cdContact;
+        Opcode::BVTCache colCache;
+        colCache.Model0 = &model1->dataSet->model;
+        colCache.Model1 = &model2->dataSet->model;
+        
+        Opcode::AABBTreeCollider collider;
+        
+        if(!detectAllContacts){
+            collider.SetFirstContact(true);
+        }
+        
+        bool isOK = collider.Collide(colCache, model1->transform, model2->transform);
+        
+        cdBoxTestsCount = collider.GetNbBVBVTests();
+        cdTriTestsCount = collider.GetNbPrimPrimTests();
+        
+        if(isOK){
+            result = cdContact;
+        }
     }
 
     return result;

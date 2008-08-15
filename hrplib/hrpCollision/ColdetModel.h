@@ -34,8 +34,8 @@ namespace hrp {
 
         void build();
 
-        void setTransform(const Matrix33& R, const Vector3& p);
-        void setTransform(const double* R, const double* p);
+        void setPosition(const Matrix33& R, const Vector3& p);
+        void setPosition(const double* R, const double* p);
 
       private:
         ColdetModelSharedDataSet* dataSet;
