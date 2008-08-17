@@ -35,12 +35,7 @@ module OpenHRP {
      * @param   model	    model information
      * @endif
     */
-    void
-    addModel
-    (
-     in string charName,
-     in BodyInfo model
-     );
+    void addModel(in string name, in BodyInfo model);
   
     /**
      * @if jp
@@ -57,29 +52,9 @@ module OpenHRP {
      * 			      should be converted to a set of Convexes
      * @endif
     */
-    void
-    addCollisionPair
-    (
-     in LinkPair   colPair,
-     in boolean convexsize1,
-     in boolean convexsize2
-     );
+    void addCollisionPair(in LinkPair collisionPair, in boolean convexsize1, in boolean convexsize2);
   
-    /**
-     * @if jp
-     * @brief ペアを取り除きます。
-     * @param colPair 取り除くペア
-     * @else
-     * Delete a pair of Polygon Sets
-     * @param   colPair       Collision Pair
-     * @endif
-     */
-    void
-    removeCollisionPair
-    (
-     in LinkPair   colPair
-     );
-  
+
     /**
      * @if jp
      * 既に設定されたペアから衝突検出を行います。
@@ -174,17 +149,6 @@ module OpenHRP {
 						   in CharacterPositionSequence positions,
 						   out CollisionSequence collisions
 						   );
-    
-    /**
-     * @if jp
-     * キャッシュをクリアします。
-     * @param url モデルファイルURL
-     * @else
-     * Clear the Cache
-     * @param   url         Data Identifier
-     * @endif
-     */
-    void clearCache(in string url);
     
   };
 

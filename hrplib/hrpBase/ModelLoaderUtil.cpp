@@ -356,11 +356,13 @@ void ModelLoaderHelper::createColdetModel(Link* link, const LinkInfo& linkInfo)
     }
 
     ColdetModelPtr coldetModel(new ColdetModel());
-    coldetModel->setNumVertices(totalNumVertices);
-    coldetModel->setNumTriangles(totalNumTriangles);
-    addLinkVerticesAndTriangles(coldetModel, linkInfo);
-    coldetModel->build();
-
+    coldetModel->setName(linkInfo.name);
+    if(totalNumTriangles > 0){
+        coldetModel->setNumVertices(totalNumVertices);
+        coldetModel->setNumTriangles(totalNumTriangles);
+        addLinkVerticesAndTriangles(coldetModel, linkInfo);
+        coldetModel->build();
+    }
     link->coldetModel = coldetModel;
 }
 
@@ -413,11 +415,13 @@ void ModelLoaderHelper::createColdetModel(Link* link, const LinkInfo& linkInfo)
     int totalNumVertices = totalNumTriangles * 3;
 
     ColdetModelPtr coldetModel(new ColdetModel());
-    coldetModel->setNumVertices(totalNumVertices);
-    coldetModel->setNumTriangles(totalNumTriangles);
-    addLinkVerticesAndTriangles(coldetModel, linkInfo);
-    coldetModel->build();
-
+    coldetModel->setName(linkInfo.name);
+    if(totalNumTriangles > 0){
+        coldetModel->setNumVertices(totalNumVertices);
+        coldetModel->setNumTriangles(totalNumTriangles);
+        addLinkVerticesAndTriangles(coldetModel, linkInfo);
+        coldetModel->build();
+    }
     link->coldetModel = coldetModel;
 }
 

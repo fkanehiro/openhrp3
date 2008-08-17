@@ -18,7 +18,7 @@ namespace hrp {
     public:
         ColdetModelSharedDataSet();
 
-        void build();
+        bool build();
 
         // need two instances ?
         Opcode::Model model;
