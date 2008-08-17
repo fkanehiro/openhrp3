@@ -9,63 +9,47 @@
 
 using namespace hrp;
 
-namespace hrp {
-
-    class ColdetModelPairImpl
-    {
-    public:
-        collision_data* detectCollisions(bool detectAllContacts);
-        
-        ColdetModelPtr model1;
-        ColdetModelPtr model2;
-    };
-}
-
 
 ColdetModelPair::ColdetModelPair()
 {
-    impl = new ColdetModelPairImpl();
+
 }
 
 
-ColdetModelPair::ColdetModelPair(ColdetModelPtr model1, ColdetModelPtr model2)
+ColdetModelPair::ColdetModelPair(ColdetModelPtr model0, ColdetModelPtr model1)
 {
-    impl = new ColdetModelPairImpl();
-    impl->model1 = model1;
-    impl->model2 = model2;
+    model0_ = model0;
+    model1_ = model1;
 }
 
 
 ColdetModelPair::ColdetModelPair(const ColdetModelPair& org)
 {
-    impl = new ColdetModelPairImpl();
-    impl->model1 = org.impl->model1;
-    impl->model2 = org.impl->model2;
+    model0_ = org.model0_;
+    model1_ = org.model1_;
 }
 
 
 ColdetModelPair::~ColdetModelPair()
 {
-    delete impl;
+
 }
 
 
-void ColdetModelPair::set(ColdetModelPtr model1, ColdetModelPtr model2)
+void ColdetModelPair::set(ColdetModelPtr model0, ColdetModelPtr model1)
 {
-    // inverse order because of historical background
-    // this should be fixed.(note that the direction of normal is inversed when the order inversed 
-    impl->model1 = model2;
-    impl->model2 = model1;
+    model0_ = model0;
+    model1_ = model1;
 }
 
 
 collision_data* ColdetModelPair::detectCollisions()
 {
-    return impl->detectCollisions(true);
+    return detectCollisionsSub(true);
 }
 
 
-collision_data* ColdetModelPairImpl::detectCollisions(bool detectAllContacts)
+collision_data* ColdetModelPair::detectCollisionsSub(bool detectAllContacts)
 {
     collision_data* result = 0;
     
@@ -75,11 +59,14 @@ collision_data* ColdetModelPairImpl::detectCollisions(bool detectAllContacts)
         cdContactsCount = 0;
     }
 
-    if(model1 && model2){
+    if(model0_->isValid() && model1_->isValid()){
 
         Opcode::BVTCache colCache;
-        colCache.Model0 = &model1->dataSet->model;
-        colCache.Model1 = &model2->dataSet->model;
+
+        // inverse order because of historical background
+        // this should be fixed.(note that the direction of normal is inversed when the order inversed 
+        colCache.Model0 = &model1_->dataSet->model;
+        colCache.Model1 = &model0_->dataSet->model;
         
         Opcode::AABBTreeCollider collider;
         
@@ -87,7 +74,7 @@ collision_data* ColdetModelPairImpl::detectCollisions(bool detectAllContacts)
             collider.SetFirstContact(true);
         }
         
-        bool isOK = collider.Collide(colCache, model1->transform, model2->transform);
+        bool isOK = collider.Collide(colCache, model1_->transform, model0_->transform);
         
         cdBoxTestsCount = collider.GetNbBVBVTests();
         cdTriTestsCount = collider.GetNbPrimPrimTests();
@@ -103,5 +90,5 @@ collision_data* ColdetModelPairImpl::detectCollisions(bool detectAllContacts)
 
 bool ColdetModelPair::checkCollision()
 {
-    return (impl->detectCollisions(false) != 0);
+    return (detectCollisionsSub(false) != 0);
 }

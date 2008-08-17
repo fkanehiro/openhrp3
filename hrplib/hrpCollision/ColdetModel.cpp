@@ -17,16 +17,29 @@ using namespace hrp;
 ColdetModel::ColdetModel()
 {
     dataSet = new ColdetModelSharedDataSet();
-    dataSet->refCounter++;
-    transform = new IceMaths::Matrix4x4();
+    isValid_ = false;
+    initialize();
 }
 
 
 ColdetModel::ColdetModel(const ColdetModel& org)
 {
     dataSet = org.dataSet;
+    isValid_ = org.isValid_;
+    initialize();
+}
+
+
+void ColdetModel::initialize()
+{
     dataSet->refCounter++;
+
     transform = new IceMaths::Matrix4x4();
+
+    transform->Set(1.0f, 0.0f, 0.0f, 0.0f,
+                   0.0f, 1.0f, 0.0f, 0.0f,
+                   0.0f, 0.0f, 1.0f, 0.0f,
+                   0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 
@@ -74,25 +87,34 @@ void ColdetModel::setTriangle(int index, int v1, int v2, int v3)
 
 void ColdetModel::build()
 {
-    dataSet->build();
+    isValid_ = dataSet->build();
 }
 
 
-void ColdetModelSharedDataSet::build()
+bool ColdetModelSharedDataSet::build()
 {
-    Opcode::OPCODECREATE OPCC;
-
-    iMesh.SetPointers(&triangles[0], &vertices[0]);
-    iMesh.SetNbTriangles(triangles.size());
-    iMesh.SetNbVertices(vertices.size());
-
-    OPCC.mIMesh = &iMesh;
+    bool result = false;
     
-    OPCC.mNoLeaf = false;
-    OPCC.mQuantized = false;
-    OPCC.mKeepOriginal = false;
+    if(triangles.size() > 0){
+
+        Opcode::OPCODECREATE OPCC;
+
+        iMesh.SetPointers(&triangles[0], &vertices[0]);
+        iMesh.SetNbTriangles(triangles.size());
+        iMesh.SetNbVertices(vertices.size());
         
-    model.Build(OPCC);
+        OPCC.mIMesh = &iMesh;
+        
+        OPCC.mNoLeaf = false;
+        OPCC.mQuantized = false;
+        OPCC.mKeepOriginal = false;
+        
+        model.Build(OPCC);
+        
+        result = true;
+    }
+
+    return result;
 }
 
 

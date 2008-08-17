@@ -12,24 +12,27 @@
 
 namespace hrp {
 
-    class ColdetModelPairImpl;
-
     class HRP_COLLISION_EXPORT ColdetModelPair
     {
       public:
         ColdetModelPair();
-        ColdetModelPair(ColdetModelPtr model1, ColdetModelPtr model2);
+        ColdetModelPair(ColdetModelPtr model0, ColdetModelPtr model1);
         ColdetModelPair(const ColdetModelPair& org);
         virtual ~ColdetModelPair();
 
-        void set(ColdetModelPtr model1, ColdetModelPtr model2);
+        void set(ColdetModelPtr model0, ColdetModelPtr model1);
+        ColdetModelPtr model0() { return model0_; }
+        ColdetModelPtr model1() { return model1_; }
         
         collision_data* detectCollisions();
 
         bool checkCollision();
 
       private:
-        ColdetModelPairImpl* impl;
+        collision_data* detectCollisionsSub(bool detectAllContacts);
+        
+        ColdetModelPtr model0_;
+        ColdetModelPtr model1_;
     };
 }
 

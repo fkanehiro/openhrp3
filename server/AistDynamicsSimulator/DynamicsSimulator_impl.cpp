@@ -31,7 +31,7 @@ using namespace hrp;
 
 
 // #define INTEGRATOR_DEBUG
-static const bool USE_INTERNAL_COLLISION_DETECTOR = true;
+static const bool USE_INTERNAL_COLLISION_DETECTOR = false;
 static const int debugMode = false;
 static const bool enableTimeMeasure = false;
 
