@@ -37,10 +37,10 @@ using namespace std;
 class CdModelSet
 {
 public:
-	DllExport CdModelSet();
-	DllExport ~CdModelSet();
-	DllExport void addTriangle(const double *p1, const double *p2, const double *p3);
-	DllExport void endModel();
+	HRP_COLLISION_EXPORT CdModelSet();
+	HRP_COLLISION_EXPORT ~CdModelSet();
+	HRP_COLLISION_EXPORT void addTriangle(const double *p1, const double *p2, const double *p3);
+	HRP_COLLISION_EXPORT void endModel();
 	Opcode::Model *model_[2];
 	int linkIndex; // index in a model file (and the model loader)
 private:
@@ -57,13 +57,13 @@ private:
 class CdModelCache
 {
 public:
-	DllExport CdModelCache();
-	DllExport ~CdModelCache();
-	DllExport int addModel(const char* name,CdModelSet* obj);
-	DllExport int removeModel(const char* name);
-	DllExport CdModelSet* getModel(const char* name);
-	DllExport int exist(const char* name);
-	DllExport vector<string> getNameList();
+	HRP_COLLISION_EXPORT CdModelCache();
+	HRP_COLLISION_EXPORT ~CdModelCache();
+	HRP_COLLISION_EXPORT int addModel(const char* name,CdModelSet* obj);
+	HRP_COLLISION_EXPORT int removeModel(const char* name);
+	HRP_COLLISION_EXPORT CdModelSet* getModel(const char* name);
+	HRP_COLLISION_EXPORT int exist(const char* name);
+	HRP_COLLISION_EXPORT vector<string> getNameList();
 private:
 	map<string,CdModelSet*> map_;
 };
@@ -71,13 +71,13 @@ private:
 class CdCharCache
 {
 public:
-	DllExport CdCharCache();
-	DllExport ~CdCharCache();
-	DllExport int addChar(const char* name,CdModelCache* obj);
-	DllExport int removeChar(const char* name);
-	DllExport int removeAllChar();
-	DllExport CdModelCache* getChar(const char* name);
-	DllExport int exist(const char* name);
+	HRP_COLLISION_EXPORT CdCharCache();
+	HRP_COLLISION_EXPORT ~CdCharCache();
+	HRP_COLLISION_EXPORT int addChar(const char* name,CdModelCache* obj);
+	HRP_COLLISION_EXPORT int removeChar(const char* name);
+	HRP_COLLISION_EXPORT int removeAllChar();
+	HRP_COLLISION_EXPORT CdModelCache* getChar(const char* name);
+	HRP_COLLISION_EXPORT int exist(const char* name);
 private:
 	map<string,CdModelCache*> map_;
 };

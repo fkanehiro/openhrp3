@@ -28,7 +28,7 @@ double CD_s2;
 
 int cdBoxTestsCount;
 int cdTriTestsCount;
-int cdContactsCount;
+HRP_COLLISION_EXPORT int cdContactsCount;
 
 int cdNbCollisionPairAlloced = 0;
 collision_data *cdContact = 0;

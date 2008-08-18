@@ -78,10 +78,7 @@ namespace hrp
 	}
 
 	// for backward compatibility (to be obsolete)
-	inline Matrix33 inverse33(const Matrix33& m) { return inverse(m); }
-
-	
-	HRP_UTIL_EXPORT Matrix33 inverse33(const Matrix33& m);
+	HRP_UTIL_EXPORT inline Matrix33 inverse33(const Matrix33& m) { return inverse(m); }
 
     inline Matrix33 hat(const Vector3& c) {
 		Matrix33 m;

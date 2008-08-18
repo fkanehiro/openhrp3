@@ -12,19 +12,11 @@
 #ifndef CD_WRAPPER_H
 #define CD_WRAPPER_H
 
+#include "config.h"
 #include "utilities.h"
 #include "Opcode.h"
 
-#ifdef _WIN32
-#ifndef DLLEXPORT
-#define DLLEXPORT __declspec(dllexport)
-#endif /* DLLEXPORT */
-#else
-#define DLLEXPORT
-#endif /* _WIN32 */
-
-
-class DLLEXPORT CdWrapperException {
+class HRP_COLLISION_EXPORT CdWrapperException {
 
 private:
     int id_;
@@ -39,7 +31,7 @@ public:
 /**
    wrapper of collision detection package
 */
-class DLLEXPORT CdWrapper {
+class HRP_COLLISION_EXPORT CdWrapper {
 
 public:
 

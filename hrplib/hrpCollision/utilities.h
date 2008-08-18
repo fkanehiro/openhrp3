@@ -10,18 +10,6 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#ifdef _WIN32
-# ifndef DllExport
-#  define DllExport	__declspec( dllexport )
-# endif
-# ifndef DllImport
-#  define DllImport	__declspec( dllexport )
-# endif
-#else
-# define DllExport
-# define DllImport
-#endif
-
 #include "CollisionData.h"
 #include "Opcode.h"
 #include <boost/numeric/ublas/matrix.hpp>
