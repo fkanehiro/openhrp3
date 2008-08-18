@@ -23,7 +23,8 @@ foreach(name ${IDL_FILE_BASENAMES})
     add_custom_command(
       OUTPUT ${idl_file}
       COMMAND ${NATIVE2ASCII} -encoding UTF-8 ${src_idl_file} ${idl_file}
-      COMMAND ${RMDIR} src jp
+      COMMAND ${RMDIR} src
+      COMMAND ${RMDIR} jp
       DEPENDS ${src_idl_file}
     )
   elseif(WIN32)
@@ -67,8 +68,7 @@ set(jarfile ${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar)
 
 if(UNIX)
   add_custom_command(
-#    OUTPUT ${jarfile} jp
-    OUTPUT ${jarfile}
+    OUTPUT ${jarfile} jp
     COMMAND ${JAVAC} ${javac_flags} ${CMAKE_CURRENT_BINARY_DIR}/src/${package_path}/*.java
     COMMAND ${JAR} cf ${jarfile} -C ${CMAKE_CURRENT_BINARY_DIR} jp
     DEPENDS ${idl_compiled_flag_files}
