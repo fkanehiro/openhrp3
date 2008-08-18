@@ -14,6 +14,8 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
 
+#include "config.h"
+
 typedef boost::numeric::ublas::bounded_vector<double,3> dvector3;
 
 
@@ -39,7 +41,7 @@ public:
 
 extern  int cdBoxTestsCount;
 extern  int cdTriTestsCount;
-extern  int cdContactsCount;
+extern  HRP_COLLISION_EXPORT int cdContactsCount;
 
 extern  collision_data *cdContact;
 

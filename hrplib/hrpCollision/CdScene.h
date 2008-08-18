@@ -34,8 +34,8 @@ class CdChar;
 class CdJoint
 {
 public:
-	DllExport CdJoint(CdModelSet* model, const char* name, CdChar* parent);
-	DllExport ~CdJoint();
+	HRP_COLLISION_EXPORT CdJoint(CdModelSet* model, const char* name, CdChar* parent);
+	HRP_COLLISION_EXPORT ~CdJoint();
         
 	void setTransform(const double t[3],const double q[4]);
 	double translation_[3];
@@ -49,10 +49,10 @@ public:
 class CdCheckPair
 {
 public:
-	DllExport CdCheckPair(CdJoint* j1,CdJoint* j2);
-	DllExport ~CdCheckPair();
-	DllExport int collide(int* num, collision_data** cPair, int flag = CD_ALL_CONTACTS);
-	DllExport int collide(int* num, int flag = CD_ALL_CONTACTS);
+	HRP_COLLISION_EXPORT CdCheckPair(CdJoint* j1,CdJoint* j2);
+	HRP_COLLISION_EXPORT ~CdCheckPair();
+	HRP_COLLISION_EXPORT int collide(int* num, collision_data** cPair, int flag = CD_ALL_CONTACTS);
+	HRP_COLLISION_EXPORT int collide(int* num, int flag = CD_ALL_CONTACTS);
         
 	CdJoint* joint_[2];
 };
@@ -60,10 +60,10 @@ public:
 class CdChar
 {
 public:
-	DllExport CdChar(CdModelCache* model, const char* name);
-	DllExport ~CdChar();
-	DllExport CdJoint* getJoint(const char* name);
-	DllExport CdJoint* getJoint(int linkIndex);
+	HRP_COLLISION_EXPORT CdChar(CdModelCache* model, const char* name);
+	HRP_COLLISION_EXPORT ~CdChar();
+	HRP_COLLISION_EXPORT CdJoint* getJoint(const char* name);
+	HRP_COLLISION_EXPORT CdJoint* getJoint(int linkIndex);
 	string name_;
 private:
 	vector<CdJoint*> linkIndexToCdJoint;
@@ -74,16 +74,16 @@ private:
 class CdScene
 {
 public:
-	DllExport CdScene();
-	DllExport ~CdScene();
-	DllExport int addChar(const char* name, CdChar* obj);
-	DllExport int removeChar(const char* name);
-	DllExport CdChar* getChar(const char* name);
+	HRP_COLLISION_EXPORT CdScene();
+	HRP_COLLISION_EXPORT ~CdScene();
+	HRP_COLLISION_EXPORT int addChar(const char* name, CdChar* obj);
+	HRP_COLLISION_EXPORT int removeChar(const char* name);
+	HRP_COLLISION_EXPORT CdChar* getChar(const char* name);
 	int exist(const char* name);
-	DllExport void addCheckPair(CdCheckPair* cPair);
+	HRP_COLLISION_EXPORT void addCheckPair(CdCheckPair* cPair);
         
-	DllExport int getNumCheckPairs();
-	DllExport CdCheckPair* getCheckPair(int i);
+	HRP_COLLISION_EXPORT int getNumCheckPairs();
+	HRP_COLLISION_EXPORT CdCheckPair* getCheckPair(int i);
         
 private:
 	map<string,CdChar*> map_;

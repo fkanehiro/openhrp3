@@ -161,9 +161,15 @@ set(sources_short
   )
 
 set(sources)
-foreach(source ${sources_short})
-  list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/com/generalrobotix/ui/${source})
-endforeach()
+if(UNIX)
+  foreach(source ${sources_short})
+    list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/com/generalrobotix/ui/${source})
+  endforeach()
+else(WIN32)
+  foreach(source ${sources_short})
+    list(APPEND sources com/generalrobotix/ui/${source})
+  endforeach()
+endif()
 
 if(UNIX)
 set(classpath "${CLASSPATH}:${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar")
