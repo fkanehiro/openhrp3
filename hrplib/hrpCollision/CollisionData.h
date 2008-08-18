@@ -8,6 +8,7 @@
  * General Robotix Inc. 
  */
 
+
 #ifndef HRP_COLLISION_COLLISION_DATA_H_INCLUDED
 #define HRP_COLLISION_COLLISION_DATA_H_INCLUDED
 

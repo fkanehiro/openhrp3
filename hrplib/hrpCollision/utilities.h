@@ -11,7 +11,7 @@
 #define UTILITIES_H
 
 #include "CollisionData.h"
-#include "Opcode.h"
+#include "Opcode/Opcode.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <math.h>
 
