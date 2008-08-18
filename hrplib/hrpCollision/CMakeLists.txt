@@ -12,69 +12,37 @@
 set(sources
   ColdetModel.cpp
   ColdetModelPair.cpp
-  CdCache.cpp
-  CdScene.cpp
-  CdWrapper.cpp
-  Ice/IceAABB.cpp
-  Ice/IceContainer.cpp
-  Ice/IceIndexedTriangle.cpp
-  Ice/IceMatrix3x3.cpp
-  Ice/IceMatrix4x4.cpp
-  Ice/IceRevisitedRadix.cpp
-  Ice/IceHPoint.cpp
-  Ice/IceRandom.cpp
-  Ice/IcePoint.cpp
-  OPC_AABBTree.cpp
-  OPC_BaseModel.cpp
-  OPC_Collider.cpp
-  OPC_Common.cpp
-  OPC_MeshInterface.cpp
-  OPC_Model.cpp
-  OPC_OptimizedTree.cpp
-  OPC_TreeBuilders.cpp
-  OPC_TreeCollider.cpp
-  OPC_VolumeCollider.cpp 
   InsertCollisionPair.cpp
   TriOverlap.cpp
+  Opcode/Ice/IceAABB.cpp
+  Opcode/Ice/IceContainer.cpp
+  Opcode/Ice/IceIndexedTriangle.cpp
+  Opcode/Ice/IceMatrix3x3.cpp
+  Opcode/Ice/IceMatrix4x4.cpp
+  Opcode/Ice/IceRevisitedRadix.cpp
+  Opcode/Ice/IceHPoint.cpp
+  Opcode/Ice/IceRandom.cpp
+  Opcode/Ice/IcePoint.cpp
+  Opcode/OPC_AABBTree.cpp
+  Opcode/OPC_BaseModel.cpp
+  Opcode/OPC_Collider.cpp
+  Opcode/OPC_Common.cpp
+  Opcode/OPC_MeshInterface.cpp
+  Opcode/OPC_Model.cpp
+  Opcode/OPC_OptimizedTree.cpp
+  Opcode/OPC_TreeBuilders.cpp
+  Opcode/OPC_TreeCollider.cpp
+  Opcode/OPC_VolumeCollider.cpp 
   )
 
 set(headers
   config.h
   ColdetModel.h
   ColdetModelPair.h
-  CdCache.h
-  CdWrapper.h
-  CdScene.h
-  utilities.h
-  OPC_PlanesTriOverlap.h
-  OPC_PlanesAABBOverlap.h
-  OPC_BaseModel.h
-  OPC_OptimizedTree.h
-  OPC_Collider.h
-  OPC_TreeBuilders.h
-  OPC_HybridModel.h
-  OPC_Common.h
-  OPC_SphereAABBOverlap.h
-  OPC_AABBTree.h
-  OPC_TreeCollider.h
-  OPC_SphereTriOverlap.h
-  OPC_TriBoxOverlap.h
-  OPC_BoxBoxOverlap.h
-  OPC_VolumeCollider.h
-  OPC_TriTriOverlap.h
-  OPC_Model.h
-  OPC_Picking.h
-  OPC_SweepAndPrune.h
-  OPC_MeshInterface.h
-  OPC_IceHook.h
-  OPC_BoxPruning.h
-  OPC_Settings.h
-  Opcode.h
-  Stdafx.h
+  CollisionData.h
   )
 
-# TODO: remove this
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Opcode)
 
 add_library(hrpCollision3 SHARED ${sources})
 

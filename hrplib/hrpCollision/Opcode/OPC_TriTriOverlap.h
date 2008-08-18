@@ -1,4 +1,4 @@
-#include "utilities.h"
+#include "../utilities.h"
 
 //! if OPC_TRITRI_EPSILON_TEST is true then we do a check (if |dv|<EPSILON then dv=0.0;) else no check is done (which is less robust, but faster)
 #define LOCAL_EPSILON 0.000001f
