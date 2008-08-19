@@ -545,16 +545,35 @@ bool TMSImpl::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh)
 
     MFVec3f& vertices = triangleMesh->coord->point;
     vertices.reserve(8);
+
+
+    static const int numTriangles = 12;
     
+#if 1
+    static const double xsigns[] = { -1.0, -1.0, -1.0, -1.0,  1.0,  1.0,  1.0,  1.0 };
+    static const double ysigns[] = { -1.0, -1.0,  1.0,  1.0, -1.0, -1.0,  1.0,  1.0 };
+    static const double zsigns[] = { -1.0,  1.0,  1.0, -1.0, -1.0,  1.0,  1.0, -1.0 };
+
+    static const int triangles[] =
+        {
+            0, 1, 2,
+            2, 3, 0,
+            3, 2, 6,
+            3, 6, 7,
+            6, 2, 1,
+            1, 5, 6,
+            1, 0, 5,
+            5, 0, 4,
+            5, 4, 6,
+            6, 4, 7,
+            7, 4, 0,
+            0, 3, 7
+        };
+#else
     static const double xsigns[] = { -1.0, -1.0, -1.0, -1.0,  1.0,  1.0,  1.0, 1.0 };
     static const double ysigns[] = { -1.0, -1.0,  1.0,  1.0, -1.0, -1.0,  1.0, 1.0 };
     static const double zsigns[] = { -1.0,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0, 1.0 };
 
-    for(int i=0; i < 8; ++i){
-        addVertex(vertices, xsigns[i] * x, ysigns[i] * y, zsigns[i] * z);
-    }
-    
-    static const int numTriangles = 12;
     static const int triangles[] =
         { 5, 7, 3,
           5, 3, 1,
@@ -569,7 +588,12 @@ bool TMSImpl::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh)
           4, 5, 1,
           4, 1, 0,
         };
+#endif
 
+    for(int i=0; i < 8; ++i){
+        addVertex(vertices, xsigns[i] * x, ysigns[i] * y, zsigns[i] * z);
+    }
+    
     MFInt32& indices = triangleMesh->coordIndex;
     indices.resize(numTriangles * 4);
 

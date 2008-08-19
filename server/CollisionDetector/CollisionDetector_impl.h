@@ -85,7 +85,7 @@ private:
     class ColdetModelPairEx : public ColdetModelPair
     {
     public:
-        ColdetModelPairEx(ColdetBodyPtr body0, ColdetModelPtr link0, ColdetBodyPtr body1, ColdetModelPtr link1) :
+        ColdetModelPairEx(ColdetBodyPtr& body0, ColdetModelPtr& link0, ColdetBodyPtr& body1, ColdetModelPtr& link1) :
             ColdetModelPair(link0, link1),
             body0(body0),
             body1(body1)
@@ -100,9 +100,9 @@ private:
     void updateAllLinkPositions(const CharacterPositionSequence& characterPositions);
     bool detectAllCollisions(vector<ColdetModelPairEx>& coldetPairs, CollisionSequence_out& out_collisions);
     bool detectCollisionsOfLinkPair(
-        ColdetModelPairEx& coldetPair, CollisionPointSequence& out_collisionPoints, bool addCollisionPoints);
+        ColdetModelPairEx& coldetPair, CollisionPointSequence& out_collisionPoints, const bool addCollisionPoints);
     bool detectCollidedLinkPairs(
-        vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, bool checkAll);
+        vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll);
 
 };
 
