@@ -50,12 +50,6 @@ void ColdetModelPair::set(ColdetModelPtr model0, ColdetModelPtr model1)
 }
 
 
-collision_data* ColdetModelPair::detectCollisions()
-{
-    return detectCollisionsSub(true);
-}
-
-
 collision_data* ColdetModelPair::detectCollisionsSub(bool detectAllContacts)
 {
     collision_data* result = 0;
@@ -92,10 +86,4 @@ collision_data* ColdetModelPair::detectCollisionsSub(bool detectAllContacts)
     }
 
     return result;
-}
-
-
-bool ColdetModelPair::checkCollision()
-{
-    return (detectCollisionsSub(false) != 0);
 }

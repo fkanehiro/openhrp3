@@ -151,7 +151,7 @@ void CollisionDetector_impl::updateAllLinkPositions
 {
     for(int i=0; i < characterPositions.length(); i++){
         const CharacterPosition& characterPosition = characterPositions[i];
-        string bodyName(characterPosition.characterName);
+        const string bodyName(characterPosition.characterName);
         StringToColdetBodyMap::iterator it = nameToColdetBodyMap.find(bodyName);
         if(it != nameToColdetBodyMap.end()){
             ColdetBodyPtr& coldetBody = it->second;
@@ -189,38 +189,38 @@ bool CollisionDetector_impl::detectAllCollisions
 
 
 bool CollisionDetector_impl::detectCollisionsOfLinkPair
-(ColdetModelPairEx& coldetPair, CollisionPointSequence& out_collisionPoints, bool addCollisionPoints)
+(ColdetModelPairEx& coldetPair, CollisionPointSequence& out_collisionPoints, const bool addCollisionPoints)
 {
     bool detected = false;
 	
     collision_data* cdata = coldetPair.detectCollisions();
 
-    if(cdata){
-        int npoints = 0;
-        for(int i = 0; i < cdContactsCount; i++) {
-            for(int j = 0; j < cdata[i].num_of_i_points; j++){
-                if(cdata[i].i_point_new[j]) npoints ++;
+    int npoints = 0;
+    for(int i=0; i < cdContactsCount; i++) {
+        for(int j=0; j < cdata[i].num_of_i_points; j++){
+            if(cdata[i].i_point_new[j]){
+                npoints ++;
             }
         }
-        if(npoints > 0){
-            detected = true;
-            if(addCollisionPoints){
-                out_collisionPoints.length(npoints);
-                int idx = 0;
-                for (int i = 0; i < cdContactsCount; i++) {
-                    collision_data& cd = cdata[i];
-                    for(int j=0; j < cd.num_of_i_points; j++){
-                        if (cd.i_point_new[j]){
-                            CollisionPoint& point = out_collisionPoints[idx];
-                            for(int k=0; k < 3; k++){
-                                point.position[k] = cd.i_points[j][k];
-                            }
-                            for(int k=0; k < 3; k++){
-                                point.normal[k] = cd.n_vector[k];
-                            }
-                            point.idepth = cd.depth;
-                            idx++;
+    }
+    if(npoints > 0){
+        detected = true;
+        if(addCollisionPoints){
+            out_collisionPoints.length(npoints);
+            int index = 0;
+            for(int i=0; i < cdContactsCount; i++) {
+                collision_data& cd = cdata[i];
+                for(int j=0; j < cd.num_of_i_points; j++){
+                    if (cd.i_point_new[j]){
+                        CollisionPoint& point = out_collisionPoints[index];
+                        for(int k=0; k < 3; k++){
+                            point.position[k] = cd.i_points[j][k];
                         }
+                        for(int k=0; k < 3; k++){
+                            point.normal[k] = cd.n_vector[k];
+                        }
+                        point.idepth = cd.depth;
+                        index++;
                     }
                 }
             }
@@ -265,7 +265,7 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForGivenPairs
 
 
 bool CollisionDetector_impl::detectCollidedLinkPairs
-(vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, bool checkAll)
+(vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll)
 {
     CollisionPointSequence dummy;
 	

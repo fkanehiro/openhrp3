@@ -28,12 +28,16 @@ namespace hrp {
         virtual ~ColdetModelPair();
 
         void set(ColdetModelPtr model0, ColdetModelPtr model1);
-        ColdetModelPtr model0() { return model0_; }
-        ColdetModelPtr model1() { return model1_; }
+        ColdetModelPtr& model0() { return model0_; }
+        ColdetModelPtr& model1() { return model1_; }
         
-        collision_data* detectCollisions();
+        collision_data* detectCollisions() {
+            return detectCollisionsSub(true);
+        }
 
-        bool checkCollision();
+        bool checkCollision() {
+            return (detectCollisionsSub(false) != 0);
+        }
 
       private:
         collision_data* detectCollisionsSub(bool detectAllContacts);

@@ -35,9 +35,6 @@ namespace hrp {
 	vector<IceMaths::Point> vertices;
 	vector<IceMaths::IndexedTriangle> triangles;
 
-        double translation[3];
-	double rotation[3][3];
-
       private:
         int refCounter;
 

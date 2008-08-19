@@ -40,11 +40,10 @@ public:
 
 };
 
-extern  int cdBoxTestsCount;
-extern  int cdTriTestsCount;
+extern  HRP_COLLISION_EXPORT int cdBoxTestsCount;
+extern  HRP_COLLISION_EXPORT int cdTriTestsCount;
 extern  HRP_COLLISION_EXPORT int cdContactsCount;
-
-extern  collision_data *cdContact;
+extern  HRP_COLLISION_EXPORT collision_data *cdContact;
 
 
 #endif

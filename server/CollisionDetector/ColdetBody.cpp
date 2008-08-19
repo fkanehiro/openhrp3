@@ -105,14 +105,10 @@ void ColdetBody::setLinkPositions(const LinkPositionSequence& linkPositions)
 {
     const int srcNumLinks = linkPositions.length();
     const int selfNumLinks = linkColdetModels.size();
-
     for(int i=0; i < srcNumLinks && i < selfNumLinks; ++i){
         const LinkPosition& linkPosition = linkPositions[i];
-        const DblArray3& p = linkPosition.p;
-        const DblArray9& R = linkPosition.R;
-        ColdetModelPtr& coldetModel = linkColdetModels[i];
-        if(coldetModel){
-            coldetModel->setPosition(R, p);
+        if(linkColdetModels[i]){
+            linkColdetModels[i]->setPosition(linkPosition.R, linkPosition.p);
         }
     }
 }
