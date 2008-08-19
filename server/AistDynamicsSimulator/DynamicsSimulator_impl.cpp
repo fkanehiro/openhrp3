@@ -478,43 +478,49 @@ void DynamicsSimulator_impl::initSimulation()
 
     if(enableTimeMeasure){
         timeMeasureFinished = false;
-        timeMeasure1.begin();
+        timeMeasureStarted = false;
     }
 }
 
 
 void DynamicsSimulator_impl::stepSimulation()
 {
+    if(enableTimeMeasure){
+        if(!timeMeasureStarted){
+            timeMeasure1.begin();
+            timeMeasureStarted = true;
+        }
+    }
+
     if(debugMode){
         cout << "DynamicsSimulator_impl::stepSimulation()" << endl;
     }
 
     if(enableTimeMeasure) timeMeasure2.begin();
     world.calcNextState(collisions);
-    if(enableTimeMeasure) timeMeasure2.end();
-
-    if(enableTimeMeasure){
-        cout << " " << timeMeasure2.time() << "\n";
-    }
 
     needToUpdateSensorStates = true;
 
     _updateCharacterPositions();
+    if(enableTimeMeasure) timeMeasure2.end();
 
+    if(enableTimeMeasure) timeMeasure3.begin();
     if(!USE_INTERNAL_COLLISION_DETECTOR){
         collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
     }
+    if(enableTimeMeasure) timeMeasure3.end();
 
     world.contactForceSolver.clearExternalForces();
 
-    if(false && enableTimeMeasure){
+
+    if(enableTimeMeasure){
         if(world.currentTime() > 10.0 && !timeMeasureFinished){
             timeMeasureFinished = true;
             timeMeasure1.end();
             cout << "Total elapsed time = " << timeMeasure1.totalTime() << "\n"
                  << "Internal elapsed time = " << timeMeasure2.totalTime()
                  << ", the avarage = " << timeMeasure2.avarageTime() << endl;
-            //cout << "Collision check time = " << timeMeasure3.totalTime() << endl;
+            cout << "Collision check time = " << timeMeasure3.totalTime() << endl;
         }
     }
 }

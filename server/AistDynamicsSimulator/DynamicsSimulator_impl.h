@@ -51,6 +51,7 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
     TimeMeasure timeMeasure2;
     TimeMeasure timeMeasure3;
     bool timeMeasureFinished;
+    bool timeMeasureStarted;
 
     void _setupCharacterData();
     void _updateCharacterPositions();
