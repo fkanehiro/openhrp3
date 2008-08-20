@@ -23,7 +23,7 @@ class TimeMeasure
     double totalTime_;
     int numCalls;
     
- public:
+public:
     TimeMeasure() {
 	totalTime_ = 0.0;
 	numCalls = 0;
@@ -55,37 +55,37 @@ typedef unsigned __int64    ulonglong;
 
 class TimeMeasure
 {
-	ulonglong iTimerScale;
-	ulonglong beginTime;
-	ulonglong endTime;
-	double time_;
-	double totalTime_;
+    ulonglong iTimerScale;
+    ulonglong beginTime;
+    ulonglong endTime;
+    double time_;
+    double totalTime_;
     int numCalls;
  
-	public:
+public:
     TimeMeasure() { 
-		totalTime_ = 0.0;
-		numCalls = 0;
-		BOOL iDummyBool = QueryPerformanceFrequency ((LARGE_INTEGER *) &iTimerScale);
-		if(!iDummyBool)
-			iTimerScale=1;
-	}
+        totalTime_ = 0.0;
+        numCalls = 0;
+        BOOL iDummyBool = QueryPerformanceFrequency ((LARGE_INTEGER *) &iTimerScale);
+        if(!iDummyBool)
+            iTimerScale=1;
+    }
 
     void begin() { 
-		BOOL iDummyBool = QueryPerformanceCounter ((LARGE_INTEGER *) &beginTime);
-		if(!iDummyBool)
-			beginTime=1;
-	}
+        BOOL iDummyBool = QueryPerformanceCounter ((LARGE_INTEGER *) &beginTime);
+        if(!iDummyBool)
+            beginTime=1;
+    }
 
     void end(){ 
-		BOOL iDummyBool = QueryPerformanceCounter ((LARGE_INTEGER *) &endTime);
-		if(!iDummyBool)
-			endTime=0;
-		time_ = (double)(endTime - beginTime) / iTimerScale;
-		totalTime_ += time_;
-		numCalls++;
-	}
-	double time() { return time_; }
+        BOOL iDummyBool = QueryPerformanceCounter ((LARGE_INTEGER *) &endTime);
+        if(!iDummyBool)
+            endTime=0;
+        time_ = (double)(endTime - beginTime) / iTimerScale;
+        totalTime_ += time_;
+        numCalls++;
+    }
+    double time() { return time_; }
     double totalTime() { return totalTime_; }
     double avarageTime() { return totalTime_ / numCalls; }
 };

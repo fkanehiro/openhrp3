@@ -11,16 +11,14 @@
 
 #include "DynamicsSimulator_impl.h"
 
+#include <hrpUtil/Tvmet3d.h>
 #include <hrpBase/Body.h>
 #include <hrpBase/Link.h>
 #include <hrpBase/LinkTraverse.h>
 #include <hrpBase/LinkPath.h>
 #include <hrpBase/Sensor.h>
 #include <hrpBase/ModelLoaderUtil.h>
-#include <hrpBase/tvmet3d.h>
 #include <hrpBase/ublasCommonTypes.h>
-
-// #include "OpenHRP/Base/quaternion.h"
 
 #include <vector>
 #include <map>
@@ -602,7 +600,7 @@ void DynamicsSimulator_impl::setCharacterLinkData
         link->p(0) = wdata[0];
         link->p(1) = wdata[1];
         link->p(2) = wdata[2];
-        matrix33 R;
+        Matrix33 R;
         getMatrix33FromRowMajorArray(R, wdata.get_buffer(), 3);
         link->setSegmentAttitude(R);
     }
@@ -838,7 +836,7 @@ void DynamicsSimulator_impl::setGVector
 {
     assert(wdata.length() == 3);
 
-    vector3 g;
+    Vector3 g;
     getVector3(g, wdata);
     world.setGravityAcceleration(g);
 
@@ -857,7 +855,7 @@ void DynamicsSimulator_impl::getGVector
     )
 {
     wdata->length(3);
-    vector3 g = world.getGravityAcceleration();
+    Vector3 g = world.getGravityAcceleration();
     (*wdata)[0] = g[0];
     (*wdata)[1] = g[1];
     (*wdata)[2] = g[2];
@@ -919,8 +917,8 @@ CORBA::Boolean DynamicsSimulator_impl::calcCharacterInverseKinematics
     JointPath path(body->link(fromLink), body->link(toLink));
 
     if(path){
-        vector3 p(target.p[0], target.p[1], target.p[2]);
-        matrix33 R;
+        Vector3 p(target.p[0], target.p[1], target.p[2]);
+        Matrix33 R;
         for (int i=0; i<3; i++) {
             for (int j=0; j<3; j++){
                 R(i,j) = target.R[3*i+j];

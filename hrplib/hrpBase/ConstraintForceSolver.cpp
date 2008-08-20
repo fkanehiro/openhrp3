@@ -608,47 +608,65 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
 
 void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
 {
-    static CollisionPointSequence collisionPoints;
-    CollisionPointSequence* pCollisionPoints;
+    static const bool enableNormalVisualization = true;
+
+    CollisionPointSequence collisionPoints;
+    CollisionPointSequence* pCollisionPoints = 0;
+
+    if(USE_INTERNAL_COLLISION_DETECTOR && enableNormalVisualization){
+        collisions.length(collisionCheckLinkPairs.size());
+    }
 	
-    for(size_t i=0; i < collisionCheckLinkPairs.size(); ++i){
+    for(size_t colIndex=0; colIndex < collisionCheckLinkPairs.size(); ++colIndex){
         pCollisionPoints = 0;
-        LinkPair& linkPair = collisionCheckLinkPairs[i];
+        LinkPair& linkPair = collisionCheckLinkPairs[colIndex];
 
         if( ! USE_INTERNAL_COLLISION_DETECTOR){
-            CollisionPointSequence& points = collisions[i].points;
+            CollisionPointSequence& points = collisions[colIndex].points;
             if(points.length() > 0){
                 pCollisionPoints = &points;
             }
         } else {
+            if(enableNormalVisualization){
+                Collision& collision = collisions[colIndex];
+                collision.pair.charName1 = CORBA::string_dup(linkPair.bodyData[0]->body->name.c_str());
+                collision.pair.charName2 = CORBA::string_dup(linkPair.bodyData[1]->body->name.c_str());
+                collision.pair.linkName1 = CORBA::string_dup(linkPair.link[0]->name.c_str());
+                collision.pair.linkName2 = CORBA::string_dup(linkPair.link[1]->name.c_str());
+                pCollisionPoints = &collision.points;
+            } else {
+                pCollisionPoints = &collisionPoints;
+            }
+            
             collision_data* cdata = linkPair.detectCollisions();
-            if(cdata){
+            
+            if(!cdata){
+                pCollisionPoints->length(0);
+            } else {
                 int npoints = 0;
                 for(int i = 0; i < cdContactsCount; i++) {
                     for(int j = 0; j < cdata[i].num_of_i_points; j++){
                         if(cdata[i].i_point_new[j]) npoints ++;
                     }
                 }
-                if(npoints > 0){
-                    collisionPoints.length(npoints);
-                    int idx = 0;
-                    for (int i = 0; i < cdContactsCount; i++) {
-                        collision_data& cd = cdata[i];
-                        for(int j=0; j < cd.num_of_i_points; j++){
-                            if (cd.i_point_new[j]){
-                                CollisionPoint& point = collisionPoints[idx];
-                                for(int k=0; k < 3; k++){
-                                    point.position[k] = cd.i_points[j][k];
-                                }
-                                for(int k=0; k < 3; k++){
-                                    point.normal[k] = cd.n_vector[k];
-                                }
-                                point.idepth = cd.depth;
-                                idx++;
+                pCollisionPoints->length(npoints);
+                                
+                int idx = 0;
+                for (int i = 0; i < cdContactsCount; i++) {
+                    collision_data& cd = cdata[i];
+                    for(int j=0; j < cd.num_of_i_points; j++){
+                        if (cd.i_point_new[j]){
+                            CollisionPoint& point = (*pCollisionPoints)[idx];
+                            for(int k=0; k < 3; k++){
+                                point.position[k] = cd.i_points[j][k];
                             }
+                            for(int k=0; k < 3; k++){
+                                point.normal[k] = cd.n_vector[k];
+                            }
+                            point.idepth = cd.depth;
+                            idx++;
                         }
                     }
-                    pCollisionPoints = &collisionPoints;
                 }
             }
         }
