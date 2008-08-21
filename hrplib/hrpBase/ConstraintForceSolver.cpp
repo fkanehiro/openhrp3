@@ -372,10 +372,7 @@ bool CFSImpl::addCollisionCheckLinkPair
     int index;
     int isRegistered;
 
-    BodyPtr body1 = world.body(bodyIndex1);
-    BodyPtr body2 = world.body(bodyIndex2);
-
-    tie(index, isRegistered) = world.getIndexOfLinkPairs(body1, link1, body2, link2);
+    tie(index, isRegistered) = world.getIndexOfLinkPairs(link1, link2);
 
     if(index >= 0){
 

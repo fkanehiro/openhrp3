@@ -77,7 +77,7 @@ namespace hrp {
 		virtual void initialize();
 		virtual void calcNextState();
 
-		std::pair<int,bool> getIndexOfLinkPairs(BodyPtr body1, Link* link1, BodyPtr body2, Link* link2);
+		std::pair<int,bool> getIndexOfLinkPairs(Link* link1, Link* link2);
 
 	private:
 		
@@ -97,8 +97,6 @@ namespace hrp {
         BodyToIndexMap bodyToIndexMap;
 		
         struct LinkPairKey {
-			BodyPtr body1;
-			BodyPtr body2;
 			Link* link1;
 			Link* link2;
 			bool operator<(const LinkPairKey& pair2) const;
