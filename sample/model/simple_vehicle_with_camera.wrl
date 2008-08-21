@@ -311,7 +311,7 @@ DEF SimpleVehicle Humanoid {
       translation 0 0 0.1
       children [
         DEF BODY_LINK Segment {
-          centerOfMass  0.12 0 0
+          centerOfMass  0 0 0
           mass    10.0
           momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.5 ]
 

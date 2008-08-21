@@ -74,8 +74,20 @@ static const double DEFAULT_GAUSS_SEIDEL_MAX_REL_ERROR = 1.0e-3;
 static const bool USE_PREVIOUS_LCP_SOLUTION = true;
 
 static const bool ALLOW_SUBTLE_PENETRATION_FOR_STABILITY = true;
+
+// normal setting
 static const double ALLOWED_PENETRATION_DEPTH = 0.0001;
-static const double NEGATIVE_VELOCITY_RATIO_FOR_ALLOWING_PENETRATION = 10.0;
+//static const double PENETRATION_A = 500.0;
+//static const double PENETRATION_B = 80.0;
+static const double NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION = 1000.0;
+
+
+// test for mobile robots with wheels
+//static const double ALLOWED_PENETRATION_DEPTH = 0.005;
+//static const double PENETRATION_A = 500.0;
+//static const double PENETRATION_B = 80.0;
+//static const double NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION = 10.0;
+//static const bool ENABLE_CONTACT_POINT_THINNING = false;
 
 // experimental options
 static const bool PROPORTIONAL_DYNAMIC_FRICTION = false;
@@ -1482,9 +1494,16 @@ void CFSImpl::setConstantVectorAndMuBlock()
 
             } else {
                 // contact constraint
-
-                if(ALLOW_SUBTLE_PENETRATION_FOR_STABILITY && constraint.depth < ALLOWED_PENETRATION_DEPTH){
-                    double extraNegativeVel = (ALLOWED_PENETRATION_DEPTH - constraint.depth) * NEGATIVE_VELOCITY_RATIO_FOR_ALLOWING_PENETRATION;
+                if(ALLOW_SUBTLE_PENETRATION_FOR_STABILITY){
+                    double extraNegativeVel;
+                    double newDepth = ALLOWED_PENETRATION_DEPTH - constraint.depth;
+                    if(newDepth > 0){
+                        //extraNegativeVel = PENETRATION_B * (-exp(- PENETRATION_A * newDepth) + 1.0) / PENETRATION_A;
+                        extraNegativeVel = NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION * newDepth;
+                    } else {
+                        extraNegativeVel = 0.0;
+                    }
+                    
                     b(globalIndex) = an0(globalIndex) + (constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
                 } else {
                     b(globalIndex) = an0(globalIndex) + constraint.normalProjectionOfRelVelocityOn0 * dtinv;
