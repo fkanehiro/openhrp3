@@ -22,7 +22,7 @@
 #include "Body.h"
 #include "Link.h"
 #include "LinkTraverse.h"
-#include "ublasCommonTypes.h"
+#include "uBlasCommonTypes.h"
 #include "ForwardDynamicsCBM.h"
 #include "ConstraintForceSolver.h"
 

@@ -11,7 +11,7 @@
 #ifndef OPENHRP_MATRIX_SOLVERS_H_INCLUDED
 #define OPENHRP_MATRIX_SOLVERS_H_INCLUDED
 
-#include "ublasCommonTypes.h"
+#include "uBlasCommonTypes.h"
 #include "hrpModelExportDef.h"
 
 
