@@ -18,7 +18,6 @@
 #include <hrpBase/LinkPath.h>
 #include <hrpBase/Sensor.h>
 #include <hrpBase/ModelLoaderUtil.h>
-#include <hrpBase/ublasCommonTypes.h>
 
 #include <vector>
 #include <map>

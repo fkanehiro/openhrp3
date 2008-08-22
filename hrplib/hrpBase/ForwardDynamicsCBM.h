@@ -21,7 +21,7 @@
 #include <boost/intrusive_ptr.hpp>
 
 #include "tvmet3d.h"
-#include "ublasCommonTypes.h"
+#include "uBlasCommonTypes.h"
 #include "ForwardDynamics.h"
 #include "hrpModelExportDef.h"
 

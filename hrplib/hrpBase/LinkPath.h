@@ -22,7 +22,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "tvmet3d.h"
-#include "ublasCommonTypes.h"
+#include "uBlasCommonTypes.h"
 #include "LinkTraverse.h"
 
 #include "hrpModelExportDef.h"

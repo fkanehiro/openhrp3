@@ -31,9 +31,9 @@ set(headers
   ModelLoaderUtil.h
   Sensor.h
   World.h
+  uBlasCommonTypes.h
   hrpModelExportDef.h
   tvmet3d.h
-  ublasCommonTypes.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
   )	
 
