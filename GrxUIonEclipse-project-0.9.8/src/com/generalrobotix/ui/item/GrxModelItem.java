@@ -34,8 +34,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
 
-import com.sun.j3d.loaders.vrml97.VrmlLoader;
-import com.sun.j3d.loaders.vrml97.VrmlScene;
+//import com.sun.j3d.loaders.vrml97.VrmlLoader;
+//import com.sun.j3d.loaders.vrml97.VrmlScene;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.geometry.*;
 import java.awt.image.*;
