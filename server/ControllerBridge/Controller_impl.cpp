@@ -260,6 +260,8 @@ void Controller_impl::start()
     cout << "Controller_impl::onStart" << endl;
   }
 
+  controlTime = 0.0;
+
   if(!CORBA::is_nil(viewSimulator)) {
     viewSimulator->getCameraSequenceOf(robotName.c_str(), cameras);
   }
@@ -339,6 +341,13 @@ void Controller_impl::flushJointDataSeqToSimulator(DynamicsSimulator::LinkDataTy
   }
 }
 
+void Controller_impl::flushLinkDataToSimulator(const std::string& linkName, 
+					       DynamicsSimulator::LinkDataType linkDataType,
+					       const DblSequence& linkData)
+{
+  dynamicsSimulator->setCharacterLinkData(robotName.c_str(), linkName.c_str(),
+					  linkDataType, linkData);
+}
 
 void Controller_impl::output()
 {
@@ -361,6 +370,8 @@ void Controller_impl::control()
   if(CONTROLLER_BRIDGE_DEBUG){
     cout << "Controller_impl::control" << endl;
   }
+
+  controlTime += timeStep;
 
   virtualRobotRTC->writeDataToOutPorts();
 
@@ -396,6 +407,9 @@ void Controller_impl::destroy()
   poa->deactivate_object(id);
 }
 
+void Controller_impl::setTimeStep(CORBA::Double _timeStep){
+    timeStep = _timeStep;
+}
 
 ControllerFactory_impl::ControllerFactory_impl(RTC::Manager* rtcManager, BridgeConf* bridgeConf)
   : rtcManager(rtcManager),

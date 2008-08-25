@@ -50,9 +50,13 @@ public:
 	ImageData* getCameraImageFromSimulator(int cameraId);
 	DblSequence& getJointDataSeqRef(DynamicsSimulator::LinkDataType linkDataType);
 	void flushJointDataSeqToSimulator(DynamicsSimulator::LinkDataType linkDataType);
+    void flushLinkDataToSimulator(const std::string& linkName, 
+	                                DynamicsSimulator::LinkDataType linkDataType,
+									const DblSequence& linkData);
   
 	virtual void setDynamicsSimulator(DynamicsSimulator_ptr dynamicsSimulator);
 	virtual void setViewSimulator(ViewSimulator_ptr viewSimulator);
+    virtual void setTimeStep(CORBA::Double TimeStep);
 		
 	virtual void start();
 	virtual void control();
@@ -61,6 +65,8 @@ public:
 	virtual void stop();
 
 	virtual void destroy();
+
+    double controlTime;
   
 private:
 	BridgeConf* bridgeConf;
@@ -107,6 +113,8 @@ private:
 	void addRtcWithConnection(RTC::RTObject_var rtcRef);
 	void setupRtcConnections();
 	bool connectPorts(RTC::Port_ptr outPort, RTC::Port_ptr inPort);
+
+    double timeStep;
 };
 
 

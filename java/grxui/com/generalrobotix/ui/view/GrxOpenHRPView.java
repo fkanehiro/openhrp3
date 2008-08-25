@@ -609,6 +609,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 					
 					controllers_.add(new ControllerAttribute(model.getName(), controller, step));	
 					GrxDebugUtil.println(" connected to the Controller("+controllerName+")\n");
+                    controller.setTimeStep(step);
 					controller.start();
 					break;
 				} catch (Exception e) {

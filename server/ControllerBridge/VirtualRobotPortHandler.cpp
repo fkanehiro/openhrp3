@@ -52,7 +52,6 @@ namespace {
   }
 }
 
-
 PortHandler::~PortHandler()
 {
 
@@ -92,6 +91,7 @@ void SensorStateOutPortHandler::inputDataFromSimulator(Controller_impl* controll
   default:
     break;
   }
+   setTime(values, controller->controlTime);
 }
 
 
@@ -113,6 +113,7 @@ void LinkDataOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 {
   DblSequence_var data = controller->getLinkDataFromSimulator(linkName, linkDataType);
   value.data = data;
+  setTime(value, controller->controlTime);
 }
 
 
@@ -134,6 +135,7 @@ void SensorDataOutPortHandler::inputDataFromSimulator(Controller_impl* controlle
 {
   DblSequence_var data = controller->getSensorDataFromSimulator(sensorName);
   value.data = data;
+  setTime(value, controller->controlTime);
 }
 
 
@@ -155,6 +157,7 @@ void ColorImageOutPortHandler::inputDataFromSimulator(Controller_impl* controlle
 {
   ImageData_var imageInput = controller->getCameraImageFromSimulator(cameraId);
   image.data = imageInput->longData;
+  setTime(image, controller->controlTime);
 }
 
 
@@ -176,6 +179,7 @@ void GrayScaleImageOutPortHandler::inputDataFromSimulator(Controller_impl* contr
 {
   ImageData_var imageInput = controller->getCameraImageFromSimulator(cameraId);
   image.data = imageInput->octetData;
+  setTime(image, controller->controlTime);
 }
 
 
@@ -197,6 +201,7 @@ void DepthImageOutPortHandler::inputDataFromSimulator(Controller_impl* controlle
 {
   ImageData_var imageInput = controller->getCameraImageFromSimulator(cameraId);
   image.data = imageInput->floatData;
+  setTime(image, controller->controlTime);
 }
 
 
@@ -225,6 +230,30 @@ void JointDataSeqInPortHandler::readDataFromPort(Controller_impl* controller)
 
   DblSequence& data = controller->getJointDataSeqRef(linkDataType);
   
+  CORBA::ULong n = values.data.length();
+  data.length(n);
+  for(CORBA::ULong i=0; i < n; ++i){
+    data[i] = values.data[i];
+  }
+}
+LinkDataInPortHandler::LinkDataInPortHandler(PortInfo& info) :
+  inPort(info.portName.c_str(), values),
+  linkName(info.dataOwnerName)
+{
+  linkDataType = toDynamicsSimulatorLinkDataType(info.dataTypeId);
+}
+
+
+void LinkDataInPortHandler::outputDataToSimulator(Controller_impl* controller)
+{
+  controller->flushLinkDataToSimulator(linkName, linkDataType, data);
+}
+
+
+void LinkDataInPortHandler::readDataFromPort(Controller_impl* controller)
+{
+  inPort.read();
+
   CORBA::ULong n = values.data.length();
   data.length(n);
   for(CORBA::ULong i=0; i < n; ++i){
