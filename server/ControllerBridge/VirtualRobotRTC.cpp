@@ -164,6 +164,21 @@ void VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
     default:
       break;
     }
+  }else{
+    switch(dataTypeId){
+    case JOINT_VALUE:
+    case JOINT_VELOCITY:
+    case JOINT_ACCELERATION:
+    case JOINT_TORQUE:
+      registerInPortHandler(new LinkDataInPortHandler(portInfo));
+      break;
+    case ABS_TRANSFORM:
+      std::cout << "createInPortHandler()" << std::endl;
+      registerInPortHandler(new LinkDataInPortHandler(portInfo));
+      break;
+    default:
+      break;
+    }
   }
 }
 

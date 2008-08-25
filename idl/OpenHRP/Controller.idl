@@ -117,6 +117,13 @@ module OpenHRP {
 		 * @endif
 		 */
 		void destroy();
+
+        /**
+		 * @if jp
+		 * controllerのtimeStepを設定します。
+		 * @endif
+		 */
+        void setTimeStep(in double timeStep);
 	};
 	
 

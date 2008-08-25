@@ -47,6 +47,11 @@ class OutPortHandler : public PortHandler
 public:
     virtual void inputDataFromSimulator(Controller_impl* controller) = 0;
     virtual void writeDataToPort() = 0;
+    template<class T> void setTime(T& value, double _time)
+    {
+        value.tm.sec = (unsigned long)_time;
+        value.tm.nsec = (unsigned long)((_time-value.tm.sec)*1000000000.0 + 0.5);
+    }
 };
 
 typedef boost::shared_ptr<OutPortHandler> OutPortHandlerPtr;
@@ -139,8 +144,8 @@ private:
     RTC::TimedFloatSeq image;
     int cameraId;
 };
-    
-  
+
+
 class JointDataSeqInPortHandler : public InPortHandler
 {
 public:
@@ -153,5 +158,18 @@ private:
     DynamicsSimulator::LinkDataType linkDataType;
 };
 
+class LinkDataInPortHandler : public InPortHandler
+    {
+public:
+    LinkDataInPortHandler(PortInfo& info);
+    virtual void outputDataToSimulator(Controller_impl* controller);
+    virtual void readDataFromPort(Controller_impl* controller);
+    RTC::InPort<RTC::TimedDoubleSeq> inPort;
+private:      
+    RTC::TimedDoubleSeq values;
+    std::string linkName;
+    DynamicsSimulator::LinkDataType linkDataType;
+    DblSequence data;
+};
 
 #endif
