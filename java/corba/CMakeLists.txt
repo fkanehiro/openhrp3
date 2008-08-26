@@ -68,7 +68,8 @@ set(jarfile ${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar)
 
 if(UNIX)
   add_custom_command(
-    OUTPUT ${jarfile} jp
+#    OUTPUT ${jarfile} jp
+    OUTPUT ${jarfile}
     COMMAND ${JAVAC} ${javac_flags} ${CMAKE_CURRENT_BINARY_DIR}/src/${package_path}/*.java
     COMMAND ${JAR} cf ${jarfile} -C ${CMAKE_CURRENT_BINARY_DIR} jp
     DEPENDS ${idl_compiled_flag_files}
