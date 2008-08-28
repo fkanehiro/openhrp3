@@ -226,6 +226,9 @@ public class BehaviorManager implements WorldReplaceListener {
 		}
 		return currentDynamics_;
 	}
+	public int getOperationMode() {
+		return operationMode_;
+	}
 
 	public boolean initDynamicsSimulator() {
 		getDynamicsSimulator(true);
@@ -287,6 +290,21 @@ public class BehaviorManager implements WorldReplaceListener {
 	}
 	public void removeClickListener( Grx3DViewClickListener listener ){
 		behavior_.removeClickListener( listener );
+	}
+	public Collision[] getCollision(List<GrxModelItem> modelList) {
+		for (int i=0; i<modelList.size(); i++)  {
+			GrxModelItem model = modelList.get(i);
+			String name = model.getName();
+			String base = model.lInfo_[0].name;
+			double[] data = model.getTransformArray(base);
+			currentDynamics_.setCharacterLinkData(name, base, LinkDataType.ABS_TRANSFORM, data);
+			data = model.getJointValues();
+			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
+		}
+		currentDynamics_.checkCollision();
+		WorldStateHolder wsH = new WorldStateHolder();
+		currentDynamics_.getWorldState(wsH);
+		return wsH.value.collisions;
 	}
 
 }
