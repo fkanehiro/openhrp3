@@ -92,7 +92,7 @@ public class GrxConfigBundle extends Properties {
 		return ret;
 	}
 	
-	public final Integer getInt(String key,int defaultVal){
+	public final Integer getInt(String key, Integer defaultVal) {
 		Integer ret;
 		try {
 			ret = Integer.parseInt(getStr(key));

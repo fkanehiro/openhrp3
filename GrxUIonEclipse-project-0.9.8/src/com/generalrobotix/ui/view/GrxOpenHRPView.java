@@ -69,7 +69,7 @@ import com.generalrobotix.ui.view.simulation.SimulationParameterPanel;
 
 @SuppressWarnings("serial")
 public class GrxOpenHRPView extends GrxBaseView {
-    public static final String TITLE = "OpenHRP";
+	public static final String TITLE = "OpenHRP";
 
 	private GrxWorldStateItem currentWorld_;
 	private DynamicsSimulator currentDynamics_;
@@ -227,11 +227,11 @@ public class GrxOpenHRPView extends GrxBaseView {
 			}
 		} catch (Exception e) {
 			stopSimulation();
-			GrxDebugUtil.printErr("SimulationLoop:", e);
+			GrxDebugUtil.printErr("got exception in startSimulation():", e);
 			return;
 		}
 
-		simThread_ = new Thread(){
+		simThread_ = new Thread() {
 			public void run() {
 				isExecuting_ = true;
 				try {
@@ -260,8 +260,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 				}
 			}
 		};
-
-		simThread_.setPriority(Thread.currentThread().getPriority() - 1);
+		simThread_.setPriority(Thread.currentThread().getPriority() + getInt("threadPriority", -1));
+		System.out.println("sim.thread priority : "+getInt("threadPriority", -1));
 		isIntegrate_ = simParamPane_.isIntegrate();
 		totalTime_   = simParamPane_.getTotalTime();
 		stepTime_    = simParamPane_.getStepTime();
@@ -473,14 +473,23 @@ public class GrxOpenHRPView extends GrxBaseView {
 			List modelList = manager_.getSelectedItemList(GrxModelItem.class);
 			robotEntry_.clear();
 			for (int i=0; i<modelList.size(); i++) {
-				GrxModelItem model = (GrxModelItem) modelList.get(i);
-				if (model.lInfo_ == null)
-					continue;
-
-				currentWorld_.registerCharacter(model.getName(), model.bInfo_);
-				currentDynamics_.registerCharacter(model.getName(), model.bInfo_);
-				if (model.isRobot()) {
-					robotEntry_.add(model.getName());
+				//<<<<<<< .working
+				//GrxModelItem model = (GrxModelItem) modelList.get(i);
+				//if (model.lInfo_ == null)
+				//	continue;
+				//
+				//currentWorld_.registerCharacter(model.getName(), model.bInfo_);
+				//currentDynamics_.registerCharacter(model.getName(), model.bInfo_);
+				//if (model.isRobot()) {
+				//	robotEntry_.add(model.getName());
+				//=======
+				//######
+				GrxBaseItem item = modelList.get(i);
+				if (item instanceof GrxModelItem) {
+					GrxModelItem model = (GrxModelItem) item;
+					if (model.bInfo_ != null)
+						dynamics.registerCharacter(model.getName(), model.bInfo_);
+				//>>>>>>> .merge-right.r1667
 				}
 			}
 
@@ -492,91 +501,69 @@ public class GrxOpenHRPView extends GrxBaseView {
 			currentDynamics_.setGVector(new double[] { 0.0, 0.0, simParamPane_.getGravity() });
 			
 			for (int i=0; i<modelList.size(); i++) {
-				GrxModelItem model = (GrxModelItem) modelList.get(i);
-				if (model.lInfo_ == null)
-					continue;
+				GrxBaseItem item = modelList.get(i);
+				if (item instanceof GrxModelItem) {
+					GrxModelItem model = (GrxModelItem) modelList.get(i);
+					if (model.lInfo_ == null)
+						continue;
+					String name = model.getName();
+					String base = model.lInfo_[0].name; 
 
-				// SET INITIAL ROBOT POSITION AND ATTITUDE 				
-				String base = model.lInfo_[0].name; 
-				currentDynamics_.setCharacterLinkData(
-					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
-					model.getInitialTransformArray(base));
+					// Set initial robot position and attitude
+					dynamics.setCharacterLinkData(
+							name, base, LinkDataType.ABS_TRANSFORM, 
+							model.getInitialTransformArray(base));
+
+					// Set joint values
+					dynamics.setCharacterAllLinkData(
+							name, LinkDataType.JOINT_VALUE, 
+							model.getInitialJointValues());
 			
-				// SET I/O MODE OF JOINTS
-				JointDriveMode jm = JointDriveMode.TORQUE_MODE;
-                if (isIntegrate_) {
-                	double[] jms = model.getInitialJointMode();
-					for (int j=0; j<jms.length; j++) {
-                  		if (jms[j] > 0) {
-							jm = JointDriveMode.HIGH_GAIN_MODE;
-							break;
+					// Set joint mode
+					JointDriveMode jm = JointDriveMode.TORQUE_MODE;
+                	if (isIntegrate_) {
+                		double[] jms = model.getInitialJointMode();
+						for (int j=0; j<jms.length; j++) {
+                  			if (jms[j] > 0) {
+								jm = JointDriveMode.HIGH_GAIN_MODE;
+								break;
+							}
 						}
-  					}
-				} else {
- 					jm = JointDriveMode.HIGH_GAIN_MODE;
+					} else {
+						jm = JointDriveMode.HIGH_GAIN_MODE;
+					}
+					dynamics.setCharacterAllJointModes(name, jm);
 				}
-				currentDynamics_.setCharacterAllJointModes(
-					model.getName(), jm);
-
-				// SET INITIAL JOINT VALUES
-				currentDynamics_.setCharacterAllLinkData(
-					model.getName(), LinkDataType.JOINT_VALUE, 
-					model.getInitialJointValues());
 			}
-			currentDynamics_.calcWorldForwardKinematics();
+			dynamics.calcWorldForwardKinematics();
 			
-            // SET COLLISION PAIR 
+            // Set collision pair 
 			List<GrxBaseItem> collisionPair = manager_.getSelectedItemList(GrxCollisionPairItem.class);
 			for (int i=0; i<collisionPair.size(); i++) {
-				GrxCollisionPairItem item = (GrxCollisionPairItem) collisionPair.get(i);
-				currentDynamics_.registerCollisionCheckPair(
-						item.getStr("objectName1", ""), 
-						item.getStr("jointName1", ""), 
-						item.getStr("objectName2", ""),
-						item.getStr("jointName2", ""), 
-						item.getDbl("staticFriction", 0.5),
-						item.getDbl("slidingFriction", 0.5),
-						item.getDblAry("springConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}), 
-						item.getDblAry("damperConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0})); 
+				GrxBaseItem pair = collisionPair.get(i);
+				dynamics.registerCollisionCheckPair(
+						pair.getStr("objectName1", ""), pair.getStr("jointName1", ""), 
+						pair.getStr("objectName2", ""), pair.getStr("jointName2", ""), 
+						pair.getDbl("staticFriction", 0.5), 
+						pair.getDbl("slidingFriction", 0.5),
+						pair.getDblAry("springConstant", new double[]{0, 0, 0, 0, 0, 0}), 
+						pair.getDblAry("damperConstant", new double[]{0, 0, 0, 0, 0, 0})
+				); 
 			}
-			currentDynamics_.initSimulation();
+
+			// Initialize server
+			dynamics.initSimulation();
 			
 			stateH_.value = null;
 		} catch (Exception e) {
 			GrxDebugUtil.printErr("initDynamicsSimulator:", e);
-			return false;
+			return null;
 		}
-		return true;
-	}
-
-//	private DynamicsSimulator getDynamicsSimulator(boolean update) {
-	public DynamicsSimulator getDynamicsSimulator(boolean update) {
-		if (update && currentDynamics_ != null) {
-			try {
-				currentDynamics_.destroy();
-			} catch (Exception e) {
-				GrxDebugUtil.printErr("", e);
-			}
-			currentDynamics_ = null;
-		}
-		
-		if (currentDynamics_ == null) {
-			try {
-				org.omg.CORBA.Object obj = //process_.get(DynamicsSimulatorID_).getReference();
-				GrxCorbaUtil.getReference("DynamicsSimulatorFactory", nsHost_, nsPort_);
-				DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper.narrow(obj);
-				currentDynamics_ = ifactory.create();
-				currentDynamics_._non_existent();
-
-			} catch (Exception e) {
-				GrxDebugUtil.printErr("getDynamicsSimulator: create failed.");
-				currentDynamics_ = null;
-			}
-		}
-		return currentDynamics_;
+		return dynamics;
 	}
 
 	private boolean initController() {
+		GrxDebugUtil.println("initializing controllers ...");
 		for (int i=controllers_.size()-1; i>=0; i--) {
 			try {
 				controllers_.get(i).controller_.destroy();
@@ -585,18 +572,17 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 
 		List<GrxBaseItem> models = manager_.getSelectedItemList(GrxModelItem.class);
-        for (int i=0; i<models.size(); i++) {
-            GrxModelItem model = (GrxModelItem) models.get(i);
-            if (model.isRobot() && _setupController(model) < 0)
-                return false;
-        }
-        return true;
-
+		for (int i=0; i<models.size(); i++) {
+			GrxModelItem model = (GrxModelItem) models.get(i);
+			if (model.isRobot() && _setupController(model) < 0) 
+				return false;
+		}
+		return true;
 	}
 	
 	private short _setupController(GrxModelItem model) {
-        String controllerName = model.getProperty("controller");
-        double step = model.getDbl("controlTime", 0.005);
+		String controllerName = model.getProperty("controller");
+		double step = model.getDbl("controlTime", 0.005);
 		
 		if (controllerName == null || controllerName.equals(""))
 			return 0;
@@ -604,108 +590,113 @@ public class GrxOpenHRPView extends GrxBaseView {
 		if (!simParamPane_.isIntegrate())
 			optionAdd = " -nosim";
 		
-        GrxDebugUtil.println("model name = " + model.getName() + " : controller = " + controllerName + " : cycle time[s] = " + step);
-        GrxProcessManagerView pManager = (GrxProcessManagerView)manager_.getView(GrxProcessManagerView.class);
+		GrxDebugUtil.println("model name = " + model.getName() + " : controller = " + controllerName + " : cycle time[s] = " + step);
+		GrxProcessManagerView pManager = (GrxProcessManagerView)manager_.getView(GrxProcessManagerView.class);
 
-        boolean doRestart = false;
-        org.omg.CORBA.Object cobj = GrxCorbaUtil.getReference(controllerName, nsHost_, nsPort_);
-        AProcess proc = pManager.processManager.get(controllerName);
-        String dir = model.getStr("setupDirectory", "");
-        String com = model.getStr("setupCommand", "");
-        if (cobj != null) {
-            try {
-                cobj._non_existent();
-                if (isInteractive_ && (!com.equals("") || proc != null)) { // ask only in case being abled to restart process
-                    MessageDialog dialog =new MessageDialog(getParent().getShell(),"Restart the Controller",null,
-                        "Controller '"+controllerName+"' may already exist.\n" + "Restart it ?" ,MessageDialog.QUESTION, new String[]{"YES","NO","CANCEL"}, 2);
-                    int ans = dialog.open();
-                    if (ans == SWT.YES)
-                        doRestart = true;
-                }
+		boolean doRestart = false;
+		org.omg.CORBA.Object cobj = GrxCorbaUtil.getReference(controllerName, nsHost_, nsPort_);
+		AProcess proc = pManager.processManager.get(controllerName);
+		String dir = model.getStr("setupDirectory", "");
+		String com = model.getStr("setupCommand", "");
+		if (cobj != null) {
+			try {
+				cobj._non_existent();
+				if (isInteractive_ && (!com.equals("") || proc != null)) { // ask only in case being abled to restart process
+					int ans = JOptionPane.showConfirmDialog(manager_.getFrame(),
+						"Controller '"+controllerName+"' may already exist.\n" +
+						"Restart it ?","Restart the Controller",
+						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
+				
+					if (ans == JOptionPane.YES_OPTION)
+						doRestart = true;
+				}
 
-            } catch (Exception e) {
-                cobj = null;
-            }
-        }
+			} catch (Exception e) {
+				cobj = null;
+			}
+		}
 
-        if (cobj == null || doRestart) {
-            if (proc != null)
-                proc.stop();
+		if (cobj == null || doRestart) {
+			if (proc != null)
+				proc.stop();
 
-            if (!com.equals("")) {
-                com = dir+java.io.File.separator+com;
-                ProcessInfo pi = new ProcessInfo();
-                pi.id = controllerName;
-                pi.dir = dir;
-                pi.com.add(com);
-                pi.waitCount = 2000;
-                pi.nsHost = nsHost_;
-                pi.nsPort = nsPort_;
-                pi.isCorbaServer = true;
-                pi.hasShutdown = true;
-                pi.doKillall = false;
-                pi.autoStart = false;
-                pi.autoStop = true;
-                if (proc != null)
-                    pManager.processManager.unregister(proc.pi_.id);
-                pManager.processManager.register(pi);
-                proc = pManager.processManager.get(controllerName);
-            }
+			if (!com.equals("")) {
+				com = dir+java.io.File.separator+com;
+				ProcessInfo pi = new ProcessInfo();
+				pi.id = controllerName;
+				pi.dir = dir;
+				pi.com.add(com);
+				pi.waitCount = 2000;
+				pi.nsHost = nsHost_;
+				pi.nsPort = nsPort_;
+				pi.isCorbaServer = true;
+				pi.hasShutdown = true;
+				pi.doKillall = false;
+				pi.autoStart = false; 
+				pi.autoStop = true;
+				if (proc != null)
+					pManager.processManager.unregister(proc.pi_.id);
+				pManager.processManager.register(pi);
+				proc = pManager.processManager.get(controllerName);
+			}
 
-            if (proc != null) {
-                GrxDebugUtil.println("Executing controller process ...");
-                GrxDebugUtil.println("dir: " + dir);
-                GrxDebugUtil.println("command: " + com);
-                proc.start(optionAdd);
-            }
-        }
-		
-        Date before = new Date();
-        int WAIT_COUNT = 4;
-        for (int j=0; ; j++) {
-            cobj = GrxCorbaUtil.getReference(controllerName, nsHost_, nsPort_);
-            if (cobj != null) {
-                try {
-                    ControllerFactory cfactory = ControllerFactoryHelper.narrow(cobj);
-                    Controller controller = cfactory.create(model.getName());
-                    controller.setDynamicsSimulator(currentDynamics_);
+			if (proc != null) {
+				GrxDebugUtil.println("Executing controller process ...");
+				GrxDebugUtil.println("dir: " + dir);
+				GrxDebugUtil.println("command: " + com);
+				proc.start(optionAdd);
+			}
+		} 
 
-                    if (simParamPane_.isViewSimulate()) {
-                        cobj = GrxCorbaUtil.getReference("ViewSimulator", nsHost_, nsPort_);
-                        ViewSimulator viewsim = ViewSimulatorHelper.narrow(cobj);
-                        controller.setViewSimulator(viewsim);
-                    }
+		Date before = new Date();
+		int WAIT_COUNT = 4;
+		for (int j=0; ; j++) {
+			cobj = GrxCorbaUtil.getReference(controllerName, nsHost_, nsPort_);
+			if (cobj != null) {
+				try {
+					ControllerFactory cfactory = ControllerFactoryHelper.narrow(cobj);
+					Controller controller = cfactory.create(model.getName());
+					controller.setDynamicsSimulator(currentDynamics_);
 
-                    controllers_.add(new ControllerAttribute(model.getName(), controller, step));
-                    GrxDebugUtil.println(" connected to the Controller("+controllerName+")\n");
-                    controller.start();
-                    break;
-                } catch (Exception e) {
-                    GrxDebugUtil.printErr("setupController:", e);
-                }
-            }
-
-            if (j > WAIT_COUNT || (new Date().getTime() - before.getTime() > WAIT_COUNT*1000)) {
-                GrxDebugUtil.println(" failed to setup controller:"+controllerName);
-                //タイトル画像をなしにするにはどうすればいいのか？とりあえずnullにしてみた
-                MessageDialog dialog = new MessageDialog(getParent().getShell(),"Setup Controller",null,"Can't connect the Controller("+controllerName+").\n" +"Wait more seconds ?",MessageDialog.QUESTION,new String[]{"YES","NO","CANCEL"}, 2);
-                int ans = dialog.open();
-                if (ans == SWT.YES) {
-                    before = new Date();
-                    j=0;
-                } else if (ans == SWT.NO) {
-                    break;
-                } else {
-                    return -1;
-                }
-            } else {
-              try {Thread.sleep(1000);} catch (Exception e) {}
-            }
-        }
+					if (simParamPane_.isViewSimulate()) {
+						cobj = GrxCorbaUtil.getReference("ViewSimulator", nsHost_, nsPort_);
+						ViewSimulator viewsim = ViewSimulatorHelper.narrow(cobj);
+						controller.setViewSimulator(viewsim);
+					}
+					
+					controllers_.add(new ControllerAttribute(model.getName(), controller, step));	
+					GrxDebugUtil.println(" connected to the Controller("+controllerName+")\n");
+                    controller.setTimeStep(step);
+					controller.start();
+					break;
+				} catch (Exception e) {
+					GrxDebugUtil.printErr("setupController:", e);
+				}
+			}
+			
+			if (j > WAIT_COUNT || (new Date().getTime() - before.getTime() > WAIT_COUNT*1000)) {
+				GrxDebugUtil.println(" failed to setup controller:"+controllerName);
+				int ans = JOptionPane.showConfirmDialog(manager_.getFrame(), 
+					"Can't connect the Controller("+controllerName+").\n" +
+					"Wait more seconds ?", "Setup Controller",
+					JOptionPane.YES_NO_CANCEL_OPTION, 
+					JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
+				if (ans == JOptionPane.YES_OPTION) {
+					before = new Date();
+					j=0;
+				} else if (ans == JOptionPane.NO_OPTION) {
+					break;
+				} else {
+					return -1;
+				}
+			} else {
+			  try {Thread.sleep(1000);} catch (Exception e) {}
+			}
+		}
 		
 		return 1;
 	}
-	
+
 	private boolean extendTime() {
         
 		boolean state = MessageDialog.openQuestion(getParent().getShell(), "Time is up", "Finish Simulation ?");
