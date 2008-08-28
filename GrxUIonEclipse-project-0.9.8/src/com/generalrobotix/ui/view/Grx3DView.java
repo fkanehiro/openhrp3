@@ -290,35 +290,27 @@ public class Grx3DView
 	    BoundingSphere bounds =
 	    new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
 	   
-		// light
-		/*BoundingSphere bounds = new BoundingSphere(
-				new Point3d(0.0, 0.0, 0.0), 100.0);
-		AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
-		alight.setInfluencingBounds(bounds);
-		tgView_.addChild(alight);
-		
-		DirectionalLight dlight = new DirectionalLight(
-				new Color3f(1.0f, 1.0f, 1.0f), new Vector3f(-0.8f, -1.2f, -1.5f));
-		dlight.setInfluencingBounds(bounds);
-		tgView_.addChild(dlight);*/
+		//DirectionalLight dlight = new DirectionalLight(new Color3f(1.0f, 1.0f, 1.0f), new Vector3f(-0.8f, -1.2f, -1.5f));
+		//dlight.setInfluencingBounds(bounds);
+		//tgView_.addChild(dlight);
 
 	    light[0] = new DirectionalLight(true,   // lightOn
-	            new Color3f(0.6f, 0.6f, 0.6f),  // color
+	            new Color3f(0.7f, 0.7f, 0.7f),  // color
 	            new Vector3f(0.0f, 0.0f, -1.0f) // direction
 	    );
 	    
 	    light[1] = new DirectionalLight(true,   // lightOn
-	            new Color3f(0.3f, 0.3f, 0.3f),  // color
+	            new Color3f(0.4f, 0.4f, 0.4f),  // color
 	            new Vector3f(0.0f, 0.0f, -1.0f) // direction
 	    );
 	    
 	    light[2] = new DirectionalLight(true,   // lightOn
-	            new Color3f(0.6f, 0.6f, 0.6f),  // color
+	            new Color3f(0.7f, 0.7f, 0.7f),  // color
 	            new Vector3f(0.0f, 0.0f, -1.0f) // direction
 	    );
 	    
 	    light[3] = new DirectionalLight(true,   // lightOn
-	            new Color3f(0.3f, 0.3f, 0.3f),  // color
+	            new Color3f(0.4f, 0.4f, 0.4f),  // color
 	            new Vector3f(0.0f, 0.0f, -1.0f) // direction
 	    );
 	    
@@ -328,34 +320,39 @@ public class Grx3DView
 	        bg.addChild(tg[i]);
 	        tg[i].addChild(light[i]);
 	    }
-	    
+
         Transform3D transform = new Transform3D();
         Vector3d pos = new Vector3d();
         AxisAngle4d rot = new AxisAngle4d();
         
         pos.set(10.0, 10.0, 5.0);
         transform.set(pos);
-        rot.set(-0.5, 0.5, 0.0, 0.7);
+        rot.set(-0.5, 0.5, 0.0, 1.2);
         transform.set(rot);
         tg[0].setTransform(transform);
         
         pos.set(10.0, -10.0, -5.0);
         transform.set(pos);
-        rot.set(0.5, 0.5, 0.0, 2.4);
+        rot.set(0.5, 0.5, 0.0, 3.14 - 1.2);
         transform.set(rot);
         tg[1].setTransform(transform);
         
         pos.set(-10.0, -10.0, 5.0);
         transform.set(pos);
-        rot.set(0.5, -0.5, 0.0, 0.7);
+        rot.set(0.5, -0.5, 0.0, 1.2);
         transform.set(rot);
         tg[2].setTransform(transform);
         
         pos.set(-10.0, 10.0, -5.0);
         transform.set(pos);
-        rot.set(-0.5, -0.5, 0.0, 2.4);
+        rot.set(-0.5, -0.5, 0.0, 3.14 - 1.2);
         transform.set(rot);
         tg[3].setTransform(transform);
+
+		// Ambient Light for Alert
+//		AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
+//		alight.setInfluencingBounds(bounds);
+//		tg[0].addChild(alight);
 
 		// background
 		backGround_.setCapability(Background.ALLOW_COLOR_READ);
@@ -564,6 +561,7 @@ public class Grx3DView
 			selectionChanged = true;
 		}
 
+		currentWorld_ = null;
 		Iterator it = itemList.iterator();
 		while (it.hasNext()) {
 			GrxBaseItem item = (GrxBaseItem) it.next();
@@ -578,8 +576,8 @@ public class Grx3DView
 				currentWorld_ = (GrxWorldStateItem) item;
 			}
 		}
-		if (selectionChanged) 
-			behaviorManager.updateDynamicsSimulator(true);
+		if (selectionChanged && isRunning()) 
+			behaviorManager.replaceWorld(itemList);
 		
 		prevTime_ = -1;
 		if (collisionBg_ != null) {
@@ -589,23 +587,31 @@ public class Grx3DView
 	}
 	
 	public boolean setup(List<GrxBaseItem> itemList) {
-        behaviorManager.setViewIndicator(viewToolBar_);
         behaviorManager.setThreeDViewer(this);
-        behaviorManager.replaceWorld(itemList);
+        behaviorManager.setViewIndicator(viewToolBar_);
         behaviorManager.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
         behaviorManager.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
         behaviorManager.setViewHandlerMode("button_mode_rotation");
+		behaviorManager.replaceWorld(itemList);
         viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
         viewToolBar_.setOperation(ViewToolBar.ROTATE);
         stateLogger_ = (GrxLoggerView)manager_.getView(GrxLoggerView.class);
-       	registerCORBA();
-		return true;
+
+       	return registerCORBA();
 	}
 	
 	public void control(List<GrxBaseItem> items) {
-		if (currentWorld_ == null || currentModels_.size() == 0)
+ 		if (currentModels_.size() == 0)
 			return;
-		
+
+		if (behaviorManager.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE && btnCollision_.isSelected()) {
+			_showCollision(behaviorManager.getCollision(currentModels_));
+			return;
+		}
+
+ 		if (currentWorld_ == null)
+			return;
+
 		WorldStateEx state = currentWorld_.getValue();
 		if (state == null)
 			return;
@@ -893,13 +899,13 @@ public class Grx3DView
 		return rulerBg_;
 	}
 	
-	public void registerCORBA() {
-		NamingContext rootnc = GrxCorbaUtil.getNamingContext("localhost",2809);
-
+	public boolean registerCORBA() {
+		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+		
 		OnlineViewer_impl olvImpl = new OnlineViewer_impl();
 		OnlineViewer olv = olvImpl._this(manager_.orb_);//GrxCorbaUtil.getORB());
 		NameComponent[] path1 = {new NameComponent("OnlineViewer", "")};
-
+		
 		ViewSimulator_impl  viewImpl = new ViewSimulator_impl();
 		ViewSimulator view = viewImpl._this(manager_.orb_);//GrxCorbaUtil.getORB());
 		NameComponent[] path2 = {new NameComponent("ViewSimulator", "")};
@@ -907,11 +913,13 @@ public class Grx3DView
 		try {
 			rootnc.rebind(path1, olv);
 			rootnc.rebind(path2, view);
-			
 		} catch (Exception ex) {
-			System.out.println("failed to bind");
-			return;
+			GrxDebugUtil.println("3DVIEW : failed to bind to localhost NameService");
+			return false;
 		}
+ 		
+		GrxDebugUtil.println("3DVIEW : successfully bound to localhost NameService");
+		return true;
 	}
 	
 	private class ModelEditKeyAdapter extends KeyAdapter {
@@ -1020,7 +1028,7 @@ public class Grx3DView
 					arg1.value = new Camera[l.size()];
 					for (int j=0; j<l.size(); j++) {
 						try {
-							arg1.value[i] = CameraHelper.narrow(manager_.poa_.servant_to_reference(l.get(i)));
+							arg1.value[j] = CameraHelper.narrow(manager_.poa_.servant_to_reference(l.get(j)));
 						} catch (ServantNotActive e) {
 							e.printStackTrace();
 						} catch (WrongPolicy e) {
@@ -1058,7 +1066,6 @@ public class Grx3DView
 				e.printStackTrace();
 			}
 		}
-
 		public boolean getPosture(String name , DblSequenceHolder posture) {
 			Object obj = manager_.getItem(GrxModelItem.class, name);
 			if (obj != null) {
@@ -1069,7 +1076,6 @@ public class Grx3DView
 			posture.value = new double[0];
 			return false;
 		}
-
 		public void update(WorldState arg0) {
 			GrxWorldStateItem.WorldStateEx statex = new GrxWorldStateItem.WorldStateEx(arg0);
 			if (currentWorld_ == null) {
@@ -1098,7 +1104,7 @@ public class Grx3DView
 		public void setLineScale(float arg0) {}
 		public void setLineWidth(float arg0) {}
 	}
-
+	
 	public void attach(BranchGroup bg) {
 		bgRoot_.addChild(bg);
 	}
@@ -1224,7 +1230,8 @@ public class Grx3DView
 				behaviorManager.setViewHandlerMode("button_mode_zoom");
 				// viewHandlerMode_[currentViewer_] = "button_mode_zoom";
 				viewToolBar_.setOperation(ViewToolBar.ZOOM);
-				objectToolBar_.selectNone();
+				//objectToolBar_.selectNone();
+				//lblMode_.setText("[ VIEW ]");
 			}
 		});
 
@@ -1233,7 +1240,8 @@ public class Grx3DView
 				behaviorManager.setViewHandlerMode("button_mode_rotation");
 				// viewHandlerMode_[currentViewer_] = "button_mode_rotation";
 				viewToolBar_.setOperation(ViewToolBar.ROTATE);
-				objectToolBar_.selectNone();
+				//objectToolBar_.selectNone();
+				//lblMode_.setText("[ VIEW ]");
 			}
 		});
 		
@@ -1242,16 +1250,17 @@ public class Grx3DView
                 behaviorManager.setViewHandlerMode("button_mode_translation");
                 // viewHandlerMode_[currentViewer_] = "button_mode_translation";
                 viewToolBar_.setOperation(ViewToolBar.PAN);
-                objectToolBar_.selectNone();
+                //objectToolBar_.selectNone();
+				//lblMode_.setText("[ VIEW ]");
             }
         });
         
 		GUIAction.WIRE_FRAME.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-					Iterator it = manager_.getItemMap(GrxModelItem.class).values().iterator();
-					while (it.hasNext()) {
-						((GrxModelItem)it.next()).setWireFrame(viewToolBar_.isWireFrameSelected());
-					}
+				Iterator it = manager_.getItemMap(GrxModelItem.class).values().iterator();
+				while (it.hasNext()) {
+					((GrxModelItem)it.next()).setWireFrame(viewToolBar_.isWireFrameSelected());
+				}
 			}
 		});
 

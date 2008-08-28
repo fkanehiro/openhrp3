@@ -92,10 +92,10 @@ public class LogManager {
     public static LogManager getInstance() {
         if (this_ == null) {
             this_ = new LogManager();
-            String tmpdir = System.getProperty("TEMP");
-            if (tmpdir != null){ 
-            	COLLISION_LOG = tmpdir+File.separator+COLLISION_LOG;
-            }
+	    String tmpdir = System.getProperty("TEMP");
+	    if (tmpdir != null){ 
+		COLLISION_LOG = tmpdir+File.separator+COLLISION_LOG;
+	    }
         }
 
         return this_;
@@ -580,10 +580,6 @@ public class LogManager {
         if (data.length == (header.recordSize_ / LogHeader.FLOAT_DATA_SIZE)) {
             try {
                 DataOutputStream out = (DataOutputStream)writeFile_.get(objectName);
-                if(out == null){
-                	System.out.println("[LM]@put log "+objectName+ " is null");
-                	return;
-                }
                 for (int i = 0; i < data.length; i ++) {
                     out.writeFloat(data[i]);
                 }
