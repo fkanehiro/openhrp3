@@ -88,13 +88,15 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	private Matrix3d m3d = new Matrix3d();
 	private AxisAngle4d a4dg = new AxisAngle4d();
 	private Matrix3d m3dg = new Matrix3d();
+
+	private String tempDirBase_;
+	private String tempDir_;
 	
 	public GrxWorldStateItem(String name, GrxPluginManager manager) {
     	super(name, manager);
 
-    	LOG_DIR = System.getProperty("java.io.tmpdir");
-    	if( LOG_DIR==null )
-    		LOG_DIR="/tmp";
+		tempDirBase_ = System.getProperty("java.io.tmpdir")+File.separator+"grxui-"+System.getProperty("user.name")+File.separator;
+		tempDir_ = tempDirBase_+getName();
     	
     	/*
 		save_.addActionListener(new ActionListener(){
