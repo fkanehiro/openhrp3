@@ -163,7 +163,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	public void restoreProperties() {
 		super.restoreProperties();
-		useDisk_ = isTrue("useDisk", useDisk_);
+		useDisk_ = isTrue("useDisk", false);
 		storeAllPos_ = isTrue("storeAllPosition", storeAllPos_);
 		if (!useDisk_) {
 			GrxDebugUtil.println("GrxWorldStateItem: useDisk = false");
