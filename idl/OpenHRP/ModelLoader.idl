@@ -334,6 +334,13 @@ module OpenHRP {
        VRMLのSFImageから、先頭の<width>, <height>, <num components>
        を除いたものと同様。<width>, <height>, <num components>に対応する
        値は本構造体の width, height, numComponents で指定。
+
+       元のデータがurl指定の場合は、urlフィールドに画像ファイルの位置が格納される。
+       この場合、モデルローダ側で画像の展開が行われなかった場合は、
+       imageフィールドのサイズは0となっており、
+       クライアントはファイル名からテクスチャを獲得する必要がある。
+       image フィールドのサイズが 0 でなくて、urlのサイズも 0 でない場合は、
+       クライアントは好きな方のやり方でテクスチャ画像を獲得すればよい。
        @endif
     */
     OctetSequence image;
@@ -343,6 +350,8 @@ module OpenHRP {
     short         height;
     boolean       repeatS;
     boolean       repeatT;
+
+    string	  url;
   };
 
   typedef sequence<TextureInfo> TextureInfoSequence;
