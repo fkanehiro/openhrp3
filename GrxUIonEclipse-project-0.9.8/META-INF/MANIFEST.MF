@@ -91,7 +91,6 @@ Export-Package: com.generalrobotix.ui;
  jp.go.aist.rtm.RTC.port.publisher,
  jp.go.aist.rtm.RTC.util
 Bundle-ClassPath: .,
- vrml97.jar,
  jython.jar,
  openhrpstubskel.jar,
  commons-cli-1.1.jar,
