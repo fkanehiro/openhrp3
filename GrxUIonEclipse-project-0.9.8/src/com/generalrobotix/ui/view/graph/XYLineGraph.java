@@ -24,6 +24,7 @@ import java.text.*;
  * @author Kernel Inc.
  * @version 1.0 (2001/8/20)
  */
+@SuppressWarnings("serial")
 public class XYLineGraph extends JPanel {
 
     // -----------------------------------------------------------------

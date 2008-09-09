@@ -25,12 +25,14 @@ import org.w3c.dom.NodeList;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
-//import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 
 @SuppressWarnings("serial")
+/**
+ * @brief
+ */
 public class GrxModeInfoItem extends GrxBaseItem {
 	public static final String TITLE = "Mode Info";
 
@@ -42,6 +44,7 @@ public class GrxModeInfoItem extends GrxBaseItem {
 		setExclusive(true);
 	}
 
+	
 	public void restoreProperties() {
 		super.restoreProperties();
 		// アイテムプラグインの追加

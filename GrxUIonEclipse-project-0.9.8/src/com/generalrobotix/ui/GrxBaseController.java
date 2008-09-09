@@ -20,11 +20,44 @@ package com.generalrobotix.ui;
 
 import java.util.List;
 
+/**
+ * @brief
+ *
+ */
 public interface GrxBaseController {
-  public void start();
-  public void stop();
-  public void itemSelectionChanged(List<GrxBaseItem> itemList);
-  public boolean setup(List<GrxBaseItem> itemList);
-  public void control(List<GrxBaseItem> itemList);
-  public boolean cleanup(List<GrxBaseItem> itemList);
+	/**
+	 * @brief
+	 */
+	public void start();
+  
+	/**
+	 * @brief
+	 */
+	public void stop();
+
+	/**
+	 * @brief
+	 * @param itemList
+	 */
+	public void itemSelectionChanged(List<GrxBaseItem> itemList);
+
+	/**
+	 * @brief
+	 * @param itemList
+	 * @return
+	 */
+	public boolean setup(List<GrxBaseItem> itemList);
+
+	/**
+	 * @brief
+	 * @param itemList
+	 */
+	public void control(List<GrxBaseItem> itemList);
+
+	/**
+	 * @brief
+	 * @param itemList
+	 * @return
+	 */
+	public boolean cleanup(List<GrxBaseItem> itemList);
 }

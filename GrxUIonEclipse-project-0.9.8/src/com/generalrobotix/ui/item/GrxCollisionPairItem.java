@@ -27,7 +27,6 @@ public class GrxCollisionPairItem extends GrxBaseItem {
   
     public GrxCollisionPairItem(String name, GrxPluginManager manager) {
         super(name, manager);
-        //setIcon(new ImageIcon(getClass().getResource("/resources/images/collision.png")));
         setIcon( "collision.png" );
     }
 }

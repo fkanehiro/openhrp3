@@ -18,18 +18,12 @@
 
 package com.generalrobotix.ui.item;
 
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-
-//import javax.swing.JMenuItem;
-//import javax.swing.JOptionPane;
-//import javax.swing.undo.UndoManager;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -46,27 +40,9 @@ public class GrxTextItem extends GrxBaseItem {
 	private boolean isEdited_ = false;
 	private long lastModified_ = 0;
 	private int caretPosition_ = 0;
-//	public UndoManager undo_ = new UndoManager();
 	
 	public GrxTextItem(String name, GrxPluginManager manager) {
 		super(name, manager);
-		/*
-		JMenuItem item = new JMenuItem("save");
-		setMenuItem(item);
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				save();
-			}
-		});
-
-		item = new JMenuItem("save As");
-		setMenuItem(item);
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				saveAs();
-			}
-		});
-		*/
 		Action item = new Action(){
 			public String getText(){ return "save"; }
 			public void run(){ save(); }

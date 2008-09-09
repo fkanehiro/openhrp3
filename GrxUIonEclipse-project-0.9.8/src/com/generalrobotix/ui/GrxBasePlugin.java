@@ -18,16 +18,9 @@
 package com.generalrobotix.ui;
 
 import java.lang.reflect.Field;
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
 import java.util.Enumeration;
 import java.util.Vector;
-/*
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-*/
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -43,6 +36,9 @@ import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 
 @SuppressWarnings("serial")
+/**
+ * @brief
+ */
 public class GrxBasePlugin extends GrxConfigBundle {
 	private String name_;
 	protected GrxPluginManager manager_;
@@ -50,11 +46,9 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	private boolean selected_ = false;
 	private boolean isExclusive_= false;
 
-	//	private ImageIcon icon_;
 	private ImageRegistry ireg_;
 	private String iconName_;
 
-	//private JMenu menu_;
 	private Vector<Action> menu_ = new Vector<Action>();
 	private String[] menuPath_;
 	
@@ -65,22 +59,17 @@ public class GrxBasePlugin extends GrxConfigBundle {
     protected final static String VIEW_TAG = "view";
     protected final static String PROPERTY_TAG = "property";
     protected final static String INDENT4 = "    ";
-    
-	private GrxBasePlugin(){};
 
+    /**
+     * @brief constructor
+     * @param name name of this plugin
+     * @param manager plugin manager
+     */
 	protected GrxBasePlugin(String name, GrxPluginManager manager) {
 		manager_ = manager;
 		name_ = name;
 		ireg_ = new ImageRegistry();
-		/*
-		JMenuItem item = new JMenuItem("restore Properties");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				restoreProperties();
-			}
-		});
-		setMenuItem(item);
-		*/
+		// menu item : restore Properties
 		Action a = new Action(){
 			public String getText(){
 				return "restore Properties";
@@ -92,6 +81,9 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		setMenuItem(a);
 	}
 
+	/**
+	 * @brief restore properties. Called by menu item "restore Properties"
+	 */
 	public void restoreProperties() {
 		if (element_ == null) {
 			return;
@@ -106,6 +98,10 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		}
 	}
 	
+	/**
+	 * @brief store properties
+	 * @return
+	 */
 	public Element storeProperties() {
 		if (doc_ == null)
 			return null;
@@ -146,47 +142,91 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		return element_;
 	}
 
+	/**
+	 * @brief set name 
+	 * @param name name
+	 */
 	public void setName(String name) {
 		name_ = name;
 	}
 
+	/**
+	 * @brief get name
+	 * @return name
+	 */
 	public final String getName() {
 		return name_;
 	}
 
+	/**
+	 * @brief convert to String. Currently, name is returned.
+	 * @return name
+	 */
 	public final String toString() {
 		return name_;
 	}
 	
+	/**
+	 * @brief set document
+	 * @param doc document
+	 */
 	public void setDocument(Document doc) {
 		doc_ = doc;
 	}
 
+	/**
+	 * @brief set element
+	 * @param element element
+	 */
 	public void setElement(Element element) {
 		element_ = element;
 		doc_ = element.getOwnerDocument();
 	}
 
+	/**
+	 * @brief get element
+	 * @return element
+	 */
 	public Element getElement() {
 		return element_;
 	}
 
+	/**
+	 * @brief set selected flag
+	 * @param b flag
+	 */
 	protected void setSelected(boolean b) {
 		selected_ = b;
 	}
 
+	/**
+	 * @brief check whether this is selected or not
+	 * @return true if selected, false otherwise
+	 */
 	public boolean isSelected() {
 		return selected_;
 	}
 
+	/**
+	 * @brief set exclusive flag
+	 * @param b flag
+	 */
 	public void setExclusive(boolean b) {
 		isExclusive_ = b;
 	}
 
+	/**
+	 * @brief check whether this is exclusive or not
+	 * @return true if exclusive, false otherwise
+	 */
 	public boolean isExclusive() {
 		return isExclusive_;
 	}
 
+	/**
+	 * @brief set icon
+	 * @param iconName name of icon
+	 */
 	protected void setIcon(String iconName) {
 		iconName_ = iconName;
 		if( ireg_.get( iconName_ ) == null )
@@ -194,42 +234,61 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		//icon_ = icon;
 	}
 
+	/**
+	 * @brief get icon
+	 * @return icon
+	 */
 	public Image getIcon() {
 		return ireg_.get( iconName_ );
 	}
 
-	/*
-	protected void setMenuItem(JComponent c) {
-		if (menu_ == null)
-			menu_ = new JMenu(name_);
-		menu_.add(c);
-	}
-
-  	public JMenu getMenu() {
-		return menu_;
-	};
+	/**
+	 * @brief add a menu item
+	 * @param a new menu item
 	 */
 	public void setMenuItem( Action a ) {
 		menu_.add(a);
 	}
+	
+	/**
+	 * @brief get menu
+	 * @return menu
+	 */
 	public Vector<Action> getMenu() {
 		return menu_;
 	}
 	
+	/**
+	 * @brief set menu path
+	 * @param path menu path
+	 */
 	protected void setMenuPath(String[] path) {
 		menuPath_ = path;
 	}
 
+	/**
+	 * @brief get menu path
+	 * @return menu path
+	 */
 	public String[] getMenuPath() {
 		return menuPath_;
 	};
 
+	/**
+	 * @brief check whether obj equals to this 
+	 * @param obj an object to be checked
+	 */
 	public boolean equals(Object obj) {
 
 		return obj != null && this.hashCode() == obj.hashCode()
 				&& this.toString().equals(obj.toString());
 	}
 
+	/**
+	 * get url
+	 * @param expand if expand is true, expanded url is returned.
+	 * @return url
+	 */
 	public String getURL(boolean expand) {
 		if (expand)
 			return GrxXmlUtil.expandEnvVal(url_);
@@ -237,10 +296,21 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			return url_;
 	}
 	
+	/**
+	 * @brief set url
+	 * @param url
+	 */
 	public void setURL(String url) {
 		url_ =url;
 	}
 	
+	/**
+	 * @brief get field
+	 * @param cls
+	 * @param field
+	 * @param defaultValue
+	 * @return
+	 */
     public static Object getField(Class<? extends GrxBasePlugin> cls, String field, Object defaultValue) {
 		try {
 			Field f = cls.getField(field);
@@ -251,10 +321,16 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		return defaultValue;
     }
 
+    /**
+     * 
+     */
 	public void propertyChanged() {
 		
 	}
 
+	/**
+	 * 
+	 */
 	public void shutdown() {
 
 	}

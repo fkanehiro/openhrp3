@@ -134,7 +134,7 @@ class JointRotationHandler extends OperationHandler {
         vw2view.mul(target2vw);
         vw2view.transform(point000);
         Vector3d vectorView = new Vector3d(point000);
-        vectorCylinder_ = new Vector3d(l.jointAxis);
+        vectorCylinder_ = new Vector3d(l.jointAxis());
         vw2view.transform(vectorCylinder_);
         
         // 二つの Vector で angle の角度を得て diskAngle と
@@ -279,7 +279,7 @@ class JointRotationHandler extends OperationHandler {
         if (l == null)
         	return false;
         
-        if (l.jointType.equals("rotate") || l.jointType.equals("slide")) {
+        if (l.jointType().equals("rotate") || l.jointType().equals("slide")) {
             _disableBoundingBox();
             robot.activeLinkInfo_ = l;
             tgTarget_ = l.tg;
