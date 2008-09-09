@@ -806,7 +806,8 @@ public class XYLineGraph extends JPanel {
      * 凡例パネルクラス
      *
      */
-    public class LegendPanel extends JPanel {
+    @SuppressWarnings("serial")
+	public class LegendPanel extends JPanel {
 
         // -----------------------------------------------------------------
         // 定数

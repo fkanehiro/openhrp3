@@ -18,16 +18,11 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.*;
 
-//import jp.go.aist.hrp.simulator.SensorType;
-
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxModelItem.LinkInfoLocal;
 import com.generalrobotix.ui.util.MessageBundle;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.widgets.Composite;
 
 /**
  *

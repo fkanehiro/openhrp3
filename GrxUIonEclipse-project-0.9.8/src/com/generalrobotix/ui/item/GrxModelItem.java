@@ -17,25 +17,14 @@
 
 package com.generalrobotix.ui.item;
 
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
 import java.io.File;
-import java.net.URL;
 import java.util.*;
 
-import javax.swing.ImageIcon;
-//import javax.swing.JMenuItem;
-//import javax.swing.SwingUtilities;
-import javax.swing.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.swt.SWT;
 
-//import com.sun.j3d.loaders.vrml97.VrmlLoader;
-//import com.sun.j3d.loaders.vrml97.VrmlScene;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.geometry.*;
 import java.awt.image.*;
@@ -50,8 +39,6 @@ import jp.go.aist.hrp.simulator.*;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraParameter;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraType;
 import java.awt.image.BufferedImage;
-import jp.go.aist.hrp.simulator.ImageData;
-import jp.go.aist.hrp.simulator.PixelFormat;
 
 @SuppressWarnings("unchecked")
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {

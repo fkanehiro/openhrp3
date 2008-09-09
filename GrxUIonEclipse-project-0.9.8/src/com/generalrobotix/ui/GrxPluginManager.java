@@ -18,30 +18,15 @@
 
 package com.generalrobotix.ui;
 
-import java.awt.Frame;
 import java.io.*;
-//import java.lang.reflect.Constructor;
-//import java.lang.reflect.Method;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 
-/*
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.JTree.DynamicUtilTreeNode;
-*/
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.Action;
-//import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.omg.PortableServer.POA;
-//import org.w3c.dom.Element;
 
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
@@ -51,7 +36,6 @@ import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxPluginLoader;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.OrderedHashMap;
-import com.generalrobotix.ui.view.GrxLoggerView;
 import com.generalrobotix.ui.view.GrxItemView;
 import com.generalrobotix.ui.view.GrxProcessManagerView;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
@@ -67,7 +51,6 @@ import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 /**
