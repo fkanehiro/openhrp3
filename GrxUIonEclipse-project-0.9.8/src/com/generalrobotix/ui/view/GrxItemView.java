@@ -51,18 +51,19 @@ import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.util.OrderedHashMap;
 
 @SuppressWarnings("serial")
+/**
+ * @brief
+ */
 public class GrxItemView extends GrxBaseView {
 
 	GrxItemViewPart vp;
 
 	TreeViewer tv;
 	MenuManager menuMgr= new MenuManager();
-	//TreeItem selectedItem;
 
 	public GrxItemView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
 		super(name, manager, vp, parent);
 
-		//tree = new Tree( parent, SWT.BORDER);
 		tv = new TreeViewer(composite_);
 		tv.setContentProvider( new TreeContentProvider() );
 		tv.setLabelProvider( new TreeLabelProvider() );

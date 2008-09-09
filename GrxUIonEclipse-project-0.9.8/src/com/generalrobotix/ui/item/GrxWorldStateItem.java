@@ -18,13 +18,10 @@
 
 package com.generalrobotix.ui.item;
 
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-//import javax.swing.*;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix3d;
 
@@ -33,7 +30,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import jp.go.aist.hrp.simulator.*;
 
-//import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.GrxTimeSeriesItem;
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -58,12 +54,6 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	private boolean useDisk_ = true;
 	private boolean storeAllPos_ = true;
 	
-	/*
-	private JMenuItem save_ = new JMenuItem("save");
-	private JMenuItem saveCSV_ = new JMenuItem("saveAsCSV");
-	private JMenuItem clear_ = new JMenuItem("clear");
-	*/
-
 	private Action save_ = new Action(){
         public String getText(){ return "save"; }
 		public void run(){
@@ -98,50 +88,18 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		tempDirBase_ = System.getProperty("java.io.tmpdir")+File.separator+"grxui-"+System.getProperty("user.name")+File.separator;
 		tempDir_ = tempDirBase_+getName();
     	
-    	/*
-		save_.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-               saveLog();
-			}
-		});
-		
-		JMenuItem load = new JMenuItem("load");
-		load.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-               loadLog(null);
-			}
-		});
-		*/
     	Action load = new Action(){
             public String getText(){ return "load"; }
     		public void run(){
     			loadLog(null);
     		}
     	};
-    	/*
-		saveCSV_.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-               saveCSV();
-			}
-		});
-		
-		clear_.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				int ans = JOptionPane.showConfirmDialog(manager_.getFrame(), 
-					"Are you sure to clear log ?", "Clear Log", 
-					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON);
-				if (ans == JOptionPane.OK_OPTION)
-					clearLog();
-			}
-		});
-		*/
 		setMenuItem(save_);
 		setMenuItem(load);
 		setMenuItem(saveCSV_);
 		setMenuItem(clear_);
 
 		setExclusive(true);
-		//setIcon(new ImageIcon(getClass().getResource("/resources/images/world.png")));
 		setIcon( "world.png" );
 
 		logger_.init();

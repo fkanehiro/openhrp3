@@ -24,10 +24,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.Composite;
 
+/**
+ * @brief
+ *
+ */
 public class GrxBaseView extends GrxBasePlugin {
 
-	//	private JPanel contentPane_ = null;
-//	private JComponent toolBar_ = null;
 	private static Dimension defaultButtonSize_ = new Dimension(27, 27);
 	public boolean isScrollable_ = true;
 	
@@ -38,14 +40,18 @@ public class GrxBaseView extends GrxBasePlugin {
 	static final int GRX_VIEW_CLEANUP = 2;
 	static final int GRX_VIEW_SLEEP   = 3;
     
-//    private static Dimension defaultButtonSize_ = new Dimension(27, 27);
-    //   private JComponent toolBar_ = null;
-
 	private GrxBaseViewPart vp_;
 	private Composite parent_;
     private ScrolledComposite scrollComposite_;
     protected Composite composite_;
 
+    /**
+     * @brief constructor
+     * @param name name
+     * @param manager_ plugin manager
+     * @param vp view part
+     * @param parent parent composite
+     */
 	public GrxBaseView( String name, GrxPluginManager manager_, GrxBaseViewPart vp, Composite parent ){
 		super( name, manager_ );
 		vp_ = vp;
@@ -59,93 +65,106 @@ public class GrxBaseView extends GrxBasePlugin {
         scrollComposite_.setContent(composite_);
 	}
     
-
-	/*
-	public GrxBaseView(String name, GrxPluginManager manager) {
-		super(name, manager);
-		//menuPath_ = new String[]{"View"};
-	}
-	*/
-
+	/**
+	 * @brief set name
+	 * @name name
+	 */
 	public void setName(String name) {
 		super.setName(name);
-		//getContentPane().setName(name);
 	}
 	
+	/**
+	 * @brief get view part
+	 * @return view part
+	 */
 	public GrxBaseViewPart getViewPart(){
 		return vp_;
 	}
 
+	/**
+	 * @brief get parent composite
+	 * @return parent composite
+	 */
 	public Composite getParent(){
 		return parent_;
 	}
 
 	/**
-	 * SWTのパーツはここで取得できるコンポジット上に設置する。
-	 * @return
+	 * @brief get composite. SWTのパーツはここで取得できるコンポジット上に設置する。
+	 * @return composite
 	 */
     public Composite getComposite(){
         return composite_;
     }
     
+    /**
+     * @brief set scroll minimum size
+     */
     public void setScrollMinSize(){
         scrollComposite_.setMinSize(composite_.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
 
-	/*
-	public final JPanel getContentPane() {
-		if (contentPane_ == null) {
-			contentPane_ = new JPanel();
-			contentPane_.setName(getName());
-		}
-		return contentPane_;
-	};
-*/
-/*
-	public void setToolBar(JComponent toolBar) {
-		toolBar_ = toolBar;
-	};
-
-
-	public JComponent getToolBar() {
-		return toolBar_;
-	};
-
-
-	public void setToolBarVisible(boolean visible) {
-		if (toolBar_ != null)
-			toolBar_.isVisible();
-	}
-
-
-	public boolean isToolBarVisible() {
-		return toolBar_ != null || toolBar_.isVisible();
-	}
-*/
-
+    /**
+     * @brief get default button size
+     * @return default button size
+     */
 	public static Dimension getDefaultButtonSize() {
 		return defaultButtonSize_;
 	}
 
+	/**
+	 * @brief start this 
+	 */
 	public void start() {
 		if (view_state_ == GRX_VIEW_SLEEP)
 			view_state_ = GRX_VIEW_SETUP;
 	}
 
+	/**
+	 * @brief stop this
+	 */
 	public void stop() {
 		if (view_state_ == GRX_VIEW_ACTIVE)
 			view_state_ = GRX_VIEW_CLEANUP;
 	}
 	
+	/**
+	 * 
+	 * @param itemList
+	 */
 	public void itemSelectionChanged(List<GrxBaseItem> itemList){}
-	public boolean setup(List<GrxBaseItem> itemList){return true;}
-	public void control(List<GrxBaseItem> itemList){}
-	public boolean cleanup(List<GrxBaseItem> itemList){return true;}
 
+	/**
+	 * @brief setup
+	 * @param itemList
+	 * @return true if setup finished, false otherwise
+	 */
+	public boolean setup(List<GrxBaseItem> itemList){return true;}
+
+	/**
+	 * @brief control
+	 * @param itemList
+	 */
+	public void control(List<GrxBaseItem> itemList){}
+
+	/**
+	 * @brief cleanup
+	 * @param itemList
+	 * @return true if cleanup finished, false otherwise
+	 */public boolean cleanup(List<GrxBaseItem> itemList){return true;}
+
+	/**
+	 * @brief check if this is running 
+	 * @return true if running, false otherwise
+	 */
 	public boolean isRunning() {
 		return (view_state_ == GRX_VIEW_ACTIVE);
 	}
 
+	/**
+	 * @brief check if this is sleeping
+	 * @return true if sleeping, false otherwise
+	 */
 	public boolean isSleeping() {
 		return (view_state_ == GRX_VIEW_SLEEP);
 	}

@@ -21,6 +21,7 @@ package com.generalrobotix.ui.view.graph;
 
 import java.lang.RuntimeException;
 
+@SuppressWarnings("serial")
 public class StringExchangeException extends RuntimeException {
     /**
      * コンストラクタ

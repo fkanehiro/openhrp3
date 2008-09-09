@@ -937,23 +937,23 @@ public class Grx3DView
           	KeyStroke ks = KeyStroke.getKeyStrokeForEvent(arg0);
           	if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_UP,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_K,0)) {
-          		int next = li.jointId-1;
+          		int next = li.jointId()-1;
           		if (next >= 0) {
-          			for (int j=0; j<item.lInfo_.length; j++) {
-          				if (next == item.lInfo_[j].jointId) {
-          					item.activeLinkInfo_ = item.lInfo_[j];
-          					behaviorManager.setPickTarget(item.lInfo_[j].tg);
+          			for (int j=0; j<item.lInfo_.size(); j++) {
+          				if (next == item.lInfo_.get(j).jointId()) {
+          					item.activeLinkInfo_ = item.lInfo_.get(j);
+          					behaviorManager.setPickTarget(item.lInfo_.get(j).tg);
           					break;
           				}
           			}
           		}
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_DOWN,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_J,0)) {
-          		int next = li.jointId+1;
-  				for (int j=0; j<item.lInfo_.length; j++) {
-      				if (next == item.lInfo_[j].jointId) {
-      					item.activeLinkInfo_ = item.lInfo_[j];
-          				behaviorManager.setPickTarget(item.lInfo_[j].tg);
+          		int next = li.jointId()+1;
+  				for (int j=0; j<item.lInfo_.size(); j++) {
+      				if (next == item.lInfo_.get(j).jointId()) {
+      					item.activeLinkInfo_ = item.lInfo_.get(j);
+          				behaviorManager.setPickTarget(item.lInfo_.get(j).tg);
       					break;
       				}
        			}
@@ -964,7 +964,7 @@ public class Grx3DView
           		if (li.llimit[0] < li.ulimit[0])
           			li.jointValue = Math.max(li.jointValue, li.llimit[0]);
           		item.calcForwardKinematics();
-        	 	item.setProperty(li.name+".angle",String.valueOf(li.jointValue));
+        	 	item.setProperty(li.name()+".angle",String.valueOf(li.jointValue));
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,KeyEvent.SHIFT_MASK) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_L,KeyEvent.SHIFT_MASK)) {
@@ -972,7 +972,7 @@ public class Grx3DView
           		if (li.llimit[0] < li.ulimit[0])
           			li.jointValue = Math.min(li.jointValue, li.ulimit[0]);
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.name+".angle",String.valueOf(li.jointValue));
+        	 	item.setProperty(li.name()+".angle",String.valueOf(li.jointValue));
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_H,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0)) {
@@ -980,7 +980,7 @@ public class Grx3DView
           		if (li.llimit[0] < li.ulimit[0])
           			li.jointValue = Math.max(li.jointValue, li.llimit[0]);
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.name+".angle",String.valueOf(li.jointValue));
+        	 	item.setProperty(li.name()+".angle",String.valueOf(li.jointValue));
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_L,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0)) {
@@ -988,7 +988,7 @@ public class Grx3DView
           		if (li.llimit[0] < li.ulimit[0])
           			li.jointValue = Math.min(li.jointValue, li.ulimit[0]);
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.name+".angle",String.valueOf(li.jointValue));
+        	 	item.setProperty(li.name()+".angle",String.valueOf(li.jointValue));
           	}
           	arg0.consume();
         }     

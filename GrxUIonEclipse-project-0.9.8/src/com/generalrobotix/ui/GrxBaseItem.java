@@ -17,9 +17,6 @@
  */
 package com.generalrobotix.ui;
 
-//import java.awt.event.ActionEvent;
-//import java.awt.event.ActionListener;
-//import javax.swing.*;
 import java.io.File;
 
 import org.eclipse.jface.action.Action;
@@ -28,52 +25,30 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 
-//import com.generalrobotix.ui.util.GrxGuiUtil;
-
 @SuppressWarnings("serial")
+
+/**
+ * 
+ */
 public class GrxBaseItem extends GrxBasePlugin {
-    //public final String DEFAULT_DIR = "";
-    //public final String FILE_EXTENSION = "";
-	private Object value_ = null;
+	private   Object value_ = null;
 	private   File defaultFileDir_;
 	protected File file_;
 	private   String ext_;
 	
+	/**
+	 * @brief constructor
+	 * @param name name
+	 * @param manager manager
+	 */
 	protected GrxBaseItem(String name, GrxPluginManager manager) {
 		super(name, manager);
-		/*
-		JMenuItem item = new JMenuItem("rename");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				String ans = JOptionPane.showInputDialog(manager_.getFrame(),
-					"Input new name (without extension).", getName());
-				if (ans != null)
-					rename(ans);
-			}});
-		setMenuItem(item);
-		item = new JMenuItem("delete");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				Object[] options = new Object[] { "OK", "CANCEL" };
-				int ans = JOptionPane.showOptionDialog(manager_.getFrame(),
-					"Are you sure to delete " + GrxBaseItem.this.getName() + " ?",
-					"delete item", JOptionPane.OK_CANCEL_OPTION,
-					JOptionPane.QUESTION_MESSAGE, manager_.ROBOT_ICON, options,
-					options[1]);
-				if (ans == 0) 
-					delete();
-			}
-		});
-		setMenuItem(item);
-		setMenuItem(new JSeparator());
-		setMenuPath(new String[] { "Item" });
-		*/
+		// rename
 		Action item = new Action(){
 				public String getText(){
 					return "rename";
 				}
 				public void run(){
-					//String ans = null;
 					InputDialog dialog = new InputDialog( null, null,
 							"Input new name (without extension).", null,null);
 					if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
@@ -81,6 +56,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 				}
 			};
 		setMenuItem(item);
+		// delete
 		item = new Action(){
 				public String getText(){
 					return "delete";
@@ -94,43 +70,79 @@ public class GrxBaseItem extends GrxBasePlugin {
 		setMenuItem(item);
 	}
 
+	/**
+	 * @brief 
+	 * @return
+	 */
 	public boolean create() {
 		return true;
 	};
 
+	/**
+	 * 
+	 * @param file
+	 * @return
+	 */
 	public boolean load(File file) {
 		file_ = file;
 		return true;
 	};
 	
+	/**
+	 * @brief rename this item
+	 * @param newName new name
+	 */
 	public void rename(String newName) {
 		manager_.renamePlugin(this, newName);
 	};
 
+	/**
+	 * @brief delete this item
+	 */
 	public void delete() {
 		manager_.removeItem(this);
 	};
 
+	/**
+	 * @brief get file extension
+	 * @return file extension
+	 */
 	public String getFileExtention() {
 		if (ext_ == null)
 			ext_ = (String)GrxBasePlugin.getField(this.getClass(), "FILE_EXTENSION", "");
 		return ext_;
 	}
 	
+	/**
+	 * @brief get default directory
+	 * @return default directory
+	 */
 	public File getDefaultDir() {
         if (defaultFileDir_ == null)
             defaultFileDir_ = new File(manager_.getHomePath() + GrxBasePlugin.getField(this.getClass(), "DEFAULT_DIR", ""));
 		return defaultFileDir_;
 	}
 
+	/**
+	 * get value
+	 * @return value
+	 */
 	public Object getValue() {
 		return value_;
 	}
 
+	/**
+	 * set file extension
+	 * @param ext file extension
+	 */
 	protected void setFileExtension(String ext) {
 		ext_ = ext;
 	}
 	
+	/**
+	 * set default directory
+	 * @param dir new default directory. If dir is invalid, home is set.
+	 */
 	protected void setDefaultDirectory(String dir) {
         String home = manager_.getHomePath();
         if (home == null) 
@@ -140,29 +152,19 @@ public class GrxBaseItem extends GrxBasePlugin {
 			defaultFileDir_ = new File(home);
 	}
 	
+	/**
+	 * set value
+	 * @param o new value
+	 */
 	public void setValue(Object o) {
 		value_ = o;
 	}
 	
+	/**
+	 * choose a file to save
+	 * @return file to save
+	 */
 	public File chooseSaveFile() {
-		/*
-		JFileChooser fc = manager_.getFileChooser();
-		fc.setDialogTitle("Save Item");
-		if (file_ == null)
-			fc.setCurrentDirectory(getDefaultDir());
-		else  {
-			fc.setCurrentDirectory(file_.getParentFile());
-			fc.setSelectedFile(file_);		
-		}
-		
-		if (ext_ != null)
-			fc.setFileFilter(GrxGuiUtil.createFileFilter(ext_));
-			
-		if (fc.showSaveDialog(manager_.getFrame()) != JFileChooser.APPROVE_OPTION)
-			return null;
-		
-		return fc.getSelectedFile();
-		*/
 		FileDialog openDialog = new FileDialog(null,SWT.SAVE);
 		String openFile = openDialog.open();
 		if( openFile != null )

@@ -251,7 +251,7 @@ public class BehaviorManager implements WorldReplaceListener {
 				if (model.lInfo_ == null)
 					continue;
 				
-				String base = model.lInfo_[0].name;
+				String base = model.rootLink().name();
 				currentDynamics_.setCharacterLinkData(
 					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
 					model.getTransformArray(base));
@@ -296,7 +296,7 @@ public class BehaviorManager implements WorldReplaceListener {
 		for (int i=0; i<modelList.size(); i++)  {
 			GrxModelItem model = modelList.get(i);
 			String name = model.getName();
-			String base = model.lInfo_[0].name;
+			String base = model.rootLink().name();
 			double[] data = model.getTransformArray(base);
 			currentDynamics_.setCharacterLinkData(name, base, LinkDataType.ABS_TRANSFORM, data);
 			data = model.getJointValues();

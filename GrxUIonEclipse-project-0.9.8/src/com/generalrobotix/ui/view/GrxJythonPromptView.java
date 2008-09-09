@@ -58,9 +58,11 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxPythonScriptItem;
-import com.generalrobotix.ui.util.GrxDebugUtil;
 
 @SuppressWarnings("serial")
+/**
+ * @briefs
+ */
 public class GrxJythonPromptView extends GrxBaseView {
     
     private PythonInterpreter interpreter_ = new PythonInterpreter();

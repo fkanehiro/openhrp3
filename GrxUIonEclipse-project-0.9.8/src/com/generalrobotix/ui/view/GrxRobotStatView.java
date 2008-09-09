@@ -22,9 +22,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import jp.go.aist.hrp.simulator.SensorState;
-//import jp.go.aist.hrp.simulator.SensorType;
 
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -138,11 +138,11 @@ public class GrxRobotStatView extends GrxBaseView {
 
                 currentModel_ = item;
                 jointList_.clear();
-                LinkInfoLocal[] lInfo = currentModel_.lInfo_;
-                for (int i = 0; i < lInfo.length; i++) {
-                    for (int j = 0; j < lInfo.length; j++) {
-                        if (i == lInfo[j].jointId) {
-                            jointList_.add(lInfo[j]);
+                Vector<LinkInfoLocal> lInfo = currentModel_.lInfo_;
+                for (int i = 0; i < lInfo.size(); i++) {
+                    for (int j = 0; j < lInfo.size(); j++) {
+                        if (i == lInfo.get(j).jointId()) {
+                            jointList_.add(lInfo.get(j));
                             break;
                         }
                     }
@@ -258,11 +258,11 @@ public class GrxRobotStatView extends GrxBaseView {
             if (item == null || item == currentModel_)
                 return;
             currentModel_ = item;
-            LinkInfoLocal[] lInfo = currentModel_.lInfo_;
-            for (int i = 0; i < lInfo.length; i++) {
-                for (int j = 0; j < lInfo.length; j++) {
-                    if (i == lInfo[j].jointId) {
-                        jointList_.add(lInfo[j]);
+            Vector<LinkInfoLocal> lInfo = currentModel_.lInfo_;
+            for (int i = 0; i < lInfo.size(); i++) {
+                for (int j = 0; j < lInfo.size(); j++) {
+                    if (i == lInfo.get(j).jointId()) {
+                        jointList_.add(lInfo.get(j));
                         break;
                     }
                 }
@@ -402,7 +402,7 @@ public class GrxRobotStatView extends GrxBaseView {
                 case 1:
                     if (jointList_.size() <= 0)
                         break;
-                    return jointList_.get(rowIndex).name;
+                    return jointList_.get(rowIndex).name();
                 case 2:
                     if (jointList_.size() <= 0)
                         break;

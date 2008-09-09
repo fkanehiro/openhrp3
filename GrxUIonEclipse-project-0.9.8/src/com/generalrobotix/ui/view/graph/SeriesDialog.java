@@ -299,9 +299,9 @@ public class SeriesDialog extends JDialog {
 					Object type = comboType_.getSelectedItem();
 					GrxModelItem model = (GrxModelItem)comboModel_.getSelectedItem();
 					if (type.equals("Joint")) {
-						LinkInfoLocal[] li = model.lInfo_;
-						for (int i = 0; i < li.length; i++) 
-							comboLink_.addItem(li[i].name);
+						Vector<LinkInfoLocal> li = model.lInfo_;
+						for (int i = 0; i < li.size(); i++) 
+							comboLink_.addItem(li.get(i).name());
 					} else {
 						//SensorType t = null;
 						//if (type.equals("ForceSensor"))

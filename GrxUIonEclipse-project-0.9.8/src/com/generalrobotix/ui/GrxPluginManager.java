@@ -54,7 +54,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * プラグイン管理クラス.
+ * @brief プラグイン管理クラス
  * GrxUIの核になるクラス。プラグインのロード等の、初期化を実行する。
  * また、タイマーを使ったプラグイン間の動機を行う。
  * プラグインとそのアイテムのマップ（#pluginMap_）、プラグインとその情報のマップ（#pinfoMap_）などを持つ。
@@ -85,20 +85,11 @@ public class GrxPluginManager
 		new HashMap<Class<? extends GrxBasePlugin>, PluginInfo>();
 	
 	// for cyclic execution
-	//private javax.swing.Timer timer_;
 	private int delay_ = DEFAULT_INTERVAL;// [msec]
 	private long prevTime_ = 0; // [msec]
 	public  double min, max, now; // [msec]
 	private static final int  DEFAULT_INTERVAL = 100; // [msec]
 	
-	// UI objects
-	/*
-	private GrxUIFrame frame_;
-	private JFileChooser fileChooser_ = null;
-	public ImageIcon ROBOT_ICON = new ImageIcon(GrxPluginManager.class.getResource("/resources/images/grxrobot.png"));
-	public GrxProcessingWindow processingWindow_;
-	*/
-
 	// for CORBA
 	public POA poa_;
 	public org.omg.CORBA.ORB orb_;
@@ -111,7 +102,7 @@ public class GrxPluginManager
     
 	
 	/** 
-	 * GrxPluginManagerのコンストラクタ.
+	 * @brief GrxPluginManagerのコンストラクタ.
 	 * まず、プラグインローダ（GrxPluginLoader）のインスタンス#pluginLoader_を作成する。<br>
 	 * そして最初に、GrxModeInfoItemをロードする。これは「モード」を管理するアイテムプラグインである。<br>
 	 * モードの読み込みは#start()関数内で行われるのでそちらを参照。<br>
@@ -191,6 +182,10 @@ public class GrxPluginManager
 		initSucceed = true;
 	}
 
+	/**
+	 * @brief check if GrxUI perspective is visible or not
+	 * @return true if visible, false otherwise
+	 */
 	private boolean isPerspectiveVisible(){
   		IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
@@ -205,7 +200,9 @@ public class GrxPluginManager
 		return true;
 	}
 
-	
+	/**
+	 * @brief
+	 */
 	private void _updateItemSelection() {
 		GrxDebugUtil.println("[PM THREAD] update Item Selections");
 
@@ -244,7 +241,9 @@ public class GrxPluginManager
 		}	
 	}
 
-	// パースペクティブ中の全ビューを取得、selectedViewList_へ
+	/**
+	 * @brief パースペクティブ中の全ビューを取得、selectedViewList_へ
+	 */
 	private void updateViewList(){
 		selectedViewList_.clear();
 
@@ -272,6 +271,9 @@ public class GrxPluginManager
        	}
 	}
 
+	/**
+	 * @brief call control of all views
+	 */
 	private void _control() {
 		long t = System.currentTimeMillis();
 		now = t - prevTime_;
@@ -451,50 +453,9 @@ public class GrxPluginManager
 		GrxDebugUtil.println("[PM] 該当クラスなし。"+cls.toString()+" register fault.");
 	    return null;
 	}
-/*	public void introducePlugin(Class cls) {
-		if (pluginMap_.get(cls) == null)
-			pluginMap_.put((Class<? extends GrxBasePlugin>) cls,
-					(OrderedHashMap) new HashMap<String, GrxBasePlugin>());
-	}*/
-/*	public Class introducePlugin() {
-		String className = (String) JOptionPane.showInputDialog(
-				frame_, "Input class name to introduce current mode.", "Introduce Plugin", 
-				JOptionPane.QUESTION_MESSAGE, 
-				ROBOT_ICON, 
-				null, "test1");
-		Class cls = registerPlugin(className);
-		if (cls == null)
-			return null;
-		if (GrxBaseItem.class.isAssignableFrom(cls)) {
-			if (!currentMode_.activeItemClassList_.contains(cls)) {
-				currentMode_.activeItemClassList_.add((Class<? extends GrxBaseItem>) cls);
-				setVisibleItem(currentMode_.activeItemClassList_);
-			}
-		} else if (GrxBaseView.class.isAssignableFrom(cls)) {
-			if (!currentMode_.activeViewClassList_.contains(cls)) {
-				currentMode_.activeViewClassList_.add((Class<? extends GrxBaseView>) cls);
-			}
-		}
-		return cls;
-	}
-	*/
+
 	/**
-	 * アイテムの作成.
-	 * 指定したアイテムプラグインに、指定したアイテム名で新しいアイテムを作る。
-	 * @param clsName プラグイン名
-	 * @param name 新しく作成するアイテムの名前。nullの場合アイテムプラグインの指定したデフォルトが使用される。
-	 * @return アイテムプラグイン。該当するプラグインが無い場合はnullを返す
-	 */
-	/*	
-	public GrxBaseItem createItem(String clsName, String name) {
-		Class cls = pluginLoader_.loadClass(clsName);
-		if (cls != null)
-			return createItem((Class<? extends GrxBaseItem>)cls, name);
-		return null;
-	}
-	*/
-	/**
-	 * アイテムの作成.
+	 * @brief アイテムの作成.
 	 * 指定したアイテムプラグインに、指定したアイテム名で新しいアイテムを作る。
 	 * @param cls プラグインのクラス.　GrxXXXItem.classのように指定する。
 	 * @param name 新しく作成するアイテムの名前。nullの場合アイテムプラグインの指定するデフォルトが使用される。
@@ -520,6 +481,14 @@ public class GrxPluginManager
 		}
 		return item;
 	}
+	
+	/**
+	 * @brief
+	 * @param cls
+	 * @param name
+	 * @param url
+	 * @return
+	 */
 	public GrxBaseItem loadItem(Class<? extends GrxBaseItem> cls, String name, String url) {
 		String _url = GrxXmlUtil.expandEnvVal(url);
 		if (_url == null)
@@ -554,35 +523,24 @@ public class GrxPluginManager
 		return item;
 	}
 
-	//TODO: FileNameLocationDialogは無意味にめんどくさい自作物だが必要なのか？
-	/*public GrxBaseItem loadItem2(Class<? extends GrxBaseItem> cls, String dir, String[] ext) {
-		FileNameLocationDialog dialog = new FileNameLocationDialog(
-			frame_, 
-			MessageBundle.get("dialog.object.addRobot.title"),
-			MessageBundle.get("dialog.object.addRobot.title"),
-			ext,dir
-		);
-		//dialog.setText(prevUrl_);
-
-		if (dialog.showModalDialog() == ModalDialog.OK_BUTTON) {
-			String objectName = dialog.getName();
-			String location = dialog.getFileName();
-
-			GrxBaseItem item = loadItem(cls, objectName, location);
-			if (item != null) 
-				item.setProperty("url", location);
-			//prevUrl_ = location;
-			return item;
-		}
-		return null;
-	}*/
-
+	/**
+	 * @brief
+	 * @param cls
+	 * @param name
+	 * @return
+	 */
 	public GrxBaseView createView(Class<? extends GrxBaseView> cls, String name) {
         if (name == null)
             name = pinfoMap_.get(cls).title;
         return (GrxBaseView) createPlugin(cls, name);
 	}
 
+	/**
+	 * @brief
+	 * @param cls
+	 * @param name
+	 * @return
+	 */
 	private GrxBasePlugin createPlugin(Class<? extends GrxBasePlugin> cls, String name) {
 		if (registerPlugin(cls) == null) {
 			GrxDebugUtil.println("[PM]@createPlugin registerPlugin failed");
@@ -606,6 +564,11 @@ public class GrxPluginManager
 		return null;
 	}
 
+	/**
+	 * @brief
+	 * @param m
+	 * @param e
+	 */
 	private void showExceptionTrace(String m, Exception e) {
 		GrxDebugUtil.printErr(m, e);
 
@@ -637,41 +600,19 @@ public class GrxPluginManager
 		MessageDialog.openWarning( null, "Exception Occered", msg);
 	}
 
+	/**
+	 * @brief
+	 * @param item
+	 */
 	private void _addItemNode(GrxBaseItem item) {
-		/*
-		DefaultMutableTreeNode node = null;
-		for (int i = 0; i < root_.getChildCount(); i++) {
-			node = (DefaultMutableTreeNode) root_.getChildAt(i);
-			if (node.getUserObject().equals(item.getClass()))
-				break;
-			node = null;
-		}
-
-		if (node == null) {
-			node = new DynamicUtilTreeNode(item.getClass(), new Hashtable());
-			root_.add(node);
-		}
-
-		DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(item);
-		node.add(newNode);
-		*/
 		isItemModelChanged_ = true;
 	}
+
+	/**
+	 * @brief
+	 * @param item
+	 */
 	public void removeItem(GrxBaseItem item) {
-		/*
-		Enumeration e = root_.depthFirstEnumeration();
-		while (e.hasMoreElements()) {
-			DefaultMutableTreeNode n = (DefaultMutableTreeNode) e.nextElement();
-			if (n.getUserObject() == item) {
-				try {
-					treeModel_.removeNodeFromParent(n);
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				break;
-			}
-		}
-		*/
 		Map m = pluginMap_.get(item.getClass());
 		if (m != null) {
 			setSelectedItem(item, false);
@@ -679,18 +620,33 @@ public class GrxPluginManager
 			isItemModelChanged_ = true;
 		}
 	}
+	
+	/**
+	 * @brief
+	 * @param cls
+	 */
 	public void removeItems(Class<? extends GrxBaseItem> cls) {
 		Map<?, ?> m = pluginMap_.get(cls);
 		GrxBaseItem[] items = m.values().toArray(new GrxBaseItem[0]);
 		for (int i = 0; i < items.length; i++)
 			removeItem(items[i]);
 	}
+	
+	/**
+	 * @brief
+	 */
 	public void removeAllItems() {
 		if (currentMode_ == null)
 			return;
 		for (int i = 0; i < currentMode_.activeItemClassList_.size(); i++)
 			removeItems(currentMode_.activeItemClassList_.get(i));
 	}
+	
+	/**
+	 * @brief
+	 * @param item
+	 * @param newName
+	 */
 	public void renamePlugin(GrxBasePlugin item, String newName) {
 		Map<String, GrxBasePlugin> m = pluginMap_.get(item.getClass());
         if (m.get(newName) == null) {
@@ -701,7 +657,9 @@ public class GrxPluginManager
         } 
 	}
 	
-	// GrxModeInfoItemがプラグインをロードした後実行している
+	/**
+	 * @brief
+	 */
 	public void setVisibleItem() {
 		// root_.removeAllChildren();
 		
@@ -715,6 +673,10 @@ public class GrxPluginManager
 		isItemModelChanged_ = true;
 	}
 
+	/**
+	 * @brief
+	 * @return
+	 */
 	public ArrayList<GrxBaseItem> getActiveItemList() {
 		ArrayList<Class<? extends GrxBaseItem>> cList = currentMode_.activeItemClassList_;
 		ArrayList<GrxBaseItem> iList = new ArrayList<GrxBaseItem>();
@@ -727,6 +689,13 @@ public class GrxPluginManager
 		}
 		return iList;
 	}
+	
+	/**
+	 * @brief
+	 * @param cls
+	 * @param name
+	 * @return
+	 */
 	public GrxBaseItem getItem(Class<? extends GrxBaseItem> cls, String name) {
 		Iterator it = pluginMap_.get(cls).values().iterator();
 		while (it.hasNext()) {
@@ -739,6 +708,12 @@ public class GrxPluginManager
 		GrxDebugUtil.println("[PM] fault getItem "+cls.getName()+":"+name);
 		return null;
 	}
+	
+	/**
+	 * @brief
+	 * @param name
+	 * @return
+	 */
 	public GrxBaseItem getItem(String name) {
 		Iterator it = pluginMap_.values().iterator();
 		while (it.hasNext()) {
@@ -749,10 +724,22 @@ public class GrxPluginManager
 		}
 		return null;
 	}
+	
+	/**
+	 * @brief
+	 * @param cls
+	 * @return
+	 */
 	public Map getItemMap(Class<? extends GrxBaseItem> cls) {
 		return pluginMap_.get(cls);
 	}
 
+	/**
+	 * @brief
+	 * @param cls
+	 * @param name
+	 * @return
+	 */
 	public GrxBaseItem getSelectedItem(Class<? extends GrxBaseItem> cls, String name) {
 		for (int i = 0; i < selectedItemList_.size(); i++) {
 			GrxBaseItem item = selectedItemList_.get(i);
@@ -764,6 +751,12 @@ public class GrxPluginManager
 		System.out.println("[PM]@getSelectedItem "+cls.getName()+":"+name+" NOT FOUND.");
 		return null;
 	}
+	
+	/**
+	 * @brief
+	 * @param cls
+	 * @return
+	 */
 	public List<GrxBaseItem> getSelectedItemList(Class<? extends GrxBaseItem> cls) {
 		ArrayList<GrxBaseItem> list = new ArrayList<GrxBaseItem>();
 		for (int i = 0; i < selectedItemList_.size(); i++) {
@@ -774,9 +767,19 @@ public class GrxPluginManager
 		return list;
 	}
 
+	/**
+	 * @brief
+	 * @return
+	 */
 	public List<GrxBaseView> getActiveViewList() {
 		return selectedViewList_;
 	}
+	
+	/**
+	 * @brief
+	 * @param cls
+	 * @return
+	 */
 	public GrxBaseView getView(Class<? extends GrxBaseView> cls) {
 		/*HashMap m = pluginMap_.get(cls);
 		if (m != null) {
@@ -792,19 +795,12 @@ public class GrxPluginManager
 
 		return null;
 	}
-	//TODO:現在はpluginMap_がViewのインスタンスを保持しないため上と同等の改造が必要だが、だれも使ってない？
-	/*
-	public GrxBaseView getView(String name) {
-		Iterator it = pluginMap_.values().iterator();
-		while (it.hasNext()) {
-			HashMap m = (HashMap) it.next();
-			Object o = m.get(name);
-			if (o != null && o instanceof GrxBaseView)
-				return (GrxBaseView) o;
-		}
-		return null;
-	}
-	*/
+	
+	/**
+	 * @brief
+	 * @param item
+	 * @param select
+	 */
 	public void setSelectedItem(GrxBaseItem item, boolean select) {
 		if (item == null)
 			return;
@@ -826,9 +822,17 @@ public class GrxPluginManager
 
 		item.setSelected(select);
 	}
+	
+	/**
+	 * @brief
+	 */
 	public void reselectItems() {
 		isItemSelectionChanged_ = true;
 	}
+	
+	/**
+	 * @brief
+	 */
 	public void clearItemSelection() {
 		Iterator i = pluginMap_.values().iterator();
 		while (i.hasNext()) {
@@ -840,20 +844,32 @@ public class GrxPluginManager
 			}
 		}
 	}
-	
+
+	/**
+	 * @brief
+	 * @param cls
+	 * @return
+	 */
 	public String getItemTitle(Class<? extends GrxBasePlugin> cls) {
         return pinfoMap_.get(cls).title;
 	}
 
+	/**
+	 * @brief
+	 *
+	 */
 	private class PluginInfo {
 		String title;
 		File   lastDir;
-//		FileFilter filter;
 		String filter;
-//		JMenu  menu;
 		Vector<Action> menu;
 	}
 
+	/**
+	 * @brief
+	 * @param cls
+	 * @return
+	 */
 	public Vector<Action> getItemMenu(final Class<? extends GrxBaseItem> cls) {
 		final PluginInfo pi = pinfoMap_.get(cls);
 		Vector<Action> menu = pi.menu;
@@ -862,6 +878,7 @@ public class GrxPluginManager
 			
 		menu = pi.menu = new Vector<Action>();
 			
+		// menu item : create
 		Action create = new Action(){
 			public String getText(){
 				return "create";
@@ -872,6 +889,7 @@ public class GrxPluginManager
 		};
 		menu.add(create);
 
+		// menu item : load
 		Action load = new Action(){
 			public String getText(){
 				return "load";
@@ -892,6 +910,7 @@ public class GrxPluginManager
 		};
 		menu.add(load);
 
+		// menu item : clear
 		Action clear = new Action(){
 			public String getText(){
 				return "clear";
@@ -919,6 +938,9 @@ public class GrxPluginManager
 		return menu;
 	}
 
+	/**
+	 * @brief
+	 */
 	public void shutdown() {
 		GrxDebugUtil.println("[PM] shutdown.");
 
@@ -941,58 +963,68 @@ public class GrxPluginManager
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		//System.exit(0);
 	}
 
+	/**
+	 * @brief set property associated to key
+	 * @param key keyword
+	 * @param val property associated to key
+	 */
 	public void setProjectProperty(String key, String val) {
 		currentProject_.setProperty(key, val);
 	}
+	
+	/**
+	 * @brief get property of current project associated to key
+	 * @param key
+	 * @return property of current project
+	 */
 	public String getProjectProperty(String key) {
 		return currentProject_.getProperty(key);
 	}
-	/*	
-	public JFileChooser getFileChooser() {
-		if (fileChooser_ == null)
-			fileChooser_ = new JFileChooser();
-		FileFilter aaf = fileChooser_.getAcceptAllFileFilter();
-		FileFilter ff[] = fileChooser_.getChoosableFileFilters();
-		for (int i=0; i<ff.length; i++)
-			fileChooser_.removeChoosableFileFilter(ff[i]);
-		fileChooser_.setFileFilter(aaf);
-			
-		return fileChooser_;
-	}
-	*/
+
+	/**
+	 * @brief get current model name
+	 * @return current model name
+	 */
 	public String getCurrentModeName() {
 		if (currentMode_ == null)
 			return null;
 		return currentMode_.getName();
 	}
-	
-/*	public JMenu getProjectMenu() {
-		return currentProject_.getMenu();
-	}*/
+
+	/**
+	 * @brief get project menu
+	 * @return project menu
+	 */
 	public Vector<Action> getProjectMenu() {
 		return currentProject_.getMenu();
 	}
 	
+	/**
+	 * @brief get home path
+	 * @return home path
+	 */
     public String getHomePath() {
         return homePath_;
     }
-	
+
+    /**
+     * @brief restore processes in rc project and current project
+     */
 	public void restoreProcess() {
 		GrxProcessManagerView pmView = (GrxProcessManagerView) getView(GrxProcessManagerView.class);
 		if (pmView == null) 
 			return;
 		
-		//processingWindow_.setMessage("loading process manager settings ...");
-		//processingWindow_.setVisible(true);
 		pmView.loadProcessList(rcProject_.getElement());
 		pmView.loadProcessList(currentProject_.getElement());
-		//processingWindow_.setVisible(false);
 	}
 	
+	/**
+	 * @brief get project name
+	 * @return project name
+	 */
 	public String getProjectName(){
 		return currentProject_.getName();
 	}

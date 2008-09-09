@@ -136,7 +136,7 @@ public class InvKinemaResolver {
         value[11]= mat.m22;
 
         integrator_.setCharacterLinkData(
-            objectName, robot_.lInfo_[0].name, LinkDataType.ABS_TRANSFORM, value
+            objectName, robot_.rootLink().name(), LinkDataType.ABS_TRANSFORM, value
         );
         integrator_.setCharacterAllLinkData(
             objectName, LinkDataType.JOINT_VALUE, robot_.getJointValues()
@@ -169,7 +169,7 @@ public class InvKinemaResolver {
 			if (robot_ == null || from_ == null || to_ == null)
 				return false;
 
-        	if (!integrator_.calcCharacterInverseKinematics(robot_.getName(), from_.name, to_.name, tr)) {
+        	if (!integrator_.calcCharacterInverseKinematics(robot_.getName(), from_.name(), to_.name(), tr)) {
         		System.out.println("ik failed.");
         		robot_.calcForwardKinematics();
             	return false;

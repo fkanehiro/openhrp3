@@ -31,8 +31,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.ImageRegistry;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
@@ -43,6 +41,9 @@ import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 
 @SuppressWarnings("serial")
+/**
+ * @brief
+ */
 public class GrxLoggerView extends GrxBaseView {
     public static final String TITLE = "Logger";
 
@@ -89,7 +90,13 @@ public class GrxLoggerView extends GrxBaseView {
 
 	//private static final Font MONO_PLAIN_12 = new Font("Monospaced", Font.PLAIN, 12);
 
-	
+	/**
+	 * @brief
+	 * @param name
+	 * @param manager
+	 * @param vp
+	 * @param parent
+	 */
 	public GrxLoggerView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
 		super(name, manager, vp, parent);
 
@@ -218,6 +225,10 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 
 	private double stepTime_ = -1.0;
+	
+	/**
+	 * @brief
+	 */
 	public void play() {
 		if (!isPlaying_) {
 			//current_ = sliderTime_.getValue();
@@ -241,41 +252,47 @@ public class GrxLoggerView extends GrxBaseView {
 	
 	private double prevTime_ = 0.0;
 	private double playRateLogTime_ = -1;
+	
+	/**
+	 * @brief
+	 * @param intervalMsec
+	 */
 	public void playLogTime(int intervalMsec) {
 		if (!isPlaying_) {
-			//setEnabled(false);
-			//current_ = sliderTime_.getValue();
 			current_ = sliderTime_.getSelection();
 			if (current_ == sliderTime_.getMaximum() && playRate_ > 0)
 				current_ = 0;
 			
 			playRateLogTime_ = (double)intervalMsec/1000.0;
 			prevTime_ = 0.0;
-//			lblPlayRate_.setForeground(Color.red);
 			isPlaying_ = true;
 		}
 	}
 
+	/**
+	 * @brief
+	 */
 	public void pause() {
-//		lblPlayRate_.setForeground(Color.black);
 		isPlaying_ = false;
 		playRateLogTime_ = 0;
 	}
 	
+	/**
+	 * @brief
+	 * @return
+	 */
 	public boolean isPlaying() {
 		return isPlaying_;
 	}
 	
+	/**
+	 * @brief
+	 */
 	public void restoreProperties() {
 		super.restoreProperties();
 		
 		timeFormat = getStr("timeFormat", "%8.3f");
 		GrxDebugUtil.println("LoggerView: timeFormat = \""+timeFormat+"\"\n");
-		
-		boolean b = isTrue("showFrameRateSlider", true);
-	//	lblFrameRateM_.setVisible(b);
-	//	lblFrameRate_.setVisible(b);
-	//	sliderFrameRate_.setVisible(b);
 	}
 	
 	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
@@ -290,23 +307,15 @@ public class GrxLoggerView extends GrxBaseView {
 				}
 			}
 			if (currentItem_ == null) {
-				//sliderTime_.setValue(0);
 				sliderTime_.setSelection(0);
 				sliderTime_.setMaximum(0);
-//				tFldTime_.setText("NO ITEM");
 				setEnabled(false);
 				return;
-			} else {
-				double step = currentItem_.getDbl("logTimeStep", 0.001);
-		//		sliderTime_.setMinorTickSpacing((int)(1.0/step));
-		//		sliderTime_.setMajorTickSpacing((int)(5.0/step));
 			}
 		}
 	}
 
 	public void control(List<GrxBaseItem> itemList) {
-//	    if (lblFrameRateM_.isVisible())
-//	    	lblFrameRateM_.setText(String.format(FORMAT_FRATE, 1000/manager_.now));
 	    
 		if (currentItem_ == null) {
 			setEnabled(false);

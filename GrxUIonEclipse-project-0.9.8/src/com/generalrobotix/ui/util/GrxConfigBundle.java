@@ -25,35 +25,53 @@ import java.io.IOException;
 import java.util.Properties;
 
 @SuppressWarnings("serial")
+/**
+ * @brief
+ */
 public class GrxConfigBundle extends Properties {	
+	/**
+	 * @brief constructor
+	 */
 	public GrxConfigBundle() {
 		
 	}
+	
+	/**
+	 * @brief construct from a file
+	 * @param fname file name
+	 * @throws IOException
+	 */
 	public GrxConfigBundle(String fname) throws IOException{
 		load(fname);
 	}
 	
+	/**
+	 * @brief load config from a file
+	 * @param fname filename
+	 * @throws IOException
+	 */
 	public void load(String fname) throws IOException {
 		FileInputStream in = new FileInputStream(fname);
 		load(in);
 		in.close();
 	}
 	
+	/**
+	 * @brief store this config 
+	 * @param fname file name
+	 * @param comments comments
+	 * @throws IOException
+	 */
 	public void store(String fname,String comments) throws IOException{
 		FileOutputStream out = new FileOutputStream(fname);
 		store(out,comments);
 	}
 	
-//	public void storeToXML(String fname,String comments) throws IOException{
-//		FileOutputStream out = new FileOutputStream(fname);
-//		properties_.storeToXML(out,comments);
-//	}
-	
-//	public void storeToXML(String fname,String comments,String encoding) throws IOException{
-//		FileOutputStream out = new FileOutputStream(fname);
-//		properties_.storeToXML(out,comments,encoding);
-//	}
-	
+	/**
+	 * @brief get value associated to keyword
+	 * @param key keyword
+	 * @return value associated to keyword. If value can not be found in this config and environment variables, null is returned
+	 */
 	public final String getStr(String key){	
 		String str = null;
 		StringBuffer buf = null;
@@ -85,13 +103,25 @@ public class GrxConfigBundle extends Properties {
 		return buf.toString();
 	}
 	
+	/**
+	 * @brief get value associated to key
+	 * @param key keyword
+	 * @param defaultVal default return value
+	 * @return value associated to key. If it can't be found, default value is returned.
+	 */
 	public final String getStr(String key, String defaultVal) {
 		String ret = null;
 		if ((ret= getStr(key)) == null)
 			ret = defaultVal;
 		return ret;
 	}
-	
+
+	/**
+	 * @brief get integer value associated to key
+	 * @param key keyword
+	 * @param defaultVal default value
+	 * @return integer value associated to key
+	 */
 	public final Integer getInt(String key, Integer defaultVal) {
 		Integer ret;
 		try {
@@ -102,6 +132,11 @@ public class GrxConfigBundle extends Properties {
 		return ret;
 	}
 	
+	/**
+	 * @brief get integer array associated to key
+	 * @param key keyword
+	 * @return integer array associated to key
+	 */
 	public final int[] getIntAry(String key){
 		String s = getStr(key);
 		if (s==null)
@@ -118,6 +153,12 @@ public class GrxConfigBundle extends Properties {
 		return ret;
 	}
 	
+	/**
+	 * @brief get double value associated to key
+	 * @param key keyword
+	 * @param defaultVal default value
+	 * @return double value associated to key
+	 */
 	public final Double getDbl(String key, Double defaultVal) {
 		Double ret;
 		try {
@@ -128,6 +169,12 @@ public class GrxConfigBundle extends Properties {
 		return ret;
 	}
 	
+	/**
+	 * @brief get double array associated to key
+	 * @param key keyword
+	 * @param defaultVal default value
+	 * @return double array associated to key
+	 */
 	public final double[] getDblAry(String key, double[] defaultVal){
 		String s = getStr(key);
 		if (s==null)
@@ -144,6 +191,11 @@ public class GrxConfigBundle extends Properties {
 		return ret;
 	}
 	
+	/**
+	 * @brief associate double array to key
+	 * @param key keyword
+	 * @param value double array
+	 */
 	public final void setDblAry(String key, double[] value) {
 		String val = new String();
 		for (int i=0; i<value.length; i++) {
@@ -152,15 +204,32 @@ public class GrxConfigBundle extends Properties {
 		setProperty(key,val);
 	}
 	
+	/**
+	 * @brief associate double value to key
+	 * @param key keyword
+	 * @param value double value
+	 */
 	public final void setDbl(String key, double value) {
 		String val = new String();
 		val += String.valueOf(value)+" ";
 		setProperty(key,val);
 	}
 	
+	/**
+	 * @brief check whether value associated to key includes a word "true"
+	 * @param key keyword
+	 * @return true if value associated to key includes a word "true", false otherwise
+	 */
 	public final boolean isTrue(String key){
 		return isTrue(key,false);
 	}
+	
+	/**
+	 * @brief check whether value associated to key includes a word "true"
+	 * @param key keyword
+	 * @param defaultVal default value
+	 * @return true if value associated to key includes a word "true", false otherwise
+	 */
 	public final boolean isTrue(String key,boolean defaultVal){
 		Boolean b = new Boolean(defaultVal);
 		String str = getStr(key,b.toString()).toLowerCase();
@@ -168,9 +237,21 @@ public class GrxConfigBundle extends Properties {
 			return true;
 		return false;
 	}
+
+	/**
+	 * @brief check whether value associated to key includes a word "false"
+	 * @param key keyword
+	 * @return true if value associated to key includes a word "false", false otherwise
+	 */
 	public final boolean isFalse(String key){
 		return isFalse(key,false);
 	}
+
+	/**
+	 * @brief check whether value associated to key includes a word "false"
+	 * @param key keyword
+	 * @return true if value associated to key includes a word "false", false otherwise
+	 */
 	public final boolean isFalse(String key,boolean defaultVal){
 		Boolean b = new Boolean(defaultVal);
 		String str = getStr(key,b.toString()).toLowerCase();
