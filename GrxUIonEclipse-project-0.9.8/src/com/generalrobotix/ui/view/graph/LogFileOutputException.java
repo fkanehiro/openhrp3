@@ -15,6 +15,7 @@
  */
 package com.generalrobotix.ui.view.graph;
 
+@SuppressWarnings("serial")
 public class LogFileOutputException extends Exception {
     /**
      * コンストラクタ

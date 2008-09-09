@@ -160,11 +160,7 @@ public class GrxRobotStatView extends GrxBaseView {
                 { SWT.LEFT, SWT.LEFT,  SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.CENTER, SWT.CENTER, SWT.RIGHT, SWT.RIGHT },
                 { SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
                 { SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT } };
-        int[][] columnSize = new int[][] {
-                { 18, 100, 60, 60, 50, 28, 28, 32, 32 },
-                { 102, 51, 50, 51, 50, 51, 50 }, 
-				{ 102, 101, 100, 100 } };
-        
+
         jointTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);
         forceTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);    
         sensorTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);    

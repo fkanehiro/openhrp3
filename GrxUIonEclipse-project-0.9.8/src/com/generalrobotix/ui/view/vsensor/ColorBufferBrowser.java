@@ -74,6 +74,7 @@ public final class ColorBufferBrowser extends JFrame {
 	 * @date	2001.02.02
 	 * @version	1.0
 	 */
+	@SuppressWarnings("serial")
 	final class CanvasDraw extends Canvas {
 		// raster size
 		private int width_;

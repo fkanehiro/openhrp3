@@ -18,10 +18,6 @@
 
 package com.generalrobotix.ui.item;
 
-//import javax.swing.ImageIcon;
-
-import org.eclipse.swt.graphics.Image;
-
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 

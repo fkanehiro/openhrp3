@@ -171,16 +171,6 @@ public class SceneGraphModifier {
 */
     //--------------------------------------------------------------------
     // プライベートメソッド
-    private void _setCapabilities(TransformGroup tg) {
-        tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-        tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
-        tg.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
-        tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
-        tg.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
-        tg.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-    }
-
     private void _setSegmentCapabilities(TransformGroup tg) {
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);

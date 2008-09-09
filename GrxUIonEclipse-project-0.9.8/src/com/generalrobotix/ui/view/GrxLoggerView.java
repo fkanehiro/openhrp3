@@ -55,7 +55,6 @@ public class GrxLoggerView extends GrxBaseView {
 	private boolean isPlaying_ = false;
 
 	private Scale sliderFrameRate_;
-	private Label  lblFrameRateM_;
 	private Label  lblFrameRate_;
 
 	
@@ -86,7 +85,6 @@ public class GrxLoggerView extends GrxBaseView {
 	
 	private static DecimalFormat FORMAT_FAST  =  new DecimalFormat(" Play x ##; Play x-##");
 	private static DecimalFormat FORMAT_SLOW  =  new DecimalFormat(" Play x 1/##; Play x-1/##");
-	private static String FORMAT_FRATE = " FrameRate %2.0f/";
 	private static String timeFormat   = "%8.3f"; //"###0.000"
 
 	//private static final Font MONO_PLAIN_12 = new Font("Monospaced", Font.PLAIN, 12);
