@@ -24,8 +24,8 @@ import jp.go.aist.hrp.simulator.*;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.*;
 
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
-import com.generalrobotix.ui.item.GrxModelItem.LinkInfoLocal;
 
 /**
  * InvKinemaResolver
@@ -35,8 +35,8 @@ public class InvKinemaResolver {
     private DynamicsSimulator integrator_;
     private GrxPluginManager manager_;
     private GrxModelItem robot_;
-    private LinkInfoLocal from_;
-    private LinkInfoLocal to_;
+    private GrxLinkItem from_;
+    private GrxLinkItem to_;
     private Transform3D trFrom_;
     private LinkPosition tr;
 
@@ -74,7 +74,7 @@ public class InvKinemaResolver {
             robot_ = (GrxModelItem)manager_.getItem(GrxModelItem.class, objectName);
         }
         
-        from_ = (LinkInfoLocal)robot_.getLinkInfo(jointName);
+        from_ = (GrxLinkItem)robot_.getLinkInfo(jointName);
         
         // fromジョイントのグローバル座標での位置姿勢を保持
         TransformGroup tg = from_.tg;
@@ -101,7 +101,7 @@ public class InvKinemaResolver {
             return false;
         }
         
-        to_ = (LinkInfoLocal)robot_.getLinkInfo(jointName);
+        to_ = (GrxLinkItem)robot_.getLinkInfo(jointName);
         
         return true;
     }

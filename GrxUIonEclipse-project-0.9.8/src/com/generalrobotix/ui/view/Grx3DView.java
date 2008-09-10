@@ -67,9 +67,9 @@ import jp.go.aist.hrp.simulator.ViewSimulatorPackage.ViewSimulatorException;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
-import com.generalrobotix.ui.item.GrxModelItem.LinkInfoLocal;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.view.tdview.*;
@@ -922,7 +922,7 @@ public class Grx3DView
     private class ModelEditKeyAdapter extends KeyAdapter {
         public void keyPressed(KeyEvent arg0) {
         	GrxModelItem item = null;
-        	LinkInfoLocal li = null;
+        	GrxLinkItem li = null;
        	  	for (int i=0; i<currentModels_.size(); i++) {
         	  	item = (GrxModelItem)currentModels_.get(i);
         	  	li = item.activeLinkInfo_;

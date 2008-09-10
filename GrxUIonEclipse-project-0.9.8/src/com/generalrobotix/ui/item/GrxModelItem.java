@@ -55,12 +55,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public BodyInfo bInfo_;
 	
     public BranchGroup bgRoot_;
-    public Vector<LinkInfoLocal> lInfo_;
-    public LinkInfoLocal activeLinkInfo_;
+    public Vector<GrxLinkItem> lInfo_;
+    public GrxLinkItem activeLinkInfo_;
     private int[] jointToLink_; // length = joint number
-    private final Map<String, LinkInfoLocal> lInfoMap_ = new HashMap<String, LinkInfoLocal>();
+    private final Map<String, GrxLinkItem> lInfoMap_ = new HashMap<String, GrxLinkItem>();
     private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
-    private final Map<String, List<SensorInfoLocal>> sensorMap_ = new HashMap<String, List<SensorInfoLocal>>();
+    // sensor type name -> list of sensors
+    private final Map<String, List<GrxSensorItem>> sensorMap_ = new HashMap<String, List<GrxSensorItem>>();
+    // list of cameras 
     private List<Camera_impl> cameraList_ = new ArrayList<Camera_impl>();
 	
     private Switch switchCom_;
@@ -132,7 +134,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	/**
 	 * @brief get root link
 	 */
-	public LinkInfoLocal rootLink() {
+	public GrxLinkItem rootLink() {
 		return lInfo_.get(0);
 	}
 	
@@ -150,7 +152,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             updateInitialTransformRoot();
 		
         for (int i=0; i<jointToLink_.length; i++) {
-            LinkInfoLocal l = lInfo_.get(jointToLink_[i]);
+            GrxLinkItem l = lInfo_.get(jointToLink_[i]);
             Double d = getDbl(l.name()+".angle", null);
             if (d == null) 
                 setDbl(l.name()+".angle", 0.0);
@@ -252,7 +254,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             bInfo_ = mloader.getBodyInfo(url);
             //
             LinkInfo[] linkInfoList = bInfo_.links();
-            lInfo_ = new Vector<LinkInfoLocal>();
+            lInfo_ = new Vector<GrxLinkItem>();
             lInfoMap_.clear();
             
             for (int i=0; i<cameraList_.size(); i++){
@@ -262,7 +264,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             
             int jointCount = 0;
             for (int i = 0; i < linkInfoList.length; i++) {
-                lInfo_.add(new LinkInfoLocal(linkInfoList[i]));
+                lInfo_.add(new GrxLinkItem(linkInfoList[i].name, manager_, linkInfoList[i]));
                 lInfoMap_.put(lInfo_.get(i).name(), lInfo_.get(i));
                 if (lInfo_.get(i).jointId() >= 0){
                     jointCount++;
@@ -295,7 +297,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 }
             }
             
-            Iterator<List<SensorInfoLocal>> it = sensorMap_.values().iterator();
+            Iterator<List<GrxSensorItem>> it = sensorMap_.values().iterator();
             while (it.hasNext()) {
                 Collections.sort(it.next());
             }
@@ -319,17 +321,24 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     private void createLink( int index ){
         
-        LinkInfoLocal info = lInfo_.get(index);
+        GrxLinkItem info = lInfo_.get(index);
         
-        if (info.info_.parentIndex != -1){
-        	LinkInfoLocal parent = lInfo_.get(info.info_.parentIndex);
+        // register this to children field of parent link
+        if (info.parentIndex() != -1){
+        	GrxLinkItem parent = lInfo_.get(info.parentIndex());
         	parent.children.add(info);
         }
         
-        for( int i = 0 ; i < info.info_.childIndices.length ; i++ ) 
+        // update cameraList_
+        for (int i=0; i< info.cameras_.size(); i++){
+        	cameraList_.add(info.cameras_.get(i));
+        }
+        
+        
+        for( int i = 0 ; i < info.childIndices().length ; i++ ) 
             {
                 // call recursively
-                int childIndex = info.info_.childIndices[i];
+                int childIndex = info.childIndices()[i];
                 createLink( childIndex );
             }
     }
@@ -380,9 +389,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 }
             }
 
-            Vector<SensorInfoLocal> sensors = lInfo_.get(linkIndex).sensors;
+            Vector<GrxSensorItem> sensors = lInfo_.get(linkIndex).sensors;
             for (int j=0; j < sensors.size(); j++) {
-                SensorInfoLocal si = sensors.get(j);
+                GrxSensorItem si = sensors.get(j);
 
                 if (si.type().equals("Vision")) {
 
@@ -410,13 +419,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         SceneGraphModifier modifier = SceneGraphModifier.getInstance();
         for (int i = 0; i < lInfo_.size(); i++) {
             Map<String, Object> userData = new Hashtable<String, Object>();
-            LinkInfoLocal info = lInfo_.get(i);
+            GrxLinkItem info = lInfo_.get(i);
             userData.put("object", this);
             userData.put("linkInfo", info);
             userData.put("objectName", this.getName());
             userData.put("jointName", info.name());
             Vector3d jointAxis = new Vector3d(info.jointAxis());
-            LinkInfoLocal itmp = info;
+            GrxLinkItem itmp = info;
             while (itmp.jointId() == -1 && itmp.parentIndex() != -1) {
                 itmp = lInfo_.get(itmp.parentIndex());
             }
@@ -893,7 +902,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @value value of the joint
      */
     public void setJointValue(String jname, double value) {
-        LinkInfoLocal l = getLinkInfo(jname);
+        GrxLinkItem l = getLinkInfo(jname);
         if (l != null) 
             l.jointValue = value;
     }
@@ -906,7 +915,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         if (values.length != jointToLink_.length)
             return;
         for (int i=0; i<jointToLink_.length; i++) {
-            LinkInfoLocal l = lInfo_.get(jointToLink_[i]);
+            GrxLinkItem l = lInfo_.get(jointToLink_[i]);
             l.jointValue = values[i];
         }
     }
@@ -916,7 +925,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public void setJointValuesWithinLimit() {
         for (int i = 1; i < lInfo_.size(); i++) {
-            LinkInfoLocal l = lInfo_.get(i);
+            GrxLinkItem l = lInfo_.get(i);
             if (l.llimit[0] < l.ulimit[0]) {
                 if (l.jointValue < l.llimit[0])
                     l.jointValue = l.llimit[0];
@@ -948,14 +957,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param jname name of the joint
      */
     public void updateInitialJointValue(String jname) {
-        LinkInfoLocal l = getLinkInfo(jname);
+        GrxLinkItem l = getLinkInfo(jname);
         if (l != null)
             setDbl(jname+".angle", l.jointValue);
     }
 
     public void updateInitialJointValues() {
         for (int i=0; i<jointToLink_.length; i++) {
-            LinkInfoLocal l = lInfo_.get(jointToLink_[i]);
+            GrxLinkItem l = lInfo_.get(jointToLink_[i]);
             setDbl(l.name()+".angle", l.jointValue);
         }
     }
@@ -973,7 +982,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         if (linkId < 0)
             return;
 		
-        LinkInfoLocal l = lInfo_.get(linkId);
+        GrxLinkItem l = lInfo_.get(linkId);
         if (linkId != 0 && l.parentIndex() != -1) {
             lInfo_.get(l.parentIndex()).tg.getTransform(t3dm_);
 			
@@ -1054,7 +1063,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     public String[] getSensorNames(String type) {
-        List<SensorInfoLocal> l = sensorMap_.get(type);
+        List<GrxSensorItem> l = sensorMap_.get(type);
         if (l == null)
             return null;
 		
@@ -1064,12 +1073,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return ret;
     }
 
-    public LinkInfoLocal getLinkInfo(String linkName) {
+    public GrxLinkItem getLinkInfo(String linkName) {
         return lInfoMap_.get(linkName);
     }
 
     public Transform3D getTransform(String linkName) {
-        LinkInfoLocal l = getLinkInfo(linkName);
+        GrxLinkItem l = getLinkInfo(linkName);
         if (l == null)
             return null;
         Transform3D ret = new Transform3D();
@@ -1140,7 +1149,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     public double getJointValue(String jname) {
-        LinkInfoLocal l = getLinkInfo(jname);
+        GrxLinkItem l = getLinkInfo(jname);
         if (l != null)
             return l.jointValue;
         return 0.0;
@@ -1156,7 +1165,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public double[] getInitialJointValues() {
         double[] ret = new double[jointToLink_.length];
         for (int i=0; i<ret.length; i++) {
-            LinkInfoLocal l = lInfo_.get(jointToLink_[i]);
+            GrxLinkItem l = lInfo_.get(jointToLink_[i]);
             String jname = l.name();
             ret[i] = getDbl(jname+".angle", l.jointValue);
         }
@@ -1513,162 +1522,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
 
 
-    //==================================================================================================
-    /*!
-      @brief		"LinkInfoLocal" class
-      @author		GeneralRobotix
-      @version	0.00
-      @date		200?-0?-0?
-      @note		200?-0?-0? GeneralRobotix create <BR>
-      @note		2008-03-03 M.YASUKAWA modify <BR>
-      @note		"LinkInfoLocal" class
-    */
-    //==================================================================================================
-    public class LinkInfoLocal
-    {
-    	private LinkInfo info_;
-
-        final public double[]	translation;
-        final public double[]	rotation;
-        final public double[]	ulimit;
-        final public double[]	llimit;
-        final public double[]	uvlimit;
-        final public double[]	lvlimit;
-        
-        public Vector<LinkInfoLocal> children;
-        
-        final public Vector<SensorInfoLocal> sensors;
-
-        public Vector<Short>	shapeIndices;
-        private Vector<Shape3D> shapes_;
-        
-        public double  jointValue;
-        public TransformGroup tg;
-
-        /**
-         * @brief get inertia matrix
-         * @return inertia matrix
-         */
-        public double [] inertia(){
-        	return info_.inertia;
-        }
-        
-        /**
-         * @brief get relative position of center of mass
-         * @return position of center of mass relative to coorinates of this link
-         */
-        public double [] centerOfMass(){
-        	return info_.centerOfMass;
-        }
-        /**
-         * @brief get axis of joint
-         * @return axis of joint
-         */
-        public double[] jointAxis(){
-        	return info_.jointAxis;
-        }
-        
-        /**
-         * @brief get name of link
-         * @return name of link
-         */
-        public String name(){
-        	return info_.name;
-        }
-        
-        /**
-         * @brief get joint id
-         * @return joint id
-         */
-        public int jointId(){
-        	return info_.jointId;
-        }
-        
-        /**
-         * @brief get index of parent link in lInfo_
-         * @return index of parent link
-         */
-        public short parentIndex() {
-        	return info_.parentIndex;
-        }
-        
-        /**
-         * @brief get indices of child links in lInfo_
-         * @return indices of child links
-         */
-        public short[] childIndices() {
-        	return info_.childIndices;
-        }
-
-        /**
-         * @brief get mass of link
-         * @return mass of link
-         */
-        public double mass() {
-        	return info_.mass;
-        }
-
-        /**
-         * @brief get type of joint
-         * @return type of joint
-         */
-        public String jointType() {
-        	return info_.jointType;
-        }
-        
-        /**
-         * @constructor
-         * @param info link information retrieved through ModelLoader
-         */
-        public LinkInfoLocal(LinkInfo info) {
-
-        	info_ = info;
-            children = new Vector<LinkInfoLocal>();
-
-            translation    = info.translation;
-            
-            rotation = new double[9];
-            Matrix3d R = new Matrix3d();
-            R.set(new AxisAngle4d(info.rotation));
-            for(int row=0; row < 3; ++row){
-                for(int col=0; col < 3; ++col){
-                    rotation[row * 3 + col] = R.getElement(row, col);
-                }
-            }
-            
-            if (info.ulimit == null || info.ulimit.length == 0) {
-                ulimit = new double[]{0.0};
-            } else {
-                ulimit  = info.ulimit;
-            }
-            
-            if (info.llimit == null || info.llimit.length == 0){
-                llimit = new double[]{0.0};
-            } else {
-                llimit = info.llimit;
-            }
-
-            uvlimit = info.uvlimit;
-            lvlimit = info.lvlimit;
-            
-            jointValue = 0.0;
-            
-            sensors = new Vector<SensorInfoLocal>();
-            SensorInfo[] sinfo = info.sensors;
-            for (int i=0; i<sinfo.length; i++) {
-            	SensorInfoLocal sensor = new SensorInfoLocal(sinfo[i], LinkInfoLocal.this);
-                sensors.add(sensor);
-                List<SensorInfoLocal> l = sensorMap_.get(sensor.type());
-                if (l == null) {
-                    l = new ArrayList<SensorInfoLocal>();
-                    sensorMap_.put(sensor.type(), l);
-                }
-                l.add(sensors.get(i));
-		
-            }
-        }
-    }
-
     /**
      * @brief get sequence of cameras
      * @return sequence of cameras
@@ -1676,110 +1529,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public List<Camera_impl> getCameraSequence () {
         return cameraList_;
     }
-
-    /**
-     * @brief sensor
-     */
-    private class SensorInfoLocal implements Comparable {
-    	SensorInfo info_;
-        final public double[] translation;
-        final public double[] rotation;
-        final public float[] maxValue;
-        final public LinkInfoLocal parent_;
-
-        /**
-         * @brief get name
-         * @return name of sensor
-         */
-        public String name(){
-        	return info_.name;
-        }
-        
-        /**
-         * @brief get type of sensor
-         * @return type of sensor
-         */
-        public String type(){
-        	return info_.type;
-        }
-        
-        /**
-         * @brief get id of sensor
-         * @return id of sensor
-         */
-        public int id(){
-        	return info_.id;
-        }
-        /**
-         * @brief constructor
-         * @param info SensorInfo retrieved through ModelLoader
-         * @param parentLink link to which this sensor is attached
-         */
-        public SensorInfoLocal(SensorInfo info, LinkInfoLocal parentLink) {
-        	info_ = info;
-
-            translation = info.translation;
-            rotation = info.rotation;
-            maxValue = info.specValues;
-            parent_ = parentLink;
-
-            if (info.type.equals("Vision")) {
-                CameraParameter prm = new CameraParameter();
-                prm.defName = new String(info.name);
-                prm.sensorName = new String(info.name);
-                prm.sensorId = info.id;
-                
-                prm.frontClipDistance = (float)info.specValues[0];
-                prm.backClipDistance = (float)info.specValues[1];
-                prm.fieldOfView = (float)info.specValues[2];
-                try {
-                    prm.type = CameraType.from_int((int)info.specValues[3]);
-                } catch (Exception e) {
-                    prm.type = CameraType.NONE;
-                }
-                prm.width  = (int)info.specValues[4];
-                prm.height = (int)info.specValues[5];
-                boolean offScreen = false;
-                Camera_impl camera = new Camera_impl(prm, offScreen);
-                cameraList_.add(camera);
-            }
-        
-        }
-
-        public int compareTo(Object o) {
-            if (o instanceof SensorInfoLocal) {
-                SensorInfoLocal s = (SensorInfoLocal) o;
-                if (getOrder(type()) < getOrder(s.type())) 
-                    return -1;
-                else{
-                    if (id() < s.id())
-                        return -1;
-                }
-            }
-            return 1;
-        }
-
-        /**
-         * @brief get sensor type as integer value
-         * @param type sensor type
-         * @return 
-         */
-        private int getOrder(String type) {
-            if (type.equals("Force")) 
-                return 0;
-            else if (type.equals("RateGyro")) 
-                return 1;
-            else if (type.equals("Acceleration")) 
-                return 2;
-            else if (type.equals("Vision")) 
-                return 3;
-            else
-                return -1;
-
-        }
-
-    }
-
 
     /**
      * @brief set color of joint
