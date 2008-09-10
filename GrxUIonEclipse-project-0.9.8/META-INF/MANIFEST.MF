@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Grxui プラグイン
+Bundle-Name: GrxUI プラグイン
 Bundle-SymbolicName: com.generalrobotix.ui.grxui;singleton:=true
 Bundle-Version: 0.9.8
 Bundle-Activator: com.generalrobotix.ui.grxui.Activator

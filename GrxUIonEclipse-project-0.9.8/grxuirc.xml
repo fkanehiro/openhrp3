@@ -10,6 +10,7 @@
 
     <mode name="Simulation" select="true">
         <item class="com.generalrobotix.ui.item.GrxModelItem"/>
+        <item class="com.generalrobotix.ui.item.GrxLinkItem"/>
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem"/>
         <item class="com.generalrobotix.ui.item.GrxCollisionPairItem"/>
         <item class="com.generalrobotix.ui.item.GrxGraphItem"/>

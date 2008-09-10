@@ -497,7 +497,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 					continue;
 
 				// SET INITIAL ROBOT POSITION AND ATTITUDE 				
-				String base = model.rootLink().name(); 
+				String base = model.rootLink().getName(); 
 				currentDynamics_.setCharacterLinkData(
 					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
 					model.getInitialTransformArray(base));

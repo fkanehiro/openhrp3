@@ -77,7 +77,7 @@ public class InvKinemaResolver {
         from_ = (GrxLinkItem)robot_.getLinkInfo(jointName);
         
         // fromジョイントのグローバル座標での位置姿勢を保持
-        TransformGroup tg = from_.tg;
+        TransformGroup tg = from_.tg_;
         Transform3D tr = new Transform3D();
         tg.getTransform(tr);
         tg.getLocalToVworld(trFrom_);
@@ -136,7 +136,7 @@ public class InvKinemaResolver {
         value[11]= mat.m22;
 
         integrator_.setCharacterLinkData(
-            objectName, robot_.rootLink().name(), LinkDataType.ABS_TRANSFORM, value
+            objectName, robot_.rootLink().getName(), LinkDataType.ABS_TRANSFORM, value
         );
         integrator_.setCharacterAllLinkData(
             objectName, LinkDataType.JOINT_VALUE, robot_.getJointValues()
@@ -169,7 +169,7 @@ public class InvKinemaResolver {
 			if (robot_ == null || from_ == null || to_ == null)
 				return false;
 
-        	if (!integrator_.calcCharacterInverseKinematics(robot_.getName(), from_.name(), to_.name(), tr)) {
+        	if (!integrator_.calcCharacterInverseKinematics(robot_.getName(), from_.getName(), to_.getName(), tr)) {
         		System.out.println("ik failed.");
         		robot_.calcForwardKinematics();
             	return false;
@@ -191,10 +191,10 @@ public class InvKinemaResolver {
     
     private void _setRootJoint(GrxModelItem robot) {
         Transform3D t3d = new Transform3D();
-        from_.tg.getTransform(t3d);
+        from_.tg_.getTransform(t3d);
         
         Transform3D t3dFromNew = new Transform3D();
-        from_.tg.getLocalToVworld(t3dFromNew);
+        from_.tg_.getLocalToVworld(t3dFromNew);
         t3dFromNew.mul(t3d);
         t3dFromNew.invert();
         
