@@ -19,8 +19,8 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
-import com.generalrobotix.ui.item.GrxModelItem.LinkInfoLocal;
 import com.generalrobotix.ui.util.MessageBundle;
 
 
@@ -299,7 +299,7 @@ public class SeriesDialog extends JDialog {
 					Object type = comboType_.getSelectedItem();
 					GrxModelItem model = (GrxModelItem)comboModel_.getSelectedItem();
 					if (type.equals("Joint")) {
-						Vector<LinkInfoLocal> li = model.lInfo_;
+						Vector<GrxLinkItem> li = model.lInfo_;
 						for (int i = 0; i < li.size(); i++) 
 							comboLink_.addItem(li.get(i).name());
 					} else {

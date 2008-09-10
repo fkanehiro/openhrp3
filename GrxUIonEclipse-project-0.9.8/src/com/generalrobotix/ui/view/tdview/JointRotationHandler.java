@@ -23,8 +23,8 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
-import com.generalrobotix.ui.item.GrxModelItem.LinkInfoLocal;
 import com.sun.j3d.utils.picking.*;
 
 class JointRotationHandler extends OperationHandler {
@@ -129,7 +129,7 @@ class JointRotationHandler extends OperationHandler {
         //軸情報取り出す
 
         Hashtable ht = (Hashtable)tgTarget_.getUserData();
-        LinkInfoLocal l = (LinkInfoLocal)ht.get("linkInfo");
+        GrxLinkItem l = (GrxLinkItem)ht.get("linkInfo");
   
         vw2view.mul(target2vw);
         vw2view.transform(point000);
@@ -275,7 +275,7 @@ class JointRotationHandler extends OperationHandler {
         Hashtable ht = SceneGraphModifier.getHashtableFromTG(tg);
         String objectName = (String)ht.get("objectName");
         GrxModelItem robot = (GrxModelItem)info.getManipulatable(objectName);
-        LinkInfoLocal l = (LinkInfoLocal)ht.get("linkInfo");
+        GrxLinkItem l = (GrxLinkItem)ht.get("linkInfo");
         if (l == null)
         	return false;
         

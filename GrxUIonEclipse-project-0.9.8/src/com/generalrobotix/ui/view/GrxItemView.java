@@ -47,6 +47,7 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.OrderedHashMap;
@@ -154,10 +155,20 @@ public class GrxItemView extends GrxBaseView {
 				return os;
 			}
 			*/
-			//
-			if (o instanceof GrxModelItem.LinkInfoLocal){
-				GrxModelItem.LinkInfoLocal lil = (GrxModelItem.LinkInfoLocal)o;
-				return lil.children.toArray();
+			// GrxLinkItem -> 子供のGrxLinkItem,センサ、形状を返す
+			if (o instanceof GrxLinkItem){
+				GrxLinkItem link = (GrxLinkItem)o;
+				Vector<Object> children = new Vector<Object>();
+				for (int i=0; i<link.sensors.size(); i++){
+					children.add(link.sensors.get(i));
+				}
+				for (int i=0; i<link.shapes.size(); i++){
+					children.add(link.shapes.get(i));
+				}
+				for (int i=0; i<link.children.size(); i++){
+					children.add(link.children.get(i));
+				}
+				return children.toArray();
 			}
 			// その他
 			return null;
@@ -189,8 +200,8 @@ public class GrxItemView extends GrxBaseView {
 				if( GrxBaseItem.class.isAssignableFrom( object.getClass() ) ) {
 					return ((GrxBaseItem)object).getName(); 
 				}
-				if (object instanceof GrxModelItem.LinkInfoLocal){
-					return ((GrxModelItem.LinkInfoLocal)object).name();
+				if (object instanceof GrxLinkItem){
+					return ((GrxLinkItem)object).name();
 				}
 			}
 			// Other

@@ -52,9 +52,9 @@ import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
-import com.generalrobotix.ui.item.GrxModelItem.LinkInfoLocal;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 
@@ -75,7 +75,7 @@ public class GrxRobotStatView extends GrxBaseView {
     private double[]     currentRefAng_;
     private long[]       currentSvStat_;
 
-    private List<LinkInfoLocal> jointList_ = new ArrayList<LinkInfoLocal>();
+    private List<GrxLinkItem> jointList_ = new ArrayList<GrxLinkItem>();
     private String[] forceName_;
     
     private Combo comboModelName_;
@@ -138,7 +138,7 @@ public class GrxRobotStatView extends GrxBaseView {
 
                 currentModel_ = item;
                 jointList_.clear();
-                Vector<LinkInfoLocal> lInfo = currentModel_.lInfo_;
+                Vector<GrxLinkItem> lInfo = currentModel_.lInfo_;
                 for (int i = 0; i < lInfo.size(); i++) {
                     for (int j = 0; j < lInfo.size(); j++) {
                         if (i == lInfo.get(j).jointId()) {
@@ -258,7 +258,7 @@ public class GrxRobotStatView extends GrxBaseView {
             if (item == null || item == currentModel_)
                 return;
             currentModel_ = item;
-            Vector<LinkInfoLocal> lInfo = currentModel_.lInfo_;
+            Vector<GrxLinkItem> lInfo = currentModel_.lInfo_;
             for (int i = 0; i < lInfo.size(); i++) {
                 for (int j = 0; j < lInfo.size(); j++) {
                     if (i == lInfo.get(j).jointId()) {
@@ -460,7 +460,7 @@ public class GrxRobotStatView extends GrxBaseView {
                 case 2:
                     if (jointList_.size() <= 0)
                         break;
-                    LinkInfoLocal info = jointList_.get(rowIndex);
+                    GrxLinkItem info = jointList_.get(rowIndex);
                     if (info.llimit[0] < info.ulimit[0]
                         && (info.jointValue <= info.llimit[0] || info.ulimit[0] <= info.jointValue)) {
                         return red_;
@@ -487,7 +487,7 @@ public class GrxRobotStatView extends GrxBaseView {
                         return bold12_;
                     }
                 case 2:
-                    LinkInfoLocal info = jointList_.get(rowIndex);
+                    GrxLinkItem info = jointList_.get(rowIndex);
                     if (info.llimit[0] < info.ulimit[0]
                         && (info.jointValue <= info.llimit[0] || info.ulimit[0] <= info.jointValue)) {
                         return bold12_;
