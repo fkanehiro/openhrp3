@@ -261,7 +261,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             cameraList_.clear();
             
             int jointCount = 0;
-            for (int i = 0; i < lInfo_.size(); i++) {
+            for (int i = 0; i < linkInfoList.length; i++) {
                 lInfo_.add(new LinkInfoLocal(linkInfoList[i]));
                 lInfoMap_.put(lInfo_.get(i).name(), lInfo_.get(i));
                 if (lInfo_.get(i).jointId() >= 0){
@@ -283,6 +283,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             if( rootIndex < 0 ){
                 System.out.println( "Error, root node doesn't exist." );
             }
+            
+            createLink(rootIndex);
             
             jointToLink_ = new int[jointCount];
             for (int i=0; i<jointCount; i++) {
@@ -315,6 +317,29 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return true;
     }
 
+    private void createLink( int index ){
+        
+        LinkInfoLocal info = lInfo_.get(index);
+        
+        if (info.info_.parentIndex != -1){
+        	LinkInfoLocal parent = lInfo_.get(info.info_.parentIndex);
+        	parent.children.add(info);
+        }
+        
+        for( int i = 0 ; i < info.info_.childIndices.length ; i++ ) 
+            {
+                // call recursively
+                int childIndex = info.info_.childIndices[i];
+                createLink( childIndex );
+            }
+    }
+
+
+    /**
+     * @brief create shapes of links
+     * @param links array of LinkInfo retrieved from ModelLoader
+     * @throws BadLinkStructureException
+     */
     private void _loadVrmlScene(LinkInfo[] links) throws BadLinkStructureException {
 
         ShapeInfo[] shapes = bInfo_.shapes();
@@ -427,7 +452,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			
             int mid = lInfo_.get(i).parentIndex();
             if (mid != -1) {
-                Group mg = (Group)lInfo_.get(i).tg.getParent();
+                Group mg = (Group)lInfo_.get(mid).tg.getParent();
                 mg.addChild(g.getParent());
             } 
         }
@@ -1510,6 +1535,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         final public double[]	uvlimit;
         final public double[]	lvlimit;
         
+        public Vector<LinkInfoLocal> children;
+        
         final public Vector<SensorInfoLocal> sensors;
 
         public Vector<Short>	shapeIndices;
@@ -1596,6 +1623,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         public LinkInfoLocal(LinkInfo info) {
 
         	info_ = info;
+            children = new Vector<LinkInfoLocal>();
 
             translation    = info.translation;
             

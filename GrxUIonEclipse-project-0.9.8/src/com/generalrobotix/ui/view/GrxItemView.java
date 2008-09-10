@@ -48,6 +48,7 @@ import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
+import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.OrderedHashMap;
 
 @SuppressWarnings("serial")
@@ -61,6 +62,13 @@ public class GrxItemView extends GrxBaseView {
 	TreeViewer tv;
 	MenuManager menuMgr= new MenuManager();
 
+	/**
+	 * @brief constructor
+	 * @param name
+	 * @param manager
+	 * @param vp
+	 * @param parent
+	 */
 	public GrxItemView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
 		super(name, manager, vp, parent);
 
@@ -114,6 +122,9 @@ public class GrxItemView extends GrxBaseView {
         updateTree();
 	}
 
+	/**
+	 * @brief
+	 */
 	class TreeContentProvider implements ITreeContentProvider {
 
 		Object[] gets( Object o ) {
@@ -136,8 +147,19 @@ public class GrxItemView extends GrxBaseView {
 					return oMap.values().toArray();
 				}
 			}
-
-			// アイテムのインスタンス(の、はず)
+			/* This will be enabled later
+			// GrxModelItem -> ルートのリンクを返す
+			if (o instanceof GrxModelItem){
+				Object[] os = {((GrxModelItem)o).rootLink()};
+				return os;
+			}
+			*/
+			//
+			if (o instanceof GrxModelItem.LinkInfoLocal){
+				GrxModelItem.LinkInfoLocal lil = (GrxModelItem.LinkInfoLocal)o;
+				return lil.children.toArray();
+			}
+			// その他
 			return null;
 		}
 		public Object[] getChildren(Object parentElement) { return gets(parentElement); }
@@ -151,6 +173,9 @@ public class GrxItemView extends GrxBaseView {
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}
 	}
 
+	/**
+	 * @brief
+	 */
 	class TreeLabelProvider extends LabelProvider implements IViewerLabelProvider{
 
 		public String getText(Object object) {
@@ -163,6 +188,9 @@ public class GrxItemView extends GrxBaseView {
 			}else{
 				if( GrxBaseItem.class.isAssignableFrom( object.getClass() ) ) {
 					return ((GrxBaseItem)object).getName(); 
+				}
+				if (object instanceof GrxModelItem.LinkInfoLocal){
+					return ((GrxModelItem.LinkInfoLocal)object).name();
 				}
 			}
 			// Other
@@ -195,17 +223,27 @@ public class GrxItemView extends GrxBaseView {
 			}
 		}
 	}
-	
+
+	/**
+	 * @brief
+	 */
 	public void updateTree() {
 		tv.refresh();
 		tv.expandAll();
 	}
 
+	/**
+	 * @brief
+	 */
 	public void itemSelectionChanged( List<GrxBaseItem> itemList )
 	{
 		updateTree();
 	}
 
+	/**
+	 * @brief
+	 * @return
+	 */
 	public GrxBasePlugin getFocusedItem() {
 		ISelection selection = tv.getSelection();
 		if( selection==null )
