@@ -159,14 +159,14 @@ public class GrxItemView extends GrxBaseView {
 			if (o instanceof GrxLinkItem){
 				GrxLinkItem link = (GrxLinkItem)o;
 				Vector<Object> children = new Vector<Object>();
-				for (int i=0; i<link.sensors.size(); i++){
-					children.add(link.sensors.get(i));
+				for (int i=0; i<link.sensors_.size(); i++){
+					children.add(link.sensors_.get(i));
 				}
-				for (int i=0; i<link.shapes.size(); i++){
-					children.add(link.shapes.get(i));
+				for (int i=0; i<link.shapes_.size(); i++){
+					children.add(link.shapes_.get(i));
 				}
-				for (int i=0; i<link.children.size(); i++){
-					children.add(link.children.get(i));
+				for (int i=0; i<link.children_.size(); i++){
+					children.add(link.children_.get(i));
 				}
 				return children.toArray();
 			}
@@ -201,7 +201,7 @@ public class GrxItemView extends GrxBaseView {
 					return ((GrxBaseItem)object).getName(); 
 				}
 				if (object instanceof GrxLinkItem){
-					return ((GrxLinkItem)object).name();
+					return ((GrxLinkItem)object).getName();
 				}
 			}
 			// Other

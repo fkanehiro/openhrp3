@@ -224,7 +224,7 @@ public class CollisionPairPanel extends Composite {
                         for (int k=1; k<m1.lInfo_.size(); k++) {
                             for (int l=1; l<m2.lInfo_.size(); l++) {
                                 if (i != j || k != l)
-                                    _createItem(m1.getName(), m1.lInfo_.get(k).name(), m2.getName(), m2.lInfo_.get(l).name());
+                                    _createItem(m1.getName(), m1.lInfo_.get(k).getName(), m2.getName(), m2.lInfo_.get(l).getName());
                             }
                         }
                     }
@@ -562,7 +562,7 @@ public class CollisionPairPanel extends Composite {
                  boxLink_.removeAll();
                  //boxLink_.add("");        
                  for (int i=0; i<model.lInfo_.size(); i++)
-                     boxLink_.add(model.lInfo_.get(i).name());
+                     boxLink_.add(model.lInfo_.get(i).getName());
                  boxLink_.deselectAll();
             }
             

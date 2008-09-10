@@ -643,18 +643,23 @@ public class GrxPluginManager
 	}
 	
 	/**
-	 * @brief
-	 * @param item
-	 * @param newName
+	 * @brief rename plugin. If new name is already used, name is not changed.
+	 * @param item plugin to be renamed
+	 * @param newName new name
 	 */
 	public void renamePlugin(GrxBasePlugin item, String newName) {
 		Map<String, GrxBasePlugin> m = pluginMap_.get(item.getClass());
+		if (m == null){
+			System.out.println("map for "+item.getClass()+" doesn't exist in pluginMap_");
+		}
         if (m.get(newName) == null) {
 		    m.remove(item.getName());
 		    m.put(newName, item);
 		    item.setName(newName);
 		    isItemModelChanged_ = true;
-        } 
+        }else{
+        	System.out.println(newName+" is already used");
+        }
 	}
 	
 	/**

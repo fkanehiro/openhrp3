@@ -100,6 +100,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	 * @brief delete this item
 	 */
 	public void delete() {
+		System.out.println("GrxBaseItem.delete("+getName()+") is called");
 		manager_.removeItem(this);
 	};
 

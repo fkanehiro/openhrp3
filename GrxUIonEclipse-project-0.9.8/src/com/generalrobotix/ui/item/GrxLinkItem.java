@@ -19,7 +19,6 @@ package com.generalrobotix.ui.item;
 
 import java.util.Vector;
 
-import javax.media.j3d.Shape3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix3d;
@@ -36,23 +35,23 @@ public class GrxLinkItem extends GrxBaseItem{
 
 	private LinkInfo info_;
 
-    final public double[]	translation;
-    final public double[]	rotation;
-    final public double[]	ulimit;
-    final public double[]	llimit;
-    final public double[]	uvlimit;
-    final public double[]	lvlimit;
+    final public double[]	translation_;
+    final public double[]	rotation_;
+    final public double[]	ulimit_;
+    final public double[]	llimit_;
+    final public double[]	uvlimit_;
+    final public double[]	lvlimit_;
     
-    public Vector<GrxLinkItem> children;
+    public Vector<GrxLinkItem> children_;
     
-    final public Vector<GrxSensorItem> sensors;
+    final public Vector<GrxSensorItem> sensors_;
     public Vector<Camera_impl> cameras_;
     
     public Vector<Short>	shapeIndices;
-    public Vector<GrxShapeItem> shapes;
+    public Vector<GrxShapeItem> shapes_;
     
-    public double  jointValue;
-    public TransformGroup tg;
+    public double  jointValue_;
+    public TransformGroup tg_;
 
     /**
      * @brief get inertia matrix
@@ -75,14 +74,6 @@ public class GrxLinkItem extends GrxBaseItem{
      */
     public double[] jointAxis(){
     	return info_.jointAxis;
-    }
-    
-    /**
-     * @brief get name of link
-     * @return name of link
-     */
-    public String name(){
-    	return info_.name;
     }
     
     /**
@@ -134,40 +125,40 @@ public class GrxLinkItem extends GrxBaseItem{
 
     	info_ = info;
 
-        translation    = info.translation;
+        translation_    = info.translation;
         
-        rotation = new double[9];
+        rotation_ = new double[9];
         Matrix3d R = new Matrix3d();
         R.set(new AxisAngle4d(info.rotation));
         for(int row=0; row < 3; ++row){
             for(int col=0; col < 3; ++col){
-                rotation[row * 3 + col] = R.getElement(row, col);
+                rotation_[row * 3 + col] = R.getElement(row, col);
             }
         }
         
         if (info.ulimit == null || info.ulimit.length == 0) {
-            ulimit = new double[]{0.0};
+            ulimit_ = new double[]{0.0};
         } else {
-            ulimit  = info.ulimit;
+            ulimit_  = info.ulimit;
         }
         
         if (info.llimit == null || info.llimit.length == 0){
-            llimit = new double[]{0.0};
+            llimit_ = new double[]{0.0};
         } else {
-            llimit = info.llimit;
+            llimit_ = info.llimit;
         }
 
-        uvlimit = info.uvlimit;
-        lvlimit = info.lvlimit;
+        uvlimit_ = info.uvlimit;
+        lvlimit_ = info.lvlimit;
         
-        children = new Vector<GrxLinkItem>();
+        children_ = new Vector<GrxLinkItem>();
 
         cameras_ = new Vector<Camera_impl>();
-        sensors = new Vector<GrxSensorItem>();
+        sensors_ = new Vector<GrxSensorItem>();
         SensorInfo[] sinfo = info.sensors;
         for (int i=0; i<sinfo.length; i++) {
         	GrxSensorItem sensor = new GrxSensorItem(sinfo[i].name, manager, sinfo[i], this);
-            sensors.add(sensor);
+            sensors_.add(sensor);
             // TODO : sensorMap_ must be updated later
             /*
             List<GrxSensorItem> l = sensorMap_.get(sensor.type());
@@ -180,9 +171,9 @@ public class GrxLinkItem extends GrxBaseItem{
 	
         }
         
-        shapes = new Vector<GrxShapeItem>();
+        shapes_ = new Vector<GrxShapeItem>();
         
-        jointValue = 0.0;
+        jointValue_ = 0.0;
         
         setIcon("joint.png");
     }
