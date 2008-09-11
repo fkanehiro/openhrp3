@@ -299,7 +299,7 @@ public class SeriesDialog extends JDialog {
 					Object type = comboType_.getSelectedItem();
 					GrxModelItem model = (GrxModelItem)comboModel_.getSelectedItem();
 					if (type.equals("Joint")) {
-						Vector<GrxLinkItem> li = model.lInfo_;
+						Vector<GrxLinkItem> li = model.links_;
 						for (int i = 0; i < li.size(); i++) 
 							comboLink_.addItem(li.get(i).getName());
 					} else {

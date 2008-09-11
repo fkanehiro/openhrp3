@@ -474,7 +474,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			robotEntry_.clear();
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem) modelList.get(i);
-				if (model.lInfo_ == null)
+				if (model.links_ == null)
 					continue;
 
 				currentWorld_.registerCharacter(model.getName(), model.bInfo_);
@@ -493,7 +493,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem) modelList.get(i);
-				if (model.lInfo_ == null)
+				if (model.links_ == null)
 					continue;
 
 				// SET INITIAL ROBOT POSITION AND ATTITUDE 				

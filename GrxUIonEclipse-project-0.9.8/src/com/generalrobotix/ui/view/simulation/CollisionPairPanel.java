@@ -221,10 +221,10 @@ public class CollisionPairPanel extends Composite {
                     GrxModelItem m1 = (GrxModelItem)list.get(i);
                     for (int j=0; j<list.size(); j++) {
                         GrxModelItem m2 = (GrxModelItem)list.get(j);
-                        for (int k=1; k<m1.lInfo_.size(); k++) {
-                            for (int l=1; l<m2.lInfo_.size(); l++) {
+                        for (int k=1; k<m1.links_.size(); k++) {
+                            for (int l=1; l<m2.links_.size(); l++) {
                                 if (i != j || k != l)
-                                    _createItem(m1.getName(), m1.lInfo_.get(k).getName(), m2.getName(), m2.lInfo_.get(l).getName());
+                                    _createItem(m1.getName(), m1.links_.get(k).getName(), m2.getName(), m2.links_.get(l).getName());
                             }
                         }
                     }
@@ -561,8 +561,8 @@ public class CollisionPairPanel extends Composite {
             private void _entryLink(GrxModelItem model) {
                  boxLink_.removeAll();
                  //boxLink_.add("");        
-                 for (int i=0; i<model.lInfo_.size(); i++)
-                     boxLink_.add(model.lInfo_.get(i).getName());
+                 for (int i=0; i<model.links_.size(); i++)
+                     boxLink_.add(model.links_.get(i).getName());
                  boxLink_.deselectAll();
             }
             

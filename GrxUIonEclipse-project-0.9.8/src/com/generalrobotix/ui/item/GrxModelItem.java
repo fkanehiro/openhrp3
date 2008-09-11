@@ -25,7 +25,6 @@ import javax.vecmath.*;
 
 import org.eclipse.jface.action.Action;
 
-import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.geometry.*;
 import java.awt.image.*;
 import com.sun.j3d.utils.picking.PickTool;
@@ -36,8 +35,6 @@ import com.generalrobotix.ui.view.tdview.*;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
 import jp.go.aist.hrp.simulator.*;
-import jp.go.aist.hrp.simulator.CameraPackage.CameraParameter;
-import jp.go.aist.hrp.simulator.CameraPackage.CameraType;
 import java.awt.image.BufferedImage;
 
 @SuppressWarnings({ "unchecked", "serial" })
@@ -55,10 +52,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public BodyInfo bInfo_;
 	
     public BranchGroup bgRoot_;
-    public Vector<GrxLinkItem> lInfo_;
-    public GrxLinkItem activeLinkInfo_;
+    public Vector<GrxLinkItem> links_;
+    public GrxLinkItem activeLink_;
     private int[] jointToLink_; // length = joint number
-    private final Map<String, GrxLinkItem> lInfoMap_ = new HashMap<String, GrxLinkItem>();
+    private final Map<String, GrxLinkItem> linkMap_ = new HashMap<String, GrxLinkItem>();
     private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
     // sensor type name -> list of sensors
     private final Map<String, List<GrxSensorItem>> sensorMap_ = new HashMap<String, List<GrxSensorItem>>();
@@ -71,6 +68,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     private TransformGroup tgComZ0_;
     private static final double DEFAULT_RADIOUS = 0.05;
     
+    // temporary varibales for computation
     private Transform3D t3d_ = new Transform3D(); 
     private Transform3D t3dm_ = new Transform3D(); 
     private Vector3d v3d_ = new Vector3d();
@@ -79,6 +77,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     private Matrix3d m3d2_ = new Matrix3d();
     private Vector3d v3d2_ = new Vector3d();
 
+    // icons
    	private static final String robotIcon = "robot.png";
    	private static final String envIcon = "environment.png";
 
@@ -135,7 +134,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	 * @brief get root link
 	 */
 	public GrxLinkItem rootLink() {
-		return lInfo_.get(0);
+		return links_.get(0);
 	}
 	
 	/**
@@ -152,7 +151,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             updateInitialTransformRoot();
 		
         for (int i=0; i<jointToLink_.length; i++) {
-            GrxLinkItem l = lInfo_.get(jointToLink_[i]);
+            GrxLinkItem l = links_.get(jointToLink_[i]);
             Double d = getDbl(l.getName()+".angle", null);
             if (d == null) 
                 setDbl(l.getName()+".angle", 0.0);
@@ -164,6 +163,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @brief properties are set to robot
      */
     public void propertyChanged() {
+    	super.propertyChanged();
         double[] p = getDblAry(rootLink().getName()+".translation", null);
         if (p == null || p.length != 3)
             p = new double[]{0, 0, 0};
@@ -184,8 +184,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		
         _setTransform(0, p, R);
 		
-        for (int j = 0; j < lInfo_.size(); j++) 
-            lInfo_.get(j).jointValue_ = getDbl(lInfo_.get(j).getName() + ".angle", 0.0);
+        for (int j = 0; j < links_.size(); j++) 
+            links_.get(j).jointValue(getDbl(links_.get(j).getName() + ".angle", 0.0));
 		
         calcForwardKinematics();
     }
@@ -254,8 +254,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             bInfo_ = mloader.getBodyInfo(url);
             //
             LinkInfo[] linkInfoList = bInfo_.links();
-            lInfo_ = new Vector<GrxLinkItem>();
-            lInfoMap_.clear();
+            links_ = new Vector<GrxLinkItem>();
+            linkMap_.clear();
             
             for (int i=0; i<cameraList_.size(); i++){
                 cameraList_.get(i).destroy();
@@ -264,17 +264,17 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             
             int jointCount = 0;
             for (int i = 0; i < linkInfoList.length; i++) {
-                lInfo_.add(new GrxLinkItem(linkInfoList[i].name, manager_, linkInfoList[i]));
-                lInfoMap_.put(lInfo_.get(i).getName(), lInfo_.get(i));
-                if (lInfo_.get(i).jointId() >= 0){
+                links_.add(new GrxLinkItem(linkInfoList[i].name, manager_, linkInfoList[i]));
+                linkMap_.put(links_.get(i).getName(), links_.get(i));
+                if (links_.get(i).jointId() >= 0){
                     jointCount++;
                 }
             }
             
             // Search root node.
             int rootIndex = -1;
-            for( int i = 0 ; i < lInfo_.size() ; i++ ) {
-                if( lInfo_.get(i).parentIndex() < 0 ){
+            for( int i = 0 ; i < links_.size() ; i++ ) {
+                if( links_.get(i).parentIndex() < 0 ){
                     if( rootIndex < 0 ) {
                         rootIndex = i;
                     } else {
@@ -290,8 +290,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             
             jointToLink_ = new int[jointCount];
             for (int i=0; i<jointCount; i++) {
-                for (int j=0; j<lInfo_.size(); j++) {
-                    if (lInfo_.get(j).jointId() == i) {
+                for (int j=0; j<links_.size(); j++) {
+                    if (links_.get(j).jointId() == i) {
                         jointToLink_[i] = j;
                     }
                 }
@@ -321,24 +321,23 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     private void createLink( int index ){
         
-        GrxLinkItem info = lInfo_.get(index);
+        GrxLinkItem link = links_.get(index);
         
         // register this to children field of parent link
-        if (info.parentIndex() != -1){
-        	GrxLinkItem parent = lInfo_.get(info.parentIndex());
-        	parent.children_.add(info);
+        if (link.parentIndex() != -1){
+        	links_.get(link.parentIndex()).addLink(link);
         }
         
-        // update cameraList_
-        for (int i=0; i< info.cameras_.size(); i++){
-        	cameraList_.add(info.cameras_.get(i));
+        // gather cameras
+        for (int i=0; i< link.cameras_.size(); i++){
+        	cameraList_.add(link.cameras_.get(i));
         }
         
         
-        for( int i = 0 ; i < info.childIndices().length ; i++ ) 
+        for( int i = 0 ; i < link.childIndices().length ; i++ ) 
             {
                 // call recursively
-                int childIndex = info.childIndices()[i];
+                int childIndex = link.childIndices()[i];
                 createLink( childIndex );
             }
     }
@@ -360,9 +359,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         for(int linkIndex = 0; linkIndex < numLinks; linkIndex++) {
 
             LinkInfo linkInfo = links[linkIndex];
+            GrxLinkItem link = links_.get(linkIndex);
 
-            TransformGroup linkTopTransformNode = new TransformGroup();
-            lInfo_.get(linkIndex).tg_ = linkTopTransformNode;
+            TransformGroup linkTopTransformNode = link.tg_;
 
             int numShapes = linkInfo.shapeIndices.length;
             for(int localShapeIndex = 0; localShapeIndex < numShapes; localShapeIndex++) {
@@ -372,6 +371,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 Shape3D linkShape3D = createLinkShape3D(shapeInfo, appearances, materials, textures);
 
                 TransformGroup shapeTransform = new TransformGroup();
+
                 double[] m = tsi.transformMatrix;
                 Matrix4d M = new Matrix4d(m[0], m[1], m[2],  m[3],
                                           m[4], m[5], m[6],  m[7],
@@ -379,7 +379,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                                           0.0,  0.0,  0.0,   1.0);
                 shapeTransform.setTransform(new Transform3D(M));
                 shapeTransform.addChild(linkShape3D);
-                linkTopTransformNode.addChild(shapeTransform);
+
+                BranchGroup bg = new BranchGroup();
+                bg.setCapability(BranchGroup.ALLOW_DETACH);
+                bg.addChild(shapeTransform);
+                
+                GrxShapeItem shape = new GrxShapeItem(linkInfo.name+"_shape_"+localShapeIndex, manager_, bg);
+                link.addShape(shape);
 
                 /* normal visualization */
                 if(false){
@@ -389,7 +395,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 }
             }
 
-            Vector<GrxSensorItem> sensors = lInfo_.get(linkIndex).sensors_;
+            Vector<GrxSensorItem> sensors = links_.get(linkIndex).sensors_;
             for (int j=0; j < sensors.size(); j++) {
                 GrxSensorItem si = sensors.get(j);
 
@@ -398,8 +404,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     Camera_impl camera = cameraList_.get(si.id());
                     linkTopTransformNode.addChild(camera.getBranchGraph());
 
-                    double[] pos = si.translation;
-                    double[] rot = si.rotation;
+                    double[] pos = si.translation();
+                    double[] rot = si.rotation();
 
                     Transform3D t3d = new Transform3D();
                     t3d.setTranslation(new Vector3d(pos));
@@ -409,17 +415,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             }
         }
 
-        if(numLinks > 0){
-            bgRoot_.addChild(rootTransformGroup());
-            for(int i=1; i < numLinks; ++i){
-                new BranchGroup().addChild(lInfo_.get(i).tg_);
-            }
-        }
-
         SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-        for (int i = 0; i < lInfo_.size(); i++) {
+        for (int i = 0; i < links_.size(); i++) {
             Map<String, Object> userData = new Hashtable<String, Object>();
-            GrxLinkItem info = lInfo_.get(i);
+            GrxLinkItem info = links_.get(i);
             userData.put("object", this);
             userData.put("linkInfo", info);
             userData.put("objectName", this.getName());
@@ -427,11 +426,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             Vector3d jointAxis = new Vector3d(info.jointAxis());
             GrxLinkItem itmp = info;
             while (itmp.jointId() == -1 && itmp.parentIndex() != -1) {
-                itmp = lInfo_.get(itmp.parentIndex());
+                itmp = links_.get(itmp.parentIndex());
             }
             userData.put("controllableJoint", itmp.getName());
 			 
-            TransformGroup g = lInfo_.get(i).tg_;
+            TransformGroup g = links_.get(i).tg_;
             Transform3D tr = new Transform3D();
             tr.setIdentity();
             g.setTransform(tr);
@@ -459,11 +458,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             g.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
             g.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
 			
-            int mid = lInfo_.get(i).parentIndex();
-            if (mid != -1) {
-                Group mg = (Group)lInfo_.get(mid).tg_.getParent();
-                mg.addChild(g.getParent());
-            } 
+            bgRoot_.addChild(links_.get(i).bg_);
         }
 		
         rootTransformGroup().setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
@@ -473,12 +468,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		
         modifier.modifyRobot(this);
 		
-        setDblAry(rootLink().getName()+".translation", rootLink().translation_);
-        setDblAry(rootLink().getName()+".rotation", rootLink().rotation_);
+        setDblAry(rootLink().getName()+".translation", rootLink().translation());
+        setDblAry(rootLink().getName()+".rotation", rootLink().rotation());
         propertyChanged();
 
-        for (int i=0; i<lInfo_.size(); i++) {
-            Node n = lInfo_.get(i).tg_.getChild(0);
+        for (int i=0; i<links_.size(); i++) {
+            Node n = links_.get(i).tg_.getChild(0);
             if (n.getCapability(Node.ENABLE_PICK_REPORTING))
                 n.clearCapability(Node.ENABLE_PICK_REPORTING);
         }
@@ -837,7 +832,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             return;
 		
         boolean isAllPosProvided = true;
-        for (int i=0; i<lInfo_.size(); i++) {
+        for (int i=0; i<links_.size(); i++) {
             if (lpos[i].p == null || lpos[i].R == null)
                 isAllPosProvided = false;
             else
@@ -846,7 +841,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		
         if (q != null) {
             for (int i=0; i<jointToLink_.length; i++)
-                lInfo_.get(jointToLink_[i]).jointValue_ = q[i];
+                links_.get(jointToLink_[i]).jointValue(q[i]);
         }
 		
         if (isAllPosProvided)
@@ -871,7 +866,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param rot rotation matrix
      */
     private void _setTransform(int linkId, Vector3d pos, Matrix3d rot) {
-        TransformGroup tg = lInfo_.get(linkId).tg_;
+        TransformGroup tg = links_.get(linkId).tg_;
         tg.getTransform(t3d_);
         if (pos != null)
             t3d_.set(pos);
@@ -898,13 +893,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     /**
      * @brief set joint value
-     * @jname name of the joint
-     * @value value of the joint
+     * @param jname name of the joint
+     * @param value of the joint
      */
     public void setJointValue(String jname, double value) {
         GrxLinkItem l = getLinkInfo(jname);
         if (l != null) 
-            l.jointValue_ = value;
+            l.jointValue(value);
     }
 
     /**
@@ -915,8 +910,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         if (values.length != jointToLink_.length)
             return;
         for (int i=0; i<jointToLink_.length; i++) {
-            GrxLinkItem l = lInfo_.get(jointToLink_[i]);
-            l.jointValue_ = values[i];
+            GrxLinkItem l = links_.get(jointToLink_[i]);
+            l.jointValue(values[i]);
         }
     }
 
@@ -924,13 +919,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @brief modify joint value If it exceeds limit values
      */
     public void setJointValuesWithinLimit() {
-        for (int i = 1; i < lInfo_.size(); i++) {
-            GrxLinkItem l = lInfo_.get(i);
+        for (int i = 1; i < links_.size(); i++) {
+            GrxLinkItem l = links_.get(i);
             if (l.llimit_[0] < l.ulimit_[0]) {
-                if (l.jointValue_ < l.llimit_[0])
-                    l.jointValue_ = l.llimit_[0];
-                else if (l.ulimit_[0] < l.jointValue_)
-                    l.jointValue_ = l.ulimit_[0];
+                if (l.jointValue() < l.llimit_[0])
+                    l.jointValue(l.llimit_[0]);
+                else if (l.ulimit_[0] < l.jointValue())
+                    l.jointValue(l.ulimit_[0]);
             }
         }
     }
@@ -959,57 +954,19 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public void updateInitialJointValue(String jname) {
         GrxLinkItem l = getLinkInfo(jname);
         if (l != null)
-            setDbl(jname+".angle", l.jointValue_);
+            setDbl(jname+".angle", l.jointValue());
     }
 
     public void updateInitialJointValues() {
         for (int i=0; i<jointToLink_.length; i++) {
-            GrxLinkItem l = lInfo_.get(jointToLink_[i]);
-            setDbl(l.getName()+".angle", l.jointValue_);
+            GrxLinkItem l = links_.get(jointToLink_[i]);
+            setDbl(l.getName()+".angle", l.jointValue());
         }
     }
 
     public  void calcForwardKinematics() {
-        calcForwardKinematics(0);
+        rootLink().calcForwardKinematics();
         _updateCoM();
-    }
-
-    /**
-     * @brief compute forward kinematics
-     * @param linkId id of the link where computation is started
-     */
-    private void calcForwardKinematics(int linkId) {
-        if (linkId < 0)
-            return;
-		
-        GrxLinkItem l = lInfo_.get(linkId);
-        if (linkId != 0 && l.parentIndex() != -1) {
-            lInfo_.get(l.parentIndex()).tg_.getTransform(t3dm_);
-			
-            if (l.jointType().equals("rotate") || l.jointType().equals("fixed")) {
-                v3d_.set(l.translation_[0], l.translation_[1], l.translation_[2]);
-                t3d_.setTranslation(v3d_);
-                m3d_.set(l.rotation_);
-                a4d_.set(l.jointAxis()[0], l.jointAxis()[1], l.jointAxis()[2], lInfo_.get(linkId).jointValue_);
-                m3d2_.set(a4d_);
-                m3d_.mul(m3d2_);
-                t3d_.setRotation(m3d_);
-            } else if(l.jointType().equals("slide")) {
-                v3d_.set(l.translation_[0], l.translation_[1], l.translation_[2]);
-                v3d2_.set(l.jointAxis()[0], l.jointAxis()[1], l.jointAxis()[2]);
-                v3d2_.scale(lInfo_.get(linkId).jointValue_);
-                v3d_.add(v3d2_);
-                t3d_.setTranslation(v3d_);
-                m3d_.set(l.rotation_);
-                m3d_.mul(m3d_);
-                t3d_.setRotation(m3d_);
-            }
-            t3dm_.mul(t3d_);
-            l.tg_.setTransform(t3dm_);
-        }
-        for (int i=0; i<l.childIndices().length; i++){
-        	calcForwardKinematics(l.childIndices()[i]);
-        }
     }
 
     private void _updateCoM() {
@@ -1048,15 +1005,15 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         Vector3d absCom = new Vector3d();
         Vector3d p = new Vector3d();
         Transform3D t3d = new Transform3D();
-        for (int i = 0; i < lInfo_.size(); i++) {
-            totalMass += lInfo_.get(i).mass();
-            absCom.set(lInfo_.get(i).centerOfMass());
-            TransformGroup tg = lInfo_.get(i).tg_;
+        for (int i = 0; i < links_.size(); i++) {
+            totalMass += links_.get(i).mass();
+            absCom.set(links_.get(i).centerOfMass());
+            TransformGroup tg = links_.get(i).tg_;
             tg.getTransform(t3d);
             t3d.transform(absCom);
             t3d.get(p);
             absCom.add(p);
-            absCom.scale(lInfo_.get(i).mass());
+            absCom.scale(links_.get(i).mass());
             pos.add(absCom);
         }
         pos.scale(1.0 / totalMass);
@@ -1069,12 +1026,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		
         String[] ret = new String[l.size()];
         for (int i=0; i<ret.length; i++)
-            ret[i] = l.get(i).name();
+            ret[i] = l.get(i).getName();
         return ret;
     }
 
     public GrxLinkItem getLinkInfo(String linkName) {
-        return lInfoMap_.get(linkName);
+        return linkMap_.get(linkName);
     }
 
     public Transform3D getTransform(String linkName) {
@@ -1144,30 +1101,30 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public String[] getJointNames() {
         String[] names = new String[jointToLink_.length];
         for (int i=0; i<jointToLink_.length; i++)
-            names[i] = lInfo_.get(jointToLink_[i]).getName();
+            names[i] = links_.get(jointToLink_[i]).getName();
         return names;
     }
 
     public double getJointValue(String jname) {
         GrxLinkItem l = getLinkInfo(jname);
         if (l != null)
-            return l.jointValue_;
+            return l.jointValue();
         return 0.0;
     } 
 
     public double[] getJointValues() {
         double[] vals = new double[jointToLink_.length];
         for (int i=0; i<jointToLink_.length; i++)
-            vals[i] = lInfo_.get(jointToLink_[i]).jointValue_;
+            vals[i] = links_.get(jointToLink_[i]).jointValue();
         return vals;
     }
 
     public double[] getInitialJointValues() {
         double[] ret = new double[jointToLink_.length];
         for (int i=0; i<ret.length; i++) {
-            GrxLinkItem l = lInfo_.get(jointToLink_[i]);
+            GrxLinkItem l = links_.get(jointToLink_[i]);
             String jname = l.getName();
-            ret[i] = getDbl(jname+".angle", l.jointValue_);
+            ret[i] = getDbl(jname+".angle", l.jointValue());
         }
         return ret;
     }
@@ -1175,7 +1132,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public double[] getInitialJointMode() {
         double[] ret = new double[jointToLink_.length];
         for (int i=0; i<ret.length; i++) {
-            String jname = lInfo_.get(jointToLink_[i]).getName();
+            String jname = links_.get(jointToLink_[i]).getName();
             String mode = getStr(jname+".mode", "Torque");
             ret[i] = mode.equals("HighGain") ? 1.0 : 0.0;
         }
@@ -1537,9 +1494,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public void setJointColor(int jid, java.awt.Color color) {
         if (color == null) 
-            setAmbientColorRecursive(lInfo_.get(jointToLink_[jid]).tg_, new Color3f(0.0f, 0.0f, 0.0f));
+            setAmbientColorRecursive(links_.get(jointToLink_[jid]).tg_, new Color3f(0.0f, 0.0f, 0.0f));
         else
-            setAmbientColorRecursive(lInfo_.get(jointToLink_[jid]).tg_, new Color3f(color));
+            setAmbientColorRecursive(links_.get(jointToLink_[jid]).tg_, new Color3f(color));
     }
     
 
