@@ -281,7 +281,7 @@ class JointRotationHandler extends OperationHandler {
         
         if (l.jointType().equals("rotate") || l.jointType().equals("slide")) {
             _disableBoundingBox();
-            robot.activeLinkInfo_ = l;
+            robot.activeLink_ = l;
             tgTarget_ = l.tg_;
             bbSwitch_ = (Switch)ht.get("boundingBoxSwitch");
             axisSwitch_ = (Switch)ht.get("axisLineSwitch");

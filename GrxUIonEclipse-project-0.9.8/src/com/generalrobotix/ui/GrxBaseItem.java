@@ -43,21 +43,8 @@ public class GrxBaseItem extends GrxBasePlugin {
 	 */
 	protected GrxBaseItem(String name, GrxPluginManager manager) {
 		super(name, manager);
-		// rename
-		Action item = new Action(){
-				public String getText(){
-					return "rename";
-				}
-				public void run(){
-					InputDialog dialog = new InputDialog( null, null,
-							"Input new name (without extension).", null,null);
-					if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
-						rename( dialog.getValue() );
-				}
-			};
-		setMenuItem(item);
 		// delete
-		item = new Action(){
+		Action item = new Action(){
 				public String getText(){
 					return "delete";
 				}
@@ -88,13 +75,6 @@ public class GrxBaseItem extends GrxBasePlugin {
 		return true;
 	};
 	
-	/**
-	 * @brief rename this item
-	 * @param newName new name
-	 */
-	public void rename(String newName) {
-		manager_.renamePlugin(this, newName);
-	};
 
 	/**
 	 * @brief delete this item

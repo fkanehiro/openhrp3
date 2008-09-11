@@ -248,7 +248,7 @@ public class BehaviorManager implements WorldReplaceListener {
 			
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem) modelList.get(i);
-				if (model.lInfo_ == null)
+				if (model.links_ == null)
 					continue;
 				
 				String base = model.rootLink().getName();

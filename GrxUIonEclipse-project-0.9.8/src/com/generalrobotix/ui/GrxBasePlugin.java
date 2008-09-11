@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
@@ -67,7 +68,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
      */
 	protected GrxBasePlugin(String name, GrxPluginManager manager) {
 		manager_ = manager;
-		name_ = name;
+		setName(name);
 		ireg_ = new ImageRegistry();
 		// menu item : restore Properties
 		Action a = new Action(){
@@ -79,6 +80,20 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			}
 		};
 		setMenuItem(a);
+		
+		// rename
+		Action item = new Action(){
+				public String getText(){
+					return "rename";
+				}
+				public void run(){
+					InputDialog dialog = new InputDialog( null, null,
+							"Input new name (without extension).", getName(),null);
+					if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
+						rename( dialog.getValue() );
+				}
+			};
+		setMenuItem(item);
 	}
 
 	/**
@@ -148,6 +163,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	 */
 	public void setName(String name) {
 		name_ = name;
+		setProperty("name", name);
 	}
 
 	/**
@@ -305,6 +321,14 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	}
 	
 	/**
+	 * @brief rename this item
+	 * @param newName new name
+	 */
+	public void rename(String newName) {
+		manager_.renamePlugin(this, newName);
+	};
+	
+	/**
 	 * @brief get field
 	 * @param cls
 	 * @param field
@@ -325,7 +349,10 @@ public class GrxBasePlugin extends GrxConfigBundle {
      * 
      */
 	public void propertyChanged() {
-		
+		String name = getStr("name");
+		if (name != null){
+			rename(name);
+		}
 	}
 
 	/**

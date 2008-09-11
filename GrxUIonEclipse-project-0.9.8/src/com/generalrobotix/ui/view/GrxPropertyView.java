@@ -64,13 +64,20 @@ public class GrxPropertyView extends GrxBaseView {
 
     private final String[] clmName_ = { "Name", "Value" };
 
+    /**
+     * @brief constructor
+     * @param name
+     * @param manager
+     * @param vp
+     * @param parent
+     */
     public GrxPropertyView(
         String name,
-        GrxPluginManager manager_,
+        GrxPluginManager manager,
         GrxBaseViewPart vp,
         Composite parent) {
 
-        super(name, manager_, vp, parent);
+        super(name, manager, vp, parent);
         GrxDebugUtil.println("GrxPropertyView init");
 
         viewer_ = new TableViewer(composite_, SWT.MULTI | SWT.FULL_SELECTION

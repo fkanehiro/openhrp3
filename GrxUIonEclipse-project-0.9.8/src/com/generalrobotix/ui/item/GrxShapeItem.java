@@ -17,43 +17,80 @@
 
 package com.generalrobotix.ui.item;
 
+import javax.media.j3d.BranchGroup;
+
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 
+@SuppressWarnings("serial")
 /**
  * @brief sensor
  */
-@SuppressWarnings("serial")
 public class GrxShapeItem extends GrxBaseItem{
-
-	private String name_;
+	public BranchGroup bg_;
 	/*
     final public double[] translation;
     final public double[] rotation;
     */
-    final public GrxLinkItem parent_;
+    public GrxLinkItem parent_;
 
     /**
-     * @brief get name
-     * @return name of sensor
+     * @brief delete this shape
      */
-    public String name(){
-    	return name_;
+    public void delete() {
+    	super.delete();
+    	bg_.detach();
+    	parent_.removeShape(this);
     }
+    
     
     /**
      * @brief constructor
      * @param info SensorInfo retrieved through ModelLoader
-     * @param parentLink link to which this sensor is attached
      */
-    public GrxShapeItem(String name, GrxPluginManager manager, GrxLinkItem parentLink) {
+    public GrxShapeItem(String name, GrxPluginManager manager, BranchGroup bg) {
     	super(name, manager);
+    	bg_ = bg;
 
-    	/*
+		getMenu().clear();
+		
+		Action item;
+
+		// rename
+		item = new Action(){
+			public String getText(){
+				return "rename";
+			}
+			public void run(){
+				InputDialog dialog = new InputDialog( null, null,
+						"Input new name.", getName(),null);
+				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
+					rename( dialog.getValue() );
+			}
+		};
+		setMenuItem(item);
+
+		// delete
+		item = new Action(){
+			public String getText(){
+				return "delete";
+			}
+			public void run(){
+				if( MessageDialog.openQuestion( null, "delete shape",
+						"Are you sure to delete " + getName() + " ?") )
+					delete();
+			}
+		};
+		setMenuItem(item);
+
+		/*
         translation = info.translation;
         rotation = info.rotation;
 		*/
-        parent_ = parentLink;
     }
 
 
