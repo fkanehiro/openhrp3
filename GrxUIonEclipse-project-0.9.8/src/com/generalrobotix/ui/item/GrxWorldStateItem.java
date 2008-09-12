@@ -184,7 +184,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			logList.add("float[4]");
 		}
 		
-		for (int i=0; i<jointList.size(); i++) {
+		for (short i=0; i<jointList.size(); i++) { // short <- its depend on the idl def.
 			int idx = jointList.indexOf(i);
 			if (idx >= 0) {
 				String jname = li[idx].name;
