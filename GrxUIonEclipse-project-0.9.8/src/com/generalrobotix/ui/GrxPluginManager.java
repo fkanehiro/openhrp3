@@ -499,7 +499,7 @@ public class GrxPluginManager
 			URL u = new URL(_url);
 			f = new File(u.getFile());
 		} catch (Exception e) {
-			GrxDebugUtil.printErr("loadItem : in not URL format\n", e);
+			GrxDebugUtil.printErr("loadItem("+url+" is not URL format\n", e);
 	        f = new File(_url);
 		}
 		
@@ -788,13 +788,6 @@ public class GrxPluginManager
 	 * @return
 	 */
 	public GrxBaseView getView(Class<? extends GrxBaseView> cls) {
-		/*HashMap m = pluginMap_.get(cls);
-		if (m != null) {
-			Iterator it = m.values().iterator();
-			if (it.hasNext())
-				return (GrxBaseView) it.next();
-		}
-		return null;*/
 		updateViewList();
 		for( GrxBaseView v : selectedViewList_ )
 			if( v.getClass() == cls )
@@ -803,6 +796,17 @@ public class GrxPluginManager
 		return null;
 	}
 	
+	public GrxBaseView getView(String name) {
+		updateViewList();
+		for (GrxBaseView v : selectedViewList_){
+			System.out.println(v.getName());
+			if (v.getName().equals(name)){
+				return v;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * @brief
 	 * @param item

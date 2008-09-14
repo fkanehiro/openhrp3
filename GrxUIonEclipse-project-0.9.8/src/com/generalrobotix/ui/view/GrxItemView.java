@@ -49,7 +49,6 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
-import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.OrderedHashMap;
 
 @SuppressWarnings("serial")

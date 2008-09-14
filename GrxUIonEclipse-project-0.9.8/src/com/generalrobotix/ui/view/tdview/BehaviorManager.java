@@ -293,6 +293,7 @@ public class BehaviorManager implements WorldReplaceListener {
 		behavior_.removeClickListener( listener );
 	}
 	public Collision[] getCollision(List<GrxModelItem> modelList) {
+		if (currentDynamics_ == null) return null;
 		for (int i=0; i<modelList.size(); i++)  {
 			GrxModelItem model = modelList.get(i);
 			String name = model.getName();

@@ -88,6 +88,7 @@ public class Grx3DView
     private GrxLoggerView stateLogger_;
     private double prevTime_ = -1;
     private double dAngle_ = Math.toRadians(0.1);
+    private boolean updateModels_=true;
     
     // for scene graph
     private static VirtualUniverse universe_;
@@ -224,6 +225,14 @@ public class Grx3DView
         setScrollMinSize();
     }
     
+    
+    public void disableUpdateModel(){
+        updateModels_ = false;
+    }
+    
+    public void enableUpdateModel(){
+        updateModels_ = true;
+    }
     
     private void _setupSceneGraph() {
         universe_ = new VirtualUniverse();
@@ -440,14 +449,14 @@ public class Grx3DView
         });
         
 
-        final JToggleButton btnCamera = new JToggleButton("C");
+        final JButton btnCamera = new JButton("C");
         btnCamera.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 for (int i=0; i<currentModels_.size(); i++) {
                     List<Camera_impl> l = currentModels_.get(i).getCameraSequence();
                     for (int j=0; j<l.size(); j++) {
                         Camera_impl c = l.get(j);
-                        c.setVisible(btnCamera.isSelected());
+                        c.setVisible(!c.isVisible());
                     }
                 }
             }
@@ -598,7 +607,9 @@ public class Grx3DView
     }
     
     public void control(List<GrxBaseItem> items) {
-         if (currentModels_.size() == 0)
+        if (updateModels_) _updateViewSimulator();
+
+        if (currentModels_.size() == 0)
             return;
 
         if (behaviorManager.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE && btnCollision_.isSelected()) {
@@ -621,6 +632,13 @@ public class Grx3DView
 
         _updateViewSimulator();
         
+        if (updateModels_) updateModels(state);
+		
+        _doRecording();
+        prevTime_ = state.time;
+    }
+
+    public void updateModels(WorldStateEx state){
         // update models with new WorldState
         for (int i=0; i<currentModels_.size(); i++) {
             GrxModelItem model = currentModels_.get(i);
@@ -632,8 +650,6 @@ public class Grx3DView
                     model.setCharacterPos(charStat.position, null);
             }
         }
-        _doRecording();
-        prevTime_ = state.time;
     }
 
     private void rec(){
@@ -856,15 +872,11 @@ public class Grx3DView
     }
 
     private void _updateViewSimulator() {
-        if (!currentWorld_.isTrue("viewsimulate", false))
-            return;
-
         for (int i=0; i<currentModels_.size(); i++) {
             List<Camera_impl> l = currentModels_.get(i).getCameraSequence();
             for (int j=0; j<l.size(); j++) {
                 Camera_impl c = l.get(j);
-                c.rendered_ = false;
-                c.updateView();
+                if (c.isVisible()) c.updateView();
             }
         }
     }

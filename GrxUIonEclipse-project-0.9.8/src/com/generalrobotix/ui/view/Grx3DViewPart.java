@@ -7,7 +7,7 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 public class Grx3DViewPart extends GrxBaseViewPart {
 
     public void createPartControl(Composite parent) {
-        createView( Grx3DView.class, "Test View", this, parent );
+        createView( Grx3DView.class, "3DView", this, parent );
     }
 
 }
