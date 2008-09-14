@@ -44,13 +44,9 @@ public class SimulationParameterPanel extends Composite{
   ItemPropertyDoubleSpinForSWT spinStepTime_;
   ItemPropertyDoubleSpinForSWT spinLogStepTime_;
   ItemPropertyDoubleSpinForSWT spinGravity_;
-  ItemPropertyDoubleSpinForSWT spinViewSimulationStepTime_;
-
   Button chkIntegrate_;
   Button chkViewSimulate_;
   Combo cmbMethod_;
-  
-  Label lblViewSimulationStepTime_;
   
   public SimulationParameterPanel(Composite parent,int style) {
     super(parent,style);
@@ -158,8 +154,6 @@ public class SimulationParameterPanel extends Composite{
         }
 
         public void widgetSelected(SelectionEvent e) {
-            lblViewSimulationStepTime_.setEnabled(isViewSimulate());
-            spinViewSimulationStepTime_.setEnabled(isViewSimulate());
             if (currentItem_ != null)
                 currentItem_.setProperty("viewsimulate", String.valueOf(chkViewSimulate_.getSelection()));
         }
@@ -169,15 +163,8 @@ public class SimulationParameterPanel extends Composite{
     
     label = new Label(this,SWT.SHADOW_NONE);//dummy
 
-    lblViewSimulationStepTime_ = new Label(this,SWT.SHADOW_NONE);
-    lblViewSimulationStepTime_.setText(MessageBundle.get("panel.simulation.start.viewsimulationStepTime"));
     gridData = new GridData();
     gridData.horizontalAlignment = SWT.END;
-    lblViewSimulationStepTime_.setLayoutData(gridData);
-    //lblViewSimulationStepTime_.setBounds(12, 12 + 36 + 36 + 36 + 36 + 36 + 36 + 36 + 36, 130, 24);
-    
-    spinViewSimulationStepTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,0.033, 100, 0.001);
-    //spinViewSimulationStepTime_.getContent().setBounds(12 + 130 + 6, 12 + 36 + 36 + 36 + 36 + 36 + 36 + 36 + 36, 100, 24);
     
     this.setSize(260,330);
     //setPreferredSize(new Dimension(260, 300));
@@ -189,8 +176,6 @@ public class SimulationParameterPanel extends Composite{
     for (int i = 0; i < cmps.length; i++) {
       cmps[i].setEnabled(flag);
     }
-    lblViewSimulationStepTime_.setEnabled(flag && isViewSimulate());
-    spinViewSimulationStepTime_.setEnabled(flag && isViewSimulate());
   }
   
 
@@ -223,10 +208,6 @@ public class SimulationParameterPanel extends Composite{
     spinGravity_.setValue(g);
   }
 
-  public void setViewSimulationStepTime(double g) {
-    spinViewSimulationStepTime_.setValue(g);
-  }
-  
   public double getStepTime() {
     return spinStepTime_.getValue();
   }
@@ -243,16 +224,12 @@ public class SimulationParameterPanel extends Composite{
     return chkIntegrate_.getSelection();
   }
 
-  public boolean isViewSimulate() {
+  public boolean isSimulatingView() {
     return chkViewSimulate_.getSelection();
   }
 
   public double getGravity() {
 	    return spinGravity_.getValue();
-  }
-  
-  public double getViewSimulationStepTime() {
-    return spinViewSimulationStepTime_.getValue();
   }
   
   public SEEnumeration getMethod() {
@@ -267,14 +244,12 @@ public class SimulationParameterPanel extends Composite{
       spinStepTime_.setItem(item, "timeStep");
   	  spinLogStepTime_.setItem(item, "logTimeStep");
   	  spinGravity_.setItem(item, "gravity");
-  	  spinViewSimulationStepTime_.setItem(item, "viewsimulationTimeStep");
 	  
 	  if (item != null) { 
 		  setTotalTime(item.getDbl("totalTime", 20.0));
 		  setStepTime(item.getDbl("timeStep", 0.001));
 		  setLogStepTime(item.getDbl("logTimeStep", 0.001));
 		  setGravity(item.getDbl("gravity", 9.8));
-		  setViewSimulationStepTime(item.getDbl("viewsimulationTimeStep", 0.033));
 		  setMethod(item.getProperty("method",METHOD_NAMES[0]));
 		  setIntegrate(item.isTrue("integrate", true));
 		  setViewSimulate(item.isTrue("viewsimulate", false));

@@ -1,3 +1,4 @@
+// -*- indent-tabs-mode: nil; tab-width: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -54,6 +55,7 @@ public class GrxLoggerView extends GrxBaseView {
 	private double interval_ = 100;
 	private boolean isChanging_ = false;
 	private boolean isPlaying_ = false;
+    private boolean isControlDisabled_ = false; 
 
 	private Scale sliderFrameRate_;
 	private Label  lblFrameRate_;
@@ -413,10 +415,19 @@ public class GrxLoggerView extends GrxBaseView {
     }
 	
 	public void setEnabled(boolean b) {
+        if (isControlDisabled_) return;
 		sliderTime_.setEnabled(b);
 //		tFldTime_.setEnabled(b);
 		lblPlayRate_.setEnabled(b);
 		for (int i=0; i<btns_.length; i++)
 			btns_[i].setEnabled(b);
 	}
+    public void disableControl() {
+        setEnabled(false);
+        isControlDisabled_ = true;
+    }
+
+    public void enableControl() {
+        isControlDisabled_ = false;
+    }
 }

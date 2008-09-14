@@ -1,3 +1,4 @@
+// -*- indent-tabs-mode: nil; tab-width: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -90,6 +91,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private double stepTime_ = 0.001;
 	private double totalTime_ = 20;
 	private double logStepTime_ = 0.05;
+	private boolean isSimulatingView_;
+	private Grx3DView tdview_;
 
 	private SimulationParameterPanel simParamPane_;
 	private ControllerPanel controllerPane_;
@@ -270,9 +273,18 @@ public class GrxOpenHRPView extends GrxBaseView {
 		simTime_ = 0.0;
 		startTime_ = System.currentTimeMillis();
 		suspendedTime_ = 0;
-
+		isSimulatingView_ = simParamPane_.isSimulatingView();
+		if (isSimulatingView_){
+			tdview_ = (Grx3DView)manager_.getView("3DView");
+			if (tdview_ == null){
+				GrxDebugUtil.printErr("can't find 3DView");
+			}
+			tdview_.disableUpdateModel();
+			GrxLoggerView lgview = (GrxLoggerView)manager_.getView("Logger View");
+			lgview.disableControl();
+		}
 		simThread_.start();
-		GrxDebugUtil.println("[HRP]@startSimulation Start Thread and end this function.");
+		GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
 	}
 
 	void execSWT( Runnable r, boolean execInCurrentThread ){
@@ -298,6 +310,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 	public void stopSimulation() {
 		if (isExecuting_) {
 			isExecuting_ = false;
+			tdview_.enableUpdateModel();
+			GrxLoggerView lgview = (GrxLoggerView)manager_.getView("Logger View");
+			lgview.enableControl();
 			updateTimeMsg();
 			try {
 				if (Thread.currentThread() != simThread_) {
@@ -393,19 +408,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			return;
 		}
 
-		if ((simTime_ % logStepTime_) < stepTime_) {
-			currentDynamics_.getWorldState(stateH_);
-			WorldStateEx wsx = new WorldStateEx(stateH_.value);
-			for (int i=0; i<robotEntry_.size(); i++) {
-				String name = robotEntry_.get(i);
-				currentDynamics_.getCharacterSensorState(name, cStateH_);
-				wsx.setSensorState(name, cStateH_.value);
-			}
-            if (!isIntegrate_)
-                wsx.time = simTime_;
-			currentWorld_.addValue(simTime_, wsx);
-		}
-
+		// input
 	    for (int i = 0; i<controllers_.size(); i++) {
 	    	ControllerAttribute attr = 
 	    		(ControllerAttribute)controllers_.get(i);
@@ -421,7 +424,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	    
 		simTime_ += stepTime_;
 
-
+		// control
 		for (int i = 0; i < controllers_.size(); i++) {
 			ControllerAttribute attr = controllers_.get(i);
 			if (attr.doFlag_) {
@@ -433,13 +436,31 @@ public class GrxOpenHRPView extends GrxBaseView {
 			}
 		}
 		
+		// simulate
 		if (isIntegrate_) {
 			currentDynamics_.stepSimulation();
 		} else {
 			currentDynamics_.calcWorldForwardKinematics();
 		}
 		
+		// log
+		if ((simTime_ % logStepTime_) < stepTime_) {
+			currentDynamics_.getWorldState(stateH_);
+			WorldStateEx wsx = new WorldStateEx(stateH_.value);
+			for (int i=0; i<robotEntry_.size(); i++) {
+				String name = robotEntry_.get(i);
+				currentDynamics_.getCharacterSensorState(name, cStateH_);
+				wsx.setSensorState(name, cStateH_.value);
+			}
+            if (!isIntegrate_)
+                wsx.time = simTime_;
+			currentWorld_.addValue(simTime_, wsx);
+			if (isSimulatingView_){
+				tdview_.updateModels(wsx);
+			}
+		}
 
+		// output
 		for (int i = 0; i < controllers_.size(); i++) {
 			ControllerAttribute attr = controllers_.get(i);
 			if (attr.doFlag_) {
@@ -670,7 +691,7 @@ public class GrxOpenHRPView extends GrxBaseView {
                     Controller controller = cfactory.create(model.getName());
                     controller.setDynamicsSimulator(currentDynamics_);
 
-                    if (simParamPane_.isViewSimulate()) {
+                    if (simParamPane_.isSimulatingView()) {
                         cobj = GrxCorbaUtil.getReference("ViewSimulator", nsHost_, nsPort_);
                         ViewSimulator viewsim = ViewSimulatorHelper.narrow(cobj);
                         controller.setViewSimulator(viewsim);

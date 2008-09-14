@@ -6,7 +6,7 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 public class GrxLoggerViewPart extends GrxBaseViewPart {
 
     public void createPartControl(Composite parent) {
-        createView( GrxLoggerView.class, "Test View", this, parent );
+        createView( GrxLoggerView.class, "Logger View", this, parent );
     }
 
 

@@ -1,3 +1,4 @@
+// -*- indent-tabs-mode: nil; tab-width: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -21,42 +22,26 @@ import javax.media.j3d.*;
  * @author	Ichitaro Kohara, MSTC
  * @version	1.0(2001.02.05)
  */
-public final class OffScreenCanvas3D
-extends Canvas3DI
+@SuppressWarnings("serial")
+public final class OffScreenCanvas3D extends Canvas3DI
 {
-	// debug flag
-	private boolean debug_;
-
-	// for debug
-	ColorBufferBrowser cBrowser_;
-
 	/**
-	 * Constructor
-	 *
+	 * @brief Constructor
+	 * @param graphicsConfiguration
+	 * @param raster
+	 * @param width
+	 * @param height
+	 * @param rasterType
 	 */
 	public OffScreenCanvas3D(
 		GraphicsConfiguration	graphicsConfiguration,
 		Raster					raster,
 		int						width,
 		int						height,
-		int						rasterType,
-		boolean			debug
-	)
+		int						rasterType)
 	{
-		super(graphicsConfiguration, true);
+		super(graphicsConfiguration, true, raster, width, height, rasterType);
 		//System.out.println("OffScreenCanvas3D::OffScreenCanvas3D()");
-
-		raster_ = raster;
-		width_ = width;
-		height_ = height;
-		rasterType_ = rasterType;
-		gc_ = getGraphicsContext3D();
-		debug_ = debug;
-
-		if (rasterType_ == Raster.RASTER_DEPTH
-			|| rasterType_ == Raster.RASTER_COLOR_DEPTH) {
-			depthBuffer_ = new float[width_ * height_];
-		}
 
 		if (rasterType_ == Raster.RASTER_COLOR
 		    || rasterType_ == Raster.RASTER_COLOR_DEPTH){
@@ -65,43 +50,16 @@ extends Canvas3DI
 		    setOffScreenBuffer(new ImageComponent2D(ImageComponent.FORMAT_RGB,
 							    width, height));
 		}
-		setSize(width, height);
 		
 		Screen3D s3d = getScreen3D();
 		s3d.setSize(width, height);
 		s3d.setPhysicalScreenWidth(width);
 		s3d.setPhysicalScreenHeight(height);
-		if (debug_){
-		    // for debug
-		    cBrowser_ = new ColorBufferBrowser(width, height,
-			 	"color buffer(off-screen)");
-		    cBrowser_.setAlwaysOnTop(true);
-		    //cBrowser_.setVisible(true);
-		}
 	}
 
-	/**
-	 * This method is called when buffer has swapped
-	 */
-	public void postSwap()
-	{
-	    super.postSwap();
-
-	    switch (rasterType_){
-	    case Raster.RASTER_COLOR:
-			color_ = raster_.getImage().getImage();
-			colorBuffer_ = color_.getRGB(0,0,width_, height_, null, 0, width_);
-			break;
-
-	    case Raster.RASTER_DEPTH:
-			depth_ = (DepthComponentFloat)raster_.getDepthComponent();
-			depth_.getDepthData(depthBuffer_);
-			break;
-
-	    case Raster.RASTER_COLOR_DEPTH:
-			break;
-	    }
-	    if (debug_) 
-			cBrowser_.setColorBuffer(colorBuffer_);
-	}
+    public void renderOnce(){
+        super.renderOnce();
+        renderOffScreenBuffer();
+        waitForOffScreenRendering();
+    }
 }

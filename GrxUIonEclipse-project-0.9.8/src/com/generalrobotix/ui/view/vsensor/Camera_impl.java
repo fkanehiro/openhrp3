@@ -1,3 +1,4 @@
+// -*- indent-tabs-mode: nil; tab-width: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -9,7 +10,9 @@
  */
 package com.generalrobotix.ui.view.vsensor;
 
+import java.awt.Canvas;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 import javax.swing.*;
@@ -45,20 +48,20 @@ public class Camera_impl extends CameraPOA {
 	private BranchGroup			bgVp_;
 	private TransformGroup		tgVp_;
 	private Canvas3DI			canvas_;
+	private MyCanvas			canvas2;
 	private ViewPlatform		vplatform_;
 	private View				view_;
 	private PhysicalBody		pbody_;
 	private PhysicalEnvironment	penv_;
 	
 	private JFrame	frm_;
-	public boolean rendered_ = false;
 
 	// ---------- Constructor ----------
 
 	/**
 	 * Constructor
 	 * @param	param		camera parameter
-	 * @param	offScreen	off-screnn flag
+	 * @param	offScreen	off-screen flag
 	 */
 	public Camera_impl(CameraParameter param, boolean offScreen) {
 		param_ = param;
@@ -87,7 +90,7 @@ public class Camera_impl extends CameraPOA {
 		else
 		    image_.format = PixelFormat.ARGB;
 
-		// create color infomation for reading color buffer
+		// create color information for reading color buffer
 		// type int, (Alpha:8bit,) R:8bit, G:8bit, B:8bit
 		BufferedImage bimageRead = null;
 		ImageComponent2D readImage = null;
@@ -152,35 +155,27 @@ public class Camera_impl extends CameraPOA {
 
 		penv_ = new PhysicalEnvironment();
 
-		if (raster_ == null) {
-			canvas_ = new Canvas3DI(SimpleUniverse.getPreferredConfiguration());
-			canvas_.setSize(width_, height_);
-			
-		} else {
-			if (offScreen) {
-				canvas_ = new OffScreenCanvas3D(
+        if (offScreen) {
+            canvas_ = new OffScreenCanvas3D(
 					SimpleUniverse.getPreferredConfiguration(),
 					raster_,
 					width_,
 					height_,
-					rasterType,
-					true
+					rasterType
 				);
-			} else {
-				canvas_ = new OnScreenCanvas3D(
+        } else {
+            canvas_ = new OnScreenCanvas3D(
 					SimpleUniverse.getPreferredConfiguration(),
 					raster_,
 					width_,
 					height_,
-					rasterType,
-					false
+					rasterType
 				);
-			}
 		}
 
 		//
 		// construct branch-graph
-		//SampleRobotPD.xml
+		//
 
 		bgVp_.addChild(tgVp_);
 		tgVp_.addChild(vplatform_);
@@ -189,13 +184,6 @@ public class Camera_impl extends CameraPOA {
 		view_.setPhysicalBody(pbody_);
 		view_.setPhysicalEnvironment(penv_);
 
-		//bgVp_.compile();
-
-		if (offScreen)	
-			return;
-
-		canvas_.stopRenderer();
-
 		//
 		// Swing
 		//
@@ -203,22 +191,37 @@ public class Camera_impl extends CameraPOA {
 		frm_ = new JFrame(param.sensorName);
 		frm_.setSize(width_ + 20, height_ + 30);
 		frm_.getContentPane().setLayout(new FlowLayout());
-		//frm_.getContentPane().setLayout(new BorderLayout());
-		frm_.getContentPane().add(canvas_);
+        if (offScreen){
+            canvas2 = new MyCanvas();
+            canvas2.setSize(width_, height_);
+            frm_.getContentPane().add(canvas2);
+        }else{
+            frm_.getContentPane().add(canvas_);
+        }
 		frm_.pack();
 		frm_.setResizable(false);
 		frm_.setAlwaysOnTop(true);
-		//frm_.setVisible(true);
 	}
 	
-	public void setVisible(boolean b) {
-		if (canvas_ instanceof OffScreenCanvas3D)
-			((OffScreenCanvas3D)canvas_).cBrowser_.setVisible(b);
-		else
-			frm_.setVisible(b);
-	}
+	@SuppressWarnings("serial")
+	public class MyCanvas extends Canvas{
+        BufferedImage bImage_;
+        public void paint(Graphics g){
+            if (bImage_ == null){
+                bImage_ = new BufferedImage(width_, height_, BufferedImage.TYPE_INT_ARGB);
+            }
+            if (getColorBuffer().length > 1){
+                bImage_.setRGB(0,0,width_,height_,getColorBuffer(),
+                              0,width_); 
+                g.drawImage(bImage_, 0, 0, null);
+            }
+        }
+        public void update(Graphics g){
+            paint(g);
+        }
+    }
 
-	// ------------ Camera interfece implementation ------------
+	// ------------ Camera interface implementation ------------
 
 	/**
 	 * Destroy
@@ -258,37 +261,36 @@ public class Camera_impl extends CameraPOA {
 	public CameraParameter getCameraParameter() {
 		return param_;
 	}
-	public void updateView() {
-	    if (rendered_) 
-	    	return;
-	    if (canvas_.isOffScreen()) {
-	    	canvas_.renderOffScreenBuffer();
-			canvas_.waitForOffScreenRendering();
-			
-	    } else {
-	        if (!frm_.isVisible())
-                frm_.setVisible(true);
-	    	int cnt = 0;
-			canvas_.finished_ = false;
-			canvas_.startRenderer();
-			try {
-				while (canvas_.finished_ == false) {
-					Thread.sleep(5);
-					if (cnt++ > 20)
-						break;
-				}
-			} catch (InterruptedException ex) { }
-			canvas_.stopRenderer();
-	    }
-	    rendered_ = true;
+
+    public boolean isVisible(){
+        return frm_.isVisible();
+    }
+
+	public void setVisible(boolean b){
+        if (frm_.isVisible() != b){
+            frm_.setVisible(b);
+            if (b){
+                // note: setVisible returns immediately. 
+                // But it takes for a while until the window become really visible
+                try{
+                    Thread.sleep(1000);
+                }catch(Exception e){}
+            }
+        }
 	}
+	
+	public void updateView() {
+        canvas_.renderOnce();
+        if (canvas_.isOffScreen()) {
+            canvas2.repaint();
+        }
+	}
+	
 	/**
 	 * Get color buffer
 	 * @return	color buffer
 	 */
 	public int[] getColorBuffer() {
-//	  	visionsensor_.updateTransform();
-		updateView();
 		return canvas_.getColorBuffer();
 	}
 
@@ -297,30 +299,28 @@ public class Camera_impl extends CameraPOA {
 	 * @return	depth buffer
 	 */
 	public float[] getDepthBuffer() {
-//	  	visionsensor_.updateTransform();
-		updateView();
 		return canvas_.getDepthBuffer();
 	}
 
 	public ImageData getImageData() {
-//	  visionsensor_.updateTransform();
+        if (!canvas_.isOffScreen()) setVisible(true);
+        updateView();
 
-	  updateView();
-	  if (param_.type == CameraType.COLOR ||
-			  param_.type == CameraType.COLOR_DEPTH){
-		  image_.longData = canvas_.getColorBuffer();
-	  }
+        if (param_.type == CameraType.COLOR ||
+            param_.type == CameraType.COLOR_DEPTH){
+            image_.longData = canvas_.getColorBuffer();
+        }
+        
+        if (param_.type == CameraType.MONO ||
+            param_.type == CameraType.MONO_DEPTH){
+            image_.octetData = canvas_.getMonoBuffer();
+        }
 	  
-	  if (param_.type == CameraType.MONO ||
-			  param_.type == CameraType.MONO_DEPTH){
-		  image_.octetData = canvas_.getMonoBuffer();
-	  }
-	  
-	  if (param_.type == CameraType.DEPTH ||
-			  param_.type == CameraType.COLOR_DEPTH){
-		  image_.floatData = canvas_.getDepthBuffer();
-	  }
-	  return image_;
+        if (param_.type == CameraType.DEPTH ||
+            param_.type == CameraType.COLOR_DEPTH){
+            image_.floatData = canvas_.getDepthBuffer();
+        }
+        return image_;
 	}
 
 	/**
