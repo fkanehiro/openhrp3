@@ -310,7 +310,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 	public void stopSimulation() {
 		if (isExecuting_) {
 			isExecuting_ = false;
-			tdview_.enableUpdateModel();
+			if (isSimulatingView_) {
+				tdview_.enableUpdateModel();
+			}
 			GrxLoggerView lgview = (GrxLoggerView)manager_.getView("Logger View");
 			lgview.enableControl();
 			updateTimeMsg();
