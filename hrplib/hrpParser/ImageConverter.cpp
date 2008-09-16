@@ -23,13 +23,12 @@ using namespace hrp;
     @return     bool true : succeeded / false : failed
 */
 //==================================================================================================
-bool ImageConverter::initializeSFImage(
-    SFImage &   image )
+bool ImageConverter::initializeSFImage( )
 {
-    image.width = 0;
-    image.height = 0;
-    image.numComponents = 0;
-    image.pixels.clear();
+    image->width = 0;
+    image->height = 0;
+    image->numComponents = 0;
+    image->pixels.clear();
 
     return true;
 }
@@ -50,51 +49,35 @@ bool ImageConverter::initializeSFImage(
     @return     bool true : succeeded / false : failed
 */
 //==================================================================================================
-bool
-ImageConverter::convert(
-    VrmlImageTexture &  imageTexture,
-    VrmlPixelTexture &  pixelTexture,
-	string dirPath )
+SFImage* ImageConverter::convert( string url )
 {
-    // ImageTextureに格納されている MFString url の数を確認
-    if( 0 == imageTexture.url.size() )
-    {
-        cout << "ImageTexture read error: No urls in ImageTexture node" << "\n";
-        return false;
-    }
-    else if( 1 < imageTexture.url.size() )
-    {
-        cout << "ImageTexture read warning: multiple texture not supported." << "\n";
-        cout << "  loading first url only." << "\n";
-    }
-
     // 拡張子抽出
-    string  fileName = dirPath + *imageTexture.url.begin();
-    string  ext = fileName.substr( fileName.rfind( '.' ) );
+    string  ext = url.substr( url.rfind( '.' ) );
 
     // 拡張子を小文字に変換
     transform( ext.begin(), ext.end(), ext.begin(), (int(*)(int))tolower );
 
-    // SFImageの作成
+   // SFImageの作成
     if( !ext.compare( ".png" ) )
     {
-        loadPNG( fileName, pixelTexture.image );
+        if(loadPNG( url ))
+            return image;
     }
     else if( !ext.compare( ".jpg" ) )
     {
-        loadJPEG( fileName, pixelTexture.image );
+        if(!loadJPEG( url ))
+            return image;
     }
     else
     {
        cout << "ImageTexture read error: unsupported format." << '\n';
-       return false;
     }
-    
-    // PixelTexture のその他のパラメータをコピー
-    pixelTexture.repeatS = imageTexture.repeatS;
-    pixelTexture.repeatT = imageTexture.repeatT;
 
-    return true;
+    image->height = 0;
+    image->width = 0;
+    image->numComponents = 0;
+    image->pixels.resize(0);
+    return image;
 }
 
 
@@ -112,10 +95,12 @@ ImageConverter::convert(
 //==================================================================================================bool
 bool
 ImageConverter::loadPNG(
-    string &    filePath,
-    SFImage &   image )
+    string &    filePath
+)
 {
-    initializeSFImage( image );
+    return(false);
+
+    initializeSFImage( );
 
     FILE *  fp;
 
@@ -167,11 +152,21 @@ ImageConverter::loadPNG(
         int         numComponents;
         png_uint_32 width   = png_get_image_width( pPng, pInfo );
         png_uint_32 height  = png_get_image_height( pPng, pInfo );
-        png_byte    depth   = png_get_bit_depth( pPng, pInfo );
+        int    depth   = png_get_bit_depth( pPng, pInfo );
+    /*
+        png_uint_32 width, height;
+        int depth, color_type;
+        int interlace_type;
+        int compression_type;
+        int filter_method;
+        png_get_IHDR(pPng, pInfo, &width, &height,
+       &depth, &color_type, &interlace_type,
+       &compression_type, &filter_method);
+*/
+        //if( 8 != depth )
+        //    throw "Unsupported color depth.";
 
-        if( 8 != depth )
-            throw "Unsupported color depth.";
-
+        cout << "COLOR_TYPE= " << (int)(png_get_color_type( pPng, pInfo )) << endl;
         switch( png_get_color_type( pPng, pInfo ) )
         {
         case PNG_COLOR_TYPE_GRAY:
@@ -190,8 +185,13 @@ ImageConverter::loadPNG(
             numComponents = 4;
             break;
 
+        case PNG_COLOR_TYPE_PALETTE:
+            //????????
+            numComponents = 1;
+            break;
         default:
-            throw "Unsupported color type.";
+            numComponents = 1;
+          //  throw "Unsupported color type.";
 
         }
 
@@ -202,9 +202,9 @@ ImageConverter::loadPNG(
 
 
         // SFImageに展開
-        image.width = width;
-        image.height = height;
-        image.numComponents = numComponents;
+        image->width = width;
+        image->height = height;
+        image->numComponents = numComponents;
 
         unsigned char   byteData;
 
@@ -213,7 +213,7 @@ ImageConverter::loadPNG(
             for( png_uint_32 x=0 ; x<width*numComponents ; x++ )
             {
                 byteData = (unsigned char)row_pointers[y][x];
-                image.pixels.push_back( byteData );
+                image->pixels.push_back( byteData );
             }
         }
 
@@ -250,10 +250,9 @@ ImageConverter::loadPNG(
 //==================================================================================================bool
 bool
 ImageConverter::loadJPEG(
-    string &    filePath,
-    SFImage &   image )
+    string &    filePath )
 {
-    initializeSFImage( image );
+    initializeSFImage( );
 
     FILE *  fp;
 
@@ -291,9 +290,9 @@ ImageConverter::loadJPEG(
 
 
         // get image attribute
-        image.width         = cinfo.output_width;
-        image.height        = cinfo.output_height;
-        image.numComponents = cinfo.out_color_components;
+        image->width         = cinfo.output_width;
+        image->height        = cinfo.output_height;
+        image->numComponents = cinfo.out_color_components;
         if( 1 == cinfo.output_components )  throw "Index color is not supported currentry.";
 
 
@@ -316,7 +315,7 @@ ImageConverter::loadJPEG(
             for( x=0 ; x<bufferLength ; x++ )
             {
                 byteData = (unsigned char)buffer[0][x];
-                image.pixels.push_back( byteData );
+                image->pixels.push_back( byteData );
             }
             y++;
         }

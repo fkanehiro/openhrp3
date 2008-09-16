@@ -29,6 +29,7 @@ import javax.media.j3d.*;
 
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.geometry.*;
+import com.sun.j3d.utils.image.*;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.*;
@@ -46,6 +47,7 @@ import jp.go.aist.hrp.simulator.CameraPackage.CameraType;
 import java.awt.image.BufferedImage;
 import jp.go.aist.hrp.simulator.ImageData;
 import jp.go.aist.hrp.simulator.PixelFormat;
+import com.sun.j3d.utils.geometry.Box;
 
 @SuppressWarnings("unchecked")
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {
@@ -314,8 +316,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             for(int localShapeIndex = 0; localShapeIndex < numShapes; localShapeIndex++) {
                 TransformedShapeIndex tsi = linkInfo.shapeIndices[localShapeIndex];
                 int shapeIndex = tsi.shapeIndex;
-                ShapeInfo shapeInfo = shapes[shapeIndex];
-                Shape3D linkShape3D = createLinkShape3D(shapeInfo, appearances, materials, textures);
+                ShapeInfo shapeInfo = shapes[shapeIndex];             
 
                 TransformGroup shapeTransform = new TransformGroup();
                 double[] m = tsi.transformMatrix;
@@ -324,15 +325,28 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                                           m[8], m[9], m[10], m[11],
                                           0.0,  0.0,  0.0,   1.0);
                 shapeTransform.setTransform(new Transform3D(M));
-                shapeTransform.addChild(linkShape3D);
+
+                if(shapeInfo.primitiveType == ShapePrimitiveType.SP_MESH ){
+                    Shape3D linkShape3D = createLinkShape3D(shapeInfo, appearances, materials, textures);
+                    shapeTransform.addChild(linkShape3D);
+                    /* normal visualization */
+                    if(false){
+                        NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f, M);
+                        Shape3D nshape = new Shape3D(nrender.getLineArray());
+                        linkTopTransformNode.addChild(nshape);
+                    }
+                }else{
+                    Primitive primitive = createShapePrimitive(shapeInfo, appearances, materials, textures);
+                    shapeTransform.addChild(primitive);
+                    /* normal visualization */
+                    if(false){
+                        //TODO
+                    }
+                }
+
                 linkTopTransformNode.addChild(shapeTransform);
 
-                /* normal visualization */
-                if(false){
-                    NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f, M);
-                    Shape3D nshape = new Shape3D(nrender.getLineArray());
-                    linkTopTransformNode.addChild(nshape);
-                }
+                
             }
 
             SensorInfoLocal[] sensors = lInfo_[linkIndex].sensors;
@@ -518,90 +532,93 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     private Shape3D createLinkShape3D
     (ShapeInfo shapeInfo, AppearanceInfo[] appearances, MaterialInfo[] materials, TextureInfo[] textures){
-        
+
         GeometryInfo geometryInfo = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
 
-        // set vertices
         int numVertices = shapeInfo.vertices.length / 3;
         Point3f[] vertices = new Point3f[numVertices];
         for(int i=0; i < numVertices; ++i){
             vertices[i] = new Point3f(shapeInfo.vertices[i*3], shapeInfo.vertices[i*3+1], shapeInfo.vertices[i*3+2]);
         }
         geometryInfo.setCoordinates(vertices);
-        
-        // set triangles (indices to the vertices)
         geometryInfo.setCoordinateIndices(shapeInfo.triangles);
         
         Appearance appearance = new Appearance();
+
         PolygonAttributes pa = new PolygonAttributes();
         pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
         pa.setCullFace(PolygonAttributes.CULL_NONE);
         pa.setBackFaceNormalFlip(true);
         appearance.setPolygonAttributes(pa);
 
-        int appearanceIndex = shapeInfo.appearanceIndex;
-        if(appearanceIndex >= 0){
-
-            AppearanceInfo appearanceInfo = appearances[appearanceIndex];
+        if(shapeInfo.appearanceIndex >= 0){
+            AppearanceInfo appearanceInfo = appearances[shapeInfo.appearanceIndex];
 
             setColors(geometryInfo, shapeInfo, appearanceInfo);
-
-            MaterialInfo materialInfo = null;
-            int materialIndex = appearanceInfo.materialIndex;
-            if(materialIndex >= 0){
-                materialInfo = materials[materialIndex];
-                if(materialInfo.transparency > 0.0f){
-                    TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
-                    appearance.setTransparencyAttributes(ta);
-                }
-            }
-
             setNormals(geometryInfo, shapeInfo, appearanceInfo);
+            
+            if(appearanceInfo.materialIndex >= 0)
+                setMaterial( appearance, materials[appearanceInfo.materialIndex] );
 
-            if(materialInfo != null){
-                appearance.setMaterial(createMaterial(materialInfo));
-            }
-
-            int textureIndex = appearanceInfo.textureIndex;
-            if(textureIndex >= 0){
-                
-                TextureInfoLocal texInfo = new TextureInfoLocal(textures[textureIndex]);
-
-                Texture2D texture2d = null;
-                if((texInfo.width != 0) && (texInfo.height != 0)){
-                    ImageComponent2D icomp2d = texInfo.readImage;
-                    texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
-                    texture2d.setImage(0, icomp2d);
-                }
-
-                if(texture2d != null){
-                    appearance.setTexture(texture2d);
-                }
-                
-                int vTris = (shapeInfo.triangles.length)/3;
-                Point2f[] TexPoints = new Point2f[vTris * 3];
-                for(int vi=0; vi<vTris; vi++){
-                    TexPoints[vi*3] = new Point2f( 0.0f , 0.0f );
-                    TexPoints[vi*3+1] = new Point2f( 1.0f , 0.0f );
-                    TexPoints[vi*3+2] = new Point2f( 1.0f , 1.0f );
-                }
-                geometryInfo.setTextureCoordinates(TexPoints);
-                geometryInfo.setTextureCoordinateIndices(shapeInfo.triangles);
-                //TextureAttributes Set
-                TextureAttributes texAttrBase =  new TextureAttributes();
-                //TextureAttributes Property Set
-                texAttrBase.setTextureMode(TextureAttributes.MODULATE);
-                //Appearance <- TextureAttributes 
-                appearance.setTextureAttributes(texAttrBase);
+            if(appearanceInfo.textureIndex >= 0 ){
+                setTexture( appearance, textures[appearanceInfo.textureIndex] );
+            
+                int numTexCoordinate = appearanceInfo.textureCoordinate.length / 2;
+                Point2f[] texCoordinate = new Point2f[numTexCoordinate];
+                for(int i=0, j=0; i<numTexCoordinate;  i++)
+                    texCoordinate[i] = new Point2f( appearanceInfo.textureCoordinate[j++], appearanceInfo.textureCoordinate[j++] );
+                geometryInfo.setTextureCoordinates(texCoordinate);
+                geometryInfo.setTextureCoordinateIndices(appearanceInfo.textureCoordIndices);               
             }
         }
 
         Shape3D shape3D = new Shape3D(geometryInfo.getGeometryArray());
         shape3D.setAppearance(appearance);
-
         return shape3D;
     }
+ 
+    private Primitive createShapePrimitive
+    (ShapeInfo shapeInfo, AppearanceInfo[] appearances, MaterialInfo[] materials, TextureInfo[] textures){
 
+        Appearance appearance = new Appearance();
+        if(shapeInfo.appearanceIndex >= 0){
+            AppearanceInfo appearanceInfo = appearances[shapeInfo.appearanceIndex];
+            if(appearanceInfo.materialIndex >= 0)
+                setMaterial( appearance, materials[appearanceInfo.materialIndex] );
+            if(appearanceInfo.textureIndex >= 0 ){
+                setTexture( appearance, textures[appearanceInfo.textureIndex] );
+                TextureAttributes texAttrBase = new TextureAttributes();
+                Transform3D t3d = new Transform3D(new Matrix4d(
+                    appearanceInfo.textransformMatrix[0], appearanceInfo.textransformMatrix[1], appearanceInfo.textransformMatrix[2], 0,
+                    appearanceInfo.textransformMatrix[3], appearanceInfo.textransformMatrix[4], appearanceInfo.textransformMatrix[5], 0, 
+                    0, 0, 1, 0,
+                    0, 0, 0, 1 ));      
+                //System.out.println(t3d.toString());
+                texAttrBase.setTextureTransform(t3d);
+                appearance.setTextureAttributes(texAttrBase);
+            }
+        }
+
+        int flag = Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS | Primitive.ENABLE_GEOMETRY_PICKING;
+        if(shapeInfo.primitiveType == ShapePrimitiveType.SP_BOX ){
+            Box box = new Box((float)(shapeInfo.primitiveParameters[0]/2.0), (float)(shapeInfo.primitiveParameters[1]/2.0),
+                (float)(shapeInfo.primitiveParameters[2]/2.0), flag, appearance );
+            return box;
+        }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_CYLINDER ){
+            Cylinder cylinder = new Cylinder(shapeInfo.primitiveParameters[0], shapeInfo.primitiveParameters[1],
+                flag, appearance );
+            return cylinder;
+        }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_CONE ){
+            Cone cone = new Cone(shapeInfo.primitiveParameters[0], shapeInfo.primitiveParameters[1],
+                flag, appearance );
+            return cone;
+        }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_SPHERE ){
+            Sphere sphere = new Sphere(shapeInfo.primitiveParameters[0], flag, appearance );
+            return sphere;
+        }
+
+        return null; 
+    }
 
     public class NormalRender {
         private LineArray nline = null;
@@ -636,6 +653,35 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         public LineArray getLineArray() { return nline; }
     }
 
+    private void setMaterial(Appearance appearance, MaterialInfo materialInfo){
+        if(materialInfo.transparency > 0.0f){
+            TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
+            appearance.setTransparencyAttributes(ta);
+        }
+        if(materialInfo != null){
+            appearance.setMaterial(createMaterial(materialInfo));
+        }        
+    }
+
+    private void setTexture( Appearance appearance, TextureInfo textureInfo ){
+        TextureInfoLocal texInfo = new TextureInfoLocal(textureInfo);
+        if(texInfo.url.isEmpty()){
+            if((texInfo.width != 0) && (texInfo.height != 0)){
+                ImageComponent2D icomp2d = texInfo.readImage;
+                Texture2D texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
+                texture2d.setImage(0, icomp2d);
+                appearance.setTexture(texture2d);
+            }
+        }else{
+            //System.out.println("url: "+texInfo.url);
+            TextureLoader tloader = new TextureLoader(texInfo.url, null);  
+            Texture texture = tloader.getTexture();
+            appearance.setTexture(texture);
+        }
+        TextureAttributes texAttrBase =  new TextureAttributes();
+        texAttrBase.setTextureMode(TextureAttributes.REPLACE);
+        appearance.setTextureAttributes(texAttrBase);
+    }
 
     private void setColors(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
 
@@ -1198,34 +1244,17 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         public	boolean			repeatT;
         private  BufferedImage	bimageRead;
         public  ImageComponent2D readImage;
+        String url;
 
         public TextureInfoLocal(TextureInfo texinfo) {
-//				image = new ImageData();
-            
-            // set TextureInfo width
             width = texinfo.width;
-//				image.width = texinfo.width;
-//System.out.println( "   TextureInfo.width   = " + width );
-            
-                    // set TextureInfo height
             height = texinfo.height;
-//				image.height = texinfo.height;
-//System.out.println( "   TextureInfo.height   = " + height );
-            
-//				image.octetData = new byte[1];
-//				image.longData = new int[1];
-//				image.floatData = new float[1];
-            
-//				image.format = PixelFormat.RGB;
-            
-            // set TextureInfo numComponents
             numComponents = texinfo.numComponents;
-            // numComponents=1 ...  8bit
-            //              =2 ... 16bit
-            //              =3 ... 24bit
-            //              =4 ... 32bit
-//System.out.println( "   TextureInfo.numComponents   = " + numComponents );
-            
+            repeatS = texinfo.repeatS;
+            repeatT = texinfo.repeatT;
+            url = texinfo.url;
+
+
             if((width == 0) || (height == 0)){
 //System.out.println( "   TextureInfoLocal width = 0  & height = 0  => No Generate " );
                 numComponents = 3;
@@ -1401,13 +1430,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 //System.out.println( "   new ImageComponent2D(ImageComponent.FORMAT_RGB, bimageRead)"  );
             
             
-            // set TextureInfo repeatS
-            repeatS = texinfo.repeatS;
-//System.out.println( "   TextureInfo.repeatS   = " + repeatS );
             
-            // set TextureInfo repeatT
-            repeatT = texinfo.repeatT;
-//System.out.println( "   TextureInfo.repeatT   = " + repeatT );
         }
     }
     // ##### [Changed]

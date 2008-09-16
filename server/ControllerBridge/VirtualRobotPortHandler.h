@@ -51,6 +51,10 @@ public:
     {
         value.tm.sec = (unsigned long)_time;
         value.tm.nsec = (unsigned long)((_time-value.tm.sec)*1000000000.0 + 0.5);
+		if( value.tm.nsec >= 1000000000 ){
+			value.tm.sec++;
+			value.tm.nsec -= 1000000000;
+		}
     }
 };
 

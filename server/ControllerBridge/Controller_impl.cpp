@@ -407,10 +407,6 @@ void Controller_impl::destroy()
   poa->deactivate_object(id);
 }
 
-void Controller_impl::setTimeStep(CORBA::Double _timeStep){
-    timeStep = _timeStep;
-}
-
 ControllerFactory_impl::ControllerFactory_impl(RTC::Manager* rtcManager, BridgeConf* bridgeConf)
   : rtcManager(rtcManager),
     bridgeConf(bridgeConf)

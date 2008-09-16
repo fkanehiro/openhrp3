@@ -25,15 +25,20 @@ namespace hrp
     class ImageConverter
     {
     private:
-        bool    initializeSFImage( SFImage & image );
-        bool    loadPNG( string & filePath, SFImage & image );
-        bool    loadJPEG( string & filePath, SFImage & image );
+        bool    initializeSFImage();
+        bool    loadPNG( string & filePath );
+        bool    loadJPEG( string & filePath );
 
     public:
-        ImageConverter(void){};
-        virtual ~ImageConverter(void){};
+        SFImage* image;
+        ImageConverter(void){
+            image = new SFImage;
+        };
+        virtual ~ImageConverter(void){
+            delete image;
+        };
 
-        HRP_PARSER_EXPORT bool convert( VrmlImageTexture & imageTexture, VrmlPixelTexture & pixelTexture, string dirPath = "" );
+        HRP_PARSER_EXPORT SFImage* convert( string url );
     };
 
 };
