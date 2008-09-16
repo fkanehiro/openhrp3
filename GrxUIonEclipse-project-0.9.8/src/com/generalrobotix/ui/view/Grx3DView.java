@@ -607,22 +607,25 @@ public class Grx3DView
     }
     
     public void control(List<GrxBaseItem> items) {
-        if (updateModels_) _updateViewSimulator();
-
         if (currentModels_.size() == 0)
             return;
 
         if (behaviorManager.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE && btnCollision_.isSelected()) {
             _showCollision(behaviorManager.getCollision(currentModels_));
+            if (updateModels_) updateViewSimulator(0);
             return;
         }
 
-         if (currentWorld_ == null)
-            return;
+         if (currentWorld_ == null){
+        	 if (updateModels_) updateViewSimulator(0);
+        	 return;
+         }
 
         WorldStateEx state = currentWorld_.getValue();
-        if (state == null)
+        if (state == null){
+            if (updateModels_) updateViewSimulator(0);
             return;
+        }
         
         _checkRecordingFinish();
         
@@ -630,12 +633,23 @@ public class Grx3DView
             return;
         _showCollision(state.collisions);
 
-        _updateViewSimulator();
-        
-        if (updateModels_) updateModels(state);
+        if (updateModels_){
+        	updateModels(state);
+            updateViewSimulator(state.time);
+        }
 		
         _doRecording();
         prevTime_ = state.time;
+    }
+
+	public void showViewSimulator() {
+        for (int i=0; i<currentModels_.size(); i++) {
+            List<Camera_impl> l = currentModels_.get(i).getCameraSequence();
+            for (int j=0; j<l.size(); j++) {
+                Camera_impl c = l.get(j);
+                c.setVisible(true);
+            }
+        }
     }
 
     public void updateModels(WorldStateEx state){
@@ -871,12 +885,12 @@ public class Grx3DView
         }
     }
 
-    private void _updateViewSimulator() {
+    public void updateViewSimulator(double time) {
         for (int i=0; i<currentModels_.size(); i++) {
             List<Camera_impl> l = currentModels_.get(i).getCameraSequence();
             for (int j=0; j<l.size(); j++) {
                 Camera_impl c = l.get(j);
-                if (c.isVisible()) c.updateView();
+                if (c.isVisible()) c.updateView(time);
             }
         }
     }
