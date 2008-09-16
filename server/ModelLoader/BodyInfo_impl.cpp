@@ -395,7 +395,7 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
             sensorInfo.specValues[2] = maxAcceleration[2];
             
         } else if( sensorType == "Vision" ){
-            sensorInfo.specValues.length( CORBA::ULong(6) );
+            sensorInfo.specValues.length( CORBA::ULong(7) );
 
             CORBA::Double specValues[3];
             copyVrmlField(fmap, "frontClipDistance", specValues[0] );
@@ -430,6 +430,10 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
 
             sensorInfo.specValues[4] = static_cast<CORBA::Double>(width);
             sensorInfo.specValues[5] = static_cast<CORBA::Double>(height);
+	    
+	    double frameRate;
+            copyVrmlField(fmap, "frameRate", frameRate);
+            sensorInfo.specValues[6] = frameRate;
         }
 
         Matrix44 T;
