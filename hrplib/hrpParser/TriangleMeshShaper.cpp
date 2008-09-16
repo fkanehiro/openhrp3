@@ -58,7 +58,7 @@ namespace hrp {
         std::vector< std::vector<int> > vertexIndexToFaceIndicesMap;
         std::vector< std::vector<int> > vertexIndexToNormalIndicesMap;
 
-        enum RemapType { REMAP_COLOR, REMAP_NORMAL, REMAP_TEX };
+        enum RemapType { REMAP_COLOR, REMAP_NORMAL };
 
 
         VrmlGeometryPtr getOriginalGeometry(VrmlShapePtr shapeNode);
@@ -87,6 +87,7 @@ namespace hrp {
         void calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
         void setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh);
         void setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh);
+        bool setTexCoordIndex(VrmlTextureCoordinatePtr texCoord, MFInt32& texCoordIndex, MFInt32& coordIndex );
 
         void putMessage(const std::string& message);
     };
@@ -353,10 +354,8 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
 
     faceSet->ccw = true;
 
-    int numtexCoord = faceSet->texCoord ? faceSet->texCoord->point.size() : 0;
-    result &= checkAndRemapIndices
-        (REMAP_TEX, numtexCoord, faceSet->texCoordIndex, true, faceSet);
-
+    setTexCoordIndex(faceSet->texCoord, faceSet->texCoordIndex, faceSet->coordIndex);
+ 
     return (result && !indices.empty());
 }
 
@@ -461,7 +460,7 @@ bool TMSImpl::remapDirectMapObjectsPerFaces(TArray& values, const char* valueNam
 bool TMSImpl::checkAndRemapIndices
 (RemapType type, int numElements, MFInt32& indices, bool perVertex, VrmlIndexedFaceSet* triangleMesh)
 {
-    const char* valueName = (type==REMAP_COLOR) ? "colors" : (type==REMAP_NORMAL) ? "normals" : "texCoord" ;
+    const char* valueName = (type==REMAP_COLOR) ? "colors" : "normals" ;
     
     bool result = true;
     
@@ -478,7 +477,7 @@ bool TMSImpl::checkAndRemapIndices
             if(perVertex){
                 if(numElements < triangleMesh->coord->point.size()){
                     putMessage(string("The number of ") + valueName +
-                               " is less than the number of vertices.");
+                              " is less than the number of vertices.");
                     result = false;
                 }
             } else {
@@ -525,6 +524,43 @@ bool TMSImpl::checkAndRemapIndices
         }
     }
 
+    return result;
+}
+
+bool TMSImpl::setTexCoordIndex(VrmlTextureCoordinatePtr texCoord,
+    MFInt32& texCoordIndex, MFInt32& coordIndex )
+{
+   
+    bool result = true;
+    
+    if(!texCoord){
+        // TODO  default Mapping
+    } else {
+        if(texCoordIndex.empty()){
+            int numNewIndices = coordIndex.size();
+            texCoordIndex.resize(numNewIndices);
+            for(int i=0; i < numNewIndices; i++){
+                texCoordIndex[i] = coordIndex[i];
+            }
+        } else {
+            const MFInt32 orgIndices = texCoordIndex;
+            int numNewIndices = indexPositionMap.size();
+            texCoordIndex.resize(numNewIndices);
+            for(int i=0; i < numNewIndices; ++i){
+                if(indexPositionMap[i] == -1){
+                    texCoordIndex[i] = -1;
+                } else {
+                    int index = orgIndices[indexPositionMap[i]];
+                    if(index < texCoord->point.size()){
+                        texCoordIndex[i] = index;
+                    } else {
+                        putError1("texCoordIndex");
+                        result = false;
+                    } 
+                }
+            }
+        }
+    }
     return result;
 }
 
