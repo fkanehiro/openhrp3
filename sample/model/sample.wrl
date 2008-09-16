@@ -117,6 +117,7 @@ PROTO VisionSensor [
   exposedField SFInt32    sensorId          -1
   exposedField SFInt32    width             320
   exposedField SFInt32    height            240
+  exposedField SFFloat    frameRate         30
 ]
 {
   Transform {
@@ -450,7 +451,7 @@ DEF SampleRobot Humanoid {
                             Shape {
                               geometry Cylinder {
                                 radius      0.02
-                                height      0.025
+                                height      0.018
                               }
                               appearance Appearance {
                                 material Material {
