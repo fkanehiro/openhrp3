@@ -361,11 +361,53 @@ module OpenHRP {
 
   /**
      @if jp
+     形状データ一式を格納するオブジェクト。
+     @endif
+  */
+  interface ShapeSetInfo
+  {
+    /**
+       @if jp
+       表面の形状と見えの情報を格納するShapeInfoのシーケンス。
+       LinkInfoにおいて、Linkに対応する情報が本シーケンスのインデックスとして指定される。
+       @endif
+    */
+    readonly attribute ShapeInfoSequence shapes;
+
+    /**
+       @if jp
+       Appearance情報のシーケンス。
+       ShapeInfoにおいて、本シーケンスのインデックスが指定される。
+       @endif
+    */
+    readonly attribute AppearanceInfoSequence appearances;
+
+    /**
+       @if jp
+       Material情報のシーケンス。
+       AppearanceInfoにおいて、本シーケンスのインデックスが指定される。
+       @endif
+    */
+    readonly attribute MaterialInfoSequence materials;
+
+    /**
+       @if jp
+       Texture情報のシーケンス。
+       AppearanceInfoにおいて、本シーケンスのインデックスが指定される。
+       @endif
+    */
+    readonly attribute TextureInfoSequence textures;
+
+  };
+
+
+  /**
+     @if jp
      物体モデル情報へのアクセスを提供するCORBAオブジェクトのインタフェース。
      旧IDLのCharacterInfoに対応。
      @endif
   */
-  interface BodyInfo
+  interface BodyInfo : ShapeSetInfo
   {
     /**
        @if jp
@@ -414,40 +456,26 @@ module OpenHRP {
     */
     readonly attribute AllLinkShapeIndexSequence linkShapeIndices;
     
-    /**
-       @if jp
-       表面の形状と見えの情報を格納するShapeInfoのシーケンス。
-       LinkInfoにおいて、Linkに対応する情報が本シーケンスのインデックスとして指定される。
-       @endif
-    */
-    readonly attribute ShapeInfoSequence shapes;
-    
-    /**
-       @if jp
-       Appearance情報のシーケンス。
-       ShapeInfoにおいて、本シーケンスのインデックスが指定される。
-       @endif
-    */
-    readonly attribute AppearanceInfoSequence appearances;
-
-    /**
-       @if jp
-       Material情報のシーケンス。
-       AppearanceInfoにおいて、本シーケンスのインデックスが指定される。
-       @endif
-    */
-    readonly attribute MaterialInfoSequence materials;
-
-    /**
-       @if jp
-       Texture情報のシーケンス。
-       AppearanceInfoにおいて、本シーケンスのインデックスが指定される。
-       @endif
-    */
-    readonly attribute TextureInfoSequence textures;
-
   };
 
+
+  interface SceneInfo : ShapeSetInfo
+  {
+    /**
+       @if jp
+       形状ファイルのURL。
+       @endif
+    */
+    readonly attribute string url;
+
+    /**
+       @if jp 
+       LinkInfo の shapeIndices と同じ。
+       @endif
+    */
+    readonly attribute TransformedShapeIndexSequence shapeIndices;
+  };
+    
 
   /**
      @if jp
@@ -499,6 +527,14 @@ module OpenHRP {
        @endif
     */
     BodyInfo loadBodyInfo(in string url) raises (ModelLoaderException);
+
+
+    /**
+       @if jp
+       素のVRMLファイルを読み込み、含まれる形状のデータ一式を ShapeInfoSet として返す。
+       @endif
+    */
+    SceneInfo loadSceneInfo(in string url) raises (ModelLoaderException);
 
 
     /**

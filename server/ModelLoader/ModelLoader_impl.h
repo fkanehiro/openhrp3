@@ -47,6 +47,9 @@ class ModelLoader_impl : public POA_OpenHRP::ModelLoader
 
     virtual BodyInfo_ptr loadBodyInfo(const char* url)
         throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
+
+    virtual SceneInfo_ptr loadSceneInfo(const char* url)
+        throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 		
     virtual void clearData();
 		
