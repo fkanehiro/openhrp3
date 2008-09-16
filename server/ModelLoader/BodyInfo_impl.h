@@ -91,8 +91,10 @@ class BodyInfo_impl : public POA_OpenHRP::BodyInfo
     int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet);
     void setColors(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     void setNormals(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
+    void setTexCoords(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     int createMaterialInfo(VrmlMaterialPtr materialNode);
     int createTextureInfo(VrmlTexturePtr textureNode);
+    void createTextureTransformMatrix(AppearanceInfo& appInfo, VrmlTextureTransformPtr textureTransform );
     std::string getModelFileDirPath();
 };
 

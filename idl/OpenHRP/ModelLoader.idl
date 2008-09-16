@@ -295,6 +295,8 @@ module OpenHRP {
     long          textureIndex;
 
     FloatSequence textureCoordinate;
+    LongSequence  textureCoordIndices;
+    DblArray9	  textransformMatrix;
   };
 
   typedef sequence<AppearanceInfo> AppearanceInfoSequence;
@@ -351,7 +353,7 @@ module OpenHRP {
     boolean       repeatS;
     boolean       repeatT;
 
-    string	  url;
+    string	      url;
   };
 
   typedef sequence<TextureInfo> TextureInfoSequence;

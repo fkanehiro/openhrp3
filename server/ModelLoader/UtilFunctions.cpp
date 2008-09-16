@@ -2,11 +2,18 @@
   @author S.NAKAOKA
 */
 
+#if (BOOST_VERSION <= 103301)
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+#else
+#include <boost/filesystem.hpp>
+#endif
+
 #include "UtilFunctions.h"
 #include <cmath>
 
 using namespace std;
-
+using namespace boost;
 
 namespace {
     void throwException(const std::string& fieldName, const std::string& expectedFieldType)
@@ -236,5 +243,37 @@ string deleteURLScheme(string url)
         }
     }
         
+    return url;
+}
+
+string setTexturefileUrl(string modelfileDir, MFString urls){
+    string url("");
+    // ImageTextureに格納されている MFString url の数を確認
+    if( 0 == urls.size() )
+    {
+        string error;
+        error += "ImageTexture read error: No urls in ImageTexture node";
+        throw ModelLoader::ModelLoaderException(error.c_str());
+    }else{
+        for(int i=0; i<urls.size(); i++){
+            string urlString = urls[i];
+            size_t pos = urlString.find("http:");
+            if (pos == string::npos){   // ローカルファイル
+                filesystem::path filepath(deleteURLScheme(urlString), filesystem::native);
+                if(filesystem::exists(filepath)){    //元が絶対パス
+                    url = filesystem::system_complete(filepath).file_string();
+                    return url;
+                }else{               //元が相対パス
+                    filesystem::path filepath(modelfileDir+deleteURLScheme(urlString), filesystem::native);
+                    if(filesystem::exists(filepath)){
+                        url = filesystem::system_complete(filepath).file_string();
+                     return url;
+                    }
+                }
+            }else{          
+                // 存在するか調べる.....
+            }
+        }
+    }
     return url;
 }

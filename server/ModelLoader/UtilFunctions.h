@@ -27,5 +27,6 @@ void copyVrmlRotationFieldToDblArray9(TProtoFieldMap& fieldMap, const std::strin
 void copyVrmlRotationFieldToDblArray4(TProtoFieldMap& fieldMap, const std::string name, DblArray4& out_R);
 
 std::string deleteURLScheme(std::string url);
+std::string setTexturefileUrl(std::string modelfileDir, hrp::MFString urls);
 
 #endif

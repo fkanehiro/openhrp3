@@ -178,7 +178,7 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     }
 
     url_ = CORBA::string_dup(url2.c_str());
-
+    
     const string& humanoidName = modelNodeSet.humanoidNode()->defName;
     name_ = CORBA::string_dup(humanoidName.c_str());
 
@@ -679,16 +679,18 @@ int BodyInfo_impl::createAppearanceInfo
 
     if(faceSet->normal){
         setNormals(appInfo, faceSet);
-    }
+    } 
     
     VrmlAppearancePtr& appNode = shapeNode->appearance;
 
     if(appNode) {
-        // todo
-        //appInfo->textureCoordinate = faceSet->texCood;
-        
         appInfo.materialIndex = createMaterialInfo(appNode->material);
         appInfo.textureIndex  = createTextureInfo (appNode->texture);
+        createTextureTransformMatrix(appInfo, appNode->textureTransform);
+    }
+
+    if(faceSet->texCoord){
+        setTexCoords(appInfo, faceSet);
     }
 
     return appearanceIndex;
@@ -770,6 +772,59 @@ void BodyInfo_impl::setNormals(AppearanceInfo& appInfo, VrmlIndexedFaceSet* tria
     }
 }
 
+void BodyInfo_impl::setTexCoords(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh)
+{
+    int numCoords = triangleMesh->texCoord->point.size();
+    appInfo.textureCoordinate.length(numCoords * 2);
+
+    Matrix33 m;
+    for(int i=0,k=0; i<3; i++)
+        for(int j=0; j<3; j++)
+             m(i,j) = appInfo.textransformMatrix[k++];
+    
+    for(int i=0, pos=0; i < numCoords; i++ ){
+        Vector3 point(triangleMesh->texCoord->point[i][0], triangleMesh->texCoord->point[i][1], 1);
+        Vector3 texCoordinate(m * point);
+        appInfo.textureCoordinate[pos++] = texCoordinate(0);
+        appInfo.textureCoordinate[pos++] = texCoordinate(1);
+    }
+
+    int numIndex = triangleMesh->texCoordIndex.size();
+    if(numIndex > 0){
+        appInfo.textureCoordIndices.length(numIndex * 3 / 4);
+         for(int i=0, j=0; i < numIndex; i++){
+            if(triangleMesh->texCoordIndex[i] != -1)
+                appInfo.textureCoordIndices[j++] = triangleMesh->texCoordIndex[i];
+        }
+    }
+}
+
+void BodyInfo_impl::createTextureTransformMatrix(AppearanceInfo& appInfo, VrmlTextureTransformPtr textureTransform ){
+
+    Matrix33 m;
+    if(textureTransform){
+        Matrix33 matCT;
+        matCT = 1, 0, textureTransform->translation[0]+textureTransform->center[0],
+                0, 1, textureTransform->translation[1]+textureTransform->center[1],
+                0,0,1 ;
+        Matrix33 matR;
+        matR = cos(textureTransform->rotation), -sin(textureTransform->rotation), 0,
+               sin(textureTransform->rotation), cos(textureTransform->rotation), 0,
+               0,0,1;
+        Matrix33 matCS;
+        matCS = textureTransform->scale[0], 0, -textureTransform->center[0],
+                0, textureTransform->scale[1], -textureTransform->center[1],
+                0,0,1 ;
+        
+        m = matCS * matR * matCT;
+    }else{
+        m = tvmet::identity<Matrix33>();
+    }
+ 
+    for(int i=0,k=0; i<3; i++)
+        for(int j=0; j<3; j++)
+            appInfo.textransformMatrix[k++] = m(i,j);
+}
 
 /*!
   @if jp
@@ -810,7 +865,8 @@ int BodyInfo_impl::createMaterialInfo(VrmlMaterialPtr materialNode)
 /*!
   @if jp
   textureノードが存在すれば，TextureInfoを生成，textures_ に追加する。
-  なお，ImageTextureノードの場合は，PixelTextureに変換し TextureInfoを生成する。
+  なお，ImageTextureノードの場合は，画像のurlと、imageの変換に成功すればimageデータと両方を持つ。
+　いまのところ、movieTextureノードには対応しいない。
 
   @return long TextureInfo(textures_)のインデックス，textureノードが存在しない場合は -1
   @endif
@@ -821,22 +877,31 @@ int BodyInfo_impl::createTextureInfo(VrmlTexturePtr textureNode)
 
     if(textureNode){
 
+        TextureInfo_var texture(new TextureInfo());
+       
         VrmlPixelTexturePtr pixelTextureNode = dynamic_pointer_cast<VrmlPixelTexture>(textureNode);
-
+        
         if(!pixelTextureNode){
             VrmlImageTexturePtr imageTextureNode = dynamic_pointer_cast<VrmlImageTexture>(textureNode);
             if(imageTextureNode){
-                ImageConverter  converter;
-                VrmlPixelTexture* tempTexture = new VrmlPixelTexture;
-                if(converter.convert(*imageTextureNode, *tempTexture, getModelFileDirPath())){
-                    pixelTextureNode = tempTexture;
+                string url = setTexturefileUrl(getModelFileDirPath(), imageTextureNode->url);
+                if(!url.empty()){
+                    ImageConverter  converter;
+                    SFImage* image = converter.convert(url);
+                    texture->url = CORBA::string_dup(url.c_str());
+                    texture->repeatS = imageTextureNode->repeatS;
+                    texture->repeatT = imageTextureNode->repeatT;
+                    texture->height = image->height;
+                    texture->width = image->width;
+                    texture->numComponents = image->numComponents;
+		            size_t pixelsLength = image->pixels.size();
+                    texture->image.length( pixelsLength );
+                    for(size_t j = 0 ; j < pixelsLength ; j++ ){
+                        texture->image[j] = image->pixels[j];
+                    }
                 }
             }
-        }
-
-        if(pixelTextureNode){
-            TextureInfo_var texture(new TextureInfo());
-
+        }else if(pixelTextureNode){
             texture->height = pixelTextureNode->image.height;
             texture->width = pixelTextureNode->image.width;
             texture->numComponents = pixelTextureNode->image.numComponents;
@@ -848,11 +913,11 @@ int BodyInfo_impl::createTextureInfo(VrmlTexturePtr textureNode)
             }
             texture->repeatS = pixelTextureNode->repeatS;
             texture->repeatT = pixelTextureNode->repeatT;
-
-            textureInfoIndex = textures_.length();
-            textures_.length(textureInfoIndex + 1);
-            textures_[textureInfoIndex] = texture;
-	}
+        }
+        
+        textureInfoIndex = textures_.length();
+        textures_.length(textureInfoIndex + 1);
+        textures_[textureInfoIndex] = texture;
     }
 
     return textureInfoIndex;

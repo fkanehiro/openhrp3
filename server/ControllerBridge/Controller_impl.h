@@ -56,8 +56,10 @@ public:
   
 	virtual void setDynamicsSimulator(DynamicsSimulator_ptr dynamicsSimulator);
 	virtual void setViewSimulator(ViewSimulator_ptr viewSimulator);
-    virtual void setTimeStep(CORBA::Double TimeStep);
-		
+	void setTimeStep(CORBA::Double _timeStep){
+        timeStep = _timeStep;
+    }
+
 	virtual void start();
 	virtual void control();
 	virtual void input();

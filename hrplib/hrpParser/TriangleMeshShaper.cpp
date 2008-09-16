@@ -58,7 +58,7 @@ namespace hrp {
         std::vector< std::vector<int> > vertexIndexToFaceIndicesMap;
         std::vector< std::vector<int> > vertexIndexToNormalIndicesMap;
 
-        enum RemapType { REMAP_COLOR, REMAP_NORMAL };
+        enum RemapType { REMAP_COLOR, REMAP_NORMAL, REMAP_TEX };
 
 
         VrmlGeometryPtr getOriginalGeometry(VrmlShapePtr shapeNode);
@@ -353,6 +353,10 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
 
     faceSet->ccw = true;
 
+    int numtexCoord = faceSet->texCoord ? faceSet->texCoord->point.size() : 0;
+    result &= checkAndRemapIndices
+        (REMAP_TEX, numtexCoord, faceSet->texCoordIndex, true, faceSet);
+
     return (result && !indices.empty());
 }
 
@@ -457,7 +461,7 @@ bool TMSImpl::remapDirectMapObjectsPerFaces(TArray& values, const char* valueNam
 bool TMSImpl::checkAndRemapIndices
 (RemapType type, int numElements, MFInt32& indices, bool perVertex, VrmlIndexedFaceSet* triangleMesh)
 {
-    const char* valueName = (type==REMAP_COLOR) ? "colors" : "normals";
+    const char* valueName = (type==REMAP_COLOR) ? "colors" : (type==REMAP_NORMAL) ? "normals" : "texCoord" ;
     
     bool result = true;
     
