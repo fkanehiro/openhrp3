@@ -126,6 +126,7 @@ public class GrxSensorItem extends GrxBaseItem implements  Comparable {
             }
             prm.width  = (int)info.specValues[4];
             prm.height = (int)info.specValues[5];
+            prm.frameRate = (float)info.specValues[6];
             boolean offScreen = false;
             camera_ = new Camera_impl(prm, offScreen);
         }

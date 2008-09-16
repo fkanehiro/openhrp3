@@ -796,7 +796,7 @@ public class GrxPluginManager
 		return null;
 	}
 	
-	public GrxBaseView getView(String name) {
+	public synchronized GrxBaseView getView(String name) {
 		updateViewList();
 		for (GrxBaseView v : selectedViewList_){
 			System.out.println(v.getName());

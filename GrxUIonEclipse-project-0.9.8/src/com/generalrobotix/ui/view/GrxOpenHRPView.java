@@ -93,6 +93,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private double logStepTime_ = 0.05;
 	private boolean isSimulatingView_;
 	private Grx3DView tdview_;
+	private GrxLoggerView lgview_;
 
 	private SimulationParameterPanel simParamPane_;
 	private ControllerPanel controllerPane_;
@@ -276,12 +277,14 @@ public class GrxOpenHRPView extends GrxBaseView {
 		isSimulatingView_ = simParamPane_.isSimulatingView();
 		if (isSimulatingView_){
 			tdview_ = (Grx3DView)manager_.getView("3DView");
-			if (tdview_ == null){
-				GrxDebugUtil.printErr("can't find 3DView");
+			lgview_ = (GrxLoggerView)manager_.getView("Logger View");
+			if (tdview_ == null || lgview_ == null){
+				GrxDebugUtil.printErr("can't find 3DView or Logger View");
+				return;
 			}
 			tdview_.disableUpdateModel();
-			GrxLoggerView lgview = (GrxLoggerView)manager_.getView("Logger View");
-			lgview.disableControl();
+			tdview_.showViewSimulator();
+			lgview_.disableControl();
 		}
 		simThread_.start();
 		GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
@@ -310,12 +313,10 @@ public class GrxOpenHRPView extends GrxBaseView {
 	public void stopSimulation() {
 		if (isExecuting_) {
 			isExecuting_ = false;
-			if (isSimulatingView_ && tdview_ != null) {
+			if (isSimulatingView_) {
 				tdview_.enableUpdateModel();
+				lgview_.enableControl();
 			}
-			GrxLoggerView lgview = (GrxLoggerView)manager_.getView("Logger View");
-			if (lgview != null)
-			  lgview.enableControl();
 			updateTimeMsg();
 			try {
 				if (Thread.currentThread() != simThread_) {
@@ -460,6 +461,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			currentWorld_.addValue(simTime_, wsx);
 			if (isSimulatingView_){
 				tdview_.updateModels(wsx);
+				tdview_.updateViewSimulator(simTime_);
 			}
 		}
 

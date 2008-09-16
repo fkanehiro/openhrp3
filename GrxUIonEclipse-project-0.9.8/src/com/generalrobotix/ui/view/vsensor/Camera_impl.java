@@ -56,6 +56,8 @@ public class Camera_impl extends CameraPOA {
 	
 	private JFrame	frm_;
 
+	private int lastRenderedFrame_=0;
+
 	// ---------- Constructor ----------
 
 	/**
@@ -279,11 +281,17 @@ public class Camera_impl extends CameraPOA {
         }
 	}
 	
-	public void updateView() {
-        canvas_.renderOnce();
-        if (canvas_.isOffScreen()) {
-            canvas2.repaint();
-        }
+	public void updateView(double time) {
+		if (!canvas_.isOffScreen()) setVisible(true);
+		
+		int frame = (int)(time*param_.frameRate);
+		if (time == 0 || frame != lastRenderedFrame_){
+			canvas_.renderOnce();
+			if (canvas_.isOffScreen()) {
+				canvas2.repaint();
+			}
+			lastRenderedFrame_ = frame;
+		}
 	}
 	
 	/**
@@ -304,7 +312,6 @@ public class Camera_impl extends CameraPOA {
 
 	public ImageData getImageData() {
         if (!canvas_.isOffScreen()) setVisible(true);
-        updateView();
 
         if (param_.type == CameraType.COLOR ||
             param_.type == CameraType.COLOR_DEPTH){
