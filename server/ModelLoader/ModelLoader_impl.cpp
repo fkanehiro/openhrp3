@@ -108,6 +108,15 @@ BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url)
 }
 
 
+
+SceneInfo_ptr ModelLoader_impl::loadSceneInfo(const char* url0)
+    throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
+{
+    return 0;
+}
+
+
+
 void ModelLoader_impl::clearData()
 {
     //UrlToBodyInfoMap::iterator p;
