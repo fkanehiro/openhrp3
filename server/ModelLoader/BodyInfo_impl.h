@@ -10,23 +10,15 @@
 /*!
   @file BodyInfo_impl.h
   @author Shin'ichiro Nakaoka
-  @author Y.TSUNODA
 */
 
 #ifndef OPENHRP_MODEL_LOADER_BODYINFO_IMPL_H_INCLUDED
 #define OPENHRP_MODEL_LOADER_BODYINFO_IMPL_H_INCLUDED
 
 #include <string>
-#include <vector>
-
 #include <hrpCorba/ORBwrap.h>
 #include <hrpCorba/ModelLoader.h>
-
 #include <hrpParser/ModelNodeSet.h>
-#include <hrpParser/VrmlNodes.h>
-
-#include <hrpUtil/Tvmet3d.h>
-#include <hrpUtil/Tvmet4d.h>
 
 #include "ShapeSetInfo_impl.h"
 
@@ -69,8 +61,8 @@ private:
 
     int readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIndex, int motherIndex);
     void setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr jointNode );
-    void setSegmentParameters(int linkInfoIndex, VrmlProtoInstancePtr segmentNode );
-    void setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet );
+    void setSegmentParameters(int linkInfoIndex, VrmlProtoInstancePtr segmentNode);
+    void setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet);
     void readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode);
 };
 
