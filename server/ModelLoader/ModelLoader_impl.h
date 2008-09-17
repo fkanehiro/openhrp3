@@ -21,6 +21,7 @@
 #include <hrpCorba/ModelLoader.h>
 
 #include "BodyInfo_impl.h"
+#include "SceneInfo_impl.h"
 
 using namespace OpenHRP;
 

@@ -109,12 +109,28 @@ BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url)
 
 
 
-SceneInfo_ptr ModelLoader_impl::loadSceneInfo(const char* url0)
+SceneInfo_ptr ModelLoader_impl::loadSceneInfo(const char* url)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
-    return 0;
-}
+    cout << "loading " << url << endl;
 
+    SceneInfo_impl* sceneInfo = new SceneInfo_impl(poa);
+
+    try {
+	sceneInfo->load(url);
+    }
+    catch(OpenHRP::ModelLoader::ModelLoaderException& ex){
+	cout << "loading failed.\n";
+	cout << ex.description << endl;
+	//sceneInfo->_remove_ref();
+	throw;
+    }
+    cout << url << " was successfully loaded ! " << endl;
+    
+    //poa->activate_object(sceneInfo);
+
+    return sceneInfo->_this();
+}
 
 
 void ModelLoader_impl::clearData()
