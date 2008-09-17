@@ -110,7 +110,7 @@ TextureInfoSequence* ShapeSetInfo_impl::textures()
   @if jp
   Shape ノード探索のための再帰関数
 
-  子ノードオブジェクトを辿り ShapeInfoを生成する。
+  node以下のシーングラフをたどり、ShapeInfoを生成していく。
   生成したShapeInfoはshapes_に追加する。
   shapes_に追加した位置(index)を io_shapeIndicesに追加する。
   io_shapeIndices は、BodyInfo構築時は LinkInfoのshapeIndices になり、
@@ -119,44 +119,53 @@ TextureInfoSequence* ShapeSetInfo_impl::textures()
   @endif
 */
 void ShapeSetInfo_impl::traverseShapeNodes
-(MFNode& childNodes, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices)
+(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices)
 {
-    for(size_t i = 0; i < childNodes.size(); ++i) {
-        VrmlNodePtr& node = childNodes[i];
+    if(node->isCategoryOf(PROTO_INSTANCE_NODE)){
+        VrmlProtoInstance* protoInstance = static_cast<VrmlProtoInstance*>(node);
+        if(protoInstance->actualNode){
+            traverseShapeNodes(protoInstance->actualNode.get(), T, io_shapeIndices);
+        }
 
-        if(node->isCategoryOf(GROUPING_NODE)) {
-            VrmlGroupPtr groupNode = static_pointer_cast<VrmlGroup>(node);
-            VrmlTransformPtr transformNode = dynamic_pointer_cast<VrmlTransform>(groupNode);
-            if(!transformNode){
-                traverseShapeNodes(groupNode->children, T, io_shapeIndices);
-            } else {
-                Matrix44 T2;
-                calcTransformMatrix(transformNode, T2);
-                traverseShapeNodes(groupNode->children, Matrix44(T * T2), io_shapeIndices);
-            }
+    } else if(node->isCategoryOf(GROUPING_NODE)) {
+        VrmlGroup* groupNode = static_cast<VrmlGroup*>(node);
+        VrmlTransform* transformNode = dynamic_cast<VrmlTransform*>(groupNode);
+        const Matrix44* pT;
+        Matrix44 T2;
+        if(!transformNode){
+            pT = &T;
+        } else {
+            Matrix44 Tlocal;
+            calcTransformMatrix(transformNode, Tlocal);
+            T2 = T * Tlocal;
+            pT = &T2;
+        }
+        MFNode& children = groupNode->children;
+        for(size_t i=0; i < children.size(); ++i){
+            traverseShapeNodes(children[i].get(), *pT, io_shapeIndices);
+        }
+        
+    } else if(node->isCategoryOf(SHAPE_NODE)) {
 
-        } else if(node->isCategoryOf(SHAPE_NODE)) {
-
-            VrmlShapePtr shapeNode = static_pointer_cast<VrmlShape>(node);
-            short shapeInfoIndex;
-
-            ShapeNodeToShapeInfoIndexMap::iterator p = shapeInfoIndexMap.find(shapeNode);
-            if(p != shapeInfoIndexMap.end()){
-                shapeInfoIndex = p->second;
-            } else {
-                shapeInfoIndex = createShapeInfo(shapeNode);
-            }
-
-            if(shapeInfoIndex >= 0){
-                long length = io_shapeIndices.length();
-                io_shapeIndices.length(length + 1);
-                TransformedShapeIndex& tsi = io_shapeIndices[length];
-                tsi.shapeIndex = shapeInfoIndex;
-                int p = 0;
-                for(int row=0; row < 3; ++row){
-                    for(int col=0; col < 4; ++col){
-                        tsi.transformMatrix[p++] = T(row, col);
-                    }
+        VrmlShape* shapeNode = static_cast<VrmlShape*>(node);
+        short shapeInfoIndex;
+        
+        ShapeNodeToShapeInfoIndexMap::iterator p = shapeInfoIndexMap.find(shapeNode);
+        if(p != shapeInfoIndexMap.end()){
+            shapeInfoIndex = p->second;
+        } else {
+            shapeInfoIndex = createShapeInfo(shapeNode);
+        }
+        
+        if(shapeInfoIndex >= 0){
+            long length = io_shapeIndices.length();
+            io_shapeIndices.length(length + 1);
+            TransformedShapeIndex& tsi = io_shapeIndices[length];
+            tsi.shapeIndex = shapeInfoIndex;
+            int p = 0;
+            for(int row=0; row < 3; ++row){
+                for(int col=0; col < 4; ++col){
+                    tsi.transformMatrix[p++] = T(row, col);
                 }
             }
         }
@@ -170,7 +179,7 @@ void ShapeSetInfo_impl::traverseShapeNodes
   計算結果は第2引数に代入する。
   @endif
 */
-void ShapeSetInfo_impl::calcTransformMatrix(VrmlTransformPtr transform, Matrix44& out_T)
+void ShapeSetInfo_impl::calcTransformMatrix(VrmlTransform* transform, Matrix44& out_T)
 {
     Matrix44 R;
     const SFRotation& r = transform->rotation;
@@ -211,7 +220,7 @@ void ShapeSetInfo_impl::calcTransformMatrix(VrmlTransformPtr transform, Matrix44
 /**
    @return the index of a created ShapeInfo object. The return value is -1 if the creation fails.
 */
-int ShapeSetInfo_impl::createShapeInfo(VrmlShapePtr shapeNode)
+int ShapeSetInfo_impl::createShapeInfo(VrmlShape* shapeNode)
 {
     int shapeInfoIndex = -1;
 
@@ -263,7 +272,7 @@ void ShapeSetInfo_impl::setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet
 }
 
 
-void ShapeSetInfo_impl::setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShapePtr shapeNode)
+void ShapeSetInfo_impl::setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* shapeNode)
 {
     shapeInfo.primitiveType = SP_MESH;
     FloatSequence& param = shapeInfo.primitiveParameters;
@@ -315,7 +324,7 @@ void ShapeSetInfo_impl::setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShapePt
    @return the index of a created AppearanceInfo object. The return value is -1 if the creation fails.
 */
 int ShapeSetInfo_impl::createAppearanceInfo
-(ShapeInfo& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet)
+(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlIndexedFaceSet* faceSet)
 {
     int appearanceIndex = appearances_.length();
     appearances_.length(appearanceIndex + 1);
@@ -454,7 +463,7 @@ void ShapeSetInfo_impl::setTexCoords(AppearanceInfo& appInfo, VrmlIndexedFaceSet
     }
 }
 
-void ShapeSetInfo_impl::createTextureTransformMatrix(AppearanceInfo& appInfo, VrmlTextureTransformPtr textureTransform ){
+void ShapeSetInfo_impl::createTextureTransformMatrix(AppearanceInfo& appInfo, VrmlTextureTransformPtr& textureTransform ){
 
     Matrix33 m;
     if(textureTransform){
@@ -489,7 +498,7 @@ void ShapeSetInfo_impl::createTextureTransformMatrix(AppearanceInfo& appInfo, Vr
   @return long MaterialInfo (materials_)のインデックス，materialノードが存在しない場合は -1
   @endif
 */
-int ShapeSetInfo_impl::createMaterialInfo(VrmlMaterialPtr materialNode)
+int ShapeSetInfo_impl::createMaterialInfo(VrmlMaterialPtr& materialNode)
 {
     int materialInfoIndex = -1;
 
@@ -526,7 +535,7 @@ int ShapeSetInfo_impl::createMaterialInfo(VrmlMaterialPtr materialNode)
   @return long TextureInfo(textures_)のインデックス，textureノードが存在しない場合は -1
   @endif
 */
-int ShapeSetInfo_impl::createTextureInfo(VrmlTexturePtr textureNode)
+int ShapeSetInfo_impl::createTextureInfo(VrmlTexturePtr& textureNode)
 {
     int textureInfoIndex = -1;
 

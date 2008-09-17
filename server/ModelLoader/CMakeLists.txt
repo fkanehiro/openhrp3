@@ -12,6 +12,7 @@ set(program openhrp-model-loader)
 
 set(sources
   ShapeSetInfo_impl.cpp
+  SceneInfo_impl.cpp
   BodyInfo_impl.cpp
   ModelLoader_impl.cpp
   UtilFunctions.cpp

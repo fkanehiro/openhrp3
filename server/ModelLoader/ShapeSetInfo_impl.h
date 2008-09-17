@@ -16,15 +16,10 @@
 #define OPENHRP_MODEL_LOADER_SHAPE_SET_INFO_INPL_H_INCLUDED
 
 #include <string>
-#include <vector>
-
 #include <hrpCorba/ORBwrap.h>
 #include <hrpCorba/ModelLoader.h>
-
 #include <hrpParser/TriangleMeshShaper.h>
 #include <hrpParser/VrmlNodes.h>
-
-#include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/Tvmet4d.h>
 
 using namespace OpenHRP;
@@ -49,7 +44,7 @@ protected:
     void applyTriangleMeshShaper(VrmlNodePtr node);
     static void putMessage(const std::string& message);
     std::string& replace(std::string& str, const std::string& sb, const std::string& sa);
-    void traverseShapeNodes(MFNode& childNodes, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices);
+    void traverseShapeNodes(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices);
     virtual const std::string& topUrl() = 0;
 
 private:
@@ -66,17 +61,17 @@ private:
     typedef std::map<VrmlShapePtr, int> ShapeNodeToShapeInfoIndexMap;
     ShapeNodeToShapeInfoIndexMap shapeInfoIndexMap;
 
-    void calcTransformMatrix(VrmlTransformPtr transform, Matrix44& out_T);
-    int createShapeInfo(VrmlShapePtr shapeNode);
+    void calcTransformMatrix(VrmlTransform* transform, Matrix44& out_T);
+    int createShapeInfo(VrmlShape* shapeNode);
     void setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet* triangleMesh);
-    void setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShapePtr shapeNode);
-    int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShapePtr& shapeNode, VrmlIndexedFaceSet* faceSet);
+    void setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* shapeNode);
+    int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlIndexedFaceSet* faceSet);
     void setColors(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     void setNormals(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     void setTexCoords(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
-    int createMaterialInfo(VrmlMaterialPtr materialNode);
-    int createTextureInfo(VrmlTexturePtr textureNode);
-    void createTextureTransformMatrix(AppearanceInfo& appInfo, VrmlTextureTransformPtr textureTransform );
+    int createMaterialInfo(VrmlMaterialPtr& materialNode);
+    int createTextureInfo(VrmlTexturePtr& textureNode);
+    void createTextureTransformMatrix(AppearanceInfo& appInfo, VrmlTextureTransformPtr& textureTransform );
     std::string getModelFileDirPath(const std::string& url);
 };
 

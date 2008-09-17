@@ -131,9 +131,6 @@ DEF longfloor Humanoid {
 	          6, 7, 4, -1,
 	          4, 5, 6, -1,
 	        ]
-	        colorIndex [
-	          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	        ]
 	      }
 #              geometry Box {
 #                  size 0.2 0.8 0.2

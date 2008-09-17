@@ -531,7 +531,7 @@ module OpenHRP {
 
     /**
        @if jp
-       素のVRMLファイルを読み込み、含まれる形状のデータ一式を ShapeInfoSet として返す。
+       素のVRMLファイルを読み込み、含まれる形状のデータ一式を SceneInfo として返す。
        @endif
     */
     SceneInfo loadSceneInfo(in string url) raises (ModelLoaderException);
