@@ -61,37 +61,7 @@ Link::Link()
 
 Link::Link(const Link& org)
 {
-    jointType = org.jointType;
-    jointId = org.jointId;
-    a = org.a;
-    d = org.d;
-    b = org.b;
-    c = org.c;
-    m = org.m;
-    I = org.I;
-    Ir = org.Ir;
-    torqueConst = org.torqueConst;
-    encoderPulse = org.encoderPulse;
-    gearRatio = org.gearRatio;
-	gearEfficiency = org.gearEfficiency;
-    rotorResistor = org.rotorResistor;
-    Jm2 = org.Jm2;
-    ulimit = org.ulimit;
-    llimit = org.llimit;
-    uvlimit = org.uvlimit;
-    lvlimit = org.lvlimit;
-	isHighGainMode = org.isHighGainMode;
-
-    parent = child = sibling = 0;
-
-    if(org.child){
-        for(Link* orgChild = org.child; orgChild; orgChild = orgChild->sibling){
-            Link* newChild = new Link(*orgChild);
-            newChild->parent = this;
-            newChild->sibling = child;
-            child = newChild;
-        }
-    }
+    copy(org);
 }
 
 
@@ -134,6 +104,40 @@ void Link::addChild(Link* link)
 	setBodyIter(link, body);
 }
 
+void Link::copy(const Link& org)
+{
+    jointType = org.jointType;
+    jointId = org.jointId;
+    a = org.a;
+    d = org.d;
+    b = org.b;
+    c = org.c;
+    m = org.m;
+    I = org.I;
+    Ir = org.Ir;
+    torqueConst = org.torqueConst;
+    encoderPulse = org.encoderPulse;
+    gearRatio = org.gearRatio;
+	gearEfficiency = org.gearEfficiency;
+    rotorResistor = org.rotorResistor;
+    Jm2 = org.Jm2;
+    ulimit = org.ulimit;
+    llimit = org.llimit;
+    uvlimit = org.uvlimit;
+    lvlimit = org.lvlimit;
+	isHighGainMode = org.isHighGainMode;
+
+    parent = child = sibling = 0;
+
+    if(org.child){
+        for(Link* orgChild = org.child; orgChild; orgChild = orgChild->sibling){
+            Link* newChild = new Link(*orgChild);
+            newChild->parent = this;
+            newChild->sibling = child;
+            child = newChild;
+        }
+    }
+}
 
 /**
    A child link is detached from the link.
@@ -176,6 +180,11 @@ std::ostream& operator<<(std::ostream &out, Link& link)
     return out;
 }
 
+Link& Link::operator=(const Link& link)
+{
+	copy(link);
+	return *this;
+}
 
 void Link::putInformation(std::ostream& os)
 {
