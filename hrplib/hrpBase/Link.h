@@ -1,4 +1,4 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+// -*- mode: c++; indent-tabs-mode: nil; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -42,6 +42,7 @@ namespace hrp {
 		void addChild(Link* link);
 		bool detachChild(Link* link);
 
+		void copy(const Link& link);
 		void setAttitude(const Matrix33& R) { this->R = R * trans(Rs); }
 		Matrix33 attitude() { return Matrix33(this->R * Rs); }
 
@@ -56,6 +57,8 @@ namespace hrp {
 		Matrix33 segmentAttitude() { return Matrix33(this->R * Rs); }
 
 		void putInformation(std::ostream& os);
+
+		Link& operator=(const Link& link);
 
 		Body* body;
 
