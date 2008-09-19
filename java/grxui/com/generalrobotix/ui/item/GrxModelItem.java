@@ -340,7 +340,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     shapeTransform.addChild(primitive);
                     /* normal visualization */
                     if(false){
-                        //TODO
+                        for(int i=0; i<primitive.numChildren(); i++){
+                            Shape3D shape = primitive.getShape(i);  
+                            NormalRender nrender = new NormalRender((GeometryArray)shape.getGeometry(), 0.05f, M);
+                            Shape3D nshape = new Shape3D(nrender.getLineArray());
+                            linkTopTransformNode.addChild(nshape);
+                        }
                     }
                 }
 
@@ -581,6 +586,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     (ShapeInfo shapeInfo, AppearanceInfo[] appearances, MaterialInfo[] materials, TextureInfo[] textures){
 
         Appearance appearance = new Appearance();
+        PolygonAttributes pa = new PolygonAttributes();
+        pa.setCullFace(PolygonAttributes.CULL_NONE);
+        appearance.setPolygonAttributes(pa);
         if(shapeInfo.appearanceIndex >= 0){
             AppearanceInfo appearanceInfo = appearances[shapeInfo.appearanceIndex];
             if(appearanceInfo.materialIndex >= 0)
@@ -607,10 +615,20 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_CYLINDER ){
             Cylinder cylinder = new Cylinder(shapeInfo.primitiveParameters[0], shapeInfo.primitiveParameters[1],
                 flag, appearance );
+            if((int)shapeInfo.primitiveParameters[2]==0)  //TOP
+                cylinder.removeChild(cylinder.getShape(Cylinder.TOP));
+            if((int)shapeInfo.primitiveParameters[3]==0)  //BOTTOM
+                cylinder.removeChild(cylinder.getShape(Cylinder.BOTTOM));
+            if((int)shapeInfo.primitiveParameters[4]==0)  //SIDE
+                cylinder.removeChild(cylinder.getShape(Cylinder.BODY));
             return cylinder;
         }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_CONE ){
             Cone cone = new Cone(shapeInfo.primitiveParameters[0], shapeInfo.primitiveParameters[1],
                 flag, appearance );
+            if((int)shapeInfo.primitiveParameters[2]==0)  //BOTTOM
+                cone.removeChild(cone.getShape(Cone.CAP));
+            if((int)shapeInfo.primitiveParameters[3]==0)  //SIDE
+                cone.removeChild(cone.getShape(Cone.BODY));
             return cone;
         }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_SPHERE ){
             Sphere sphere = new Sphere(shapeInfo.primitiveParameters[0], flag, appearance );
