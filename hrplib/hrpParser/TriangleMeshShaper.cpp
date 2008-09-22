@@ -529,46 +529,12 @@ bool TMSImpl::checkAndRemapIndices
 
 bool TMSImpl::setTexCoordIndex(VrmlIndexedFaceSetPtr faseSet)
 {
-   
     bool result = true;
-    VrmlTextureCoordinatePtr& texCoord = faseSet->texCoord;
+    VrmlTextureCoordinatePtr texCoord = faseSet->texCoord;
     MFInt32& texCoordIndex = faseSet->texCoordIndex;
-    VrmlCoordinatePtr& coord = faseSet->coord;
     MFInt32& coordIndex = faseSet->coordIndex;
 
-    if(!texCoord){
-        // default Mapping
-        float max[3]={0,0,0};
-        float min[3]={0,0,0};
-        int n = coord->point.size();
-        for(int i=0; i<n; i++){
-            for(int j=0; j<3; j++){
-                float w = coord->point[i][j];
-                max[j] = std::max( max[j], w );
-                min[j] = std::min( min[j], w );
-            }
-        }
-        float size[3]={0,0,0};
-        for(int j=0; j<3; j++)
-            size[j] = max[j]-min[j];
-        int s,t;
-        size[0] >= size[1] ? 
-              ( size[0] >= size[2] ? 
-                      ( s=0 , t=size[1] >= size[2] ? 1 : 2 ) 
-                    : ( s=2 , t=0) ) 
-            : ( size[1] >= size[2] ? 
-                      ( s=1 , t=size[0] >= size[2] ? 0 : 2 )
-                    : ( s=2 , t=1) ) ;
-        texCoord = new VrmlTextureCoordinate();
-        for(int i=0; i<n; i++){
-            SFVec2f point;
-            point[0] = (coord->point[i][s]-min[s])/size[s];
-            point[1] = (coord->point[i][t]-min[t])/size[t]*0.5;
-            texCoord->point.push_back(point);
-        }
-        texCoordIndex.resize(coordIndex.size());
-        copy( coordIndex.begin(), coordIndex.end(), texCoordIndex.begin() );
-     } else {
+	if(texCoord){
         if(texCoordIndex.empty()){   
             texCoordIndex.resize(coordIndex.size());
             copy( coordIndex.begin(), coordIndex.end(), texCoordIndex.begin() );
