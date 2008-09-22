@@ -692,7 +692,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             }
         }else{
             //System.out.println("url: "+texInfo.url);
-            TextureLoader tloader = new TextureLoader(texInfo.url, null);  
+            TextureLoader tloader = new TextureLoader(texInfo.url, manager_.getFrame());  
             Texture texture = tloader.getTexture();
             appearance.setTexture(texture);
         }
