@@ -125,9 +125,9 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
 			}
             break;
             
+        case Link::FIXED_JOINT:
         default:
             link->R = child->R;
-			arm = link->R * (child->b + child->q * child->d);
 			link->p = child->p - (link->R * child->b);
 
 			if(calcVelocity){

@@ -743,7 +743,7 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
             vector3 v[2];
             for(int k=0; k < 2; ++k){
                 Link* link = linkPair.link[k];
-                if(link->jointType == Link::FIXED_JOINT){
+                if(link->isRoot() && link->jointType == Link::FIXED_JOINT){
                     v[k] = 0.0;
                 } else {
                     v[k] = link->vo + cross(link->w, contact.point);
@@ -865,7 +865,7 @@ bool CFSImpl::setConnectionConstraintPoints(LinkPair& linkPair)
     vector3 v[2];
     for(int k=0; k < 2; ++k){
         Link* link = connection->link[k];
-        if(link->jointType == Link::FIXED_JOINT){
+        if(link->isRoot() && link->jointType == Link::FIXED_JOINT){
             v[k] = 0.0;
         } else {
             v[k] = link->vo + cross(link->w, point[k]);
@@ -1160,14 +1160,18 @@ void CFSImpl::initABMForceElementsWithNoExtForce(BodyData& bodyData)
             data.pf0   += childData.pf0;
             data.ptau0 += childData.ptau0;
 
-            double uu_dd = childData.uu0 / child->dd;
-            data.pf0    += uu_dd * child->hhv;
-            data.ptau0  += uu_dd * child->hhw;
+            if(child->jointType != Link::FIXED_JOINT ){
+                double uu_dd = childData.uu0 / child->dd;
+                data.pf0    += uu_dd * child->hhv;
+                data.ptau0  += uu_dd * child->hhw;
+            }
         }
 
         if(i > 0){
-            data.uu0  = link->uu + link->u - (dot(link->sv, data.pf0) + dot(link->sw, data.ptau0));
-            data.uu = data.uu0;
+            if(link->jointType != Link::FIXED_JOINT){
+                data.uu0  = link->uu + link->u - (dot(link->sv, data.pf0) + dot(link->sw, data.ptau0));
+                data.uu = data.uu0;
+            }
         }
     }
 }
@@ -1183,12 +1187,14 @@ void CFSImpl::calcABMForceElementsWithTestForce
 
     Link* link = linkToApplyForce;
     while(link->parent){
-        LinkData& data = linksData[link->index];
-        double duu = -(dot(link->sv, dpf) + dot(link->sw, dptau));
-        data.uu += duu;
-        double duudd = duu / link->dd;
-        dpf   += duudd * link->hhv;
-        dptau += duudd * link->hhw;
+        if(link->jointType != Link::FIXED_JOINT){
+            LinkData& data = linksData[link->index];
+            double duu = -(dot(link->sv, dpf) + dot(link->sw, dptau));
+            data.uu += duu;
+            double duudd = duu / link->dd;
+            dpf   += duudd * link->hhv;
+            dptau += duudd * link->hhw;
+        }
         link = link->parent;
     }
 
@@ -1246,9 +1252,15 @@ void CFSImpl::calcAccelsABM(BodyData& bodyData, int constraintIndex)
             Link* link = linkData.link;
             LinkData& parentData = linksData[linkData.parentIndex];
 
-            linkData.ddq = (linkData.uu - (dot(link->hhv, parentData.dvo) + dot(link->hhw, parentData.dw))) / link->dd;
-            linkData.dvo = parentData.dvo + link->cv + link->sv * linkData.ddq;
-            linkData.dw  = parentData.dw  + link->cw + link->sw * linkData.ddq;
+            if(link->jointType != Link::FIXED_JOINT){
+                linkData.ddq = (linkData.uu - (dot(link->hhv, parentData.dvo) + dot(link->hhw, parentData.dw))) / link->dd;
+                linkData.dvo = parentData.dvo + link->cv + link->sv * linkData.ddq;
+                linkData.dw  = parentData.dw  + link->cw + link->sw * linkData.ddq;
+            }else{
+                linkData.ddq = 0.0;
+                linkData.dvo = parentData.dvo;
+                linkData.dw  = parentData.dw;
+            }
 
             // reset
             linkData.uu   = linkData.uu0;
@@ -1277,9 +1289,13 @@ void CFSImpl::calcAccelsMM(BodyData& bodyData, int constraintIndex)
 
             Link* link = linkData.link;
             LinkData& parentData = linksData[linkData.parentIndex];
-
-            linkData.dvo = parentData.dvo + link->cv + link->ddq * link->sv;
-            linkData.dw  = parentData.dw  + link->cw + link->ddq * link->sw;
+            if(link->jointType != Link::FIXED_JOINT){
+                linkData.dvo = parentData.dvo + link->cv + link->ddq * link->sv;
+                linkData.dw  = parentData.dw  + link->cw + link->ddq * link->sw;
+            }else{
+                linkData.dvo = parentData.dvo;
+                linkData.dw = parentData.dw;
+            }
         }
     }
 }
@@ -1544,7 +1560,7 @@ void CFSImpl::addConstraintForceToLinks()
     for(int i=0; i < n; ++i){
         LinkPair* linkPair = constrainedLinkPairs[i];
         for(int j=0; j < 2; ++j){
-            if(linkPair->link[j]->jointType != Link::FIXED_JOINT){
+            if(!linkPair->link[j]->isRoot() || linkPair->link[j]->jointType != Link::FIXED_JOINT){
                 addConstraintForceToLink(linkPair, j);
             }
         }

@@ -368,13 +368,24 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
 				break;
 
 			case Link::ROTATIONAL_JOINT:
-			default:
 				link->R  = parent->R * rodrigues(link->a, link->q);
 				link->p  = parent->R * link->b + parent->p;
 				link->sw = parent->R * link->a;
 				link->sv = cross(link->p, link->sw);
 				link->w  = link->dq * link->sw + parent->w;
 				break;
+
+            case Link::FIXED_JOINT:
+            default:
+				link->p = parent->R * link->b + parent->p;
+				link->R = parent->R;
+				link->w = parent->w;
+				link->vo = parent->vo;
+				link->sw = 0.0;
+				link->sv = 0.0;
+				link->cv = 0.0;
+				link->cw = 0.0;
+                goto COMMON_CALCS_FOR_ALL_JOINT_TYPES;
 			}
 
 			link->vo = link->dq * link->sv + parent->vo;
@@ -384,6 +395,8 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
 			link->cv = link->dq * dsv;
 			link->cw = link->dq * dsw;
 		}
+
+        COMMON_CALCS_FOR_ALL_JOINT_TYPES:
 
 		/// \todo remove this  equation
 		link->v = link->vo + cross(link->w, link->p);
