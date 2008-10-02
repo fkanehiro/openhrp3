@@ -53,6 +53,7 @@ import com.generalrobotix.ui.util.GrxConfigBundle;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 
+
 @SuppressWarnings("unchecked")
 public class GrxProjectItem extends GrxBaseItem {
 	public static final String TITLE = "Project";
@@ -70,7 +71,6 @@ public class GrxProjectItem extends GrxBaseItem {
     private Transformer transformer_;
     
     private Map<String, ModeNodeInfo> modeInfoMap_ = new HashMap<String, ModeNodeInfo>();
-    
     private class ModeNodeInfo {
     	Element  root;
     	List     propList;
@@ -90,6 +90,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			transformer_ = tffactory.newTransformer();
             transformer_.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer_.setOutputProperty(OutputKeys.METHOD, "xml");
+            setDefaultDirectory();
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch (TransformerConfigurationException e) {
@@ -348,11 +349,23 @@ public class GrxProjectItem extends GrxBaseItem {
 	}
 
 	public void load() {
+		String path = getURL(true);
+		File filterPath = null;
+		if (path == null){
+			filterPath = getDefaultDir();
+		} else {
+			File tempFile = new File(path);
+			filterPath = tempFile.getParentFile();
+		}
+		
+		
 		IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 		FileDialog fdlg = new FileDialog( window.getShell(), SWT.OPEN);
 		String[] fe = { "*.xml" };
 		fdlg.setFilterExtensions( fe );
+		if( filterPath != null )
+			fdlg.setFilterPath(filterPath.getPath());
 		String fPath = fdlg.open();
 		if( fPath != null ) {
 			File f = new File(fPath);
@@ -713,6 +726,14 @@ public class GrxProjectItem extends GrxBaseItem {
 			}
 			newItem.restoreProperties();
 			manager_.setSelectedItem(newItem, true);
+		}
+	}
+	
+	//
+	private void setDefaultDirectory(){
+		String dir = java.lang.System.getenv("PROJECT_DIR");
+		if( dir != null ){
+			setDefaultDirectory( dir );
 		}
 	}
 }
