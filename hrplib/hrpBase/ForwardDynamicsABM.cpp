@@ -263,11 +263,9 @@ void ForwardDynamicsABM::calcABMPhase1()
 				link->R = parent->R;
 				link->w = parent->w;
 				link->vo = parent->vo;
-				link->v = parent->v;
-				// move these to initialization ?
 				link->sw = 0.0;
 				link->sv = 0.0;
-				link->cv = 0.0;
+                link->cv = 0.0;
 				link->cw = 0.0;
 				goto COMMON_CALCS_FOR_ALL_JOINT_TYPES;
 			}
@@ -326,27 +324,36 @@ void ForwardDynamicsABM::calcABMPhase2()
 
         for(Link* child = link->child; child; child = child->sibling){
 
-			vector3 hhv_dd(child->hhv / child->dd);
-			link->Ivv += child->Ivv - VVt_prod(child->hhv, hhv_dd);
-			link->Iwv += child->Iwv - VVt_prod(child->hhw, hhv_dd);
-			link->Iww += child->Iww - VVt_prod(child->hhw, vector3(child->hhw / child->dd));
+            if(child->jointType == Link::FIXED_JOINT){
+                link->Ivv += child->Ivv;
+			    link->Iwv += child->Iwv;
+			    link->Iww += child->Iww;
+
+            }else{
+                vector3 hhv_dd(child->hhv / child->dd);
+			    link->Ivv += child->Ivv - VVt_prod(child->hhv, hhv_dd);
+			    link->Iwv += child->Iwv - VVt_prod(child->hhw, hhv_dd);
+			    link->Iww += child->Iww - VVt_prod(child->hhw, vector3(child->hhw / child->dd));
+            }
 
 			link->pf   += child->Ivv * child->cv + trans(child->Iwv) * child->cw + child->pf;
 			link->ptau += child->Iwv * child->cv + child->Iww * child->cw + child->ptau;
 
-			double uu_dd = child->uu / child->dd;
-			link->pf   += uu_dd * child->hhv;
-			link->ptau += uu_dd * child->hhw;
+            if(child->jointType != Link::FIXED_JOINT){  
+                double uu_dd = child->uu / child->dd;
+ 			    link->pf   += uu_dd * child->hhv;
+			    link->ptau += uu_dd * child->hhw;
+            }
 		}
 
 		if(i > 0){
-			link->hhv = link->Ivv * link->sv + trans(link->Iwv) * link->sw;
-			link->hhw = link->Iwv * link->sv + link->Iww * link->sw;
-
-			link->dd = dot(link->sv, link->hhv) + dot(link->sw, link->hhw) + link->Jm2;
-
-			link->uu = link->u - (dot(link->hhv, link->cv) + dot(link->hhw, link->cw)
-								  + dot(link->sv, link->pf) + dot(link->sw, link->ptau));
+            if(link->jointType != Link::FIXED_JOINT){
+                link->hhv = link->Ivv * link->sv + trans(link->Iwv) * link->sw;
+			    link->hhw = link->Iwv * link->sv + link->Iww * link->sw;
+			    link->dd = dot(link->sv, link->hhv) + dot(link->sw, link->hhw) + link->Jm2;
+			    link->uu = link->u - (dot(link->hhv, link->cv) + dot(link->hhw, link->cw)
+								      + dot(link->sv, link->pf) + dot(link->sw, link->ptau));
+            }
 		}
     }
 }
@@ -363,20 +370,29 @@ void ForwardDynamicsABM::calcABMPhase2Part1()
 
         for(Link* child = link->child; child; child = child->sibling){
 
-			vector3 hhv_dd(child->hhv / child->dd);
-			link->Ivv += child->Ivv - VVt_prod(child->hhv, hhv_dd);
-			link->Iwv += child->Iwv - VVt_prod(child->hhw, hhv_dd);
-			link->Iww += child->Iww - VVt_prod(child->hhw, vector3(child->hhw / child->dd));
+			if(child->jointType == Link::FIXED_JOINT){
+                link->Ivv += child->Ivv;
+			    link->Iwv += child->Iwv;
+			    link->Iww += child->Iww;
+
+            }else{
+                vector3 hhv_dd(child->hhv / child->dd);
+			    link->Ivv += child->Ivv - VVt_prod(child->hhv, hhv_dd);
+			    link->Iwv += child->Iwv - VVt_prod(child->hhw, hhv_dd);
+			    link->Iww += child->Iww - VVt_prod(child->hhw, vector3(child->hhw / child->dd));
+            }
 
 			link->pf   += child->Ivv * child->cv + trans(child->Iwv) * child->cw;
 			link->ptau += child->Iwv * child->cv + child->Iww * child->cw;
 		}
 
 		if(i > 0){
-			link->hhv = link->Ivv * link->sv + trans(link->Iwv) * link->sw;
-			link->hhw = link->Iwv * link->sv + link->Iww * link->sw;
-			link->dd  = dot(link->sv, link->hhv) + dot(link->sw, link->hhw) + link->Jm2;
-			link->uu  = - (dot(link->hhv, link->cv) + dot(link->hhw, link->cw));
+            if(link->jointType != Link::FIXED_JOINT){
+			    link->hhv = link->Ivv * link->sv + trans(link->Iwv) * link->sw;
+			    link->hhw = link->Iwv * link->sv + link->Iww * link->sw;
+			    link->dd  = dot(link->sv, link->hhv) + dot(link->sw, link->hhw) + link->Jm2;
+			    link->uu  = - (dot(link->hhv, link->cv) + dot(link->hhw, link->cw));
+            }
 		}
     }
 }
@@ -398,13 +414,16 @@ void ForwardDynamicsABM::calcABMPhase2Part2()
 			link->pf   += child->pf;
 			link->ptau += child->ptau;
 
-			double uu_dd = child->uu / child->dd;
-			link->pf   += uu_dd * child->hhv;
-			link->ptau += uu_dd * child->hhw;
+			if(child->jointType != Link::FIXED_JOINT){  
+                double uu_dd = child->uu / child->dd;
+ 			    link->pf   += uu_dd * child->hhv;
+			    link->ptau += uu_dd * child->hhw;
+            }
 		}
 
 		if(i > 0){
-			link->uu += link->u - (dot(link->sv, link->pf) + dot(link->sw, link->ptau));
+            if(link->jointType != Link::FIXED_JOINT)
+    			link->uu += link->u - (dot(link->sv, link->pf) + dot(link->sw, link->ptau));
 		}
     }
 }
@@ -446,13 +465,17 @@ void ForwardDynamicsABM::calcABMPhase3()
 
     int n = traverse.numLinks();
     for(int i=1; i < n; ++i){
-
         Link* link = traverse[i];
         Link* parent = link->parent;
-
-		link->ddq = (link->uu - (dot(link->hhv, parent->dvo) + dot(link->hhw, parent->dw))) / link->dd;
-        link->dvo = parent->dvo + link->cv + link->sv * link->ddq;
-        link->dw  = parent->dw  + link->cw + link->sw * link->ddq;
+        if(link->jointType != Link::FIXED_JOINT){
+		    link->ddq = (link->uu - (dot(link->hhv, parent->dvo) + dot(link->hhw, parent->dw))) / link->dd;
+            link->dvo = parent->dvo + link->cv + link->sv * link->ddq;
+            link->dw  = parent->dw  + link->cw + link->sw * link->ddq;
+        }else{
+            link->ddq = 0.0;
+            link->dvo = parent->dvo;
+            link->dw = parent->dw; 
+        }
     }
 }
 

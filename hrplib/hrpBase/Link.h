@@ -41,6 +41,7 @@ namespace hrp {
 
 		void addChild(Link* link);
 		bool detachChild(Link* link);
+        bool isRoot() { return !parent; }
 
 		void copy(const Link& link);
 		void setAttitude(const Matrix33& R) { this->R = R * trans(Rs); }

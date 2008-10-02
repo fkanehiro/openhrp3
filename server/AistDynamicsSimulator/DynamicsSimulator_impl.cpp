@@ -579,19 +579,23 @@ void DynamicsSimulator_impl::setCharacterLinkData
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_VALUE:
-        link->q = wdata[0];
+        if(link->jointType != Link::FIXED_JOINT)
+            link->q = wdata[0];
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_VELOCITY:
-        link->dq = wdata[0];
+        if(link->jointType != Link::FIXED_JOINT)
+            link->dq = wdata[0];
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_ACCELERATION:
-        link->ddq = wdata[0];
+        if(link->jointType != Link::FIXED_JOINT)
+            link->ddq = wdata[0];
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_TORQUE:
-        link->u = wdata[0];
+        if(link->jointType != Link::FIXED_JOINT)
+            link->u = wdata[0];
         break;
 
     case OpenHRP::DynamicsSimulator::ABS_TRANSFORM:
@@ -800,25 +804,29 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
 
     case OpenHRP::DynamicsSimulator::JOINT_VALUE:
         for(int i=0; i < n; ++i){
-            body->joint(i)->q = wdata[i];
+            if(body->joint(i)->jointType != Link::FIXED_JOINT)
+                body->joint(i)->q = wdata[i];
         }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_VELOCITY:
         for(int i=0; i < n; ++i){
-            body->joint(i)->dq = wdata[i];
+            if(body->joint(i)->jointType != Link::FIXED_JOINT)
+                body->joint(i)->dq = wdata[i];
         }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_ACCELERATION:
         for(int i=0; i < n; ++i){
-            body->joint(i)->ddq = wdata[i];
+            if(body->joint(i)->jointType != Link::FIXED_JOINT)
+                body->joint(i)->ddq = wdata[i];
         }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_TORQUE:
         for(int i=0; i < n; ++i){
-            body->joint(i)->u = wdata[i];
+            if(body->joint(i)->jointType != Link::FIXED_JOINT)
+                body->joint(i)->u = wdata[i];
         }
         break;
 

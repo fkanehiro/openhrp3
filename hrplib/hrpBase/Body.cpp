@@ -391,8 +391,13 @@ void Body::calcInverseDynamics(Link* ptr, vector3& out_f, vector3& out_tau)
     if(parent){
 		vector3 dsv,dsw,sv,sw;
 
-		sw  = parent->R * ptr->a;
-		sv  = cross(ptr->p, sw);
+        if(ptr->jointType != Link::FIXED_JOINT){
+    		sw  = parent->R * ptr->a;
+	    	sv  = cross(ptr->p, sw);
+        }else{
+            sw = 0.0;
+            sv = 0.0;
+        }
 		dsv = cross(parent->w, sv) + cross(parent->vo, sw);
 		dsw = cross(parent->w, sw);
 
