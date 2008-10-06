@@ -43,8 +43,10 @@ endif()
 # commands
 if(UNIX)
   set(RMDIR rm -fr)
+  set(CPSEP ":")
 elseif(WIN32)
   set(RMDIR rmdir /S/Q)
+  set(CPSEP ";")
 endif()
 
 # shell script file suffix
@@ -225,7 +227,7 @@ message(STATUS "JDK: ${JDK_DIR}")
 # jython
 find_package(Jython REQUIRED)
 if(JYTHON_JAR)
-	set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}:${JYTHON_JAR}")
+	set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JYTHON_JAR}")
 endif()
 
 set(JAVA3D_LIB_DIR CACHE FILEPATH "set the location of Java3D 'lib' directory when it is not installed in the JDK")
@@ -233,22 +235,26 @@ set(JAVA3D_LIB_DIR CACHE FILEPATH "set the location of Java3D 'lib' directory wh
 if(JAVA3D_LIB_DIR)
   string(REGEX REPLACE "/$" "" JAVA3D_LIB_DIR ${JAVA3D_LIB_DIR})
   foreach(jar_file j3dcore.jar j3dutils.jar vecmath.jar)
-    set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}:${JAVA3D_LIB_DIR}/ext/${jar_file}")
+    set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JAVA3D_LIB_DIR}/ext/${jar_file}")
   endforeach()
-  set(JAVA_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}:${JAVA3D_LIB_DIR}/i386")
+  if(UNIX)
+    set(JAVA_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}${CPSEP}${JAVA3D_LIB_DIR}/i386")
+  elseif(WIN32)
+    set(JAVA_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}${CPSEP}${JAVA3D_LIB_DIR}/../bin")
+  endif()
 endif()
 
 set(JMFHOME $ENV{JMFHOME} CACHE FILEPATH "set the location of Java Media Framework when it is not in the class path")
 if(JMFHOME)
   string(REGEX REPLACE "/$" "" JMFHOME ${JMFHOME})
-  set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}:${JMFHOME}/lib/jmf.jar")
-  set(JAVA_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}:${JMFHOME}/lib")
+  set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JMFHOME}/lib/jmf.jar")
+  set(JAVA_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}${CPSEP}${JMFHOME}/lib")
 endif()
 
 
 if(SYSTEM_CLASSPATH)
-  string(REGEX REPLACE "^:" "" SYSTEM_CLASSPATH ${SYSTEM_CLASSPATH})
-  message(STATUS "Additional Java SYSTEM_CLASSPATH is ${SYSTEM_CLASSPATH}")
+    string(REGEX REPLACE "^${CPSEP}" "" SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}" )
+  message(STATUS "SYSTEM_CLASSPATH: ${SYSTEM_CLASSPATH}")
   set(CLASSPATH ${SYSTEM_CLASSPATH})
 endif()
 

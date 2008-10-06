@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST) 
+ * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 /*
  *  GrxDebugUtil.java
@@ -18,13 +18,18 @@
  */
 package com.generalrobotix.ui.util;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.logging.*;
 
 public class GrxDebugUtil {
 	private static boolean isDebugging_ = false;
-	
+
 	public static void setDebugFlag(boolean flag){
-		isDebugging_ = flag;		
+		isDebugging_ = flag;
 		Logger logger = Logger.getLogger("");
 		if (flag) {
 			System.out.println("debug on (message logging level : INFO)");
@@ -34,12 +39,12 @@ public class GrxDebugUtil {
 			logger.setLevel(Level.SEVERE);
 		}
 	}
-	
+
 	public static void print(String s){
 		if (isDebugging_ == true)
 			System.out.print(s);
 	}
-	
+
 	public static void println(String s){
 		if (isDebugging_ == true)
 			System.out.println(s);
@@ -56,6 +61,19 @@ public class GrxDebugUtil {
 			e.printStackTrace();
 		}
 	}
+
+	public static void outputLogFile(String path, String s){
+		try {
+			FileOutputStream logFileStream = new FileOutputStream(path);
+			OutputStreamWriter logFileOut = new OutputStreamWriter(logFileStream, "UTF-8");
+			logFileOut.write(s);
+			logFileOut.flush();
+			logFileOut.close();
+		} catch (Exception e){
+
+		}
+	}
+
 
   public static boolean isDebugging() {
     return isDebugging_;

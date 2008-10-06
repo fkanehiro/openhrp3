@@ -171,14 +171,8 @@ else(WIN32)
   endforeach()
 endif()
 
-if(UNIX)
-set(classpath "${CLASSPATH}:${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar")
-  set(javac_flags -target 1.5 -encoding EUCJIS -classpath ${classpath} -d classes)
-elseif(WIN32)
-set(classpath "${CLASSPATH}\;${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar")
-  set(javac_flags -target 1.5 -encoding EUCJIS -d classes)
-endif()
-
+set(CLASSPATH "${CLASSPATH}${CPSEP}${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar")
+set(javac_flags -target 1.5 -encoding EUCJIS -d classes)
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
   list(APPEND javac_flags -g)
 endif()
@@ -189,7 +183,7 @@ if(UNIX)
 add_custom_command(
   OUTPUT  ${grxui_jar} classes
   COMMAND ${CMAKE_COMMAND} -E make_directory classes
-  COMMAND ${JAVAC} ${javac_flags} ${sources}
+  COMMAND ${JAVAC} ${javac_flags} -classpath ${CLASSPATH} ${sources}
   COMMAND ${JAR} cmf ${CMAKE_CURRENT_SOURCE_DIR}/Manifest.mf ${grxui_jar} -C classes com
   COMMAND ${JAR} uf ${grxui_jar} -C ${CMAKE_CURRENT_SOURCE_DIR} resources 
   DEPENDS ${sources}
@@ -203,7 +197,7 @@ elseif(WIN32)
   add_custom_command(
     OUTPUT  ${grxui_jar} ${classes}
     COMMAND ${CMAKE_COMMAND} -E make_directory classes
-    COMMAND ${JAVAC} ${javac_flags} -classpath ${classpath} ${sources}
+    COMMAND ${JAVAC} ${javac_flags} -classpath "${CLASSPATH}" ${sources}
     COMMAND ${JAR} cmf ${CMAKE_CURRENT_SOURCE_DIR}/Manifest.mf ${grxui_jar} -C classes com
     COMMAND ${JAR} uf ${grxui_jar} -C ${CMAKE_CURRENT_SOURCE_DIR} resources 
     DEPENDS ${sources}

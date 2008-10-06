@@ -1,11 +1,11 @@
-/*
+﻿/*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
  * Eclipse Public License v1.0 which accompanies this distribution, and is
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST) 
+ * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 /*
  *  GrxProjectItem.java
@@ -58,9 +58,9 @@ public class GrxProjectItem extends GrxBaseItem {
 	private Document doc_;
     private DocumentBuilder builder_;
     private Transformer transformer_;
-    
+
     private Map<String, ModeNodeInfo> modeInfoMap_ = new HashMap<String, ModeNodeInfo>();
-    
+
     private class ModeNodeInfo {
     	Element  root;
     	List     propList;
@@ -68,18 +68,19 @@ public class GrxProjectItem extends GrxBaseItem {
     	NodeList viewList;
     	Element  windowConfig;
     }
-    
+
 	public GrxProjectItem(String name, GrxPluginManager manager) {
 		super(name, manager);
 		setIcon(manager_.ROBOT_ICON);
 		DocumentBuilderFactory dbfactory = DocumentBuilderFactory.newInstance();
 		TransformerFactory tffactory = TransformerFactory.newInstance();
-	
+
 		try {
 			builder_ = dbfactory.newDocumentBuilder();
 			transformer_ = tffactory.newTransformer();
             transformer_.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer_.setOutputProperty(OutputKeys.METHOD, "xml");
+            setDefaultDirectory();
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch (TransformerConfigurationException e) {
@@ -95,7 +96,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				break;
 			}
 		}
-			
+
 		doc_ = builder_.newDocument();
 		element_ = doc_.createElement("grxui");
 		element_.appendChild(doc_.createTextNode("\n"));
@@ -113,11 +114,11 @@ public class GrxProjectItem extends GrxBaseItem {
 			mi.root = (Element)modeList.item(i);
             modeInfoMap_.put(mi.root.getAttribute("name"), mi);
 
-			// property node 
+			// property node
 			NodeList propList = mi.root.getElementsByTagName(PROPERTY_TAG);
 			List<Element> elList = new ArrayList<Element>();
 			for (int j=0; j<propList.getLength(); j++) {
-				if (propList.item(j).getParentNode() == mi.root) 
+				if (propList.item(j).getParentNode() == mi.root)
 					elList.add((Element)propList.item(j));
 			}
 			mi.propList =  elList;
@@ -127,7 +128,7 @@ public class GrxProjectItem extends GrxBaseItem {
 
             // view node
 			mi.viewList = mi.root.getElementsByTagName(VIEW_TAG);
-			
+
             // window config element
 			NodeList wconfList = mi.root.getElementsByTagName(WINCONF_TAG);
 			if (wconfList.getLength() > 0)
@@ -154,18 +155,18 @@ public class GrxProjectItem extends GrxBaseItem {
 			    element_.appendChild(doc_.createTextNode(INDENT4));
 			    element_.appendChild(mi.root);
 			    element_.appendChild(doc_.createTextNode("\n"));
-            } 
+            }
 
 			_updateModeInfo();
         }
 
         return mi;
     }
-	
+
 	public Element getWindowConfigElement(String mode) {
-        return _getModeNodeInfo(mode).windowConfig; 
+        return _getModeNodeInfo(mode).windowConfig;
 	}
-   
+
     private Element _createWindowConfigElement(String mode) {
         ModeNodeInfo mi = _getModeNodeInfo(mode);
 		mi.windowConfig = doc_.createElement("windowconfig");
@@ -180,7 +181,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		NodeList list = modeEl.getChildNodes();
 		for (int i=list.getLength()-1; i>=0; i--)
 			modeEl.removeChild(list.item(i));
-		
+
 		modeEl.appendChild(doc_.createTextNode("\n"));
 
 		Enumeration keys = propertyNames();
@@ -189,7 +190,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			String val = getProperty(key);
 			if (key == null || val == null)
 				continue;
-				
+
 			Element propEl = doc_.createElement(GrxProjectItem.PROPERTY_TAG);
 			propEl.setAttribute("name",  key);
 			propEl.setAttribute("value", val);
@@ -197,7 +198,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			modeEl.appendChild(propEl);
 			modeEl.appendChild(doc_.createTextNode("\n"));
 		}
-		
+
 		List<GrxBaseItem> itemList = manager_.getActiveItemList();
 		for (int i=0; i<itemList.size(); i++) {
 			GrxBaseItem item = itemList.get(i);
@@ -206,7 +207,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			modeEl.appendChild(item.storeProperties());
 			modeEl.appendChild(doc_.createTextNode("\n"));
 		}
-		
+
 		List<GrxBaseView> viewList = manager_.getActiveViewList();
 		for (int i=0; i<viewList.size(); i++) {
 			GrxBaseView view = viewList.get(i);
@@ -217,10 +218,10 @@ public class GrxProjectItem extends GrxBaseItem {
 				modeEl.appendChild(doc_.createTextNode("\n"));
 			}
 		}
-		
+
 		modeEl.appendChild(doc_.createTextNode(INDENT4));
 	}
-	
+
 	private JMenu projectMenu_ = new JMenu();
 	public JMenu getMenu() {
 		if (projectMenu_.getItemCount() == 0) {
@@ -228,10 +229,10 @@ public class GrxProjectItem extends GrxBaseItem {
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int ans = JOptionPane.showConfirmDialog(
-						manager_.getFrame(), 
-						"Before create new Project,\nRemove all items ?", "Create New Project", 
-						JOptionPane.YES_NO_CANCEL_OPTION, 
-						JOptionPane.QUESTION_MESSAGE, 
+						manager_.getFrame(),
+						"Before create new Project,\nRemove all items ?", "Create New Project",
+						JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
 						manager_.ROBOT_ICON);
 					if (ans == JOptionPane.YES_OPTION)
 						manager_.removeAllItems();
@@ -241,7 +242,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				}
 			});
 			projectMenu_.add(item);
-			
+
 			item = new JMenuItem("Restore Project");
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -254,7 +255,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				}
 			});
 			projectMenu_.add(item);
-			
+
 			item = new JMenuItem("Load Project");
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -262,7 +263,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				}
 			});
 			projectMenu_.add(item);
-			
+
 			item = new JMenuItem("Save Project");
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -291,24 +292,24 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 		return projectMenu_;
 	}
-	
+
 	public void save(File f) {
 		if (f.exists()) {
 			if (!f.isFile())
                return;
 
 			int ans = JOptionPane.showConfirmDialog(
-				manager_.getFrame(), 
+				manager_.getFrame(),
 				"Project: "+f.getName()+" is already exist.\n" +
 				"Overwrite this file ?",
 				"Save Project",
 				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE, 
+				JOptionPane.QUESTION_MESSAGE,
 				manager_.ROBOT_ICON);
 			if (ans == JOptionPane.CANCEL_OPTION)
 				return;
 		}
-		
+
 		String mode = manager_.getCurrentModeName();
 		storeMode(mode);
 
@@ -317,28 +318,28 @@ public class GrxProjectItem extends GrxBaseItem {
         manager_.getFrame().update(manager_.getFrame().getGraphics());
 
 		int ans = JOptionPane.showConfirmDialog(
-				manager_.getFrame(), 
+				manager_.getFrame(),
 				"Save current Window Configuration ?",
 				"Save Window Config.",
 				JOptionPane.YES_NO_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE, 
+				JOptionPane.QUESTION_MESSAGE,
 				manager_.ROBOT_ICON);
 		if (ans == JOptionPane.CANCEL_OPTION)
 			return;
-		
+
 		if (ans == JOptionPane.YES_OPTION) {
 			Element we = getWindowConfigElement(mode);
-            if (we == null) 
+            if (we == null)
                we = _createWindowConfigElement(mode);
 			manager_.getFrame().storeConfig(we);
 		}
-		
+
 		if (f == null)
 			f = new File(getDefaultDir().getAbsolutePath()+"/"+getName()+".xml");
-		
+
 		if (!f.getAbsolutePath().endsWith(".xml"))
 			f = new File(f.getAbsolutePath()+".xml");
-		
+
 	   	try {
 	  		DOMSource src = new DOMSource();
 	  		src.setNode(doc_);
@@ -353,19 +354,19 @@ public class GrxProjectItem extends GrxBaseItem {
 	     		e.printStackTrace();
 	   	}
 	}
-	
+
 	public void saveAs() {
 		String path = getURL(true);
 		if (path == null)
 			path = getDefaultDir().getAbsolutePath()+"/"+getName()+".xml";
-		
+
 		File initialFile = new File(path);
 		JFileChooser fc = manager_.getFileChooser();
 		fc.setDialogTitle("Save Project");
 		fc.setFileFilter(GrxGuiUtil.createFileFilter("xml"));
 		fc.setSelectedFile(initialFile);
 		fc.setCurrentDirectory(initialFile.getParentFile());
-		
+
 		if (fc.showSaveDialog(manager_.getFrame()) == JFileChooser.APPROVE_OPTION)
 			save(fc.getSelectedFile());
 	}
@@ -374,13 +375,13 @@ public class GrxProjectItem extends GrxBaseItem {
 		JFileChooser fc = manager_.getFileChooser();
 		fc.setDialogTitle("Open Project File");
 		fc.setFileFilter(GrxGuiUtil.createFileFilter("xml"));
-		
+
 		if (getURL(true) == null) {
 			fc.setCurrentDirectory(getDefaultDir());
 		} else {
 			fc.setSelectedFile(new File(getURL(true)));
 		}
-		
+
 		if (fc.showOpenDialog(manager_.getFrame()) == JFileChooser.APPROVE_OPTION) {
 			load(fc.getSelectedFile());
 			Thread t = new Thread() {
@@ -404,7 +405,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		    System.setProperty("PROJECT_DIR", dir);
 		    System.out.println(dir);
 		}
-		
+
     	try {
       		doc_ = builder_.parse(f);
       		element_ = doc_.getDocumentElement();
@@ -416,16 +417,16 @@ public class GrxProjectItem extends GrxBaseItem {
       		file_ = null;
       		return false;
     	}
-		
+
 		// register mode
 		GrxBaseItem selectedMode = manager_.getSelectedItem(GrxModeInfoItem.class, null);
 		NodeList list = doc_.getElementsByTagName(MODE_TAG);
 		for (int i=0; i<list.getLength(); i++) {
 			Element modeEl = (Element) list.item(i);
 			String modeName = modeEl.getAttribute("name");
-			if (modeName == null) 
+			if (modeName == null)
 				continue;
-			
+
 			GrxBaseItem item = manager_.createItem(GrxModeInfoItem.class, modeName);
 			if (item != null)  {
 				item.setElement(modeEl);
@@ -436,38 +437,38 @@ public class GrxProjectItem extends GrxBaseItem {
 				}
 			}
 		}
-		
+
 		if (selectedMode != null)
 			manager_.setSelectedItem(selectedMode, true);
-		
+
 		manager_.getItemMap(GrxModeInfoItem.class).values().iterator();
 		Map<?, ?> m = manager_.getItemMap(GrxModeInfoItem.class);
 		GrxModeInfoItem[] modes = (GrxModeInfoItem[])m.values().toArray(new GrxModeInfoItem[0]);
-		
+
 		GrxModeInfoItem mode = (GrxModeInfoItem)manager_.getSelectedItem(GrxModeInfoItem.class, null);
 		if (mode != null && manager_.getFrame() != null)
 			manager_.getFrame().updateModeButtons(modes, mode);
 
 		return true;
 	}
-	
+
 	public void restoreProject() {
 		String mode = manager_.getCurrentModeName();
 		manager_.processingWindow_.setTitle("Restore Project (Mode:" +mode+")");
 		manager_.restoreProcess();
 
-//		if (file_ == null || !file_.isFile()) 
+//		if (file_ == null || !file_.isFile())
 //			return;
-	
+
 		ModeNodeInfo minfo =  modeInfoMap_.get(mode);
         Element we = minfo.windowConfig;
-        if (we != null) 
+        if (we != null)
 		    manager_.getFrame().restoreConfig(we);
-		
+
 		manager_.processingWindow_.setVisible(false);
 		manager_.processingWindow_.setMessage("restore view plugin  ... ");
 		manager_.processingWindow_.setVisible(true);
-		
+
 		clear();
 		List propList = minfo.propList;
 		if (propList != null) {
@@ -482,18 +483,18 @@ public class GrxProjectItem extends GrxBaseItem {
 			for (int i = 0; i < minfo.viewList.getLength(); i++)
 				_restorePlugin((Element) minfo.viewList.item(i));
 		}
-	/*	
+	/*
 		List<GrxBaseView> vl = manager_.getActiveViewList();
-		for (int i=0; i<vl.size(); i++) 
+		for (int i=0; i<vl.size(); i++)
 			vl.get(i).restoreProperties();
-		
+
 		try {
 			Thread.sleep(400);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		*/
-		
+
 		if (minfo.itemList != null) {
             List<GrxBaseItem> il = new ArrayList<GrxBaseItem>();
 			for (int i = 0; i < minfo.itemList.getLength(); i++) {
@@ -501,8 +502,8 @@ public class GrxProjectItem extends GrxBaseItem {
                 if (p != null)
                      il.add(p);
             }
-            
-            // for a item that is exclusive selection reselect 
+
+            // for a item that is exclusive selection reselect
             for (int i=0; i<il.size(); i++) {
 			    GrxBaseItem item = il.get(i);
                 boolean select = GrxXmlUtil.getBoolean(item.getElement(), "select", false);
@@ -511,12 +512,12 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 
 		List<GrxBaseView> vl = manager_.getActiveViewList();
-		for (int i=0; i<vl.size(); i++) 
+		for (int i=0; i<vl.size(); i++)
 			vl.get(i).restoreProperties();
-		
+
 		manager_.processingWindow_.setVisible(false);
 	}
-	
+
 	private GrxBasePlugin _restorePlugin(Element e) {
 		String iname = e.getAttribute("name");
 		if (iname == null || iname.length() == 0)
@@ -525,10 +526,10 @@ public class GrxProjectItem extends GrxBaseItem {
 		Class cls = manager_.registerPlugin(e.getAttribute("class"));
 		if (cls == null)
 			return null;
-		
+
 		manager_.processingWindow_.setMessage(
 			"restoring plugin ... \n  " +cls.getSimpleName()+" : "+iname);
-		
+
 		GrxBasePlugin plugin = null;
 		if (GrxBaseItem.class.isAssignableFrom(cls)) {
 			Class<? extends GrxBaseItem> icls = (Class<? extends GrxBaseItem>) cls;
@@ -542,7 +543,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		} else {
 			plugin = manager_.getView((Class<? extends GrxBaseView>) cls);
 		}
-        
+
         if (plugin != null) {
             plugin.setElement(e);
 			plugin.restoreProperties();
@@ -550,7 +551,7 @@ public class GrxProjectItem extends GrxBaseItem {
 
         return plugin;
 	}
-	
+
 	private static final File DEFAULT_ISE_PROJECT_DIR = new File("../ISE/Projects");
 	public void importISEProject() {
 		final JFileChooser fc = manager_.getFileChooser();
@@ -558,7 +559,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		fc.setFileFilter(GrxGuiUtil.createFileFilter("prj"));
 		fc.setCurrentDirectory(DEFAULT_ISE_PROJECT_DIR);
 		fc.setSelectedFile(null);
-		
+
 		if (fc.showOpenDialog(manager_.getFrame()) == JFileChooser.APPROVE_OPTION) {
 			manager_.processingWindow_.setVisible(false);
 			manager_.processingWindow_.setTitle("Importing ISE Project");
@@ -577,20 +578,20 @@ public class GrxProjectItem extends GrxBaseItem {
 			t.start();
 		}
 	}
-	
+
 	private static String ENVIRONMENT_NODE = "jp.go.aist.hrp.simulator.EnvironmentNode";
 	private static String ROBOT_NODE = "jp.go.aist.hrp.simulator.RobotNode";
 	private static String COLLISIONPAIR_NODE = "jp.go.aist.hrp.simulator.CollisionPairNode";
 	private static String GRAPH_NODE = "jp.go.aist.hrp.simulator.GraphNode";
-			
+
 	private static String WORLD_STATE_ITEM = "com.generalrobotix.ui.item.GrxWorldStateItem";
 	private static String MODEL_ITEM = "com.generalrobotix.ui.item.GrxModelItem";
 	private static String COLLISIONPAIR_ITEM = "com.generalrobotix.ui.item.GrxCollisionPairItem";
 	private static String GRAPH_ITEM = "com.generalrobotix.ui.item.GrxGraphItem";
-	
+
 	public void importISEProject(File f) {
 		manager_.removeAllItems();
-		
+
 		GrxConfigBundle prop = null;
 		try {
 			prop = new GrxConfigBundle(f.getAbsolutePath());
@@ -615,7 +616,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			String cName = prop.getStr(header + "class");
 			if (oName == null || cName == null)
 				continue;
-			
+
 			if (cName.equals(ENVIRONMENT_NODE) || cName.equals(ROBOT_NODE)) {
 				cls = manager_.registerPlugin(MODEL_ITEM);
 				try {
@@ -641,15 +642,15 @@ public class GrxProjectItem extends GrxBaseItem {
 	  						} else if (key.endsWith(".mode")) {
 								newItem.setProperty(newKey, prop.getStr(key, "Torque"));
 	  						} else if (key.endsWith(".translation"))  {
-								newItem.setDblAry(newKey, 
+								newItem.setDblAry(newKey,
 									prop.getDblAry(key, new double[]{0.0, 0.0, 0.0}));
 	  						} else if (key.endsWith(".rotation"))  {
-								newItem.setDblAry(newKey, 
+								newItem.setDblAry(newKey,
 									prop.getDblAry(key, new double[]{0.0, 1.0, 0.0, 0.0}));
 	  						}
 	  					}
 	  				}
-	  				
+
 					String controller = prop.getStr(header + "controller");
 					controller = controller.replaceFirst("openhrp.", "");
 					double controlTime = prop.getDbl(header + "controlTime", 0.001);
@@ -663,9 +664,9 @@ public class GrxProjectItem extends GrxBaseItem {
 						newItem.setProperty("imageProcessTime", String.valueOf(imageProcessTime));
 					}
 				}
-	  			
+
 			} else if (cName.equals(COLLISIONPAIR_NODE)) {
-				cls = manager_.registerPlugin(COLLISIONPAIR_ITEM); 
+				cls = manager_.registerPlugin(COLLISIONPAIR_ITEM);
 				newItem = manager_.createItem((Class<? extends GrxBaseItem>)cls, oName);
 				newItem.setProperty("objectName1", prop.getStr(header + "objectName1"));
 				newItem.setProperty("jointName1",  prop.getStr(header + "jointName1"));
@@ -685,9 +686,9 @@ public class GrxProjectItem extends GrxBaseItem {
 				String items = prop.getStr(header + "dataItems");
 				newItem.setProperty(oName + ".dataItems", items);
 				String[] str = items.split(",");
-				String[] p = { 
-					"object", "node", "attr", "index", 
-					"numSibling", "legend", "color" 
+				String[] p = {
+					"object", "node", "attr", "index",
+					"numSibling", "legend", "color"
 				};
 				for (int j = 0; j < str.length; j++) {
 					for (int k = 0; k < p.length; k++) {
@@ -700,6 +701,12 @@ public class GrxProjectItem extends GrxBaseItem {
 			}
 			newItem.restoreProperties();
 			manager_.setSelectedItem(newItem, true);
+		}
+	}
+	private void setDefaultDirectory(){
+		String dir = java.lang.System.getenv("PROJECT_DIR");
+		if( dir != null ){
+			setDefaultDirectory( dir );
 		}
 	}
 }

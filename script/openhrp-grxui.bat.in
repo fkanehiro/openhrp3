@@ -38,7 +38,7 @@ rem ---
 
 set BIN_DIR=%OPENHRPHOME%\bin\dos
 set BIN_SFX=.bat
-
+set PROJECT_DIR=%OPENHRPHOME%\@RELATIVE_SAMPLE_INSTALL_PATH@\project
 cd "%GRXUI_HOME%"
 
 @echo off
