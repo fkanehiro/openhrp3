@@ -143,7 +143,7 @@ void AccelSensor::clear()
 {
     dv(0) = 0.0;
     dv(1) = 0.0;
-    dv(2) = 0.0;
+    dv(2) = 9.8;
 }
 
 
