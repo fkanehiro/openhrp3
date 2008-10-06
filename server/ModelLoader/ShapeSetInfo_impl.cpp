@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
  * Eclipse Public License v1.0 which accompanies this distribution, and is
@@ -549,7 +549,7 @@ int ShapeSetInfo_impl::createMaterialInfo(VrmlMaterialPtr& materialNode)
             material->specularColor[j] = materialNode->specularColor[j];
         }
 
-        // materials_に追加する
+        // materials_に追加する //
         materialInfoIndex = materials_.length();
         materials_.length(materialInfoIndex + 1 );
         materials_[materialInfoIndex] = material;
@@ -631,17 +631,17 @@ int ShapeSetInfo_impl::createTextureInfo(VrmlTexturePtr& textureNode)
 */
 std::string ShapeSetInfo_impl::getModelFileDirPath(const std::string& url)
 {
-    // BodyInfo::url_ から URLスキームを削除する
+    //  BodyInfo::url_ から URLスキームを削除する //
     string filepath = deleteURLScheme(url);
 
-    // '/' または '\' の最後の位置を取得する
+    //  '/' または '\' の最後の位置を取得する //
     size_t pos = filepath.find_last_of("/\\");
 
     string dirPath = "";
 
-    // 存在すれば，
+    //  存在すれば， //
     if(pos != string::npos){
-        // ディレクトリパス文字列
+        //  ディレクトリパス文字列 //
         dirPath = filepath;
         dirPath.resize(pos + 1);
     }

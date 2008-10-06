@@ -1,4 +1,4 @@
-﻿/*! @file
+/*! @file
   @author S.NAKAOKA
 */
 
@@ -216,10 +216,10 @@ void copyVrmlRotationFieldToDblArray4
 }
 
 
-/*!
+/*!  
   @if jp
-  @brief URLスキーム(file:)文字列を削除
-  @return string URLスキーム文字列を取り除いた文字列
+  @brief URLスキーム(file:)文字列を削除  
+  @return string URLスキーム文字列を取り除いた文字列  
   @endif
 */
 string deleteURLScheme(string url)
@@ -248,7 +248,7 @@ string deleteURLScheme(string url)
 
 string setTexturefileUrl(string modelfileDir, MFString urls){
     string url("");
-    // ImageTextureに格納されている MFString url の数を確認
+    //  ImageTextureに格納されている MFString url の数を確認 //
     if( 0 == urls.size() )
     {
         string error;
@@ -258,12 +258,12 @@ string setTexturefileUrl(string modelfileDir, MFString urls){
         for(int i=0; i<urls.size(); i++){
             string urlString = urls[i];
             size_t pos = urlString.find("http:");
-            if (pos == string::npos){   // ローカルファイル
+            if (pos == string::npos){   // ローカルファイル //
                 filesystem::path filepath(deleteURLScheme(urlString), filesystem::native);
-                if(filesystem::exists(filepath)){    //元が絶対パス
+                if(filesystem::exists(filepath)){    // 元が絶対パス //
                     url = filesystem::system_complete(filepath).file_string();
                     return url;
-                }else{               //元が相対パス
+                }else{               // 元が相対パス //
                     filesystem::path filepath(modelfileDir+deleteURLScheme(urlString), filesystem::native);
                     if(filesystem::exists(filepath)){
                         url = filesystem::system_complete(filepath).file_string();
@@ -271,7 +271,7 @@ string setTexturefileUrl(string modelfileDir, MFString urls){
                     }
                 }
             }else{          
-                // 存在するか調べる.....
+                //  存在するか調べる... //
             }
         }
     }
