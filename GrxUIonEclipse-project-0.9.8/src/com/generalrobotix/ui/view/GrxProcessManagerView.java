@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
  * Eclipse Public License v1.0 which accompanies this distribution, and is
@@ -111,8 +111,8 @@ public class GrxProcessManagerView extends GrxBaseView {
 		return new String[]{"Tools"};
 	}
 
-	// ¥×¥é¥°¥¤¥ó½é´ü²½»ş¤Ë¤Ï¥Ó¥å¡¼¤¬Ìµ¤¤¤¿¤á¥×¥í¥»¥¹½é´ü²½¤Ë¼ºÇÔ¤¹¤ë¤¿¤á¡¢
-	// ¥Ó¥å¡¼¤¬½é´ü²½¤µ¤ì¤¿¤µ¤¤¤ËºÆÅÙ¥×¥í¥»¥¹¤ò¥ê¥¹¥È¥¢¤¹¤ë
+	// ãƒ—ãƒ©ã‚°ã‚¤ãƒ³åˆæœŸåŒ–æ™‚ã«ã¯ãƒ“ãƒ¥ãƒ¼ãŒç„¡ã„ãŸã‚ãƒ—ãƒ­ã‚»ã‚¹åˆæœŸåŒ–ã«å¤±æ•—ã™ã‚‹ãŸã‚ã€
+	// ãƒ“ãƒ¥ãƒ¼ãŒåˆæœŸåŒ–ã•ã‚ŒãŸã•ã„ã«å†åº¦ãƒ—ãƒ­ã‚»ã‚¹ã‚’ãƒªã‚¹ãƒˆã‚¢ã™ã‚‹
 	public boolean setup(List<GrxBaseItem> itemList){
 		GrxDebugUtil.println("[ProcessManagerView] restore process");
 		manager_.restoreProcess();
