@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
  * Eclipse Public License v1.0 which accompanies this distribution, and is
@@ -302,7 +302,7 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
             int numTriangles = addTrianglesDividedFromPolygon(polygon, vertices, trianglesInPolygon);
             
             if(numTriangles > 0){
-                // \todo ここで3頂点に重なりはないか、距離が短すぎないかなどのチェックを行った方がよい
+                // \todo ここで3頂点に重なりはないか、距離が短すぎないかなどのチェックを行った方がよい //
                 for(int j=0; j < numTriangles; ++j){
                     if(faceSet->ccw){
                         for(int k=0; k < 3; ++k){
@@ -422,7 +422,7 @@ int TMSImpl::addTrianglesDividedFromPolygon
         double distance02 = norm2(v0 - v2);
         double distance13 = norm2(v1 - v3);
 
-        // 対角線の長さが短い方で分割する
+        // 対角線の長さが短い方で分割する //
         if(distance02 < distance13){
             add3Elements(out_trianglesInPolygon, 0, 1, 2);
             add3Elements(out_trianglesInPolygon, 0, 2, 3);

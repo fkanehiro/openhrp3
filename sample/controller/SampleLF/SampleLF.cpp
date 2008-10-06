@@ -1,4 +1,4 @@
-﻿// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -208,7 +208,7 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
     std::cout << "SampleLF::onExecute" << std::endl;
   }
 
-  // この関数の振る舞いはController_impl::controlの派生先仮想関数に対応する
+  // この関数の振る舞いはController_impl::controlの派生先仮想関数に対応する //
   m_angleIn.update();
   m_torqueInL.update();
   m_torqueInR.update();
@@ -217,9 +217,9 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
 	double threshold = 30.0;
 
 
-  // *.datの読み込み
-  // 行頭の時間データのスキップと行の存在チェックを兼ねた処理
-  // 行が存在しなければ次の行を読み込む
+  // *.datの読み込み //
+  // 行頭の時間データのスキップと行の存在チェックを兼ねた処理 //
+  // 行が存在しなければ次の行を読み込む //
   if(file==1)
   {
 	  if( !(angle1 >> dq_ref &&  vel1 >> dq_ref) )// skip time
@@ -243,7 +243,7 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
 	  check = false;
   }
 
-  // *.dat一行の読み込み
+  // *.dat一行の読み込み//
   for (int i=0; i<DOF; i++)
   {
 	  switch(file)
