@@ -18,7 +18,7 @@
 #include <vector>
 #include <string>
 #include <boost/shared_ptr.hpp>
-#include <hrpCorba/ModelLoader.h>
+#include <hrpCorba/ModelLoader.hh>
 #include <hrpCollision/ColdetModel.h>
 
 using namespace std;

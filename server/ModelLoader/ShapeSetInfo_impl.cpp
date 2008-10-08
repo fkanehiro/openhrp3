@@ -19,7 +19,7 @@
 #include <iostream>
 #include <boost/bind.hpp>
 
-#include <hrpCorba/ViewSimulator.h>
+#include <hrpCorba/ViewSimulator.hh>
 #include <hrpParser/VrmlNodes.h>
 #include <hrpParser/ImageConverter.h>
 

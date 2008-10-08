@@ -16,7 +16,7 @@
 #define OPENHRP_MODEL_LOADER_SCENE_INFO_IMPL_H_INCLUDED
 
 #include <string>
-#include <hrpCorba/ModelLoader.h>
+#include <hrpCorba/ModelLoader.hh>
 
 #include "ShapeSetInfo_impl.h"
 

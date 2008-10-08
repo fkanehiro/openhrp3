@@ -41,7 +41,7 @@ endforeach()
 
 
 # TODO: '-pkgPrefix' option should be used instead of '-pkgTranslate'
-set(idlj_flags -fclient -fserver -pkgTranslate OpenHRP ${package} -td ${CMAKE_CURRENT_BINARY_DIR}/src)
+set(idlj_flags -fclient -fserver -pkgTranslate OpenHRP ${package} -td ${CMAKE_CURRENT_BINARY_DIR}/src -I${OPENRTM_IDL_DIR})
 
 foreach(idl_file ${idl_files})
   get_filename_component(idl_file_basename ${idl_file} NAME_WE)
@@ -58,7 +58,7 @@ endforeach()
 
 
 set(javac_flags -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
-  -classpath ${package_path} -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
+  -classpath ${package_path}:${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/OpenRTM-aist-0.4.1.jar -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
   list(APPEND javac_flags -g)
