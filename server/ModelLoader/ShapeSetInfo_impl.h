@@ -17,7 +17,7 @@
 
 #include <string>
 #include <hrpCorba/ORBwrap.h>
-#include <hrpCorba/ModelLoader.h>
+#include <hrpCorba/ModelLoader.hh>
 #include <hrpParser/TriangleMeshShaper.h>
 #include <hrpParser/VrmlNodes.h>
 #include <hrpUtil/Tvmet4d.h>

@@ -18,7 +18,7 @@
 #include <stack>
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/Tvmet4d.h>
-#include <hrpCorba/OpenHRPCommon.h>
+#include <hrpCorba/OpenHRPCommon.hh>
 #include <hrpCollision/ColdetModel.h>
 
 #include "Link.h"

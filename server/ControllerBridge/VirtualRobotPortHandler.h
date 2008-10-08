@@ -23,7 +23,7 @@
 #include <rtm/InPort.h>
 #include <rtm/idl/BasicDataTypeStub.h>
 
-#include <hrpCorba/DynamicsSimulator.h>
+#include <hrpCorba/DynamicsSimulator.hh>
 
 #include "BridgeConf.h"
 

@@ -17,7 +17,7 @@
 
 #include <string>
 #include <hrpCorba/ORBwrap.h>
-#include <hrpCorba/ModelLoader.h>
+#include <hrpCorba/ModelLoader.hh>
 #include <hrpParser/ModelNodeSet.h>
 
 #include "ShapeSetInfo_impl.h"

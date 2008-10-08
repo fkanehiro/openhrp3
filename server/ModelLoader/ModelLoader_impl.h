@@ -18,7 +18,7 @@
 #include <map>
 #include <string>
 #include <hrpCorba/ORBwrap.h>
-#include <hrpCorba/ModelLoader.h>
+#include <hrpCorba/ModelLoader.hh>
 
 #include "BodyInfo_impl.h"
 #include "SceneInfo_impl.h"

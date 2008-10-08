@@ -12,9 +12,9 @@
 
 
 #include <hrpCorba/ORBwrap.h>
-#include <hrpCorba/ModelLoader.h>
-#include <hrpCorba/CollisionDetector.h>
-#include <hrpCorba/DynamicsSimulator.h>
+#include <hrpCorba/ModelLoader.hh>
+#include <hrpCorba/CollisionDetector.hh>
+#include <hrpCorba/DynamicsSimulator.hh>
 
 #include <hrpBase/World.h>
 #include <hrpBase/ConstraintForceSolver.h>

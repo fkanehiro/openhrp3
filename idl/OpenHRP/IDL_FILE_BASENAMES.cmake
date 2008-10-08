@@ -6,5 +6,6 @@ set(IDL_FILE_BASENAMES
   DynamicsSimulator
   Controller
   ViewSimulator
-  OnlineViewer)
+  OnlineViewer
+  ClockGenerator)
 

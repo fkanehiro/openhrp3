@@ -21,8 +21,8 @@
 #include <map>
 #include <vector>
 #include <hrpCorba/ORBwrap.h>
-#include <hrpCorba/CollisionDetector.h>
-#include <hrpCorba/ModelLoader.h>
+#include <hrpCorba/CollisionDetector.hh>
+#include <hrpCorba/ModelLoader.hh>
 #include <hrpCollision/ColdetModelPair.h>
 #include "ColdetBody.h"
 

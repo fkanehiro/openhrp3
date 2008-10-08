@@ -22,7 +22,9 @@ package com.generalrobotix.ui.view;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 
+import jp.go.aist.hrp.simulator.ClockGenerator;
 import jp.go.aist.hrp.simulator.Controller;
 import jp.go.aist.hrp.simulator.ControllerFactory;
 import jp.go.aist.hrp.simulator.ControllerFactoryHelper;
@@ -37,6 +39,7 @@ import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.IntegrateMethod;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.JointDriveMode;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.LinkDataType;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.SensorOption;
+import jp.go.aist.hrp.simulator.ClockGeneratorPOA;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -51,6 +54,10 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.omg.CosNaming.NameComponent;
+import org.omg.CosNaming.NamingContext;
+
+import RTC.ExtTrigExecutionContextService;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
@@ -78,13 +85,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private WorldStateHolder stateH_ = new WorldStateHolder();
 	private SensorStateHolder cStateH_ = new SensorStateHolder();
 	private List<String> robotEntry_ = new ArrayList<String>();
+	private ClockGenerator_impl clockGenerator_ = new ClockGenerator_impl();
 	
 	private String nsHost_ = "localhost";
 	private int    nsPort_ = 2809;
 	private boolean isInteractive_ = true;
 	private boolean isExecuting_ = false;
 	private boolean isSuspending_ = false;
-	private double simTime_ = 0.0;
 	private long startTime_ = 0;
 	private long suspendedTime_ = 0;
 	private boolean isIntegrate_ = true;
@@ -102,6 +109,372 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private Thread simThread_;
 
 	private static final String FORMAT1 = "%8.3f";
+	
+	/**
+	 * @brief implementation of ClockGenerator interface
+	 */
+	private class ClockGenerator_impl extends ClockGeneratorPOA {
+		private Vector<ExecutionContext> ecs_;
+		private double simTime_ = 0.0;
+
+		/**
+		 * @brief This class manages execution timing of execution context
+		 *
+		 */
+		private class ExecutionContext {
+			public ExtTrigExecutionContextService ec_;
+			private double period_;
+			private double nextExecutionTime_;
+			
+			/**
+			 * @brief constructor
+			 * @param ec execution context
+			 * @param period ExtTrigExecutionContextService.tick() is called with this period
+			 */
+			ExecutionContext(ExtTrigExecutionContextService ec, double period){
+				ec_ = ec;
+				period_ = period;
+				reset();
+			}
+			
+			/**
+			 * @param t current time in the simulation world
+			 */
+			void execute(double t){
+				if (t >= nextExecutionTime_){
+					ec_.tick();
+					nextExecutionTime_ += period_;
+				}
+			}
+
+			/**
+			 * @brief reset
+			 */
+			void reset(){
+				nextExecutionTime_ = 0;
+			}
+		}
+		
+		/**
+		 * @brief constructor
+		 */
+		ClockGenerator_impl(){
+			ecs_ = new Vector<ExecutionContext>();
+		}
+		
+		/**
+		 * @brief register an execution context with its execution period
+		 * @param ec execution context
+		 * @param period execution period
+		 */
+		public void subscribe(ExtTrigExecutionContextService ec, double period) {
+			ecs_.add(new ExecutionContext(ec, period));
+			
+		}
+
+		/**
+		 * @brief remove execution context from execution list
+		 * @param ec execution context
+		 */
+		public void unsubscribe(ExtTrigExecutionContextService ec) {
+			for (int i=0; i<ecs_.size(); i++){
+				ExecutionContext ec2 = ecs_.get(i);
+				if (ec == ec2.ec_){
+					ecs_.remove(ec2);
+					return;
+				}
+			}
+		}
+		
+		public void startSimulation(boolean isInteractive) {
+
+			if (isExecuting_){
+				GrxDebugUtil.println("[HRP]@startSimulation now executing.");
+				return;
+			}
+
+			if (currentWorld_ == null) {
+				GrxDebugUtil.println("[HRP]@startSimulation there is no world.");
+				stopSimulation();
+				return;
+			}
+			
+			isInteractive_ = isInteractive;
+
+			if (isInteractive && currentWorld_.getLogSize() > 0) {
+	            boolean ans = MessageDialog.openConfirm(getParent().getShell(), "Start Simulation", "The log data will be cleared.\n" + "Are you sure to start ?");
+				
+				if (ans != true) {
+					stopSimulation();
+					return;
+				}
+			}
+
+			/*
+			startBtn_.setIcon(stopSimIcon_);
+			startBtn_.setToolTipText("Stop Simulation");
+			startBtn_.setSelected(true);
+			*/
+
+			simParamPane_.setEnabled(false);
+			controllerPane_.setEnabled(false);
+			collisionPane_.setEnabled(false);
+			
+			currentWorld_.clearLog();
+			try {
+				if (!initDynamicsSimulator()) {
+					stopSimulation();
+	                MessageDialog.openInformation(getParent().getShell(),"", "Failed to initialize DynamicsSimulator.");
+					return;
+				}
+				if (!initController()) {
+					stopSimulation();
+	                MessageDialog.openInformation(getParent().getShell(), "", "Failed to initialize Controller.");
+					return;
+				}
+			} catch (Exception e) {
+				stopSimulation();
+				GrxDebugUtil.printErr("SimulationLoop:", e);
+				return;
+			}
+
+			simThread_ = new Thread(){
+				public void run() {
+					isExecuting_ = true;
+					try {
+						Thread.sleep(manager_.getDelay());
+						while (isExecuting_) {
+							if (isSuspending_) {
+								long s = System.currentTimeMillis();
+								Thread.sleep(200);
+								suspendedTime_ += System.currentTimeMillis() - s;
+							} else {
+								simLoop(null);
+							}
+						}
+					} catch (Exception e) {
+						GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
+
+						execSWT( new Runnable(){
+							public void run(){
+						        IWorkbench workbench = PlatformUI.getWorkbench();
+						        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+						        MessageDialog.openError( window.getShell(),
+										"Simulation Interupted", "Simulation Interrupted by Exception.");
+							}
+						}, false );
+						stopSimulation();
+					}
+				}
+			};
+
+			simThread_.setPriority(Thread.currentThread().getPriority() - 1);
+			isIntegrate_ = simParamPane_.isIntegrate();
+			totalTime_   = simParamPane_.getTotalTime();
+			stepTime_    = simParamPane_.getStepTime();
+			logStepTime_ = simParamPane_.getLogStepTime();
+			
+			simTime_ = 0.0;
+			startTime_ = System.currentTimeMillis();
+			suspendedTime_ = 0;
+			isSimulatingView_ = simParamPane_.isSimulatingView();
+			if (isSimulatingView_){
+				tdview_ = (Grx3DView)manager_.getView("3DView");
+				lgview_ = (GrxLoggerView)manager_.getView("Logger View");
+				if (tdview_ == null || lgview_ == null){
+					GrxDebugUtil.printErr("can't find 3DView or Logger View");
+					return;
+				}
+				tdview_.disableUpdateModel();
+				tdview_.showViewSimulator();
+				lgview_.disableControl();
+			}
+			simThread_.start();
+			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
+		}
+
+		String timeMsg_;
+		String updateTimeMsg(){
+			double time = (double)(System.currentTimeMillis() - startTime_ - suspendedTime_)/1000.0;
+			timeMsg_ = 
+				"   (A)Sim. Time = " + String.format(FORMAT1, simTime_) + "[s]\n" +
+				"   (B)Real Time = " + String.format(FORMAT1, time) + "[s]\n" +
+				"     (B) / (A)  = " + String.format(FORMAT1, time/simTime_);
+			return timeMsg_;
+		}
+
+		public void stopSimulation() {
+			if (isExecuting_) {
+				isExecuting_ = false;
+				if (isSimulatingView_) {
+					tdview_.enableUpdateModel();
+					lgview_.enableControl();
+				}
+				updateTimeMsg();
+				try {
+					if (Thread.currentThread() != simThread_) {
+						//simThread_.interrupt();
+						simThread_.join();
+					}
+				} catch (Exception e) {
+					GrxDebugUtil.printErr("stopSimulation:", e);
+				}
+				System.out.println(new java.util.Date()+timeMsg_.replace(" ", "").replace("\n", " : "));
+				if (isInteractive_) {
+					isInteractive_ = false;
+					execSWT( new Runnable(){
+							public void run(){
+						        IWorkbench workbench = PlatformUI.getWorkbench();
+						        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+						        MessageDialog.openInformation(window.getShell(), "Simulation Finished", timeMsg_);
+							}
+						} ,
+						Thread.currentThread() != simThread_
+					);
+				}
+
+	        	if (currentWorld_ != null)
+	        		currentWorld_.setPosition(0);
+			}
+
+			/*
+			startBtn_.setIcon(startSimIcon_);
+			startBtn_.setToolTipText("Start Simulation");
+			startBtn_.setSelected(false);
+			*/
+			execSWT( new Runnable(){
+					private IAction getAction(){
+						ViewPart vp = getViewPart();
+						if(vp==null) {
+							GrxDebugUtil.println("[OpenHRPView]@thread ViewPart is null");
+							return null;
+						}
+						IViewSite vs = vp.getViewSite();
+						if(vs==null){
+							GrxDebugUtil.println("[OpenHRPView]@thread ViewSite is null");
+							return null;
+						}
+						IAction a = vs.getActionBars().getGlobalActionHandler("com.generalrobotix.ui.actions.StartSimulate");
+						if(a==null){
+							GrxDebugUtil.println("[OpenHRPView]@thread Action is null");
+							return null;
+						}
+						return a;
+					}
+				
+					public void run(){
+						simParamPane_.setEnabled(true);
+						controllerPane_.setEnabled(true);
+						collisionPane_.setEnabled(true);
+						IAction action = getAction();
+						if(action==null) {
+							GrxDebugUtil.println("[OpenHRPView]@thread getAction was returned null.");
+						}else{
+							action = getAction();
+							action.setChecked(false);
+							action.setEnabled(false);
+						}
+					}
+				}, 
+				Thread.currentThread() != simThread_
+			);
+		}
+		
+		public void waitStopSimulation() {
+			try {
+				if (Thread.currentThread() != simThread_)
+					simThread_.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		private void simLoop(List<GrxBaseItem> itemList) {
+			if (simTime_ > totalTime_) { // && !extendTime()) {
+				stopSimulation();
+				return;
+			}
+
+			// input
+		    for (int i = 0; i<controllers_.size(); i++) {
+		    	ControllerAttribute attr = 
+		    		(ControllerAttribute)controllers_.get(i);
+				if (attr.doCount_ <= simTime_ / attr.stepTime_) {
+					attr.doFlag_ = true;
+					try {
+						attr.controller_.input();
+					} catch (Exception e) {
+						GrxDebugUtil.printErr("Exception in input", e);
+					}
+				}
+		    }
+		    
+			simTime_ += stepTime_;
+
+			// control
+			for (int i = 0; i < controllers_.size(); i++) {
+				ControllerAttribute attr = controllers_.get(i);
+				if (attr.doFlag_) {
+					try {
+						attr.controller_.control();
+					} catch (Exception e) {
+						GrxDebugUtil.printErr("Exception in control", e);
+					}
+				}
+			}
+			for (int i=0; i<ecs_.size(); i++){
+				ecs_.get(i).execute(simTime_);
+			}
+			
+			// simulate
+			if (isIntegrate_) {
+				currentDynamics_.stepSimulation();
+			} else {
+				currentDynamics_.calcWorldForwardKinematics();
+			}
+			
+			// log
+			if ((simTime_ % logStepTime_) < stepTime_) {
+				currentDynamics_.getWorldState(stateH_);
+				WorldStateEx wsx = new WorldStateEx(stateH_.value);
+				for (int i=0; i<robotEntry_.size(); i++) {
+					String name = robotEntry_.get(i);
+					currentDynamics_.getCharacterSensorState(name, cStateH_);
+					wsx.setSensorState(name, cStateH_.value);
+				}
+	            if (!isIntegrate_)
+	                wsx.time = simTime_;
+				currentWorld_.addValue(simTime_, wsx);
+				if (isSimulatingView_){
+					tdview_.updateModels(wsx);
+					tdview_.updateViewSimulator(simTime_);
+				}
+			}
+
+			// output
+			for (int i = 0; i < controllers_.size(); i++) {
+				ControllerAttribute attr = controllers_.get(i);
+				if (attr.doFlag_) {
+					try {
+						attr.controller_.output();
+					} catch (Exception e) {
+						GrxDebugUtil.printErr("Exception in output", e);
+					}
+					attr.doCount_++;
+					attr.doFlag_ = false;
+				}
+			}
+		}
+		
+	}
+	
+	public void startSimulation(boolean isInteractive){
+		clockGenerator_.startSimulation(isInteractive);
+	}
+	
+	public void stopSimulation(){
+		clockGenerator_.stopSimulation();
+	}
 	
 	private class ControllerAttribute {
 		String modelName_;
@@ -167,6 +540,17 @@ public class GrxOpenHRPView extends GrxBaseView {
         tabItem.setControl(collisionPane_);
         controllerPane_.setEnabled(true);//false
         setScrollMinSize();
+        
+        NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+        
+        ClockGenerator cg = clockGenerator_._this(manager_.orb_);
+        NameComponent[] path = {new NameComponent("ClockGenerator", "")};
+        
+        try {
+            rootnc.rebind(path, cg);
+        } catch (Exception ex) {
+            GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
+        }
 	}
 	
     public void restoreProperties() {
@@ -183,112 +567,6 @@ public class GrxOpenHRPView extends GrxBaseView {
         }
     }
 
-	public void startSimulation(boolean isInteractive) {
-
-		if (isExecuting_){
-			GrxDebugUtil.println("[HRP]@startSimulation now executing.");
-			return;
-		}
-
-		if (currentWorld_ == null) {
-			GrxDebugUtil.println("[HRP]@startSimulation there is no world.");
-			stopSimulation();
-			return;
-		}
-		
-		isInteractive_ = isInteractive;
-
-		if (isInteractive && currentWorld_.getLogSize() > 0) {
-            boolean ans = MessageDialog.openConfirm(getParent().getShell(), "Start Simulation", "The log data will be cleared.\n" + "Are you sure to start ?");
-			
-			if (ans != true) {
-				stopSimulation();
-				return;
-			}
-		}
-
-		/*
-		startBtn_.setIcon(stopSimIcon_);
-		startBtn_.setToolTipText("Stop Simulation");
-		startBtn_.setSelected(true);
-		*/
-
-		simParamPane_.setEnabled(false);
-		controllerPane_.setEnabled(false);
-		collisionPane_.setEnabled(false);
-		
-		currentWorld_.clearLog();
-		try {
-			if (!initDynamicsSimulator()) {
-				stopSimulation();
-                MessageDialog.openInformation(getParent().getShell(),"", "Failed to initialize DynamicsSimulator.");
-				return;
-			}
-			if (!initController()) {
-				stopSimulation();
-                MessageDialog.openInformation(getParent().getShell(), "", "Failed to initialize Controller.");
-				return;
-			}
-		} catch (Exception e) {
-			stopSimulation();
-			GrxDebugUtil.printErr("SimulationLoop:", e);
-			return;
-		}
-
-		simThread_ = new Thread(){
-			public void run() {
-				isExecuting_ = true;
-				try {
-					Thread.sleep(manager_.getDelay());
-					while (isExecuting_) {
-						if (isSuspending_) {
-							long s = System.currentTimeMillis();
-							Thread.sleep(200);
-							suspendedTime_ += System.currentTimeMillis() - s;
-						} else {
-							simLoop(null);
-						}
-					}
-				} catch (Exception e) {
-					GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
-
-					execSWT( new Runnable(){
-						public void run(){
-					        IWorkbench workbench = PlatformUI.getWorkbench();
-					        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-					        MessageDialog.openError( window.getShell(),
-									"Simulation Interupted", "Simulation Interrupted by Exception.");
-						}
-					}, false );
-					stopSimulation();
-				}
-			}
-		};
-
-		simThread_.setPriority(Thread.currentThread().getPriority() - 1);
-		isIntegrate_ = simParamPane_.isIntegrate();
-		totalTime_   = simParamPane_.getTotalTime();
-		stepTime_    = simParamPane_.getStepTime();
-		logStepTime_ = simParamPane_.getLogStepTime();
-		
-		simTime_ = 0.0;
-		startTime_ = System.currentTimeMillis();
-		suspendedTime_ = 0;
-		isSimulatingView_ = simParamPane_.isSimulatingView();
-		if (isSimulatingView_){
-			tdview_ = (Grx3DView)manager_.getView("3DView");
-			lgview_ = (GrxLoggerView)manager_.getView("Logger View");
-			if (tdview_ == null || lgview_ == null){
-				GrxDebugUtil.printErr("can't find 3DView or Logger View");
-				return;
-			}
-			tdview_.disableUpdateModel();
-			tdview_.showViewSimulator();
-			lgview_.disableControl();
-		}
-		simThread_.start();
-		GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
-	}
 
 	void execSWT( Runnable r, boolean execInCurrentThread ){
 		if( execInCurrentThread ) {
@@ -300,101 +578,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 	}
 
-	String timeMsg_;
-	String updateTimeMsg(){
-		double time = (double)(System.currentTimeMillis() - startTime_ - suspendedTime_)/1000.0;
-		timeMsg_ = 
-			"   (A)Sim. Time = " + String.format(FORMAT1, simTime_) + "[s]\n" +
-			"   (B)Real Time = " + String.format(FORMAT1, time) + "[s]\n" +
-			"     (B) / (A)  = " + String.format(FORMAT1, time/simTime_);
-		return timeMsg_;
-	}
-
-	public void stopSimulation() {
-		if (isExecuting_) {
-			isExecuting_ = false;
-			if (isSimulatingView_) {
-				tdview_.enableUpdateModel();
-				lgview_.enableControl();
-			}
-			updateTimeMsg();
-			try {
-				if (Thread.currentThread() != simThread_) {
-					//simThread_.interrupt();
-					simThread_.join();
-				}
-			} catch (Exception e) {
-				GrxDebugUtil.printErr("stopSimulation:", e);
-			}
-			System.out.println(new java.util.Date()+timeMsg_.replace(" ", "").replace("\n", " : "));
-			if (isInteractive_) {
-				isInteractive_ = false;
-				execSWT( new Runnable(){
-						public void run(){
-					        IWorkbench workbench = PlatformUI.getWorkbench();
-					        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-					        MessageDialog.openInformation(window.getShell(), "Simulation Finished", timeMsg_);
-						}
-					} ,
-					Thread.currentThread() != simThread_
-				);
-			}
-
-        	if (currentWorld_ != null)
-        		currentWorld_.setPosition(0);
-		}
-
-		/*
-		startBtn_.setIcon(startSimIcon_);
-		startBtn_.setToolTipText("Start Simulation");
-		startBtn_.setSelected(false);
-		*/
-		execSWT( new Runnable(){
-				private IAction getAction(){
-					ViewPart vp = getViewPart();
-					if(vp==null) {
-						GrxDebugUtil.println("[OpenHRPView]@thread ViewPart is null");
-						return null;
-					}
-					IViewSite vs = vp.getViewSite();
-					if(vs==null){
-						GrxDebugUtil.println("[OpenHRPView]@thread ViewSite is null");
-						return null;
-					}
-					IAction a = vs.getActionBars().getGlobalActionHandler("com.generalrobotix.ui.actions.StartSimulate");
-					if(a==null){
-						GrxDebugUtil.println("[OpenHRPView]@thread Action is null");
-						return null;
-					}
-					return a;
-				}
-			
-				public void run(){
-					simParamPane_.setEnabled(true);
-					controllerPane_.setEnabled(true);
-					collisionPane_.setEnabled(true);
-					IAction action = getAction();
-					if(action==null) {
-						GrxDebugUtil.println("[OpenHRPView]@thread getAction was returned null.");
-					}else{
-						action = getAction();
-						action.setChecked(false);
-						action.setEnabled(false);
-					}
-				}
-			}, 
-			Thread.currentThread() != simThread_
-		);
-	}
-	
-	public void waitStopSimulation() {
-		try {
-			if (Thread.currentThread() != simThread_)
-				simThread_.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
 
 	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
 		if (!isExecuting_) {
@@ -406,80 +589,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 	}
 
-	private void simLoop(List<GrxBaseItem> itemList) {
-		if (simTime_ > totalTime_) { // && !extendTime()) {
-			stopSimulation();
-			return;
-		}
-
-		// input
-	    for (int i = 0; i<controllers_.size(); i++) {
-	    	ControllerAttribute attr = 
-	    		(ControllerAttribute)controllers_.get(i);
-			if (attr.doCount_ <= simTime_ / attr.stepTime_) {
-				attr.doFlag_ = true;
-				try {
-					attr.controller_.input();
-				} catch (Exception e) {
-					GrxDebugUtil.printErr("Exception in input", e);
-				}
-			}
-	    }
-	    
-		simTime_ += stepTime_;
-
-		// control
-		for (int i = 0; i < controllers_.size(); i++) {
-			ControllerAttribute attr = controllers_.get(i);
-			if (attr.doFlag_) {
-				try {
-					attr.controller_.control();
-				} catch (Exception e) {
-					GrxDebugUtil.printErr("Exception in control", e);
-				}
-			}
-		}
-		
-		// simulate
-		if (isIntegrate_) {
-			currentDynamics_.stepSimulation();
-		} else {
-			currentDynamics_.calcWorldForwardKinematics();
-		}
-		
-		// log
-		if ((simTime_ % logStepTime_) < stepTime_) {
-			currentDynamics_.getWorldState(stateH_);
-			WorldStateEx wsx = new WorldStateEx(stateH_.value);
-			for (int i=0; i<robotEntry_.size(); i++) {
-				String name = robotEntry_.get(i);
-				currentDynamics_.getCharacterSensorState(name, cStateH_);
-				wsx.setSensorState(name, cStateH_.value);
-			}
-            if (!isIntegrate_)
-                wsx.time = simTime_;
-			currentWorld_.addValue(simTime_, wsx);
-			if (isSimulatingView_){
-				tdview_.updateModels(wsx);
-				tdview_.updateViewSimulator(simTime_);
-			}
-		}
-
-		// output
-		for (int i = 0; i < controllers_.size(); i++) {
-			ControllerAttribute attr = controllers_.get(i);
-			if (attr.doFlag_) {
-				try {
-					attr.controller_.output();
-				} catch (Exception e) {
-					GrxDebugUtil.printErr("Exception in output", e);
-				}
-				attr.doCount_++;
-				attr.doFlag_ = false;
-			}
-		}
-	}
-	
 	public void shutdown() {
 		if (currentDynamics_ != null) {
 			try {
@@ -575,7 +684,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 		return true;
 	}
 
-//	private DynamicsSimulator getDynamicsSimulator(boolean update) {
 	public DynamicsSimulator getDynamicsSimulator(boolean update) {
 		if (update && currentDynamics_ != null) {
 			try {

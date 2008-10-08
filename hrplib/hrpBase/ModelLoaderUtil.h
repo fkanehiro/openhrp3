@@ -21,7 +21,7 @@
 #include <sstream>
 
 #include <hrpCorba/ORBwrap.h>
-#include <hrpCorba/ModelLoader.h>
+#include <hrpCorba/ModelLoader.hh>
 
 #include "Body.h"
 
