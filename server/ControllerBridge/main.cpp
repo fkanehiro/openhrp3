@@ -28,29 +28,6 @@
 
 using namespace std;
 
-namespace RTC {
-
-  class OpenHRPExecutionContext : public virtual PeriodicExecutionContext
-  {
-  public:
-    OpenHRPExecutionContext() : PeriodicExecutionContext() { }
-    virtual ~OpenHRPExecutionContext() { }
-    virtual void tick() throw (CORBA::SystemException)
-    { 
-      std::for_each(m_comps.begin(), m_comps.end(), invoke_worker()); 
-    }
-    virtual int svc(void) { return 0; }
-    
-    static void init(RTC::Manager* manager)
-    {
-      manager->registerECFactory("OpenHRPExecutionContext",
-				 ECCreate<OpenHRPExecutionContext>,
-				 ECDelete<OpenHRPExecutionContext>);
-    }
-  };
-}
-
-
 namespace {
 
 
@@ -118,8 +95,6 @@ int main(int argc, char* argv[])
 
 	try {
 		rtcManager = RTC::Manager::init(0, 0);
-
-		RTC::OpenHRPExecutionContext::init(rtcManager);
 
 		rtcManager->activateManager();
 	}
