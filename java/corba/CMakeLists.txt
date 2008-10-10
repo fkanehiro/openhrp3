@@ -56,9 +56,13 @@ foreach(idl_file ${idl_files})
 endforeach()
 
 
-
+if(UNIX)
 set(javac_flags -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
   -classpath ${package_path}:${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/OpenRTM-aist-0.4.1.jar -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
+elseif(WIN32)
+set(javac_flags -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
+  -classpath "${package_path}\;${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/OpenRTM-aist-0.4.1.jar" -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
+endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
   list(APPEND javac_flags -g)
