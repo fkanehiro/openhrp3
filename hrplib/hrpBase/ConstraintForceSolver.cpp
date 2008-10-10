@@ -26,7 +26,7 @@
 #include "ForwardDynamicsCBM.h"
 #include "ConstraintForceSolver.h"
 
-#include <hrpCorba/OpenHRPCommon.h>
+#include <hrpCorba/OpenHRPCommon.hh>
 #include <hrpCollision/ColdetModelPair.h>
 
 #include <limits>
