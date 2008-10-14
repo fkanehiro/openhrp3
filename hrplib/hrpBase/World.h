@@ -38,7 +38,7 @@ namespace hrp {
     class Link;
 
 
-    class HRPMODEL_EXPORT WorldBase
+    class HRPBASE_EXPORT WorldBase
     {
     public:
         WorldBase();

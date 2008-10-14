@@ -27,7 +27,7 @@ namespace hrp {
 
 	class Link;
 
-	class HRPMODEL_EXPORT Sensor
+	class HRPBASE_EXPORT Sensor
 	{
 	public:
 
@@ -67,7 +67,7 @@ namespace hrp {
 	};
 
 
-	class HRPMODEL_EXPORT ForceSensor : public Sensor
+	class HRPBASE_EXPORT ForceSensor : public Sensor
 	{
 	public:
 		static const int TYPE = FORCE;
@@ -81,7 +81,7 @@ namespace hrp {
 	};
 
 
-	class HRPMODEL_EXPORT RateGyroSensor : public Sensor
+	class HRPBASE_EXPORT RateGyroSensor : public Sensor
 	{
 	public:
 		static const int TYPE = RATE_GYRO;
@@ -94,7 +94,7 @@ namespace hrp {
 	};
 
 
-	class HRPMODEL_EXPORT AccelSensor : public Sensor
+	class HRPBASE_EXPORT AccelSensor : public Sensor
 	{
 	public:
 		static const int TYPE = ACCELERATION;

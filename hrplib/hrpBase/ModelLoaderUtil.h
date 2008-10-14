@@ -28,11 +28,11 @@
 
 namespace hrp
 {
-    HRPMODEL_EXPORT BodyPtr loadBodyFromBodyInfo(OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection = false);
-    HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb);
-    HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt);
-    HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, int argc, char *argv[]);
-    HRPMODEL_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, std::istringstream& strm);
+    HRPBASE_EXPORT BodyPtr loadBodyFromBodyInfo(OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection = false);
+    HRPBASE_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb);
+    HRPBASE_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt);
+    HRPBASE_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, int argc, char *argv[]);
+    HRPBASE_EXPORT BodyPtr loadBodyFromModelLoader(const char *url, std::istringstream& strm);
 };
 
 

@@ -50,7 +50,7 @@ if(UNIX)
     boost_filesystem boost_regex dl)
 
 elseif(WIN32)
-  add_definitions(-DHRPMODEL_MAKE_DLL)
+  add_definitions(-DHRPBASE_MAKE_DLL)
   target_link_libraries(hrpBase3
     optimized hrpUtil3 optimized hrpCorbaStubSkel3 optimized hrpCollision3
     debug hrpUtil3d debug hrpCorbaStubSkel3d debug hrpCollision3d

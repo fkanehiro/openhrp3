@@ -13,13 +13,13 @@
 
 // for Windows DLL export 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-# ifdef HRPMODEL_MAKE_DLL
-#   define HRPMODEL_EXPORT __declspec(dllexport)
+# ifdef HRPBASE_MAKE_DLL
+#   define HRPBASE_EXPORT __declspec(dllexport)
 # else 
-#   define HRPMODEL_EXPORT __declspec(dllimport)
+#   define HRPBASE_EXPORT __declspec(dllimport)
 # endif
 #else 
-# define HRPMODEL_EXPORT 
+# define HRPBASE_EXPORT 
 #endif /* Windows */
 
 
