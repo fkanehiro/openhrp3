@@ -27,7 +27,7 @@ namespace hrp
 	class CFSImpl;
 	class WorldBase;
 	
-    class HRPMODEL_EXPORT ContactForceSolver
+    class HRPBASE_EXPORT ContactForceSolver
     {
 		CFSImpl* impl;
 		

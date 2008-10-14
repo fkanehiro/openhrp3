@@ -43,7 +43,7 @@ namespace hrp
 	   If all the joints of a body are the torque mode, the ForwardDynamicsABM,
 	   which uses the articulated body method, is more efficient.
 	*/
-    class HRPMODEL_EXPORT ForwardDynamicsMM : public ForwardDynamics {
+    class HRPBASE_EXPORT ForwardDynamicsMM : public ForwardDynamics {
 
     public:
         

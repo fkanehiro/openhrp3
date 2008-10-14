@@ -20,13 +20,13 @@ namespace hrp {
 	/**
 	   b = a * x, x = b^(-1) * a
 	*/
-	HRPMODEL_EXPORT int solveLinearEquation(const dmatrix &_a, const dvector &_b, dvector &_x, double _sv_ratio=1.0e-3);
+	HRPBASE_EXPORT int solveLinearEquation(const dmatrix &_a, const dvector &_b, dvector &_x, double _sv_ratio=1.0e-3);
 	
-	HRPMODEL_EXPORT int solveLinearEquationLU(dmatrix a, const dmatrix &b, dmatrix &out_x);
-	HRPMODEL_EXPORT int solveLinearEquationLU(const dmatrix &_a, const dvector &_b, dvector &_x);
-	HRPMODEL_EXPORT int solveLinearEquationSVD(const dmatrix &_a, const dvector &_b, dvector &_x, double _sv_ratio=1.0e-3);
+	HRPBASE_EXPORT int solveLinearEquationLU(dmatrix a, const dmatrix &b, dmatrix &out_x);
+	HRPBASE_EXPORT int solveLinearEquationLU(const dmatrix &_a, const dvector &_b, dvector &_x);
+	HRPBASE_EXPORT int solveLinearEquationSVD(const dmatrix &_a, const dvector &_b, dvector &_x, double _sv_ratio=1.0e-3);
 	
-	HRPMODEL_EXPORT int calcPseudoInverse(const dmatrix &_a, dmatrix &_a_pseu, double _sv_ratio=1.0e-3);
+	HRPBASE_EXPORT int calcPseudoInverse(const dmatrix &_a, dmatrix &_a_pseu, double _sv_ratio=1.0e-3);
 
 	int calcEigenVectors(const dmatrix &_a, dmatrix  &_evec, dvector &_eval);
 	double det(const dmatrix &a);

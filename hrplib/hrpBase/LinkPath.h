@@ -30,7 +30,7 @@
 
 namespace hrp {
 
-	class HRPMODEL_EXPORT LinkPath : public LinkTraverse
+	class HRPBASE_EXPORT LinkPath : public LinkTraverse
 	{
 	public:
 		LinkPath();
@@ -58,7 +58,7 @@ namespace hrp {
 	};
 
 
-	class HRPMODEL_EXPORT JointPath : public LinkPath
+	class HRPBASE_EXPORT JointPath : public LinkPath
     {
     public:
 		
@@ -125,7 +125,7 @@ namespace hrp {
 };
 
 
-HRPMODEL_EXPORT std::ostream& operator<<(std::ostream& os, hrp::LinkTraverse& traverse);
+HRPBASE_EXPORT std::ostream& operator<<(std::ostream& os, hrp::LinkTraverse& traverse);
 
 
 #endif

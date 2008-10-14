@@ -31,7 +31,7 @@ namespace hrp {
 
 	class Body;
 
-    class HRPMODEL_EXPORT Link {
+    class HRPBASE_EXPORT Link {
 
 	public:
 
@@ -172,7 +172,7 @@ namespace hrp {
 };
 	
 
-HRPMODEL_EXPORT std::ostream& operator<<(std::ostream &out, hrp::Link& link);
+HRPBASE_EXPORT std::ostream& operator<<(std::ostream &out, hrp::Link& link);
 
 
 #endif

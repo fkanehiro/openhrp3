@@ -36,7 +36,7 @@ namespace hrp
     /**
 	   Forward dynamics calculation using Featherstone's Articulated Body Method (ABM)
     */
-    class HRPMODEL_EXPORT ForwardDynamicsABM : public ForwardDynamics {
+    class HRPBASE_EXPORT ForwardDynamicsABM : public ForwardDynamics {
 
     public:
         

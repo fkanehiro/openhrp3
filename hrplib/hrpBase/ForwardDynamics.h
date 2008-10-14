@@ -35,7 +35,7 @@ namespace hrp
        by using the Featherstone's articulated body algorithm.
        The class also integrates motion using the Euler method or RungeKutta method.
     */
-    class HRPMODEL_EXPORT ForwardDynamics {
+    class HRPBASE_EXPORT ForwardDynamics {
 
     public:
         

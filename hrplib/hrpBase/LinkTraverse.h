@@ -28,7 +28,7 @@ namespace hrp {
 
     class Link;
 
-    class HRPMODEL_EXPORT LinkTraverse
+    class HRPBASE_EXPORT LinkTraverse
     {
     public:
 		LinkTraverse();
@@ -91,7 +91,7 @@ namespace hrp {
 };
 
 
-HRPMODEL_EXPORT std::ostream& operator<<(std::ostream& os, hrp::LinkTraverse& traverse);
+HRPBASE_EXPORT std::ostream& operator<<(std::ostream& os, hrp::LinkTraverse& traverse);
 
 
 #endif

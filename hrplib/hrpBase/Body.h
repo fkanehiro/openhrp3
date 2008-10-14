@@ -51,7 +51,7 @@ namespace hrp {
     typedef void* BodyCustomizerHandle;
 
 	
-    class HRPMODEL_EXPORT  Body {
+    class HRPBASE_EXPORT  Body {
 
     public:
 
@@ -293,7 +293,7 @@ namespace boost
 
 
 
-HRPMODEL_EXPORT std::ostream &operator<< (std::ostream& out, hrp::Body& body);
+HRPBASE_EXPORT std::ostream &operator<< (std::ostream& out, hrp::Body& body);
 
 
 #endif

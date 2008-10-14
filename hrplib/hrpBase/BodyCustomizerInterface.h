@@ -73,9 +73,9 @@ namespace hrp {
 
 	typedef BodyCustomizerInterface* (*GetBodyCustomizerInterfaceFunc)(BodyInterface* bodyInterface);
 
-	HRPMODEL_EXPORT int loadBodyCustomizers(const std::string pathString, BodyInterface* bodyInterface);
-	HRPMODEL_EXPORT int loadBodyCustomizersInDefaultDirectories(BodyInterface* bodyInterface);
-	HRPMODEL_EXPORT BodyCustomizerInterface* findBodyCustomizer(std::string modelName);
+	HRPBASE_EXPORT int loadBodyCustomizers(const std::string pathString, BodyInterface* bodyInterface);
+	HRPBASE_EXPORT int loadBodyCustomizersInDefaultDirectories(BodyInterface* bodyInterface);
+	HRPBASE_EXPORT BodyCustomizerInterface* findBodyCustomizer(std::string modelName);
 
 }
     

@@ -174,7 +174,7 @@ int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyIn
 
 /**
    The function loads the customizers in the directories specified
-   by the environmental variable LIBHRPMODEL_PLUGINS_PATH.
+   by the environmental variable OPENHRP_PLUGIN_PATH.
 */
 int hrp::loadBodyCustomizersInDefaultDirectories(BodyInterface* bodyInterface)
 {
@@ -184,7 +184,7 @@ int hrp::loadBodyCustomizersInDefaultDirectories(BodyInterface* bodyInterface)
 
 		pluginLoadingFunctionsCalled = true;
 
-		char* pathListEnv = getenv("LIBHRPMODEL_PLUGIN_PATH");
+		char* pathListEnv = getenv("OPENHRP_PLUGIN_PATH");
 
 		if(pathListEnv){
 			char_separator<char> sep(PATH_DELIMITER);
