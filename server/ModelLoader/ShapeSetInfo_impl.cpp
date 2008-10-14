@@ -352,6 +352,9 @@ int ShapeSetInfo_impl::createAppearanceInfo
         appInfo.textureIndex  = createTextureInfo (appNode->texture);
 		if(appInfo.textureIndex != -1 ){
 			createTextureTransformMatrix(appInfo, appNode->textureTransform);
+            if(!faceSet->texCoord){   // default Texture Mapping
+                triangleMeshShaper.defaultTextureMapping(shapeNode);
+            }
 			setTexCoords(appInfo, faceSet);
 		}
     }
@@ -435,43 +438,8 @@ void ShapeSetInfo_impl::setNormals(AppearanceInfo& appInfo, VrmlIndexedFaceSet* 
     }
 }
 
-void ShapeSetInfo_impl::setTexCoords(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh)
+void ShapeSetInfo_impl::setTexCoords(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh )
 {
-	if(!triangleMesh->texCoord){
-        // default Mapping
-        float max[3]={0,0,0};
-        float min[3]={0,0,0};
-        int n = triangleMesh->coord->point.size();
-        for(int i=0; i<n; i++){
-            for(int j=0; j<3; j++){
-                float w = triangleMesh->coord->point[i][j];
-                max[j] = std::max( max[j], w );
-                min[j] = std::min( min[j], w );
-            }
-        }
-        float size[3]={0,0,0};
-        for(int j=0; j<3; j++)
-            size[j] = max[j]-min[j];
-        int s,t;
-        size[0] >= size[1] ? 
-              ( size[0] >= size[2] ? 
-                      ( s=0 , t=size[1] >= size[2] ? 1 : 2 ) 
-                    : ( s=2 , t=0) ) 
-            : ( size[1] >= size[2] ? 
-                      ( s=1 , t=size[0] >= size[2] ? 0 : 2 )
-                    : ( s=2 , t=1) ) ;
-        triangleMesh->texCoord = new VrmlTextureCoordinate();
-        for(int i=0; i<n; i++){
-            SFVec2f point;
-            point[0] = (triangleMesh->coord->point[i][s]-min[s])/size[s];
-            point[1] = (triangleMesh->coord->point[i][t]-min[t])/size[t]*0.5;
-            triangleMesh->texCoord->point.push_back(point);
-        }
-        triangleMesh->texCoordIndex.resize(triangleMesh->coordIndex.size());
-        copy( triangleMesh->coordIndex.begin(), triangleMesh->coordIndex.end(), 
-			triangleMesh->texCoordIndex.begin() );
-    }
-
 	int numCoords = triangleMesh->texCoord->point.size();
     appInfo.textureCoordinate.length(numCoords * 2);
 

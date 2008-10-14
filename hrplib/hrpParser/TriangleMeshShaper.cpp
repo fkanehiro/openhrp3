@@ -672,9 +672,11 @@ bool TMSImpl::convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& triangleMesh)
 
     for(int i=0; i < divisionNumber; ++i){
         // side faces
-        addTriangle(indices, topIndex, (i + 1) % divisionNumber, i);
+        if(cone->side)
+            addTriangle(indices, topIndex, (i + 1) % divisionNumber, i);
         // bottom faces
-        addTriangle(indices, bottomCenterIndex, i, (i + 1) % divisionNumber);
+        if(cone->bottom)       
+            addTriangle(indices, bottomCenterIndex, i, (i + 1) % divisionNumber);
     }
 
     triangleMesh->creaseAngle = 3.14 / 2.0;
@@ -714,13 +716,17 @@ bool TMSImpl::convertCylinder(VrmlCylinder* cylinder, VrmlIndexedFaceSetPtr& tri
 
     for(int i=0; i < divisionNumber; ++i){
         // top face
-        addTriangle(indices, topCenterIndex, (i+1) % divisionNumber, i);
+        if(cylinder->top)
+            addTriangle(indices, topCenterIndex, (i+1) % divisionNumber, i);
         // side face (upward convex triangle)
-        addTriangle(indices, i, ((i+1) % divisionNumber) + divisionNumber, i + divisionNumber);
-        // side face (downward convex triangle)
-        addTriangle(indices, i, (i+1) % divisionNumber, ((i + 1) % divisionNumber) + divisionNumber);
+        if(cylinder->side){        
+            addTriangle(indices, i, ((i+1) % divisionNumber) + divisionNumber, i + divisionNumber);
+            // side face (downward convex triangle)
+            addTriangle(indices, i, (i+1) % divisionNumber, ((i + 1) % divisionNumber) + divisionNumber);
+        }
         // bottom face
-        addTriangle(indices, bottomCenterIndex, i + divisionNumber, ((i+1) % divisionNumber) + divisionNumber);
+        if(cylinder->bottom)
+            addTriangle(indices, bottomCenterIndex, i + divisionNumber, ((i+1) % divisionNumber) + divisionNumber);
     }
 
     triangleMesh->creaseAngle = 3.14 / 2.0;
@@ -764,7 +770,7 @@ bool TMSImpl::convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleM
     }
 
     // side faces
-    for(int i=1; i < vdn - 2; ++i){
+    for(int i=0; i < vdn - 2; ++i){
         const int upper = i * hdn;
         const int lower = (i + 1) * hdn;
         for(int j=0; j < hdn; ++j) {
@@ -819,6 +825,13 @@ bool TMSImpl::convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPt
     }
 
     triangleMesh->creaseAngle = grid->creaseAngle;
+
+    if(grid->texCoord){
+        triangleMesh->texCoord->point.resize(grid->texCoord->point.size());
+        copy(grid->texCoord->point.begin(), grid->texCoord->point.end(), triangleMesh->texCoord->point.begin());
+        triangleMesh->texCoordIndex.resize(indices.size());
+        copy(indices.begin(), indices.end(), triangleMesh->texCoordIndex.begin());
+    }
 
     return true;
 }
@@ -1023,5 +1036,353 @@ void TMSImpl::putMessage(const std::string& message)
 {
     if(!self->sigMessage.empty()){
         self->sigMessage(message + "\n" );
+    }
+}
+
+void TriangleMeshShaper::defaultTextureMapping(VrmlShape* shapeNode){
+    VrmlIndexedFaceSet* triangleMesh = dynamic_cast<VrmlIndexedFaceSet*>(shapeNode->geometry.get());
+    if(!triangleMesh)
+        return;
+    VrmlGeometry* originalGeometry = getOriginalGeometry(shapeNode).get();
+    if(originalGeometry){
+        if(VrmlBox* box = dynamic_cast<VrmlBox*>(originalGeometry)){    //Box
+            defaultTextureMappingBox(triangleMesh);
+        }else if(VrmlCone* cone = dynamic_cast<VrmlCone*>(originalGeometry)){  //cone
+            defaultTextureMappingCone(triangleMesh);
+        }else if(VrmlCylinder* cylinder = dynamic_cast<VrmlCylinder*>(originalGeometry)){   //Cylinder
+            defaultTextureMappingCylinder(triangleMesh);
+        }else if(VrmlSphere* sphere = dynamic_cast<VrmlSphere*>(originalGeometry)){     //sphere
+            defaultTextureMappingSphere(triangleMesh, sphere->radius);
+        }else if(VrmlElevationGrid* grid = dynamic_cast<VrmlElevationGrid*>(originalGeometry)){     //VrmlElevationGrid
+            defaultTextureMappingElevationGrid(grid, triangleMesh);
+        }else if(VrmlExtrusion* extrusion = dynamic_cast<VrmlExtrusion*>(originalGeometry)){     //convertExtrusion
+            //todo
+            defaultTextureMappingFaceSet(triangleMesh);
+        }
+    }else{      //IndexedFaceSet
+        defaultTextureMappingFaceSet(triangleMesh);
+    }
+}
+
+void TriangleMeshShaper::defaultTextureMappingFaceSet(VrmlIndexedFaceSet* triangleMesh)
+{
+    if(!triangleMesh->texCoord){
+        float max[3]={0,0,0};
+        float min[3]={0,0,0};
+        int n = triangleMesh->coord->point.size();
+        for(int i=0; i<n; i++){
+            for(int j=0; j<3; j++){
+                float w = triangleMesh->coord->point[i][j];
+                max[j] = std::max( max[j], w );
+                min[j] = std::min( min[j], w );
+            }
+        }
+        float size[3]={0,0,0};
+        for(int j=0; j<3; j++)
+            size[j] = max[j]-min[j];
+        int s,t;
+        size[0] >= size[1] ? 
+              ( size[0] >= size[2] ? 
+                      ( s=0 , t=size[1] >= size[2] ? 1 : 2 ) 
+                    : ( s=2 , t=0) ) 
+            : ( size[1] >= size[2] ? 
+                      ( s=1 , t=size[0] >= size[2] ? 0 : 2 )
+                    : ( s=2 , t=1) ) ;
+        triangleMesh->texCoord = new VrmlTextureCoordinate();
+        for(int i=0; i<n; i++){
+            SFVec2f point;
+            point[0] = (triangleMesh->coord->point[i][s]-min[s])/size[s];
+            point[1] = (triangleMesh->coord->point[i][t]-min[t])/size[t]*0.5;
+            triangleMesh->texCoord->point.push_back(point);
+        }
+        triangleMesh->texCoordIndex.resize(triangleMesh->coordIndex.size());
+        copy( triangleMesh->coordIndex.begin(), triangleMesh->coordIndex.end(), 
+			triangleMesh->texCoordIndex.begin() );
+    }   
+}
+
+void TriangleMeshShaper::defaultTextureMappingElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSet* triangleMesh)
+{
+    float xmax = grid->xSpacing * (grid->xDimension-1);
+    float zmax = grid->zSpacing * (grid->zDimension-1);
+    triangleMesh->texCoord = new VrmlTextureCoordinate();
+    for(int i=0; i<triangleMesh->coord->point.size(); i++){
+       SFVec2f point;
+       point[0] = (triangleMesh->coord->point[i][0])/xmax;
+       point[1] = (triangleMesh->coord->point[i][2])/zmax;
+       triangleMesh->texCoord->point.push_back(point);
+    }
+    triangleMesh->texCoordIndex.resize(triangleMesh->coordIndex.size());
+    copy( triangleMesh->coordIndex.begin(), triangleMesh->coordIndex.end(), 
+		triangleMesh->texCoordIndex.begin() );
+}
+
+int TriangleMeshShaper::faceofBox(SFVec3f* point){
+    if(point[0][0] <= 0 && point[1][0] <= 0 && point[2][0] <= 0 ) return LEFT;
+    if(point[0][0] > 0 && point[1][0] > 0 && point[2][0] > 0 ) return RIGHT;
+    if(point[0][1] <= 0 && point[1][1] <= 0 && point[2][1] <= 0 ) return BOTTOM;
+    if(point[0][1] > 0 && point[1][1] > 0 && point[2][1] > 0 ) return TOP;
+    if(point[0][2] <= 0 && point[1][2] <= 0 && point[2][2] <= 0 ) return BACK;
+    if(point[0][2] > 0 && point[1][2] > 0 && point[2][2] > 0 ) return FRONT;
+    return -1;
+}
+
+int TriangleMeshShaper::findPoint(MFVec2f& points, SFVec2f& target){
+    for(int i=0; i<points.size(); i++){
+        if((points[i][0]-target[0])*(points[i][0]-target[0]) +
+            (points[i][1]-target[1])*(points[i][1]-target[1]) < 1.0e-9 )
+            return i;
+    }
+    return -1;
+}
+
+double TriangleMeshShaper::calcangle(SFVec3f& point){
+    double angle = atan2( point[2], point[0] );
+    if(angle>=0) angle=1.5*PI-angle;
+    else if(-0.5*PI<angle) angle=-angle+1.5*PI;
+    else angle=-angle-0.5*PI;
+    return angle;
+}
+
+
+void TriangleMeshShaper::defaultTextureMappingBox(VrmlIndexedFaceSet* triangleMesh)
+{
+    triangleMesh->texCoord = new VrmlTextureCoordinate();
+    SFVec2f point ;
+    point[0] = 0.0; point[1] = 0.0;     //index=0
+    triangleMesh->texCoord->point.push_back(point);
+    point[0] = 1.0; point[1] = 0.0;     //index=1
+    triangleMesh->texCoord->point.push_back(point);
+    point[0] = 0.0; point[1] = 1.0;     //index=2
+    triangleMesh->texCoord->point.push_back(point);
+    point[0] = 1.0; point[1] = 1.0;     //index=3
+    triangleMesh->texCoord->point.push_back(point);
+    
+    for(int i=0; i<12; i++){
+        SFVec3f point[3];
+        for(int j=0; j<3; j++)
+            point[j] = triangleMesh->coord->point[triangleMesh->coordIndex[i*4+j]];
+        switch(faceofBox(point)){
+            case LEFT:
+                for(int j=0; j<3; j++){
+                    if(point[j][1] > 0 && point[j][2] > 0 ) triangleMesh->texCoordIndex.push_back(3);
+                    else if(point[j][1] > 0 && point[j][2] <= 0 ) triangleMesh->texCoordIndex.push_back(2);
+                    else if(point[j][1] <= 0 && point[j][2] > 0 ) triangleMesh->texCoordIndex.push_back(1);
+                    else if(point[j][1] <= 0 && point[j][2] <= 0 ) triangleMesh->texCoordIndex.push_back(0);
+                }
+                break;
+            case RIGHT:
+                for(int j=0; j<3; j++){
+                    if(point[j][1] > 0 && point[j][2] > 0 ) triangleMesh->texCoordIndex.push_back(2);
+                    else if(point[j][1] > 0 && point[j][2] <= 0 ) triangleMesh->texCoordIndex.push_back(3);
+                    else if(point[j][1] <= 0 && point[j][2] > 0 ) triangleMesh->texCoordIndex.push_back(0);
+                    else if(point[j][1] <= 0 && point[j][2] <= 0 ) triangleMesh->texCoordIndex.push_back(1);
+                }
+                break;
+            case BOTTOM:
+                for(int j=0; j<3; j++){
+                    if(point[j][2] > 0 && point[j][0] > 0 ) triangleMesh->texCoordIndex.push_back(3);
+                    else if(point[j][2] > 0 && point[j][0] <= 0 ) triangleMesh->texCoordIndex.push_back(2);
+                    else if(point[j][2] <= 0 && point[j][0] > 0 ) triangleMesh->texCoordIndex.push_back(1);
+                    else if(point[j][2] <= 0 && point[j][0] <= 0 ) triangleMesh->texCoordIndex.push_back(0);
+                }
+                break;
+            case TOP:
+                for(int j=0; j<3; j++){
+                    if(point[j][2] > 0 && point[j][0] > 0 ) triangleMesh->texCoordIndex.push_back(1);
+                    else if(point[j][2] > 0 && point[j][0] <= 0 ) triangleMesh->texCoordIndex.push_back(0);
+                    else if(point[j][2] <= 0 && point[j][0] > 0 ) triangleMesh->texCoordIndex.push_back(3);
+                    else if(point[j][2] <= 0 && point[j][0] <= 0 ) triangleMesh->texCoordIndex.push_back(2);
+                }
+                break;
+            case BACK:
+                for(int j=0; j<3; j++){
+                    if(point[j][1] > 0 && point[j][0] > 0 ) triangleMesh->texCoordIndex.push_back(2);
+                    else if(point[j][1] > 0 && point[j][0] <= 0 ) triangleMesh->texCoordIndex.push_back(3);
+                    else if(point[j][1] <= 0 && point[j][0] > 0 ) triangleMesh->texCoordIndex.push_back(0);
+                    else if(point[j][1] <= 0 && point[j][0] <= 0 ) triangleMesh->texCoordIndex.push_back(1);
+                }
+                break;
+            case FRONT:
+                 for(int j=0; j<3; j++){
+                    if(point[j][1] > 0 && point[j][0] > 0 ) triangleMesh->texCoordIndex.push_back(3);
+                    else if(point[j][1] > 0 && point[j][0] <= 0 ) triangleMesh->texCoordIndex.push_back(2);
+                    else if(point[j][1] <= 0 && point[j][0] > 0 ) triangleMesh->texCoordIndex.push_back(1);
+                    else if(point[j][1] <= 0 && point[j][0] <= 0 ) triangleMesh->texCoordIndex.push_back(0);
+                }
+                break;
+            default:
+                break;
+        }
+        triangleMesh->texCoordIndex.push_back(-1);
+    }
+}
+
+
+void TriangleMeshShaper::defaultTextureMappingCone(VrmlIndexedFaceSet* triangleMesh)
+{
+    triangleMesh->texCoord = new VrmlTextureCoordinate();
+    SFVec2f texPoint ;
+    texPoint[0] = 0.5; texPoint[1] = 0.5;     //center of bottom index=0
+    triangleMesh->texCoord->point.push_back(texPoint);
+    int texIndex = 1;
+    for(int i=0; i<triangleMesh->coordIndex.size(); i++){
+        SFVec3f point[3];
+        int top=-1;
+        int center=-1;
+        for(int j=0; j<3; j++){
+            point[j] = triangleMesh->coord->point[triangleMesh->coordIndex[i++]];
+            if(point[j][1] > 0) top = j;
+            if(point[j][0] == 0.0 && point[j][2] == 0.0) center = j;
+        }
+        if(top>=0){         //side
+            double s[3]={0,0,0};
+            int pre=-1;
+            for(int j=0; j<3; j++){
+                if(j!=top){
+                    double angle = calcangle(point[j]);
+                    s[j] = angle/2/PI;     
+                    if(pre!=-1)
+                        if(s[pre] > 0.5 && s[j] < 1.0e-6)
+                            s[j] = 1.0;
+                    pre = j;
+
+                }
+            }
+            for(int j=0; j<3; j++){
+                if(j!=top){
+                    texPoint[0] = s[j];        
+                    texPoint[1] = 0.0;
+                }else{
+                    texPoint[0] = (s[0]+s[1]+s[2])/2.0;        
+                    texPoint[1] = 1.0;
+                }
+                int k=findPoint(triangleMesh->texCoord->point, texPoint);
+                if(k!=-1){
+                    triangleMesh->texCoordIndex.push_back(k);
+                }else{
+                    triangleMesh->texCoord->point.push_back(texPoint);
+                    triangleMesh->texCoordIndex.push_back(texIndex++);
+                }
+            }
+            triangleMesh->texCoordIndex.push_back(-1);
+        }else{              // bottom
+            for(int j=0; j<3; j++){
+                if(j!=center){
+                    double angle = atan2( point[j][2], point[j][0] );
+                    texPoint[0] = 0.5 + 0.5*cos(angle);        
+                    texPoint[1] = 0.5 + 0.5*sin(angle);
+                    int k=findPoint(triangleMesh->texCoord->point, texPoint);
+                    if(k!=-1){
+                         triangleMesh->texCoordIndex.push_back(k);
+                    }else{
+                         triangleMesh->texCoord->point.push_back(texPoint);
+                         triangleMesh->texCoordIndex.push_back(texIndex++);
+                    }
+                }else{
+                    triangleMesh->texCoordIndex.push_back(0);
+                }
+            }
+            triangleMesh->texCoordIndex.push_back(-1);
+        }
+    }
+}
+
+void TriangleMeshShaper::defaultTextureMappingCylinder(VrmlIndexedFaceSet* triangleMesh){
+    triangleMesh->texCoord = new VrmlTextureCoordinate();
+    SFVec2f texPoint ;
+    texPoint[0] = 0.5; texPoint[1] = 0.5;     //center of top(bottom) index=0
+    triangleMesh->texCoord->point.push_back(texPoint);
+    int texIndex = 1;
+    for(int i=0; i<triangleMesh->coordIndex.size(); i++){
+        SFVec3f point[3];
+        bool notside=true;
+        int center=-1;
+        for(int j=0; j<3; j++){
+            point[j] = triangleMesh->coord->point[triangleMesh->coordIndex[i++]];
+            if(j)
+                if(point[0][1] == point[j][1] ) notside &= true;
+                else   notside &= false;
+            if(point[j][0] == 0.0 && point[j][2] == 0.0) center = j;
+        }
+        if(!notside){         //side
+            bool over=false;
+            double s[3]={0,0,0};
+            for(int j=0; j<3; j++){
+                double angle = calcangle(point[j]);
+                s[j] = angle/2/PI;
+                if(s[j] > 0.5)
+                    over = true;
+            }
+            for(int j=0; j<3; j++){
+                if(over && s[j]<1.0e-6)
+                    s[j] = 1.0;
+                texPoint[0] = s[j];        
+                if(point[j][1] > 0) texPoint[1] = 1.0;
+                else    texPoint[1] = 0.0;
+                int k=findPoint(triangleMesh->texCoord->point, texPoint);
+                if(k!=-1){
+                    triangleMesh->texCoordIndex.push_back(k);
+                }else{
+                    triangleMesh->texCoord->point.push_back(texPoint);
+                    triangleMesh->texCoordIndex.push_back(texIndex++);
+                }
+            }
+            triangleMesh->texCoordIndex.push_back(-1);
+        }else{              // top / bottom
+            for(int j=0; j<3; j++){
+                if(j!=center){
+                    double angle = atan2( point[j][2], point[j][0] );
+                    texPoint[0] = 0.5 + 0.5*cos(angle);    
+                    if(point[0][1] > 0)  //top
+                        texPoint[1] = 0.5 - 0.5*sin(angle);
+                    else                //bottom
+                        texPoint[1] = 0.5 + 0.5*sin(angle);   
+                    int k=findPoint(triangleMesh->texCoord->point, texPoint);
+                    if(k!=-1){
+                        triangleMesh->texCoordIndex.push_back(k);
+                    }else{
+                        triangleMesh->texCoord->point.push_back(texPoint);
+                        triangleMesh->texCoordIndex.push_back(texIndex++);
+                    }
+                }else{
+                    triangleMesh->texCoordIndex.push_back(0);
+                }
+            }
+            triangleMesh->texCoordIndex.push_back(-1);
+        }
+    }
+}
+
+void TriangleMeshShaper::defaultTextureMappingSphere(VrmlIndexedFaceSet* triangleMesh, double radius){
+    triangleMesh->texCoord = new VrmlTextureCoordinate();
+    SFVec2f texPoint ;
+    int texIndex = 0;
+    for(int i=0; i<triangleMesh->coordIndex.size(); i++){
+        SFVec3f point[3];
+        bool over=false;
+        double s[3]={0,0,0};
+        for(int j=0; j<3; j++){
+            point[j] = triangleMesh->coord->point[triangleMesh->coordIndex[i++]];
+            double angle = calcangle(point[j]);
+            s[j] = angle/2/PI; 
+            if(s[j] > 0.5)
+                over = true;
+        }
+        for(int j=0; j<3; j++){
+            if(over && s[j]<1.0e-6)
+                s[j] = 1.0;
+            texPoint[0] = s[j];
+            double theta = acos(point[j][1]/radius);        
+            texPoint[1] = 1.0-theta/PI;
+            int k=findPoint(triangleMesh->texCoord->point, texPoint);
+            if(k!=-1){
+                triangleMesh->texCoordIndex.push_back(k);
+            }else{
+                triangleMesh->texCoord->point.push_back(texPoint);
+                triangleMesh->texCoordIndex.push_back(texIndex++);
+            }
+        }
+        triangleMesh->texCoordIndex.push_back(-1);
     }
 }
