@@ -683,7 +683,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     private void setTexture( Appearance appearance, TextureInfo textureInfo ){
         TextureInfoLocal texInfo = new TextureInfoLocal(textureInfo);
-        if(texInfo.url.isEmpty()){
+        if(texInfo.url.length()==0){
             if((texInfo.width != 0) && (texInfo.height != 0)){
                 ImageComponent2D icomp2d = texInfo.readImage;
                 Texture2D texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
