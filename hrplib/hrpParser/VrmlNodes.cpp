@@ -406,6 +406,11 @@ VrmlExtrusion::VrmlExtrusion()
     ccw			= true;
     convex		= true;
     creaseAngle = 0;
+    SFRotation ori= {0,0,1,0};
+    orientation.push_back(ori);
+    SFVec2f sc ={ 1,1 };
+    scale.push_back(sc);
+
 }
 
 

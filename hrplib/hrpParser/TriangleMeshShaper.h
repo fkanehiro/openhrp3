@@ -49,6 +49,7 @@ namespace hrp
         void defaultTextureMappingCone(VrmlIndexedFaceSet* triangleMesh);
         void defaultTextureMappingCylinder(VrmlIndexedFaceSet* triangleMesh);
         void defaultTextureMappingSphere(VrmlIndexedFaceSet* triangleMesh, double radius);
+        void defaultTextureMappingExtrusion(VrmlIndexedFaceSet* triangleMesh, VrmlExtrusion* extrusion );
         int faceofBox(SFVec3f* point);
         int findPoint(MFVec2f& points, SFVec2f& target);
         double calcangle(SFVec3f& point);
