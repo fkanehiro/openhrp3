@@ -34,7 +34,7 @@ add_library(hrpParser3 SHARED ${sources})
 set_target_properties(hrpParser3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
-  target_link_libraries(hrpParser3 hrpUtil3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY})
+  target_link_libraries(hrpParser3 hrpUtil3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY} )
     
 elseif(WIN32)
   set_target_properties(hrpParser3 PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
