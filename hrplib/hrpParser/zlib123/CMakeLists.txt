@@ -37,16 +37,16 @@ set(headers
   zutil.h
 )
 
-add_library(zlib STATIC ${sources})
+add_library(${ZLIB_LIBRARY} STATIC ${sources})
 
 if(WIN32)
-set_target_properties(zlib PROPERTIES COMPILE_FLAGS -Ob1)
-set_target_properties(zlib PROPERTIES DEBUG_POSTFIX d )
+set_target_properties(${ZLIB_LIBRARY} PROPERTIES COMPILE_FLAGS -Ob1)
+set_target_properties(${ZLIB_LIBRARY} PROPERTIES DEBUG_POSTFIX d )
 endif() 
 
 if(WIN32)
   install(
-    TARGETS zlib
+    TARGETS ${ZLIB_LIBRARY}
     RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release
     LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release
     ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release
@@ -54,7 +54,7 @@ if(WIN32)
 endif()
 
 install(
-  TARGETS zlib
+  TARGETS ${ZLIB_LIBRARY}
   RUNTIME DESTINATION bin CONFIGURATIONS Release
   LIBRARY DESTINATION lib CONFIGURATIONS Release
   ARCHIVE DESTINATION lib CONFIGURATIONS Release
