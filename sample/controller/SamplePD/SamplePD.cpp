@@ -193,18 +193,22 @@ RTC::ReturnCode_t SamplePD::onExecute(RTC::UniqueId ec_id)
 
   m_angleIn.update();
 
-  double q_ref, dq_ref;
-  angle >> q_ref; vel >> dq_ref;// skip time
-  for (int i=0; i<DOF; i++){
-    angle >> q_ref;
-    vel >> dq_ref;
+  static double q_ref[DOF], dq_ref[DOF];
+  if(!angle.eof()){
+	angle >> q_ref[0]; vel >> dq_ref[0];// skip time
+	for (int i=0; i<DOF; i++){
+		angle >> q_ref[i];
+		vel >> dq_ref[i];
+	}
+  }
+  for(int i=0; i<DOF; i++){
     double q = m_angle.data[i];
     double dq = (q - qold[i]) / TIMESTEP;
     qold[i] = q;
     
-    m_torque.data[i] = -(q - q_ref) * Pgain[i] - (dq - dq_ref) * Dgain[i];
+    m_torque.data[i] = -(q - q_ref[i]) * Pgain[i] - (dq - dq_ref[i]) * Dgain[i];
   }
-  
+      
   m_torqueOut.write();
   
   return RTC::RTC_OK;
