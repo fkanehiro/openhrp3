@@ -174,17 +174,26 @@ RTC::ReturnCode_t SampleHG::onExecute(RTC::UniqueId ec_id)
   {
     std::cout << "SampleHG::onExecute" << std::endl;
   }
-  // £È"ÀË’Ó«‚ÀÓU§Á5¡‚°‡ŒÂontroller_impl::control£ˆ√…øÎºÂ≠ÓΩ€≥˚ªÙ£ı1ÕÁ€‚°¶
-  double dummy;
-  angle >> dummy; vel >> dummy; acc >> dummy; // skip time
-  int i;
+  
+  static double angle[DOF], vel[DOF], acc[DOF];
+  if(!angle.eof()){
+    double dummy;
+    angle >> dummy; vel >> dummy; acc >> dummy; // skip time
 
-  //≥∆•’•°•§•Î£Â"°¶f°º•ø§Í°¶µ‘≈Ù"°¶€‚°¶°¶|°º•»£ı7°¶
+    int i;
+
+    for (i=0; i<DOF; i++)
+    {
+        angle >> angle[i];
+        vel   >> vel[i];
+        acc   >> acc[i];
+    }
+  }
   for (i=0; i<DOF; i++)
   {
-      angle >> m_angle.data[i];
-      vel   >> m_vel.data[i];
-      acc   >> m_acc.data[i];
+      m_angle.data[i] = angle[i];
+      m_vel.data[i] = vel[i];
+      am_acc.data[i] = acc[i];
   }
 
   m_angleOut.write();
