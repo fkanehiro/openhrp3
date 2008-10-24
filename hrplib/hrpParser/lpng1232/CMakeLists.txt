@@ -32,21 +32,19 @@ set(headers
   pngconf.h
 )
 
-add_library(png STATIC ${sources})
+add_library(${PNG_LIBRARY} STATIC ${sources})
 
 include_directories("../zlib123")
 add_definitions(-DPNG_NO_MMX_CODE -D_CRT_SECURE_NO_WARNINGS)
 
 if(WIN32)
-set_target_properties(png PROPERTIES COMPILE_FLAGS -Ob1)
-set_target_properties(png PROPERTIES DEBUG_POSTFIX d )
-set_target_properties(png PROPERTIES OUTPUT_NAME libpng )
-
+set_target_properties(${PNG_LIBRARY} PROPERTIES COMPILE_FLAGS -Ob1)
+set_target_properties(${PNG_LIBRARY} PROPERTIES DEBUG_POSTFIX d )
 endif() 
 
 if(WIN32)
   install(
-    TARGETS png
+    TARGETS ${PNG_LIBRARY}
     RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release
     LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release
     ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release
@@ -54,7 +52,7 @@ if(WIN32)
 endif()
 
 install(
-  TARGETS png
+  TARGETS ${PNG_LIBRARY}
   RUNTIME DESTINATION bin CONFIGURATIONS Release
   LIBRARY DESTINATION lib CONFIGURATIONS Release
   ARCHIVE DESTINATION lib CONFIGURATIONS Release

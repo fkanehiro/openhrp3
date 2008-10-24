@@ -74,17 +74,16 @@ set(headers
   transupp.h
 )
 
-add_library(jpeg STATIC ${sources})
+add_library(${JPEG_LIBRARY} STATIC ${sources})
 
 if(WIN32)
-set_target_properties(jpeg PROPERTIES COMPILE_FLAGS -Ob1)
-set_target_properties(jpeg PROPERTIES DEBUG_POSTFIX d )
-set_target_properties(jpeg PROPERTIES OUTPUT_NAME libjpeg )
+set_target_properties(${JPEG_LIBRARY} PROPERTIES COMPILE_FLAGS -Ob1)
+set_target_properties(${JPEG_LIBRARY} PROPERTIES DEBUG_POSTFIX d )
 endif() 
 
 if(WIN32)
   install(
-    TARGETS jpeg
+    TARGETS ${JPEG_LIBRARY}
     RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release
     LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release
     ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release
@@ -92,7 +91,7 @@ if(WIN32)
 endif()
 
 install(
-  TARGETS jpeg
+  TARGETS ${JPEG_LIBRARY}
   RUNTIME DESTINATION bin CONFIGURATIONS Release
   LIBRARY DESTINATION lib CONFIGURATIONS Release
   ARCHIVE DESTINATION lib CONFIGURATIONS Release
