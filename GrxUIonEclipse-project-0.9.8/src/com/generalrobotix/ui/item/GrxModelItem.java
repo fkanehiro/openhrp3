@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST) 
+ * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 
 /*
@@ -24,12 +24,13 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import com.sun.j3d.utils.geometry.*;
-import com.sun.j3d.utils.image.TextureLoader;
-
-import java.awt.image.*;
-import com.sun.j3d.utils.picking.PickTool;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
@@ -37,7 +38,6 @@ import com.generalrobotix.ui.view.tdview.*;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
 import jp.go.aist.hrp.simulator.*;
-import java.awt.image.BufferedImage;
 
 @SuppressWarnings({ "unchecked", "serial" })
 /**
@@ -47,42 +47,49 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public static final String TITLE = "Model";
     public static final String DEFAULT_DIR = "../../etc";
     public static final String FILE_EXTENSION = "wrl";
-
-    private boolean isRobot_ = true;
-    public boolean update_ = true;
-    
-    public BodyInfo bInfo_;
-	
-    public BranchGroup bgRoot_;
-    public Vector<GrxLinkItem> links_;
-    public GrxLinkItem activeLink_;
-    private int[] jointToLink_; // length = joint number
-    private final Map<String, GrxLinkItem> linkMap_ = new HashMap<String, GrxLinkItem>();
-    private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
-    // sensor type name -> list of sensors
-    private final Map<String, List<GrxSensorItem>> sensorMap_ = new HashMap<String, List<GrxSensorItem>>();
-    // list of cameras 
-    private List<Camera_impl> cameraList_ = new ArrayList<Camera_impl>();
-	
-    private Switch switchCom_;
-    private TransformGroup tgCom_;
-    private Switch switchComZ0_;
-    private TransformGroup tgComZ0_;
     private static final double DEFAULT_RADIOUS = 0.05;
-    
-    // temporary varibales for computation
-    private Transform3D t3d_ = new Transform3D(); 
-    private Transform3D t3dm_ = new Transform3D(); 
-    private Vector3d v3d_ = new Vector3d();
-    private AxisAngle4d a4d_ = new AxisAngle4d();
-    private Matrix3d m3d_ = new Matrix3d();
-    private Matrix3d m3d2_ = new Matrix3d();
-    private Vector3d v3d2_ = new Vector3d();
 
     // icons
    	private static final String robotIcon = "robot.png";
    	private static final String envIcon = "environment.png";
+   	
+    private boolean isRobot_ = true;
+    public boolean update_ = true;
 
+    private BodyInfo bInfo_;
+
+    public BranchGroup bgRoot_ = new BranchGroup();
+    public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
+    public GrxLinkItem activeLink_;
+    private int[] jointToLink_; // length = joint number
+    private final Map<String, GrxLinkItem> linkMap_ = new HashMap<String, GrxLinkItem>();
+    // sensor type name -> list of sensors
+    private final Map<String, List<GrxSensorItem>> sensorMap_ = new HashMap<String, List<GrxSensorItem>>();
+    // list of cameras
+    private List<Camera_impl> cameraList_ = new ArrayList<Camera_impl>();
+
+    // CoM
+    private Switch switchCom_;
+    private TransformGroup tgCom_;
+    
+    // CoM projected on the floor
+    private Switch switchComZ0_;
+    private TransformGroup tgComZ0_;
+
+    // temporary variables for computation
+    private Transform3D t3d_ = new Transform3D();
+    private Vector3d v3d_ = new Vector3d();
+
+
+    /**
+     * @brief get BodyInfo
+     * @return BodyInfo
+     */
+    public BodyInfo getBodyInfo(){
+    	// TODO gather all information
+    	return bInfo_;
+    }
+    
    	/**
    	 * @brief
    	 */
@@ -111,6 +118,27 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	public GrxModelItem(String name, GrxPluginManager item) {
 		super(name, item);
 		setIcon(robotIcon);
+		_initMenu();
+		
+        bgRoot_.setCapability(BranchGroup.ALLOW_DETACH);
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+
+        // create root link
+        GrxLinkItem link = new GrxLinkItem("root", manager_);
+        link.setProperty("jointType", "free");
+        link.propertyChanged();
+        links_.add(link);
+        bgRoot_.addChild(link.bg_);
+        
+        setProperty("url","");
+        
+        _setupMarks();
+    }
+
+	/**
+	 * @brief initialize right-click menu
+	 */
+	private void _initMenu() {
 		// menu item : reload
 		setMenuItem(new Action(){
             public String getText(){ return "reload"; }
@@ -120,42 +148,102 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		});
 
         setMenuItem(menuChangeType_);
-    }
-	
+
+        // menu item : save
+        setMenuItem(new Action(){
+        	public String getText() { return "save"; }
+        	public void run(){
+		        String url = getStr("url");
+		        if (url == null || url.equals("")){
+		        	_saveAs();
+		        }else{
+					GrxVrmlExporter.export(GrxModelItem.this, url);
+				}
+        	}
+        });
+
+        // menu item : save as
+        setMenuItem(new Action(){
+        	public String getText() { return "save as"; }
+        	public void run(){
+        		_saveAs();
+        	}
+        });
+
+        /* disable copy and paste menus until they are implemented
+        // menu item : copy
+        setMenuItem( new Action(){
+            public String getText(){
+                return "copy";
+            }
+            public void run(){
+                GrxDebugUtil.println("GrxModelItem.GrxModelItem copy Action");
+                manager_.setSelectedGrxBaseItemList();
+            }
+        });
+
+        // menu item : paste
+        setMenuItem(new Action(){
+            public String getText(){
+                return "paste";
+            }
+
+            public void run(){
+            }
+        });
+        */
+	}
+
+	/**
+	 * @brief save this model as a VRML file
+	 */
+	private void _saveAs(){
+		IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+		FileDialog fdlg = new FileDialog( window.getShell(), SWT.SAVE);
+		String fPath = fdlg.open();
+		if( fPath != null ) {
+			if (GrxVrmlExporter.export(GrxModelItem.this, fPath)){
+				setURL(fPath);
+			}
+		}
+	}
 	/**
 	 * @brief create a new model
 	 * @return true if created successfully, false otherwise
 	 */
-	/* this method will be enabled later
 	public boolean create() {
 		return true;
 	}
-	*/
 
 	/**
 	 * @brief get root link
 	 */
 	public GrxLinkItem rootLink() {
-		return links_.get(0);
+		if (links_.size() > 0){
+			return links_.get(0);
+		}else{
+			return null;
+		}
 	}
-	
+
 	/**
 	 * @brief restore properties
 	 */
     public void restoreProperties() {
         super.restoreProperties();
-		
+
         _setModelType(isTrue("isRobot", isRobot_));
         _setupMarks();
-		
-        if (getDblAry(rootLink().getName()+".translation", null) == null && 
-            getDblAry(rootLink().getName()+".rotation", null) == null) 
+
+        if (getDblAry(rootLink().getName()+".translation", null) == null &&
+            getDblAry(rootLink().getName()+".rotation", null) == null)
             updateInitialTransformRoot();
-		
+
         for (int i=0; i<jointToLink_.length; i++) {
             GrxLinkItem l = links_.get(jointToLink_[i]);
             Double d = getDbl(l.getName()+".angle", null);
-            if (d == null) 
+            if (d == null)
                 setDbl(l.getName()+".angle", 0.0);
         }
         propertyChanged();
@@ -169,7 +257,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         double[] p = getDblAry(rootLink().getName()+".translation", null);
         if (p == null || p.length != 3)
             p = new double[]{0, 0, 0};
-		
+
         double[] R = getDblAry(rootLink().getName()+".rotation", null);
         if (R != null && R.length == 4) {  // AxisAngle
             Matrix3d m3d = new Matrix3d();
@@ -183,12 +271,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         } else {
             R = new double[]{1, 0 ,0 , 0, 1, 0, 0, 0, 1};
         }
-		
-        _setTransform(0, p, R);
-		
-        for (int j = 0; j < links_.size(); j++) 
+
+        setTransformRoot(p, R);
+
+        for (int j = 0; j < links_.size(); j++)
             links_.get(j).jointValue(getDbl(links_.get(j).getName() + ".angle", 0.0));
-		
+
         calcForwardKinematics();
     }
 
@@ -218,7 +306,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     TransformGroup rootTransformGroup() {
     	return rootLink().tg_;
     }
-    
+
     /**
      * @brief create spheres to display CoM and projected CoM
      */
@@ -226,7 +314,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         double radius = getDbl("markRadius", DEFAULT_RADIOUS);
         if (switchCom_ == null || radius != DEFAULT_RADIOUS) {
             switchCom_ = createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
-            switchComZ0_= createBall(radius, new Color3f(0.0f, 1.0f, 0.0f)); 
+            switchComZ0_= createBall(radius, new Color3f(0.0f, 1.0f, 0.0f));
             tgCom_ = (TransformGroup)switchCom_.getChild(0);
             tgComZ0_ = (TransformGroup)switchComZ0_.getChild(0);
             TransformGroup root = rootTransformGroup();
@@ -246,24 +334,30 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             manager_.setSelectedItem(this, false);
         bgRoot_ = new BranchGroup();
         bgRoot_.setCapability(BranchGroup.ALLOW_DETACH);
-		
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+
         file_ = f;
         String url = "file:///" + f.getAbsolutePath();
         GrxDebugUtil.println("Loading " + url);
         try {
             ModelLoader mloader = ModelLoaderHelper.narrow(
-                GrxCorbaUtil.getReference("ModelLoader", "localhost", 2809));
+                GrxCorbaUtil.getReference("ModelLoader"));
             bInfo_ = mloader.getBodyInfo(url);
             //
             LinkInfo[] linkInfoList = bInfo_.links();
-            links_ = new Vector<GrxLinkItem>();
             linkMap_.clear();
-            
+
+            // delete existing model data
+            if (rootLink() != null){
+            	rootLink().delete();
+            }
+            links_.clear();
+
             for (int i=0; i<cameraList_.size(); i++){
                 cameraList_.get(i).destroy();
             }
             cameraList_.clear();
-            
+
             int jointCount = 0;
             for (int i = 0; i < linkInfoList.length; i++) {
                 links_.add(new GrxLinkItem(linkInfoList[i].name, manager_, linkInfoList[i]));
@@ -272,7 +366,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     jointCount++;
                 }
             }
-            
+
             // Search root node.
             int rootIndex = -1;
             for( int i = 0 ; i < links_.size() ; i++ ) {
@@ -287,9 +381,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             if( rootIndex < 0 ){
                 System.out.println( "Error, root node doesn't exist." );
             }
-            
+
             createLink(rootIndex);
-            
+
             jointToLink_ = new int[jointCount];
             for (int i=0; i<jointCount; i++) {
                 for (int j=0; j<links_.size(); j++) {
@@ -298,7 +392,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     }
                 }
             }
-            
+
             Iterator<List<GrxSensorItem>> it = sensorMap_.values().iterator();
             while (it.hasNext()) {
                 Collections.sort(it.next());
@@ -322,21 +416,23 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     private void createLink( int index ){
-        
+
         GrxLinkItem link = links_.get(index);
-        
+
         // register this to children field of parent link
         if (link.parentIndex() != -1){
         	links_.get(link.parentIndex()).addLink(link);
+        }else{
+            bgRoot_.addChild(link.bg_);
         }
-        
+
         // gather cameras
         for (int i=0; i< link.cameras_.size(); i++){
         	cameraList_.add(link.cameras_.get(i));
         }
-        
-        
-        for( int i = 0 ; i < link.childIndices().length ; i++ ) 
+
+
+        for( int i = 0 ; i < link.childIndices().length ; i++ )
             {
                 // call recursively
                 int childIndex = link.childIndices()[i];
@@ -359,135 +455,80 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         int numLinks = links.length;
         for(int linkIndex = 0; linkIndex < numLinks; linkIndex++) {
-
             LinkInfo linkInfo = links[linkIndex];
             GrxLinkItem link = links_.get(linkIndex);
-
-            TransformGroup linkTopTransformNode = link.tg_;
-
+        
             int numShapes = linkInfo.shapeIndices.length;
             for(int localShapeIndex = 0; localShapeIndex < numShapes; localShapeIndex++) {
                 TransformedShapeIndex tsi = linkInfo.shapeIndices[localShapeIndex];
                 int shapeIndex = tsi.shapeIndex;
                 ShapeInfo shapeInfo = shapes[shapeIndex];
-
-                TransformGroup shapeTransform = new TransformGroup();
-
-                double[] m = tsi.transformMatrix;
-                Matrix4d M = new Matrix4d(m[0], m[1], m[2],  m[3],
-                                          m[4], m[5], m[6],  m[7],
-                                          m[8], m[9], m[10], m[11],
-                                          0.0,  0.0,  0.0,   1.0);
-                shapeTransform.setTransform(new Transform3D(M));
-
-                if(shapeInfo.primitiveType == ShapePrimitiveType.SP_MESH ){
-                    Shape3D linkShape3D = createLinkShape3D(shapeInfo, appearances, materials, textures);
-                    shapeTransform.addChild(linkShape3D);
-                    /* normal visualization */
-                    if(false){
-                        NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f, M);
-                        Shape3D nshape = new Shape3D(nrender.getLineArray());
-                        linkTopTransformNode.addChild(nshape);
+                AppearanceInfo appearanceInfo = null;
+                MaterialInfo materialInfo = null;
+                TextureInfo textureInfo = null;
+                if (shapeInfo.appearanceIndex >= 0){
+                    appearanceInfo = appearances[shapeInfo.appearanceIndex];
+                    if (appearanceInfo.materialIndex >= 0){
+                        materialInfo = materials[appearanceInfo.materialIndex];
                     }
-                }else{
-                    Primitive primitive = createShapePrimitive(shapeInfo, appearances, materials, textures);
-                    shapeTransform.addChild(primitive);
-                    /* normal visualization */
-                    if(false){
-                        for(int i=0; i<primitive.numChildren(); i++){
-                            Shape3D shape = primitive.getShape(i);  
-                            NormalRender nrender = new NormalRender((GeometryArray)shape.getGeometry(), 0.05f, M);
-                            Shape3D nshape = new Shape3D(nrender.getLineArray());
-                            linkTopTransformNode.addChild(nshape);
-                        }
+                    if (appearanceInfo.textureIndex >= 0){
+                    	textureInfo = textures[appearanceInfo.textureIndex];
                     }
                 }
-
-                BranchGroup bg = new BranchGroup();
-                bg.setCapability(BranchGroup.ALLOW_DETACH);
-                bg.addChild(shapeTransform);
-
-                GrxShapeItem shape = new GrxShapeItem(linkInfo.name+"_shape_"+localShapeIndex, manager_, bg);
-                link.addShape(shape);
-            }
-
-            Vector<GrxSensorItem> sensors = links_.get(linkIndex).sensors_;
-            for (int j=0; j < sensors.size(); j++) {
-                GrxSensorItem si = sensors.get(j);
-
-                if (si.type().equals("Vision")) {
-
-                    Camera_impl camera = cameraList_.get(si.id());
-                    linkTopTransformNode.addChild(camera.getBranchGraph());
-
-                    double[] pos = si.translation();
-                    double[] rot = si.rotation();
-
-                    Transform3D t3d = new Transform3D();
-                    t3d.setTranslation(new Vector3d(pos));
-                    t3d.setRotation(new AxisAngle4d(rot));
-                    camera.getTransformGroup().setTransform(t3d);
+                GrxShapeItem shape = new GrxShapeItem(linkInfo.name+"_shape_"+localShapeIndex, manager_,
+                tsi.transformMatrix, shapeInfo, appearanceInfo, materialInfo, textureInfo);
+                link.addChild(shape);
+        
+                /* normal visualization */
+                /*
+                if(false){
+                    NormalRender nrender = new NormalRender((GeometryArray)linkShape3D.getGeometry(), 0.05f, M);
+                    Shape3D nshape = new Shape3D(nrender.getLineArray());
+                    linkTopTransformNode.addChild(nshape);
                 }
+                */
             }
         }
-
+        
         SceneGraphModifier modifier = SceneGraphModifier.getInstance();
         for (int i = 0; i < links_.size(); i++) {
-            Map<String, Object> userData = new Hashtable<String, Object>();
-            GrxLinkItem info = links_.get(i);
+            GrxLinkItem link = links_.get(i);
+            TransformGroup g = link.tg_;
+            Map<String, Object> userData = (Map<String, Object>)g.getUserData();
             userData.put("object", this);
-            userData.put("linkInfo", info);
             userData.put("objectName", this.getName());
-            userData.put("jointName", info.getName());
-            Vector3d jointAxis = new Vector3d(info.jointAxis());
-            GrxLinkItem itmp = info;
-            while (itmp.jointId() == -1 && itmp.parentIndex() != -1) {
-                itmp = links_.get(itmp.parentIndex());
-            }
-            userData.put("controllableJoint", itmp.getName());
-			 
-            TransformGroup g = links_.get(i).tg_;
+
             Transform3D tr = new Transform3D();
             tr.setIdentity();
             g.setTransform(tr);
-			
+            
             modifier.init_ = true;
             modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
             modifier._calcUpperLower(g, tr);
-			
+            
             Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
             Switch bbSwitch =  modifier._makeSwitchNode(modifier._makeBoundingBox(color));
-            bbSwitch.setCapability(Switch.ALLOW_SWITCH_READ);
-            bbSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-            bbSwitch.setCapability(Switch.ALLOW_CHILDREN_READ);
-            bbSwitch.setCapability(Switch.ALLOW_CHILDREN_WRITE);
             g.addChild(bbSwitch);
-			
             userData.put("boundingBoxSwitch", bbSwitch);
+
+            Vector3d jointAxis = new Vector3d(link.jointAxis());
             if (jointAxis != null) {
                 Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
                 g.addChild(axisSwitch);
                 userData.put("axisLineSwitch", axisSwitch);
             }
-			
-            g.setUserData(userData);
-            g.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
-            g.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-			
-            bgRoot_.addChild(links_.get(i).bg_);
         }
-		
-        rootTransformGroup().setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+            
         _setupMarks();
-		
-        _traverse(bgRoot_, 0);
-		
+        
+        //_traverse(bgRoot_, 0);
+        
         modifier.modifyRobot(this);
-		
+        
         setDblAry(rootLink().getName()+".translation", rootLink().translation());
         setDblAry(rootLink().getName()+".rotation", rootLink().rotation());
         propertyChanged();
-
+        
         for (int i=0; i<links_.size(); i++) {
             Node n = links_.get(i).tg_.getChild(0);
             if (n.getCapability(Node.ENABLE_PICK_REPORTING))
@@ -499,7 +540,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     /**
-     * @brief setup capabilities and shapeVector_
+     * @brief setup capabilities
      * @param node node where this process starts
      * @param depth current depth. This can be used for debug output
      */
@@ -512,7 +553,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             bg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
             for (int i = 0; i < bg.numChildren(); i++)
                 _traverse(bg.getChild(i), depth + 1);
-			
+
         } else if (node instanceof TransformGroup) {
             TransformGroup tg = (TransformGroup) node;
             tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
@@ -522,14 +563,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
             for (int i = 0; i < tg.numChildren(); i++)
                 _traverse(tg.getChild(i), depth + 1);
-			
+
         } else if (node instanceof Group) {
             Group g = (Group) node;
             g.setCapability(Group.ALLOW_CHILDREN_READ);
             g.setCapability(Group.ALLOW_CHILDREN_WRITE);
             for (int i = 0; i < g.numChildren(); i++)
                 _traverse(g.getChild(i), depth + 1);
-			
+
         } else if (node instanceof Link) {
             Link l = (Link) node;
             l.setCapability(Link.ALLOW_SHARED_GROUP_READ);
@@ -537,162 +578,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             sg.setCapability(SharedGroup.ALLOW_CHILDREN_READ);
             for (int i = 0; i < sg.numChildren(); i++)
                 _traverse(sg.getChild(i), depth + 1);
-			
-        } else if (node instanceof Shape3D) {
-            Shape3D s3d = (Shape3D) node;
-            s3d.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
-            s3d.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
-            s3d.setCapability(GeometryArray.ALLOW_COORDINATE_READ);
-            s3d.setCapability(GeometryArray.ALLOW_COUNT_READ);
-            PickTool.setCapabilities(s3d, PickTool.INTERSECT_FULL);
-			
-            Appearance app = s3d.getAppearance();
-            if (app != null) {
-                app.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_READ);
-                TransparencyAttributes ta = app.getTransparencyAttributes();
-                if (ta != null) {
-                    ta.setCapability(TransparencyAttributes.ALLOW_MODE_READ);
-                    ta.setCapability(TransparencyAttributes.ALLOW_MODE_WRITE);
-                    ta.setCapability(TransparencyAttributes.ALLOW_VALUE_READ);
-                    ta.setCapability(TransparencyAttributes.ALLOW_VALUE_WRITE);
-                }
-				
-                app.setCapability(Appearance.ALLOW_POLYGON_ATTRIBUTES_READ);
-                PolygonAttributes pa = app.getPolygonAttributes();
-                if (pa == null) {
-                    pa = new PolygonAttributes();
-                    pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-                    app.setPolygonAttributes(pa);
-                }
-                pa.setCapability(PolygonAttributes.ALLOW_MODE_READ);
-                pa.setCapability(PolygonAttributes.ALLOW_MODE_WRITE);
-				
-                app.setCapability(Appearance.ALLOW_MATERIAL_READ);
-                Material ma = app.getMaterial();
 
-                if (ma != null) {
-                    ma.setCapability(Material.ALLOW_COMPONENT_READ);
-                    ma.setCapability(Material.ALLOW_COMPONENT_WRITE);
-                }	
-            }
-            shapeVector_.add(s3d);
+        } else if (node instanceof Shape3D) {
+        	// do nothing
         } else {
             GrxDebugUtil.println("* The node " + node.toString() + " is not supported.");
         }
     }
 
-    /**
-     * @brief create Shape3D object from shapeInfo, appearanceInfo, MaterialInfo and TextureInfo
-     * @param shapeInfo
-     * @param appearances
-     * @param materials
-     * @param textures
-     * @return
-     */
-    private Shape3D createLinkShape3D
-    (ShapeInfo shapeInfo, AppearanceInfo[] appearances, MaterialInfo[] materials, TextureInfo[] textures){
-        
-        GeometryInfo geometryInfo = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
-
-        // set vertices
-        int numVertices = shapeInfo.vertices.length / 3;
-        Point3f[] vertices = new Point3f[numVertices];
-        for(int i=0; i < numVertices; ++i){
-            vertices[i] = new Point3f(shapeInfo.vertices[i*3], shapeInfo.vertices[i*3+1], shapeInfo.vertices[i*3+2]);
-        }
-        geometryInfo.setCoordinates(vertices);
-        geometryInfo.setCoordinateIndices(shapeInfo.triangles);
-        
-        Appearance appearance = new Appearance();
-
-        PolygonAttributes pa = new PolygonAttributes();
-        pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
-        pa.setCullFace(PolygonAttributes.CULL_NONE);
-        pa.setBackFaceNormalFlip(true);
-        appearance.setPolygonAttributes(pa);
-
-        if(shapeInfo.appearanceIndex >= 0){
-            AppearanceInfo appearanceInfo = appearances[shapeInfo.appearanceIndex];
-
-            setColors(geometryInfo, shapeInfo, appearanceInfo);
-            setNormals(geometryInfo, shapeInfo, appearanceInfo);
-
-            if(appearanceInfo.materialIndex >= 0)
-                setMaterial( appearance, materials[appearanceInfo.materialIndex] );      
-
-            if(appearanceInfo.textureIndex >= 0 ){
-                setTexture( appearance, textures[appearanceInfo.textureIndex] );
-            
-                int numTexCoordinate = appearanceInfo.textureCoordinate.length / 2;
-                Point2f[] texCoordinate = new Point2f[numTexCoordinate];
-                for(int i=0, j=0; i<numTexCoordinate;  i++)
-                    texCoordinate[i] = new Point2f( appearanceInfo.textureCoordinate[j++], appearanceInfo.textureCoordinate[j++] );
-                geometryInfo.setTextureCoordinates(texCoordinate);
-                geometryInfo.setTextureCoordinateIndices(appearanceInfo.textureCoordIndices);               
-            }
-        }
-
-        Shape3D shape3D = new Shape3D(geometryInfo.getGeometryArray());
-        shape3D.setAppearance(appearance);
-
-        return shape3D;
-    }
-
-    private Primitive createShapePrimitive
-    (ShapeInfo shapeInfo, AppearanceInfo[] appearances, MaterialInfo[] materials, TextureInfo[] textures){
-
-        Appearance appearance = new Appearance();
-        PolygonAttributes pa = new PolygonAttributes();
-        pa.setCullFace(PolygonAttributes.CULL_NONE);
-        appearance.setPolygonAttributes(pa);
-        if(shapeInfo.appearanceIndex >= 0){
-            AppearanceInfo appearanceInfo = appearances[shapeInfo.appearanceIndex];
-            if(appearanceInfo.materialIndex >= 0)
-                setMaterial( appearance, materials[appearanceInfo.materialIndex] );
-            if(appearanceInfo.textureIndex >= 0 ){
-                setTexture( appearance, textures[appearanceInfo.textureIndex] );
-                TextureAttributes texAttrBase = new TextureAttributes();
-                Transform3D t3d = new Transform3D(new Matrix4d(
-                    appearanceInfo.textransformMatrix[0], appearanceInfo.textransformMatrix[1], appearanceInfo.textransformMatrix[2], 0,
-                    appearanceInfo.textransformMatrix[3], appearanceInfo.textransformMatrix[4], appearanceInfo.textransformMatrix[5], 0, 
-                    0, 0, 1, 0,
-                    0, 0, 0, 1 ));      
-                //System.out.println(t3d.toString());
-                texAttrBase.setTextureTransform(t3d);
-                appearance.setTextureAttributes(texAttrBase);
-            }
-        }
-
-        int flag = Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS | Primitive.ENABLE_GEOMETRY_PICKING;
-        if(shapeInfo.primitiveType == ShapePrimitiveType.SP_BOX ){
-            Box box = new Box((float)(shapeInfo.primitiveParameters[0]/2.0), (float)(shapeInfo.primitiveParameters[1]/2.0),
-                (float)(shapeInfo.primitiveParameters[2]/2.0), flag, appearance );
-            return box;
-        }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_CYLINDER ){
-            Cylinder cylinder = new Cylinder(shapeInfo.primitiveParameters[0], shapeInfo.primitiveParameters[1],
-                flag, appearance );
-            if((int)shapeInfo.primitiveParameters[2]==0)  //TOP
-                cylinder.removeChild(cylinder.getShape(Cylinder.TOP));
-            if((int)shapeInfo.primitiveParameters[3]==0)  //BOTTOM
-                cylinder.removeChild(cylinder.getShape(Cylinder.BOTTOM));
-            if((int)shapeInfo.primitiveParameters[4]==0)  //SIDE
-                cylinder.removeChild(cylinder.getShape(Cylinder.BODY));
-            return cylinder;
-        }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_CONE ){
-            Cone cone = new Cone(shapeInfo.primitiveParameters[0], shapeInfo.primitiveParameters[1],
-                flag, appearance );
-            if((int)shapeInfo.primitiveParameters[2]==0)  //BOTTOM
-                cone.removeChild(cone.getShape(Cone.CAP));
-            if((int)shapeInfo.primitiveParameters[3]==0)  //SIDE
-                cone.removeChild(cone.getShape(Cone.BODY));
-            return cone;
-        }else if( shapeInfo.primitiveType == ShapePrimitiveType.SP_SPHERE ){
-            Sphere sphere = new Sphere(shapeInfo.primitiveParameters[0], flag, appearance );
-            return sphere;
-        }
-
-        return null; 
-    }
 
     /**
      * @brief
@@ -701,7 +594,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         private LineArray nline = null;
 
         public NormalRender(GeometryArray geom, float scale, Matrix4d T) {
-            
+
             Point3f[] vertices = new Point3f[geom.getVertexCount()];
             Vector3f[] normals = new Vector3f[geom.getVertexCount()];
             for (int i=0; i<geom.getVertexCount(); i++) {
@@ -717,7 +610,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 T.transform(normals[i]);
                 normals[i].normalize();
                 T.transform(vertices[i]);
-                
+
                 nvertices[n++] = new Point3f( vertices[i] );
                 nvertices[n++] = new Point3f( vertices[i].x + scale * normals[i].x,
                                               vertices[i].y + scale * normals[i].y,
@@ -726,166 +619,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             nline = new LineArray(nvertices.length, GeometryArray.COORDINATES);
             nline.setCoordinates(0, nvertices);
         }
-        
+
         public LineArray getLineArray() { return nline; }
     }
 
-    private void setMaterial(Appearance appearance, MaterialInfo materialInfo){
-        if(materialInfo.transparency > 0.0f){
-            TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
-            appearance.setTransparencyAttributes(ta);
-        }
-        if(materialInfo != null){
-            appearance.setMaterial(createMaterial(materialInfo));
-        }        
-    }
 
-    private void setTexture( Appearance appearance, TextureInfo textureInfo ){
-        TextureInfoLocal texInfo = new TextureInfoLocal(textureInfo);
-        if(texInfo.url.length()==0){
-            if((texInfo.width != 0) && (texInfo.height != 0)){
-                ImageComponent2D icomp2d = texInfo.readImage;
-                Texture2D texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
-                texture2d.setImage(0, icomp2d);
-                appearance.setTexture(texture2d);
-            }
-        }else{
-            //System.out.println("url: "+texInfo.url);
-            TextureLoader tloader = new TextureLoader(texInfo.url, null);  
-            Texture texture = tloader.getTexture();
-            appearance.setTexture(texture);
-        }
-        TextureAttributes texAttrBase =  new TextureAttributes();
-        texAttrBase.setTextureMode(TextureAttributes.REPLACE);
-        appearance.setTextureAttributes(texAttrBase);
-    }
-
-    private void setColors(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
-
-        int numColors = appearanceInfo.colors.length / 3;
-
-        if(numColors > 0){
-            float[] orgColors = appearanceInfo.colors;
-            Color3f[] colors = new Color3f[numColors];
-            for(int i=0; i < numColors; ++i){
-                colors[i] = new Color3f(orgColors[i*3], orgColors[i*3+1], orgColors[i*3+2]);
-            }
-            geometryInfo.setColors(colors);
-            
-            int[] orgColorIndices = appearanceInfo.colorIndices;
-            int numOrgColorIndices = orgColorIndices.length;
-            int numTriangles = shapeInfo.triangles.length / 3;
-            int[] colorIndices = new int[numTriangles * 3];
-                
-            if(numOrgColorIndices > 0){
-                if(appearanceInfo.colorPerVertex){
-                    colorIndices = orgColorIndices;
-                } else {
-                    int pos = 0;
-                    for(int i=0; i < numTriangles; ++i){
-                        int colorIndex = orgColorIndices[i];
-                        for(int j=0; j < 3; ++j){
-                            colorIndices[pos++] = colorIndex;
-                        }
-                    }
-                }
-            } else {
-                if(appearanceInfo.colorPerVertex){
-                    for(int i=0; i < colorIndices.length; ++i){
-                        colorIndices[i] = shapeInfo.triangles[i];
-                    }
-                } else {
-                    int pos = 0;
-                    for(int i=0; i < numTriangles; ++i){
-                        for(int j=0; j < 3; ++j){
-                            colorIndices[pos++] = i;
-                        }
-                    }                        
-                    
-                }
-            }
-            geometryInfo.setColorIndices(colorIndices);
-        }
-    }
-
-
-    private void setNormals(GeometryInfo geometryInfo, ShapeInfo shapeInfo, AppearanceInfo appearanceInfo) {
-
-        int numNormals = appearanceInfo.normals.length / 3;
-
-        if(numNormals == 0){
-            NormalGenerator ng = new NormalGenerator(appearanceInfo.creaseAngle);
-            ng.generateNormals(geometryInfo);
-            
-        } else {
-
-            float[] orgNormals = appearanceInfo.normals;
-            Vector3f[] normals = new Vector3f[numNormals];
-            for(int i=0; i < numNormals; ++i){
-                normals[i] = new Vector3f(orgNormals[i*3], orgNormals[i*3+1], orgNormals[i*3+2]);
-            }
-            geometryInfo.setNormals(normals);
-
-            int[] orgNormalIndices = appearanceInfo.normalIndices;
-            int numOrgNormalIndices = orgNormalIndices.length;
-            int numTriangles = shapeInfo.triangles.length / 3;
-            int[] normalIndices = new int[numTriangles * 3];
-                
-            if(numOrgNormalIndices > 0){
-                if(appearanceInfo.normalPerVertex){
-                    normalIndices = orgNormalIndices;
-                } else {
-                    int pos = 0;
-                    for(int i=0; i < numTriangles; ++i){
-                        int normalIndex = orgNormalIndices[i];
-                        for(int j=0; j < 3; ++j){
-                            normalIndices[pos++] = normalIndex;
-                        }
-                    }
-                }
-            } else {
-                if(appearanceInfo.normalPerVertex){
-                    for(int i=0; i < normalIndices.length; ++i){
-                        normalIndices[i] = shapeInfo.triangles[i];
-                    }
-                } else {
-                    int pos = 0;
-                    for(int i=0; i < numTriangles; ++i){
-                        for(int j=0; j < 3; ++j){
-                            normalIndices[pos++] = i;
-                        }
-                    }                        
-                    
-                }
-            }
-
-            geometryInfo.setNormalIndices(normalIndices);
-        }
-    }
-
-
-    private Material createMaterial(MaterialInfo materialInfo){
-
-        Material material = new Material();
-        
-        float[] dColor = materialInfo.diffuseColor;
-        material.setDiffuseColor(new Color3f(dColor[0], dColor[1], dColor[2]));
-
-        float[] sColor = materialInfo.specularColor;
-        material.setSpecularColor(new Color3f(sColor[0], sColor[1], sColor[2]));
-
-        float[] eColor = materialInfo.emissiveColor;
-        material.setEmissiveColor(new Color3f(eColor[0], eColor[1], eColor[2]));
-
-        float r = materialInfo.ambientIntensity;
-        material.setAmbientColor(new Color3f(r * dColor[0], r * dColor[1], r * dColor[2]));
-        
-        float shininess = materialInfo.shininess * 127.0f + 1.0f;
-        material.setShininess(shininess);
-        
-        return material;
-    }
-    
     /**
      * @brief set transformation of the root joint and all joint values
      * @param lpos transformation of the root joint
@@ -894,7 +632,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public void setCharacterPos(LinkPosition[] lpos, double[] q) {
         if (!update_)
             return;
-		
+
         boolean isAllPosProvided = true;
         for (int i=0; i<links_.size(); i++) {
             if (lpos[i].p == null || lpos[i].R == null)
@@ -902,12 +640,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             else
                 _setTransform(i, lpos[i].p, lpos[i].R);
         }
-		
+
         if (q != null) {
             for (int i=0; i<jointToLink_.length; i++)
                 links_.get(jointToLink_[i]).jointValue(q[i]);
         }
-		
+
         if (isAllPosProvided)
             _updateCoM();
         else
@@ -924,19 +662,23 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     /**
+     * @brief set transformation of the root joint
+     * @param pos position
+     * @param rot rotation matrix
+     */
+    public void setTransformRoot(double[] pos, double[] rot) {
+        _setTransform(0, pos, rot);
+    }
+
+    /**
      * @brief set transformation of linkId th joint
      * @param linkId id of the link
      * @param pos position
      * @param rot rotation matrix
      */
     private void _setTransform(int linkId, Vector3d pos, Matrix3d rot) {
-        TransformGroup tg = links_.get(linkId).tg_;
-        tg.getTransform(t3d_);
-        if (pos != null)
-            t3d_.set(pos);
-        if (rot != null)
-            t3d_.setRotation(rot);
-        tg.setTransform(t3d_);
+    	GrxLinkItem link = links_.get(linkId);
+    	if (link != null) link.setTransform(pos, rot);
     }
 
     /**
@@ -946,13 +688,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param rot rotation matrix
      */
     private void _setTransform(int linkId, double[] p, double[] R) {
-        Vector3d pos = null;
-        Matrix3d rot = null;
-        if (p != null)
-            pos = new Vector3d(p);
-        if (R != null)
-            rot = new Matrix3d(R);
-        _setTransform(linkId, pos, rot);
+    	GrxLinkItem link = links_.get(linkId);
+    	if (link != null) link.setTransform(p, R);
     }
 
     /**
@@ -962,7 +699,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public void setJointValue(String jname, double value) {
         GrxLinkItem l = getLinkInfo(jname);
-        if (l != null) 
+        if (l != null)
             l.jointValue(value);
     }
 
@@ -971,27 +708,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param values joint values
      */
     public void setJointValues(final double[] values) {
-        if (values.length != jointToLink_.length)
-            return;
-        for (int i=0; i<jointToLink_.length; i++) {
-            GrxLinkItem l = links_.get(jointToLink_[i]);
-            l.jointValue(values[i]);
-        }
+    	rootLink().jointValue(values);
     }
 
     /**
-     * @brief modify joint value If it exceeds limit values
+     * @brief modify joint value if it exceeds limit values
      */
     public void setJointValuesWithinLimit() {
-        for (int i = 1; i < links_.size(); i++) {
-            GrxLinkItem l = links_.get(i);
-            if (l.llimit_[0] < l.ulimit_[0]) {
-                if (l.jointValue() < l.llimit_[0])
-                    l.jointValue(l.llimit_[0]);
-                else if (l.ulimit_[0] < l.jointValue())
-                    l.jointValue(l.ulimit_[0]);
-            }
-        }
+        rootLink().setJointValuesWithinLimit();
     }
 
     /**
@@ -1001,11 +725,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         Transform3D t3d = new Transform3D();
         Matrix3d m3d = new Matrix3d();
         Vector3d v3d = new Vector3d();
-		
+
         rootTransformGroup().getTransform(t3d);
         t3d.get(m3d, v3d);
         setDblAry(rootLink().getName()+".translation", new double[]{v3d.x, v3d.y, v3d.z});
-		
+
         AxisAngle4d a4d = new AxisAngle4d();
         a4d.set(m3d);
         setDblAry(rootLink().getName()+".rotation", new double[]{a4d.x, a4d.y, a4d.z, a4d.angle});
@@ -1028,6 +752,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
     }
 
+    /**
+     * @brief computer forward kinematics
+     */
     public  void calcForwardKinematics() {
         rootLink().calcForwardKinematics();
         _updateCoM();
@@ -1038,11 +765,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             switchComZ0_.getWhichChild() == Switch.CHILD_ALL) {
             getCoM(v3d_);
             Vector3d vz0 = new Vector3d(v3d_);
-			
+
             _globalToRoot(v3d_);
             t3d_.set(v3d_);
             tgCom_.setTransform(t3d_);
-			
+
             vz0.z = 0.0;
             _globalToRoot(vz0);
             t3d_.set(vz0);
@@ -1050,6 +777,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
     }
 
+    /**
+     * @brief convert global position into robot local
+     * @param pos global position It is overwritten by robot local position
+     */
     private void _globalToRoot(Vector3d pos) {
         Transform3D t3d = new Transform3D();
         rootTransformGroup().getTransform(t3d);
@@ -1060,24 +791,21 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         t3d.transform(pos);
     }
 
+    /**
+     * @brief compute center of mass
+     * @pos computed center of mass
+     */
     public void getCoM(Vector3d pos) {
         pos.x = 0.0;
         pos.y = 0.0;
         pos.z = 0.0;
         double totalMass = 0.0;
-		
-        Vector3d absCom = new Vector3d();
-        Vector3d p = new Vector3d();
-        Transform3D t3d = new Transform3D();
+
         for (int i = 0; i < links_.size(); i++) {
-            totalMass += links_.get(i).mass();
-            absCom.set(links_.get(i).centerOfMass());
-            TransformGroup tg = links_.get(i).tg_;
-            tg.getTransform(t3d);
-            t3d.transform(absCom);
-            t3d.get(p);
-            absCom.add(p);
-            absCom.scale(links_.get(i).mass());
+        	GrxLinkItem link = links_.get(i);
+            totalMass += link.mass();
+            Vector3d absCom = link.absCoM();
+            absCom.scale(link.mass());
             pos.add(absCom);
         }
         pos.scale(1.0 / totalMass);
@@ -1087,7 +815,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         List<GrxSensorItem> l = sensorMap_.get(type);
         if (l == null)
             return null;
-		
+
         String[] ret = new String[l.size()];
         for (int i=0; i<ret.length; i++)
             ret[i] = l.get(i).getName();
@@ -1126,24 +854,24 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         Matrix3d mat = new Matrix3d();
         Vector3d vec = new Vector3d();
         t3d.get(mat, vec);
-		
+
         double[] ret = new double[12];
         vec.get(ret);
         ret[3] = mat.m00; ret[4] = mat.m01; ret[5] = mat.m02;
         ret[6] = mat.m10; ret[7] = mat.m11; ret[8] = mat.m12;
         ret[9] = mat.m20; ret[10]= mat.m21; ret[11]= mat.m22;
-		
+
         return ret;
     }
 
     public double[] getInitialTransformArray(String linkName) {
         double[] ret = getTransformArray(linkName);
-		
+
         double[] p = getDblAry(linkName+".translation", null);
         if (p != null && p.length == 3) {
             System.arraycopy(p, 0, ret, 0, 3);
         }
-		
+
         double[] r = getDblAry(linkName+".rotation", null);
         if (r != null && r.length == 4) {
             Matrix3d mat = new Matrix3d();
@@ -1151,8 +879,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             ret[3] = mat.m00; ret[4] = mat.m01; ret[5] = mat.m02;
             ret[6] = mat.m10; ret[7] = mat.m11; ret[8] = mat.m12;
             ret[9] = mat.m20; ret[10]= mat.m21; ret[11]= mat.m22;
-        } 
-		
+        }
+
         return ret;
     }
 
@@ -1174,7 +902,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         if (l != null)
             return l.jointValue();
         return 0.0;
-    } 
+    }
 
     public double[] getJointValues() {
         double[] vals = new double[jointToLink_.length];
@@ -1212,7 +940,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         if (!b) {
             bgRoot_.detach();
             for (int i=0; i<cameraList_.size(); i++)
-                cameraList_.get(i).getBranchGraph().detach();
+                cameraList_.get(i).getBranchGroup().detach();
         }
     }
 
@@ -1239,9 +967,45 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
     }
 
+    /**
+     * @brief switch display mode between fill and line
+     * @param b true to switch to line mode, false otherwise
+     */
     public void setWireFrame(boolean b) {
-        for (int i=0; i<shapeVector_.size(); i++) {
-            Shape3D s3d = (Shape3D)shapeVector_.get(i);
+    	setWireFrame(b, bgRoot_);
+    }
+    
+    /**
+     * @brief switch display mode between fill and line
+     * @param b true to switch to line mode, false otherwise
+     * @param node top of subtree to be processed
+     */
+    public void setWireFrame(boolean b, Node node){
+        if (node instanceof Switch) {
+            return;
+        } else if (node instanceof BranchGroup) {
+            BranchGroup bg = (BranchGroup) node;
+            for (int i = 0; i < bg.numChildren(); i++)
+                setWireFrame(b, bg.getChild(i));
+
+        } else if (node instanceof TransformGroup) {
+            TransformGroup tg = (TransformGroup) node;
+            for (int i = 0; i < tg.numChildren(); i++)
+                setWireFrame(b, tg.getChild(i));
+
+        } else if (node instanceof Group) {
+            Group g = (Group) node;
+            for (int i = 0; i < g.numChildren(); i++)
+                setWireFrame(b, g.getChild(i));
+
+        } else if (node instanceof Link) {
+            Link l = (Link) node;
+            SharedGroup sg = l.getSharedGroup();
+            for (int i = 0; i < sg.numChildren(); i++)
+                setWireFrame(b, sg.getChild(i));
+
+        } else if (node instanceof Shape3D) {
+            Shape3D s3d = (Shape3D) node;
             Appearance app = s3d.getAppearance();
             if (app != null) {
                 PolygonAttributes pa = app.getPolygonAttributes();
@@ -1251,12 +1015,48 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
                 }
             }
-        }
+        }    	
     }
 
+    /**
+     * @brief 
+     * @param b
+     */
     public void setTransparencyMode(boolean b) {
-        for (int i=0; i<shapeVector_.size(); i++) {
-            Shape3D s3d = (Shape3D)shapeVector_.get(i);
+    	setTransparencyMode(b, bgRoot_);
+    }
+
+    /**
+     * @brief
+     * @param b
+     * @param node
+     */
+    private void setTransparencyMode(boolean b, Node node) {
+        if (node instanceof Switch) {
+            return;
+        } else if (node instanceof BranchGroup) {
+            BranchGroup bg = (BranchGroup) node;
+            for (int i = 0; i < bg.numChildren(); i++)
+                setTransparencyMode(b, bg.getChild(i));
+
+        } else if (node instanceof TransformGroup) {
+            TransformGroup tg = (TransformGroup) node;
+            for (int i = 0; i < tg.numChildren(); i++)
+                setTransparencyMode(b, tg.getChild(i));
+
+        } else if (node instanceof Group) {
+            Group g = (Group) node;
+            for (int i = 0; i < g.numChildren(); i++)
+                setTransparencyMode(b, g.getChild(i));
+
+        } else if (node instanceof Link) {
+            Link l = (Link) node;
+            SharedGroup sg = l.getSharedGroup();
+            for (int i = 0; i < sg.numChildren(); i++)
+                setTransparencyMode(b, sg.getChild(i));
+
+        } else if (node instanceof Shape3D) {
+            Shape3D s3d = (Shape3D) node;
             Appearance app = s3d.getAppearance();
             if (app != null) {
                 TransparencyAttributes ta = app.getTransparencyAttributes();
@@ -1270,10 +1070,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     }
                 }
             }
-        }
-    }
-    
-    private Switch createBall(double radius, Color3f c) {
+        }    	
+	}
+
+	private Switch createBall(double radius, Color3f c) {
         Material m = new Material();
         m.setDiffuseColor(c);
         m.setSpecularColor(0.01f, 0.10f, 0.02f);
@@ -1282,7 +1082,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         app.setMaterial(m);
         Node sphere = new Sphere((float)radius, Sphere.GENERATE_NORMALS, app);
         sphere.setPickable(false);
-		
+
         Transform3D trans = new Transform3D();
         trans.setTranslation(new Vector3d(0.0, 0.0, 0.0));
         trans.setRotation(new AxisAngle4d(1.0, 0.0, 0.0, 0.0));
@@ -1291,7 +1091,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
         tg.addChild(sphere);
-		
+
         Switch ret = new Switch();
         ret.setCapability(Switch.ALLOW_CHILDREN_EXTEND);
         ret.setCapability(Switch.ALLOW_CHILDREN_READ);
@@ -1299,223 +1099,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         ret.setCapability(Switch.ALLOW_SWITCH_READ);
         ret.setCapability(Switch.ALLOW_SWITCH_WRITE);
         ret.addChild(tg);
-		
+
         return ret;
     }
 
-
-
-    // ##### [Changed] NewModelLoader.IDL
-    //==================================================================================================
-    /*!
-      @brief		"TextureInfoLocal" class
-      @author		ErgoVision
-      @version	0.00
-      @date		2008-04-06 M.YASUKAWA <BR>
-      @note		2008-04-06 M.YASUKAWA modify <BR>
-      @note		"TextureInfoLocal" class
-    */
-    //==================================================================================================
-    public class TextureInfoLocal
-    {
-//		public	ImageData		image;
-        public	short			numComponents;
-        public	short			width;
-        public	short			height;
-        public	boolean			repeatS;
-        public	boolean			repeatT;
-        private  BufferedImage	bimageRead;
-        public  ImageComponent2D readImage;
-        String url;
-
-        public TextureInfoLocal(TextureInfo texinfo) {
-            width = texinfo.width;
-            height = texinfo.height;
-            numComponents = texinfo.numComponents;
-            repeatS = texinfo.repeatS;
-            repeatT = texinfo.repeatT;
-            url = texinfo.url;
-
-
-            if((width == 0) || (height == 0)){
-//System.out.println( "   TextureInfoLocal width = 0  & height = 0  => No Generate " );
-                numComponents = 3;
-                repeatS = false;
-                repeatT = false;
-                bimageRead = null;
-                width = 0;
-                height = 0;
-                return;
-            }
-            
-            // set TextureInfo image
-//System.out.println( "   TextureInfo.image  " );
-            // create color infomation for reading color buffer
-            // type int, (Alpha:8bit,) R:8bit, G:8bit, B:8bit
-            BufferedImage bimageRead = null;
-            readImage = null;
-            
-            bimageRead = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            
-            //int[] imagefield =((DataBufferInt)bimageRead.getRaster().getDataBuffer()).getData();
-            //System.out.println( "   imagefield =((DataBufferInt)bimageRead.getRaster().getDataBuffer()).getData()" );			
-            byte mByteCode;
-            byte rByteCode;
-            byte gByteCode;
-            byte bByteCode;
-            byte aByteCode;
-            int mCode;
-            int rCode;
-            int gCode;
-            int bCode;
-            int aCode;
-            int rgbCode;
-            int[] pixels;
-            pixels = ( (DataBufferInt)bimageRead.getRaster().getDataBuffer() ).getData();
-            int img_i=0;
-            int img_j=0;
-            int imgsize = texinfo.image.length;
-            int imgrgbsize = imgsize/3;
-            //System.out.println( "   texinfo.image.length   = " + imgsize + " imgrgbsize = " + imgrgbsize );
-            
-            for(int img_a=0; img_a<imgrgbsize; img_a++){
-                
-                switch (numComponents) {
-                    
-                    // 1byte:Kido MonoColor
-                case 1:
-                    
-                    mByteCode = (byte)(texinfo.image[img_a]);
-                    mCode = mByteCode & 0xFF;
-                    rCode = mCode;
-                    gCode = mCode;
-                    bCode = mCode;
-                    
-                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;	
-                    
-                    //            rgbCode =(  ( ((mByteCode) & 0xE0) << 16 ) | ( ((mByteCode) & 0xE0) << 13 ) | ( ((mByteCode) & 0x00C0) << 10 ) | 
-                    //( ((mByteCode) & 0x1C) << 11 ) | ( ((mByteCode) & 0x1C) <<  8 ) | ( ((mByteCode) & 0x0018) <<  5 ) | 
-                    //( ((mByteCode) & 0x03) <<  6 ) | ( ((mByteCode) & 0x03) <<  4 ) | 
-                    //( ((mByteCode) & 0x03) <<  2 ) | ( ((mByteCode) & 0x03)       ) );
-                    
-//System.out.println( "   bimageRead numComponents = 1 rgbCode: " + rgbCode );
-                    
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    
-                    break;
-                    
-                    // 1byte:Kido 2byte:Transparency
-                case 2:
-                    mByteCode = (byte)(texinfo.image[img_a]);
-                    mCode = mByteCode & 0xFF;
-                    aByteCode = (byte)(texinfo.image[img_a * 2 + 1]);
-                    aCode = aByteCode & 0xFF;
-                    rCode = mCode;
-                    gCode = mCode;
-                    bCode = mCode;
-                    
-                    //            rgbCode =(  ( ((mByteCode) & 0xE0) << 16 ) | ( ((mByteCode) & 0xE0) << 13 ) | ( ((mByteCode) & 0x00C0) << 10 ) | 
-                    //( ((mByteCode) & 0x1C) << 11 ) | ( ((mByteCode) & 0x1C) <<  8 ) | ( ((mByteCode) & 0x0018) <<  5 ) | 
-                    //( ((mByteCode) & 0x03) <<  6 ) | ( ((mByteCode) & 0x03) <<  4 ) | 
-                    //( ((mByteCode) & 0x03) <<  2 ) | ( ((mByteCode) & 0x03)       ) );
-                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;	
-                    
-                    rgbCode = aCode * 0x1000000 + rgbCode;
-                    
-//System.out.println( "   bimageRead numComponents = 2 rgbCode: " + rgbCode );
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    break;
-                    
-                    // RGB
-                case 3:
-                    rByteCode = (byte)(texinfo.image[img_a * 3]);
-                    rCode = rByteCode & 0xFF;
-                    gByteCode = (byte)(texinfo.image[img_a * 3 + 1]);
-                    gCode = gByteCode & 0xFF;
-                    bByteCode = (byte)(texinfo.image[img_a * 3 + 2]);
-                    bCode = bByteCode & 0xFF;
-//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ")");
-                    
-                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
-                    //img_i++;
-                    //if(img_i >= width){
-                    //    img_i = 0;
-                    //    img_j++;
-                    //}			
-                    
-                    break;
-                    
-                    // RGB+Transparency
-                case 4:
-                    rByteCode = (byte)(texinfo.image[img_a * 4]);
-                    rCode = rByteCode & 0xFF;
-                    gByteCode = (byte)(texinfo.image[img_a * 4 + 1]);
-                    gCode = gByteCode & 0xFF;
-                    bByteCode = (byte)(texinfo.image[img_a * 4 + 2]);
-                    bCode = bByteCode & 0xFF;
-                    aByteCode = (byte)(texinfo.image[img_a * 4 + 3]);
-                    aCode = aByteCode & 0xFF;
-//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ", Alfa: " + aCode + ")");
-                    
-                    rgbCode =  aCode * 0x1000000 + rCode * 0x10000 + gCode * 0x100 + bCode;
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
-                    //img_i++;
-                    //if(img_i >= width){
-                    //    img_i = 0;
-                    //    img_j++;
-                    //}	
-                    
-                    break;
-                    
-                default:
-                    rByteCode = (byte)(texinfo.image[img_a * 3]);
-                    rCode = rByteCode & 0xFF;
-                    gByteCode = (byte)(texinfo.image[img_a * 3 + 1]);
-                    gCode = gByteCode & 0xFF;
-                    bByteCode = (byte)(texinfo.image[img_a * 3 + 2]);
-                    bCode = bByteCode & 0xFF;
-//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ")");
-                    
-                    rgbCode = rCode * 65536 + gCode * 256 + bCode;
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
-                    //img_i++;
-                    //if(img_i >= width){
-                    //    img_i = 0;
-                    //    img_j++;
-                    //}		
-                    break;		
-                }
-                
-                img_i++;
-                if(img_i >= width){
-                    img_i = 0;
-                    img_j++;
-                }			
-            }
-            
-            
-            readImage = new ImageComponent2D(ImageComponent.FORMAT_RGB, bimageRead);
-//System.out.println( "   new ImageComponent2D(ImageComponent.FORMAT_RGB, bimageRead)"  );
-            
-            
-            
-        }
-    }
-    // ##### [Changed]
 
 
 
@@ -1534,12 +1121,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param color color
      */
     public void setJointColor(int jid, java.awt.Color color) {
-        if (color == null) 
+        if (color == null)
             setAmbientColorRecursive(links_.get(jointToLink_[jid]).tg_, new Color3f(0.0f, 0.0f, 0.0f));
         else
             setAmbientColorRecursive(links_.get(jointToLink_[jid]).tg_, new Color3f(color));
     }
-    
+
 
     private void setAmbientColorRecursive(Node node, Color3f color) {
     	if (node instanceof BranchGroup) {
@@ -1550,14 +1137,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             TransformGroup tg = (TransformGroup)node;
             for (int i = 0; i < tg.numChildren(); i++)
                 setAmbientColorRecursive(tg.getChild(i), color);
-    	} else if (node instanceof Group) {	
+    	} else if (node instanceof Group) {
             Group g = (Group)node;
             for (int i = 0; i < g.numChildren(); i++)
                 setAmbientColorRecursive(g.getChild(i), color);
     	} else if (node instanceof Link) {
     	    Link l = (Link)node;
     	    SharedGroup sg = l.getSharedGroup();
-    	    for (int i = 0; i < sg.numChildren(); i++) 
+    	    for (int i = 0; i < sg.numChildren(); i++)
     	    	setAmbientColorRecursive(sg.getChild(i), color);
     	} else if (node instanceof Shape3D) { // Is the node Shape3D ?
     	    Shape3D s3d = (Shape3D)node;
@@ -1572,4 +1159,64 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	}
     }
 
+
+    /* this method is disabled to hide paste menu 
+    public void paste(String clipVal){
+
+        Clipboard clp = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable data = clp.getContents(null);
+
+        String strClip = "";
+
+        if (data == null || !data.isDataFlavorSupported(DataFlavor.stringFlavor)){
+            strClip = "転送に失敗しました";
+        } else {
+            try {
+                strClip = (String)data.getTransferData( DataFlavor.stringFlavor );
+            } catch(Exception e) {
+                GrxDebugUtil.printErr("GrxModelItem.paste: " , e);
+            }
+        }
+    }
+    */
+    
+    /**
+     * @brief Override clone method
+     * @return GrxModelItem
+     */   
+    public GrxModelItem clone(){
+    	GrxModelItem ret = (GrxModelItem)super.clone();
+    	ret.bInfo_ = (BodyInfo)bInfo_._duplicate(); 
+    	//ret.bgRoot_ = (BodyInfo)bgRoot_.cloneTree();
+    	
+    	ret.links_ = new Vector<GrxLinkItem>(links_);
+    	//ret.activeLink_ = activeLink_.clone();
+/*    	
+	Deep copy suspension list
+
+    public BodyInfo bInfo_;
+
+    public BranchGroup bgRoot_ = new BranchGroup();
+    public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
+    public GrxLinkItem activeLink_;
+    private int[] jointToLink_; // length = joint number
+    private final Map<String, GrxLinkItem> linkMap_ = new HashMap<String, GrxLinkItem>();
+    private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
+    // sensor type name -> list of sensors
+    private final Map<String, List<GrxSensorItem>> sensorMap_ = new HashMap<String, List<GrxSensorItem>>();
+    // list of cameras
+    private List<Camera_impl> cameraList_ = new ArrayList<Camera_impl>();
+
+    private Switch switchCom_;
+    private TransformGroup tgCom_;
+    private Switch switchComZ0_;
+    private TransformGroup tgComZ0_;
+
+    // temporary variables for computation
+    private Transform3D t3d_ = new Transform3D();
+    private Vector3d v3d_ = new Vector3d();
+*/
+    	
+    	return ret;
+    }
 }

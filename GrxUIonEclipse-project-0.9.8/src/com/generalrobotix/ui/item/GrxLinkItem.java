@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST) 
+ * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 
 /*
@@ -17,45 +17,49 @@
 
 package com.generalrobotix.ui.item;
 
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Geometry;
+import javax.media.j3d.QuadArray;
+import javax.media.j3d.Shape3D;
+import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.AxisAngle4d;
+import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3d;
+import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import jp.go.aist.hrp.simulator.LinkInfo;
 import jp.go.aist.hrp.simulator.SensorInfo;
 
-import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
+
 @SuppressWarnings("serial")
-public class GrxLinkItem extends GrxBaseItem{
+public class GrxLinkItem extends GrxTransformItem{
 
 	private LinkInfo info_;
 
-    final public double[]	ulimit_;
-    final public double[]	llimit_;
-    final public double[]	uvlimit_;
-    final public double[]	lvlimit_;
-    
-    public GrxLinkItem parent_;
-    public Vector<GrxLinkItem> children_;
-    final public Vector<GrxSensorItem> sensors_;
+    // TODO remove cameras_
     public Vector<Camera_impl> cameras_;
-    public Vector<GrxShapeItem> shapes_;
-    
+
     private double  jointValue_;
-    public TransformGroup tg_;
-    public BranchGroup bg_;
 
     /**
      * @brief get inertia matrix
@@ -64,7 +68,7 @@ public class GrxLinkItem extends GrxBaseItem{
     public double [] inertia(){
     	return info_.inertia;
     }
-    
+
     /**
      * @brief get relative position of center of mass
      * @return position of center of mass relative to coordinates of this link
@@ -79,7 +83,7 @@ public class GrxLinkItem extends GrxBaseItem{
     public double[] jointAxis(){
     	return info_.jointAxis;
     }
-    
+
     /**
      * @brief get joint id
      * @return joint id
@@ -87,7 +91,7 @@ public class GrxLinkItem extends GrxBaseItem{
     public int jointId(){
     	return info_.jointId;
     }
-    
+
     /**
      * @brief get index of parent link in lInfo_
      * @return index of parent link
@@ -95,7 +99,7 @@ public class GrxLinkItem extends GrxBaseItem{
     public short parentIndex() {
     	return info_.parentIndex;
     }
-    
+
     /**
      * @brief get indices of child links in lInfo_
      * @return indices of child links
@@ -119,109 +123,124 @@ public class GrxLinkItem extends GrxBaseItem{
     public String jointType() {
     	return info_.jointType;
     }
-    
-    /**
-     * @brief delete this item and children
-     */
-    public void delete() {
-    	// delete children first
-    	while (children_.size() > 0){
-    		children_.get(0).delete();
-    	}
-    	while (sensors_.size() > 0){
-    		sensors_.get(0).delete();
-    	}
-    	while (shapes_.size() > 0){
-    		shapes_.get(0).delete();
-    	}
-    	// delete this link
-    	
-    	// TODO : implement delete this link
-    	super.delete();
-    	if (parent_ != null){
-    		parent_.removeLink(this);
-    	}
+
+    public double gearRatio(){
+    	return info_.gearRatio;
     }
-    
+
+    public double encoderPulse(){
+    	return info_.encoderPulse;
+    }
+
+    public double rotorInertia(){
+    	return info_.rotorInertia;
+    }
+
+    public double rotorResister(){
+    	return info_.rotorResistor;
+    }
+
+    public double torqueConst(){
+    	return info_.torqueConst;
+    }
+
+    public double [] ulimit(){
+    	return info_.ulimit;
+    }
+
+    public double [] llimit(){
+    	return info_.llimit;
+    }
+
+    public double [] uvlimit(){
+    	return info_.uvlimit;
+    }
+
+    public double [] lvlimit(){
+    	return info_.lvlimit;
+    }
     /**
      * @brief create and add a new link as a child
      * @param name name of the new link
      */
     public void addLink(String name){
     	System.out.println("GrxLinkItem.addLink("+name+") is called");
-    	// TODO : implement
+    	try{
+    		GrxLinkItem newLink = new GrxLinkItem(name, manager_);
+    		addLink(newLink);
+        	System.out.println("GrxLinkItem.addLink("+name+") is done");
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    	}
+    	manager_.reselectItems();
     }
-    
+
     /**
-     * @brief add a link as a child
-     * @param link link
+     * @brief add a child link
+     * @param child child link
      */
-    public void addLink(GrxLinkItem link){
-    	children_.add(link);
-    	link.parent_ = this;
+    public void addLink(GrxLinkItem child){
+    	children_.add(child);
+    	child.parent_ = this;
+    	BranchGroup bg = (BranchGroup)bg_.getParent();
+    	bg.addChild(child.bg_);
+    	child.calcForwardKinematics();
     }
-    
-    /**
-     * @brief remove a link from children
-     * @param link link
-     */
-    public void removeLink(GrxLinkItem link){
-    	children_.remove(link);
-    	bg_.detach();
-    }
-    
+
     /**
      * @brief create and add a new sensor as a child
      * @param name name of the new sensor
      */
     public void addSensor(String name){
-    	System.out.println("GrxLinkItem.addSensor("+name+") is called");
-    	// TODO : implement
+    	try{
+	    	SensorInfo info = new SensorInfo();
+	    	info.id = -1;
+	    	info.type = new String("Force");
+	    	info.translation = new double[]{0.0, 0.0, 0.0};
+	    	info.rotation = new double[]{0.0, 0.0, 1.0, 0.0};
+	    	info.specValues = new float[]{-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
+	    	GrxSensorItem sensor = new GrxSensorItem(name, manager_, info);
+	    	addSensor(sensor);
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    	}
+    	manager_.reselectItems();
+    }
+
+    /**
+     * @brief add child under this link
+     * @param child child
+     */
+    public void addShape(GrxTransformItem child){
+    	super.addChild(child);
+    	rebuildBoundingBox();
     }
     
+    /**
+     * @brief remove child
+     */
+    public void removeChild(GrxTransformItem child){
+    	super.removeChild(child);
+    	rebuildBoundingBox();
+    }
+
     /**
      * @brief add a sensor as a child
      * @param sensor sensor
      */
     public void addSensor(GrxSensorItem sensor){
-    	sensors_.add(sensor);
+    	addChild(sensor);
     	if (sensor.camera_ != null){
     		cameras_.add(sensor.camera_);
     	}
     }
-    
+
     public void removeSensor(GrxSensorItem sensor){
-    	sensors_.remove(sensor);
+    	removeChild(sensor);
     	if (sensor.camera_ != null){
     		cameras_.remove(sensor.camera_);
     		// TODO : GrxModelItem.cameraList_ must be updated
     	}
-    }
-    /**
-     * @brief create and add a new shape as a child
-     * @param url URL of the file where shape is described
-     */
-    public void addShape(String url){
-    	System.out.println("GrxLinkItem.addShape("+url+") is called");
-    	// TODO : implement
-    }
-
-    /**
-     * @brief add a shape as a child
-     * @param shape shape
-     */
-    public void addShape(GrxShapeItem shape){
-    	shapes_.add(shape);
-    	shape.parent_ = this;
-    	tg_.addChild(shape.bg_);
-    }
-    
-    /**
-     * @brief remove a shape from children
-     * @param shape shape
-     */
-    public void removeShape(GrxShapeItem shape){
-    	shapes_.remove(shape);
     }
     
     /**
@@ -232,7 +251,23 @@ public class GrxLinkItem extends GrxBaseItem{
     	jointValue_ = jv;
     	setDbl("angle", jointValue_);
     }
-    
+
+    /**
+     * @brief set new joint values recursively
+     * @param values new joint values
+     */
+	public void jointValue(double[] values) {
+		if (jointId() >= 0 && jointId() < values.length){
+			jointValue(values[jointId()]);
+		}
+		for (int i=0; i<children_.size(); i++){
+			if (children_.get(i) instanceof GrxLinkItem){
+				GrxLinkItem link = (GrxLinkItem)children_.get(i);
+				link.jointValue(values);
+			}
+		}
+	}
+
     /**
      * @brief get current joint value
      * @return joint value
@@ -240,18 +275,52 @@ public class GrxLinkItem extends GrxBaseItem{
     public double jointValue(){
     	return jointValue_;
     }
-    
+
+    /**
+     * @brief compute CoM in global frame
+     * @return computed CoM
+     */
+    public Vector3d absCoM(){
+        Vector3d absCom = new Vector3d();
+        Vector3d p = new Vector3d();
+        Transform3D t3d = new Transform3D();
+        absCom.set(centerOfMass());
+        tg_.getTransform(t3d);
+        t3d.transform(absCom);
+        t3d.get(p);
+        absCom.add(p);
+        return absCom;
+    }
     /**
      * @brief properties are set to robot
      */
     public void propertyChanged() {
+    	//System.out.println("GrxLinkItem::propertyChanged()");
     	super.propertyChanged();
     	jointValue_ = getDbl("angle", 0.0);
     	info_.translation = getDblAry("translation",null);
     	info_.rotation = getDblAry("rotation", null);
+    	info_.jointAxis = getDblAry("jointAxis", null);
+    	// TODO rebuild axis shape
+    	info_.jointType = getStr("jointType", null);
     	calcForwardKinematics();
+    	// joint properties
+    	info_.jointId = getShort("jointId", null);
+    	info_.ulimit = getDblAry("ulimit", null);
+    	info_.llimit = getDblAry("llimit", null);
+    	info_.uvlimit = getDblAry("uvlimit", null);
+    	info_.lvlimit = getDblAry("lvlimit", null);
+    	// motor & gear properties
+    	info_.torqueConst = getDbl("torqueConst", null);
+    	info_.rotorResistor = getDbl("rotorResistor", null);
+    	info_.encoderPulse = getDbl("encoderPulse", null);
+    	info_.gearRatio = getDbl("gearRatio", null);
+    	// mass properties
+    	info_.centerOfMass = getDblAry("centerOfMass", null);
+    	info_.mass = getDbl("mass", null);
+    	info_.inertia = getDblAry("inertia", null);
     }
-    
+
     /**
      * @brief get translation relative to the parent joint
      * @return translation
@@ -259,7 +328,7 @@ public class GrxLinkItem extends GrxBaseItem{
     public double[] translation(){
     	return info_.translation;
     }
-    
+
     /**
      * @brief get axis and angle relative to the parent link
      * @return axis and angle
@@ -300,22 +369,56 @@ public class GrxLinkItem extends GrxBaseItem{
             }
             t3dp.mul(t3d);
             tg_.setTransform(t3dp);
+        }else{
+        	v3d.set(translation());
+        	t3d.setTranslation(v3d);
+        	t3d.setRotation(new AxisAngle4d(rotation()));
+        	tg_.setTransform(t3d);
         }
         for (int i=0; i<children_.size(); i++){
-        	children_.get(i).calcForwardKinematics();
+        	if (children_.get(i) instanceof GrxLinkItem){
+        		GrxLinkItem link = (GrxLinkItem)children_.get(i);
+        		link.calcForwardKinematics();
+        	}
         }
 
     }
-    
-    /**
+
+    protected GrxLinkItem(String name, GrxPluginManager manager){
+    	super(name, manager);
+		info_ = new LinkInfo();
+		info_.translation = new double[]{0.0, 0.0, 0.0};
+		info_.rotation = new double[]{0.0, 0.0, 1.0, 0.0};
+		info_.centerOfMass = new double[]{0.0, 0.0, 0.0};
+		info_.inertia = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+		info_.jointAxis = new double[]{0.0, 0.0, 1.0};
+		info_.jointId = -1;
+		info_.gearRatio = 1.0;
+		info_.jointType = new String("rotate");
+		info_.encoderPulse = 1.0;
+		info_.torqueConst = 1.0;
+		info_.ulimit = new double[]{};
+		info_.llimit = new double[]{};
+		info_.uvlimit = new double[]{};
+		info_.lvlimit = new double[]{};
+    	_init();
+    }
+	/**
      * @constructor
      * @param info link information retrieved through ModelLoader
      */
 	protected GrxLinkItem(String name, GrxPluginManager manager, LinkInfo info) {
 		super(name, manager);
-		
+		info_ = info;
+		_init();
+    }
+
+	/**
+	 * @brief initialize menu
+	 */
+	private void _initMenu(){
 		getMenu().clear();
-		
+
 		Action item;
 
 		// rename
@@ -347,47 +450,86 @@ public class GrxLinkItem extends GrxBaseItem{
 
 		// menu item : add joint
 		item = new Action(){
-				public String getText(){
-					return "add joint";
-				}
-				public void run(){
-					InputDialog dialog = new InputDialog( null, null,
-							"Input name of new joint", null,null);
-					if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
-						addLink( dialog.getValue() );
-				}
-		};
-		setMenuItem(item);
-	
-		// menu item : add sensor
-		item = new Action(){
-				public String getText(){
-					return "add sensor";
-				}
-				public void run(){
-					InputDialog dialog = new InputDialog( null, null,
-							"Input name of new sensor", null,null);
-					if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
-						addSensor( dialog.getValue() );
-				}
-		};
-		setMenuItem(item);
-	
-		// menu item : add shape
-		item = new Action(){
-				public String getText(){
-					return "add shape";
-				}
-				public void run(){
-					InputDialog dialog = new InputDialog( null, null,
-							"Input name of new shape", null,null);
-					if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
-						addShape( dialog.getValue() );
-				}
+			public String getText(){
+				return "add joint";
+			}
+			public void run(){
+				InputDialog dialog = new InputDialog( null, null,
+						"Input name of new joint", null,null);
+				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
+					addLink( dialog.getValue() );
+			}
 		};
 		setMenuItem(item);
 
-    	info_ = info;
+		// menu item : add sensor
+		item = new Action(){
+			public String getText(){
+				return "add sensor";
+			}
+			public void run(){
+				InputDialog dialog = new InputDialog( null, null,
+						"Input name of new sensor", null,null);
+				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
+					addSensor( dialog.getValue() );
+			}
+		};
+		setMenuItem(item);
+
+		// menu item : add shape
+		item = new Action(){
+			public String getText(){
+				return "add shape from VRML97";
+			}
+			public void run(){
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+				FileDialog fdlg = new FileDialog( window.getShell(), SWT.OPEN);
+				String fPath = fdlg.open();
+				System.out.println("fPath = "+fPath);
+				if( fPath != null ) {
+					addShape( fPath );
+				}
+			}
+		};
+        setMenuItem(item);
+
+        /* diable copy and paste menus until they are implemented
+        // menu item : copy
+        item = new Action(){
+            public String getText(){
+                return "copy";
+            }
+            public void run(){
+                GrxDebugUtil.println("GrxModelItem.GrxLinkItem copy Action");
+                manager_.setSelectedGrxBaseItemList();
+            }
+        };
+        setMenuItem(item);
+
+        // menu item : paste
+        item = new Action(){
+            public String getText(){
+                return "paste";
+            }
+            public void run(){
+            }
+        };
+		setMenuItem(item);
+		*/
+
+	}
+	/**
+	 * @brief common initialization
+	 */
+	private void _init(){
+		_initMenu();
+		
+        cameras_ = new Vector<Camera_impl>();
+
+        jointValue(0);
+
+        setIcon("joint.png");
 
     	setDblAry("translation", info_.translation);
     	setDblAry("rotation", info_.rotation);
@@ -400,52 +542,176 @@ public class GrxLinkItem extends GrxBaseItem{
         setDblAry("llimit", info_.llimit);
         setDblAry("uvlimit", info_.uvlimit);
         setDblAry("lvlimit", info_.lvlimit);
+        setDbl("gearRatio", info_.gearRatio);
+        setDbl("torqueConst", info_.torqueConst);
+        setDbl("rotorInertia", info_.rotorInertia);
+        setDbl("rotorResistor", info_.rotorResistor);
+        setDbl("encoderPulse", info_.encoderPulse);
         setProperty("jointId", String.valueOf(info_.jointId));
-        
-        if (info.ulimit == null || info.ulimit.length == 0) {
-            ulimit_ = new double[]{0.0};
-        } else {
-            ulimit_  = info.ulimit;
-        }
-        
-        if (info.llimit == null || info.llimit.length == 0){
-            llimit_ = new double[]{0.0};
-        } else {
-            llimit_ = info.llimit;
+
+        if (info_.ulimit == null || info_.ulimit.length == 0) {
+            info_.ulimit = new double[]{0.0};
         }
 
-        uvlimit_ = info.uvlimit;
-        lvlimit_ = info.lvlimit;
-        
-        children_ = new Vector<GrxLinkItem>();
+        if (info_.llimit == null || info_.llimit.length == 0){
+            info_.llimit = new double[]{0.0};
+        }
 
-        cameras_ = new Vector<Camera_impl>();
-        sensors_ = new Vector<GrxSensorItem>();
-        SensorInfo[] sinfo = info.sensors;
-        for (int i=0; i<sinfo.length; i++) {
-        	GrxSensorItem sensor = new GrxSensorItem(sinfo[i].name, manager, sinfo[i]);
-        	addSensor(sensor);
-            // TODO : sensorMap_ must be updated later
-            /*
-            List<GrxSensorItem> l = sensorMap_.get(sensor.type());
-            if (l == null) {
-                l = new ArrayList<SensorInfoLocal>();
-                sensorMap_.put(sensor.type(), l);
+        SensorInfo[] sinfo = info_.sensors;
+        if (sinfo != null){
+            for (int i=0; i<sinfo.length; i++) {
+            	GrxSensorItem sensor = new GrxSensorItem(sinfo[i].name, manager_, sinfo[i]);
+            	addSensor(sensor);
+                // TODO : sensorMap_ must be updated later
+                /*
+                List<GrxSensorItem> l = sensorMap_.get(sensor.type());
+                if (l == null) {
+                    l = new ArrayList<SensorInfoLocal>();
+                    sensorMap_.put(sensor.type(), l);
+                }
+                l.add(sensors.get(i));
+                */
+
             }
-            l.add(sensors.get(i));
-            */
-	
         }
+        Map<String, Object> userData = new Hashtable<String, Object>();
+        userData.put("linkInfo", this);
+        tg_.setUserData(userData);
+        tg_.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
         
-        shapes_ = new Vector<GrxShapeItem>();
+        Transform3D tr = new Transform3D();
+        tr.setIdentity();
+        tg_.setTransform(tr);
         
-        jointValue(0);
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+
+        modifier.init_ = true;
+        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        modifier._calcUpperLower(tg_, tr);
         
-        tg_ = new TransformGroup();
-        bg_ = new BranchGroup();
-        bg_.setCapability(BranchGroup.ALLOW_DETACH);
-        bg_.addChild(tg_);
+        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+        Switch bbSwitch =  modifier._makeSwitchNode(modifier._makeBoundingBox(color));
+        tg_.addChild(bbSwitch);
+        userData.put("boundingBoxSwitch", bbSwitch);
+
+        Vector3d jointAxis = new Vector3d(jointAxis());
+        if (jointAxis != null) {
+            Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
+            tg_.addChild(axisSwitch);
+            userData.put("axisLineSwitch", axisSwitch);
+        }
+	}
+
+	/**
+	 * @brief rebuild bounding box which is displayed when this joint is selected
+	 */
+	private void rebuildBoundingBox(){
+        Transform3D tr = new Transform3D();
+        Transform3D org = new Transform3D();
+        tr.setIdentity();
+        tg_.getTransform(org);
+        tg_.setTransform(tr);
         
-        setIcon("joint.png");
-    }
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+        Hashtable<String, Object> userData = SceneGraphModifier.getHashtableFromTG(tg_);
+ 
+        modifier.init_ = true;
+        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        modifier._calcUpperLower(tg_, tr);
+        
+        Switch bbSwitch =  (Switch)userData.get("boundingBoxSwith");
+    	Shape3D shapeNode = (Shape3D)bbSwitch.getChild(0);
+    	Geometry gm = (Geometry)shapeNode.getGeometry(0);
+
+    	Point3f[] p3fW = modifier._makePoints();
+    	if (gm instanceof QuadArray) {
+    		QuadArray qa = (QuadArray) gm;
+    		qa.setCoordinates(0, p3fW);
+		}
+	}
+	
+    /**
+     * @brief Override clone method
+     * @return GrxLinkItem
+     */
+	public GrxLinkItem clone(){
+		GrxLinkItem ret = (GrxLinkItem)super.clone();
+/*    	
+	Deep copy suspension list
+*/
+		
+		return ret;
+	}
+
+	/**
+	 * @brief set new position and rotation
+	 * @param pos new position
+	 * @param rot new rotation
+	 */
+	public void setTransform(Vector3d pos, Matrix3d rot) {
+    	if (pos != null){
+    		double[] newpos = new double[3];
+    		pos.get(newpos);
+        	setDblAry("translation", newpos);
+    	}
+    	if (rot != null){
+    		AxisAngle4d a4d = new AxisAngle4d();
+    		a4d.set(rot);
+    		double[] newrot = new double[4];
+    		a4d.get(newrot);
+    		setDblAry("rotation", newrot);
+    	}
+    	if (pos != null || rot != null)	propertyChanged();
+	}
+
+	/**
+	 * @brief set new position and rotation
+	 * @param pos new position(length = 3)
+	 * @param rot new rotation(length = 9)
+	 */
+	public void setTransform(double[] pos, double[] rot) {
+    	if (pos != null){
+        	setDblAry("translation", pos);
+    	}
+    	if (rot != null){
+    		Matrix3d m3d = new Matrix3d(rot);
+    		AxisAngle4d a4d = new AxisAngle4d();
+    		a4d.set(m3d);
+    		double[] newrot = new double[4];
+    		a4d.get(newrot);
+    		setDblAry("rotation", newrot);
+    	}
+    	if (pos != null || rot != null)	propertyChanged();
+	}
+
+	/**
+	 * @brief set new position and rotation
+	 * @param tform new transform
+	 */
+	public void setTransform(Transform3D trans) {
+		Vector3d pos = new Vector3d();
+		Matrix3d rot = new Matrix3d();
+		trans.get(rot, pos);
+		setTransform(pos, rot);
+	}
+
+	/**
+	 * @brief limit joint value within limits recursively
+	 */
+	public void setJointValuesWithinLimit() {
+        if (llimit() != null && ulimit() != null && llimit()[0] < ulimit()[0]) {
+            if (jointValue() < llimit()[0])
+                jointValue(llimit()[0]);
+            else if (ulimit()[0] < jointValue())
+                jointValue(ulimit()[0]);
+        }
+        for (int i=0; i<children_.size(); i++){
+        	if (children_.get(i) instanceof GrxLinkItem){
+        		GrxLinkItem link = (GrxLinkItem)children_.get(i);
+        		link.setJointValuesWithinLimit();
+        	}
+        }
+	}
+
+	
 }

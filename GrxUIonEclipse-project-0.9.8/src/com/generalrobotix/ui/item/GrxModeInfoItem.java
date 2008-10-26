@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST) 
+ * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 /*
  *  GrxModeInfoItem.java
@@ -44,7 +44,7 @@ public class GrxModeInfoItem extends GrxBaseItem {
 		setExclusive(true);
 	}
 
-	
+
 	public void restoreProperties() {
 		super.restoreProperties();
 		// アイテムプラグインの追加
@@ -52,7 +52,7 @@ public class GrxModeInfoItem extends GrxBaseItem {
 		for (int i = 0; i < list.getLength(); i++) {
 			Element el = (Element) list.item(i);
 			manager_.pluginLoader_.addURL(GrxXmlUtil.expandEnvVal(el.getAttribute("lib")));
-			Class cls = manager_.registerPlugin(el.getAttribute("class"));
+			Class cls = manager_.registerPlugin(el);
 			if ( cls != null && GrxBaseItem.class.isAssignableFrom(cls) &&
 					!activeItemClassList_.contains(cls)) {
 				activeItemClassList_.add((Class<? extends GrxBaseItem>)cls);
@@ -65,7 +65,7 @@ public class GrxModeInfoItem extends GrxBaseItem {
 			Element el = (Element) list.item(i);
 			manager_.pluginLoader_.addURL(GrxXmlUtil.expandEnvVal(el.getAttribute("lib")));
 			Class cls = manager_.registerPlugin(el.getAttribute("class"));
-			if (cls != null && 
+			if (cls != null &&
 					GrxBaseView.class.isAssignableFrom(cls) &&
 					!activeViewClassList_.contains(cls)) {
 				activeViewClassList_.add((Class<? extends GrxBaseView>)cls);

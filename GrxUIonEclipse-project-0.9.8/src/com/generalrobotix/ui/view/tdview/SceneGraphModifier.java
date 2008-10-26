@@ -61,13 +61,13 @@ public class SceneGraphModifier {
         return this_;
     }
 
-    public static Hashtable getHashtableFromTG(TransformGroup tg) {
+    public static Hashtable<String, Object> getHashtableFromTG(TransformGroup tg) {
         if (tg == null) 
 			return null; 
 
         Object userData = tg.getUserData();
         if (userData instanceof Hashtable) 
-            return (Hashtable)userData;
+            return (Hashtable<String, Object>)userData;
 
         return null;
     }
@@ -82,65 +82,61 @@ public class SceneGraphModifier {
      */
     public void modifyRobot(GrxModelItem robot) throws BadLinkStructureException
     {
-        TransformGroup tg = (TransformGroup)robot.getTransformGroupRoot(); // for GrxUI
+        TransformGroup tg = robot.getTransformGroupRoot(); // for GrxUI
         //_cloneGeometry(tg); // Geometry複製処理 
-        _cloneGeometry(robot.bgRoot_); // Geometry複製処理
+        //_cloneGeometry(robot.bgRoot_); // Geometry複製処理
 
         init_ = true;
         mode_ = CREATE_BOUNDS;
-        
-        // 全体を囲む
-	/*	for (int i=0; i<robot.lInfo_.length; i++) {
-			Transform3D t3d = new Transform3D();
-			robot.lInfo_[i].tg.getTransform(t3d);
-        	_calcUpperLower(robot.lInfo_[i].tg, t3d);
-		}*/
         
         Color3f color = new Color3f(0.0f, 1.0f, 0.0f);
         Switch bbSwitch = _makeSwitchNode(_makeBoundingBox(color));
         tg.addChild(bbSwitch);
 
         // スイッチノードをTGのユーザーデータ領域のストア
-        Hashtable<String, Switch> userData = (Hashtable<String, Switch>)tg.getUserData();
+        Hashtable<String, Object> userData = (Hashtable<String, Object>)tg.getUserData();
         userData.put("fullBoundingBoxSwitch", bbSwitch);
         tg.setUserData(userData);
     }
 
     /**
-     *
-     * @param  node         SimulationElementNode
+     * @brief rebuild bounding box which covers the whole body
+     * @param model model item
      */
-    public void resizeBounds(GrxModelItem node) {
+    public void resizeBounds(GrxModelItem model) {
         init_  = true;
         mode_ = RESIZE_BOUNDS;
 
         // ノードのRootのTransformGroupを取得
-        //TransformGroup tg = node.getTransformGroupRoot();
-        BranchGroup tg = node.bgRoot_;
-        for (int i = 0; i < tg.numChildren(); i++) {
-            try {
-                _calcUpperLower(tg.getChild(i), new Transform3D());
-            } catch (CapabilityNotSetException ex) {
-                ex.printStackTrace();
-            }
-        }
+        TransformGroup tg = model.getTransformGroupRoot();
+        Transform3D t3dLocal = new Transform3D();
+        tg.getTransform(t3dLocal);
+		t3dLocal.invert();
+		for (int i=0; i<model.links_.size(); i++) 
+        	_calcUpperLower(model.links_.get(i).tg_, t3dLocal);
 
-        // BoundingBoxを作成
-        // Switch_Nodeを検索
+    	Hashtable<String, Object> userdata = getHashtableFromTG(tg);
+		if (userdata == null) 
+			return;
+
+		Switch sw = (Switch)userdata.get("fullBoundingBoxSwitch");
         for (int i = 0; i < tg.numChildren(); i++) {
             Node childNode = (Node)tg.getChild(i);
-            if (childNode instanceof Switch) {
+            if (childNode instanceof Switch && childNode == sw) {
                 Group group = (Group)childNode;
-                Shape3D shapeNode = (Shape3D)group.getChild(0);
-                Geometry gm = (Geometry)shapeNode.getGeometry(0);
-
-                Point3f[] p3fW = _makePoints();
-                if (gm instanceof QuadArray) {  // added for GrxUI
-                	QuadArray qa = (QuadArray) gm;
-                	qa.setCoordinates(0, p3fW);  // 座標
-                }  								// added for GrxUI
+				if (group.getChild(0) instanceof Shape3D) {
+                	Shape3D shapeNode = (Shape3D)group.getChild(0);
+                	Geometry gm = (Geometry)shapeNode.getGeometry(0);
+	
+                	Point3f[] p3fW = _makePoints();
+                	if (gm instanceof QuadArray) {
+                		QuadArray qa = (QuadArray) gm;
+                		qa.setCoordinates(0, p3fW);  // 座標
+					}
+                }
             }
         }
+     
     }
 /*
     public void changeShadingMode(SimulationElementNode node, int mode) {
@@ -178,10 +174,9 @@ public class SceneGraphModifier {
     }
 
     /**
-     *
-     * @param  node
-     * @param  t3dParent
-     * @param  t3dDef
+     * @brief 
+     * @param node
+     * @param t3dParent
      */
     public  void _calcUpperLower(Node node, Transform3D t3dParent) {
         if (init_) {
@@ -325,7 +320,7 @@ public class SceneGraphModifier {
      * BoundingBoxを作成
      */
 
-    private Point3f[] _makePoints() {
+    public Point3f[] _makePoints() {
         Point3f[] points = new Point3f[24];
         points[0]  = new Point3f(upper_[0], upper_[1], upper_[2]); // A
         points[1]  = new Point3f(lower_[0], upper_[1], upper_[2]); // B
@@ -469,13 +464,18 @@ public class SceneGraphModifier {
      * Switch_Nodeを作成
      */
     public Switch _makeSwitchNode(Shape3D shape) {
+        Switch switchNode = _makeSwitchNode();
+        switchNode.addChild(shape);
+        return switchNode;
+    }
+
+    public Switch _makeSwitchNode() {
         Switch switchNode = new Switch();
         switchNode.setCapability(Switch.ALLOW_CHILDREN_EXTEND);
         switchNode.setCapability(Switch.ALLOW_CHILDREN_READ);
         switchNode.setCapability(Switch.ALLOW_CHILDREN_WRITE);
         switchNode.setCapability(Switch.ALLOW_SWITCH_READ);
         switchNode.setCapability(Switch.ALLOW_SWITCH_WRITE);
-        switchNode.addChild(shape);
         //switchNode.setUserData(USERDATA_SWITCH);
         //switchNode.setWhichChild(Switch.CHILD_ALL);
         return switchNode;

@@ -206,12 +206,19 @@ public class GrxPropertyView extends GrxBaseView {
 
         @SuppressWarnings("unchecked")
         public void modify(Object element, String property, Object value) {
+            try{
             if (element instanceof TableItem && value instanceof String) {
                 TableItem item = (TableItem) element;
                 Map.Entry entry = (Map.Entry)item.getData();
                 entry.setValue((String)value);
                 currentPlugin_.propertyChanged();
                 item.setText(1, (String) value);
+                table_.setVisible(false);
+                viewer_.setInput(currentPlugin_);
+                table_.setVisible(true);
+            }
+            }catch(Exception ex){
+            	ex.printStackTrace();
             }
         }
 

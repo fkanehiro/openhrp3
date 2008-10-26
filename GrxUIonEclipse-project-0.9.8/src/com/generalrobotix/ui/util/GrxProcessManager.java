@@ -103,16 +103,7 @@ public class GrxProcessManager {
 		if (get(pi.id) != null)
 			return false;
 		process_.add(new AProcess(pi));
-		GrxDebugUtil.println("\nID: " + pi.id);
-		for (int i = 0; i < pi.com.size(); i++)
-			GrxDebugUtil.println("COM" + i + ": " + pi.com.get(i));
-		if (pi.env.size() > 0) {
-			for (int i = 0; i < pi.env.size(); i++)
-				GrxDebugUtil.println("ENV" + i + ": " + pi.env.get(i));
-		} else {
-			GrxDebugUtil.println("ENV: use parent process environment");
-		}
-		GrxDebugUtil.println("DIR: " + pi.dir);
+		pi.print();
 		return true;
 	}
 
@@ -243,13 +234,24 @@ public class GrxProcessManager {
 		public List<String> env = new ArrayList<String>();
 		public String dir = null;
 		public int waitCount = -1;
-		public String nsHost = null;
-		public int nsPort = -1;
 		public boolean isCorbaServer = false;
 		public boolean hasShutdown = false;
 		public boolean doKillall = false;
 		public boolean autoStart = true;
 		public boolean autoStop = true;
+		
+		public void print(){
+			GrxDebugUtil.println("\nID: " + id);
+			for (int i = 0; i < com.size(); i++)
+				GrxDebugUtil.println("COM" + i + ": " + com.get(i));
+			if (env.size() > 0) {
+				for (int i = 0; i < env.size(); i++)
+					GrxDebugUtil.println("ENV" + i + ": " + env.get(i));
+			} else {
+				GrxDebugUtil.println("ENV: use parent process environment");
+			}
+			GrxDebugUtil.println("DIR: " + dir);
+		}
 	}
 
 	public void createThread() {
@@ -455,7 +457,7 @@ public class GrxProcessManager {
 		}
 
 		public boolean stop() {
-			GrxDebugUtil.println("stop:stoping " + pi_.id);
+			GrxDebugUtil.println("[PMView] stop:stopping " + pi_.id);
 			// StatusOut.append("\nStopping "+pi_.id+" ... ");
 			if (isRunning()) {
 				if (pi_.hasShutdown) {
@@ -494,8 +496,7 @@ public class GrxProcessManager {
 		boolean shutdown() {
 			try {
 				// StatusOut.append("\nShutting down "+pi_.id+" ... ");
-				org.omg.CORBA.Object obj = GrxCorbaUtil.getReference(pi_.id,
-						pi_.nsHost, pi_.nsPort);
+				org.omg.CORBA.Object obj = GrxCorbaUtil.getReference(pi_.id);
 				ServerObject serverObj = ServerObjectHelper.narrow(obj);
 				serverObj.shutdown();
 				// StatusOut.append("OK\n");
@@ -638,7 +639,7 @@ public class GrxProcessManager {
 		}
 
 		org.omg.CORBA.Object getReference() {
-			return GrxCorbaUtil.getReference(pi_.id, pi_.nsHost, pi_.nsPort);
+			return GrxCorbaUtil.getReference(pi_.id);
 		}
         
 	}

@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST) 
+ * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 /*
  *  GrxBasePlugin.java
@@ -52,7 +52,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 
 	private Vector<Action> menu_ = new Vector<Action>();
 	private String[] menuPath_;
-	
+
 	private Document doc_;
 	protected Element element_;
 
@@ -80,8 +80,8 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			}
 		};
 		setMenuItem(a);
-		
-		// rename
+
+		// menu item : rename
 		Action item = new Action(){
 				public String getText(){
 					return "rename";
@@ -112,7 +112,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			setProperty(key, val);
 		}
 	}
-	
+
 	/**
 	 * @brief store properties
 	 * @return
@@ -120,7 +120,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public Element storeProperties() {
 		if (doc_ == null)
 			return null;
-		
+
 		if (element_ != null) {
 			Node n = element_.getParentNode();
 			if (n != null)
@@ -128,15 +128,15 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		}
 
 		String tag = (this instanceof GrxBaseItem) ? ITEM_TAG:VIEW_TAG;
-		element_ = doc_.createElement(tag); 
-		
+		element_ = doc_.createElement(tag);
+
 		element_.setAttribute("class",getClass().getName());
 		element_.setAttribute("name", getName());
 		element_.setAttribute("select", String.valueOf(isSelected()));
 		if (getURL(false) != null)
 			element_.setAttribute("url", getURL(false));
 		element_.appendChild(doc_.createTextNode("\n"));
-		
+
 		Enumeration keys = propertyNames();
 		while (keys.hasMoreElements()) {
 			String key = (String)keys.nextElement();
@@ -147,18 +147,18 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			Element propEl = doc_.createElement(GrxProjectItem.PROPERTY_TAG);
 			propEl.setAttribute("name",  key);
 			propEl.setAttribute("value", val);
-			
+
 			element_.appendChild(doc_.createTextNode(INDENT4+INDENT4+INDENT4));
 			element_.appendChild(propEl);
 			element_.appendChild(doc_.createTextNode("\n"));
 		}
-		element_.appendChild(doc_.createTextNode(INDENT4+INDENT4));	
-		
+		element_.appendChild(doc_.createTextNode(INDENT4+INDENT4));
+
 		return element_;
 	}
 
 	/**
-	 * @brief set name 
+	 * @brief set name
 	 * @param name name
 	 */
 	public void setName(String name) {
@@ -181,7 +181,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public final String toString() {
 		return name_;
 	}
-	
+
 	/**
 	 * @brief set document
 	 * @param doc document
@@ -265,7 +265,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public void setMenuItem( Action a ) {
 		menu_.add(a);
 	}
-	
+
 	/**
 	 * @brief get menu
 	 * @return menu
@@ -273,7 +273,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public Vector<Action> getMenu() {
 		return menu_;
 	}
-	
+
 	/**
 	 * @brief set menu path
 	 * @param path menu path
@@ -291,7 +291,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	};
 
 	/**
-	 * @brief check whether obj equals to this 
+	 * @brief check whether obj equals to this
 	 * @param obj an object to be checked
 	 */
 	public boolean equals(Object obj) {
@@ -311,15 +311,16 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		else
 			return url_;
 	}
-	
+
 	/**
 	 * @brief set url
 	 * @param url
 	 */
 	public void setURL(String url) {
+		setProperty("url", url);
 		url_ =url;
 	}
-	
+
 	/**
 	 * @brief rename this item
 	 * @param newName new name
@@ -327,7 +328,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public void rename(String newName) {
 		manager_.renamePlugin(this, newName);
 	};
-	
+
 	/**
 	 * @brief get field
 	 * @param cls
@@ -346,7 +347,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
     }
 
     /**
-     * 
+     *
      */
 	public void propertyChanged() {
 		String name = getStr("name");
@@ -356,9 +357,36 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void shutdown() {
 
+	}
+	
+    /**
+     * @brief Override clone method
+     * @return GrxBasePlugin
+     */
+	public GrxBasePlugin clone(){
+		GrxBasePlugin ret = (GrxBasePlugin) super.clone();
+		
+		
+    	ret.setName(name_);
+    	ret.setURL(url_);
+    	
+/*    	
+ * 		Deep copy suspension list
+
+	private ImageRegistry ireg_;
+	private String iconName_;
+
+	private Vector<Action> menu_ = new Vector<Action>();
+	private String[] menuPath_;
+
+	private Document doc_;
+	protected Element element_;
+*/
+    	
+    	return ret;
 	}
 }

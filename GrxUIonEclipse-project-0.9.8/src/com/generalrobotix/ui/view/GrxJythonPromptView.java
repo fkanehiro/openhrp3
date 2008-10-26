@@ -58,6 +58,7 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxPythonScriptItem;
+import com.generalrobotix.ui.util.GrxCorbaUtil;
 
 @SuppressWarnings("serial")
 /**
@@ -416,9 +417,11 @@ public class GrxJythonPromptView extends GrxBaseView {
         String nsHost = manager_.getProjectProperty("nsHost");
         String nsPort = manager_.getProjectProperty("nsPort");
         if (nsHost == null)
-            nsHost = "localhost";
-        if (nsPort == null)
-            nsPort = "2809";
+            nsHost = GrxCorbaUtil.nsHost();
+        if (nsPort == null){
+        	Integer np = new Integer(GrxCorbaUtil.nsPort());
+            nsPort = np.toString();
+        }
             
         String NS_OPT = "-ORBInitRef NameService=corbaloc:iiop:"+nsHost+":"+nsPort+"/NameService";
         System.setProperty("NS_OPT", NS_OPT);

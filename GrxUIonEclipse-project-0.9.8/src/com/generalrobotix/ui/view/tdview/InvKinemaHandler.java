@@ -21,6 +21,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
+
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.sun.j3d.utils.picking.*;
 
 class InvKinemaHandler extends OperationHandler {
@@ -276,7 +278,7 @@ class InvKinemaHandler extends OperationHandler {
     }
 
     private boolean _enableBoundingBoxFrom(TransformGroup tg) {
-        Hashtable hashTable = SceneGraphModifier.getHashtableFromTG(tg);
+        Hashtable<String, Object> hashTable = SceneGraphModifier.getHashtableFromTG(tg);
 
         bbSwitchFrom_ = (Switch)hashTable.get("boundingBoxSwitch");
         if (bbSwitchFrom_ == null) {
@@ -288,7 +290,8 @@ class InvKinemaHandler extends OperationHandler {
             return false;
         }
         
-        String jointName = (String)hashTable.get("jointName");
+        GrxLinkItem link = (GrxLinkItem)hashTable.get("linkInfo");
+        String jointName = link.getName();
         if (jointName == null) {
             return false;
         }
@@ -299,7 +302,7 @@ class InvKinemaHandler extends OperationHandler {
      }
 
     private boolean _enableBoundingBoxTo(TransformGroup tg) {
-        Hashtable hashTable = SceneGraphModifier.getHashtableFromTG(tg);
+        Hashtable<String, Object> hashTable = SceneGraphModifier.getHashtableFromTG(tg);
         if (bbSwitchTo_ != null) {
             bbSwitchTo_.setWhichChild(Switch.CHILD_NONE);
         }
@@ -312,10 +315,12 @@ class InvKinemaHandler extends OperationHandler {
             return false;
         }
      
+        GrxLinkItem link = (GrxLinkItem)hashTable.get("linkInfo");
+        String jointName = link.getName();
         if (bbSwitchTo_ != null && 
         		resolver_.setToJoint(
                 (String)hashTable.get("objectName"),
-                (String)hashTable.get("jointName"))) {
+                jointName)) {
             bbSwitchTo_.setWhichChild(Switch.CHILD_ALL);
             tgTarget_ = tg;
             return true;

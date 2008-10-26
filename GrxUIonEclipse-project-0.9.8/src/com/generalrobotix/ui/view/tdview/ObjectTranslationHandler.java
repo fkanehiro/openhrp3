@@ -23,6 +23,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.sun.j3d.utils.picking.*;
 
@@ -137,7 +138,9 @@ class ObjectTranslationHandler extends OperationHandler {
                 tr.set(mouse);
                 tgTarget_.getTransform(l2vw);
                 l2vw.mul(tr);
-                tgTarget_.setTransform(l2vw);
+                Hashtable<String, Object> hashtable = SceneGraphModifier.getHashtableFromTG(tgTarget_);
+                GrxLinkItem link = (GrxLinkItem)hashtable.get("linkInfo");
+                link.setTransform(l2vw);
                 _transformChanged(info);
          
                 prevPoint_.x = evt.getPoint().x;
@@ -179,7 +182,7 @@ class ObjectTranslationHandler extends OperationHandler {
     }
 
     private boolean _enableBoundingBox(TransformGroup tg, BehaviorInfo info) {
-        Hashtable hashTable = SceneGraphModifier.getHashtableFromTG(tg);
+        Hashtable<String, Object> hashTable = SceneGraphModifier.getHashtableFromTG(tg);
         if (hashTable == null) 
         	return false;
         
@@ -208,7 +211,7 @@ class ObjectTranslationHandler extends OperationHandler {
     }
 
     private void _transformChanged(BehaviorInfo info) {
-        Hashtable hashtable = SceneGraphModifier.getHashtableFromTG(tgTarget_);
+        Hashtable<String, Object> hashtable = SceneGraphModifier.getHashtableFromTG(tgTarget_);
         GrxModelItem model = (GrxModelItem)hashtable.get("object");
         if (model == null) {
             System.out.println("no manipulatable.");

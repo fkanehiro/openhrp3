@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST) 
+ * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 /*
  *  GrxBaseItem.java
@@ -20,7 +20,6 @@ package com.generalrobotix.ui;
 import java.io.File;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
@@ -28,14 +27,15 @@ import org.eclipse.swt.widgets.FileDialog;
 @SuppressWarnings("serial")
 
 /**
- * 
+ *
  */
 public class GrxBaseItem extends GrxBasePlugin {
 	private   Object value_ = null;
 	private   File defaultFileDir_;
 	protected File file_;
 	private   String ext_;
-	
+	protected String clipValue_ = "";
+
 	/**
 	 * @brief constructor
 	 * @param name name
@@ -58,7 +58,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	}
 
 	/**
-	 * @brief 
+	 * @brief
 	 * @return
 	 */
 	public boolean create() {
@@ -66,7 +66,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	};
 
 	/**
-	 * 
+	 *
 	 * @param file
 	 * @return
 	 */
@@ -74,7 +74,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 		file_ = file;
 		return true;
 	};
-	
+
 
 	/**
 	 * @brief delete this item
@@ -93,7 +93,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 			ext_ = (String)GrxBasePlugin.getField(this.getClass(), "FILE_EXTENSION", "");
 		return ext_;
 	}
-	
+
 	/**
 	 * @brief get default directory
 	 * @return default directory
@@ -119,20 +119,20 @@ public class GrxBaseItem extends GrxBasePlugin {
 	protected void setFileExtension(String ext) {
 		ext_ = ext;
 	}
-	
+
 	/**
 	 * set default directory
 	 * @param dir new default directory. If dir is invalid, home is set.
 	 */
 	protected void setDefaultDirectory(String dir) {
         String home = manager_.getHomePath();
-        if (home == null) 
+        if (home == null)
             home = "";
 		defaultFileDir_ = new File(dir);
 		if (!defaultFileDir_.isDirectory())
 			defaultFileDir_ = new File(home);
 	}
-	
+
 	/**
 	 * set value
 	 * @param o new value
@@ -140,7 +140,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	public void setValue(Object o) {
 		value_ = o;
 	}
-	
+
 	/**
 	 * choose a file to save
 	 * @return file to save
@@ -153,4 +153,28 @@ public class GrxBaseItem extends GrxBasePlugin {
 		else
 			return null;
 	}
+
+    /**
+     * @brief paste object
+     */
+    public void paste(String clipVal) {
+        clipValue_ = clipVal;
+    };
+
+    /**
+     * @brief Override clone method
+     * @return GrxBaseItem
+     */
+    public GrxBaseItem clone() {
+    	GrxBaseItem ret = (GrxBaseItem) super.clone();
+    	ret.setValue(value_);
+/*    	
+ * 		Deep copy suspension list
+    	ret.defaultFileDir_ = new File(defaultFileDir_.getPath());
+    	ret.file_ = new File(file_.getPath());
+    	ret.ext_ = new String(ext_);
+    	ret.clipValue_ = new String(clipValue_);
+*/
+    	return ret;
+    }
 }

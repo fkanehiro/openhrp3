@@ -69,6 +69,8 @@ import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxSensorItem;
+import com.generalrobotix.ui.item.GrxShapeItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
@@ -140,6 +142,7 @@ public class Grx3DView
     private JLabel lblValue_  = new JLabel("");
     
     private Shape3D coll;
+    private BranchGroup axes_;
     
     // for "Linux resize problem"
     Frame frame_;
@@ -222,10 +225,48 @@ public class Grx3DView
         BranchGroup bg = new BranchGroup();
         bg.addChild(coll);
         bgRoot_.addChild(bg);
+        
+        axes_ = createAxes();
+        
         setScrollMinSize();
     }
     
-    
+    public BranchGroup createAxes(){
+        Shape3D shape = new Shape3D();
+        shape.setPickable(false);
+        shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+        try {
+        	Appearance app = new Appearance();
+        	LineAttributes latt = new LineAttributes();
+        	latt.setLineWidth(LineWidth_);
+        	app.setLineAttributes(latt);
+        	shape.setAppearance(app);
+        	
+        	Point3d o = new Point3d(0.0, 0.0, 0.0);
+        	Point3d x = new Point3d(0.5, 0.0, 0.0);
+        	Point3d y = new Point3d(0.0, 0.5, 0.0);
+        	Point3d z = new Point3d(0.0, 0.0, 0.5);
+            Point3d[] p3d = {o,x,o,y,o,z};
+            LineArray la = new LineArray(p3d.length, LineArray.COLOR_3
+                    | LineArray.COORDINATES | LineArray.NORMALS);
+            la.setCoordinates(0, p3d);
+            Color3f r = new Color3f(1.0f, 0.0f, 0.0f);
+            Color3f g = new Color3f(0.0f, 1.0f, 0.0f);
+            Color3f b = new Color3f(0.0f, 0.0f, 1.0f);
+            Color3f[]  c3f = {r,r,g,g,b,b};
+            la.setColors(0, c3f);
+            shape.addGeometry(la);
+        }catch(Exception ex){
+        	ex.printStackTrace();
+        }
+        TransformGroup tg = new TransformGroup();
+        tg.addChild(shape);
+        BranchGroup bg = new BranchGroup();
+        bg.setCapability(BranchGroup.ALLOW_DETACH);
+        bg.addChild(tg);
+        return bg;
+    }
+
     public void disableUpdateModel(){
         updateModels_ = false;
     }
@@ -568,7 +609,7 @@ public class Grx3DView
         }
 
         currentWorld_ = null;
-        Iterator it = itemList.iterator();
+        Iterator<GrxBaseItem> it = itemList.iterator();
         while (it.hasNext()) {
             GrxBaseItem item = (GrxBaseItem) it.next();
             if (item instanceof GrxModelItem) {
@@ -607,6 +648,23 @@ public class Grx3DView
     }
     
     public void control(List<GrxBaseItem> items) {
+        GrxItemView iview = (GrxItemView)manager_.getView("Item View");
+        if (iview != null){
+            GrxBasePlugin plugin = iview.getFocusedItem();
+            if (axes_.getParent() != null) axes_.detach();
+            
+            if (plugin instanceof GrxLinkItem){
+            	GrxLinkItem link = (GrxLinkItem)plugin;
+            	link.tg_.addChild(axes_);
+            }else if (plugin instanceof GrxSensorItem){
+            	GrxSensorItem sensor = (GrxSensorItem)plugin;
+            	sensor.tg_.addChild(axes_);
+            }else if (plugin instanceof GrxShapeItem){
+            	GrxShapeItem shape = (GrxShapeItem)plugin;
+            	shape.tg_.addChild(axes_);
+            }
+        }
+        
         if (currentModels_.size() == 0)
             return;
 
@@ -987,32 +1045,32 @@ public class Grx3DView
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_H,KeyEvent.SHIFT_MASK)) {
           		li.jointValue(li.jointValue()-dAngle_);
           		
-          		if (li.llimit_[0] < li.ulimit_[0])
-          			li.jointValue(Math.max(li.jointValue(), li.llimit_[0]));
+          		if (li.llimit()[0] < li.ulimit()[0])
+          			li.jointValue(Math.max(li.jointValue(), li.llimit()[0]));
           		item.calcForwardKinematics();
         	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue()));
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,KeyEvent.SHIFT_MASK) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_L,KeyEvent.SHIFT_MASK)) {
           		li.jointValue(li.jointValue()+dAngle_);
-          		if (li.llimit_[0] < li.ulimit_[0])
-          			li.jointValue(Math.min(li.jointValue(), li.ulimit_[0]));
+          		if (li.llimit()[0] < li.ulimit()[0])
+          			li.jointValue(Math.min(li.jointValue(), li.ulimit()[0]));
         	 	item.calcForwardKinematics();
         	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue()));
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_H,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0)) {
           		li.jointValue(li.jointValue()-dAngle_*20);
-          		if (li.llimit_[0] < li.ulimit_[0])
-          			li.jointValue(Math.max(li.jointValue(), li.llimit_[0]));
+          		if (li.llimit()[0] < li.ulimit()[0])
+          			li.jointValue(Math.max(li.jointValue(), li.llimit()[0]));
         	 	item.calcForwardKinematics();
         	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue()));
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_L,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0)) {
           		li.jointValue(li.jointValue()+dAngle_*20);
-          		if (li.llimit_[0] < li.ulimit_[0])
-          			li.jointValue(Math.min(li.jointValue(), li.ulimit_[0]));
+          		if (li.llimit()[0] < li.ulimit()[0])
+          			li.jointValue(Math.min(li.jointValue(), li.ulimit()[0]));
         	 	item.calcForwardKinematics();
         	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue()));
           	}
@@ -1109,7 +1167,7 @@ public class Grx3DView
                 String[] chars = statex.characters();
                 for (int i=0; i<chars.length; i++) {
                     GrxModelItem model = (GrxModelItem)manager_.getItem(GrxModelItem.class, chars[i]);
-                    currentWorld_.registerCharacter(chars[i], model.bInfo_);
+                    currentWorld_.registerCharacter(chars[i], model.getBodyInfo());
                 }
             }
             double t = statex.time;

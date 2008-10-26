@@ -50,11 +50,11 @@ import org.w3c.dom.NodeList;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.GrxConfigBundle;
+import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 
-
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "serial" })
 public class GrxProjectItem extends GrxBaseItem {
 	public static final String TITLE = "Project";
 	public static final String DEFAULT_DIR = "project";
@@ -71,6 +71,7 @@ public class GrxProjectItem extends GrxBaseItem {
     private Transformer transformer_;
     
     private Map<String, ModeNodeInfo> modeInfoMap_ = new HashMap<String, ModeNodeInfo>();
+    
     private class ModeNodeInfo {
     	Element  root;
     	List     propList;
@@ -623,8 +624,9 @@ public class GrxProjectItem extends GrxBaseItem {
 			e.printStackTrace();
 		}
 
-		setProperty("nsHost", "localhost");
-		setProperty("nsPort", "2809");
+		setProperty("nsHost", GrxCorbaUtil.nsHost());
+		Integer nsPort = new Integer(GrxCorbaUtil.nsPort());
+		setProperty("nsPort", nsPort.toString());
 
 		String pname = prop.getStr("Project.name", "");
 		Class cls = manager_.registerPlugin(WORLD_STATE_ITEM);

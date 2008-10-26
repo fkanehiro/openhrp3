@@ -23,6 +23,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.sun.j3d.utils.picking.*;
 
@@ -176,9 +177,11 @@ class ObjectRotationHandler extends OperationHandler {
                 tgTarget_.getTransform(l2vw);
                 tr.set(new AxisAngle4f(axis_, angle));
                 l2vw.mul(tr);
-                tgTarget_.setTransform(l2vw);
-            
+                Hashtable<String, Object> hashtable = SceneGraphModifier.getHashtableFromTG(tgTarget_);
+                GrxLinkItem link = (GrxLinkItem)hashtable.get("linkInfo");
+                link.setTransform(l2vw);
                 _transformChanged(info);
+
                 prevPoint_.x = evt.getPoint().x;
                 prevPoint_.y = evt.getPoint().y;
             }
@@ -218,7 +221,7 @@ class ObjectRotationHandler extends OperationHandler {
     }
 
     private boolean _enableBoundingBox(TransformGroup tg, BehaviorInfo info) {
-        Hashtable hashTable = SceneGraphModifier.getHashtableFromTG(tg);
+        Hashtable<String, Object> hashTable = SceneGraphModifier.getHashtableFromTG(tg);
         GrxModelItem model = (GrxModelItem)hashTable.get("object");
         if (model == null) 
         	return false; 
@@ -292,7 +295,7 @@ class ObjectRotationHandler extends OperationHandler {
     }
 
     private void _transformChanged(BehaviorInfo info) {
-        Hashtable hashtable = SceneGraphModifier.getHashtableFromTG(tgTarget_);
+        Hashtable<String, Object> hashtable = SceneGraphModifier.getHashtableFromTG(tgTarget_);
         GrxModelItem model = (GrxModelItem)hashtable.get("object");
 	    if (model == null) {
             System.out.println("can't get manipulatable.");

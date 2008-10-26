@@ -26,11 +26,21 @@ import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CosNaming.*;
 import org.omg.PortableServer.POA;
 
+/**
+ * @brief corba utility functions
+ */
 public class GrxCorbaUtil {
 
 	private static ORB orb_ = null;
 	private static HashMap<String, NamingContext> namingContextList_ = null;
-
+	private static final int DEFAULT_PORT=2809;
+	private static final String DEFAULT_HOST="localhost";
+	
+	/**
+	 * @brief initialize and get ORB
+	 * @param argv arguments for ORB initialization
+	 * @return ORB
+	 */
 	public static org.omg.CORBA.ORB getORB(String[] argv) {
 		if (orb_ == null) {
 			java.util.Properties props = null;
@@ -40,24 +50,54 @@ public class GrxCorbaUtil {
 		return orb_;
 	}
   
+	/**
+	 * @brief initialize and get ORB
+	 * @return ORB
+	 */
 	public static org.omg.CORBA.ORB getORB() {
 		return getORB(null);
 	}
   
-	public static NamingContext getNamingContext() {   
-		String nsHost = System.getenv("NS_HOST");
-		if (nsHost == null) {
-			nsHost = "localhost";
-		}
-		int nsPort = 2809;
+	/**
+	 * @brief get port number where naming server is listening
+	 * @return port number where naming server is listening
+	 */
+	public static int nsPort(){
+		int nsPort = DEFAULT_PORT;
 		try {
 			nsPort = Integer.parseInt(System.getenv("NS_PORT"));
 		} catch (Exception e) {
-			nsPort = 2809;
+			nsPort = DEFAULT_PORT;
 		}
-		return getNamingContext(nsHost, nsPort);
+		return nsPort;
+	}
+	
+	/**
+	 * @brief get hostname where naming server is running
+	 * @return hostname where naming server is running
+	 */
+	public static String nsHost(){
+		String nsHost = System.getenv("NS_HOST");
+		if (nsHost == null) {
+			nsHost = DEFAULT_HOST;
+		}
+		return nsHost;
+	}
+	
+	/**
+	 * @brief get naming context
+	 * @return naming context
+	 */
+	public static NamingContext getNamingContext() {   
+		return getNamingContext(nsHost(), nsPort());
 	}
 
+	/**
+	 * @brief get naming context from name server which is running on the specified hostname and port number
+	 * @param nsHost hostname where name server is running
+	 * @param nsPort port number where name server is listening
+	 * @return naming context
+	 */
 	public static NamingContext getNamingContext(String nsHost, int nsPort) {
 		getORB();
 		String nameServiceURL = "corbaloc:iiop:"+nsHost+":"+nsPort+"/NameService";
@@ -76,28 +116,32 @@ public class GrxCorbaUtil {
 		return ncxt;
 	}
 
+	/**
+	 * @brief get map between naming service location and naming context
+	 * @return map
+	 */
 	private static HashMap<String, NamingContext> getNamingContextList() {
 		if (namingContextList_ == null)
 			namingContextList_ = new HashMap<String, NamingContext>();
 		return namingContextList_;
 	}
 
-
+	/**
+	 * @brief get CORBA object which is associated with id
+	 * @param id id of the CORBA object
+	 * @return CORBA object associated with id
+	 */
 	public static org.omg.CORBA.Object getReference(String id) {
-		String nsHost = System.getenv("NS_HOST");
-		if (nsHost == null) {
-			nsHost = "localhost";
-		}
-		int nsPort = 2809;
-		try {
-			nsPort = Integer.parseInt(System.getenv("NS_PORT"));
-		} catch (Exception e) {
-			nsPort = 2809;
-		}
-
-		return  getReference(id, nsHost, nsPort);
+		return  getReference(id, nsHost(), nsPort());
 	}
 
+	/**
+	 * @brief get CORBA object which is associated with id
+	 * @param id id of the CORBA object
+	 * @param nsHost hostname where name server is running
+	 * @param nsPort port number where name server is listening
+	 * @return CORBA object associated with id
+	 */
 	public static org.omg.CORBA.Object getReference(String id, String nsHost, int nsPort) {
 		NamingContext namingContext = getNamingContext(nsHost, nsPort);
 		org.omg.CORBA.Object obj = null;

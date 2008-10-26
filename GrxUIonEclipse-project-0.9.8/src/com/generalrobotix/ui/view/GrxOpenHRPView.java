@@ -612,8 +612,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 				if (model.links_ == null)
 					continue;
 
-				currentWorld_.registerCharacter(model.getName(), model.bInfo_);
-				currentDynamics_.registerCharacter(model.getName(), model.bInfo_);
+				currentWorld_.registerCharacter(model.getName(), model.getBodyInfo());
+				currentDynamics_.registerCharacter(model.getName(), model.getBodyInfo());
 				if (model.isRobot()) {
 					robotEntry_.add(model.getName());
 				}
@@ -773,8 +773,6 @@ public class GrxOpenHRPView extends GrxBaseView {
                 pi.dir = dir;
                 pi.com.add(com);
                 pi.waitCount = 2000;
-                pi.nsHost = nsHost_;
-                pi.nsPort = nsPort_;
                 pi.isCorbaServer = true;
                 pi.hasShutdown = true;
                 pi.doKillall = false;

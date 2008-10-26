@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST) 
+ * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 /*
  *  GrxItemView.java
@@ -18,8 +18,10 @@
 
 package com.generalrobotix.ui.view;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.Iterator;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -49,6 +51,8 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
+import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.util.OrderedHashMap;
 
 @SuppressWarnings("serial")
@@ -77,16 +81,19 @@ public class GrxItemView extends GrxBaseView {
 		tv.setLabelProvider( new TreeLabelProvider() );
 
 		Tree t = tv.getTree();
+		
 
+	
 		// ダブルクリックでアイテムの選択状態をトグル
 		t.addListener ( SWT.DefaultSelection, new Listener () {
 			public void handleEvent (Event event) {
 				ISelection selection = tv.getSelection();
-				Object o = ((IStructuredSelection) selection).getFirstElement();
-				if( GrxBaseItem.class.isAssignableFrom( o.getClass() ) ){
-					manager_.setSelectedItem( (GrxBaseItem)o, !((GrxBaseItem)o).isSelected() );
-					updateTree();
+				for (Object o : ((IStructuredSelection) selection).toArray() ){
+					if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
+						manager_.setSelectedItem( (GrxBaseItem)o, !((GrxBaseItem)o).isSelected() );
+					}
 				}
+				updateTree();
     		}
     	});
 
@@ -100,7 +107,7 @@ public class GrxItemView extends GrxBaseView {
     			// アイテムのクラス
     			if( Class.class.isAssignableFrom( o.getClass() ) ){
     				if( GrxBaseItem.class.isAssignableFrom( (Class<?>)o ) ) {
-    					Vector<Action> menus = manager_.getItemMenu( (Class<? extends GrxBaseItem>) o ); 
+    					Vector<Action> menus = manager_.getItemMenu( (Class<? extends GrxBaseItem>) o );
     					for( Action a: menus){
     						menuMgr.add(a);
     					}
@@ -108,7 +115,7 @@ public class GrxItemView extends GrxBaseView {
     			}
     			// アイテムのインスタンス
     			if( GrxBasePlugin.class.isAssignableFrom( o.getClass() ) ){
-        			Vector<Action> menus = ((GrxBasePlugin)o).getMenu(); 
+        			Vector<Action> menus = ((GrxBasePlugin)o).getMenu();
         			for( Action a: menus){
         				menuMgr.add(a);
         			}
@@ -137,9 +144,19 @@ public class GrxItemView extends GrxBaseView {
 			// プロジェクト名 -> アイテムのクラスのリスト
 			if( o instanceof String ) {
 		        GrxModeInfoItem mode = (GrxModeInfoItem)(manager_.getItem( manager_.getCurrentModeName()));
-				return mode.activeItemClassList_.toArray();
+
+		        ArrayList<Class<? extends GrxBaseItem>> localList = new ArrayList<Class<? extends GrxBaseItem>>();
+		        Iterator it = mode.activeItemClassList_.listIterator();
+		        //grxuirc.xmlの属性値grxui.mode.item.visibleを導入してvisibleがtrueのものをふるい分けして表示
+		        while (it.hasNext()){
+		        	Class<? extends GrxBaseItem> local = (Class<? extends GrxBaseItem>)it.next();
+		        	if ( manager_.isItemVisible( local ) ){
+			        	localList.add( local );
+		        	}
+		        }
+				return localList.toArray();
 			}
-			
+
 			// アイテムのクラス -> インスタンスのリスト
 			if( o instanceof Class ) {
 				if( GrxBaseItem.class.isAssignableFrom( (Class<?>)o ) ) {
@@ -147,28 +164,28 @@ public class GrxItemView extends GrxBaseView {
 					return oMap.values().toArray();
 				}
 			}
-			/* This will be enabled later
 			// GrxModelItem -> ルートのリンクを返す
 			if (o instanceof GrxModelItem){
-				Object[] os = {((GrxModelItem)o).rootLink()};
-				return os;
+				GrxModelItem model = (GrxModelItem)o;
+				if (model.rootLink() != null){
+					Object[] os = {((GrxModelItem)o).rootLink()};
+					return os;
+				}else{
+					return null;
+				}
 			}
-			*/
-			// GrxLinkItem -> 子供のGrxLinkItem,センサ、形状を返す
+			// GrxLinkItem -> 子供のリンク,センサ、形状を返す
 			if (o instanceof GrxLinkItem){
 				GrxLinkItem link = (GrxLinkItem)o;
-				Vector<Object> children = new Vector<Object>();
-				for (int i=0; i<link.sensors_.size(); i++){
-					children.add(link.sensors_.get(i));
-				}
-				for (int i=0; i<link.shapes_.size(); i++){
-					children.add(link.shapes_.get(i));
-				}
-				for (int i=0; i<link.children_.size(); i++){
-					children.add(link.children_.get(i));
-				}
-				return children.toArray();
+				return link.children_.toArray();
 			}
+			
+			// GrxSensorItem -> 子供の形状を返す
+			if (o instanceof GrxSensorItem){
+				GrxSensorItem sensor = (GrxSensorItem)o;
+				return sensor.children_.toArray();
+			}
+			
 			// その他
 			return null;
 		}
@@ -197,7 +214,7 @@ public class GrxItemView extends GrxBaseView {
 			// アイテムのインスタンス
 			}else{
 				if( GrxBaseItem.class.isAssignableFrom( object.getClass() ) ) {
-					return ((GrxBaseItem)object).getName(); 
+					return ((GrxBaseItem)object).getName();
 				}
 				if (object instanceof GrxLinkItem){
 					return ((GrxLinkItem)object).getName();
@@ -262,5 +279,25 @@ public class GrxItemView extends GrxBaseView {
 		if( o!=null &&  GrxBasePlugin.class.isAssignableFrom( o.getClass() ) )
 			return (GrxBasePlugin) o;
 		return null;
+	}
+	
+	/**
+	 * @brief  Return selected node and item on tree view
+	 * @return List<GrxBaseItem>
+	 */
+	public List<GrxBaseItem> getSelectedTreeGrxBaseItem(){
+		List<GrxBaseItem> retList = new ArrayList<GrxBaseItem>();
+		
+		IStructuredSelection iStructuredSelection = (IStructuredSelection) tv.getSelection();
+		Object oFirst  =  iStructuredSelection.getFirstElement();
+		if ( GrxBaseItem.class.isAssignableFrom(oFirst.getClass()) ){
+			retList.add((GrxBaseItem)oFirst);	
+		}
+		for (Object o : iStructuredSelection.toArray() ){
+			if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) && oFirst != o){
+				retList.add((GrxBaseItem)o);	
+			}
+		}
+		return retList;
 	}
 }
