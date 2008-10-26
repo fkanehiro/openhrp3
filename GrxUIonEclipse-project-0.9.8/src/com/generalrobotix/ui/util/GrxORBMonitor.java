@@ -31,13 +31,11 @@ import org.eclipse.swt.widgets.Text;
 
 @SuppressWarnings("serial")
 public class GrxORBMonitor extends Composite {
-    //private static GrxORBMonitor this_ = null;
     private MessageBox dialog_ = null;
     
-    private Text singleText = null;
-    private Text singleText1 = null;
-    private Label label2 = null;
-    private Composite panel = null;
+    private Text textNsHost = null;
+    private Text textNsPort = null;
+    private Label labelNs = null;
     private Text multiText = null;
 
     public GrxORBMonitor(Composite parent,int style) {
@@ -46,15 +44,15 @@ public class GrxORBMonitor extends Composite {
 
         Composite northPane = new Composite(this,SWT.NONE);
         northPane.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-        GridLayout gridLayout = new GridLayout(2,false);
-        gridLayout.marginWidth = 0;
-        gridLayout.horizontalSpacing = 0;
+        GridLayout gridLayout = new GridLayout(5,false);
+        gridLayout.marginWidth = 5;
+        gridLayout.horizontalSpacing = 5;
         northPane.setLayout(gridLayout);
         
         Button button = new Button(northPane,SWT.PUSH);
         button.setText("update");
         GridData btnGridData = new GridData();
-        btnGridData.widthHint = 100;
+        btnGridData.widthHint = 60;
         btnGridData.heightHint = 26;
         button.setLayoutData(btnGridData);
         button.addSelectionListener(new SelectionListener(){
@@ -68,30 +66,28 @@ public class GrxORBMonitor extends Composite {
         }
         );
         
-        panel = new Composite(northPane,SWT.NONE);
-        panel.setLayout(new GridLayout(2,false));
+        new Label(northPane,SWT.NONE).setText("Host:");
         
-        new Label(panel,SWT.NONE).setText("NameService Host");
-        
-        singleText = new Text(panel,SWT.SINGLE|SWT.BORDER);
-        singleText.setText("localhost");
+        textNsHost = new Text(northPane,SWT.SINGLE|SWT.BORDER);
+        textNsHost.setText(GrxCorbaUtil.nsHost());
         GridData textGridData = new GridData();
-        textGridData.widthHint = 120;
-        singleText.setLayoutData(textGridData);
+        textGridData.widthHint = 100;
+        textNsHost.setLayoutData(textGridData);
         
-        new Label(panel,SWT.NONE).setText("NameService Port");
+        new Label(northPane,SWT.NONE).setText("Port:");
         
-        singleText1 = new Text(panel,SWT.SINGLE|SWT.BORDER);
-        singleText1.setText("2809");
-        singleText1.setLayoutData(textGridData);
+        textNsPort = new Text(northPane,SWT.SINGLE|SWT.BORDER);
+        Integer nsPort = new Integer(GrxCorbaUtil.nsPort());
+        textNsPort.setText(nsPort.toString());
+        textNsPort.setLayoutData(textGridData);
 
         multiText = new Text(this,SWT.MULTI|SWT.BORDER|SWT.V_SCROLL|SWT.H_SCROLL);
         multiText.setEditable(false);
         multiText.setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        label2 = new Label(this,SWT.SHADOW_NONE);
-        label2.setText("NS_URL:");
-        label2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        labelNs = new Label(this,SWT.SHADOW_NONE);
+        labelNs.setText("NS_URL:");
+        labelNs.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         setSize(412, 280);
     }
@@ -121,11 +117,11 @@ public class GrxORBMonitor extends Composite {
         dialog_.open();
     }
     public void update(){
-        String nsHost = singleText.getText();   
-        String nsPort = singleText1.getText();
+        String nsHost = textNsHost.getText();   
+        String nsPort = textNsPort.getText();
         if (nsHost == null || nsPort == null) return;
         int nsPortInt = Integer.parseInt(nsPort);
-        label2.setText("NS_URL: corbaloc:iiop:"+nsHost+":"+nsPort+"/NameService");
+        labelNs.setText("NS_URL: corbaloc:iiop:"+nsHost+":"+nsPort+"/NameService");
         
         String s[] = GrxCorbaUtil.getObjectNameList(nsHost,nsPortInt);
         multiText.setText("");

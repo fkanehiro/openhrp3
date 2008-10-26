@@ -133,6 +133,22 @@ public class GrxConfigBundle extends Properties {
 	}
 	
 	/**
+	 * @brief get short value associated to key
+	 * @param key keyword
+	 * @param defaultVal default value
+	 * @return short value associated to key
+	 */
+	public final Short getShort(String key, Short defaultVal) {
+		Short ret;
+		try {
+			ret = Short.parseShort(getStr(key));
+		} catch(Exception e){
+			ret = defaultVal;	
+	   	}
+		return ret;
+	}
+	
+	/**
 	 * @brief get integer array associated to key
 	 * @param key keyword
 	 * @return integer array associated to key
@@ -170,6 +186,22 @@ public class GrxConfigBundle extends Properties {
 	}
 	
 	/**
+	 * @brief get float value associated to key
+	 * @param key keyword
+	 * @param defaultVal default value
+	 * @return float value associated to key
+	 */
+	public final Float getFlt(String key, Float defaultVal) {
+		Float ret;
+		try {
+			ret = Float.parseFloat(getStr(key));
+		} catch(Exception e){
+			ret = defaultVal;
+		}
+		return ret;
+	}
+	
+	/**
 	 * @brief get double array associated to key
 	 * @param key keyword
 	 * @param defaultVal default value
@@ -192,6 +224,28 @@ public class GrxConfigBundle extends Properties {
 	}
 	
 	/**
+	 * @brief get float array associated to key
+	 * @param key keyword
+	 * @param defaultVal default value
+	 * @return float array associated to key
+	 */
+	public final float[] getFltAry(String key, float[] defaultVal){
+		String s = getStr(key);
+		if (s==null)
+			return defaultVal;
+		String[] str = s.split(" ");
+		float[] ret = new float[str.length];
+		try {
+			for (int i=0;i<str.length;i++)
+				ret[i] = Float.parseFloat(str[i]);
+		} catch(Exception e){
+			return defaultVal;
+		}
+		
+		return ret;
+	}
+	
+	/**
 	 * @brief associate double array to key
 	 * @param key keyword
 	 * @param value double array
@@ -205,11 +259,35 @@ public class GrxConfigBundle extends Properties {
 	}
 	
 	/**
+	 * @brief associate float array to key
+	 * @param key keyword
+	 * @param value float array
+	 */
+	public final void setFltAry(String key, float[] value) {
+		String val = new String();
+		for (int i=0; i<value.length; i++) {
+			val += String.valueOf(value[i])+" ";
+		}
+		setProperty(key,val);
+	}
+	
+	/**
 	 * @brief associate double value to key
 	 * @param key keyword
 	 * @param value double value
 	 */
 	public final void setDbl(String key, double value) {
+		String val = new String();
+		val += String.valueOf(value)+" ";
+		setProperty(key,val);
+	}
+	
+	/**
+	 * @brief associate int value to key
+	 * @param key keyword
+	 * @param value int value
+	 */
+	public final void setInt(String key, int value) {
 		String val = new String();
 		val += String.valueOf(value)+" ";
 		setProperty(key,val);

@@ -170,7 +170,7 @@ public class ControllerPanel extends Composite{
             
         });
         
-        String[] names = GrxCorbaUtil.getObjectNameList("localhost",2809);
+        String[] names = GrxCorbaUtil.getObjectNameList();
         if(names == null){
             names = new String[0];
         }
@@ -269,7 +269,7 @@ public class ControllerPanel extends Composite{
                 }
 
                 public void mouseDown(MouseEvent e) {
-                  String[] names = GrxCorbaUtil.getObjectNameList("localhost",2809);
+                  String[] names = GrxCorbaUtil.getObjectNameList();
                   if(names == null){
                       names = new String[0];
                   }
@@ -281,16 +281,6 @@ public class ControllerPanel extends Composite{
                 }
                 
             });
-//            boxController_.addPopupMenuListener(new PopupMenuListener(){
-//              public void popupMenuCanceled(PopupMenuEvent e) {}
-//              public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
-//              public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-//                String[] names = GrxCorbaUtil.getObjectNameList("localhost",2809);
-//                boxController_.removeAllItems();
-//                for (int i=0; i<names.length; i++)
-//                  boxController_.addItem(names[i]);
-//              }            
-//            });
             
  			// Control Time
             lbl = new Label(this,SWT.SHADOW_NONE);

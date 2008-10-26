@@ -128,7 +128,7 @@ class JointRotationHandler extends OperationHandler {
         Point3f point000 = new Point3f(0,0,0);
         //軸情報取り出す
 
-        Hashtable ht = (Hashtable)tgTarget_.getUserData();
+        Hashtable<String, Object> ht = SceneGraphModifier.getHashtableFromTG(tgTarget_);
         GrxLinkItem l = (GrxLinkItem)ht.get("linkInfo");
   
         vw2view.mul(target2vw);
@@ -272,7 +272,7 @@ class JointRotationHandler extends OperationHandler {
     }
 
     private boolean _enableBoundingBox(TransformGroup tg, BehaviorInfo info) {
-        Hashtable ht = SceneGraphModifier.getHashtableFromTG(tg);
+        Hashtable<String, Object> ht = SceneGraphModifier.getHashtableFromTG(tg);
         String objectName = (String)ht.get("objectName");
         GrxModelItem robot = (GrxModelItem)info.getManipulatable(objectName);
         GrxLinkItem l = (GrxLinkItem)ht.get("linkInfo");
@@ -294,13 +294,12 @@ class JointRotationHandler extends OperationHandler {
 
     private void _jointAngleChanged(BehaviorInfo info) {
         try {
-            Hashtable ht = SceneGraphModifier.getHashtableFromTG(tgTarget_);
+            Hashtable<String, Object> ht = SceneGraphModifier.getHashtableFromTG(tgTarget_);
             GrxModelItem model = (GrxModelItem)ht.get("object");
-            String jname = (String)ht.get("controllableJoint");
-            double a = model.getJointValue(jname) +angle_;
-            model.setJointValue(jname, a);
-            model.setJointValuesWithinLimit();
-            model.updateInitialJointValue(jname);
+            GrxLinkItem link = (GrxLinkItem)ht.get("linkInfo");
+            link.jointValue(link.jointValue()+angle_);
+            link.setJointValuesWithinLimit();
+            model.updateInitialJointValue(link.getName());
             model.calcForwardKinematics();
         } catch (Exception e) { 
         	e.printStackTrace();

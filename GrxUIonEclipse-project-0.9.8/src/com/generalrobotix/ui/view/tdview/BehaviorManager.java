@@ -212,8 +212,7 @@ public class BehaviorManager implements WorldReplaceListener {
 		if (currentDynamics_ == null) {
 			try {
 				org.omg.CORBA.Object obj = //process_.get(DynamicsSimulatorID_).getReference();
-				GrxCorbaUtil.getReference("DynamicsSimulatorFactory",
-						"localhost", 2809);
+				GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
 				DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper
 						.narrow(obj);
 				currentDynamics_ = ifactory.create();
@@ -238,8 +237,8 @@ public class BehaviorManager implements WorldReplaceListener {
 			List modelList = manager_.getSelectedItemList(GrxModelItem.class);
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem)modelList.get(i);
-				if (model.bInfo_ != null)
-					currentDynamics_.registerCharacter(model.getName(), model.bInfo_);
+				if (model.getBodyInfo() != null)
+					currentDynamics_.registerCharacter(model.getName(), model.getBodyInfo());
 			}
 
 			IntegrateMethod m = IntegrateMethod.EULER;

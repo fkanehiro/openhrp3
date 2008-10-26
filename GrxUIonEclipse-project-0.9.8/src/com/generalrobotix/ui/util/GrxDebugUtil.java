@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * General Robotix Inc.
- * National Institute of Advanced Industrial Science and Technology (AIST)
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
  */
 /*
  *  GrxDebugUtil.java
@@ -18,9 +18,6 @@
  */
 package com.generalrobotix.ui.util;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.logging.*;
@@ -62,18 +59,21 @@ public class GrxDebugUtil {
 		}
 	}
 
-	public static void outputLogFile(String path, String s){
+	public static void outputLogFile(String path, String s , boolean bAppend){
 		try {
-			FileOutputStream logFileStream = new FileOutputStream(path);
+			FileOutputStream logFileStream = new FileOutputStream(path, bAppend);
 			OutputStreamWriter logFileOut = new OutputStreamWriter(logFileStream, "UTF-8");
-			logFileOut.write(s);
+			logFileOut.write(s + "\n");
 			logFileOut.flush();
 			logFileOut.close();
 		} catch (Exception e){
-
+		    GrxDebugUtil.printErr("GrxDebugUtil.outputLogFile: ", e);
 		}
 	}
 
+	public static void outputLogFile(String path, String s){
+		GrxDebugUtil.outputLogFile(path, s, true);
+	}
 
   public static boolean isDebugging() {
     return isDebugging_;

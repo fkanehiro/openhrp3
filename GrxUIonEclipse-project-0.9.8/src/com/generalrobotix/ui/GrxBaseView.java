@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
  * @brief
  *
  */
+@SuppressWarnings("serial")
 public class GrxBaseView extends GrxBasePlugin {
 
 	private static Dimension defaultButtonSize_ = new Dimension(27, 27);

@@ -331,10 +331,10 @@ public class Camera_impl extends CameraPOA {
 	}
 
 	/**
-	 * Get the branch-graph of Camera
+	 * Get the branch-group of Camera
 	 * @return	root BranchGroup of this camera
 	 */
-	public BranchGroup getBranchGraph() {
+	public BranchGroup getBranchGroup() {
 		return bgVp_;
 	}
 

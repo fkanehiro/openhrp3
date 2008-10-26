@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grxui>
     <processmanagerconfig>
-        <process dir="$(BIN_DIR)" nshost="localhost" nsport="2809" waitcount="500"/>
+        <process dir="$(BIN_DIR)" waitcount="500"/>
         <process com="$(BIN_DIR)/NameServer$(BIN_SFX)" id="NameService"/>
         <process com="$(BIN_DIR)/ModelLoader$(BIN_SFX)" hasshutdown="true" id="ModelLoader"/>
         <process com="$(BIN_DIR)/CollisionDetector$(BIN_SFX)" hasshutdown="true" id="CollisionDetectorFactory"/>
@@ -9,10 +9,13 @@
     </processmanagerconfig>
 
     <mode name="Simulation" select="true">
-        <item class="com.generalrobotix.ui.item.GrxModelItem"/>
-        <item class="com.generalrobotix.ui.item.GrxWorldStateItem"/>
-        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem"/>
-        <item class="com.generalrobotix.ui.item.GrxGraphItem"/>
-        <item class="com.generalrobotix.ui.item.GrxPythonScriptItem"/>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxLinkItem" visible="false"/>
+        <item class="com.generalrobotix.ui.item.GrxShapeItem" visible="false"/>
+        <item class="com.generalrobotix.ui.item.GrxSensorItem" visible="false"/>
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxGraphItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxPythonScriptItem" visible="true"/>
     </mode>
 </grxui>
