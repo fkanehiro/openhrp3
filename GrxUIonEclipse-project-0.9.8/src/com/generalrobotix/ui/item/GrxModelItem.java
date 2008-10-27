@@ -300,14 +300,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     /**
-     * @brief get transform group of the root joint
-     * @return transform group of the root joint
-     */
-    TransformGroup rootTransformGroup() {
-    	return rootLink().tg_;
-    }
-
-    /**
      * @brief create spheres to display CoM and projected CoM
      */
     private void _setupMarks() {
@@ -317,7 +309,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             switchComZ0_= createBall(radius, new Color3f(0.0f, 1.0f, 0.0f));
             tgCom_ = (TransformGroup)switchCom_.getChild(0);
             tgComZ0_ = (TransformGroup)switchComZ0_.getChild(0);
-            TransformGroup root = rootTransformGroup();
+            TransformGroup root = getTransformGroupRoot();
             root.addChild(switchCom_);
             root.addChild(switchComZ0_);
         }
@@ -352,6 +344,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             	rootLink().delete();
             }
             links_.clear();
+            switchCom_ = null;
 
             for (int i=0; i<cameraList_.size(); i++){
                 cameraList_.get(i).destroy();
@@ -726,7 +719,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         Matrix3d m3d = new Matrix3d();
         Vector3d v3d = new Vector3d();
 
-        rootTransformGroup().getTransform(t3d);
+        getTransformGroupRoot().getTransform(t3d);
         t3d.get(m3d, v3d);
         setDblAry(rootLink().getName()+".translation", new double[]{v3d.x, v3d.y, v3d.z});
 
@@ -760,6 +753,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         _updateCoM();
     }
 
+    /**
+     * @brief update CoM and projected CoM positions
+     */
     private void _updateCoM() {
         if (switchCom_.getWhichChild() == Switch.CHILD_ALL ||
             switchComZ0_.getWhichChild() == Switch.CHILD_ALL) {
@@ -783,7 +779,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     private void _globalToRoot(Vector3d pos) {
         Transform3D t3d = new Transform3D();
-        rootTransformGroup().getTransform(t3d);
+        getTransformGroupRoot().getTransform(t3d);
         Vector3d p = new Vector3d();
         t3d.get(p);
         t3d.invert();
@@ -793,7 +789,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     /**
      * @brief compute center of mass
-     * @pos computed center of mass
+     * @param pos computed center of mass
      */
     public void getCoM(Vector3d pos) {
         pos.x = 0.0;
@@ -840,7 +836,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         if (t3d == null)
             return null;
         Transform3D t3dr = new Transform3D();
-        rootTransformGroup().getTransform(t3dr);
+        getTransformGroupRoot().getTransform(t3dr);
         t3d.mulTransposeLeft(t3dr, t3d);
         return t3d;
     }
