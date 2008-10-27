@@ -272,7 +272,7 @@ public class GrxVrmlExporter {
 			writer.write(indent+"  jointType \""+link.jointType()+"\"\n");
 			if (link.jointId() != -1) writer.write(indent+"  jointId "+link.jointId()+"\n");
 			if (link.jointType().equals("rotate") || link.jointType().equals("slide")){
-				writer.write(indent+"  jointAxis "+link.getProperty("jointAxis")+"\n");
+				writer.write(indent+"  jointAxis \""+link.getProperty("jointAxis")+"\"\n");
 			}
 			if (!link.getProperty("translation").equals("0.0 0.0 0.0 ")){
 				writer.write(indent+"  translation "+link.getProperty("translation")+"\n");
