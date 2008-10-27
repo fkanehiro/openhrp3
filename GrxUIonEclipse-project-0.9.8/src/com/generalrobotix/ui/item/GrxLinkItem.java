@@ -300,7 +300,14 @@ public class GrxLinkItem extends GrxTransformItem{
     	jointValue_ = getDbl("angle", 0.0);
     	info_.translation = getDblAry("translation",null);
     	info_.rotation = getDblAry("rotation", null);
-    	info_.jointAxis = getDblAry("jointAxis", null);
+    	String axis = getProperty("jointAxis");
+    	if (axis.equals("X")){
+    		info_.jointAxis = new double[]{1.0, 0.0, 0.0};
+    	}else if (axis.equals("Y")){
+    		info_.jointAxis = new double[]{0.0, 1.0, 0.0};
+    	}else if (axis.equals("Z")){
+    		info_.jointAxis = new double[]{0.0, 0.0, 1.0};
+    	}
     	// TODO rebuild axis shape
     	info_.jointType = getStr("jointType", null);
     	calcForwardKinematics();
@@ -535,7 +542,13 @@ public class GrxLinkItem extends GrxTransformItem{
     	setDblAry("rotation", info_.rotation);
     	setDblAry("centerOfMass", info_.centerOfMass);
     	setDblAry("inertia", info_.inertia);
-    	setDblAry("jointAxis", info_.jointAxis);
+    	if (info_.jointAxis[0] == 1.0){
+       		setProperty("jointAxis", "X");
+    	}else if (info_.jointAxis[1] == 1.0){
+       		setProperty("jointAxis", "Y");
+    	}else if (info_.jointAxis[2] == 1.0){
+       		setProperty("jointAxis", "Z");
+    	}
         setProperty("jointType", info_.jointType);
         setDbl("mass", info_.mass);
         setDblAry("ulimit", info_.ulimit);
@@ -644,11 +657,13 @@ public class GrxLinkItem extends GrxTransformItem{
 	}
 
 	/**
-	 * @brief set new position and rotation
+	 * @brief set new position and rotation in global frame
 	 * @param pos new position
 	 * @param rot new rotation
 	 */
 	public void setTransform(Vector3d pos, Matrix3d rot) {
+		if (parent_ != null) return;
+		
     	if (pos != null){
     		double[] newpos = new double[3];
     		pos.get(newpos);
@@ -670,16 +685,13 @@ public class GrxLinkItem extends GrxTransformItem{
 	 * @param rot new rotation(length = 9)
 	 */
 	public void setTransform(double[] pos, double[] rot) {
-		Transform3D t3d = new Transform3D();
 		Vector3d v3d = new Vector3d(pos);
 		Matrix3d m3d = new Matrix3d(rot);
-		t3d.setTranslation(v3d);
-		t3d.setRotation(m3d);
-		tg_.setTransform(t3d);
+		setTransform(v3d, m3d);
 	}
 
 	/**
-	 * @brief set new position and rotation
+	 * @brief set new position and rotation in global frame
 	 * @param tform new transform
 	 */
 	public void setTransform(Transform3D trans) {
