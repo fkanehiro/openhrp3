@@ -14,6 +14,34 @@
 
 module OpenHRP {
 
+
+  /**
+     @if jp
+     ShapeInfo へのインデックス。ShapeInfo に対しては transformMatrix に格納された
+     座標変換を適用する。
+     @endif
+  */
+  struct TransformedShapeIndex 
+  {
+    /**
+	@if jp
+	変換行列。4x4同次変換行列の上3行分を Row Major Array で格納したもの。
+	@endif
+    */
+    DblArray12	transformMatrix;
+
+    /** 
+	@if jp
+	BodyInfo::shapes における ShapeInfo のインデックス。
+	@endif
+    */
+    short	shapeIndex;
+  };
+
+  typedef sequence<TransformedShapeIndex> TransformedShapeIndexSequence;
+  typedef sequence<TransformedShapeIndexSequence> AllLinkShapeIndexSequence;
+
+
   /**
      @if jp
      センサ情報を格納する構造体。
@@ -44,36 +72,13 @@ module OpenHRP {
     DblArray4      rotation;    ///< センサ設置姿勢(リンクローカル座標)  
     FloatSequence  specValues;  ///< 各種仕様値(旧IDLのmaxValuesに相当)  
     string         specFile;    ///< 仕様記述ファイル名（本改良ではとりあえず空でよい）  
+
+    /// 本リンクに対応する形状情報の変換行列付きインデックス列  
+    TransformedShapeIndexSequence shapeIndices;  
   };
 
   typedef sequence<SensorInfo> SensorInfoSequence;
 
-
-  /**
-     @if jp
-     ShapeInfo へのインデックス。ShapeInfo に対しては transformMatrix に格納された
-     座標変換を適用する。
-     @endif
-  */
-  struct TransformedShapeIndex 
-  {
-    /**
-	@if jp
-	変換行列。4x4同次変換行列の上3行分を Row Major Array で格納したもの。
-	@endif
-    */
-    DblArray12	transformMatrix;
-
-    /** 
-	@if jp
-	BodyInfo::shapes における ShapeInfo のインデックス。
-	@endif
-    */
-    short	shapeIndex;
-  };
-
-  typedef sequence<TransformedShapeIndex> TransformedShapeIndexSequence;
-  typedef sequence<TransformedShapeIndexSequence> AllLinkShapeIndexSequence;
 
 
   /**
@@ -148,6 +153,17 @@ module OpenHRP {
 
   struct ShapeInfo
   {
+
+    /**
+       @if jp
+       本ShapeがVRMLのinlineノード内に格納されている場合は、
+       inlineされているVRMLファイルへのパスを格納する。
+       inlineではなく直接メインのVRMLファイル内に形状が記述されていた場合は、
+       本フィールドは空とする。
+       @endif
+    */
+    string url;
+
     /**
        @if jp
        オリジナルのVRMLモデルファイルにおけるプリミティブの種類を表す。
