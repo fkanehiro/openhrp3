@@ -209,9 +209,24 @@ void BridgeConf::setPortInfos(const char* optionLabel, PortInfoMap& portInfos)
     if(n == 2){
       dataTypeParameterPos = 1;
     } else {
-      info.dataOwnerName = parameters[1];
+      string st=parameters[1];
+      bool digit=true;
+      for(string::iterator itr=st.begin(); itr!=st.end(); itr++){
+          if(!isdigit(*itr)){
+              digit = false;             
+              break;
+          }
+      }
+      if(digit){
+        info.dataOwnerId = atoi(st.c_str());
+        info.dataOwnerName.clear();
+      }else{
+        info.dataOwnerId = -1;
+        info.dataOwnerName = st;
+      }
       dataTypeParameterPos = 2;
     }
+    
     LabelToDataTypeIdMap::iterator it = labelToDataTypeIdMap.find(parameters[dataTypeParameterPos]);
     if(it == labelToDataTypeIdMap.end()){
       throw invalid_argument(string("invalid data type"));
