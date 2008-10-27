@@ -119,7 +119,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 
 		/**
 		 * @brief This class manages execution timing of execution context
-		 *
 		 */
 		private class ExecutionContext {
 			public ExtTrigExecutionContextService ec_;
@@ -139,12 +138,18 @@ public class GrxOpenHRPView extends GrxBaseView {
 			
 			/**
 			 * @param t current time in the simulation world
+			 * @return true if executed successfully, false otherwise
 			 */
-			void execute(double t){
+			boolean execute(double t){
 				if (t >= nextExecutionTime_){
-					ec_.tick();
-					nextExecutionTime_ += period_;
+					try{
+						ec_.tick();
+						nextExecutionTime_ += period_;
+					}catch(Exception ex){
+						return false;
+					}
 				}
+				return true;
 			}
 
 			/**
@@ -168,8 +173,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 		 * @param period execution period
 		 */
 		public void subscribe(ExtTrigExecutionContextService ec, double period) {
+			System.out.println("ClockGenerator::subscribe("+ec+", "+period);
 			ecs_.add(new ExecutionContext(ec, period));
-			
 		}
 
 		/**
@@ -177,9 +182,10 @@ public class GrxOpenHRPView extends GrxBaseView {
 		 * @param ec execution context
 		 */
 		public void unsubscribe(ExtTrigExecutionContextService ec) {
+			System.out.println("ClockGenerator::unsubscribe("+ec+")");
 			for (int i=0; i<ecs_.size(); i++){
 				ExecutionContext ec2 = ecs_.get(i);
-				if (ec == ec2.ec_){
+				if (ec._is_equivalent(ec2.ec_)){
 					ecs_.remove(ec2);
 					return;
 				}
@@ -288,6 +294,17 @@ public class GrxOpenHRPView extends GrxBaseView {
 				tdview_.disableUpdateModel();
 				tdview_.showViewSimulator();
 				lgview_.disableControl();
+			}
+			
+			for (int i=0; i<ecs_.size();){
+				ExecutionContext ec = ecs_.get(i);
+				try{
+					System.out.println(i+": rate = "+ec.ec_.get_rate());
+					ec.reset();
+					i++;
+				}catch(Exception ex){
+					ecs_.remove(ec);
+				}
 			}
 			simThread_.start();
 			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
@@ -422,8 +439,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 					}
 				}
 			}
-			for (int i=0; i<ecs_.size(); i++){
-				ecs_.get(i).execute(simTime_);
+			for (int i=0; i<ecs_.size();){
+				ExecutionContext ec = ecs_.get(i);
+				if (ec.execute(simTime_)){
+					i++;
+				}else{
+					ecs_.remove(ec);
+				}
 			}
 			
 			// simulate
