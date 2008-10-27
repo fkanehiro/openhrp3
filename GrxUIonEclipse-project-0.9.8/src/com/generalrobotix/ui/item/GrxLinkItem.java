@@ -665,23 +665,17 @@ public class GrxLinkItem extends GrxTransformItem{
 	}
 
 	/**
-	 * @brief set new position and rotation
+	 * @brief set new position and rotation in global frame
 	 * @param pos new position(length = 3)
 	 * @param rot new rotation(length = 9)
 	 */
 	public void setTransform(double[] pos, double[] rot) {
-    	if (pos != null){
-        	setDblAry("translation", pos);
-    	}
-    	if (rot != null){
-    		Matrix3d m3d = new Matrix3d(rot);
-    		AxisAngle4d a4d = new AxisAngle4d();
-    		a4d.set(m3d);
-    		double[] newrot = new double[4];
-    		a4d.get(newrot);
-    		setDblAry("rotation", newrot);
-    	}
-    	if (pos != null || rot != null)	propertyChanged();
+		Transform3D t3d = new Transform3D();
+		Vector3d v3d = new Vector3d(pos);
+		Matrix3d m3d = new Matrix3d(rot);
+		t3d.setTranslation(v3d);
+		t3d.setRotation(m3d);
+		tg_.setTransform(t3d);
 	}
 
 	/**

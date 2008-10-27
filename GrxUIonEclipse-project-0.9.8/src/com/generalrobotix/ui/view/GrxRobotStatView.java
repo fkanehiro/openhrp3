@@ -461,7 +461,7 @@ public class GrxRobotStatView extends GrxBaseView {
                     if (jointList_.size() <= 0)
                         break;
                     GrxLinkItem info = jointList_.get(rowIndex);
-                    if (info.llimit()[0] < info.ulimit()[0]
+                    if (info.llimit() != null && info.ulimit() != null && info.llimit()[0] < info.ulimit()[0]
                         && (info.jointValue() <= info.llimit()[0] || info.ulimit()[0] <= info.jointValue())) {
                         return red_;
                     }
@@ -488,7 +488,7 @@ public class GrxRobotStatView extends GrxBaseView {
                     }
                 case 2:
                     GrxLinkItem info = jointList_.get(rowIndex);
-                    if (info.llimit()[0] < info.ulimit()[0]
+                    if (info.llimit() != null && info.ulimit() != null && info.llimit()[0] < info.ulimit()[0]
                         && (info.jointValue() <= info.llimit()[0] || info.ulimit()[0] <= info.jointValue())) {
                         return bold12_;
                     }
