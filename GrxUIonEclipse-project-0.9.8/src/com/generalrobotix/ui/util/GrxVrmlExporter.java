@@ -2,6 +2,7 @@ package com.generalrobotix.ui.util;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.Vector;
 
 import jp.go.aist.hrp.simulator.MaterialInfo;
 import jp.go.aist.hrp.simulator.ShapeInfo;
@@ -228,16 +229,16 @@ public class GrxVrmlExporter {
 	        
 	        writer.write("DEF "+model.getName()+" Humanoid{\n");
 	        writer.write("  humanoidBody [\n");
-	        exportLink(writer, model.rootLink(), "    ");
+	        Vector<GrxLinkItem> links = exportLink(writer, model.rootLink(), "    ");
 	        writer.write("  ]\n");
 	        writer.write("  joints [\n");
-	        for (int i=0; i<model.links_.size(); i++){
-	        	writer.write("    USE "+model.links_.get(i).getName()+",\n");
+	        for (int i=0; i<links.size(); i++){
+	        	writer.write("    USE "+links.get(i).getName()+",\n");
 	        }
 	        writer.write("  ]\n");
 	        writer.write("  segments [\n");
-	        for (int i=0; i<model.links_.size(); i++){
-	        	writer.write("    USE "+model.links_.get(i).getName()+"_Link,\n");
+	        for (int i=0; i<links.size(); i++){
+	        	writer.write("    USE "+links.get(i).getName()+"_Link,\n");
 	        }
 	        writer.write("  ]\n");
 	        writer.write("}\n");
@@ -256,7 +257,16 @@ public class GrxVrmlExporter {
 	    return false;
 	}
 
-	public static void exportLink(BufferedWriter writer, GrxLinkItem link, String indent){
+	/**
+	 * @brief export link information
+	 * @param writer output stream
+	 * @param link link to be exported
+	 * @param indent indent string
+	 * @return vector of links which include this link and child links
+	 */
+	public static Vector<GrxLinkItem> exportLink(BufferedWriter writer, GrxLinkItem link, String indent){
+		Vector<GrxLinkItem> links = new Vector<GrxLinkItem>();
+		links.add(link);
 		try{
 			writer.write(indent+"DEF "+link.getName()+" Joint {\n");
 			writer.write(indent+"  jointType \""+link.jointType()+"\"\n");
@@ -299,7 +309,8 @@ public class GrxVrmlExporter {
 			writer.write(indent+"    }\n");
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxLinkItem){
-					exportLink(writer, (GrxLinkItem)link.children_.get(i), indent+"    ");
+					Vector<GrxLinkItem> childLinks = exportLink(writer, (GrxLinkItem)link.children_.get(i), indent+"    ");
+					links.addAll(childLinks);
 				}
 			}
 			writer.write(indent+"  ]\n");
@@ -307,6 +318,7 @@ public class GrxVrmlExporter {
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
+		return links;
 	}
 
 	public static void exportSensor(BufferedWriter writer, GrxSensorItem sensor, String indent){
@@ -371,6 +383,15 @@ public class GrxVrmlExporter {
 				if (!max.equals("-1.0 -1.0 -1.0 ")){
 					writer.write(indent+"  maxAcceleration "+max+"\n");
 				}
+			}
+			if (sensor.children_.size() > 0){
+				writer.write(indent+"  children[\n");
+				for (int i=0; i<sensor.children_.size(); i++){
+					if (sensor.children_.get(i) instanceof GrxShapeItem){
+						exportShape(writer, (GrxShapeItem)sensor.children_.get(i), indent+"    ");
+					}
+				}
+				writer.write(indent+"  ]\n");
 			}
 			writer.write(indent+"}\n");
 		}catch(Exception ex){
