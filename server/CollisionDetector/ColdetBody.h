@@ -18,6 +18,7 @@
 #include <vector>
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include <hrpUtil/Tvmet4d.h>
 #include <hrpCorba/ModelLoader.hh>
 #include <hrpCollision/ColdetModel.h>
 
@@ -55,6 +56,8 @@ public:
   private:
     void addLinkVerticesAndTriangles
         (ColdetModelPtr& coldetModel, LinkInfo& linkInfo, ShapeInfoSequence_var& shapes);
+    void addLinkVerticesAndTriangles
+        (ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, ShapeInfoSequence_var& shapes, int& vertexIndex, int& triangleIndex);
     
     vector<ColdetModelPtr> linkColdetModels;
     map<string, ColdetModelPtr> linkNameToColdetModelMap;

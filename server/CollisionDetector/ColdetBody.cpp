@@ -12,7 +12,6 @@
 */
 
 #include "ColdetBody.h"
-#include <hrpUtil/Tvmet4d.h>
 #include <iostream>
 
 
@@ -36,6 +35,18 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
             const ShapeInfo& shapeInfo = shapes[shapeIndex];
             totalNumTriangles += shapeInfo.triangles.length() / 3;
         }
+
+        const SensorInfoSequence& sensors = linkInfo.sensors;
+        for (unsigned int i=0; i<sensors.length(); i++){
+            const SensorInfo &sinfo = sensors[i];
+            const TransformedShapeIndexSequence tsis = sinfo.shapeIndices;
+            for (unsigned int j=0; j<tsis.length(); j++){
+                short shapeIndex = tsis[j].shapeIndex;
+                const ShapeInfo& shapeInfo = shapes[shapeIndex];
+                totalNumTriangles += shapeInfo.triangles.length() / 3;
+            }
+        }
+
         int totalNumVertices = totalNumTriangles * 3;
 
         ColdetModelPtr coldetModel(new ColdetModel());
@@ -57,38 +68,64 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
 
 
 void ColdetBody::addLinkVerticesAndTriangles
+(ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, ShapeInfoSequence_var& shapes, int& vertexIndex, int& triangleIndex)
+{
+    short shapeIndex = tsi.shapeIndex;
+    const DblArray12& M = tsi.transformMatrix;;
+    Matrix44 T, Tlocal;
+    Tlocal = M[0], M[1], M[2],  M[3],
+             M[4], M[5], M[6],  M[7],
+             M[8], M[9], M[10], M[11],
+             0.0,  0.0,  0.0,   1.0;
+    T = Tparent * Tlocal;
+    
+    const ShapeInfo& shapeInfo = shapes[shapeIndex];
+    
+    const FloatSequence& vertices = shapeInfo.vertices;
+    const LongSequence& triangles = shapeInfo.triangles;
+    const int numTriangles = triangles.length() / 3;
+    
+    for(int j=0; j < numTriangles; ++j){
+        int vertexIndexTop = vertexIndex;
+        for(int k=0; k < 3; ++k){
+            long orgVertexIndex = shapeInfo.triangles[j * 3 + k];
+            int p = orgVertexIndex * 3;
+            Vector4 v(T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0));
+            coldetModel->setVertex(vertexIndex++, v[0], v[1], v[2]);
+        }
+        coldetModel->setTriangle(triangleIndex++, vertexIndexTop, vertexIndexTop + 1, vertexIndexTop + 2);
+    }
+    
+}
+
+void ColdetBody::addLinkVerticesAndTriangles
 (ColdetModelPtr& coldetModel, LinkInfo& linkInfo, ShapeInfoSequence_var& shapes)
 {
     int vertexIndex = 0;
     int triangleIndex = 0;
 
     const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
-    
+
+    Matrix44 E(tvmet::identity<Matrix44>());
     for(int i=0; i < shapeIndices.length(); i++){
-        const TransformedShapeIndex& tsi = shapeIndices[i];
-        short shapeIndex = tsi.shapeIndex;
-        const DblArray12& M = tsi.transformMatrix;;
-        Matrix44 T;
-        T = M[0], M[1], M[2],  M[3],
-            M[4], M[5], M[6],  M[7],
-            M[8], M[9], M[10], M[11],
-            0.0,  0.0,  0.0,   1.0;
+        addLinkVerticesAndTriangles(coldetModel, shapeIndices[i], E, shapes,
+                                    vertexIndex, triangleIndex);
+    }
 
-        const ShapeInfo& shapeInfo = shapes[shapeIndex];
-
-        const FloatSequence& vertices = shapeInfo.vertices;
-        const LongSequence& triangles = shapeInfo.triangles;
-        const int numTriangles = triangles.length() / 3;
-
-        for(int j=0; j < numTriangles; ++j){
-            int vertexIndexTop = vertexIndex;
-            for(int k=0; k < 3; ++k){
-                long orgVertexIndex = shapeInfo.triangles[j * 3 + k];
-                int p = orgVertexIndex * 3;
-                Vector4 v(T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0));
-                coldetModel->setVertex(vertexIndex++, v[0], v[1], v[2]);
-            }
-            coldetModel->setTriangle(triangleIndex++, vertexIndexTop, vertexIndexTop + 1, vertexIndexTop + 2);
+    Matrix44 T(tvmet::identity<Matrix44>());
+    const SensorInfoSequence& sensors = linkInfo.sensors;
+    for (unsigned int i=0; i<sensors.length(); i++){
+        const SensorInfo& sensor = sensors[i]; 
+        calcRodrigues(T, Vector3(sensor.rotation[0], sensor.rotation[1], 
+                                 sensor.rotation[2]), sensor.rotation[3]);
+        T(0,3) = sensor.translation[0];
+        T(1,3) = sensor.translation[1];
+        T(2,3) = sensor.translation[2];
+        const TransformedShapeIndexSequence& shapeIndices = sensor.shapeIndices;
+        for (unsigned int j=0; j<shapeIndices.length(); j++){
+            addLinkVerticesAndTriangles(coldetModel, shapeIndices[j], T, 
+                                        shapes,
+                                        vertexIndex, triangleIndex);
         }
     }
 }
