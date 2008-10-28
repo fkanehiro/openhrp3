@@ -87,8 +87,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private List<String> robotEntry_ = new ArrayList<String>();
 	private ClockGenerator_impl clockGenerator_ = new ClockGenerator_impl();
 	
-	private String nsHost_ = "localhost";
-	private int    nsPort_ = 2809;
 	private boolean isInteractive_ = true;
 	private boolean isExecuting_ = false;
 	private boolean isSuspending_ = false;
@@ -575,21 +573,6 @@ public class GrxOpenHRPView extends GrxBaseView {
         }
 	}
 	
-    public void restoreProperties() {
-        super.restoreProperties();
-        nsHost_ = System.getenv("NS_HOST");
-        if (nsHost_ == null) {
-            nsHost_ = "localhost";
-        }
-
-        try {
-            nsPort_ = Integer.parseInt(System.getenv("NS_PORT"));
-        } catch (Exception e) {
-            nsPort_ = 2809;
-        }
-    }
-
-
 	void execSWT( Runnable r, boolean execInCurrentThread ){
 		if( execInCurrentThread ) {
 			r.run();
@@ -719,13 +702,14 @@ public class GrxOpenHRPView extends GrxBaseView {
 		if (currentDynamics_ == null) {
 			try {
 				org.omg.CORBA.Object obj = //process_.get(DynamicsSimulatorID_).getReference();
-				GrxCorbaUtil.getReference("DynamicsSimulatorFactory", nsHost_, nsPort_);
+				GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
 				DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper.narrow(obj);
 				currentDynamics_ = ifactory.create();
 				currentDynamics_._non_existent();
 
 			} catch (Exception e) {
 				GrxDebugUtil.printErr("getDynamicsSimulator: create failed.");
+				e.printStackTrace();
 				currentDynamics_ = null;
 			}
 		}
@@ -764,7 +748,7 @@ public class GrxOpenHRPView extends GrxBaseView {
         GrxProcessManagerView pManager = (GrxProcessManagerView)manager_.getView(GrxProcessManagerView.class);
 
         boolean doRestart = false;
-        org.omg.CORBA.Object cobj = GrxCorbaUtil.getReference(controllerName, nsHost_, nsPort_);
+        org.omg.CORBA.Object cobj = GrxCorbaUtil.getReference(controllerName);
         AProcess proc = pManager.processManager.get(controllerName);
         String dir = model.getStr("setupDirectory", "");
         String com = model.getStr("setupCommand", "");
@@ -817,7 +801,7 @@ public class GrxOpenHRPView extends GrxBaseView {
         Date before = new Date();
         int WAIT_COUNT = 4;
         for (int j=0; ; j++) {
-            cobj = GrxCorbaUtil.getReference(controllerName, nsHost_, nsPort_);
+            cobj = GrxCorbaUtil.getReference(controllerName);
             if (cobj != null) {
                 try {
                     ControllerFactory cfactory = ControllerFactoryHelper.narrow(cobj);
@@ -825,7 +809,7 @@ public class GrxOpenHRPView extends GrxBaseView {
                     controller.setDynamicsSimulator(currentDynamics_);
 
                     if (simParamPane_.isSimulatingView()) {
-                        cobj = GrxCorbaUtil.getReference("ViewSimulator", nsHost_, nsPort_);
+                        cobj = GrxCorbaUtil.getReference("ViewSimulator");
                         ViewSimulator viewsim = ViewSimulatorHelper.narrow(cobj);
                         controller.setViewSimulator(viewsim);
                     }
