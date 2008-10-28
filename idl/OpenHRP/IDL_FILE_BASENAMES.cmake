@@ -7,5 +7,8 @@ set(IDL_FILE_BASENAMES
   Controller
   ViewSimulator
   OnlineViewer
-  ClockGenerator)
+  ClockGenerator
+  OpenRTM
+  RTC
+  SDOPackage)
 
