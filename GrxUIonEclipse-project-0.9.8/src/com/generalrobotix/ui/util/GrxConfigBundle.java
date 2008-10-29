@@ -82,7 +82,7 @@ public class GrxConfigBundle extends Properties {
 			GrxDebugUtil.println("ConfigBundle.getStr: missingResouce("+key+")");
 			return null;
 		} catch (NullPointerException e){
-			GrxDebugUtil.printErr("ConfigBundle.getStr: The key '"+key+"' is not exist.");
+			GrxDebugUtil.printErr("ConfigBundle.getStr: The key '"+key+"' does not exist.");
 			return null;
 		}
 		

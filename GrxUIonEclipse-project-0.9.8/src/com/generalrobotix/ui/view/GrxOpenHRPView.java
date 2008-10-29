@@ -414,14 +414,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 		    for (int i = 0; i<controllers_.size(); i++) {
 		    	ControllerAttribute attr = 
 		    		(ControllerAttribute)controllers_.get(i);
-				if (attr.doCount_ <= simTime_ / attr.stepTime_) {
-					attr.doFlag_ = true;
-					try {
-						attr.controller_.input();
-					} catch (Exception e) {
-						GrxDebugUtil.printErr("Exception in input", e);
-					}
-				}
+		    	attr.input(simTime_);
 		    }
 		    
 			simTime_ += stepTime_;
@@ -429,13 +422,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			// control
 			for (int i = 0; i < controllers_.size(); i++) {
 				ControllerAttribute attr = controllers_.get(i);
-				if (attr.doFlag_) {
-					try {
-						attr.controller_.control();
-					} catch (Exception e) {
-						GrxDebugUtil.printErr("Exception in control", e);
-					}
-				}
+				attr.control();
 			}
 			for (int i=0; i<ecs_.size();){
 				ExecutionContext ec = ecs_.get(i);
@@ -474,15 +461,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			// output
 			for (int i = 0; i < controllers_.size(); i++) {
 				ControllerAttribute attr = controllers_.get(i);
-				if (attr.doFlag_) {
-					try {
-						attr.controller_.output();
-					} catch (Exception e) {
-						GrxDebugUtil.printErr("Exception in output", e);
-					}
-					attr.doCount_++;
-					attr.doFlag_ = false;
-				}
+				attr.output();
 			}
 		}
 		
@@ -641,6 +620,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 				currentDynamics_.setCharacterLinkData(
 					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
 					model.getInitialTransformArray(base));
+				
 			
 				// SET I/O MODE OF JOINTS
 				JointDriveMode jm = JointDriveMode.TORQUE_MODE;
@@ -829,10 +809,10 @@ public class GrxOpenHRPView extends GrxBaseView {
                 //タイトル画像をなしにするにはどうすればいいのか？とりあえずnullにしてみた
                 MessageDialog dialog = new MessageDialog(getParent().getShell(),"Setup Controller",null,"Can't connect the Controller("+controllerName+").\n" +"Wait more seconds ?",MessageDialog.QUESTION,new String[]{"YES","NO","CANCEL"}, 2);
                 int ans = dialog.open();
-                if (ans == SWT.YES) {
+                if (ans == 0) {
                     before = new Date();
                     j=0;
-                } else if (ans == SWT.NO) {
+                } else if (ans == 1) {
                     break;
                 } else {
                     return -1;

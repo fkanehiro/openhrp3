@@ -460,11 +460,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             	textureInfo = textures[appearanceInfo.textureIndex];
             }
         }
-        System.out.println("transform of "+name);
-        for (int i=0; i<tsi.transformMatrix.length; i++){
-        	System.out.print(tsi.transformMatrix[i]+" ");
-        }
-        System.out.println();
         GrxShapeItem shape = new GrxShapeItem(name, manager_,
         tsi.transformMatrix, shapeInfo, appearanceInfo, materialInfo, textureInfo);
 		return shape;
