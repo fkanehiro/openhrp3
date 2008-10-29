@@ -275,9 +275,15 @@ public class GrxVrmlExporter {
 			writer.write(indent+"      mass "+link.mass()+"\n");
 			writer.write(indent+"      momentsOfInertia [ "+link.getProperty("inertia")+"]\n");
 			writer.write(indent+"      children[\n");
+			String exported_url = null;
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxShapeItem){
-					exportShape(writer, (GrxShapeItem)link.children_.get(i), indent+"        ");
+					GrxShapeItem shape = (GrxShapeItem)link.children_.get(i);
+					String url = shape.getURL(false);
+					if (url == null || (url != null && !url.equals(exported_url))){
+						exportShape(writer, shape, indent+"        ");
+						exported_url = url;
+					}
 				}
 			}
 			writer.write(indent+"      ]\n");
