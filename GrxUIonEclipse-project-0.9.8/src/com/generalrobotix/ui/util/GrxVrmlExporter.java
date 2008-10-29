@@ -1,6 +1,7 @@
 package com.generalrobotix.ui.util;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.util.Vector;
 
@@ -16,6 +17,8 @@ import com.generalrobotix.ui.item.GrxShapeItem;
 public class GrxVrmlExporter {
 	public static boolean export(GrxModelItem model, String fPath){
 		// TODO check existence of fPath
+		int idx = fPath.lastIndexOf(File.separatorChar);
+		String baseDir = fPath.substring(0, idx);
 		BufferedWriter writer = null;
 	    try {
 	        writer = new BufferedWriter(new FileWriter(fPath));
@@ -204,7 +207,7 @@ public class GrxVrmlExporter {
 	        
 	        writer.write("DEF "+model.getName()+" Humanoid{\n");
 	        writer.write("  humanoidBody [\n");
-	        Vector<GrxLinkItem> links = exportLink(writer, model.rootLink(), "    ");
+	        Vector<GrxLinkItem> links = exportLink(writer, model.rootLink(), "    ", baseDir);
 	        writer.write("  ]\n");
 	        writer.write("  joints [\n");
 	        for (int i=0; i<links.size(); i++){
@@ -237,9 +240,11 @@ public class GrxVrmlExporter {
 	 * @param writer output stream
 	 * @param link link to be exported
 	 * @param indent indent string
+	 * @param baseDir directory where main file is exported
 	 * @return vector of links which include this link and child links
 	 */
-	public static Vector<GrxLinkItem> exportLink(BufferedWriter writer, GrxLinkItem link, String indent){
+	public static Vector<GrxLinkItem> exportLink(BufferedWriter writer, GrxLinkItem link, String indent, 
+			String baseDir){
 		Vector<GrxLinkItem> links = new Vector<GrxLinkItem>();
 		links.add(link);
 		try{
@@ -267,7 +272,7 @@ public class GrxVrmlExporter {
 			writer.write(indent+"  children[\n");
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxSensorItem){
-				exportSensor(writer, (GrxSensorItem)link.children_.get(i), indent+"    ");
+				exportSensor(writer, (GrxSensorItem)link.children_.get(i), indent+"    ", baseDir);
 				}
 			}
 			writer.write(indent+"    DEF "+link.getName()+"_Link Segment{\n");
@@ -281,7 +286,7 @@ public class GrxVrmlExporter {
 					GrxShapeItem shape = (GrxShapeItem)link.children_.get(i);
 					String url = shape.getURL(false);
 					if (url == null || (url != null && !url.equals(exported_url))){
-						exportShape(writer, shape, indent+"        ");
+						exportShape(writer, shape, indent+"        ", baseDir);
 						exported_url = url;
 					}
 				}
@@ -290,7 +295,8 @@ public class GrxVrmlExporter {
 			writer.write(indent+"    }\n");
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxLinkItem){
-					Vector<GrxLinkItem> childLinks = exportLink(writer, (GrxLinkItem)link.children_.get(i), indent+"    ");
+					Vector<GrxLinkItem> childLinks = exportLink(writer, (GrxLinkItem)link.children_.get(i), 
+							indent+"    ", baseDir);
 					links.addAll(childLinks);
 				}
 			}
@@ -302,7 +308,14 @@ public class GrxVrmlExporter {
 		return links;
 	}
 
-	public static void exportSensor(BufferedWriter writer, GrxSensorItem sensor, String indent){
+	/**
+	 * @biref export sensor item
+	 * @param writer output stream
+	 * @param sensor sensor to be exported
+	 * @param indent indent
+	 * @param baseDir directory where main file is exported
+	 */
+	public static void exportSensor(BufferedWriter writer, GrxSensorItem sensor, String indent, String baseDir){
 		try{
 			String nodeType="unknown";
 			if (sensor.type().equals("Force")){
@@ -369,7 +382,7 @@ public class GrxVrmlExporter {
 				writer.write(indent+"  children[\n");
 				for (int i=0; i<sensor.children_.size(); i++){
 					if (sensor.children_.get(i) instanceof GrxShapeItem){
-						exportShape(writer, (GrxShapeItem)sensor.children_.get(i), indent+"    ");
+						exportShape(writer, (GrxShapeItem)sensor.children_.get(i), indent+"    ", baseDir);
 					}
 				}
 				writer.write(indent+"  ]\n");
@@ -379,7 +392,15 @@ public class GrxVrmlExporter {
 			ex.printStackTrace();
 		}
 	}
-	public static void exportShape(BufferedWriter writer, GrxShapeItem shape, String indent){
+	
+	/**
+	 * @brief export shape item 
+	 * @param writer output stream
+	 * @param shape shape to be exported
+	 * @param indent indent 
+	 * @param baseDir directory where main file is exported
+	 */
+	public static void exportShape(BufferedWriter writer, GrxShapeItem shape, String indent, String baseDir){
 		try{
 			if (shape.getURL(false) == null){
 				writer.write(indent+"Transform {\n");
@@ -407,11 +428,31 @@ public class GrxVrmlExporter {
 				writer.write(indent+"  ]\n");
 				writer.write(indent+"}\n");
 			}else{
-				writer.write(indent+"Inline { url \""+shape.getURL(false)+"\" }\n");
+				writer.write(indent+"Inline { url \""+_absPath2relPath(shape.getURL(false), baseDir)+"\" }\n");
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
+	}
+	
+	/**
+	 * @brief convert absolute path into relative path
+	 * @param absPath absolute path
+	 * @param baseDir base directory
+	 * @return relative path from the base directory
+	 */
+	private static String _absPath2relPath(String absPath, String baseDir){
+		String [] dirs1 = absPath.split(File.separator);
+		String [] dirs2 = baseDir.split(File.separator);
+		int cnt=0;
+		while (cnt < dirs1.length && cnt < dirs2.length && dirs1[cnt].equals(dirs2[cnt])) cnt++;
+		String relPath = "";
+		for (int i=0; i<dirs2.length-cnt; i++) relPath += ".."+File.separator;
+		for (int i=cnt; i<dirs1.length; i++){
+			relPath += dirs1[i];
+			if (i != dirs1.length-1) relPath += File.separator;
+		}
+		return relPath;
 	}
 	
 	public static void exportGeometry(BufferedWriter writer, ShapeInfo info, String indent){
