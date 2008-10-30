@@ -8,7 +8,5 @@ set(IDL_FILE_BASENAMES
   ViewSimulator
   OnlineViewer
   ClockGenerator
-  OpenRTM
-  RTC
-  SDOPackage)
+)
 
