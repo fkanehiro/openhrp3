@@ -1,0 +1,348 @@
+// RTC.idl
+#include "SDOPackage.idl"
+
+#pragma prefix "omg.org"
+
+#define UNIQUE_ID_TYPE_NATIVE long
+
+module RTC
+{
+  typedef SDOPackage::UniqueIdentifier UniqueIdentifier;
+  typedef SDOPackage::NVList NVList;
+  typedef UNIQUE_ID_TYPE_NATIVE UniqueId;
+
+  /*!
+   * @brief LightweightRTC::ReturnCode_t enumeration
+   */
+  enum ReturnCode_t
+    {
+      RTC_OK,
+      RTC_ERROR,
+      BAD_PARAMETER,
+      UNSUPPORTED,
+      OUT_OF_RESOURCES,
+      PRECONDITION_NOT_MET
+    };
+  
+  /*!
+   * @brief LightweightRTC::LifeCycleState enumeration
+   */
+  enum LifeCycleState
+    {
+      INACTIVE_STATE,
+      ACTIVE_STATE,
+      ERROR_STATE,
+      UNKNOWN_STATE
+    };
+  
+  /*!
+   *@brief forward declaration of ExecutionContext
+   */
+  interface ExecutionContext;
+  typedef sequence<ExecutionContext> ExecutionContextList;
+
+  /*!
+   * @brief LightweightRTC::ConponentAction interface
+   */
+  interface ComponentAction
+  {
+    UniqueId     attach_executioncontext(in ExecutionContext exec_context);
+    ReturnCode_t detach_executioncontext(in UniqueId ec_id);
+    ReturnCode_t on_initialize();
+    ReturnCode_t on_finalize();
+    ReturnCode_t on_startup(in UniqueId ec_id);
+    ReturnCode_t on_shutdown(in UniqueId ec_id);
+    ReturnCode_t on_activated(in UniqueId ec_id);
+    ReturnCode_t on_deactivated(in UniqueId ec_id);
+    ReturnCode_t on_aborting(in UniqueId ec_id);
+    ReturnCode_t on_error(in UniqueId ec_id);
+    ReturnCode_t on_reset(in UniqueId ec_id);
+  };
+  
+  /*!
+   * @brief LightweightRTC::LightweightRTObject interface
+   */
+  interface LightweightRTObject : ComponentAction
+  {
+    ReturnCode_t initialize();
+    ReturnCode_t finalize();
+    ReturnCode_t exit();
+    boolean is_alive();
+    ExecutionContextList get_contexts();
+    ExecutionContext get_context(in UniqueId ec_id);
+  };
+
+  /*!
+   * @brief LightweightRTC::ExecutionKind enumeration
+   */
+  enum ExecutionKind
+    {
+      PERIODIC,
+      EVENT_DRIVEN,
+      OTHER
+    };
+
+  /*!
+   * @brief LightweightRTC::ExecutionContext interface
+   */
+  interface ExecutionContext
+  {
+    boolean is_running();
+    ReturnCode_t start();
+    ReturnCode_t stop();
+    double get_rate();
+    ReturnCode_t set_rate(in double rate);
+    ReturnCode_t activate_component(in LightweightRTObject comp);
+    ReturnCode_t deactivate_component(in LightweightRTObject comp);
+    ReturnCode_t reset_component(in LightweightRTObject comp);
+    LifeCycleState get_component_state(in LightweightRTObject comp);
+    ExecutionKind get_kind();
+    ReturnCode_t add(in LightweightRTObject comp);
+    ReturnCode_t remove(in LightweightRTObject comp);
+  };
+
+  /*!-----------------------------------------------------------
+   * ExecutionSemantics Package
+   *------------------------------------------------------------/
+
+  /*!
+   * @brief ExecutionSemantics::DataFlowComponentAction interface
+   */
+  interface DataFlowComponentAction
+  {
+    ReturnCode_t on_execute(in UniqueId ec_id);
+    ReturnCode_t on_state_update(in UniqueId ec_id);
+    ReturnCode_t on_rate_changed(in UniqueId ec_id);
+  };
+
+  /*!
+   * @brief ExecutionSemantics::DataFlowParticipant component
+   */
+  interface DataFlowParticipant
+    : DataFlowComponentAction
+  {
+  };
+  
+  /*!
+   * @brief ExecutionSemantics::FsmObject interface
+   */
+  interface FsmObject
+  {
+    ReturnCode_t stimulate(in string message, in UniqueId ec_id);
+  };
+  
+  /*!
+   * @brief ExecutionSemantics::FsmParticipantAction interface
+   */
+  interface FsmParticipantAction
+  {
+    ReturnCode_t on_action(in UniqueId ec_id);
+  };
+  
+  /*!
+   * @brief ExecutionSemantics::FsmParticipant component
+   */
+  interface FsmParticipant
+    : FsmParticipantAction
+  {
+  };
+  
+  /*!
+   * @brief ExecutionSemantics::Mode interface
+   */
+  interface Mode
+  {
+  };
+  
+  typedef sequence<Mode> ModeList;
+  
+  /*!
+   * @brief ExecutionSemantics::ModeCapable interface
+   */
+  interface ModeCapable
+  {
+    Mode get_default_mode();
+    Mode get_current_mode();
+    Mode get_current_mode_in_context(in UniqueId ec_id);
+    Mode get_pending_mode();
+    Mode get_pending_mode_in_context(in UniqueId ec_id);
+    ReturnCode_t set_mode(in Mode new_mode,
+			  in boolean immediate);
+  };
+  
+  /*!
+   * @brief ExecutionSemantics::MultiModeComponentAction interface
+   */
+  interface MultiModeComponentAction
+  {
+    ReturnCode_t on_mode_changed(in LightweightRTObject comp,
+				 in UniqueId ec_id);
+  };
+
+  /*!
+   * @brief ExecutionSemantics::MultiModeObject interface
+   */
+  interface MultiModeObject 
+    : ModeCapable, MultiModeComponentAction
+  {
+  };
+  
+
+  /*!-----------------------------------------------------------
+   * Introspection package
+   *------------------------------------------------------------*/
+  interface RTObject;
+  
+  /*!
+   * @brief Introspection::PortInterfacePolarity enumeration
+   */
+  enum PortInterfacePolarity
+    {
+      PROVIDED,
+      REQUIRED
+    };
+  
+  /*!
+   * @brief Introspection::PortInterfaceProfile structure
+   */
+  struct PortInterfaceProfile
+  {
+    string instance_name;
+    string type_name;
+    PortInterfacePolarity polarity;
+  };
+  
+  typedef sequence<PortInterfaceProfile> PortInterfaceProfileList;
+
+  interface Port;
+
+  typedef sequence<Port> PortList;
+
+  typedef sequence<RTObject> RTCList;
+
+  /*!
+   * @brief Introspection::ConnectorProfile structure
+   */
+  struct ConnectorProfile
+  {
+    string name;
+    UniqueIdentifier connector_id;
+    PortList ports;
+    NVList properties;
+  };
+  
+  typedef sequence<ConnectorProfile> ConnectorProfileList;
+
+  /*!
+   * @brief Introspection::PortProfile structure
+   */
+  struct PortProfile
+  {
+    string name;
+    PortInterfaceProfileList interfaces;
+    Port port_ref;
+    ConnectorProfileList connector_profiles;
+    RTObject owner;
+    NVList properties;
+  };
+  
+  typedef sequence<PortProfile> PortProfileList;
+  
+  /*!
+   * @brief Introspection::ExecutionContextProfile structure
+   */
+  struct ExecutionContextProfile
+  {
+    ExecutionKind kind;
+    double rate;
+    RTObject owner;
+    RTCList participants;
+    NVList properties;
+  };
+  
+  typedef sequence<ExecutionContextProfile>
+  
+  ExecutionContextProfileList;
+  
+  /*!
+   * @brief Introspection::ComponentProfile structure
+   */
+  struct ComponentProfile
+  {
+    string instance_name;
+    string type_name;
+    string description;
+    string version;
+    string vendor;
+    string category;
+    PortProfileList port_profiles;
+    RTObject parent;
+    NVList properties;
+  };
+  
+  typedef sequence<ComponentProfile> ComponentProfileList;
+
+  /*!
+   * @brief Introspection::Port interface
+   */
+  interface Port : SDOPackage::SDOService
+  {
+    PortProfile get_port_profile();
+    ConnectorProfileList get_connector_profiles();
+    ConnectorProfile get_connector_profile(in UniqueIdentifier connector_id);
+    ReturnCode_t connect(inout ConnectorProfile connector_profile);
+    ReturnCode_t notify_connect(inout ConnectorProfile connector_profile);
+    ReturnCode_t disconnect(in UniqueIdentifier connector_id);
+    ReturnCode_t notify_disconnect(in UniqueIdentifier connector_id);
+    ReturnCode_t disconnect_all();
+  };
+
+  /*!
+   * @brief Introspection::ExecutionContextService interface
+   */
+  interface ExecutionContextService
+    : ExecutionContext, SDOPackage::SDOService
+  {
+    ExecutionContextProfile get_profile();
+  };
+  
+  typedef sequence<ExecutionContextService> ExecutionContextServiceList;
+
+  /*!
+   * @brief Introspection::FsmBihaviorProfile structure
+   */
+  struct FsmBihaviorProfile
+  {
+    UniqueIdentifier id;
+    FsmParticipantAction comp;
+  };
+
+  /*!
+   * @brief Introspection::FsmProfile structure
+   */
+  struct FsmProfile
+  {
+    sequence<FsmBihaviorProfile> bihavior_profiles;
+  };
+
+  /*!
+   * @brief Introspection::FsmService interface
+   */
+  interface FsmService
+    : SDOPackage::SDO
+  {
+    FsmProfile get_fsm_profile();
+    ReturnCode_t set_fsm_profile();
+  };
+  
+  /*!
+   * @brief Introspection::RTObject interface
+   */
+  interface RTObject
+    : LightweightRTObject, SDOPackage::SDO
+  {
+    ComponentProfile get_component_profile();
+    PortList get_ports();
+    ExecutionContextServiceList get_execution_context_services();
+  };
+};
