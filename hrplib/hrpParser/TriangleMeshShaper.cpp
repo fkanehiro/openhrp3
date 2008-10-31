@@ -1222,10 +1222,11 @@ void TriangleMeshShaper::defaultTextureMappingFaceSet(VrmlIndexedFaceSet* triang
                       ( s=1 , t=size[0] >= size[2] ? 0 : 2 )
                     : ( s=2 , t=1) ) ;
         triangleMesh->texCoord = new VrmlTextureCoordinate();
+        double ratio = size[t]/size[s];
         for(int i=0; i<n; i++){
             SFVec2f point;
             point[0] = (triangleMesh->coord->point[i][s]-min[s])/size[s];
-            point[1] = (triangleMesh->coord->point[i][t]-min[t])/size[t]*0.5;
+            point[1] = (triangleMesh->coord->point[i][t]-min[t])/size[t]*ratio;
             triangleMesh->texCoord->point.push_back(point);
         }
         triangleMesh->texCoordIndex.resize(triangleMesh->coordIndex.size());
