@@ -118,15 +118,10 @@ class ObjectFittingHandler extends OperationHandler {
         // 現在の Transform3D を生成し t3dCur へ入れる
         Transform3D t3dCur = new Transform3D();
         TransformGroup tgCur = new TransformGroup();
-        Hashtable hashTable =
-            SceneGraphModifier.getHashtableFromTG(
-                fittingInfoFrom_.getTransformGroup()
-            );
 
-        String strObjectName = (String)hashTable.get("objectName");
-        Manipulatable element = info.getManipulatable(strObjectName);
-        if (element == null) return false;
-        tgCur = element.getTransformGroupRoot();
+        GrxModelItem model = SceneGraphModifier.getModelFromTG(fittingInfoFrom_.getTransformGroup());
+        if (model == null) return false;
+        tgCur = model.getTransformGroupRoot();
         tgCur.getTransform(t3dCur);
 
         // 移動させる側の法線のスタートポイントへ回転処理をかけた場合の
@@ -234,7 +229,7 @@ class ObjectFittingHandler extends OperationHandler {
 
         String strFirst = null;
         String strSecond = null;
-        Hashtable tgInfo;
+        Hashtable<String, Object> tgInfo;
         switch (mode_) {
         case FITTING_FROM:
             if (tg == fittingInfoFrom_.getArrowTransformGroup()) {
@@ -246,13 +241,15 @@ class ObjectFittingHandler extends OperationHandler {
 
             tgInfo = SceneGraphModifier.getHashtableFromTG(tg);
             if (tgInfo == null) return;
-            strFirst = (String)tgInfo.get("objectName");
+            GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
+            strFirst = model.getName();
 
             tgInfo = SceneGraphModifier.getHashtableFromTG(
                 fittingInfoTo_.getTransformGroup()
             );
-            if (tgInfo != null) {
-                strSecond = (String)tgInfo.get("objectName");
+            model = SceneGraphModifier.getModelFromTG(fittingInfoTo_.getTransformGroup());
+            if (model != null) {
+                strSecond = model.getName();
             }
 
             if (strFirst.equals(strSecond)) return;
@@ -278,13 +275,15 @@ class ObjectFittingHandler extends OperationHandler {
             tgInfo = SceneGraphModifier.getHashtableFromTG(tg);
             if (tgInfo == null) 
             	return;
-            strSecond = (String)tgInfo.get("objectName");
+            model = SceneGraphModifier.getModelFromTG(tg);
+            strSecond = model.getName();
 
             tgInfo = SceneGraphModifier.getHashtableFromTG(
                 fittingInfoFrom_.getTransformGroup()
             );
-            if (tgInfo != null) {
-                strFirst = (String)tgInfo.get("objectName");
+            model = SceneGraphModifier.getModelFromTG(fittingInfoFrom_.getTransformGroup());
+            if (model != null) {
+                strFirst = model.getName();
             }
             if (strSecond.equals(strFirst)) 
             	return;
@@ -328,8 +327,7 @@ class ObjectFittingHandler extends OperationHandler {
     }
 
     private void _transformChanged(BehaviorInfo info, TransformGroup tg) {
-        Hashtable hashtable = SceneGraphModifier.getHashtableFromTG(tg);
-        GrxModelItem model = (GrxModelItem)hashtable.get("object");
+        GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
         if (model == null) {
             System.out.println("no manipulatable.");
             return;

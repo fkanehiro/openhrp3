@@ -74,7 +74,7 @@ public class InvKinemaResolver {
             robot_ = (GrxModelItem)manager_.getItem(GrxModelItem.class, objectName);
         }
         
-        from_ = (GrxLinkItem)robot_.getLinkInfo(jointName);
+        from_ = (GrxLinkItem)robot_.getLink(jointName);
         
         // fromジョイントのグローバル座標での位置姿勢を保持
         TransformGroup tg = from_.tg_;
@@ -101,7 +101,7 @@ public class InvKinemaResolver {
             return false;
         }
         
-        to_ = (GrxLinkItem)robot_.getLinkInfo(jointName);
+        to_ = (GrxLinkItem)robot_.getLink(jointName);
         
         return true;
     }

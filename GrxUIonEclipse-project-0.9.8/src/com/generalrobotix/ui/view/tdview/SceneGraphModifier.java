@@ -21,10 +21,9 @@ import java.util.*;
 import javax.vecmath.*;
 import javax.media.j3d.*;
 
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.sun.j3d.utils.picking.PickTool;
-
-import com.sun.j3d.utils.geometry.*;
 
 public class SceneGraphModifier {
     //--------------------------------------------------------------------
@@ -61,6 +60,11 @@ public class SceneGraphModifier {
         return this_;
     }
 
+    /**
+     * @brief get hash table assigned to TransformGroup as user data
+     * @param tg TransformGroup
+     * @return hash table assigned to TransformGroup
+     */
     public static Hashtable<String, Object> getHashtableFromTG(TransformGroup tg) {
         if (tg == null) 
 			return null; 
@@ -72,6 +76,33 @@ public class SceneGraphModifier {
         return null;
     }
 
+    /**
+     * @brief get GrxLinkItem associated with TransformGroup
+     * @param tg TransformGroup
+     * @return GrxLinkItem
+     */
+    public static GrxLinkItem getLinkFromTG(TransformGroup tg){
+    	Hashtable<String, Object> htable = getHashtableFromTG(tg);
+    	if (htable != null){
+    		GrxLinkItem link = (GrxLinkItem)htable.get("linkInfo");
+    		return link;
+    	}
+    	return null;
+    }
+
+    /**
+     * @brief get GrxModelItem associated with TransformGroup
+     * @param tg TransformGroup
+     * @return GrxModelItem
+     */
+    public static GrxModelItem getModelFromTG(TransformGroup tg){
+    	Hashtable<String, Object> htable = getHashtableFromTG(tg);
+    	if (htable != null){
+    		GrxModelItem model = (GrxModelItem)htable.get("object");
+    		return model;
+    	}
+    	return null;
+    }
     //--------------------------------------------------------------------
     // 公開メソッド
     /**
@@ -480,97 +511,4 @@ public class SceneGraphModifier {
         //switchNode.setWhichChild(Switch.CHILD_ALL);
         return switchNode;
     }
-
-    // ===== (Thu Apr 11 2002) ===>>
-    // Geometryの複製
-    private void _cloneGeometry(Node node) {
-        // Groupの場合
-        if (node instanceof Group) {
-            Group group = (Group)node;
-            if (group instanceof Primitive) {   // Primitiveである?
-                _clonePrimitiveGeometry(node);  // PrimitiveのGeometry複製処理
-            } else {
-                for(int i = 0; i < group.numChildren(); i ++) { // すべての子ノードについて
-                    _cloneGeometry(group.getChild(i));  // 再帰降下
-                }
-            }
-        }
-        // Leafの場合
-        if (node instanceof Leaf) {
-            if (node instanceof Link) { // Linkである?
-                Link lk = (Link) node;
-                SharedGroup sg = lk.getSharedGroup();   // Linkの先のSharedGroupを取得
-                _cloneGeometry(sg); // 再帰降下
-            }
-        }
-    }
-
-    // PrimitiveのGeometryの複製
-    private void _clonePrimitiveGeometry(Node node) {
-        // Geometry複製処理
-        if (node instanceof Shape3D) {  // Shape3Dなら
-            Shape3D s3d = (Shape3D)node;
-            for(int i = 0; i < s3d.numGeometries(); i ++) { // すべてのGeometryについて
-                Geometry g0 = s3d.getGeometry();    // もともとのGeometryを取得
-                Geometry g1 = (Geometry)g0.cloneNodeComponent(true);    // Geometryを複製
-                s3d.setGeometry(g1,i);  // 複製したGeometryに差し替え
-            }
-        }
-        // ツリー再帰降下処理
-        if (node instanceof Group) {    // Groupなら
-            Group group = (Group)node;
-            for(int i = 0; i < group.numChildren(); i ++) { // すべての子ノードについて
-                _clonePrimitiveGeometry(group.getChild(i));  // Geometryの複製
-            }
-        }
-    }
-    // <<=== (Thu Apr 11 2002) =====
-
-    //--------------------------------------------------------------------
-    // BoundingBoxCreator
-    /*
-    class BoundingBoxCreator implements TraverseOperation {
-        public void operation(
-            Node node,
-            Node parent
-        ) {
-    		if (node instanceof JointNode) {
-                JointNode jointNode = (JointNode)node;
-                TransformGroup tgJoint = jointNode.getTransformGroupRoot();
-                _setCapabilities(tgJoint);
-            } else if (node instanceof SegmentNode) {
-                if (!(parent instanceof JointNode)) return;
-                SegmentNode segmentNode = (SegmentNode)node;
-                JointNode jointNode = (JointNode)parent;
-                Group scene = (Group)segmentNode.getRootNode();
-                scene.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-                scene.setCapability(Group.ALLOW_CHILDREN_READ);
-                // SceneGraphを辿りShape3Dを取得
-                init_ = true;            // upper_,lower_を初期化する
-                Transform3D tr = new Transform3D();
-                tr.setIdentity();
-                _calcUpperLower(scene, tr);  // upper_,lower_を計算する
-
-                // バウンディングボックスの作成
-                Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-                Switch bbSwitch = _makeSwitchNode(_makeBoundingBox(color));
-                scene.addChild(bbSwitch);
-
-                // スイッチノードの参照をTGのユーザーデータ領域のストア
-                jointNode.setUserData("boundingBoxSwitch", bbSwitch);
-
-                // 軸の作成
-                Vector3d jointAxis = jointNode.getJointAxis();
-                if (jointAxis != null) {
-                    Switch axisSwitch =
-                        _makeSwitchNode(_makeAxisLine(jointAxis));
-                    scene.addChild(axisSwitch);
-                 
-                    jointNode.setUserData("axisLineSwitch", axisSwitch);
-                    jointNode.setUserData("jointAxis",jointNode.getJointAxis());
-                }
-            }
-        }
-    }
-        */
 }

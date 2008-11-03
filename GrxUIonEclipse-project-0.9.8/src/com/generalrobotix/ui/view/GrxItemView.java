@@ -65,6 +65,7 @@ public class GrxItemView extends GrxBaseView {
 
 	TreeViewer tv;
 	MenuManager menuMgr= new MenuManager();
+	ISelection lastSelection_=null;
 
 	/**
 	 * @brief constructor
@@ -82,8 +83,24 @@ public class GrxItemView extends GrxBaseView {
 
 		Tree t = tv.getTree();
 		
-
-	
+		t.addListener(SWT.Selection, new Listener() {
+			public void handleEvent (Event event){
+				if (lastSelection_ != null){
+					for (Object o : ((IStructuredSelection) lastSelection_).toArray() ){
+						if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
+							((GrxBaseItem)o).unselected();
+						}
+					}
+				}
+				lastSelection_ = tv.getSelection();
+				for (Object o : ((IStructuredSelection) lastSelection_).toArray() ){
+					if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
+						((GrxBaseItem)o).selected();
+					}
+				}
+			}
+		});
+		
 		// ダブルクリックでアイテムの選択状態をトグル
 		t.addListener ( SWT.DefaultSelection, new Listener () {
 			public void handleEvent (Event event) {
