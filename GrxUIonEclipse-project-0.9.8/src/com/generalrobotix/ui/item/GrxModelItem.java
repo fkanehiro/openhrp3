@@ -30,8 +30,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-import com.sun.j3d.utils.geometry.*;
-
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.view.tdview.*;
@@ -60,9 +58,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     public BranchGroup bgRoot_ = new BranchGroup();
     public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
+    // link currently selected on 3DView
     public GrxLinkItem activeLink_;
-    private int[] jointToLink_; // length = joint number
-    private final Map<String, GrxLinkItem> linkMap_ = new HashMap<String, GrxLinkItem>();
+    // jontId -> link
+    private int[] jointToLink_; 
+    // link name -> link
+    private final Map<String, GrxLinkItem> linkMap_ = new HashMap<String, GrxLinkItem>(); 
     // sensor type name -> list of sensors
     private final Map<String, List<GrxSensorItem>> sensorMap_ = new HashMap<String, List<GrxSensorItem>>();
     // list of cameras
@@ -76,11 +77,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     private Switch switchComZ0_;
     private TransformGroup tgComZ0_;
 
-    // temporary variables for computation
-    private Transform3D t3d_ = new Transform3D();
-    private Vector3d v3d_ = new Vector3d();
-
-
     /**
      * @brief get BodyInfo
      * @return BodyInfo
@@ -90,7 +86,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	return bInfo_;
     }
     
-   	/**
+    /**
    	 * @brief
    	 */
 	class MenuChangeType extends Action {
@@ -124,7 +120,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
         // create root link
-        GrxLinkItem link = new GrxLinkItem("root", manager_);
+        GrxLinkItem link = new GrxLinkItem("root", manager_, this);
         link.setProperty("jointType", "free");
         link.propertyChanged();
         links_.add(link);
@@ -305,8 +301,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     private void _setupMarks() {
         double radius = getDbl("markRadius", DEFAULT_RADIOUS);
         if (switchCom_ == null || radius != DEFAULT_RADIOUS) {
-            switchCom_ = createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
-            switchComZ0_= createBall(radius, new Color3f(0.0f, 1.0f, 0.0f));
+            switchCom_ = GrxShapeUtil.createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
+            switchComZ0_= GrxShapeUtil.createBall(radius, new Color3f(0.0f, 1.0f, 0.0f));
             tgCom_ = (TransformGroup)switchCom_.getChild(0);
             tgComZ0_ = (TransformGroup)switchComZ0_.getChild(0);
             TransformGroup root = getTransformGroupRoot();
@@ -353,7 +349,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
             int jointCount = 0;
             for (int i = 0; i < linkInfoList.length; i++) {
-                links_.add(new GrxLinkItem(linkInfoList[i].name, manager_, linkInfoList[i]));
+                links_.add(new GrxLinkItem(linkInfoList[i].name, manager_, this, linkInfoList[i]));
                 linkMap_.put(links_.get(i).getName(), links_.get(i));
                 if (links_.get(i).jointId() >= 0){
                     jointCount++;
@@ -408,6 +404,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return true;
     }
 
+    /**
+     * @brief make connections between links and gather cameras 
+     * @param index index of link in links_
+     */
     private void createLink( int index ){
 
         GrxLinkItem link = links_.get(index);
@@ -420,10 +420,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
 
         // gather cameras
-        for (int i=0; i< link.cameras_.size(); i++){
-        	cameraList_.add(link.cameras_.get(i));
+        for (int i=0; i< link.children_.size(); i++){
+        	if (link.children_.get(i) instanceof GrxSensorItem){
+        		GrxSensorItem sensor = (GrxSensorItem)link.children_.get(i);
+        		if (sensor.camera_ != null){
+                	cameraList_.add(sensor.camera_);
+        		}
+        	}
         }
-
 
         for( int i = 0 ; i < link.childIndices().length ; i++ )
             {
@@ -508,8 +512,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             GrxLinkItem link = links_.get(i);
             TransformGroup g = link.tg_;
             Map<String, Object> userData = (Map<String, Object>)g.getUserData();
-            userData.put("object", this);
-            userData.put("objectName", this.getName());
 
             Transform3D tr = new Transform3D();
             tr.setIdentity();
@@ -550,54 +552,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         calcForwardKinematics();
         updateInitialTransformRoot();
         updateInitialJointValues();
-    }
-
-
-	/**
-     * @brief setup capabilities
-     * @param node node where this process starts
-     * @param depth current depth. This can be used for debug output
-     */
-    private void _traverse(Node node, int depth) {
-        if (node instanceof Switch) {
-            return;
-        } else if (node instanceof BranchGroup) {
-            BranchGroup bg = (BranchGroup) node;
-            bg.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-            bg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-            for (int i = 0; i < bg.numChildren(); i++)
-                _traverse(bg.getChild(i), depth + 1);
-
-        } else if (node instanceof TransformGroup) {
-            TransformGroup tg = (TransformGroup) node;
-            tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
-            tg.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
-            tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-            tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-            tg.setCapability(TransformGroup.ALLOW_LOCAL_TO_VWORLD_READ);
-            for (int i = 0; i < tg.numChildren(); i++)
-                _traverse(tg.getChild(i), depth + 1);
-
-        } else if (node instanceof Group) {
-            Group g = (Group) node;
-            g.setCapability(Group.ALLOW_CHILDREN_READ);
-            g.setCapability(Group.ALLOW_CHILDREN_WRITE);
-            for (int i = 0; i < g.numChildren(); i++)
-                _traverse(g.getChild(i), depth + 1);
-
-        } else if (node instanceof Link) {
-            Link l = (Link) node;
-            l.setCapability(Link.ALLOW_SHARED_GROUP_READ);
-            SharedGroup sg = l.getSharedGroup();
-            sg.setCapability(SharedGroup.ALLOW_CHILDREN_READ);
-            for (int i = 0; i < sg.numChildren(); i++)
-                _traverse(sg.getChild(i), depth + 1);
-
-        } else if (node instanceof Shape3D) {
-        	// do nothing
-        } else {
-            GrxDebugUtil.println("* The node " + node.toString() + " is not supported.");
-        }
     }
 
 
@@ -712,7 +666,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param value of the joint
      */
     public void setJointValue(String jname, double value) {
-        GrxLinkItem l = getLinkInfo(jname);
+        GrxLinkItem l = getLink(jname);
         if (l != null)
             l.jointValue(value);
     }
@@ -754,7 +708,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param jname name of the joint
      */
     public void updateInitialJointValue(String jname) {
-        GrxLinkItem l = getLinkInfo(jname);
+        GrxLinkItem l = getLink(jname);
         if (l != null)
             setDbl(jname+".angle", l.jointValue());
     }
@@ -780,17 +734,19 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     private void _updateCoM() {
         if (switchCom_.getWhichChild() == Switch.CHILD_ALL ||
             switchComZ0_.getWhichChild() == Switch.CHILD_ALL) {
-            getCoM(v3d_);
-            Vector3d vz0 = new Vector3d(v3d_);
+        	Vector3d v3d = new Vector3d();
+            getCoM(v3d);
+            Vector3d vz0 = new Vector3d(v3d);
 
-            _globalToRoot(v3d_);
-            t3d_.set(v3d_);
-            tgCom_.setTransform(t3d_);
+            _globalToRoot(v3d);
+            Transform3D t3d = new Transform3D();
+            t3d.set(v3d);
+            tgCom_.setTransform(t3d);
 
             vz0.z = 0.0;
             _globalToRoot(vz0);
-            t3d_.set(vz0);
-            tgComZ0_.setTransform(t3d_);
+            t3d.set(vz0);
+            tgComZ0_.setTransform(t3d);
         }
     }
 
@@ -839,12 +795,22 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return ret;
     }
 
-    public GrxLinkItem getLinkInfo(String linkName) {
+    /**
+     * @brief get link from its name
+     * @param linkName name of the link
+     * @return link
+     */
+    public GrxLinkItem getLink(String linkName) {
         return linkMap_.get(linkName);
     }
 
+    /**
+     * @brief get Transform3D of this link
+     * @param linkName name of the link
+     * @return Transform3D
+     */
     public Transform3D getTransform(String linkName) {
-        GrxLinkItem l = getLinkInfo(linkName);
+        GrxLinkItem l = getLink(linkName);
         if (l == null)
             return null;
         Transform3D ret = new Transform3D();
@@ -915,7 +881,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     public double getJointValue(String jname) {
-        GrxLinkItem l = getLinkInfo(jname);
+        GrxLinkItem l = getLink(jname);
         if (l != null)
             return l.jointValue();
         return 0.0;
@@ -966,6 +932,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         bgRoot_.detach();
     }
 
+    /**
+     * @brief set visibility of CoM
+     * @param b true to make it visible, false otherwise
+     */
     public void setVisibleCoM(boolean b) {
         if (isRobot()) {
             switchCom_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
@@ -975,6 +945,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
     }
 
+    /**
+     * @brief set visibility of CoM projected on the floor
+     * @param b true to make it visible, false otherwise
+     */
     public void setVisibleCoMonFloor(boolean b) {
         if (isRobot()) {
             switchComZ0_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
@@ -1026,10 +1000,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             Appearance app = s3d.getAppearance();
             if (app != null) {
                 PolygonAttributes pa = app.getPolygonAttributes();
-                if (b) {
-                    pa.setPolygonMode(PolygonAttributes.POLYGON_LINE);
-                } else {
-                    pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+                if (pa != null){
+                    if (b) {
+                        pa.setPolygonMode(PolygonAttributes.POLYGON_LINE);
+                    } else {
+                        pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+                    }
                 }
             }
         }    	
@@ -1089,40 +1065,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             }
         }    	
 	}
-
-	private Switch createBall(double radius, Color3f c) {
-        Material m = new Material();
-        m.setDiffuseColor(c);
-        m.setSpecularColor(0.01f, 0.10f, 0.02f);
-        m.setLightingEnable(true);
-        Appearance app = new Appearance();
-        app.setMaterial(m);
-        Node sphere = new Sphere((float)radius, Sphere.GENERATE_NORMALS, app);
-        sphere.setPickable(false);
-
-        Transform3D trans = new Transform3D();
-        trans.setTranslation(new Vector3d(0.0, 0.0, 0.0));
-        trans.setRotation(new AxisAngle4d(1.0, 0.0, 0.0, 0.0));
-        TransformGroup tg = new TransformGroup(trans);
-        tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-        tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
-        tg.addChild(sphere);
-
-        Switch ret = new Switch();
-        ret.setCapability(Switch.ALLOW_CHILDREN_EXTEND);
-        ret.setCapability(Switch.ALLOW_CHILDREN_READ);
-        ret.setCapability(Switch.ALLOW_CHILDREN_WRITE);
-        ret.setCapability(Switch.ALLOW_SWITCH_READ);
-        ret.setCapability(Switch.ALLOW_SWITCH_WRITE);
-        ret.addChild(tg);
-
-        return ret;
-    }
-
-
-
-
 
     /**
      * @brief get sequence of cameras

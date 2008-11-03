@@ -10,7 +10,7 @@
 package com.generalrobotix.ui.util;
 import java.util.*;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({ "unchecked", "serial" })
 public class OrderedHashMap extends HashMap {
     private List<Object> keyList_;
     private List<Object> valList_;

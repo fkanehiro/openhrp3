@@ -19,7 +19,6 @@ package com.generalrobotix.ui.item;
 
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
@@ -48,17 +47,19 @@ import jp.go.aist.hrp.simulator.SensorInfo;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
-import com.generalrobotix.ui.view.vsensor.Camera_impl;
+import com.generalrobotix.ui.util.GrxShapeUtil;
 
 
 @SuppressWarnings("serial")
 public class GrxLinkItem extends GrxTransformItem{
 
 	private LinkInfo info_;
-
-    // TODO remove cameras_
-    public Vector<Camera_impl> cameras_;
-
+	private GrxModelItem model_;
+	
+    // CoM
+    private Switch switchCom_;
+    private TransformGroup tgCom_;
+    
     private double  jointValue_;
 
     /**
@@ -166,7 +167,7 @@ public class GrxLinkItem extends GrxTransformItem{
     public void addLink(String name){
     	System.out.println("GrxLinkItem.addLink("+name+") is called");
     	try{
-    		GrxLinkItem newLink = new GrxLinkItem(name, manager_);
+    		GrxLinkItem newLink = new GrxLinkItem(name, manager_, model_);
     		addLink(newLink);
         	System.out.println("GrxLinkItem.addLink("+name+") is done");
     	}catch(Exception ex){
@@ -183,6 +184,8 @@ public class GrxLinkItem extends GrxTransformItem{
     	children_.add(child);
     	child.parent_ = this;
     	BranchGroup bg = (BranchGroup)bg_.getParent();
+    	// bg = GrxModelItem.bgRoot_
+    	// all links must be children of bgRoot_
     	bg.addChild(child.bg_);
     	child.calcForwardKinematics();
     }
@@ -230,15 +233,11 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void addSensor(GrxSensorItem sensor){
     	addChild(sensor);
-    	if (sensor.camera_ != null){
-    		cameras_.add(sensor.camera_);
-    	}
     }
 
     public void removeSensor(GrxSensorItem sensor){
     	removeChild(sensor);
     	if (sensor.camera_ != null){
-    		cameras_.remove(sensor.camera_);
     		// TODO : GrxModelItem.cameraList_ must be updated
     	}
     }
@@ -301,14 +300,18 @@ public class GrxLinkItem extends GrxTransformItem{
     	info_.translation = getDblAry("translation",null);
     	info_.rotation = getDblAry("rotation", null);
     	String axis = getProperty("jointAxis");
+    	double[] newAxis = null;
     	if (axis.equals("X")){
-    		info_.jointAxis = new double[]{1.0, 0.0, 0.0};
+    		newAxis = new double[]{1.0, 0.0, 0.0};
     	}else if (axis.equals("Y")){
-    		info_.jointAxis = new double[]{0.0, 1.0, 0.0};
+    		newAxis = new double[]{0.0, 1.0, 0.0};
     	}else if (axis.equals("Z")){
-    		info_.jointAxis = new double[]{0.0, 0.0, 1.0};
+    		newAxis = new double[]{0.0, 0.0, 1.0};
     	}
-    	// TODO rebuild axis shape
+    	if (!info_.jointAxis.equals(newAxis)){
+    		info_.jointAxis = newAxis;
+        	// TODO rebuild axis shape
+    	}
     	info_.jointType = getStr("jointType", null);
     	calcForwardKinematics();
     	// joint properties
@@ -324,7 +327,12 @@ public class GrxLinkItem extends GrxTransformItem{
     	info_.gearRatio = getDbl("gearRatio", null);
     	// mass properties
     	info_.centerOfMass = getDblAry("centerOfMass", null);
+    	Transform3D t3d = new Transform3D();
+    	tgCom_.getTransform(t3d);
+    	t3d.setTranslation(new Vector3d(centerOfMass()));
+    	tgCom_.setTransform(t3d);
     	info_.mass = getDbl("mass", null);
+    	// TODO update size of ball
     	info_.inertia = getDblAry("inertia", null);
     }
 
@@ -391,7 +399,7 @@ public class GrxLinkItem extends GrxTransformItem{
 
     }
 
-    protected GrxLinkItem(String name, GrxPluginManager manager){
+    protected GrxLinkItem(String name, GrxPluginManager manager, GrxModelItem model){
     	super(name, manager);
 		info_ = new LinkInfo();
 		info_.translation = new double[]{0.0, 0.0, 0.0};
@@ -408,16 +416,16 @@ public class GrxLinkItem extends GrxTransformItem{
 		info_.llimit = new double[]{};
 		info_.uvlimit = new double[]{};
 		info_.lvlimit = new double[]{};
-    	_init();
+    	_init(model);
     }
 	/**
      * @constructor
      * @param info link information retrieved through ModelLoader
      */
-	protected GrxLinkItem(String name, GrxPluginManager manager, LinkInfo info) {
+	protected GrxLinkItem(String name, GrxPluginManager manager, GrxModelItem model, LinkInfo info) {
 		super(name, manager);
 		info_ = info;
-		_init();
+		_init(model);
     }
 
 	/**
@@ -529,10 +537,10 @@ public class GrxLinkItem extends GrxTransformItem{
 	/**
 	 * @brief common initialization
 	 */
-	private void _init(){
+	private void _init(GrxModelItem model){
 		_initMenu();
 		
-        cameras_ = new Vector<Camera_impl>();
+		model_ = model;
 
         jointValue(0);
 
@@ -589,6 +597,7 @@ public class GrxLinkItem extends GrxTransformItem{
         }
         Map<String, Object> userData = new Hashtable<String, Object>();
         userData.put("linkInfo", this);
+        userData.put("object", model_);
         tg_.setUserData(userData);
         tg_.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
         
@@ -613,6 +622,10 @@ public class GrxLinkItem extends GrxTransformItem{
             tg_.addChild(axisSwitch);
             userData.put("axisLineSwitch", axisSwitch);
         }
+        
+        switchCom_ = GrxShapeUtil.createBall(mass()*0.01, new Color3f(1.0f, 1.0f, 0.0f));
+        tgCom_ = (TransformGroup)switchCom_.getChild(0);
+        tg_.addChild(switchCom_);
 	}
 
 	/**
@@ -719,5 +732,28 @@ public class GrxLinkItem extends GrxTransformItem{
         }
 	}
 
-	
+	/**
+	 * @brief make CoM ball visible/invisible
+	 * @param b true to make visible, false otherwise
+	 */
+    public void setVisibleCoM(boolean b) {
+        switchCom_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
+        calcForwardKinematics();
+    }
+    
+    /**
+     * @brief see doc for parent class
+     */
+    public void selected(){
+    	super.selected();
+    	setVisibleCoM(true);
+    }
+
+    /**
+     * @brief see doc for parent class
+     */
+    public void unselected(){
+    	super.selected();
+    	setVisibleCoM(false);
+    }
 }

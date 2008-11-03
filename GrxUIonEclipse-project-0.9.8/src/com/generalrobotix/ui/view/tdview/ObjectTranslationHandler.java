@@ -57,13 +57,6 @@ class ObjectTranslationHandler extends OperationHandler {
                 //_disableBoundingBox();
                 return;
             }
-// >> added for GrxUI            
-//            Hashtable hashTable = SceneGraphModifier.getHashtableFromTG(tg);
-//            if (hashTable == null) 
-//            	return;
-//            GrxModelItem model = (GrxModelItem)hashTable.get("object");
-//            tg = model.getTransformGroupRoot();
-// << added for GrxUI            
             
             if (tg != tgTarget_) {
                 if (_enableBoundingBox(tg, info)) {
@@ -138,8 +131,7 @@ class ObjectTranslationHandler extends OperationHandler {
                 tr.set(mouse);
                 tgTarget_.getTransform(l2vw);
                 l2vw.mul(tr);
-                Hashtable<String, Object> hashtable = SceneGraphModifier.getHashtableFromTG(tgTarget_);
-                GrxLinkItem link = (GrxLinkItem)hashtable.get("linkInfo");
+                GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tgTarget_);
                 link.setTransform(l2vw);
                 _transformChanged(info);
          
@@ -186,7 +178,7 @@ class ObjectTranslationHandler extends OperationHandler {
         if (hashTable == null) 
         	return false;
         
-        GrxModelItem model = (GrxModelItem)hashTable.get("object");
+        GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
         if (model == null) 
         	return false;
 
@@ -211,8 +203,7 @@ class ObjectTranslationHandler extends OperationHandler {
     }
 
     private void _transformChanged(BehaviorInfo info) {
-        Hashtable<String, Object> hashtable = SceneGraphModifier.getHashtableFromTG(tgTarget_);
-        GrxModelItem model = (GrxModelItem)hashtable.get("object");
+        GrxModelItem model = SceneGraphModifier.getModelFromTG(tgTarget_);
         if (model == null) {
             System.out.println("no manipulatable.");
             return;

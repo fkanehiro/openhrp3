@@ -128,8 +128,7 @@ class JointRotationHandler extends OperationHandler {
         Point3f point000 = new Point3f(0,0,0);
         //軸情報取り出す
 
-        Hashtable<String, Object> ht = SceneGraphModifier.getHashtableFromTG(tgTarget_);
-        GrxLinkItem l = (GrxLinkItem)ht.get("linkInfo");
+        GrxLinkItem l = SceneGraphModifier.getLinkFromTG(tgTarget_);
   
         vw2view.mul(target2vw);
         vw2view.transform(point000);
@@ -273,15 +272,14 @@ class JointRotationHandler extends OperationHandler {
 
     private boolean _enableBoundingBox(TransformGroup tg, BehaviorInfo info) {
         Hashtable<String, Object> ht = SceneGraphModifier.getHashtableFromTG(tg);
-        String objectName = (String)ht.get("objectName");
-        GrxModelItem robot = (GrxModelItem)info.getManipulatable(objectName);
-        GrxLinkItem l = (GrxLinkItem)ht.get("linkInfo");
+        GrxLinkItem l = SceneGraphModifier.getLinkFromTG(tg);
         if (l == null)
         	return false;
         
         if (l.jointType().equals("rotate") || l.jointType().equals("slide")) {
             _disableBoundingBox();
-            robot.activeLink_ = l;
+            GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
+            model.activeLink_ = l;
             tgTarget_ = l.tg_;
             bbSwitch_ = (Switch)ht.get("boundingBoxSwitch");
             axisSwitch_ = (Switch)ht.get("axisLineSwitch");
@@ -294,9 +292,8 @@ class JointRotationHandler extends OperationHandler {
 
     private void _jointAngleChanged(BehaviorInfo info) {
         try {
-            Hashtable<String, Object> ht = SceneGraphModifier.getHashtableFromTG(tgTarget_);
-            GrxModelItem model = (GrxModelItem)ht.get("object");
-            GrxLinkItem link = (GrxLinkItem)ht.get("linkInfo");
+            GrxModelItem model = SceneGraphModifier.getModelFromTG(tgTarget_);
+            GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tgTarget_);
             link.jointValue(link.jointValue()+angle_);
             link.setJointValuesWithinLimit();
             model.updateInitialJointValue(link.getName());

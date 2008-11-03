@@ -540,16 +540,25 @@ public class GrxOpenHRPView extends GrxBaseView {
         controllerPane_.setEnabled(true);//false
         setScrollMinSize();
         
-        NamingContext rootnc = GrxCorbaUtil.getNamingContext();
-        
-        ClockGenerator cg = clockGenerator_._this(manager_.orb_);
-        NameComponent[] path = {new NameComponent("ClockGenerator", "")};
-        
-        try {
-            rootnc.rebind(path, cg);
-        } catch (Exception ex) {
-            GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
-        }
+	}
+	
+	/**
+	 * @brief see doc for parent class
+	 */
+	public boolean setup(List<GrxBaseItem> itemList) {
+		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+	       
+		ClockGenerator cg = clockGenerator_._this(manager_.orb_);
+		NameComponent[] path = {new NameComponent("ClockGenerator", "")};
+	       
+		try {
+			rootnc.rebind(path, cg);
+		} catch (Exception ex) {
+			GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
+			return false;
+		}
+		GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
+		return true;
 	}
 	
 	void execSWT( Runnable r, boolean execInCurrentThread ){
@@ -589,7 +598,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 		getDynamicsSimulator(true);
 
 		try {
-			List modelList = manager_.getSelectedItemList(GrxModelItem.class);
+			List<GrxBaseItem> modelList = manager_.getSelectedItemList(GrxModelItem.class);
 			robotEntry_.clear();
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem) modelList.get(i);

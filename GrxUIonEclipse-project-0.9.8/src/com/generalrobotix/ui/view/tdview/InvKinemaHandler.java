@@ -23,6 +23,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import com.generalrobotix.ui.item.GrxLinkItem;
+import com.generalrobotix.ui.item.GrxModelItem;
 import com.sun.j3d.utils.picking.*;
 
 class InvKinemaHandler extends OperationHandler {
@@ -285,18 +286,18 @@ class InvKinemaHandler extends OperationHandler {
             return false;
         }
 
-        String objectName = (String)hashTable.get("objectName");
-        if (objectName == null) {
+        GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
+        if (model == null) {
             return false;
         }
         
-        GrxLinkItem link = (GrxLinkItem)hashTable.get("linkInfo");
+        GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tg);
         String jointName = link.getName();
         if (jointName == null) {
             return false;
         }
         
-        resolver_.setFromJoint(objectName, jointName);
+        resolver_.setFromJoint(model.getName(), jointName);
         bbSwitchFrom_.setWhichChild(Switch.CHILD_ALL);
         return true;
      }
@@ -315,11 +316,12 @@ class InvKinemaHandler extends OperationHandler {
             return false;
         }
      
-        GrxLinkItem link = (GrxLinkItem)hashTable.get("linkInfo");
+        GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tg);
         String jointName = link.getName();
+        GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
         if (bbSwitchTo_ != null && 
         		resolver_.setToJoint(
-                (String)hashTable.get("objectName"),
+                model.getName(),
                 jointName)) {
             bbSwitchTo_.setWhichChild(Switch.CHILD_ALL);
             tgTarget_ = tg;

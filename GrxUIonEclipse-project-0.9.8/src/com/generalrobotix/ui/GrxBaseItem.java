@@ -177,4 +177,16 @@ public class GrxBaseItem extends GrxBasePlugin {
 */
     	return ret;
     }
+
+    /**
+     * @brief this method is called by GrxItemView when this item is selected
+     */
+	public void selected() {
+	}
+
+    /**
+     * @brief this method is called by GrxItemView when this item is unselected
+     */
+	public void unselected() {
+	}
 }

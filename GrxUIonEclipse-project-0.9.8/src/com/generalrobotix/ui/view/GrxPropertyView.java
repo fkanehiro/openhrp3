@@ -50,6 +50,9 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 
 @SuppressWarnings("serial")
+/**
+ * @brief property viewer
+ */
 public class GrxPropertyView extends GrxBaseView {
     
     public static final String TITLE = "Property";
@@ -213,6 +216,7 @@ public class GrxPropertyView extends GrxBaseView {
                 entry.setValue((String)value);
                 currentPlugin_.propertyChanged();
                 item.setText(1, (String) value);
+                // following three lines are required to refresh view
                 table_.setVisible(false);
                 viewer_.setInput(currentPlugin_);
                 table_.setVisible(true);

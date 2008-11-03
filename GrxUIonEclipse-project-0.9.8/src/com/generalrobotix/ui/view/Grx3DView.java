@@ -226,47 +226,11 @@ public class Grx3DView
         bg.addChild(coll);
         bgRoot_.addChild(bg);
         
-        axes_ = createAxes();
+        axes_ = GrxShapeUtil.createAxes();
         
         setScrollMinSize();
     }
     
-    public BranchGroup createAxes(){
-        Shape3D shape = new Shape3D();
-        shape.setPickable(false);
-        shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-        try {
-        	Appearance app = new Appearance();
-        	LineAttributes latt = new LineAttributes();
-        	latt.setLineWidth(LineWidth_);
-        	app.setLineAttributes(latt);
-        	shape.setAppearance(app);
-        	
-        	Point3d o = new Point3d(0.0, 0.0, 0.0);
-        	Point3d x = new Point3d(0.5, 0.0, 0.0);
-        	Point3d y = new Point3d(0.0, 0.5, 0.0);
-        	Point3d z = new Point3d(0.0, 0.0, 0.5);
-            Point3d[] p3d = {o,x,o,y,o,z};
-            LineArray la = new LineArray(p3d.length, LineArray.COLOR_3
-                    | LineArray.COORDINATES | LineArray.NORMALS);
-            la.setCoordinates(0, p3d);
-            Color3f r = new Color3f(1.0f, 0.0f, 0.0f);
-            Color3f g = new Color3f(0.0f, 1.0f, 0.0f);
-            Color3f b = new Color3f(0.0f, 0.0f, 1.0f);
-            Color3f[]  c3f = {r,r,g,g,b,b};
-            la.setColors(0, c3f);
-            shape.addGeometry(la);
-        }catch(Exception ex){
-        	ex.printStackTrace();
-        }
-        TransformGroup tg = new TransformGroup();
-        tg.addChild(shape);
-        BranchGroup bg = new BranchGroup();
-        bg.setCapability(BranchGroup.ALLOW_DETACH);
-        bg.addChild(tg);
-        return bg;
-    }
-
     public void disableUpdateModel(){
         updateModels_ = false;
     }
