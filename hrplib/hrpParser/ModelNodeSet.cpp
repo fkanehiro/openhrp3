@@ -178,7 +178,7 @@ bool ModelNodeSetImpl::loadModelFile(const std::string& filename)
 	extractHumanoidNode(parser);
 
     } catch(EasyScanner::Exception& ex){
-	throw ModelNodeSet::Exception(ex.getFullMessage());
+	    throw ModelNodeSet::Exception(ex.getFullMessage());
     }
 
     return (humanoidNode && rootJointNodeSet);

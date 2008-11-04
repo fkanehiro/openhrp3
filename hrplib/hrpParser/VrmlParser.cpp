@@ -17,8 +17,16 @@
 
 #include <cmath>
 #include <vector>
+#include <list>
 #include <iostream>
 #include <hrpUtil/EasyScanner.h>
+
+#if (BOOST_VERSION <= 103301)
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+#else
+#include <boost/filesystem.hpp>
+#endif
 
 using namespace std;
 using namespace boost;
@@ -287,268 +295,6 @@ namespace {
         U_EXTERNPROTO
 
     };
-
-
-    class PrototypeScannerHolder
-    {
-        PrototypeScannerHolder() : prototypeScanner(new EasyScanner()) {
-            setSymbols();
-        }
-        void setSymbols();
-
-        static PrototypeScannerHolder singletonInstance;
-        EasyScannerPtr prototypeScanner;
-
-    public:
-        static EasyScannerPtr getPrototypeScanner() {
-            return singletonInstance.prototypeScanner;
-        }
-    };
-
-    PrototypeScannerHolder PrototypeScannerHolder::singletonInstance;
-
-  
-    void PrototypeScannerHolder::setSymbols()
-    {
-        struct TSymbol {
-            int id;
-            const char* symbol;
-        };
-    
-        static TSymbol symbols[] = {
-
-            // values
-            { V_TRUE, "TRUE"  },
-            { V_FALSE, "FALSE" },
-            { V_NULL, "NULL" },
-
-            // types
-            { T_SFINT32, "SFInt32" },
-            { T_MFINT32, "MFInt32" },
-            { T_SFFLOAT, "SFFloat" },
-            { T_MFFLOAT, "MFFloat" },
-            { T_SFVEC2F, "SFVec2f" },
-            { T_MFVEC2F, "MFVec2f" },
-            { T_SFVEC3F, "SFVec3f" },
-            { T_MFVEC3F, "MFVec3f" },
-            { T_SFROTATION, "SFRotation" },
-            { T_MFROTATION, "MFRotation" },
-            { T_SFTIME, "SFTime" },
-            { T_MFTIME, "MFTime" },
-            { T_SFCOLOR, "SFColor" },
-            { T_MFCOLOR, "MFColor" },
-            { T_SFSTRING, "SFString" },
-            { T_MFSTRING, "MFString" },
-            { T_SFNODE, "SFNode" },
-            { T_MFNODE, "MFNode" },
-            { T_SFBOOL, "SFBool" },
-            { T_SFIMAGE, "SFImage" },
-
-            // Nodes
-            { N_PROTO, "PROTO" },
-            { N_INLINE, "Inline" },
-            { N_BACKGROUND, "Background" },
-            { N_NAVIGATION_INFO, "NavigationInfo" },
-            { N_VIEWPOINT, "Viewpoint" },
-            { N_GROUP, "Group" },
-            { N_TRANSFORM, "Transform" },
-            { N_SHAPE, "Shape" },
-            { N_APPEARANCE, "Appearance" },
-            { N_MATERIAL, "Material" },
-            { N_IMAGE_TEXTURE, "ImageTexture" },
-            { N_TEXTURE_TRANSFORM, "TextureTransform" },
-            { N_BOX, "Box" },
-            { N_CONE, "Cone" },
-            { N_CYLINDER, "Cylinder" },
-            { N_SPHERE, "Sphere" },
-            { N_TEXT, "Text" },
-            { N_FONT_STYLE, "FontStyle" },
-            { N_INDEXED_LINE_SET, "IndexedLineSet" },
-            { N_INDEXED_FACE_SET, "IndexedFaceSet" },
-            { N_COLOR, "Color" },
-            { N_COORDINATE, "Coordinate" },
-            { N_TEXTURE_COORDINATE, "TextureCoordinate" },
-            { N_NORMAL, "Normal" },
-            { N_CYLINDER_SENSOR, "CylinderSensor" },
-
-            { N_POINTSET, "PointSet" },
-            { N_PIXEL_TEXTURE,"PixelTexture" },
-            { N_MOVIE_TEXTURE, "MovieTexture" },
-            { N_ELEVATION_GRID, "ElevationGrid" },
-            { N_EXTRUSION, "Extrusion" },
-            { N_SWITCH, "Switch" },
-            { N_LOD,"LOD" },
-            { N_COLLISION,			"Collision" },
-            { N_ANCHOR,				"Anchor" },
-            { N_FOG,					"Fog" },
-            { N_BILLBOARD,			"Billboard" },
-            { N_WORLD_INFO,			"WorldInfo" },
-            { N_POINT_LIGHT,			"PointLight" },
-            { N_DIRECTIONAL_LIGHT,	"DirectionalLight" },
-            { N_SPOT_LIGHT,			"SpotLight" },
-
-            // unsupported nodes
-            { N_AUDIO_CLIP,				"AudioClip" },
-            { N_SOUND,					"Sound" },
-            { N_COLOR_INTERPOLATOR,		"ColorInterpolator" },
-            { N_COORDINATE_INTERPOLATOR,	"CoordinateInterpolator" },
-            { N_ORIENTATION_INTERPOLATOR,	"OrientationInterpolator" },
-            { N_NORMAL_INTERPOLATOR,		"NormalInterpolator" },
-            { N_POSITION_INTERPOLATOR,	"PositionInterpolator" },
-            { N_SCALAR_INTERPOLATOR,		"ScalarInterpolator" },
-            { N_PLANE_SENSOR,				"PlaneSensor" },
-            { N_PROXIMITY_SENSOR,			"ProximitySensor" },
-            { N_SPHERE_SENSOR,			"SphereSensor" },
-            { N_TIME_SENSOR,				"TimeSensor" },
-            { N_TOUCH_SENSOR,				"TouchSensor" },
-            { N_VISIBILITY_SENSOR,		"VisibilitySensor" },
-
-            // Fields
-            { F_IS, "IS" },
-
-            { F_URL, "url" },
-
-            { F_GROUND_ANGLE, "groundAngle" },
-            { F_GROUND_COLOR, "groundColor" },
-            { F_SKY_ANGLE, "skyAngle" },
-            { F_SKY_COLOR, "skyColor" },
-            { F_BACK_URL, "backUrl" },
-            { F_BOTTOM_URL, "bottomUrl" },
-            { F_FRONT_URL, "frontUrl" },
-            { F_LEFT_URL, "leftUrl" },
-            { F_RIGHT_URL, "rightUrl" },
-            { F_TOP_URL, "topUrl" },
-
-            { F_AVATAR_SIZE, "avatarSize" },
-            { F_HEADLIGHT, "headlight" },
-            { F_SPEED, "speed" },
-            { F_TYPE, "type" },
-            { F_VISIBILITY_LIMIT, "visibilityLimit" },
-
-            { F_FIELD_OF_VIEW, "fieldOfView" },
-            { F_JUMP, "jump" },
-            { F_ORIENTATION, "orientation" },
-            { F_POSITION, "position" },
-            { F_DESCRIPTION, "description" },
-
-            { F_CHILDREN, "children" },
-            { F_ADD_CHILDREN, "addChildren" },
-            { F_REMOVE_CHILDREN, "removeChildren" },
-            { F_BBOX_CENTER, "bboxCenter" },
-            { F_BBOX_SIZE, "bboxSize" },
-
-            { F_CENTER, "center" },
-            { F_ROTATION, "rotation" },
-            { F_SCALE, "scale" },
-            { F_SCALE_ORIENTATION, "scaleOrientation" },
-            { F_TRANSLATION, "translation" },
-
-            { F_APPEARANCE, "appearance" },
-            { F_GEOMETRY, "geometry" },
-
-            { F_MATERIAL, "material" },
-            { F_TEXTURE, "texture" },
-            { F_TEXTURE_TRANSFORM, "textureTransform" },
-
-            { F_AMBIENT_INTENSITY, "ambientIntensity" },
-            { F_DIFFUSE_COLOR, "diffuseColor" },
-            { F_EMISSIVE_COLOR, "emissiveColor" },
-            { F_SHININESS, "shininess" },
-            { F_SPECULAR_COLOR, "specularColor" },
-            { F_TRANSPARANCY, "transparency" },
-            { F_DIRECTION, "direction" },
-
-            { F_REPEAT_S, "repeatS" },
-            { F_REPEAT_T, "repeatT" },
-
-            { F_SIZE, "size" },
-
-            { F_BOTTOM, "bottom" },
-            { F_BOTTOM_RADIUS, "bottomRadius" },
-            { F_HEIGHT, "height" },
-            { F_SIDE, "side" },
-
-            { F_RADIUS, "radius" },
-            { F_TOP, "top" },
-
-            { F_STRING, "string" },
-            { F_FONT_STYLE, "fontStyle" },
-            { F_LENGTH, "length" },
-            { F_MAX_EXTENT, "maxExtent" },
-
-            { F_COLOR, "color" },
-            { F_COORD, "coord" },
-            { F_COLOR_INDEX, "colorIndex" },
-            { F_COLOR_PER_VERTEX, "colorPerVertex" },
-            { F_COORD_INDEX, "coordIndex" },
-
-            { F_CCW, "ccw" },
-            { F_CONVEX, "convex" },
-            { F_SOLID, "solid" },
-            { F_CREASE_ANGLE, "creaseAngle" },
-            { F_NORMAL_INDEX, "normalIndex" },
-            { F_NORMAL, "normal" },
-            { F_NORMAL_PER_VERTEX, "normalPerVertex" },
-            { F_TEX_COORD_INDEX, "texCoordIndex" },
-            { F_TEX_COORD, "texCoord" },
-
-            { F_POINT, "point" },
-            { F_VECTOR, "vector" },
-
-            { F_AUTO_OFFSET, "autoOffset" },
-            { F_DISK_ANGLE, "diskAngle" },
-            { F_ENABLED, "enabled" },
-            { F_MAX_ANGLE, "maxAngle" },
-            { F_MIN_ANGLE, "minAngle" },
-            { F_OFFSET, "offset" },
-
-            { F_IMAGE, "image" },
-
-            { F_X_DIMENSION, "xDimension" },
-            { F_Z_DIMENSION, "zDimension" },
-            { F_X_SPACING, "xSpacing" },
-            { F_Z_SPACING, "zSpacing" },
-
-            { F_CROSS_SECTION, "crossSection" },
-            { F_SPINE, "spine" },
-            { F_BEGIN_CAP, "beginCap" },
-            { F_END_CAP, "endCap" },
-
-            { F_COLLIDE, "collide" },
-            { F_PROXY, "proxy" },
-
-            { F_PARAMETER, "parameter" },
-
-            { F_VISIBILITY_RANGE, "visibilityRange" },
-            { F_FOG_TYPE, "fogType" },
-
-            { F_AXIS_OF_ROTATION, "axisOfRotation" },
-
-            { F_TITLE, "title" },
-            { F_INFO, "info" },
-
-            // event type
-            { E_FIELD, "field" },
-            { E_EXPOSED_FIELD, "exposedField" },
-            { E_EVENTIN, "eventIn" },
-            { E_EVENTOUT, "eventOut" },
-
-            // def & route
-            { D_DEF, "DEF" },
-            { D_USE, "USE" },
-            { D_ROUTE, "ROUTE" },
-
-            // unsupported keywords
-            { U_SCRIPT, "Script" },
-            { U_EXTERNPROTO, "EXTERNPROTO" },
-
-            { 0, "" }
-        };
-
-        for(int i=0; symbols[i].id != 0; i++){
-            prototypeScanner->registerSymbol(symbols[i].id, symbols[i].symbol);
-        }
-    }
 }
 
 
@@ -558,112 +304,108 @@ namespace hrp {
     {
     public:
         VrmlParserImpl(VrmlParser* self);
-
         VrmlParser* self;
 
-	struct TSourceInfo{
-	    EasyScannerPtr scanner;
-	    MFString inlineUrls;
-	    VrmlNodeCategory inlineNodeCategory;
-	};
-	typedef boost::shared_ptr<TSourceInfo> TSourceInfoPtr;
-
-	std::vector<TSourceInfoPtr> sources;
-	EasyScannerPtr scanner; // for the current source
-	VrmlProtoInstancePtr currentProtoInstance;
+        EasyScannerPtr scanner;
+        VrmlProtoInstancePtr currentProtoInstance;
 
         bool protoInstanceActualNodeExtractionMode;
 
         typedef map<VrmlProto*, EasyScannerPtr> ProtoToEntityScannerMap;
         ProtoToEntityScannerMap protoToEntityScannerMap;
 
-	typedef map<string, VrmlNodePtr> TDefNodeMap;
-	typedef pair<string, VrmlNodePtr> TDefNodePair;
-	typedef map<string, VrmlProtoPtr> TProtoMap;
-	typedef pair<string, VrmlProtoPtr> TProtoPair;
+        typedef map<string, VrmlNodePtr> TDefNodeMap;
+        typedef pair<string, VrmlNodePtr> TDefNodePair;
+        typedef map<string, VrmlProtoPtr> TProtoMap;
+        typedef pair<string, VrmlProtoPtr> TProtoPair;
 
-	TProtoMap protoMap;
-	TDefNodeMap defNodeMap;
+        TProtoMap protoMap;
+        TDefNodeMap defNodeMap;
 
         void load(const string& filename);
-	void setSymbols();
-	VrmlNodePtr readSpecificNode(VrmlNodeCategory nodeCategory, int symbol, const std::string& symbolString);
-	VrmlNodePtr readInlineNode(VrmlNodeCategory nodeCategory);
-	void newInlineSource(std::string filename);
-	VrmlProtoPtr defineProto();
+        VrmlNodePtr readSpecificNode(VrmlNodeCategory nodeCategory, int symbol, const std::string& symbolString);
+        VrmlNodePtr readInlineNode(VrmlNodeCategory nodeCategory);
+        VrmlNodePtr newInlineSource(std::string& io_filename);
+        VrmlProtoPtr defineProto();
   
-	VrmlNodePtr readNode(VrmlNodeCategory nodeCategory);
-	VrmlProtoInstancePtr readProtoInstanceNode(const std::string& proto_name, VrmlNodeCategory nodeCategory);
-	VrmlNodePtr evalProtoInstance(VrmlProtoInstancePtr proto, VrmlNodeCategory nodeCategory);
-	VrmlUnsupportedNodePtr skipUnsupportedNode(const std::string& nodeTypeName);
+        VrmlNodePtr readNode(VrmlNodeCategory nodeCategory);
+        VrmlProtoInstancePtr readProtoInstanceNode(const std::string& proto_name, VrmlNodeCategory nodeCategory);
+        VrmlNodePtr evalProtoInstance(VrmlProtoInstancePtr proto, VrmlNodeCategory nodeCategory);
+        VrmlUnsupportedNodePtr skipUnsupportedNode(const std::string& nodeTypeName);
         VrmlUnsupportedNodePtr skipScriptNode();
-	VrmlUnsupportedNodePtr skipExternProto();
+        VrmlUnsupportedNodePtr skipExternProto();
 
-	VrmlViewpointPtr readViewpointNode();
-	VrmlNavigationInfoPtr readNavigationInfoNode();
-	VrmlBackgroundPtr readBackgroundNode();
-	VrmlGroupPtr readGroupNode();
-	VrmlTransformPtr readTransformNode();
-	VrmlShapePtr readShapeNode();
-	VrmlCylinderSensorPtr readCylinderSensorNode();
-	VrmlBoxPtr readBoxNode();
-	VrmlConePtr readConeNode();
-	VrmlCylinderPtr readCylinderNode();
+        VrmlViewpointPtr readViewpointNode();
+        VrmlNavigationInfoPtr readNavigationInfoNode();
+        VrmlBackgroundPtr readBackgroundNode();
+        VrmlGroupPtr readGroupNode();
+        VrmlTransformPtr readTransformNode();
+        VrmlShapePtr readShapeNode();
+        VrmlCylinderSensorPtr readCylinderSensorNode();
+        VrmlBoxPtr readBoxNode();
+        VrmlConePtr readConeNode();
+        VrmlCylinderPtr readCylinderNode();
 
-	VrmlPointSetPtr readPointSetNode();
-	VrmlPixelTexturePtr readPixelTextureNode();
-	VrmlMovieTexturePtr readMovieTextureNode();
-	VrmlElevationGridPtr readElevationGridNode();
-	VrmlExtrusionPtr readExtrusionNode();
-	VrmlSwitchPtr readSwitchNode();
-	VrmlLODPtr readLODNode();
-	VrmlCollisionPtr readCollisionNode();
-	VrmlAnchorPtr readAnchorNode();
-	VrmlFogPtr readFogNode();
-	VrmlBillboardPtr readBillboardNode();
-	VrmlWorldInfoPtr readWorldInfoNode();
-	VrmlPointLightPtr readPointLightNode();
-	VrmlDirectionalLightPtr	readDirectionalLightNode();
-	VrmlSpotLightPtr readSpotLightNode();
+        VrmlPointSetPtr readPointSetNode();
+        VrmlPixelTexturePtr readPixelTextureNode();
+        VrmlMovieTexturePtr readMovieTextureNode();
+        VrmlElevationGridPtr readElevationGridNode();
+        VrmlExtrusionPtr readExtrusionNode();
+        VrmlSwitchPtr readSwitchNode();
+        VrmlLODPtr readLODNode();
+        VrmlCollisionPtr readCollisionNode();
+        VrmlAnchorPtr readAnchorNode();
+        VrmlFogPtr readFogNode();
+        VrmlBillboardPtr readBillboardNode();
+        VrmlWorldInfoPtr readWorldInfoNode();
+        VrmlPointLightPtr readPointLightNode();
+        VrmlDirectionalLightPtr	readDirectionalLightNode();
+        VrmlSpotLightPtr readSpotLightNode();
 
-	VrmlSpherePtr readSphereNode();
-	VrmlTextPtr readTextNode();
-	VrmlFontStylePtr readFontStyleNode();
-	VrmlIndexedLineSetPtr readIndexedLineSetNode();
-	VrmlIndexedFaceSetPtr readIndexedFaceSetNode();
-	void checkIndexedFaceSet(VrmlIndexedFaceSetPtr node);
-	VrmlCoordinatePtr readCoordNode();
-	VrmlTextureCoordinatePtr readTextureCoordinateNode();
-	VrmlColorPtr readColorNode();
-	VrmlAppearancePtr readAppearanceNode();
-	VrmlMaterialPtr readMaterialNode();
-	VrmlImageTexturePtr readImageTextureNode();
-	VrmlTextureTransformPtr readTextureTransformNode();
-	VrmlNormalPtr readNormalNode();
+        VrmlSpherePtr readSphereNode();
+        VrmlTextPtr readTextNode();
+        VrmlFontStylePtr readFontStyleNode();
+        VrmlIndexedLineSetPtr readIndexedLineSetNode();
+        VrmlIndexedFaceSetPtr readIndexedFaceSetNode();
+        void checkIndexedFaceSet(VrmlIndexedFaceSetPtr node);
+        VrmlCoordinatePtr readCoordNode();
+        VrmlTextureCoordinatePtr readTextureCoordinateNode();
+        VrmlColorPtr readColorNode();
+        VrmlAppearancePtr readAppearanceNode();
+        VrmlMaterialPtr readMaterialNode();
+        VrmlImageTexturePtr readImageTextureNode();
+        VrmlTextureTransformPtr readTextureTransformNode();
+        VrmlNormalPtr readNormalNode();
   
-	VrmlVariantField& readProtoField(VrmlFieldTypeId fieldTypeId);
+        VrmlVariantField& readProtoField(VrmlFieldTypeId fieldTypeId);
   
-	void readSFInt32(SFInt32& out_value);
-	void readSFFloat(SFFloat& out_value);
-	void readSFString(SFString& out_value);
-	void readMFInt32(MFInt32& out_value);
-	void readMFFloat(MFFloat& out_value);
-	void readSFColor(SFColor& out_value); 
-	void readMFColor(MFColor& out_value); 
-	void readMFString(MFString& out_value);
-	void readSFVec2f(SFVec2f& out_value);
-	void readMFVec2f(MFVec2f& out_value);
-	void readSFVec3f(SFVec3f& out_value);
-	void readMFVec3f(MFVec3f& out_value);
-	void readSFRotation(SFRotation& out_value);
-	void readMFRotation(MFRotation& out_value);
-	void readSFBool(SFBool& out_value);
-	void readSFTime(SFTime& out_value);
-	void readMFTime(MFTime& out_value);
-	void readSFNode(SFNode& out_node, VrmlNodeCategory nodeCategory);
-	SFNode readSFNode(VrmlNodeCategory nodeCategory);
-	void readMFNode(MFNode& out_nodes, VrmlNodeCategory nodeCategory);
-	void readSFImage( SFImage& out_image );
+        void readSFInt32(SFInt32& out_value);
+        void readSFFloat(SFFloat& out_value);
+        void readSFString(SFString& out_value);
+        void readMFInt32(MFInt32& out_value);
+        void readMFFloat(MFFloat& out_value);
+        void readSFColor(SFColor& out_value); 
+        void readMFColor(MFColor& out_value); 
+        void readMFString(MFString& out_value);
+        void readSFVec2f(SFVec2f& out_value);
+        void readMFVec2f(MFVec2f& out_value);
+        void readSFVec3f(SFVec3f& out_value);
+        void readMFVec3f(MFVec3f& out_value);
+        void readSFRotation(SFRotation& out_value);
+        void readMFRotation(MFRotation& out_value);
+        void readSFBool(SFBool& out_value);
+        void readSFTime(SFTime& out_value);
+        void readMFTime(MFTime& out_value);
+        void readSFNode(SFNode& out_node, VrmlNodeCategory nodeCategory);
+        SFNode readSFNode(VrmlNodeCategory nodeCategory);
+        void readMFNode(MFNode& out_nodes, VrmlNodeCategory nodeCategory);
+        void readSFImage( SFImage& out_image );
+    private:
+        VrmlParserImpl(const VrmlParserImpl& self, const list< string >& ref);
+        const list< string >* getAncestorPathsList() const {return &ancestorPathsList;}
+        void setSymbols();
+        void init();
+        list< string >     ancestorPathsList;
     };
 }
 
@@ -681,18 +423,23 @@ VrmlParser::VrmlParser(const string& filename)
 }
 
 
+
 void VrmlParser::init()
 {
+
     impl = new VrmlParserImpl(this);
 }
 
 
 VrmlParserImpl::VrmlParserImpl(VrmlParser* self) : self(self)
 {
-    this->self = self;
-    
-    currentProtoInstance = 0;
-    protoInstanceActualNodeExtractionMode = true;
+    init();
+}
+
+VrmlParserImpl::VrmlParserImpl(const VrmlParserImpl& refThis, const list< string >& refSet)
+: self(refThis.self), ancestorPathsList(refSet)
+{
+    init();
 }
 
 
@@ -720,21 +467,16 @@ void VrmlParser::load(const string& filename)
 
 void VrmlParserImpl::load(const string& filename)
 {
-    sources.clear();
-
-    TSourceInfoPtr source(new TSourceInfo);
-    
-    source->scanner = PrototypeScannerHolder::getPrototypeScanner();
-    source->scanner->loadFile(filename);
-    
-    sources.push_back(source);
-    scanner = source->scanner;
+    filesystem::path localPath(filename);
+    localPath.normalize();
+    ancestorPathsList.push_back(localPath.file_string());
+    scanner->loadFile(localPath.file_string());
     
     // header check
     scanner->setCommentChar(0);
     bool ok = scanner->readString("#VRML V2.0");
     if(ok){
-	scanner->skipLine();
+	    scanner->skipLine();
     }
     
     scanner->setCommentChar('#');
@@ -757,22 +499,6 @@ VrmlNodePtr VrmlParserImpl::readNode(VrmlNodeCategory nodeCategory)
     if(scanner->isEOF()){
         if(currentProtoInstance){
             scanner->throwException("Illegal proto instance node");
-        }
-        if(sources.size() == 1){
-            return 0;
-        } else {
-            sources.pop_back();
-            TSourceInfoPtr source = sources.back();
-            MFString::iterator p = source->inlineUrls.begin();
-            p = source->inlineUrls.erase(p);
-            if(p != source->inlineUrls.end()){
-                newInlineSource(*p);
-                return readNode(source->inlineNodeCategory);
-            } else {
-                scanner = source->scanner;
-                //return 0;
-                return readNode(nodeCategory);
-            }
         }
     }
 
@@ -1012,40 +738,47 @@ VrmlNodePtr VrmlParserImpl::readInlineNode(VrmlNodeCategory nodeCategory)
     scanner->readChar('{');
 
     if(scanner->readSymbol() && scanner->symbolValue == F_URL){
-        TSourceInfoPtr source = sources.back();
-        readMFString(source->inlineUrls);
+        MFString    inlineUrls;
+        readMFString(inlineUrls);
         scanner->readCharEx('}', "syntax error 2");
-        source->inlineNodeCategory = nodeCategory;
 
-        newInlineSource(source->inlineUrls[0]);
-
-        return readNode(nodeCategory);
+        VrmlInlinePtr inlineNode = new VrmlInline();
+        for( MFString::iterator ite = inlineUrls.begin(); ite != inlineUrls.end(); ++ite ){
+            inlineNode->children.push_back( newInlineSource( *ite ) );
+            inlineNode->urls.push_back(*ite);
+        }
+        return inlineNode;
     }
     return 0;
 }
 
 
-void VrmlParserImpl::newInlineSource(string filename)
+VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
 {
-    TSourceInfoPtr new_source(new TSourceInfo);
-    new_source->scanner.reset(new EasyScanner(*scanner, false));
-    if(filename[0] != '/'){
-        size_t pos = scanner->filename.rfind('/');
-        if(pos != string::npos)
-            filename.insert(0, scanner->filename, 0, pos+1);
+    filesystem::path parentPath( scanner->filename );
+    filesystem::path localPath(io_filename);
+
+    localPath.normalize();
+
+    // Relative path check & translate to absolute path 
+    if ( ! localPath.is_complete() ){
+        localPath = parentPath.parent_path() / localPath;
+        localPath.normalize();
     }
 
-    try {
-        new_source->scanner->loadFile(filename);
-
+    const string chkFile(localPath.file_string());
+    for( list<string>::const_iterator cIte = ancestorPathsList.begin(); cIte != ancestorPathsList.end(); ++cIte){
+        if( chkFile == *cIte )
+        {
+            scanner->throwException("Infinity loop ! " + chkFile + " is included ancestor list");
+        }
     }
-    catch(EasyScanner::Exception& ex){
-        ex.message = string("Inline url cannot be loaded: ") + ex.message;
-        throw ex;
-    }
 
-    scanner = new_source->scanner;
-    sources.push_back(new_source);
+    VrmlParserImpl  inlineParser( *this, ancestorPathsList );
+
+    inlineParser.load( localPath.file_string() );
+    io_filename = localPath.file_string();
+    return inlineParser.readNode( CHILD_NODE );
 }
 
 
@@ -2759,5 +2492,256 @@ void VrmlParserImpl::readMFNode(MFNode& out_nodes, VrmlNodeCategory nodeCategory
                 }
             }
         }
+    }
+}
+
+void VrmlParserImpl::init()
+{
+    currentProtoInstance = 0;
+    protoInstanceActualNodeExtractionMode = true;
+
+    scanner = shared_ptr<EasyScanner>( new EasyScanner() );
+    setSymbols();
+}
+
+void VrmlParserImpl::setSymbols()
+{
+    struct TSymbol {
+        int id;
+        const char* symbol;
+    };
+
+    static TSymbol symbols[] = {
+
+        // values
+        { V_TRUE, "TRUE"  },
+        { V_FALSE, "FALSE" },
+        { V_NULL, "NULL" },
+
+        // types
+        { T_SFINT32, "SFInt32" },
+        { T_MFINT32, "MFInt32" },
+        { T_SFFLOAT, "SFFloat" },
+        { T_MFFLOAT, "MFFloat" },
+        { T_SFVEC2F, "SFVec2f" },
+        { T_MFVEC2F, "MFVec2f" },
+        { T_SFVEC3F, "SFVec3f" },
+        { T_MFVEC3F, "MFVec3f" },
+        { T_SFROTATION, "SFRotation" },
+        { T_MFROTATION, "MFRotation" },
+        { T_SFTIME, "SFTime" },
+        { T_MFTIME, "MFTime" },
+        { T_SFCOLOR, "SFColor" },
+        { T_MFCOLOR, "MFColor" },
+        { T_SFSTRING, "SFString" },
+        { T_MFSTRING, "MFString" },
+        { T_SFNODE, "SFNode" },
+        { T_MFNODE, "MFNode" },
+        { T_SFBOOL, "SFBool" },
+        { T_SFIMAGE, "SFImage" },
+
+        // Nodes
+        { N_PROTO, "PROTO" },
+        { N_INLINE, "Inline" },
+        { N_BACKGROUND, "Background" },
+        { N_NAVIGATION_INFO, "NavigationInfo" },
+        { N_VIEWPOINT, "Viewpoint" },
+        { N_GROUP, "Group" },
+        { N_TRANSFORM, "Transform" },
+        { N_SHAPE, "Shape" },
+        { N_APPEARANCE, "Appearance" },
+        { N_MATERIAL, "Material" },
+        { N_IMAGE_TEXTURE, "ImageTexture" },
+        { N_TEXTURE_TRANSFORM, "TextureTransform" },
+        { N_BOX, "Box" },
+        { N_CONE, "Cone" },
+        { N_CYLINDER, "Cylinder" },
+        { N_SPHERE, "Sphere" },
+        { N_TEXT, "Text" },
+        { N_FONT_STYLE, "FontStyle" },
+        { N_INDEXED_LINE_SET, "IndexedLineSet" },
+        { N_INDEXED_FACE_SET, "IndexedFaceSet" },
+        { N_COLOR, "Color" },
+        { N_COORDINATE, "Coordinate" },
+        { N_TEXTURE_COORDINATE, "TextureCoordinate" },
+        { N_NORMAL, "Normal" },
+        { N_CYLINDER_SENSOR, "CylinderSensor" },
+
+        { N_POINTSET, "PointSet" },
+        { N_PIXEL_TEXTURE,"PixelTexture" },
+        { N_MOVIE_TEXTURE, "MovieTexture" },
+        { N_ELEVATION_GRID, "ElevationGrid" },
+        { N_EXTRUSION, "Extrusion" },
+        { N_SWITCH, "Switch" },
+        { N_LOD,"LOD" },
+        { N_COLLISION,			"Collision" },
+        { N_ANCHOR,				"Anchor" },
+        { N_FOG,					"Fog" },
+        { N_BILLBOARD,			"Billboard" },
+        { N_WORLD_INFO,			"WorldInfo" },
+        { N_POINT_LIGHT,			"PointLight" },
+        { N_DIRECTIONAL_LIGHT,	"DirectionalLight" },
+        { N_SPOT_LIGHT,			"SpotLight" },
+
+        // unsupported nodes
+        { N_AUDIO_CLIP,				"AudioClip" },
+        { N_SOUND,					"Sound" },
+        { N_COLOR_INTERPOLATOR,		"ColorInterpolator" },
+        { N_COORDINATE_INTERPOLATOR,	"CoordinateInterpolator" },
+        { N_ORIENTATION_INTERPOLATOR,	"OrientationInterpolator" },
+        { N_NORMAL_INTERPOLATOR,		"NormalInterpolator" },
+        { N_POSITION_INTERPOLATOR,	"PositionInterpolator" },
+        { N_SCALAR_INTERPOLATOR,		"ScalarInterpolator" },
+        { N_PLANE_SENSOR,				"PlaneSensor" },
+        { N_PROXIMITY_SENSOR,			"ProximitySensor" },
+        { N_SPHERE_SENSOR,			"SphereSensor" },
+        { N_TIME_SENSOR,				"TimeSensor" },
+        { N_TOUCH_SENSOR,				"TouchSensor" },
+        { N_VISIBILITY_SENSOR,		"VisibilitySensor" },
+
+        // Fields
+        { F_IS, "IS" },
+
+        { F_URL, "url" },
+
+        { F_GROUND_ANGLE, "groundAngle" },
+        { F_GROUND_COLOR, "groundColor" },
+        { F_SKY_ANGLE, "skyAngle" },
+        { F_SKY_COLOR, "skyColor" },
+        { F_BACK_URL, "backUrl" },
+        { F_BOTTOM_URL, "bottomUrl" },
+        { F_FRONT_URL, "frontUrl" },
+        { F_LEFT_URL, "leftUrl" },
+        { F_RIGHT_URL, "rightUrl" },
+        { F_TOP_URL, "topUrl" },
+
+        { F_AVATAR_SIZE, "avatarSize" },
+        { F_HEADLIGHT, "headlight" },
+        { F_SPEED, "speed" },
+        { F_TYPE, "type" },
+        { F_VISIBILITY_LIMIT, "visibilityLimit" },
+
+        { F_FIELD_OF_VIEW, "fieldOfView" },
+        { F_JUMP, "jump" },
+        { F_ORIENTATION, "orientation" },
+        { F_POSITION, "position" },
+        { F_DESCRIPTION, "description" },
+
+        { F_CHILDREN, "children" },
+        { F_ADD_CHILDREN, "addChildren" },
+        { F_REMOVE_CHILDREN, "removeChildren" },
+        { F_BBOX_CENTER, "bboxCenter" },
+        { F_BBOX_SIZE, "bboxSize" },
+
+        { F_CENTER, "center" },
+        { F_ROTATION, "rotation" },
+        { F_SCALE, "scale" },
+        { F_SCALE_ORIENTATION, "scaleOrientation" },
+        { F_TRANSLATION, "translation" },
+
+        { F_APPEARANCE, "appearance" },
+        { F_GEOMETRY, "geometry" },
+
+        { F_MATERIAL, "material" },
+        { F_TEXTURE, "texture" },
+        { F_TEXTURE_TRANSFORM, "textureTransform" },
+
+        { F_AMBIENT_INTENSITY, "ambientIntensity" },
+        { F_DIFFUSE_COLOR, "diffuseColor" },
+        { F_EMISSIVE_COLOR, "emissiveColor" },
+        { F_SHININESS, "shininess" },
+        { F_SPECULAR_COLOR, "specularColor" },
+        { F_TRANSPARANCY, "transparency" },
+        { F_DIRECTION, "direction" },
+
+        { F_REPEAT_S, "repeatS" },
+        { F_REPEAT_T, "repeatT" },
+
+        { F_SIZE, "size" },
+
+        { F_BOTTOM, "bottom" },
+        { F_BOTTOM_RADIUS, "bottomRadius" },
+        { F_HEIGHT, "height" },
+        { F_SIDE, "side" },
+
+        { F_RADIUS, "radius" },
+        { F_TOP, "top" },
+
+        { F_STRING, "string" },
+        { F_FONT_STYLE, "fontStyle" },
+        { F_LENGTH, "length" },
+        { F_MAX_EXTENT, "maxExtent" },
+
+        { F_COLOR, "color" },
+        { F_COORD, "coord" },
+        { F_COLOR_INDEX, "colorIndex" },
+        { F_COLOR_PER_VERTEX, "colorPerVertex" },
+        { F_COORD_INDEX, "coordIndex" },
+
+        { F_CCW, "ccw" },
+        { F_CONVEX, "convex" },
+        { F_SOLID, "solid" },
+        { F_CREASE_ANGLE, "creaseAngle" },
+        { F_NORMAL_INDEX, "normalIndex" },
+        { F_NORMAL, "normal" },
+        { F_NORMAL_PER_VERTEX, "normalPerVertex" },
+        { F_TEX_COORD_INDEX, "texCoordIndex" },
+        { F_TEX_COORD, "texCoord" },
+
+        { F_POINT, "point" },
+        { F_VECTOR, "vector" },
+
+        { F_AUTO_OFFSET, "autoOffset" },
+        { F_DISK_ANGLE, "diskAngle" },
+        { F_ENABLED, "enabled" },
+        { F_MAX_ANGLE, "maxAngle" },
+        { F_MIN_ANGLE, "minAngle" },
+        { F_OFFSET, "offset" },
+
+        { F_IMAGE, "image" },
+
+        { F_X_DIMENSION, "xDimension" },
+        { F_Z_DIMENSION, "zDimension" },
+        { F_X_SPACING, "xSpacing" },
+        { F_Z_SPACING, "zSpacing" },
+
+        { F_CROSS_SECTION, "crossSection" },
+        { F_SPINE, "spine" },
+        { F_BEGIN_CAP, "beginCap" },
+        { F_END_CAP, "endCap" },
+
+        { F_COLLIDE, "collide" },
+        { F_PROXY, "proxy" },
+
+        { F_PARAMETER, "parameter" },
+
+        { F_VISIBILITY_RANGE, "visibilityRange" },
+        { F_FOG_TYPE, "fogType" },
+
+        { F_AXIS_OF_ROTATION, "axisOfRotation" },
+
+        { F_TITLE, "title" },
+        { F_INFO, "info" },
+
+        // event type
+        { E_FIELD, "field" },
+        { E_EXPOSED_FIELD, "exposedField" },
+        { E_EVENTIN, "eventIn" },
+        { E_EVENTOUT, "eventOut" },
+
+        // def & route
+        { D_DEF, "DEF" },
+        { D_USE, "USE" },
+        { D_ROUTE, "ROUTE" },
+
+        // unsupported keywords
+        { U_SCRIPT, "Script" },
+        { U_EXTERNPROTO, "EXTERNPROTO" },
+
+        { 0, "" }
+    };
+
+    for(int i=0; symbols[i].id != 0; i++){
+        scanner->registerSymbol(symbols[i].id, symbols[i].symbol);
     }
 }
