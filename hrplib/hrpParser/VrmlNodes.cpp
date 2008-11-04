@@ -172,6 +172,10 @@ VrmlTransform::VrmlTransform()
     translation[0] = translation[1] = translation[2] = 0.0;
 }
 
+VrmlInline::VrmlInline()
+{
+    categorySet.set(INLINE_NODE);
+}
 
 VrmlShape::VrmlShape()
 {

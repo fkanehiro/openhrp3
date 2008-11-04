@@ -105,6 +105,7 @@ namespace hrp {
         FONT_STYLE_NODE,
 
         SENSOR_NODE,
+        INLINE_NODE,
 
         NUM_VRML_NODE_CATEGORIES
     };
@@ -258,6 +259,15 @@ namespace hrp {
 	SFVec3f translation;
     };
     typedef boost::intrusive_ptr<VrmlTransform> VrmlTransformPtr;
+
+    //! VRML Inline node
+    class HRP_PARSER_EXPORT  VrmlInline : public VrmlGroup
+    {
+      public:
+        VrmlInline();
+        MFString urls;
+    };
+    typedef boost::intrusive_ptr<VrmlInline> VrmlInlinePtr;
 
 
     class VrmlAppearance;

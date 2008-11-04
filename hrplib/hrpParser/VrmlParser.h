@@ -32,28 +32,26 @@ namespace hrp {
     {
     public:
 
-	/**
-	   Constructor. This version of constructor do 'load' mehtod 
-	   after constructing the object.
+        /**
+           Constructor. This version of constructor do 'load' mehtod 
+           after constructing the object.
 
-	   \param filename file name of a target VRML97 file.
-	*/
-	VrmlParser(const std::string& filename);
-	VrmlParser();
-	~VrmlParser();
+           \param filename file name of a target VRML97 file.
+        */
+        VrmlParser(const std::string& filename);
+        VrmlParser();
+        ~VrmlParser();
 
         void setProtoInstanceActualNodeExtractionMode(bool isOn);
-	void load(const std::string& filename);
+        void load(const std::string& filename);
 
-	/**
-	   This method returns the top node of the next node tree written in the file.
-	*/
-	VrmlNodePtr readNode();
+        /**
+           This method returns the top node of the next node tree written in the file.
+        */
+        VrmlNodePtr readNode();
 
-      private:
-
+    private:
         VrmlParserImpl* impl;
-
         void init();
     };
 };
