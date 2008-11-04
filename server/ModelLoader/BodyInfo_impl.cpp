@@ -166,7 +166,6 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
     }
 
     links_[index] = linkInfo;
-
     try	{
         Matrix44 unit4d(tvmet::identity<Matrix44>());
         traverseShapeNodes(jointNodeSet->segmentNode.get(), unit4d, links_[index].shapeIndices);
@@ -394,14 +393,7 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
         */
 
         Matrix44 E(tvmet::identity<Matrix44>());
-        VrmlVariantField *field = sensorNode->getField("children");
-        if (field){
-            MFNode &children = field->mfNode();
-            for (unsigned int i=0; i<children.size(); i++){
-                traverseShapeNodes(children[i].get(), E, 
-                                   sensorInfo.shapeIndices);
-            }
-        }
+        traverseShapeNodes(sensorNode.get(), E, links_[linkInfoIndex].shapeIndices);
 
     } catch(ModelLoader::ModelLoaderException& ex) {
         string error = name_.empty() ? "Unnamed sensor node" : name_;

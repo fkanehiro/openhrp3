@@ -119,30 +119,33 @@ TextureInfoSequence* ShapeSetInfo_impl::textures()
   @endif
 */
 void ShapeSetInfo_impl::traverseShapeNodes
-(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices)
+(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices, const SFString* url)
 {
     if(node->isCategoryOf(PROTO_INSTANCE_NODE)){
         VrmlProtoInstance* protoInstance = static_cast<VrmlProtoInstance*>(node);
         if(protoInstance->actualNode){
-            traverseShapeNodes(protoInstance->actualNode.get(), T, io_shapeIndices);
+            traverseShapeNodes(protoInstance->actualNode.get(), T, io_shapeIndices, url);
         }
 
     } else if(node->isCategoryOf(GROUPING_NODE)) {
         VrmlGroup* groupNode = static_cast<VrmlGroup*>(node);
         VrmlTransform* transformNode = dynamic_cast<VrmlTransform*>(groupNode);
+        VrmlInline* inlineNode = NULL;
+        
         const Matrix44* pT;
         Matrix44 T2;
-        if(!transformNode){
-            pT = &T;
-        } else {
+        if( transformNode ){
             Matrix44 Tlocal;
             calcTransformMatrix(transformNode, Tlocal);
             T2 = T * Tlocal;
             pT = &T2;
+        } else {
+            pT = &T;
+            inlineNode = dynamic_cast<VrmlInline*>(groupNode);
         }
         MFNode& children = groupNode->children;
         for(size_t i=0; i < children.size(); ++i){
-            traverseShapeNodes(children[i].get(), *pT, io_shapeIndices);
+            traverseShapeNodes(children[i].get(), *pT, io_shapeIndices, inlineNode ? &inlineNode->urls[i] : url );
         }
         
     } else if(node->isCategoryOf(SHAPE_NODE)) {
@@ -154,7 +157,7 @@ void ShapeSetInfo_impl::traverseShapeNodes
         if(p != shapeInfoIndexMap.end()){
             shapeInfoIndex = p->second;
         } else {
-            shapeInfoIndex = createShapeInfo(shapeNode);
+            shapeInfoIndex = createShapeInfo(shapeNode, url);
         }
         
         if(shapeInfoIndex >= 0){
@@ -169,6 +172,7 @@ void ShapeSetInfo_impl::traverseShapeNodes
                 }
             }
         }
+        
     }
 }
 
@@ -220,7 +224,7 @@ void ShapeSetInfo_impl::calcTransformMatrix(VrmlTransform* transform, Matrix44& 
 /**
    @return the index of a created ShapeInfo object. The return value is -1 if the creation fails.
 */
-int ShapeSetInfo_impl::createShapeInfo(VrmlShape* shapeNode)
+int ShapeSetInfo_impl::createShapeInfo(VrmlShape* shapeNode, const SFString* url)
 {
     int shapeInfoIndex = -1;
 
@@ -232,10 +236,10 @@ int ShapeSetInfo_impl::createShapeInfo(VrmlShape* shapeNode)
         shapes_.length(shapeInfoIndex + 1);
         ShapeInfo& shapeInfo = shapes_[shapeInfoIndex];
 
+        if ( url ) shapeInfo.url = CORBA::string_dup( url->c_str() );
         setTriangleMesh(shapeInfo, triangleMesh);
         setPrimitiveProperties(shapeInfo, shapeNode);
         shapeInfo.appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh);
-
         shapeInfoIndexMap.insert(make_pair(shapeNode, shapeInfoIndex));
     }
         
