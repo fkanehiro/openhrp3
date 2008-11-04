@@ -18,8 +18,13 @@
 package com.generalrobotix.ui.item;
 
 
+import javax.media.j3d.IndexedTriangleArray;
+import javax.media.j3d.Shape3D;
+import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.AxisAngle4d;
+import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 
 import org.eclipse.jface.action.Action;
@@ -31,20 +36,12 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-import jp.go.aist.hrp.simulator.AppearanceInfo;
-import jp.go.aist.hrp.simulator.MaterialInfo;
-import jp.go.aist.hrp.simulator.ModelLoader;
-import jp.go.aist.hrp.simulator.ModelLoaderHelper;
-import jp.go.aist.hrp.simulator.SceneInfo;
 import jp.go.aist.hrp.simulator.SensorInfo;
-import jp.go.aist.hrp.simulator.ShapeInfo;
-import jp.go.aist.hrp.simulator.TextureInfo;
-import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraParameter;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraType;
 
 import com.generalrobotix.ui.GrxPluginManager;
-import com.generalrobotix.ui.util.GrxCorbaUtil;
+import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
 /**
@@ -55,6 +52,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 
 	SensorInfo info_;
 	public Camera_impl camera_;
+	private Switch switchCamera_ = null;
 
     /**
      * @brief get type of sensor
@@ -204,6 +202,9 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
             camera_ = new Camera_impl(prm, offScreen);
 
             tg_.addChild(camera_.getBranchGroup());
+            SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+            switchCamera_ = modifier._makeSwitchNode(_createShapeOfVisibleArea());
+            tg_.addChild(switchCamera_);
         }else if(info.type.equals("RateGyro")){
         	float[] max = new float[3];
         	max[0] = info.specValues[0];
@@ -330,6 +331,8 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 			info_.specValues[4] = getInt("width", null);
 			info_.specValues[5] = getInt("height", null);
 			info_.specValues[6] = getFlt("frameRate", null);
+			// TODO update shape of visible area
+			// TODO update camera_
     	}else if(info_.type.equals("RateGyro")){
     		if (info_.specValues == null || info_.specValues.length != 3 || getProperty("maxAngularVelocity")==null){
     			info_.specValues = new float[]{-1.0f, -1.0f, -1.0f};
@@ -394,5 +397,75 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		
 		return ret;
 	}
+
+	/**
+	 * @brief create shape of visible area
+	 * @return shape 
+	 */
+    private Shape3D _createShapeOfVisibleArea() {
+    	if (camera_ == null) return null;
+    	
+    	CameraParameter prm = camera_.getCameraParameter();
+        //box
+        float enlarge = 0.001f; //[m] prevent this box is rendered
+        float f = (float)prm.backClipDistance*(1.0f+enlarge);
+        float n = (float)prm.frontClipDistance*(1.0f-enlarge);
+        double theta = prm.fieldOfView;
+        float aspect = ((float)prm.height)/prm.width;
+        float nx = (float)Math.tan(theta/2)*n;
+        float ny = nx*aspect;
+        float fx = (float)Math.tan(theta/2)*f;
+        float fy = fx*aspect;
+
+        Point3f[] p3f = {
+          new Point3f(nx,ny,-n),
+          new Point3f(-nx,ny,-n),
+          new Point3f(-nx,-ny,-n),
+          new Point3f(nx,-ny,-n),
+          new Point3f(fx,fy,-f),
+          new Point3f(-fx,fy,-f),
+          new Point3f(-fx,-fy,-f),
+          new Point3f(fx,-fy,-f),
+        };
+
+        int vertIndices[] = {0,1,2,0,2,3,1,0,4,1,4,5,0,3,7,0,7,4,5,2,1,5,6,2,6,7,3,6,3,2,5,4,7,5,7,6};
+        IndexedTriangleArray tri = 
+          new IndexedTriangleArray(p3f.length, 
+                                   IndexedTriangleArray.COORDINATES,
+                                   vertIndices.length);
+          
+        tri.setCoordinates(0, p3f);
+        tri.setCoordinateIndices(0,vertIndices);
+        javax.media.j3d.Appearance app  = new javax.media.j3d.Appearance();
+        app.setTransparencyAttributes(
+            new TransparencyAttributes(TransparencyAttributes.FASTEST, 0.5f)
+        );
+        Shape3D s3d = new Shape3D(tri);
+        s3d.setAppearance(app);
+        return s3d;
+    } 
     
+	/**
+	 * @brief make visible area visible/invisible
+	 * @param b true to make visible, false otherwise
+	 */
+    public void setVisibleArea(boolean b) {
+        switchCamera_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
+    }
+    
+    /**
+     * @brief see doc for parent class
+     */
+    public void selected(){
+    	super.selected();
+    	setVisibleArea(true);
+    }
+
+    /**
+     * @brief see doc for parent class
+     */
+    public void unselected(){
+    	super.selected();
+    	setVisibleArea(false);
+    }
 }
