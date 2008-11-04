@@ -20,8 +20,8 @@ package com.generalrobotix.ui.item;
 import java.util.Hashtable;
 import java.util.Map;
 
-import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
+import javax.media.j3d.LineArray;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
@@ -183,10 +183,7 @@ public class GrxLinkItem extends GrxTransformItem{
     public void addLink(GrxLinkItem child){
     	children_.add(child);
     	child.parent_ = this;
-    	BranchGroup bg = (BranchGroup)bg_.getParent();
-    	// bg = GrxModelItem.bgRoot_
-    	// all links must be children of bgRoot_
-    	bg.addChild(child.bg_);
+    	model_.bgRoot_.addChild(child.bg_);
     	child.calcForwardKinematics();
     }
 
@@ -220,6 +217,15 @@ public class GrxLinkItem extends GrxTransformItem{
     }
     
     /**
+     * @brief read shape from VRML97 and add
+     * @param fPath URL of VRML file
+     */
+    public void addShape(String fPath){
+    	super.addShape(fPath);
+    	rebuildBoundingBox();
+    }
+    
+    /**
      * @brief remove child
      */
     public void removeChild(GrxTransformItem child){
@@ -233,12 +239,13 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void addSensor(GrxSensorItem sensor){
     	addChild(sensor);
+        // TODO : GrxModelItem.sensorMap_ and GrxModelItem.cameraList_ must be updated later
     }
 
     public void removeSensor(GrxSensorItem sensor){
     	removeChild(sensor);
     	if (sensor.camera_ != null){
-    		// TODO : GrxModelItem.cameraList_ must be updated
+    		// TODO : GrxModelItem.sensorMap_ and GrxModelItem.cameraList_ must be updated
     	}
     }
     
@@ -310,7 +317,7 @@ public class GrxLinkItem extends GrxTransformItem{
     	}
     	if (!info_.jointAxis.equals(newAxis)){
     		info_.jointAxis = newAxis;
-        	// TODO rebuild axis shape
+    		rebuildBoundingBox();
     	}
     	info_.jointType = getStr("jointType", null);
     	calcForwardKinematics();
@@ -583,16 +590,6 @@ public class GrxLinkItem extends GrxTransformItem{
             for (int i=0; i<sinfo.length; i++) {
             	GrxSensorItem sensor = new GrxSensorItem(sinfo[i].name, manager_, sinfo[i]);
             	addSensor(sensor);
-                // TODO : sensorMap_ must be updated later
-                /*
-                List<GrxSensorItem> l = sensorMap_.get(sensor.type());
-                if (l == null) {
-                    l = new ArrayList<SensorInfoLocal>();
-                    sensorMap_.put(sensor.type(), l);
-                }
-                l.add(sensors.get(i));
-                */
-
             }
         }
         Map<String, Object> userData = new Hashtable<String, Object>();
@@ -617,11 +614,9 @@ public class GrxLinkItem extends GrxTransformItem{
         userData.put("boundingBoxSwitch", bbSwitch);
 
         Vector3d jointAxis = new Vector3d(jointAxis());
-        if (jointAxis != null) {
-            Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
-            tg_.addChild(axisSwitch);
-            userData.put("axisLineSwitch", axisSwitch);
-        }
+        Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
+        tg_.addChild(axisSwitch);
+        userData.put("axisLineSwitch", axisSwitch);
         
         switchCom_ = GrxShapeUtil.createBall(mass()*0.01, new Color3f(1.0f, 1.0f, 0.0f));
         tgCom_ = (TransformGroup)switchCom_.getChild(0);
@@ -632,7 +627,8 @@ public class GrxLinkItem extends GrxTransformItem{
 	 * @brief rebuild bounding box which is displayed when this joint is selected
 	 */
 	private void rebuildBoundingBox(){
-        Transform3D tr = new Transform3D();
+        try{
+		Transform3D tr = new Transform3D();
         Transform3D org = new Transform3D();
         tr.setIdentity();
         tg_.getTransform(org);
@@ -642,10 +638,10 @@ public class GrxLinkItem extends GrxTransformItem{
         Hashtable<String, Object> userData = SceneGraphModifier.getHashtableFromTG(tg_);
  
         modifier.init_ = true;
-        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        modifier.mode_ = SceneGraphModifier.RESIZE_BOUNDS;
         modifier._calcUpperLower(tg_, tr);
         
-        Switch bbSwitch =  (Switch)userData.get("boundingBoxSwith");
+        Switch bbSwitch =  (Switch)userData.get("boundingBoxSwitch");
     	Shape3D shapeNode = (Shape3D)bbSwitch.getChild(0);
     	Geometry gm = (Geometry)shapeNode.getGeometry(0);
 
@@ -654,7 +650,19 @@ public class GrxLinkItem extends GrxTransformItem{
     		QuadArray qa = (QuadArray) gm;
     		qa.setCoordinates(0, p3fW);
 		}
-	}
+        Switch axisSwitch =  (Switch)userData.get("axisLineSwitch");
+    	shapeNode = (Shape3D)axisSwitch.getChild(0);
+    	gm = (Geometry)shapeNode.getGeometry(0);
+    	
+    	p3fW = modifier.makeAxisPoints(new Vector3d(jointAxis()));
+    	if (gm instanceof LineArray){
+    		LineArray la = (LineArray)gm;
+    		la.setCoordinates(0, p3fW);
+    	}
+        }catch(Exception ex){
+        	ex.printStackTrace();
+        }
+}
 	
     /**
      * @brief Override clone method

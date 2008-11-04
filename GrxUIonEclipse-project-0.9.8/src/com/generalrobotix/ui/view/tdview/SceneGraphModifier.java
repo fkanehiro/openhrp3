@@ -29,7 +29,7 @@ public class SceneGraphModifier {
     //--------------------------------------------------------------------
     // 定数
     public static final int CREATE_BOUNDS = 0;
-    private static final int RESIZE_BOUNDS = 1;
+    public static final int RESIZE_BOUNDS = 1;
     private static final int SHADING_MODE  = 2;
 
     public static final int SHADING    = 0;
@@ -438,10 +438,7 @@ public class SceneGraphModifier {
         return shape;
     }
 
-    /**
-     * Z軸線を作成
-     */
-    public Shape3D _makeAxisLine(Vector3d jointAxis) {
+    public Point3f[] makeAxisPoints(Vector3d jointAxis){
         Point3f[] points = new Point3f[2];
         
         float[] offset = new float[3];
@@ -461,11 +458,19 @@ public class SceneGraphModifier {
             (lower_[1] - offset[1]) * (float)jointAxis.y,
             (lower_[2] - offset[2]) * (float)jointAxis.z
         ); // B
-
+        return points;
+    }
+    /**
+     * Z軸線を作成
+     */
+    public Shape3D _makeAxisLine(Vector3d jointAxis) {
+        Point3f[] points = makeAxisPoints(jointAxis);
+        
         LineArray lines = new LineArray(
             points.length,
             LineArray.COLOR_3 | LineArray.COORDINATES | LineArray.NORMALS
         );
+        lines.setCapability(LineArray.ALLOW_COORDINATE_WRITE);
         lines.setCoordinates(0, points);                // 座標
         Color3f[] colors = new Color3f[points.length];
         Vector3f[] normals = new Vector3f[points.length];
