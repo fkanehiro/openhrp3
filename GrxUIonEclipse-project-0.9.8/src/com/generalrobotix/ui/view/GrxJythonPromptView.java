@@ -62,7 +62,7 @@ import com.generalrobotix.ui.util.GrxCorbaUtil;
 
 @SuppressWarnings("serial")
 /**
- * @briefs
+ * @brief
  */
 public class GrxJythonPromptView extends GrxBaseView {
     
@@ -142,6 +142,13 @@ public class GrxJythonPromptView extends GrxBaseView {
     
     private Image simScriptStopIcon_;
     
+    /**
+     * @brief constructor
+     * @param name name of this view
+     * @param manager PluginManager
+     * @param vp
+     * @param parent
+     */
     public GrxJythonPromptView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
         super(name, manager, vp, parent);
 
@@ -268,8 +275,19 @@ public class GrxJythonPromptView extends GrxBaseView {
                                         interpreter_.eval("__tmp__");
                                         if (obj != null)
                                         styledText_.append(obj.toString()+"\n");
-                                    } else {
-                                        interpreter_.exec(com_);
+                                    } else if (com_.contains("=")||com_.contains("-")||com_.contains("+")
+                                    		||com_.contains("*")||com_.contains("/")||com_.contains("%")){
+                                    	interpreter_.exec(com_);
+                                    }else{
+                                    	System.out.println("com_ = \""+com_+"\"");
+                                        display_.asyncExec(new Thread(){
+                                            public void run(){
+                                                Object obj = interpreter_.eval(com_);
+                                                if (obj != null){
+                                                	styledText_.append(obj.toString()+"\n");
+                                                }
+                                            }
+                                        });
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
