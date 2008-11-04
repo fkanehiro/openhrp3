@@ -44,7 +44,7 @@ protected:
     void applyTriangleMeshShaper(VrmlNodePtr node);
     static void putMessage(const std::string& message);
     std::string& replace(std::string& str, const std::string& sb, const std::string& sa);
-    void traverseShapeNodes(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices);
+    void traverseShapeNodes(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices, const SFString* url = NULL);
     virtual const std::string& topUrl() = 0;
 
 private:
@@ -62,7 +62,7 @@ private:
     ShapeNodeToShapeInfoIndexMap shapeInfoIndexMap;
 
     void calcTransformMatrix(VrmlTransform* transform, Matrix44& out_T);
-    int createShapeInfo(VrmlShape* shapeNode);
+    int createShapeInfo(VrmlShape* shapeNode, const SFString* url);
     void setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet* triangleMesh);
     void setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* shapeNode);
     int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlIndexedFaceSet* faceSet);

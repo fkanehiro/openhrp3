@@ -86,7 +86,6 @@ void SceneInfo_impl::load(const std::string& url)
                 traverseShapeNodes(node.get(), E, shapeIndices_);
             }
         }
-
     } catch(EasyScanner::Exception& ex){
         cout << ex.getFullMessage() << endl;
 	throw ModelLoader::ModelLoaderException(ex.getFullMessage().c_str());
