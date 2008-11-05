@@ -35,7 +35,7 @@ namespace hrp
         void setDivisionNumber(int n);
         void setNormalGenerationMode(bool on);
         VrmlNodePtr apply(VrmlNodePtr topNode);
-        VrmlGeometryPtr getOriginalGeometry(VrmlShapePtr shapeNode);
+        SFNode getOriginalGeometry(VrmlShapePtr shapeNode);
         void defaultTextureMapping(VrmlShape* shapeNode);
         
         boost::signal<void(const std::string& message)> sigMessage;

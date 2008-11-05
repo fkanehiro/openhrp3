@@ -44,7 +44,7 @@ namespace hrp {
         int divisionNumber;
         bool isNormalGenerationMode;
 
-        typedef std::map<VrmlShapePtr, VrmlGeometryPtr> ShapeToGeometryMap;
+        typedef std::map<VrmlShapePtr, SFNode> ShapeToGeometryMap;
         ShapeToGeometryMap shapeToOriginalGeometryMap;
 
         // for triangulation
@@ -61,7 +61,7 @@ namespace hrp {
         enum RemapType { REMAP_COLOR, REMAP_NORMAL };
 
 
-        VrmlGeometryPtr getOriginalGeometry(VrmlShapePtr shapeNode);
+        SFNode getOriginalGeometry(VrmlShapePtr shapeNode);
         bool traverseShapeNodes(VrmlNode* node, AbstractVrmlGroup* parentNode, int indexInParent);
         bool convertShapeNode(VrmlShape* shapeNode);
         bool convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet);
@@ -143,15 +143,15 @@ void TriangleMeshShaper::setNormalGenerationMode(bool on)
   例えば、元のGeometryがプリミティブ形式だった場合、プリミティブの種類やパラメータを知ることが出来る。
   @endif
 */
-VrmlGeometryPtr TriangleMeshShaper::getOriginalGeometry(VrmlShapePtr shapeNode)
+SFNode TriangleMeshShaper::getOriginalGeometry(VrmlShapePtr shapeNode)
 {
     return impl->getOriginalGeometry(shapeNode);
 }
 
 
-VrmlGeometryPtr TMSImpl::getOriginalGeometry(VrmlShapePtr shapeNode)
+SFNode TMSImpl::getOriginalGeometry(VrmlShapePtr shapeNode)
 {
-    VrmlGeometryPtr originalGeometryNode;
+    SFNode originalGeometryNode;
     ShapeToGeometryMap::iterator p = shapeToOriginalGeometryMap.find(shapeNode);
     if(p != shapeToOriginalGeometryMap.end()){
         originalGeometryNode = p->second;
@@ -214,8 +214,16 @@ bool TMSImpl::traverseShapeNodes(VrmlNode* node, AbstractVrmlGroup* parentNode, 
 bool TMSImpl::convertShapeNode(VrmlShape* shapeNode)
 {
     bool result = false;
+
+    VrmlNode *node = shapeNode->geometry.get();
+    VrmlGeometry* geometry = dynamic_cast<VrmlGeometry *>(node);
+    if (!geometry){
+        VrmlProtoInstance *protoInstance = dynamic_cast<VrmlProtoInstance *>(node);
+        if (protoInstance){
+            geometry = dynamic_cast<VrmlGeometry *>(protoInstance->actualNode.get());
+        }
+    }
     
-    VrmlGeometry* geometry = shapeNode->geometry.get();
     VrmlIndexedFaceSetPtr triangleMesh;
 
     if(VrmlIndexedFaceSet* faceSet = dynamic_cast<VrmlIndexedFaceSet*>(geometry)){
@@ -247,9 +255,8 @@ bool TMSImpl::convertShapeNode(VrmlShape* shapeNode)
         } else if(VrmlExtrusion* extrusion = dynamic_cast<VrmlExtrusion*>(geometry)){
             result = convertExtrusion(extrusion, triangleMesh);
         }
-
         if(result){
-            shapeToOriginalGeometryMap[shapeNode] = geometry;
+            shapeToOriginalGeometryMap[shapeNode] = node;
             shapeNode->geometry = triangleMesh;
         }
     }
@@ -1177,7 +1184,14 @@ void TriangleMeshShaper::defaultTextureMapping(VrmlShape* shapeNode){
     VrmlIndexedFaceSet* triangleMesh = dynamic_cast<VrmlIndexedFaceSet*>(shapeNode->geometry.get());
     if(!triangleMesh)
         return;
-    VrmlGeometry* originalGeometry = getOriginalGeometry(shapeNode).get();
+    VrmlNode* node = getOriginalGeometry(shapeNode).get();
+    VrmlGeometry *originalGeometry = dynamic_cast<VrmlGeometry *>(node);
+    if (!originalGeometry){
+        VrmlProtoInstance *protoInstance = dynamic_cast<VrmlProtoInstance *>(node);
+        if (protoInstance){
+            originalGeometry = dynamic_cast<VrmlGeometry *>(protoInstance->actualNode.get());
+        }
+    }
     if(originalGeometry){
         if(VrmlBox* box = dynamic_cast<VrmlBox*>(originalGeometry)){    //Box
             defaultTextureMappingBox(triangleMesh);
