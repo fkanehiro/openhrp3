@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Vector;
+import java.util.regex.*;
 
 import jp.go.aist.hrp.simulator.MaterialInfo;
 import jp.go.aist.hrp.simulator.ShapeInfo;
@@ -442,8 +443,12 @@ public class GrxVrmlExporter {
 	 * @return relative path from the base directory
 	 */
 	private static String _absPath2relPath(String absPath, String baseDir){
-		String [] dirs1 = absPath.split(File.separator);
-		String [] dirs2 = baseDir.split(File.separator);
+		Pattern localPattern = Pattern.compile("\\\\");
+		Matcher localMatcher = localPattern.matcher(File.separator);
+		String localStr = localMatcher.replaceAll("\\\\\\\\");
+		
+		String [] dirs1 = absPath.split( localStr );
+		String [] dirs2 = baseDir.split( localStr );
 		int cnt=0;
 		while (cnt < dirs1.length && cnt < dirs2.length && dirs1[cnt].equals(dirs2[cnt])) cnt++;
 		String relPath = "";

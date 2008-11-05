@@ -149,7 +149,7 @@ public class GrxShapeItem extends GrxTransformItem{
 			}
 		};
 		setMenuItem(item);
-
+		setURL(shapeInfo_.url);
 		/* disable copy and paste menus until they are implemented
         // menu item : copy
         item = new Action(){
