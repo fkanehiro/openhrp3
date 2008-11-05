@@ -23,6 +23,7 @@ import javax.swing.*;
 /**
  * 選択されているボタンをもう一度押すとボタンがポップするボタングループ
  */
+@SuppressWarnings("serial")
 public class PopButtonGroup extends ButtonGroup implements ActionListener {
     //--------------------------------------------------------------------
     // Instance variables
