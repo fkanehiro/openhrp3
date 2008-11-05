@@ -30,6 +30,7 @@ import com.generalrobotix.ui.util.MessageBundle;
  * @history 1.0 (2001/3/1)
  * @history 2.0 (Thu Nov 29 2001)
  */
+@SuppressWarnings("serial")
 public class ObjectToolBar extends JToolBar {
     // 画面モード
     public static final int DISABLE_MODE    = 0;

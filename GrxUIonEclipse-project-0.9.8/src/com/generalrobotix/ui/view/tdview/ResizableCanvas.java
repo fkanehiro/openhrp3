@@ -20,6 +20,7 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+@SuppressWarnings("serial")
 public class ResizableCanvas extends JScrollPane {
     Canvas canvas_;
 

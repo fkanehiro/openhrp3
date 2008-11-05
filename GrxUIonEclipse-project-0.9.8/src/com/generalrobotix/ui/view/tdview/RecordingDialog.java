@@ -22,6 +22,7 @@ import javax.swing.*;
 import com.generalrobotix.ui.util.FileInput;
 import com.generalrobotix.ui.util.ModalDialog;
 
+@SuppressWarnings("serial")
 public class RecordingDialog extends ModalDialog {
 
 	 //--------------------------------------------------------------------

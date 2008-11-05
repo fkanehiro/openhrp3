@@ -1361,6 +1361,7 @@ public class Grx3DView
 
         GUIAction.OBJECT_TRANSLATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+            	behaviorManager.initDynamicsSimulator();
                 setModelUpdate(false);
                 behaviorManager.setOperationMode(BehaviorManager.OBJECT_TRANSLATION_MODE);
                 objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
@@ -1370,6 +1371,7 @@ public class Grx3DView
 
         GUIAction.OBJECT_ROTATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+            	behaviorManager.initDynamicsSimulator();
                 setModelUpdate(false);
                 behaviorManager.setOperationMode(BehaviorManager.OBJECT_ROTATION_MODE);
                 objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
@@ -1378,6 +1380,7 @@ public class Grx3DView
         });
         GUIAction.JOINT_ROTATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+            	behaviorManager.initDynamicsSimulator();
                 setModelUpdate(false);
                 behaviorManager.setOperationMode(BehaviorManager.JOINT_ROTATION_MODE);
                 objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);

@@ -26,7 +26,6 @@ import jp.go.aist.hrp.simulator.DynamicsSimulator;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorFactory;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorFactoryHelper;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.IntegrateMethod;
-import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.JointDriveMode;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.LinkDataType;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.SensorOption;
 import jp.go.aist.hrp.simulator.*;
@@ -66,6 +65,7 @@ public class BehaviorManager implements WorldReplaceListener {
     public static final int PARALLEL_VIEW_MODE = 3;
 
     // インスタンス変数
+    DynamicsSimulator currentDynamics_;
     private IseBehavior behavior_;
     private IseBehaviorHandler handler_;
     private int viewMode_;
@@ -180,6 +180,11 @@ public class BehaviorManager implements WorldReplaceListener {
         	handler_.setViewIndicator(indicator_);
     }
 
+    /**
+     * @brief initialize dynamics server
+     * @param force if true is given, dynamics server is initialized even if it exists already
+     * @return true if updated successfully, false otherwise
+     */
     public boolean updateDynamicsSimulator(boolean force) {
     	if (currentDynamics_ == null || force) {
     		try {
@@ -197,7 +202,12 @@ public class BehaviorManager implements WorldReplaceListener {
     	}
     	return true;
     }
-    DynamicsSimulator currentDynamics_;
+    
+    /**
+     * @brief create dynamics server
+     * @param update if true is given, existing dynamics server is destroyed and re-created
+     * @return dynamics server
+     */
 	DynamicsSimulator getDynamicsSimulator(boolean update) {
 		//currentDynamics_ = dynamicsMap_.get(currentWorld_);
 		if (update && currentDynamics_ != null) {
@@ -230,11 +240,18 @@ public class BehaviorManager implements WorldReplaceListener {
 		return operationMode_;
 	}
 
+	/**
+	 * @brief initialize dynamics server
+	 * 
+	 * dynamics server object is created and existing model items are registered.
+	 * And then, collision check pairs between items are registered.
+	 * @return true initialized successfully, false otherwise
+	 */
 	public boolean initDynamicsSimulator() {
 		getDynamicsSimulator(true);
 
 		try {
-			List modelList = manager_.getSelectedItemList(GrxModelItem.class);
+			List<GrxBaseItem> modelList = manager_.getSelectedItemList(GrxModelItem.class);
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem)modelList.get(i);
 				if (model.getBodyInfo() != null)
@@ -245,6 +262,9 @@ public class BehaviorManager implements WorldReplaceListener {
 			currentDynamics_.init(0.005, m, SensorOption.ENABLE_SENSOR);
 			currentDynamics_.setGVector(new double[] { 0.0, 0.0, 9.8});
 			
+			double[] K = new double[] { 0,0,0,0,0,0 };
+			double[] C = new double[] { 0,0,0,0,0,0 };
+
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem) modelList.get(i);
 				if (model.links_ == null)
@@ -255,28 +275,18 @@ public class BehaviorManager implements WorldReplaceListener {
 					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
 					model.getTransformArray(base));
 				
-				currentDynamics_.setCharacterAllJointModes(
-					model.getName(), JointDriveMode.TORQUE_MODE);
-					
 				currentDynamics_.setCharacterAllLinkData(
 					model.getName(), LinkDataType.JOINT_VALUE, 
 					model.getJointValues());
+
+				for (int j=i+1; j<modelList.size(); j++){
+					GrxModelItem model2 = (GrxModelItem)modelList.get(j);
+					currentDynamics_.registerCollisionCheckPair(
+							model.getName(), "", model2.getName(), "", 0.5, 0.5, K, C);
+				}
 			}
 			
-			/*
-			  double[] K = new double[] { 100000, 100000, 100000, 800, 800, 800 };
-			  double[] C = new double[] { 6000, 6000, 6000, 5, 5, 5 };
-			  List<GrxBaseItem> collisionPair = manager_
-					.getSelectedItemList(GrxCollisionPairItem.class);
-			it = collisionPair.iterator();
-			while (it.hasNext()) {
-				GrxCollisionPairItem item = (GrxCollisionPairItem) it.next();
-				currentDynamics_.registerCollisionCheckPair(
-						item.getProperty("objectName1",""), 
-						item.getProperty("jointName1",""), 
-						item.getProperty("objectName2",""), 
-						item.getProperty("jointName2",""), 0.5, 0.5, K, C);
-			}*/
+			
             //state_.value = null;
 		} catch (Exception e) {
 			GrxDebugUtil.printErr("initDynamicsSimulator:", e);
@@ -291,6 +301,14 @@ public class BehaviorManager implements WorldReplaceListener {
 	public void removeClickListener( Grx3DViewClickListener listener ){
 		behavior_.removeClickListener( listener );
 	}
+	
+	/**
+	 * @brief get collision information
+	 * 
+	 * Before calling this method, dynamics server object must be initialized by calling initDynamicsSimulator()
+	 * @param modelList list of model items. Positions of these items are updated
+	 * @return collision information
+	 */
 	public Collision[] getCollision(List<GrxModelItem> modelList) {
 		if (currentDynamics_ == null) return null;
 		for (int i=0; i<modelList.size(); i++)  {
