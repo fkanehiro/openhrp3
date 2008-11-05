@@ -762,7 +762,11 @@ VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
 
     // Relative path check & translate to absolute path 
     if ( ! localPath.is_complete() ){
+#if BOOST_VERSION <= 103401
+        localPath = parentPath.branch_path() / localPath;
+#else
         localPath = parentPath.parent_path() / localPath;
+#endif
         localPath.normalize();
     }
 
@@ -896,7 +900,6 @@ VrmlProtoInstancePtr VrmlParserImpl::readProtoInstanceNode(const string& proto_n
     VrmlProtoInstancePtr protoInstance(new VrmlProtoInstance(proto));
 
     while(scanner->readWord()){
-
         TProtoFieldMap::iterator p = protoInstance->fields.find(scanner->stringValue);
         if(p == protoInstance->fields.end())
             scanner->throwException("undefined field");
@@ -1094,7 +1097,7 @@ VrmlShapePtr VrmlParserImpl::readShapeNode()
         switch(scanner->symbolValue){
 
         case F_APPEARANCE: node->appearance = dynamic_pointer_cast<VrmlAppearance>(readSFNode(APPEARANCE_NODE)); break;
-        case F_GEOMETRY:   node->geometry = dynamic_pointer_cast<VrmlGeometry>(readSFNode(GEOMETRY_NODE));       break;
+        case F_GEOMETRY:   node->geometry = readSFNode(GEOMETRY_NODE);       break;
 
         default: scanner->throwException("Undefined field");
         }

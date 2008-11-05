@@ -283,7 +283,7 @@ namespace hrp {
       public:
         VrmlShape();
         VrmlAppearancePtr appearance;
-        VrmlGeometryPtr geometry;
+        SFNode geometry;
     };
     typedef boost::intrusive_ptr<VrmlShape> VrmlShapePtr;
 
