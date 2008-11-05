@@ -149,7 +149,7 @@ module OpenHRP {
      物体形状情報を格納する構造体。
      @endif
   */
-  enum ShapePrimitiveType { SP_MESH, SP_BOX, SP_CYLINDER, SP_CONE, SP_SPHERE };
+  enum ShapePrimitiveType { SP_MESH, SP_BOX, SP_CYLINDER, SP_CONE, SP_SPHERE, SP_PLANE };
 
   struct ShapeInfo
   {
