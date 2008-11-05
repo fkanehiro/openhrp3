@@ -762,7 +762,7 @@ VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
 
     // Relative path check & translate to absolute path 
     if ( ! localPath.is_complete() ){
-#if BOOST_VERSION <= 103401
+#if BOOST_VERSION < 103600
         localPath = parentPath.branch_path() / localPath;
 #else
         localPath = parentPath.parent_path() / localPath;
