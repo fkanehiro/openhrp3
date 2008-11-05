@@ -891,6 +891,22 @@ namespace hrp {
     };
     typedef boost::intrusive_ptr<VrmlProtoInstance> VrmlProtoInstancePtr;
 
+
+    /**
+       The upper cast operation that supports the situation where the original pointer
+       is VrmlProtoInstance and you want to get the actual node,
+       the node replaced with the pre-defined node type written in the PROTO definition.
+    */
+    template<class VrmlNodeType>
+    boost::intrusive_ptr<VrmlNodeType> dynamic_node_cast(VrmlNodePtr node) {
+        VrmlProtoInstancePtr protoInstance = boost::dynamic_pointer_cast<VrmlProtoInstance>(node);
+        if(protoInstance){
+            return boost::dynamic_pointer_cast<VrmlNodeType>(protoInstance->actualNode);
+        } else {
+            return boost::dynamic_pointer_cast<VrmlNodeType>(node);
+        }
+    }
+
 };
 
 #endif

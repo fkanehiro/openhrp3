@@ -228,7 +228,7 @@ int ShapeSetInfo_impl::createShapeInfo(VrmlShape* shapeNode, const SFString* url
 {
     int shapeInfoIndex = -1;
 
-    VrmlIndexedFaceSet* triangleMesh = dynamic_cast<VrmlIndexedFaceSet*>(shapeNode->geometry.get());
+    VrmlIndexedFaceSet* triangleMesh = dynamic_node_cast<VrmlIndexedFaceSet>(shapeNode->geometry).get();
 
     if(triangleMesh){
 
@@ -281,7 +281,8 @@ void ShapeSetInfo_impl::setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* 
     shapeInfo.primitiveType = SP_MESH;
     FloatSequence& param = shapeInfo.primitiveParameters;
     
-    VrmlGeometry* originalGeometry = triangleMeshShaper.getOriginalGeometry(shapeNode).get();
+    VrmlGeometry* originalGeometry =
+        dynamic_node_cast<VrmlGeometry>(triangleMeshShaper.getOriginalGeometry(shapeNode)).get();
 
     if(originalGeometry){
 
