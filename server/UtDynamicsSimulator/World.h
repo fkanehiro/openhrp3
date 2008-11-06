@@ -17,7 +17,7 @@
 #include <list>
 #include <vector>
 #include <fMatrix3.h>
-#include <DynamicsSimulator.h>
+#include <hrpCorba/DynamicsSimulator.hh>
 #include "hrpModelExportDef.h"
 
 class pSim;

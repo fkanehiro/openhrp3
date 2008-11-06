@@ -15,8 +15,8 @@
 #include <string>
 #include <sstream>
 
-#include <ModelLoader.h>
-#include "ORBwrap.h"
+#include <hrpCorba/ModelLoader.hh>
+#include "hrpCorba/ORBwrap.h"
 #include "World.h"
 #include "hrpModelExportDef.h"
 

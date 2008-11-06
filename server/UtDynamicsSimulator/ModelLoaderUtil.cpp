@@ -13,7 +13,7 @@
  *
  */
 
-#include <OpenHRPCommon.h>
+#include <hrpCorba/OpenHRPCommon.hh>
 #include <stack>
 #include "ModelLoaderUtil.h"
 #include "Sensor.h"
@@ -28,7 +28,38 @@ using namespace std;
 //static std::ofstream logfile("model.log");
 //static std::ofstream logfile;
 
-static void array_to_mat33(DblArray9_slice* a, fMat33& mat)
+static void array_to_mat33(const DblArray4& a, fMat33& mat)
+{
+    const double sth = sin(a[3]);
+    const double vth = 1.0 - cos(a[3]);
+
+    double ax = a[0];
+    double ay = a[1];
+    double az = a[2];
+
+    const double axx = ax*ax*vth;
+    const double ayy = ay*ay*vth;
+    const double azz = az*az*vth;
+    const double axy = ax*ay*vth;
+    const double ayz = ay*az*vth;
+    const double azx = az*ax*vth;
+
+    ax *= sth;
+    ay *= sth;
+    az *= sth;
+
+    mat(0,0) = 1.0 - azz - ayy;
+	mat(0,1) =  -az + axy;
+	mat(0,2) = ay + azx;
+	mat(1,0) = az + axy;
+	mat(1,1) = 1.0 - azz - axx;
+	mat(1,2) = -ax + ayz;
+	mat(2,0) = -ay + azx;
+	mat(2,1) = ax + ayz;
+	mat(2,2) = 1.0 - ayy - axx;
+}
+
+static void array_to_mat33(const DblArray9& a, fMat33& mat)
 {
 	mat(0,0) = a[0];
 	mat(1,0) = a[1];
@@ -41,7 +72,7 @@ static void array_to_mat33(DblArray9_slice* a, fMat33& mat)
 	mat(2,2) = a[8];
 }
 
-static void array_to_vec3(DblArray3_slice* a, fVec3& vec)
+static void array_to_vec3(const DblArray3& a, fVec3& vec)
 {
 	vec(0) = a[0];
 	vec(1) = a[1];
@@ -89,11 +120,11 @@ static void createSensors(OpenHRP::World* world, Joint* jnt,  SensorInfoSequence
 
 			CORBA::String_var name0 = iSensor.name;
 			string name(name0);
-			DblArray3_var p = iSensor.translation;
+			const DblArray3& p = iSensor.translation;
 			static fVec3 localPos;
 			static fMat33 localR;
 			array_to_vec3(p, localPos);
-			DblArray9_var rot = iSensor.rotation;
+			const DblArray4& rot = iSensor.rotation;
 			array_to_mat33(rot, localR);
 			world->addSensor(jnt, sensorType, id, name, localPos, localR);
 		}
@@ -158,11 +189,11 @@ static Joint* createLink(OpenHRP::World* world, const char* charname, int index,
 		}
 	}
 
-	DblArray3_var t =iLink.translation;
+	const DblArray3& t =iLink.translation;
 	static fVec3 rel_pos;
 	array_to_vec3(t, rel_pos);
 
-	DblArray9_var r = iLink.rotation;
+	const DblArray4& r = iLink.rotation;
 	static fMat33 rel_att;
 	array_to_mat33(r, rel_att);
 
@@ -170,7 +201,7 @@ static Joint* createLink(OpenHRP::World* world, const char* charname, int index,
 	// of the joint axis
 	if(jnt->j_type == ::JROTATE || jnt->j_type == ::JSLIDE)
 	{
-		DblArray3_var a = iLink.jointAxis;
+		const DblArray3& a = iLink.jointAxis;
 		static fVec3 loc_axis;
 		array_to_vec3(a, loc_axis);
 //		logfile << "loc_axis = " << loc_axis << endl;
@@ -266,12 +297,12 @@ static Joint* createLink(OpenHRP::World* world, const char* charname, int index,
 	//link->uvlimit = getLimitValue(uvlimit, +maxlimit);
 	//link->lvlimit = getLimitValue(lvlimit, -maxlimit);
 
-	DblArray3_var rc = iLink.centerOfMass;
+	const DblArray3& rc = iLink.centerOfMass;
 	static fVec3 com;
 	array_to_vec3(rc, com);
 	jnt->loc_com.set(com);
 
-	DblArray9_var I = iLink.inertia;
+	const DblArray9& I = iLink.inertia;
 	static fMat33 inertia;
 	array_to_mat33(I, inertia);
 	jnt->inertia.set(inertia);
@@ -331,7 +362,7 @@ int OpenHRP::loadBodyFromBodyInfo(World* world, const char* _name, BodyInfo_ptr 
 
 		DblArray3_var p = iLinks[rootIndex]->translation();
 		vector3 pos(p[0u], p[1u], p[2u]);
-		DblArray9_var R = iLinks[rootIndex]->rotation();
+		const DblArray4 &R = iLinks[rootIndex]->rotation();
 		matrix33 att;
 		getMatrix33FromRowMajorArray(att, R);
 		body->setDefaultRootPosition(pos, att);

@@ -18,10 +18,10 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <ORBwrap.h>
-#include <ModelLoader.h>
-#include <CollisionDetector.h>
-#include <DynamicsSimulator.h>
+#include <hrpCorba/ORBwrap.h>
+#include <hrpCorba/ModelLoader.hh>
+#include <hrpCorba/CollisionDetector.hh>
+#include <hrpCorba/DynamicsSimulator.hh>
 
 #include "World.h"
 #include "TimeMeasure.h"

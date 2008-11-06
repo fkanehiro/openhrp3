@@ -28,7 +28,7 @@
 #define DEFAULT_MIN_TIMESTEP 1e-6
 #define DEFAULT_MAX_INTEG_ERROR 1e-4
 
-static char* ScaleString = "Scale_";
+static const char* ScaleString = "Scale_";
 
 //! Extracts the character name from a joint name.
 char* CharName(const char* _name);

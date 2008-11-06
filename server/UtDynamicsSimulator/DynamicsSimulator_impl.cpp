@@ -36,9 +36,9 @@ namespace {
 
 	struct IdLabel {
 		int id;
-		char* label;
+		const char* label;
 	};
-	typedef map<int, char*> IdToLabelMap;
+	typedef map<int, const char*> IdToLabelMap;
 
 	IdToLabelMap commandLabelMaps[2];
 
