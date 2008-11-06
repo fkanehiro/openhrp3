@@ -65,12 +65,12 @@ private:
     int createShapeInfo(VrmlShape* shapeNode, const SFString* url);
     void setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet* triangleMesh);
     void setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* shapeNode);
-    int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlIndexedFaceSet* faceSet);
+    int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlIndexedFaceSet* faceSet, const SFString *url);
     void setColors(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     void setNormals(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     void setTexCoords(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     int createMaterialInfo(VrmlMaterialPtr& materialNode);
-    int createTextureInfo(VrmlTexturePtr& textureNode);
+    int createTextureInfo(VrmlTexturePtr& textureNode, const SFString *url);
     void createTextureTransformMatrix(AppearanceInfo& appInfo, VrmlTextureTransformPtr& textureTransform );
     std::string getModelFileDirPath(const std::string& url);
 };
