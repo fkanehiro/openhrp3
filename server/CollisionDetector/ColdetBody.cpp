@@ -30,8 +30,15 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
 			
         int totalNumTriangles = 0;
         const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
+        short shapeIndex;
+        double R[9], p[3];
+        unsigned int nshape = shapeIndices.length();
 	for(int i=0; i < shapeIndices.length(); i++){
-            short shapeIndex = shapeIndices[i].shapeIndex;
+            shapeIndex = shapeIndices[i].shapeIndex;
+            const DblArray12 &tform = shapeIndices[i].transformMatrix;
+            R[0] = tform[0]; R[1] = tform[1]; R[2] = tform[2]; p[0] = tform[3];
+            R[3] = tform[4]; R[4] = tform[5]; R[5] = tform[6]; p[1] = tform[7];
+            R[6] = tform[8]; R[7] = tform[9]; R[8] = tform[10]; p[2] = tform[11];
             const ShapeInfo& shapeInfo = shapes[shapeIndex];
             totalNumTriangles += shapeInfo.triangles.length() / 3;
         }
@@ -40,8 +47,13 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
         for (unsigned int i=0; i<sensors.length(); i++){
             const SensorInfo &sinfo = sensors[i];
             const TransformedShapeIndexSequence tsis = sinfo.shapeIndices;
+            nshape += tsis.length();
             for (unsigned int j=0; j<tsis.length(); j++){
-                short shapeIndex = tsis[j].shapeIndex;
+                shapeIndex = tsis[j].shapeIndex;
+                const DblArray12 &tform = shapeIndices[i].transformMatrix;
+                R[0] = tform[0]; R[1] = tform[1]; R[2] = tform[2]; p[0] = tform[3];
+                R[3] = tform[4]; R[4] = tform[5]; R[5] = tform[6]; p[1] = tform[7];
+                R[6] = tform[8]; R[7] = tform[9]; R[8] = tform[10]; p[2] = tform[11];
                 const ShapeInfo& shapeInfo = shapes[shapeIndex];
                 totalNumTriangles += shapeInfo.triangles.length() / 3;
             }
@@ -55,6 +67,9 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
         if(totalNumTriangles > 0){
             coldetModel->setNumVertices(totalNumVertices);
             coldetModel->setNumTriangles(totalNumTriangles);
+            if (nshape == 1){
+                addLinkPrimitiveInfo(coldetModel, R, p, shapes[shapeIndex]);
+            }
             addLinkVerticesAndTriangles(coldetModel, linkInfo, shapes);
             coldetModel->build();
         }
@@ -66,6 +81,35 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
     }
 }
 
+void ColdetBody::addLinkPrimitiveInfo(ColdetModelPtr& coldetModel, 
+                                      const double *R, const double *p,
+                                      const ShapeInfo& shapeInfo)
+{
+    switch(shapeInfo.primitiveType){
+    case SP_BOX:
+        coldetModel->setPrimitiveType(ColdetModel::SP_BOX);
+        break;
+    case SP_CYLINDER:
+        coldetModel->setPrimitiveType(ColdetModel::SP_CYLINDER);
+        break;
+    case SP_CONE:
+        coldetModel->setPrimitiveType(ColdetModel::SP_CONE);
+        break;
+    case SP_SPHERE:
+        coldetModel->setPrimitiveType(ColdetModel::SP_SPHERE);
+        break;
+    case SP_PLANE:
+        coldetModel->setPrimitiveType(ColdetModel::SP_PLANE);
+        break;
+    default:
+        break;
+    }
+    coldetModel->setNumPrimitiveParams(shapeInfo.primitiveParameters.length());
+    for (unsigned int i=0; i<shapeInfo.primitiveParameters.length(); i++){
+        coldetModel->setPrimitiveParam(i, shapeInfo.primitiveParameters[i]);
+    }
+    coldetModel->setPrimitivePosition(R, p);
+}
 
 void ColdetBody::addLinkVerticesAndTriangles
 (ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, ShapeInfoSequence_var& shapes, int& vertexIndex, int& triangleIndex)
