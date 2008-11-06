@@ -761,7 +761,7 @@ public class GrxLinkItem extends GrxTransformItem{
      * @brief see doc for parent class
      */
     public void unselected(){
-    	super.selected();
+    	super.unselected();
     	setVisibleCoM(false);
     }
 }

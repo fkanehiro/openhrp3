@@ -16,13 +16,20 @@ import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.item.GrxShapeItem;
 
 public class GrxVrmlExporter {
-	public static boolean export(GrxModelItem model, String fPath){
-		// TODO check existence of fPath
-		int idx = fPath.lastIndexOf(File.separatorChar);
-		String baseDir = fPath.substring(0, idx);
+	/**
+	 * @brief export model item to a VRML97 file
+	 * @param model model item to be exported
+	 * @param exportPath path of VRML97 file
+	 * @return true exported successfully, false otherwise
+	 */
+	public static boolean export(GrxModelItem model, String exportPath){
+		// TODO check existence of exportPath
+		int idx = exportPath.lastIndexOf(File.separatorChar);
+		String exportDir = exportPath.substring(0, idx);
+
 		BufferedWriter writer = null;
 	    try {
-	        writer = new BufferedWriter(new FileWriter(fPath));
+	        writer = new BufferedWriter(new FileWriter(exportPath));
 	        
 	        writer.write("#VRML V2.0 utf8\n");                                              
 	        writer.write("\n");                                                             
@@ -189,7 +196,15 @@ public class GrxVrmlExporter {
 	        writer.write("    children    IS children\n");                             
 	        writer.write("  }\n");                                                          
 	        writer.write("}\n");                                                            
-	        writer.write("\n");                                                             
+	        writer.write("\n");                         
+	        writer.write("PROTO Plane [\n");
+	        writer.write("  exposedField SFVec3f size 10 10 0\n");
+	        writer.write("]\n");
+	        writer.write("{\n");
+	        writer.write("  Box {\n");
+	        writer.write("    size IS size\n");
+	        writer.write("  }\n");
+	        writer.write("}\n");
 	        writer.write("NavigationInfo {\n");                                             
 	        writer.write("  avatarSize    0.5\n");                                          
 	        writer.write("  headlight     TRUE\n");                                         
@@ -208,7 +223,7 @@ public class GrxVrmlExporter {
 	        
 	        writer.write("DEF "+model.getName()+" Humanoid{\n");
 	        writer.write("  humanoidBody [\n");
-	        Vector<GrxLinkItem> links = exportLink(writer, model.rootLink(), "    ", baseDir);
+	        Vector<GrxLinkItem> links = exportLink(writer, model.rootLink(), "    ", exportDir, model.getURL(false));
 	        writer.write("  ]\n");
 	        writer.write("  joints [\n");
 	        for (int i=0; i<links.size(); i++){
@@ -241,11 +256,12 @@ public class GrxVrmlExporter {
 	 * @param writer output stream
 	 * @param link link to be exported
 	 * @param indent indent string
-	 * @param baseDir directory where main file is exported
+	 * @param exportDir directory where VRML97 is exported
+	 * @param mainPath path of the main file
 	 * @return vector of links which include this link and child links
 	 */
 	public static Vector<GrxLinkItem> exportLink(BufferedWriter writer, GrxLinkItem link, String indent, 
-			String baseDir){
+			String exportDir, String mainPath){
 		Vector<GrxLinkItem> links = new Vector<GrxLinkItem>();
 		links.add(link);
 		try{
@@ -273,7 +289,7 @@ public class GrxVrmlExporter {
 			writer.write(indent+"  children[\n");
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxSensorItem){
-				exportSensor(writer, (GrxSensorItem)link.children_.get(i), indent+"    ", baseDir);
+				exportSensor(writer, (GrxSensorItem)link.children_.get(i), indent+"    ", exportDir, mainPath);
 				}
 			}
 			writer.write(indent+"    DEF "+link.getName()+"_Link Segment{\n");
@@ -287,7 +303,7 @@ public class GrxVrmlExporter {
 					GrxShapeItem shape = (GrxShapeItem)link.children_.get(i);
 					String url = shape.getURL(false);
 					if (url == null || (url != null && !url.equals(exported_url))){
-						exportShape(writer, shape, indent+"        ", baseDir);
+						exportShape(writer, shape, indent+"        ", exportDir, mainPath);
 						exported_url = url;
 					}
 				}
@@ -297,7 +313,7 @@ public class GrxVrmlExporter {
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxLinkItem){
 					Vector<GrxLinkItem> childLinks = exportLink(writer, (GrxLinkItem)link.children_.get(i), 
-							indent+"    ", baseDir);
+							indent+"    ", exportDir, mainPath);
 					links.addAll(childLinks);
 				}
 			}
@@ -314,9 +330,10 @@ public class GrxVrmlExporter {
 	 * @param writer output stream
 	 * @param sensor sensor to be exported
 	 * @param indent indent
-	 * @param baseDir directory where main file is exported
+	 * @param exportDir directory where VRML97 is exported
+	 * @param mainPath path of the main file
 	 */
-	public static void exportSensor(BufferedWriter writer, GrxSensorItem sensor, String indent, String baseDir){
+	public static void exportSensor(BufferedWriter writer, GrxSensorItem sensor, String indent, String exportDir, String mainPath){
 		try{
 			String nodeType="unknown";
 			if (sensor.type().equals("Force")){
@@ -383,7 +400,7 @@ public class GrxVrmlExporter {
 				writer.write(indent+"  children[\n");
 				for (int i=0; i<sensor.children_.size(); i++){
 					if (sensor.children_.get(i) instanceof GrxShapeItem){
-						exportShape(writer, (GrxShapeItem)sensor.children_.get(i), indent+"    ", baseDir);
+						exportShape(writer, (GrxShapeItem)sensor.children_.get(i), indent+"    ", exportDir, mainPath);
 					}
 				}
 				writer.write(indent+"  ]\n");
@@ -399,11 +416,17 @@ public class GrxVrmlExporter {
 	 * @param writer output stream
 	 * @param shape shape to be exported
 	 * @param indent indent 
-	 * @param baseDir directory where main file is exported
+	 * @param exportDir directory where VRML97 is exported
+	 * @param mainPath path of the main file
 	 */
-	public static void exportShape(BufferedWriter writer, GrxShapeItem shape, String indent, String baseDir){
+	public static void exportShape(BufferedWriter writer, GrxShapeItem shape, String indent, String exportDir, String mainPath){
+		System.out.println("mainPath = "+ mainPath);
+		System.out.println("url of shape = "+shape.getURL(false));
 		try{
-			if (shape.getURL(false) == null){
+			// If this model is created from scratch, modelPath == null and all shapes are loaded by Inline node
+			// If this shape is loaded by Inline node, modelPath != shape.getUrl()
+			// If this shape is directry written in the main file, modelPath == shape.getUrl()
+			if (shape.getURL(false).equals(mainPath)){
 				writer.write(indent+"Transform {\n");
 				if (!shape.getProperty("translation").equals("0.0 0.0 0.0 ")){
 					writer.write(indent+"  translation "+shape.getProperty("translation")+"\n");
@@ -429,7 +452,7 @@ public class GrxVrmlExporter {
 				writer.write(indent+"  ]\n");
 				writer.write(indent+"}\n");
 			}else{
-				writer.write(indent+"Inline { url \""+_absPath2relPath(shape.getURL(false), baseDir)+"\" }\n");
+				writer.write(indent+"Inline { url \""+_absPath2relPath(shape.getURL(false), exportDir)+"\" }\n");
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -502,6 +525,10 @@ public class GrxVrmlExporter {
 				writer.write(indent+"geometry Sphere{\n");
 				writer.write(indent+"  radius "+pparams[0]+"\n");
 				writer.write(indent+"}\n");					
+			}else if (ptype == ShapePrimitiveType.SP_PLANE){
+				writer.write(indent+"geometry Plane{\n");
+				writer.write(indent+"  size "+pparams[0]+" "+pparams[1]+" "+pparams[2]+"\n");
+				writer.write(indent+"}\n");
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();

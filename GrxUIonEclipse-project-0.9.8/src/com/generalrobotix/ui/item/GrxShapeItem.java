@@ -249,7 +249,7 @@ public class GrxShapeItem extends GrxTransformItem{
 
     private Primitive createPrimitive
     (ShapeInfo shapeInfo, AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo){
-
+    	
         Appearance appearance = createAppearance(appearanceInfo, materialInfo, textureInfo);
         if(appearanceInfo != null){
             if(materialInfo != null)
@@ -270,7 +270,7 @@ public class GrxShapeItem extends GrxTransformItem{
         }
 
         int flag = Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS | Primitive.ENABLE_GEOMETRY_PICKING;
-        if(shapeInfo.primitiveType == ShapePrimitiveType.SP_BOX ){
+        if(shapeInfo.primitiveType == ShapePrimitiveType.SP_BOX || shapeInfo.primitiveType == ShapePrimitiveType.SP_PLANE){
             Box box = new Box((float)(shapeInfo.primitiveParameters[0]/2.0), (float)(shapeInfo.primitiveParameters[1]/2.0),
                 (float)(shapeInfo.primitiveParameters[2]/2.0), flag, appearance );
             return box;
