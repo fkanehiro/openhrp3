@@ -634,6 +634,18 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param pos position
      * @param rot rotation matrix
      */
+    public void setTransformRoot(Transform3D tform) {
+    	Vector3d pos = new Vector3d();
+    	Matrix3d rot = new Matrix3d();
+    	tform.get(rot, pos);
+        _setTransform(0, pos, rot);
+    }
+
+    /**
+     * @brief set transformation of the root joint
+     * @param pos position
+     * @param rot rotation matrix
+     */
     public void setTransformRoot(double[] pos, double[] rot) {
         _setTransform(0, pos, rot);
     }

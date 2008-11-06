@@ -117,11 +117,10 @@ class ObjectFittingHandler extends OperationHandler {
 
         // 現在の Transform3D を生成し t3dCur へ入れる
         Transform3D t3dCur = new Transform3D();
-        TransformGroup tgCur = new TransformGroup();
 
         GrxModelItem model = SceneGraphModifier.getModelFromTG(fittingInfoFrom_.getTransformGroup());
         if (model == null) return false;
-        tgCur = model.getTransformGroupRoot();
+        TransformGroup tgCur = model.getTransformGroupRoot();
         tgCur.getTransform(t3dCur);
 
         // 移動させる側の法線のスタートポイントへ回転処理をかけた場合の
@@ -159,7 +158,7 @@ class ObjectFittingHandler extends OperationHandler {
         t3dTranslate.get(v3fTranslate);
         axis.set(quat);
 
-        tgCur.setTransform(t3dTranslate);
+        model.setTransformRoot(t3dTranslate);
 
         // 別クラスに出す場合は broadcast する
         _transformChanged(info, tgCur);
