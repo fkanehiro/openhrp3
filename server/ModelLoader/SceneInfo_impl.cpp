@@ -83,7 +83,7 @@ void SceneInfo_impl::load(const std::string& url)
         while(VrmlNodePtr node = parser.readNode()){
             if(!node->isCategoryOf(PROTO_DEF_NODE)){
                 applyTriangleMeshShaper(node);
-                traverseShapeNodes(node.get(), E, shapeIndices_);
+                traverseShapeNodes(node.get(), E, shapeIndices_, &topUrl());
             }
         }
     } catch(EasyScanner::Exception& ex){
