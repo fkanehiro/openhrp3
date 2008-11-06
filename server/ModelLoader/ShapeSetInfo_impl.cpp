@@ -281,8 +281,8 @@ void ShapeSetInfo_impl::setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* 
     shapeInfo.primitiveType = SP_MESH;
     FloatSequence& param = shapeInfo.primitiveParameters;
     
-    VrmlGeometry* originalGeometry =
-        dynamic_node_cast<VrmlGeometry>(triangleMeshShaper.getOriginalGeometry(shapeNode)).get();
+    VrmlNode *node = triangleMeshShaper.getOriginalGeometry(shapeNode).get();
+    VrmlGeometry* originalGeometry = dynamic_cast<VrmlGeometry *>(node);
 
     if(originalGeometry){
 
@@ -319,6 +319,17 @@ void ShapeSetInfo_impl::setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* 
                 shapeInfo.primitiveType = SP_SPHERE;
                 param.length(1);
                 param[0] = sphere->radius;
+            }
+        }
+    }else{
+    
+        VrmlProtoInstance *protoInstance = dynamic_cast<VrmlProtoInstance *>(node);
+        if (protoInstance && protoInstance->proto->protoName == "Plane"){
+            VrmlBox *box = dynamic_cast<VrmlBox *>(protoInstance->actualNode.get());
+            shapeInfo.primitiveType = SP_PLANE;
+            param.length(3);
+            for (int i=0; i<3; i++){
+                param[i] = box->size[i];
             }
         }
     }
