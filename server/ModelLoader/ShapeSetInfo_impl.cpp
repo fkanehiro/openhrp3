@@ -239,7 +239,7 @@ int ShapeSetInfo_impl::createShapeInfo(VrmlShape* shapeNode, const SFString* url
         if ( url ) shapeInfo.url = CORBA::string_dup( url->c_str() );
         setTriangleMesh(shapeInfo, triangleMesh);
         setPrimitiveProperties(shapeInfo, shapeNode);
-        shapeInfo.appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh);
+        shapeInfo.appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh, url);
         shapeInfoIndexMap.insert(make_pair(shapeNode, shapeInfoIndex));
     }
         
@@ -340,7 +340,8 @@ void ShapeSetInfo_impl::setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* 
    @return the index of a created AppearanceInfo object. The return value is -1 if the creation fails.
 */
 int ShapeSetInfo_impl::createAppearanceInfo
-(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlIndexedFaceSet* faceSet)
+(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlIndexedFaceSet* faceSet,
+ const SFString *url)
 {
     int appearanceIndex = appearances_.length();
     appearances_.length(appearanceIndex + 1);
@@ -365,7 +366,7 @@ int ShapeSetInfo_impl::createAppearanceInfo
 
     if(appNode) {
         appInfo.materialIndex = createMaterialInfo(appNode->material);
-        appInfo.textureIndex  = createTextureInfo (appNode->texture);
+        appInfo.textureIndex  = createTextureInfo (appNode->texture, url);
 		if(appInfo.textureIndex != -1 ){
 			createTextureTransformMatrix(appInfo, appNode->textureTransform);
             if(!faceSet->texCoord){   // default Texture Mapping
@@ -553,7 +554,7 @@ int ShapeSetInfo_impl::createMaterialInfo(VrmlMaterialPtr& materialNode)
   @return long TextureInfo(textures_)のインデックス，textureノードが存在しない場合は -1
   @endif
 */
-int ShapeSetInfo_impl::createTextureInfo(VrmlTexturePtr& textureNode)
+int ShapeSetInfo_impl::createTextureInfo(VrmlTexturePtr& textureNode, const SFString *currentUrl)
 {
     int textureInfoIndex = -1;
 
@@ -566,7 +567,7 @@ int ShapeSetInfo_impl::createTextureInfo(VrmlTexturePtr& textureNode)
         if(!pixelTextureNode){
             VrmlImageTexturePtr imageTextureNode = dynamic_pointer_cast<VrmlImageTexture>(textureNode);
             if(imageTextureNode){
-                string url = setTexturefileUrl(getModelFileDirPath(topUrl()), imageTextureNode->url);
+                string url = setTexturefileUrl(getModelFileDirPath(*currentUrl), imageTextureNode->url);
                 if(!url.empty()){
                     ImageConverter  converter;
                     SFImage* image = converter.convert(url);
