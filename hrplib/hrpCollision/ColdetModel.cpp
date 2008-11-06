@@ -42,17 +42,17 @@ void ColdetModel::initialize()
     dataSet->refCounter++;
 
     transform = new IceMaths::Matrix4x4();
+    transform->Identity();
 
-    transform->Set(1.0f, 0.0f, 0.0f, 0.0f,
-                   0.0f, 1.0f, 0.0f, 0.0f,
-                   0.0f, 0.0f, 1.0f, 0.0f,
-                   0.0f, 0.0f, 0.0f, 1.0f);
+    pTransform = new IceMaths::Matrix4x4();
+    pTransform->Identity();
 }
 
 
 ColdetModelSharedDataSet::ColdetModelSharedDataSet()
 {
     refCounter = 0;
+    pType = ColdetModel::SP_MESH;
 }    
 
 
@@ -61,6 +61,7 @@ ColdetModel::~ColdetModel()
     if(--dataSet->refCounter <= 0){
         delete dataSet;
     }
+    delete pTransform;
     delete transform;
 }
 
@@ -141,3 +142,43 @@ void ColdetModel::setPosition(const double* R, const double* p)
                    (float)R[2], (float)R[5], (float)R[8], 0.0f,
                    (float)p[0], (float)p[1], (float)p[2], 1.0f);
 }
+
+void ColdetModel::setPrimitiveType(PrimitiveType ptype)
+{
+    dataSet->pType = ptype;
+}
+
+ColdetModel::PrimitiveType ColdetModel::getPrimitiveType() const
+{
+    return dataSet->pType;
+}
+
+void ColdetModel::setNumPrimitiveParams(unsigned int nparam)
+{
+    dataSet->pParams.resize(nparam);
+}
+
+bool ColdetModel::setPrimitiveParam(unsigned int index, float value)
+{
+    if (index >= dataSet->pParams.size()) return false;
+
+    dataSet->pParams[index] = value;
+    return true;
+}
+
+bool ColdetModel::getPrimitiveParam(unsigned int index, float& value) const
+{
+    if (index >= dataSet->pParams.size()) return false;
+
+    value = dataSet->pParams[index];
+    return true;
+}
+
+void ColdetModel::setPrimitivePosition(const double* R, const double* p)
+{
+    pTransform->Set((float)R[0], (float)R[3], (float)R[6], 0.0f,
+                    (float)R[1], (float)R[4], (float)R[7], 0.0f,
+                    (float)R[2], (float)R[5], (float)R[8], 0.0f,
+                    (float)p[0], (float)p[1], (float)p[2], 1.0f);
+}
+

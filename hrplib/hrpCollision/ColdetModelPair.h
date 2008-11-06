@@ -41,6 +41,8 @@ namespace hrp {
 
       private:
         collision_data* detectCollisionsSub(bool detectAllContacts);
+        collision_data* detectMeshMeshCollisions(bool detectAllContacts);
+        collision_data* detectPlaneCylinderCollisions(bool detectAllContacts);
         
         ColdetModelPtr model0_;
         ColdetModelPtr model1_;

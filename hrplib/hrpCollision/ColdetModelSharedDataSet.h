@@ -35,6 +35,9 @@ namespace hrp {
 	vector<IceMaths::Point> vertices;
 	vector<IceMaths::IndexedTriangle> triangles;
 
+        ColdetModel::PrimitiveType pType;
+        std::vector<float> pParams;
+
       private:
         int refCounter;
 
