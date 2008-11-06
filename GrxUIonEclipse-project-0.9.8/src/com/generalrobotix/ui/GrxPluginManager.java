@@ -522,7 +522,7 @@ public class GrxPluginManager
 			URL u = new URL(_url);
 			f = new File(u.getFile());
 		} catch (Exception e) {
-			GrxDebugUtil.printErr("loadItem("+url+" is not URL format\n", e);
+			GrxDebugUtil.printErr("loadItem("+url+") is not URL format\n", e);
 	        f = new File(_url);
 		}
 

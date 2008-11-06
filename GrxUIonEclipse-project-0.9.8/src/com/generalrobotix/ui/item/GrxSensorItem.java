@@ -450,7 +450,9 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 	 * @param b true to make visible, false otherwise
 	 */
     public void setVisibleArea(boolean b) {
-        switchCamera_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
+    	if (switchCamera_ != null){
+            switchCamera_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
+    	}
     }
     
     /**

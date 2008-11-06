@@ -85,18 +85,22 @@ public class GrxItemView extends GrxBaseView {
 		
 		t.addListener(SWT.Selection, new Listener() {
 			public void handleEvent (Event event){
-				if (lastSelection_ != null){
-					for (Object o : ((IStructuredSelection) lastSelection_).toArray() ){
-						if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
-							((GrxBaseItem)o).unselected();
+				try{
+					if (lastSelection_ != null){
+						for (Object o : ((IStructuredSelection) lastSelection_).toArray() ){
+							if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
+								((GrxBaseItem)o).unselected();
+							}
 						}
 					}
-				}
-				lastSelection_ = tv.getSelection();
-				for (Object o : ((IStructuredSelection) lastSelection_).toArray() ){
-					if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
-						((GrxBaseItem)o).selected();
+					lastSelection_ = tv.getSelection();
+					for (Object o : ((IStructuredSelection) lastSelection_).toArray() ){
+						if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
+							((GrxBaseItem)o).selected();
+						}
 					}
+				}catch(Exception ex){
+					ex.printStackTrace();
 				}
 			}
 		});
