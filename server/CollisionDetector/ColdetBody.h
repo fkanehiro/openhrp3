@@ -54,6 +54,9 @@ public:
     void setLinkPositions(const LinkPositionSequence& linkPositions);
 
   private:
+    void addLinkPrimitiveInfo(ColdetModelPtr& coldetModel, 
+                              const double *R, const double *p,
+                              const ShapeInfo& shapeInfo);
     void addLinkVerticesAndTriangles
         (ColdetModelPtr& coldetModel, LinkInfo& linkInfo, ShapeInfoSequence_var& shapes);
     void addLinkVerticesAndTriangles
