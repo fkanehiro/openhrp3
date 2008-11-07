@@ -110,7 +110,7 @@ public class Grx3DView
     private TransformGroup tgView_;
     private Transform3D t3dViewHome_ = new Transform3D();
     private ViewInfo info_;
-    private BehaviorManager behaviorManager = new BehaviorManager(manager_);
+    private BehaviorManager behaviorManager_ = new BehaviorManager(manager_);
     private Background backGround_ = new Background(0.0f, 0.0f, 0.0f);
     private double[] default_eye =    new double[]{2.0, 2.0, 0.8};
     private double[] default_lookat = new double[]{0.0, 0.0, 0.8};
@@ -588,7 +588,7 @@ public class Grx3DView
             }
         }
         if (selectionChanged && isRunning()) 
-            behaviorManager.replaceWorld(itemList);
+            behaviorManager_.replaceWorld(itemList);
         
         prevTime_ = -1;
         if (collisionBg_ != null) {
@@ -598,12 +598,12 @@ public class Grx3DView
     }
     
     public boolean setup(List<GrxBaseItem> itemList) {
-        behaviorManager.setThreeDViewer(this);
-        behaviorManager.setViewIndicator(viewToolBar_);
-        behaviorManager.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
-        behaviorManager.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
-        behaviorManager.setViewHandlerMode("button_mode_rotation");
-        behaviorManager.replaceWorld(itemList);
+        behaviorManager_.setThreeDViewer(this);
+        behaviorManager_.setViewIndicator(viewToolBar_);
+        behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
+        behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
+        behaviorManager_.setViewHandlerMode("button_mode_rotation");
+        behaviorManager_.replaceWorld(itemList);
         viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
         viewToolBar_.setOperation(ViewToolBar.ROTATE);
         stateLogger_ = (GrxLoggerView)manager_.getView(GrxLoggerView.class);
@@ -632,8 +632,8 @@ public class Grx3DView
         if (currentModels_.size() == 0)
             return;
 
-        if (behaviorManager.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE && btnCollision_.isSelected()) {
-            _showCollision(behaviorManager.getCollision(currentModels_));
+        if (behaviorManager_.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE && btnCollision_.isSelected()) {
+            _showCollision(behaviorManager_.getCollision(currentModels_));
             if (updateModels_) updateViewSimulator(0);
             return;
         }
@@ -990,7 +990,7 @@ public class Grx3DView
           			for (int j=0; j<item.links_.size(); j++) {
           				if (next == item.links_.get(j).jointId()) {
           					item.activeLink_ = item.links_.get(j);
-          					behaviorManager.setPickTarget(item.links_.get(j).tg_);
+          					behaviorManager_.setPickTarget(item.links_.get(j).tg_);
           					break;
           				}
           			}
@@ -1001,7 +1001,7 @@ public class Grx3DView
   				for (int j=0; j<item.links_.size(); j++) {
       				if (next == item.links_.get(j).jointId()) {
       					item.activeLink_ = item.links_.get(j);
-          				behaviorManager.setPickTarget(item.links_.get(j).tg_);
+          				behaviorManager_.setPickTarget(item.links_.get(j).tg_);
       					break;
       				}
        			}
@@ -1185,7 +1185,7 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
                 info_.setViewMode(ViewInfo.VIEW_MODE_ROOM);
                 view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
-                behaviorManager.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
+                behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
             }
         });
@@ -1194,7 +1194,7 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
                 info_.setViewMode(ViewInfo.VIEW_MODE_WALK);
                 view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
-                behaviorManager.setViewMode(BehaviorManager.WALK_VIEW_MODE);
+                behaviorManager_.setViewMode(BehaviorManager.WALK_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.WALK_MODE);
             }
         });
@@ -1206,7 +1206,7 @@ public class Grx3DView
                 info_.setViewMode(ViewInfo.VIEW_MODE_PARALLEL);
                 view_.setProjectionPolicy(View.PARALLEL_PROJECTION);
                 setTransform(info_.getTransform());
-                behaviorManager.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
+                behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
             }
         });
@@ -1218,7 +1218,7 @@ public class Grx3DView
                 info_.setViewMode(ViewInfo.VIEW_MODE_PARALLEL);
                 view_.setProjectionPolicy(View.PARALLEL_PROJECTION);
                 setTransform(info_.getTransform());
-                behaviorManager.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
+                behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
             }
         });
@@ -1230,7 +1230,7 @@ public class Grx3DView
                 info_.setViewMode(ViewInfo.VIEW_MODE_PARALLEL);
                 view_.setProjectionPolicy(View.PARALLEL_PROJECTION);
                 setTransform(info_.getTransform());
-                behaviorManager.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
+                behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
             }
         });
@@ -1242,7 +1242,7 @@ public class Grx3DView
                 info_.setViewMode(ViewInfo.VIEW_MODE_PARALLEL);
                 view_.setProjectionPolicy(View.PARALLEL_PROJECTION);
                 setTransform(info_.getTransform());
-                behaviorManager.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
+                behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
             }
         });
@@ -1254,7 +1254,7 @@ public class Grx3DView
                 info_.setViewMode(ViewInfo.VIEW_MODE_PARALLEL);
                 view_.setProjectionPolicy(View.PARALLEL_PROJECTION);
                 setTransform(info_.getTransform());
-                behaviorManager.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
+                behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
             }
         });
@@ -1266,13 +1266,13 @@ public class Grx3DView
                 info_.setViewMode(ViewInfo.VIEW_MODE_PARALLEL);
                 view_.setProjectionPolicy(View.PARALLEL_PROJECTION);
                 setTransform(info_.getTransform());
-                behaviorManager.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
+                behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
             }
         });
         GUIAction.VIEW_ZOOM_MODE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                behaviorManager.setViewHandlerMode("button_mode_zoom");
+                behaviorManager_.setViewHandlerMode("button_mode_zoom");
                 // viewHandlerMode_[currentViewer_] = "button_mode_zoom";
                 viewToolBar_.setOperation(ViewToolBar.ZOOM);
                 //objectToolBar_.selectNone();
@@ -1282,7 +1282,7 @@ public class Grx3DView
 
         GUIAction.VIEW_ROTATION_MODE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                behaviorManager.setViewHandlerMode("button_mode_rotation");
+                behaviorManager_.setViewHandlerMode("button_mode_rotation");
                 // viewHandlerMode_[currentViewer_] = "button_mode_rotation";
                 viewToolBar_.setOperation(ViewToolBar.ROTATE);
                 //objectToolBar_.selectNone();
@@ -1292,7 +1292,7 @@ public class Grx3DView
         
         GUIAction.VIEW_PAN_MODE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                behaviorManager.setViewHandlerMode("button_mode_translation");
+                behaviorManager_.setViewHandlerMode("button_mode_translation");
                 // viewHandlerMode_[currentViewer_] = "button_mode_translation";
                 viewToolBar_.setOperation(ViewToolBar.PAN);
                 //objectToolBar_.selectNone();
@@ -1361,9 +1361,9 @@ public class Grx3DView
 
         GUIAction.OBJECT_TRANSLATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	behaviorManager.initDynamicsSimulator();
+            	behaviorManager_.initDynamicsSimulator();
                 setModelUpdate(false);
-                behaviorManager.setOperationMode(BehaviorManager.OBJECT_TRANSLATION_MODE);
+                behaviorManager_.setOperationMode(BehaviorManager.OBJECT_TRANSLATION_MODE);
                 objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
                 lblMode_.setText("[ EDIT : Translate Object ]");
             }
@@ -1371,18 +1371,18 @@ public class Grx3DView
 
         GUIAction.OBJECT_ROTATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	behaviorManager.initDynamicsSimulator();
+            	behaviorManager_.initDynamicsSimulator();
                 setModelUpdate(false);
-                behaviorManager.setOperationMode(BehaviorManager.OBJECT_ROTATION_MODE);
+                behaviorManager_.setOperationMode(BehaviorManager.OBJECT_ROTATION_MODE);
                 objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
                 lblMode_.setText("[ EDIT : Rotate Object ]");
             }
         });
         GUIAction.JOINT_ROTATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	behaviorManager.initDynamicsSimulator();
+            	behaviorManager_.initDynamicsSimulator();
                 setModelUpdate(false);
-                behaviorManager.setOperationMode(BehaviorManager.JOINT_ROTATION_MODE);
+                behaviorManager_.setOperationMode(BehaviorManager.JOINT_ROTATION_MODE);
                 objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
                 lblMode_.setText("[ EDIT : Move Joint ]");
             }
@@ -1392,7 +1392,7 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
                 objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
                 viewToolBar_.setEnabled(true);
-                behaviorManager.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
+                behaviorManager_.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
                 lblMode_.setText("[ EDIT : Object Placement Select ]");
             }
         });
@@ -1401,7 +1401,7 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
                 objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
                 viewToolBar_.setEnabled(true);
-                behaviorManager.setOperationMode(BehaviorManager.FITTING_TO_MODE);
+                behaviorManager_.setOperationMode(BehaviorManager.FITTING_TO_MODE);
                 lblMode_.setText("[ EDIT : Object Placement Destination ]");
             }
         });
@@ -1409,20 +1409,20 @@ public class Grx3DView
         GUIAction.DO_FIT.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setModelUpdate(false);
-                behaviorManager.fit();
+                behaviorManager_.fit();
                 objectToolBar_.selectNone();
                 objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
                 viewToolBar_.setEnabled(true);
-                behaviorManager.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
+                behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
                 lblMode_.setText("[ VIEW ]");
             }
         });
 
         GUIAction.INV_KINEMA_FROM.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (behaviorManager.updateDynamicsSimulator(false)) {
+                if (behaviorManager_.updateDynamicsSimulator(false)) {
                     objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
-                    behaviorManager.setOperationMode(BehaviorManager.INV_KINEMA_FROM_MODE);
+                    behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_FROM_MODE);
                     lblMode_.setText("[ EDIT : Inverse Kinematics Base Link ]");
                 }
             }
@@ -1432,7 +1432,7 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
                 setModelUpdate(false);
                 objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
-                behaviorManager.setOperationMode(BehaviorManager.INV_KINEMA_TRANSLATION_MODE);
+                behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_TRANSLATION_MODE);
                 lblMode_.setText("[ EDIT : Inverse Kinematics Translate ]");
             }
         });
@@ -1441,22 +1441,27 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
                 setModelUpdate(false);
                 objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
-                behaviorManager.setOperationMode(BehaviorManager.INV_KINEMA_ROTATION_MODE);
+                behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_ROTATION_MODE);
                 lblMode_.setText("[ EDIT : Inverse Kinematics Rotate ]");
             }
         });
 
         GUIAction.OPERATION_DISABLE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setModelUpdate(true);
-                behaviorManager.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
-                objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-                viewToolBar_.setEnabled(true);
-                lblMode_.setText("[ VIEW ]");
+            	disableOperation();
             }
         });
     }
     
+    public void disableOperation(){
+        setModelUpdate(true);
+        behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
+        objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
+        objectToolBar_.selectNone();
+        viewToolBar_.setEnabled(true);
+        lblMode_.setText("[ VIEW ]");
+    }
+
     private void setModelUpdate(boolean b) {
         for (int i=0; i<currentModels_.size(); i++)
             currentModels_.get(i).update_ = b;
@@ -1464,11 +1469,11 @@ public class Grx3DView
 
 
     public void addClickListener( Grx3DViewClickListener listener ){
-        behaviorManager.addClickListener( listener );
+        behaviorManager_.addClickListener( listener );
     }
 
     public void removeClickListener( Grx3DViewClickListener listener ){
-        behaviorManager.removeClickListener( listener );
+        behaviorManager_.removeClickListener( listener );
     }
 
     private PickCanvas initPickCanvas(int x, int y){
