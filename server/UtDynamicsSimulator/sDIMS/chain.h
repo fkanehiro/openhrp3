@@ -23,6 +23,7 @@
 #include <SceneGraph.h>
 #endif
 #include <list>
+#include <cstring>
 
 //! Defines for IntegAdaptiveEuler
 #define DEFAULT_MIN_TIMESTEP 1e-6
