@@ -22,6 +22,7 @@ package com.generalrobotix.ui.util;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.Properties;
 
 @SuppressWarnings("serial")
@@ -136,18 +137,31 @@ public class GrxConfigBundle extends Properties {
 	 * @brief get short value associated to key
 	 * @param key keyword
 	 * @param defaultVal default value
-	 * @return short value associated to key
+	 * @return short value associated to key if obtained, defaultVal otherwise
 	 */
 	public final Short getShort(String key, Short defaultVal) {
+		Short ret = getShort(getStr(key));
+		if (ret != null){
+			return ret;
+		}else{
+			return defaultVal;
+		}
+	}
+
+	/**
+	 * @breif get Short from String
+	 * @param value String
+	 * @return Short value if converted successfully, null otherwise
+	 */
+	public Short getShort(String value){
 		Short ret;
 		try {
-			ret = Short.parseShort(getStr(key));
+			ret = Short.parseShort(value);
 		} catch(Exception e){
-			ret = defaultVal;	
+			return null;
 	   	}
 		return ret;
 	}
-	
 	/**
 	 * @brief get integer array associated to key
 	 * @param key keyword
@@ -173,18 +187,32 @@ public class GrxConfigBundle extends Properties {
 	 * @brief get double value associated to key
 	 * @param key keyword
 	 * @param defaultVal default value
-	 * @return double value associated to key
+	 * @return double value associated to key if obtained, defaultVal otherwise
 	 */
 	public final Double getDbl(String key, Double defaultVal) {
+		Double ret = getDbl(getStr(key));
+		if (ret != null){
+			return ret;
+		}else{
+			return defaultVal;
+		}
+	}
+	
+	/**
+	 * @breif get Double from String
+	 * @param value string
+	 * @return Double value if converted successfully, null otherwise
+	 */
+	public Double getDbl(String value){
 		Double ret;
 		try {
-			ret = Double.parseDouble(getStr(key));
+			ret = Double.parseDouble(value);
 		} catch(Exception e){
-			ret = defaultVal;
+			return null;
 		}
 		return ret;
 	}
-	
+
 	/**
 	 * @brief get float value associated to key
 	 * @param key keyword
@@ -209,17 +237,29 @@ public class GrxConfigBundle extends Properties {
 	 */
 	public final double[] getDblAry(String key, double[] defaultVal){
 		String s = getStr(key);
-		if (s==null)
+		double[] ret = getDblAry(s);
+		if (ret != null){
+			return ret;
+		}else{
 			return defaultVal;
-		String[] str = s.split(" ");
+		}
+	}
+	
+	/**
+	 * @brief get array of double from String
+	 * @param value string of space separated double values
+	 * @return array of double if converted successfully, null otherwise
+	 */
+	public double[] getDblAry(String value){
+		if (value == null) return null;
+		String[] str = value.split(" ");
 		double[] ret = new double[str.length];
 		try {
 			for (int i=0;i<str.length;i++)
 				ret[i] = Double.parseDouble(str[i]);
 		} catch(Exception e){
-			return defaultVal;
+			return null;
 		}
-		
 		return ret;
 	}
 	
@@ -243,6 +283,22 @@ public class GrxConfigBundle extends Properties {
 		}
 		
 		return ret;
+	}
+	
+	/**
+	 * @brief associate double array to key
+	 * @param key keyword
+	 * @param value double array
+	 * @param digits for format
+	 */
+	public final void setDblAry(String key, double[] value, int digits) {
+		String val = new String();
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(digits);
+		for (int i=0; i<value.length; i++) {
+			val += nf.format(value[i])+" ";
+		}
+		setProperty(key,val);
 	}
 	
 	/**
@@ -279,6 +335,20 @@ public class GrxConfigBundle extends Properties {
 	public final void setDbl(String key, double value) {
 		String val = new String();
 		val += String.valueOf(value)+" ";
+		setProperty(key,val);
+	}
+	
+	/**
+	 * @brief associate double value to key
+	 * @param key keyword
+	 * @param value double value
+	 * @param digits digits to format
+	 */
+	public final void setDbl(String key, double value, int digits) {
+		String val = new String();
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMaximumFractionDigits(digits);
+		val += nf.format(value)+" ";
 		setProperty(key,val);
 	}
 	

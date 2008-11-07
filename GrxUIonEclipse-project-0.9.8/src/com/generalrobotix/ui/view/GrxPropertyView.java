@@ -212,10 +212,7 @@ public class GrxPropertyView extends GrxBaseView {
             try{
             if (element instanceof TableItem && value instanceof String) {
                 TableItem item = (TableItem) element;
-                Map.Entry entry = (Map.Entry)item.getData();
-                entry.setValue((String)value);
-                currentPlugin_.propertyChanged();
-                item.setText(1, (String) value);
+                currentPlugin_.propertyChanged(item.getText(), (String)value);
                 // following three lines are required to refresh view
                 table_.setVisible(false);
                 viewer_.setInput(currentPlugin_);

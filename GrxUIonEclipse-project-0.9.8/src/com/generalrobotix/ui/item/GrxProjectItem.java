@@ -349,6 +349,9 @@ public class GrxProjectItem extends GrxBaseItem {
 		}	
 	}
 
+	/**
+	 * @brief load a project
+	 */
 	public void load() {
 		String path = getURL(true);
 		File filterPath = null;
@@ -380,6 +383,11 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 	}
 
+	/**
+	 * @brief load a project file
+	 * @param f a project file
+	 * @return true if loaded successfully, false otherwise
+	 */
 	public boolean load(File f) {
 		System.out.println( "[ProjectItem]@load ProjectFile load "+ f.toString());
 		

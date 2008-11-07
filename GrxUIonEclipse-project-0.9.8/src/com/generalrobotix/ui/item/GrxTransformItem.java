@@ -14,7 +14,10 @@ package com.generalrobotix.ui.item;
 import java.util.Vector;
 
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.vecmath.AxisAngle4d;
+import javax.vecmath.Vector3d;
 
 import jp.go.aist.hrp.simulator.AppearanceInfo;
 import jp.go.aist.hrp.simulator.MaterialInfo;
@@ -98,6 +101,64 @@ public class GrxTransformItem extends GrxBaseItem {
     }
 
     /**
+     * @brief set new translation from string
+     * @param value string of space separated array of double(length=3)
+     * @return true if set successfully, false otherwise
+     */
+    public boolean translation(String value){
+    	double [] pos = getDblAry(value);
+    	if (translation(pos)){
+            return true;
+    	}else{
+    		return false;
+    	}
+    }
+    
+    /**
+     * @brief set new translation to TransformGroup
+     * @param pos new translation(length=3)
+     * @return true if new translation is set successfully, false otherwise
+     */
+    public boolean translation(double[] pos){
+    	if (pos == null || pos.length != 3) return false;
+        Transform3D t3d = new Transform3D();
+        tg_.getTransform(t3d);
+        t3d.setTranslation(new Vector3d(pos));
+        tg_.setTransform(t3d);
+        setDblAry("translation", pos, 4);
+        return true;
+    }
+
+    /**
+     * @brief set new rotation from string
+     * @param value string of space separated array of double(length=4)
+     * @return true if set successfully, false otherwise
+     */
+    public boolean rotation(String value){
+    	double [] rot = getDblAry(value);
+    	if (rotation(rot)){
+            return true;
+    	}else{
+    		return false;
+    	}
+    }
+    
+    /**
+     * @breif set new rotation to TransformGroup
+     * @param rot new rotation(axis and angle, length=4)
+	 * @return true if new rotation is set successfully, false otherwise
+     */
+    public boolean rotation(double[] rot){
+    	if (rot == null || rot.length != 4) return false;
+        Transform3D t3d = new Transform3D();
+        tg_.getTransform(t3d);
+        t3d.setRotation(new AxisAngle4d(rot));
+        tg_.setTransform(t3d);
+        setDblAry("rotation", rot, 4);
+        return true;
+    }
+
+    /**
      * @brief create and add a new shape as a child
      * @param url URL of the file where shape is described
      */
@@ -114,11 +175,6 @@ public class GrxTransformItem extends GrxBaseItem {
                 TextureInfo[] textures = sInfo.textures();
                 TransformedShapeIndex[] tsiDim = sInfo.shapeIndices();
                 
-                System.out.println("tsiDim.length = "+tsiDim.length);
-                System.out.println("shapes.length = "+shapes.length);
-                System.out.println("appearances.length = "+appearances.length);
-                System.out.println("textures.length = "+textures.length);
-                System.out.println("materials.length = "+materials.length);
                 for (int i=0; i<tsiDim.length; i++){
                     TransformedShapeIndex tsi = tsiDim[i];
                     int shapeIndex = tsi.shapeIndex;

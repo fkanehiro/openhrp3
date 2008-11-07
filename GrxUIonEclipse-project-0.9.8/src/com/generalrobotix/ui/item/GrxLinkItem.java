@@ -250,6 +250,20 @@ public class GrxLinkItem extends GrxTransformItem{
     }
     
     /**
+     * @brief set joint value from string
+     * @param value joint value
+     * @return true if set successfully, false otherwise
+     */
+    public boolean jointValue(String value){
+		Double a = getDbl(value);
+		if (a != null){
+			jointValue(a);
+			return true;
+		}else{
+			return false;
+		}
+    }
+    /**
      * @brief set new joint value
      * @param jv joint value
      */
@@ -297,16 +311,22 @@ public class GrxLinkItem extends GrxTransformItem{
         absCom.add(p);
         return absCom;
     }
+    
     /**
-     * @brief properties are set to robot
+     * @brief set joint type
+     * @param type type of this joint. It must be one of "fixed", "free", "rotate" and "slide"
      */
-    public void propertyChanged() {
-    	//System.out.println("GrxLinkItem::propertyChanged()");
-    	super.propertyChanged();
-    	jointValue_ = getDbl("angle", 0.0);
-    	info_.translation = getDblAry("translation",null);
-    	info_.rotation = getDblAry("rotation", null);
-    	String axis = getProperty("jointAxis");
+    void jointType(String type){
+		if (type.equals("fixed")||type.equals("rotate")||type.equals("free")||type.equals("slide")){
+	    	info_.jointType = type;
+	    	setProperty("jointType", type);
+		}
+    }
+    /**
+     * @breif set joint axis
+     * @param axis axis of this joint. it must be one of "X", "Y" and "Z"
+     */
+    void jointAxis(String axis){
     	double[] newAxis = null;
     	if (axis.equals("X")){
     		newAxis = new double[]{1.0, 0.0, 0.0};
@@ -315,32 +335,159 @@ public class GrxLinkItem extends GrxTransformItem{
     	}else if (axis.equals("Z")){
     		newAxis = new double[]{0.0, 0.0, 1.0};
     	}
-    	if (!info_.jointAxis.equals(newAxis)){
+    	if (newAxis != null && !info_.jointAxis.equals(newAxis)){
     		info_.jointAxis = newAxis;
+    		setProperty("jointAxis", axis);
     		rebuildBoundingBox();
+    	}  	
+    }
+    
+    /**
+     * @breif set new translation
+     * @param pos new translation
+     * @return true if new translation is set successfully, false otherwise
+     */
+    public boolean translation(double[] pos){
+    	if (super.translation(pos)){
+        	info_.translation = pos;
+        	return true;
+    	}else{
+    		return false;
     	}
-    	info_.jointType = getStr("jointType", null);
-    	calcForwardKinematics();
-    	// joint properties
-    	info_.jointId = getShort("jointId", null);
-    	info_.ulimit = getDblAry("ulimit", null);
-    	info_.llimit = getDblAry("llimit", null);
-    	info_.uvlimit = getDblAry("uvlimit", null);
-    	info_.lvlimit = getDblAry("lvlimit", null);
-    	// motor & gear properties
-    	info_.torqueConst = getDbl("torqueConst", null);
-    	info_.rotorResistor = getDbl("rotorResistor", null);
-    	info_.encoderPulse = getDbl("encoderPulse", null);
-    	info_.gearRatio = getDbl("gearRatio", null);
-    	// mass properties
-    	info_.centerOfMass = getDblAry("centerOfMass", null);
-    	Transform3D t3d = new Transform3D();
-    	tgCom_.getTransform(t3d);
-    	t3d.setTranslation(new Vector3d(centerOfMass()));
-    	tgCom_.setTransform(t3d);
-    	info_.mass = getDbl("mass", null);
-    	// TODO update size of ball
-    	info_.inertia = getDblAry("inertia", null);
+    }
+
+    /**
+     * @brief set new rotation
+     * @param rot new rotation(axis and angle, length=4)
+     * @return true if set successfully, false otherwise
+     */
+    public boolean rotation(double[] rot){
+    	if (super.rotation(rot)){
+        	info_.rotation = rot;
+        	return true;
+    	}else{
+    		return false;
+    	}
+    }
+
+    /**
+     * @brief set CoM position from string
+     * @param value space separated array of double(length=3)
+     */
+    public void CoM(String value){
+		double [] com = getDblAry(value);
+		CoM(com);
+    }
+    
+    public boolean CoM(double [] com){
+		if (com != null && com.length==3){
+        	info_.centerOfMass = com;
+        	setDblAry("centerOfMass", com);
+        	Transform3D t3d = new Transform3D();
+        	tgCom_.getTransform(t3d);
+        	t3d.setTranslation(new Vector3d(centerOfMass()));
+        	tgCom_.setTransform(t3d);
+        	return true;
+		}else{
+			return false;
+		}
+    }
+    
+    /**
+     * @brief check validity of new value of property and update if valid
+     * @param property name of property
+     * @param value value of property
+     * @return true if checked(even if value is not used), false otherwise
+     */
+    public boolean propertyChanged(String property, String value) {
+    	if (super.propertyChanged(property, value)){
+    	}else if (property.equals("angle")){
+    		if (jointValue(value)){
+        		calcForwardKinematics();
+    		}
+    	}else if(property.equals("translation")){
+    		if (translation(value)){
+            	calcForwardKinematics();
+    		}
+    	}else if(property.equals("rotation")){
+    		if (rotation(value)){
+            	calcForwardKinematics();
+    		}
+    	}else if(property.equals("jointAxis")){
+    		jointAxis(value);
+    	}else if(property.equals("jointType")){
+    		jointType(value);
+    	}else if(property.equals("jointId")){
+    		Short id = getShort(value);
+    		if (id != null){
+        		info_.jointId = id;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("ulimit")){
+    		double[] limit = getDblAry(value);
+    		if (limit != null){
+    			info_.ulimit = limit;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("vlimit")){
+    		double[] limit = getDblAry(value);
+    		if (limit != null){
+    			info_.llimit = limit;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("uvlimit")){
+    		double[] limit = getDblAry(value);
+    		if (limit != null){
+    			info_.uvlimit = limit;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("lvlimit")){
+    		double[] limit = getDblAry(value);
+    		if (limit != null){
+    			info_.lvlimit = limit;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("torqueConst")){
+    		Double tc = getDbl(value);
+    		if (tc != null){
+        		info_.torqueConst = tc;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("rotorResistor")){
+    		Double rr = getDbl(value);
+    		if (rr != null){
+        		info_.rotorResistor = rr;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("encoderPulse")){
+    		Double tc = getDbl(value);
+    		if (tc != null){
+        		info_.torqueConst = tc;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("gearRatio")){
+    		Double gr = getDbl(value);
+    		if (gr != null){
+        		info_.gearRatio = gr;
+        		setProperty(property, value);
+    		}
+    	}else if(property.equals("centerOfMass")){
+    		CoM(value);
+    	}else if(property.equals("mass")){
+    		double mass = Double.parseDouble(value);
+    		info_.mass = mass;
+    		// TODO update size of ball
+    		setProperty(property, value);
+    	}else if(property.equals("inertia")){
+    		double [] inertia = getDblAry(value);
+    		if (inertia != null && inertia.length == 6){
+            	info_.inertia = inertia;
+        		setProperty(property, value);
+    		}
+    	}else{
+    		return false;
+    	}
+    	return true;
     }
 
     /**
@@ -549,13 +696,16 @@ public class GrxLinkItem extends GrxTransformItem{
 		
 		model_ = model;
 
-        jointValue(0);
+        switchCom_ = GrxShapeUtil.createBall(mass()*0.01, new Color3f(1.0f, 1.0f, 0.0f));
+        tgCom_ = (TransformGroup)switchCom_.getChild(0);
+        tg_.addChild(switchCom_);
 
         setIcon("joint.png");
 
-    	setDblAry("translation", info_.translation);
-    	setDblAry("rotation", info_.rotation);
-    	setDblAry("centerOfMass", info_.centerOfMass);
+        jointValue(0);
+        translation(info_.translation);
+        rotation(info_.rotation);
+        CoM(info_.centerOfMass);
     	setDblAry("inertia", info_.inertia);
     	if (info_.jointAxis[0] == 1.0){
        		setProperty("jointAxis", "X");
@@ -618,9 +768,6 @@ public class GrxLinkItem extends GrxTransformItem{
         tg_.addChild(axisSwitch);
         userData.put("axisLineSwitch", axisSwitch);
         
-        switchCom_ = GrxShapeUtil.createBall(mass()*0.01, new Color3f(1.0f, 1.0f, 0.0f));
-        tgCom_ = (TransformGroup)switchCom_.getChild(0);
-        tg_.addChild(switchCom_);
 	}
 
 	/**
@@ -688,16 +835,16 @@ public class GrxLinkItem extends GrxTransformItem{
     	if (pos != null){
     		double[] newpos = new double[3];
     		pos.get(newpos);
-        	setDblAry("translation", newpos);
+    		translation(newpos);
     	}
     	if (rot != null){
     		AxisAngle4d a4d = new AxisAngle4d();
     		a4d.set(rot);
     		double[] newrot = new double[4];
     		a4d.get(newrot);
-    		setDblAry("rotation", newrot);
+    		rotation(newrot);
     	}
-    	if (pos != null || rot != null)	propertyChanged();
+    	if (pos != null || rot != null)	calcForwardKinematics();
 	}
 
 	/**
@@ -746,7 +893,6 @@ public class GrxLinkItem extends GrxTransformItem{
 	 */
     public void setVisibleCoM(boolean b) {
         switchCom_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
-        calcForwardKinematics();
     }
     
     /**

@@ -121,8 +121,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         // create root link
         GrxLinkItem link = new GrxLinkItem("root", manager_, this);
-        link.setProperty("jointType", "free");
-        link.propertyChanged();
+        link.jointType("free");
         links_.add(link);
         bgRoot_.addChild(link.bg_);
         
@@ -242,38 +241,60 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             if (d == null)
                 setDbl(l.getName()+".angle", 0.0);
         }
-        propertyChanged();
+        //propertyChanged();
     }
 
     /**
-     * @brief properties are set to robot
+     * @brief check validity of new value of property and update if valid
+     * @param property name of property
+     * @param value value of property
+     * @return true if checked(even if value is not used), false otherwise
      */
-    public void propertyChanged() {
-    	super.propertyChanged();
-        double[] p = getDblAry(rootLink().getName()+".translation", null);
-        if (p == null || p.length != 3)
-            p = new double[]{0, 0, 0};
-
-        double[] R = getDblAry(rootLink().getName()+".rotation", null);
-        if (R != null && R.length == 4) {  // AxisAngle
-            Matrix3d m3d = new Matrix3d();
-            m3d.set(new AxisAngle4d(R));
-            R = new double[9];
-            for (int i=0; i<3; i++) {
-                for (int j=0; j<3; j++) {
-                    R[i*3+j] = m3d.getElement(i, j);
-                }
+    public boolean propertyChanged(String property, String value) {
+    	if (super.propertyChanged(property, value)){
+    	}else if(property.equals("isRobot")){
+    		_setModelType(value);
+    	}else if(property.equals("controlTime")){
+    		Double t = Double.parseDouble(value);
+    		if (t != null && t > 0){
+    			setProperty("controlTime", value);
+    		}
+    	}else if(property.equals(rootLink().getName()+".translation")){
+    		if (rootLink().translation(value)){
+    			setProperty(rootLink().getName()+".translation", value);
+    			calcForwardKinematics();
+    		}
+    	}else if(property.equals(rootLink().getName()+".rotation")){
+    		if (rootLink().rotation(value)){
+    			setProperty(rootLink().getName()+".rotation", value);
+    			calcForwardKinematics();
+    		}
+    	}else{
+            for (int j = 0; j < links_.size(); j++){
+            	GrxLinkItem link = links_.get(j);
+            	if (property.equals(link.getName()+".angle")){
+            		if (link.jointValue(value)){
+                        calcForwardKinematics();
+                        setProperty(link.getName()+".angle", value);
+            		}
+                    return true;
+            	}
             }
-        } else {
-            R = new double[]{1, 0 ,0 , 0, 1, 0, 0, 0, 1};
-        }
+    		return false;
+    	}
+    	return true;
 
-        setTransformRoot(p, R);
+    }
 
-        for (int j = 0; j < links_.size(); j++)
-            links_.get(j).jointValue(getDbl(links_.get(j).getName() + ".angle", 0.0));
-
-        calcForwardKinematics();
+    /**
+     * @brief set model type(robot or environment) from String
+     * @param value "true" or "false"
+     */
+    private void _setModelType(String value){
+    	Boolean b = Boolean.parseBoolean(value);
+		if (b != null){
+			_setModelType(b);
+		}
     }
 
     /**
@@ -536,13 +557,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             
         _setupMarks();
         
-        //_traverse(bgRoot_, 0);
-        
         modifier.modifyRobot(this);
         
         setDblAry(rootLink().getName()+".translation", rootLink().translation());
         setDblAry(rootLink().getName()+".rotation", rootLink().rotation());
-        propertyChanged();
         
         for (int i=0; i<links_.size(); i++) {
             Node n = links_.get(i).tg_.getChild(0);
@@ -664,8 +682,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     /**
      * @brief set transformation of linkId th joint
      * @param linkId id of the link
-     * @param pos position
-     * @param rot rotation matrix
+     * @param pos position(length=3)
+     * @param rot rotation matrix(length=9)
      */
     private void _setTransform(int linkId, double[] p, double[] R) {
     	GrxLinkItem link = links_.get(linkId);
@@ -699,7 +717,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     /**
-     * @brief update transformation property of the root joint
+     * @brief update initial transformation property from current Transform3D
      */
     public void updateInitialTransformRoot() {
         Transform3D t3d = new Transform3D();
@@ -716,7 +734,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     /**
-     * @brief update joint value property
+     * @brief update joint value property from current joint value
      * @param jname name of the joint
      */
     public void updateInitialJointValue(String jname) {
@@ -725,6 +743,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             setDbl(jname+".angle", l.jointValue());
     }
 
+    /**
+     * @breif update initial joint value properties from current joint values
+     */
     public void updateInitialJointValues() {
         for (int i=0; i<jointToLink_.length; i++) {
             GrxLinkItem l = links_.get(jointToLink_[i]);
@@ -733,7 +754,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     /**
-     * @brief computer forward kinematics
+     * @brief compute forward kinematics
      */
     public  void calcForwardKinematics() {
         rootLink().calcForwardKinematics();
