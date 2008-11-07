@@ -8,6 +8,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <cmath>
+#include <cstring>
 #include <boost/format.hpp>
 #include <errno.h>
 
@@ -296,7 +297,7 @@ void EasyScanner::loadFile(const string& filename)
     rewind(file);
     if(textBuf) delete[] textBuf;
     textBuf = new char[size+1];
-    fread(textBuf, sizeof(char), size, file);
+    size_t s = fread(textBuf, sizeof(char), size, file);
     textBuf[size] = 0;
     fclose(file);
     text = textBuf;
