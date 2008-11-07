@@ -467,10 +467,17 @@ public class GrxOpenHRPView extends GrxBaseView {
 		
 	}
 	
+	/**
+	 * @brief start simulation
+	 * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation
+	 */
 	public void startSimulation(boolean isInteractive){
 		clockGenerator_.startSimulation(isInteractive);
 	}
 	
+	/**
+	 * @brief stop simulation
+	 */
 	public void stopSimulation(){
 		clockGenerator_.stopSimulation();
 	}
