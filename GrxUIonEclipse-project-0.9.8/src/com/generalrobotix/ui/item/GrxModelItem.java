@@ -865,6 +865,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return rootLink().tg_;
     }
 
+    /**
+     * @brief get transform of link in array form
+     * @param linkName name of link
+     * @return array. lenth = 12 = position(3)+rotation(9)
+     */
     public double[] getTransformArray(String linkName) {
         Transform3D t3d = getTransform(linkName);
         Matrix3d mat = new Matrix3d();

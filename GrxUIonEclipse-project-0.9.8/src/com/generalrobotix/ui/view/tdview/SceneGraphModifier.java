@@ -380,6 +380,41 @@ public class SceneGraphModifier {
         return points;
     }
 
+    /**
+     * @brief make array of vertices of cube
+     * @param upper coordinates of upper corner of this cube
+     * @param lower coordinates of lower corner of this cube
+     * @return array of vertices(24)
+     */
+    public Point3f[] _makePoints(float[] upper, float[] lower) {
+        Point3f[] points = new Point3f[24];
+        points[0]  = new Point3f(upper[0], upper[1], upper[2]); // A
+        points[1]  = new Point3f(lower[0], upper[1], upper[2]); // B
+        points[2]  = new Point3f(lower[0], lower[1], upper[2]); // C
+        points[3]  = new Point3f(upper[0], lower[1], upper[2]); // D
+        points[4]  = new Point3f(upper[0], lower[1], lower[2]); // H
+        points[5]  = new Point3f(lower[0], lower[1], lower[2]); // G
+        points[6]  = new Point3f(lower[0], upper[1], lower[2]); // F
+        points[7]  = new Point3f(upper[0], upper[1], lower[2]); // E
+        points[8]  = new Point3f(upper[0], upper[1], upper[2]); // A
+        points[9]  = new Point3f(upper[0], lower[1], upper[2]); // D
+        points[10] = new Point3f(upper[0], lower[1], lower[2]); // H
+        points[11] = new Point3f(upper[0], upper[1], lower[2]); // E
+        points[12] = new Point3f(lower[0], upper[1], lower[2]); // F
+        points[13] = new Point3f(lower[0], lower[1], lower[2]); // G
+        points[14] = new Point3f(lower[0], lower[1], upper[2]); // C
+        points[15] = new Point3f(lower[0], upper[1], upper[2]); // B
+        points[16] = new Point3f(upper[0], lower[1], upper[2]); // C
+        points[17] = new Point3f(lower[0], lower[1], upper[2]); // D
+        points[18] = new Point3f(lower[0], lower[1], lower[2]); // H
+        points[19] = new Point3f(upper[0], lower[1], lower[2]); // G
+        points[20] = new Point3f(upper[0], upper[1], lower[2]); // A
+        points[21] = new Point3f(lower[0], upper[1], lower[2]); // B
+        points[22] = new Point3f(lower[0], upper[1], upper[2]); // F
+        points[23] = new Point3f(upper[0], upper[1], upper[2]); // E
+        return points;
+    }
+
     private Vector3f[] _makeNormals() {
         Vector3f[] normal = new Vector3f[24];
         normal[0] = new Vector3f(0.0f, 0.0f, 1.0f);
@@ -409,35 +444,44 @@ public class SceneGraphModifier {
         return normal;
     }
 
-    public Shape3D _makeBoundingBox(Color3f color) {
-        Point3f[] points = _makePoints();
+    public Shape3D _makeCube(Color3f color, Point3f[] points){
         QuadArray quads = new QuadArray(
-            points.length,
-            QuadArray.COLOR_3 | QuadArray.COORDINATES | QuadArray.NORMALS
-        );
-        quads.setCapability(QuadArray.ALLOW_COORDINATE_READ);
-        quads.setCapability(QuadArray.ALLOW_COORDINATE_WRITE);
-        quads.setCoordinates(0, points);
-        Vector3f[] normals = _makeNormals();
-        Color3f[] colors = new Color3f[points.length];
-        for (int i = 0; i < points.length; i++) {
-            colors[i] = color;
-        }
-        quads.setNormals(0, normals);
-        quads.setColors(0, colors);
-        PolygonAttributes attr = new PolygonAttributes();
-        attr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
-        attr.setCullFace(PolygonAttributes.CULL_NONE);
-        Appearance appearance = new Appearance();
-        appearance.setPolygonAttributes(attr);
-        Shape3D shape = new Shape3D(quads, appearance);
-        shape.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
-        shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
-        shape.setCapability(Node.ENABLE_PICK_REPORTING);
-        PickTool.setCapabilities(shape, PickTool.INTERSECT_FULL);
-        return shape;
+                points.length,
+                QuadArray.COLOR_3 | QuadArray.COORDINATES | QuadArray.NORMALS
+            );
+            quads.setCapability(QuadArray.ALLOW_COORDINATE_READ);
+            quads.setCapability(QuadArray.ALLOW_COORDINATE_WRITE);
+            quads.setCoordinates(0, points);
+            Vector3f[] normals = _makeNormals();
+            Color3f[] colors = new Color3f[points.length];
+            for (int i = 0; i < points.length; i++) {
+                colors[i] = color;
+            }
+            quads.setNormals(0, normals);
+            quads.setColors(0, colors);
+            PolygonAttributes attr = new PolygonAttributes();
+            attr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
+            attr.setCullFace(PolygonAttributes.CULL_NONE);
+            Appearance appearance = new Appearance();
+            appearance.setPolygonAttributes(attr);
+            Shape3D shape = new Shape3D(quads, appearance);
+            shape.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+            shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+            shape.setCapability(Node.ENABLE_PICK_REPORTING);
+            PickTool.setCapabilities(shape, PickTool.INTERSECT_FULL);
+            return shape;
     }
 
+    public Shape3D _makeBoundingBox(Color3f color) {
+        Point3f[] points = _makePoints();
+        return _makeCube(color, points);
+    }
+
+    /**
+     * @breif make both end points of axis line
+     * @param jointAxis joint axis
+     * @return array of points(length=2)
+     */
     public Point3f[] makeAxisPoints(Vector3d jointAxis){
         Point3f[] points = new Point3f[2];
         
