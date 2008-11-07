@@ -109,7 +109,9 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			Element propEl = (Element) props.item(j);
 			String key = propEl.getAttribute("name");
 			String val = propEl.getAttribute("value");
-			setProperty(key, val);
+			if (!propertyChanged(key, val)){
+				setProperty(key, val);
+			}
 		}
 	}
 
@@ -346,16 +348,6 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		return defaultValue;
     }
 
-    /**
-     *
-     */
-	public void propertyChanged() {
-		String name = getStr("name");
-		if (name != null){
-			rename(name);
-		}
-	}
-
 	/**
 	 *
 	 */
@@ -388,5 +380,19 @@ public class GrxBasePlugin extends GrxConfigBundle {
 */
     	
     	return ret;
+	}
+
+    /**
+     * @brief check validity of new value of property and update if valid
+     * @param property name of property
+     * @param value value of property
+     * @return true if checked(even if value is not used), false otherwise
+     */
+	public boolean propertyChanged(String property, String value) {
+		if (property.equals("name")){
+			rename(value);
+			return true;
+		}
+		return false;
 	}
 }

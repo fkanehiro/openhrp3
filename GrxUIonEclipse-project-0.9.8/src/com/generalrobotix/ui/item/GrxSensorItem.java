@@ -21,11 +21,8 @@ package com.generalrobotix.ui.item;
 import javax.media.j3d.IndexedTriangleArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
-import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransparencyAttributes;
-import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Point3f;
-import javax.vecmath.Vector3d;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -154,12 +151,10 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 
     	setProperty("type", info_.type);
     	setProperty("id", String.valueOf(info_.id));
-    	setDblAry("translation", info_.translation);
-    	setDblAry("rotation", info_.rotation);
+    	translation(info_.translation);
+    	rotation(info_.rotation);
 
         setIcon("camera.png");
-
-        updateTransformGroup();
 
         if (info.type.equals("Vision")) {
             CameraParameter prm = new CameraParameter();
@@ -179,9 +174,9 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
             prm.height = (int)info.specValues[5];
             prm.frameRate = (float)info.specValues[6];
             
-            setDbl("frontClipDistance", prm.frontClipDistance);
-            setDbl("backClipDistance",  prm.backClipDistance);
-            setDbl("fieldOfView",       prm.fieldOfView);
+            setDbl("frontClipDistance", prm.frontClipDistance, 4);
+            setDbl("backClipDistance",  prm.backClipDistance, 4);
+            setDbl("fieldOfView",       prm.fieldOfView, 6);
             if (prm.type == CameraType.NONE){
             	setProperty("cameraType", "NONE");
             }else if (prm.type == CameraType.COLOR){
@@ -232,13 +227,6 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 
     }
 
-    public void updateTransformGroup(){
-        Transform3D t3d = new Transform3D();
-        t3d.setTranslation(new Vector3d(info_.translation));
-        t3d.setRotation(new AxisAngle4d(info_.rotation));
-        tg_.setTransform(t3d);
-    }
-
     public int compareTo(Object o) {
         if (o instanceof GrxSensorItem) {
             GrxSensorItem s = (GrxSensorItem) o;
@@ -287,18 +275,61 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		return info_.rotation;
 	}
 
+	/**
+	 * @brief set new translation
+	 * @param pos new translation(length=3)
+	 * @return true if set successfully, false otherwise
+	 */
+	public boolean translation(double[] pos){
+		if (super.translation(pos)){
+			info_.translation = pos;
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	/**
+	 * @brief set new rotation
+	 * @param rot new rotation(axis and angle, length=4)
+	 * @return true if set successfully, false otherwise
+	 */
+	public boolean rotation(double[] rot){
+		if (super.rotation(rot)){
+			info_.rotation = rot;
+			return true;
+		}else{
+			return false;
+		}
+	}
+
     /**
-     * @brief properties are set to robot
+     * @brief check validity of new value of property and update if valid
+     * @param property name of property
+     * @param value value of property
+     * @return true if checked(even if value is not used), false otherwise
      */
-    public void propertyChanged() {
-    	System.out.println("GrxSensorItem.propertyChanged()");
-    	super.propertyChanged();
-    	info_.translation = getDblAry("translation",null);
-    	info_.rotation = getDblAry("rotation", null);
-    	updateTransformGroup();
-    	info_.id = getShort("id", null);
-    	info_.type = getStr("type", null);
-    	if (info_.type.equals("Vision")){
+    public boolean propertyChanged(String property, String value) {
+    	if (super.propertyChanged(property, value)){
+    	}else if(property.equals("translation")){
+    		translation(value);
+    	}else if(property.equals("rotation")){
+    		rotation(value);
+    	}else if(property.equals("id")){
+    		Short id = getShort(value);
+    		if (id != null){
+    			info_.id = id;
+    		}
+    	}else if(property.equals("type")){
+    		type(value);
+    	}else{
+    		return false;
+    	}
+    	return true;
+    }
+
+    public void type(String type){
+    	if (type.equals("Vision")){
     		if (info_.specValues == null || info_.specValues.length != 7){
     			info_.specValues = new float[7];
     			_removeSensorSpecificProperties();
@@ -333,21 +364,21 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 			info_.specValues[6] = getFlt("frameRate", null);
 			// TODO update shape of visible area
 			// TODO update camera_
-    	}else if(info_.type.equals("RateGyro")){
+    	}else if(type.equals("RateGyro")){
     		if (info_.specValues == null || info_.specValues.length != 3 || getProperty("maxAngularVelocity")==null){
     			info_.specValues = new float[]{-1.0f, -1.0f, -1.0f};
     			_removeSensorSpecificProperties();
     			setFltAry("maxAngularVelocity", info_.specValues);
     		}
     		info_.specValues = getFltAry("maxAngularVelocity", null);
-    	}else if(info_.type.equals("Acceleration")){
+    	}else if(type.equals("Acceleration")){
     		if (info_.specValues == null || info_.specValues.length != 3 || getProperty("maxAcceleration")==null){
     			info_.specValues = new float[]{-1.0f, -1.0f, -1.0f};
     			_removeSensorSpecificProperties();
     			setFltAry("maxAcceleration", info_.specValues);
     		}
     		info_.specValues = getFltAry("maxAcceleration", null);
-    	}else if(info_.type.equals("Force")){
+    	}else if(type.equals("Force")){
     		if (info_.specValues == null || info_.specValues.length != 6){
     			info_.specValues = new float[]{-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
     			_removeSensorSpecificProperties();
@@ -364,9 +395,11 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     		info_.specValues[5] = maxt[2];
     	}else{
     		System.out.println("GrxSensorItem.propertyChanged() : unknown sensor type : "+info_.type);
+    		return;
     	}
+    	info_.type = type;
+    	setProperty("type", type);
     }
-    
     private void _removeSensorSpecificProperties() {
 		// properties of ForceSensor
 		remove("maxForce");

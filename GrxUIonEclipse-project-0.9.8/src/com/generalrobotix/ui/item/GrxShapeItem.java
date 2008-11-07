@@ -105,10 +105,10 @@ public class GrxShapeItem extends GrxTransformItem{
 
         double [] pos = new double[3];
         v3d.get(pos);
-        setDblAry("translation", pos);
+        translation(pos);
         double [] rot = new double[4];
         a4d.get(rot);
-        setDblAry("rotation", rot);
+        rotation(rot);
 
         tg_.setTransform(t3d);
         if(shapeInfo.primitiveType == ShapePrimitiveType.SP_MESH ){
@@ -200,7 +200,8 @@ public class GrxShapeItem extends GrxTransformItem{
      * @param textureInfo texture information
      * @return created shape
      */
-    private Shape3D createShape3D
+    @SuppressWarnings("deprecation")
+	private Shape3D createShape3D
     (ShapeInfo shapeInfo, AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo){
         
         GeometryInfo geometryInfo = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
@@ -465,16 +466,22 @@ public class GrxShapeItem extends GrxTransformItem{
 
 
     /**
-     * @brief properties are set to robot
+     * @brief update value of property
+     * @param property name of property
+     * @param value value of property
+     * @return true if updated successfully, false otherwise
      */
-    public void propertyChanged() {
-    	super.propertyChanged();
-    	double [] pos = getDblAry("translation", null);
-    	double [] rot = getDblAry("rotation", null);
-        Transform3D t3d = new Transform3D();
-        t3d.setTranslation(new Vector3d(pos));
-        t3d.setRotation(new AxisAngle4d(rot));
-        tg_.setTransform(t3d);
+    public boolean propertyChanged(String property, String value) {
+    	if (super.propertyChanged(property, value)){
+    	}else if(property.equals("translation")){
+    		translation(value);
+    	}else if(property.equals("rotation")){
+    		rotation(value);
+    	}else{
+    		System.out.println("GrxShapeItem.propertyChanged() : unknown property : "+property);
+    		return false;
+    	}
+    	return true;
     }
     // ##### [Changed] NewModelLoader.IDL
     //==================================================================================================

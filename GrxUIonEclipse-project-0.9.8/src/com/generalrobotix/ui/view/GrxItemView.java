@@ -57,7 +57,7 @@ import com.generalrobotix.ui.util.OrderedHashMap;
 
 @SuppressWarnings("serial")
 /**
- * @brief
+ * @brief This view shows tree of various items
  */
 public class GrxItemView extends GrxBaseView {
 

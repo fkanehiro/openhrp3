@@ -52,7 +52,7 @@ public class GrxORBMonitor extends Composite {
         Button button = new Button(northPane,SWT.PUSH);
         button.setText("update");
         GridData btnGridData = new GridData();
-        btnGridData.widthHint = 60;
+        btnGridData.widthHint = 80;
         btnGridData.heightHint = 26;
         button.setLayoutData(btnGridData);
         button.addSelectionListener(new SelectionListener(){
