@@ -782,7 +782,19 @@ VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
 
     inlineParser.load( localPath.file_string() );
     io_filename = localPath.file_string();
-    return inlineParser.readNode( CHILD_NODE );
+
+    VrmlGroupPtr group = new VrmlGroup();
+    while(VrmlNodePtr node = inlineParser.readNode(TOP_NODE)){
+        if(node->isCategoryOf(CHILD_NODE)){
+            group->children.push_back(node);
+        }
+    }
+
+    if(group->children.size() == 1){
+        return group->children.front();
+    } else {
+        return group;
+    }
 }
 
 
