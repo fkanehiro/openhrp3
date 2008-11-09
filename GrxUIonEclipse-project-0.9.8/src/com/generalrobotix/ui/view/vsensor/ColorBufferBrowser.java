@@ -28,6 +28,7 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
  * @author	Ichitaro Kohara, MSTC
  * @version	1.0(2001.02.22)
  */
+@SuppressWarnings("serial")
 public final class ColorBufferBrowser extends JFrame {
 	// canvas for drawing image
 	private CanvasDraw canvas_;

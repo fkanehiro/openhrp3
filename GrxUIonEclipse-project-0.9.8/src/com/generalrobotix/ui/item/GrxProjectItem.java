@@ -437,14 +437,6 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		if (selectedMode != null)
 			manager_.setSelectedItem(selectedMode, true);
-		
-		manager_.getItemMap(GrxModeInfoItem.class).values().iterator();
-		Map<?, ?> m = manager_.getItemMap(GrxModeInfoItem.class);
-		GrxModeInfoItem[] modes = (GrxModeInfoItem[])m.values().toArray(new GrxModeInfoItem[0]);
-		
-		GrxModeInfoItem mode = (GrxModeInfoItem)manager_.getSelectedItem(GrxModeInfoItem.class, null);
-//		if (mode != null && manager_.getFrame() != null)
-	//		manager_.getFrame().updateModeButtons(modes, mode);
 
 		return true;
 	}
@@ -482,12 +474,6 @@ public class GrxProjectItem extends GrxBaseItem {
 			return;
 	
 		ModeNodeInfo minfo =  modeInfoMap_.get(mode);
-        Element we = minfo.windowConfig;
-//        if (we != null) 
-//		    manager_.getFrame().restoreConfig(we);
-		
-//		manager_.processingWindow_.setMessage("restore view plugin  ... ");
-//		manager_.processingWindow_.setVisible(true);
 
         monitor.worked(1);
         
@@ -534,7 +520,7 @@ public class GrxProjectItem extends GrxBaseItem {
             for (int i=0; i<il.size(); i++) {
 			    GrxBaseItem item = il.get(i);
                 boolean select = GrxXmlUtil.getBoolean(item.getElement(), "select", false);
-			    manager_.setSelectedItem(item, select);
+			    //manager_.setSelectedItem(item, select);
             }
 		}
 

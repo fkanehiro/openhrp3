@@ -27,6 +27,7 @@ import com.sun.image.codec.jpeg.*;
  * @author Keisuke Saito
  * @version 1.0 (2000/12/20)
  */
+@SuppressWarnings("serial")
 public class SimpleMoviePlayer extends JFrame implements ControllerListener {
     
     public boolean appFlag_=false;//単体アプリとして起動してるかflag

@@ -30,6 +30,7 @@ import java.awt.event.*;
  *
  * @history  2.0 (Thu Nov 29 2001)
  */
+@SuppressWarnings("serial")
 public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandler {
     //--------------------------------------------------------------------
     // Constant Variables

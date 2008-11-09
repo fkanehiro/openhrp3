@@ -18,6 +18,7 @@
 
 package com.generalrobotix.ui.view.tdview;
 
+@SuppressWarnings("serial")
 public class BadLinkStructureException extends Exception {
     /**
      * コンストラクタ

@@ -18,7 +18,6 @@
 
 package com.generalrobotix.ui.view;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -58,8 +57,6 @@ public class GrxPropertyView extends GrxBaseView {
     public static final String TITLE = "Property";
 
     private GrxBasePlugin currentPlugin_;
-
-    private GrxItemView itemView_;
 
     private TableViewer viewer_ = null;
 
@@ -119,23 +116,24 @@ public class GrxPropertyView extends GrxBaseView {
 
     }
 
-    public boolean setup(List<GrxBaseItem> itemList) {
-        itemView_ = (GrxItemView) manager_.getView(GrxItemView.class);
-        return true;
-    }
-
-    public void control(List<GrxBaseItem> itemList) {
-        GrxBasePlugin plugin = itemView_.getFocusedItem();
-
-        if (plugin == null) {
-            currentPlugin_ = null;
-        } else if (plugin != currentPlugin_) {
+    /**
+     * @brief This method is called by PluginManager when "current item" is changed
+     * @param item current item
+     */
+    public void currentItemChanged(GrxBaseItem item) {
+    	//System.out.println("GrxPropertyView.currentItemChanged()");
+        if (item != currentPlugin_) {
             table_.setVisible(false);
-            currentPlugin_ = plugin;
+            currentPlugin_ = item;
             viewer_.setInput(currentPlugin_);
             table_.setVisible(true);
         }
     }
+
+    public void propertyChanged(){
+    	System.out.println("GrxPropertyView.propertyChanged()");
+    	_refresh();
+	}
 
     private class PropertyTableContentProvider implements
         IStructuredContentProvider {
@@ -213,10 +211,7 @@ public class GrxPropertyView extends GrxBaseView {
             if (element instanceof TableItem && value instanceof String) {
                 TableItem item = (TableItem) element;
                 currentPlugin_.propertyChanged(item.getText(), (String)value);
-                // following three lines are required to refresh view
-                table_.setVisible(false);
-                viewer_.setInput(currentPlugin_);
-                table_.setVisible(true);
+                _refresh();
             }
             }catch(Exception ex){
             	ex.printStackTrace();
@@ -225,6 +220,15 @@ public class GrxPropertyView extends GrxBaseView {
 
     }
 
+    /**
+     * @brief refresh contents of table
+     */
+    private void _refresh(){
+        table_.setVisible(false);
+        viewer_.setInput(currentPlugin_);
+        table_.setVisible(true);
+    }
+    
     private class PropertyTableViewerSorter extends ViewerSorter {
 
         public int compare(Viewer viewer, Object e1, Object e2) {

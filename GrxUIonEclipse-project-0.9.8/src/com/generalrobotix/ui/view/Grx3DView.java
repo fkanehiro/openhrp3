@@ -69,8 +69,7 @@ import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
-import com.generalrobotix.ui.item.GrxSensorItem;
-import com.generalrobotix.ui.item.GrxShapeItem;
+import com.generalrobotix.ui.item.GrxTransformItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
@@ -587,8 +586,10 @@ public class Grx3DView
                 currentWorld_ = (GrxWorldStateItem) item;
             }
         }
-        if (selectionChanged && isRunning()) 
+        if (selectionChanged && isRunning()){
             behaviorManager_.replaceWorld(itemList);
+            disableOperation();
+        }
         
         prevTime_ = -1;
         if (collisionBg_ != null) {
@@ -612,21 +613,15 @@ public class Grx3DView
     }
     
     public void control(List<GrxBaseItem> items) {
-        GrxItemView iview = (GrxItemView)manager_.getView("Item View");
-        if (iview != null){
-            GrxBasePlugin plugin = iview.getFocusedItem();
-            if (axes_.getParent() != null) axes_.detach();
-            
-            if (plugin instanceof GrxLinkItem){
-            	GrxLinkItem link = (GrxLinkItem)plugin;
-            	link.tg_.addChild(axes_);
-            }else if (plugin instanceof GrxSensorItem){
-            	GrxSensorItem sensor = (GrxSensorItem)plugin;
-            	sensor.tg_.addChild(axes_);
-            }else if (plugin instanceof GrxShapeItem){
-            	GrxShapeItem shape = (GrxShapeItem)plugin;
-            	shape.tg_.addChild(axes_);
-            }
+        GrxBaseItem item = manager_.currentItem();
+        if (item instanceof GrxTransformItem){
+        	GrxTransformItem tform = (GrxTransformItem)item;
+        	if (tform.tg_ != axes_.getParent()){
+        		axes_.detach();
+            	tform.tg_.addChild(axes_);
+        	}
+        }else{
+        	if (axes_.getParent() != null) axes_.detach();
         }
         
         if (currentModels_.size() == 0)
@@ -969,18 +964,15 @@ public class Grx3DView
     
     private class ModelEditKeyAdapter extends KeyAdapter {
         public void keyPressed(KeyEvent arg0) {
-        	GrxModelItem item = null;
         	GrxLinkItem li = null;
-       	  	for (int i=0; i<currentModels_.size(); i++) {
-        	  	item = (GrxModelItem)currentModels_.get(i);
-        	  	li = item.activeLink_;
-        	  	if (li != null)
-        		  	break;
-       	  	}
-       	  	if (li == null) {
+        	GrxBaseItem bitem = manager_.currentItem();
+        	if (bitem instanceof GrxLinkItem){
+        		li = (GrxLinkItem)bitem;
+        	}else{
        	  		arg0.consume();
        	  		return;
        	  	}
+        	GrxModelItem item = li.model();
            	  
           	KeyStroke ks = KeyStroke.getKeyStrokeForEvent(arg0);
           	if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_UP,0) ||
@@ -989,7 +981,6 @@ public class Grx3DView
           		if (next >= 0) {
           			for (int j=0; j<item.links_.size(); j++) {
           				if (next == item.links_.get(j).jointId()) {
-          					item.activeLink_ = item.links_.get(j);
           					behaviorManager_.setPickTarget(item.links_.get(j).tg_);
           					break;
           				}
@@ -1000,7 +991,6 @@ public class Grx3DView
           		int next = li.jointId()+1;
   				for (int j=0; j<item.links_.size(); j++) {
       				if (next == item.links_.get(j).jointId()) {
-      					item.activeLink_ = item.links_.get(j);
           				behaviorManager_.setPickTarget(item.links_.get(j).tg_);
       					break;
       				}
@@ -1302,7 +1292,7 @@ public class Grx3DView
         
         GUIAction.WIRE_FRAME.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Iterator it = manager_.getItemMap(GrxModelItem.class).values().iterator();
+                Iterator<?> it = manager_.getItemMap(GrxModelItem.class).values().iterator();
                 while (it.hasNext()) {
                     ((GrxModelItem)it.next()).setWireFrame(viewToolBar_.isWireFrameSelected());
                 }

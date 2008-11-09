@@ -11,7 +11,6 @@ import com.generalrobotix.ui.view.Grx3DView;
 import com.generalrobotix.ui.view.GrxOpenHRPView;
 
 public class StartSimulate implements IWorkbenchWindowActionDelegate {
-	private IWorkbenchWindow window;
 	public StartSimulate() {}
 
 	public void run(IAction action) {
@@ -24,7 +23,5 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate {
 
 	public void selectionChanged(IAction action, ISelection selection) {}
 	public void dispose() {}
-	public void init(IWorkbenchWindow window) {
-		this.window = window;
-	}
+	public void init(IWorkbenchWindow window) {}
 }

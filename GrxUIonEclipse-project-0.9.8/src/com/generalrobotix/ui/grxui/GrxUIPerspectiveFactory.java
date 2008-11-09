@@ -37,8 +37,6 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
 	    		IPageLayout.RIGHT, (float)0.7f, editorArea);
 	    IFolderLayout right_middle = layout.createFolder("RightMIDDLEViews",
 	    		IPageLayout.BOTTOM, (float)0.2f, "RightTOPViews");
-	    IFolderLayout right_bottom = layout.createFolder("RightBOTTOMViews",
-	    		IPageLayout.BOTTOM, (float)0.9f, "RightMIDDLEViews");
 	    IFolderLayout top_right = layout.createFolder("TopRightViews",
 	    		IPageLayout.TOP, (float)0.3f, editorArea);
 	    IFolderLayout top_left = layout.createFolder("TopLeftViews",

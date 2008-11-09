@@ -27,7 +27,7 @@ class BehaviorInfo {
     //--------------------------------------------------------------------
     // インスタンス変数
     private boolean timerEnabled_;
-    GrxPluginManager manager_;
+    public GrxPluginManager manager_;
 
     final PickCanvas pickCanvas;
     //final TransformGroup tgView;

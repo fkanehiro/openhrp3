@@ -56,10 +56,12 @@ public class GrxLinkItem extends GrxTransformItem{
 	private LinkInfo info_;
 	private GrxModelItem model_;
 	
-    // CoM
+    // display
     private Switch switchCom_;
     private TransformGroup tgCom_;
-    
+    private Switch switchBb_;
+    private Switch switchAxis_;
+
     private double  jointValue_;
 
     /**
@@ -213,7 +215,7 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void addShape(GrxTransformItem child){
     	super.addChild(child);
-    	rebuildBoundingBox();
+    	resizeBoundingBox();
     }
     
     /**
@@ -222,7 +224,7 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void addShape(String fPath){
     	super.addShape(fPath);
-    	rebuildBoundingBox();
+    	resizeBoundingBox();
     }
     
     /**
@@ -230,7 +232,7 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void removeChild(GrxTransformItem child){
     	super.removeChild(child);
-    	rebuildBoundingBox();
+    	resizeBoundingBox();
     }
 
     /**
@@ -323,7 +325,7 @@ public class GrxLinkItem extends GrxTransformItem{
 		}
     }
     /**
-     * @breif set joint axis
+     * @brief set joint axis
      * @param axis axis of this joint. it must be one of "X", "Y" and "Z"
      */
     void jointAxis(String axis){
@@ -335,15 +337,15 @@ public class GrxLinkItem extends GrxTransformItem{
     	}else if (axis.equals("Z")){
     		newAxis = new double[]{0.0, 0.0, 1.0};
     	}
-    	if (newAxis != null && !info_.jointAxis.equals(newAxis)){
+    	if (newAxis != null){
     		info_.jointAxis = newAxis;
     		setProperty("jointAxis", axis);
-    		rebuildBoundingBox();
+    		resizeBoundingBox();
     	}  	
     }
     
     /**
-     * @breif set new translation
+     * @brief set new translation
      * @param pos new translation
      * @return true if new translation is set successfully, false otherwise
      */
@@ -379,6 +381,11 @@ public class GrxLinkItem extends GrxTransformItem{
 		CoM(com);
     }
     
+    /**
+     * @brief set CoM position
+     * @param com CoM position(length=3)
+     * @return true if set successfully, false otherwise
+     */
     public boolean CoM(double [] com){
 		if (com != null && com.length==3){
         	info_.centerOfMass = com;
@@ -393,6 +400,61 @@ public class GrxLinkItem extends GrxTransformItem{
 		}
     }
     
+    /**
+     * @brief set inertia matrix
+     * @param newI inertia matrix(length=9)
+     * @return true if set successfully, false otherwise
+     */
+    public boolean inertia(double [] newI){
+    	if (newI != null && newI.length == 9){
+    		info_.inertia = newI;
+    		setDblAry("momentsOfInertia", info_.inertia);
+    		_updateScaleOfBall();
+    		return true;
+       	}
+    	return false;
+    }
+    
+    /**
+     * @brief set mass from string
+     * @param value mass
+     */
+    public void mass(String value){
+    	try{
+    		double m = Double.parseDouble(value);
+    		mass(m);
+    	}catch(Exception ex){
+    		
+    	}
+    }
+    
+    public void mass(double m){
+    	info_.mass = m;
+        setDbl("mass", info_.mass);
+        _updateScaleOfBall();
+    }
+    
+    private void _updateScaleOfBall(){
+		Matrix3d I = new Matrix3d(inertia());
+		double m = mass();
+		double s = 0.01;
+		Matrix3d R = new Matrix3d();
+		Matrix3d II = new Matrix3d();
+		if (diagonalize(I,R,II)){
+			Transform3D t3d = new Transform3D();
+			tgCom_.getTransform(t3d);
+			double sum = II.m00+II.m11+II.m22;
+			Vector3d sv = new Vector3d(
+					s*m*Math.sqrt(sum/II.m00),
+					s*m*Math.sqrt(sum/II.m11),
+					s*m*Math.sqrt(sum/II.m22));
+			t3d.setScale(sv);
+			tgCom_.setTransform(t3d);
+		}else{
+			System.out.println("diagonalization failed");
+		}
+
+    }
     /**
      * @brief check validity of new value of property and update if valid
      * @param property name of property
@@ -474,16 +536,10 @@ public class GrxLinkItem extends GrxTransformItem{
     	}else if(property.equals("centerOfMass")){
     		CoM(value);
     	}else if(property.equals("mass")){
-    		double mass = Double.parseDouble(value);
-    		info_.mass = mass;
-    		// TODO update size of ball
-    		setProperty(property, value);
-    	}else if(property.equals("inertia")){
-    		double [] inertia = getDblAry(value);
-    		if (inertia != null && inertia.length == 6){
-            	info_.inertia = inertia;
-        		setProperty(property, value);
-    		}
+    		mass(value);
+    	}else if(property.equals("momentsOfInertia")){
+    		double [] I = getDblAry(value);
+    		inertia(I);
     	}else{
     		return false;
     	}
@@ -696,9 +752,29 @@ public class GrxLinkItem extends GrxTransformItem{
 		
 		model_ = model;
 
-        switchCom_ = GrxShapeUtil.createBall(mass()*0.01, new Color3f(1.0f, 1.0f, 0.0f));
+		// CoM display
+		// 1.0 is tentative. It will be resized later
+        switchCom_ = GrxShapeUtil.createBall(1.0, new Color3f(1.0f, 1.0f, 0.0f));
         tgCom_ = (TransformGroup)switchCom_.getChild(0);
         tg_.addChild(switchCom_);
+
+        Transform3D tr = new Transform3D();
+        tr.setIdentity();
+        tg_.setTransform(tr);
+        
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+
+        modifier.init_ = true;
+        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        modifier._calcUpperLower(tg_, tr);
+        
+        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
+        tg_.addChild(switchBb_);
+
+        Vector3d jointAxis = new Vector3d(jointAxis());
+        switchAxis_ = SceneGraphModifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
+        tg_.addChild(switchAxis_);
 
         setIcon("joint.png");
 
@@ -706,16 +782,16 @@ public class GrxLinkItem extends GrxTransformItem{
         translation(info_.translation);
         rotation(info_.rotation);
         CoM(info_.centerOfMass);
-    	setDblAry("inertia", info_.inertia);
+        inertia(info_.inertia);
     	if (info_.jointAxis[0] == 1.0){
-       		setProperty("jointAxis", "X");
+       		jointAxis("X");
     	}else if (info_.jointAxis[1] == 1.0){
-       		setProperty("jointAxis", "Y");
+       		jointAxis("Y");
     	}else if (info_.jointAxis[2] == 1.0){
-       		setProperty("jointAxis", "Z");
+       		jointAxis("Z");
     	}
-        setProperty("jointType", info_.jointType);
-        setDbl("mass", info_.mass);
+        jointType(info_.jointType);
+        mass(info_.mass);
         setDblAry("ulimit", info_.ulimit);
         setDblAry("llimit", info_.llimit);
         setDblAry("uvlimit", info_.uvlimit);
@@ -747,49 +823,23 @@ public class GrxLinkItem extends GrxTransformItem{
         userData.put("object", model_);
         tg_.setUserData(userData);
         tg_.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
-        
-        Transform3D tr = new Transform3D();
-        tr.setIdentity();
-        tg_.setTransform(tr);
-        
-        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-
-        modifier.init_ = true;
-        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
-        modifier._calcUpperLower(tg_, tr);
-        
-        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-        Switch bbSwitch =  modifier._makeSwitchNode(modifier._makeBoundingBox(color));
-        tg_.addChild(bbSwitch);
-        userData.put("boundingBoxSwitch", bbSwitch);
-
-        Vector3d jointAxis = new Vector3d(jointAxis());
-        Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
-        tg_.addChild(axisSwitch);
-        userData.put("axisLineSwitch", axisSwitch);
-        
 	}
 
 	/**
-	 * @brief rebuild bounding box which is displayed when this joint is selected
+	 * @brief resize bounding box and axis line which are displayed when this joint is selected
 	 */
-	private void rebuildBoundingBox(){
+	private void resizeBoundingBox(){
         try{
 		Transform3D tr = new Transform3D();
-        Transform3D org = new Transform3D();
-        tr.setIdentity();
-        tg_.getTransform(org);
         tg_.setTransform(tr);
         
         SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-        Hashtable<String, Object> userData = SceneGraphModifier.getHashtableFromTG(tg_);
  
         modifier.init_ = true;
         modifier.mode_ = SceneGraphModifier.RESIZE_BOUNDS;
         modifier._calcUpperLower(tg_, tr);
         
-        Switch bbSwitch =  (Switch)userData.get("boundingBoxSwitch");
-    	Shape3D shapeNode = (Shape3D)bbSwitch.getChild(0);
+    	Shape3D shapeNode = (Shape3D)switchBb_.getChild(0);
     	Geometry gm = (Geometry)shapeNode.getGeometry(0);
 
     	Point3f[] p3fW = modifier._makePoints();
@@ -797,8 +847,8 @@ public class GrxLinkItem extends GrxTransformItem{
     		QuadArray qa = (QuadArray) gm;
     		qa.setCoordinates(0, p3fW);
 		}
-        Switch axisSwitch =  (Switch)userData.get("axisLineSwitch");
-    	shapeNode = (Shape3D)axisSwitch.getChild(0);
+
+    	shapeNode = (Shape3D)switchAxis_.getChild(0);
     	gm = (Geometry)shapeNode.getGeometry(0);
     	
     	p3fW = modifier.makeAxisPoints(new Vector3d(jointAxis()));
@@ -898,16 +948,125 @@ public class GrxLinkItem extends GrxTransformItem{
     /**
      * @brief see doc for parent class
      */
-    public void selected(){
-    	super.selected();
-    	setVisibleCoM(true);
+    public void setSelected(boolean b){
+    	//if (b!=isSelected()) System.out.println("GrxLinkItem.setSelected("+getName()+" of "+model_.getName()+", flag = "+b+")");
+    	super.setSelected(b);
+    	setVisibleCoM(b);
+    	if (b){
+    		if (jointType().equals("rotate") || jointType().equals("slide")) {
+    			switchBb_.setWhichChild(Switch.CHILD_ALL);
+    			switchAxis_.setWhichChild(Switch.CHILD_ALL);
+    		}
+    	}else{
+            switchBb_.setWhichChild(Switch.CHILD_NONE);
+            switchAxis_.setWhichChild(Switch.CHILD_NONE);
+    	}
     }
 
     /**
-     * @brief see doc for parent class
+     * @brief diagonalize symmetric matrix
+     * @param a symmetric matrix
+     * @param U orthogonal matrix
+     * @param W diagonal matrix
+     * @return true if diagonalized successfully, false otherwise
      */
-    public void unselected(){
-    	super.unselected();
-    	setVisibleCoM(false);
+    static boolean diagonalize(Matrix3d a, Matrix3d U, Matrix3d W){
+    	int i=0,j=0,l,m,p,q,count;
+    	double max,theta;
+    	Matrix3d oldU = new Matrix3d();
+    	Matrix3d newW = new Matrix3d();
+    	W.set(a);
+
+    	//計算結果としてだされた直行行列を格納するための配列を単位行列に初期化しておく。
+    	for(p=0;p<3;p++) {
+    		for(q=0;q<3;q++) {
+    			if(p==q){
+    				U.setElement(p, q, 1.0);
+    			}else{
+    				U.setElement(p, q, 0.0);
+    			}
+    		}
+    	}
+
+    	for(count=0;count<=10000;count++) {
+
+    		//配列olduは新たな対角化計算を行う前にかけてきた直行行列を保持する。
+    		for(p=0;p<3;p++) {
+    			for(q=0;q<3;q++) {
+    				oldU.setElement(p, q, U.getElement(p, q));
+    			}
+    		}
+    		//非対角要素の中から絶対値の最大のものを見つける
+    		max=0.0;
+    		for(p=0;p<3;p++) {
+    			for(q=0;q<3;q++) {
+    				if(max<Math.abs(W.getElement(p, q)) && p!=q) {
+    					max=Math.abs(W.getElement(p, q));
+    					//その最大のものの成分の行と列にあたる数を記憶しておく。
+    					i=p;
+    					j=q;
+    				}
+    			}
+    		}
+    		/*先ほど選んだ最大のものが指定の値より小さければ対角化終了*/
+    		if(max < 1.0e-10) {
+    			break;
+    		}
+    		/*条件によってシータの値を決める*/
+    		if(W.getElement(i,i)==W.getElement(j,j)){
+    			theta=Math.PI/4.0;
+    		}else{
+    			theta=Math.atan(-2*W.getElement(i,j)/(W.getElement(i,i)-W.getElement(j,j)))/2.0;
+    		}
+
+    		//ここでこのときに実対称行列にかける個々の直行行列uが決まるが 特にここでの計算の意味はない。(する必要はない。)*/
+    		double sth = Math.sin(theta);
+    		double cth = Math.cos(theta);
+
+    		/*ここでいままで実対称行列にかけてきた直行行列を配列Uに入れる。*/
+    		for(p=0;p<3;p++) {
+    			U.setElement(p,i,oldU.getElement(p,i)*cth-oldU.getElement(p,j)*sth);
+    			U.setElement(p,j,oldU.getElement(p,i)*sth+oldU.getElement(p,j)*cth);
+    		}
+
+    		//対角化計算によってでた新たな実対称行列の成分を配列newaに入れる。
+    		newW.setElement(i,i,W.getElement(i,i)*cth*cth
+    				+W.getElement(j,j)*sth*sth-2.0*W.getElement(i,j)*sth*cth);
+    		newW.setElement(j, j, W.getElement(i,i)*sth*sth
+    				+W.getElement(j,j)*cth*cth+2.0*W.getElement(i,j)*sth*cth);
+    		newW.setElement(i,j,0.0);
+    		newW.setElement(j,i,0.0);
+    		for(l=0;l<3;l++) {
+    			if(l!=i && l!=j) {
+    				newW.setElement(i,l,W.getElement(i,l)*cth-W.getElement(j,l)*sth);
+    				newW.setElement(l,i,newW.getElement(i,l));
+    				newW.setElement(j,l,W.getElement(i,l)*sth+W.getElement(j,l)*cth);
+    				newW.setElement(l,j,newW.getElement(j,l));
+    			}
+    		}
+    		for(l=0;l<3;l++) {
+    			for(m=0;m<3;m++) {
+    				if(l!=i && l!=j && m!=i && m!=j) newW.setElement(l, m, W.getElement(l,m));
+    			}
+    		}
+
+    		//次の対角化計算を行う行列の成分を配列aへ上書きする。
+    		W.set(newW);
+
+    	}
+    	if(count==10000) {
+    		System.out.println("対角化するためにはまだ作業を繰り返す必要があります");
+    		return false;
+    	}else{
+    		return true;
+    	}
     }
+
+    /**
+     * @brief get model item to which this link belongs
+     * @return model item
+     */
+	public GrxModelItem model() {
+		return model_;
+	}
 }

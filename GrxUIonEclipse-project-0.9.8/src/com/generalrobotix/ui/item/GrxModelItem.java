@@ -58,8 +58,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     public BranchGroup bgRoot_ = new BranchGroup();
     public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
-    // link currently selected on 3DView
-    public GrxLinkItem activeLink_;
     // jontId -> link
     private int[] jointToLink_; 
     // link name -> link
@@ -255,9 +253,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	}else if(property.equals("isRobot")){
     		_setModelType(value);
     	}else if(property.equals("controlTime")){
-    		Double t = Double.parseDouble(value);
-    		if (t != null && t > 0){
-    			setProperty("controlTime", value);
+    		try{
+    			double t = Double.parseDouble(value);
+    			if (t > 0){
+    				setProperty("controlTime", value);
+    			}
+    		}catch(Exception ex){
     		}
     	}else if(property.equals(rootLink().getName()+".translation")){
     		if (rootLink().translation(value)){
@@ -370,7 +371,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
             int jointCount = 0;
             for (int i = 0; i < linkInfoList.length; i++) {
-                links_.add(new GrxLinkItem(linkInfoList[i].name, manager_, this, linkInfoList[i]));
+            	GrxLinkItem link = new GrxLinkItem(linkInfoList[i].name, manager_, this, linkInfoList[i]); 
+                links_.add(link);
                 linkMap_.put(links_.get(i).getName(), links_.get(i));
                 if (links_.get(i).jointId() >= 0){
                     jointCount++;
@@ -504,7 +506,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             int numShapes = linkInfo.shapeIndices.length;
             for(int localShapeIndex = 0; localShapeIndex < numShapes; localShapeIndex++) {
                 TransformedShapeIndex tsi = linkInfo.shapeIndices[localShapeIndex];
-                link.addChild(_createShape(linkInfo.name+"_shape_"+localShapeIndex, tsi));
+                link.addShape(_createShape(linkInfo.name+"_shape_"+localShapeIndex, tsi));
         
                 /* normal visualization */
                 /*
@@ -528,35 +530,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             }
         }
         
-        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-        for (int i = 0; i < links_.size(); i++) {
-            GrxLinkItem link = links_.get(i);
-            TransformGroup g = link.tg_;
-            Map<String, Object> userData = (Map<String, Object>)g.getUserData();
-
-            Transform3D tr = new Transform3D();
-            tr.setIdentity();
-            g.setTransform(tr);
-            
-            modifier.init_ = true;
-            modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
-            modifier._calcUpperLower(g, tr);
-            
-            Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-            Switch bbSwitch =  modifier._makeSwitchNode(modifier._makeBoundingBox(color));
-            g.addChild(bbSwitch);
-            userData.put("boundingBoxSwitch", bbSwitch);
-
-            Vector3d jointAxis = new Vector3d(link.jointAxis());
-            if (jointAxis != null) {
-                Switch axisSwitch = modifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
-                g.addChild(axisSwitch);
-                userData.put("axisLineSwitch", axisSwitch);
-            }
-        }
-            
         _setupMarks();
         
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
         modifier.modifyRobot(this);
         
         setDblAry(rootLink().getName()+".translation", rootLink().translation());
@@ -958,11 +934,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     public void setSelected(boolean b) {
         super.setSelected(b);
+        /*
         if (!b) {
             bgRoot_.detach();
             for (int i=0; i<cameraList_.size(); i++)
                 cameraList_.get(i).getBranchGroup().detach();
         }
+        */
     }
 
     public void delete() {

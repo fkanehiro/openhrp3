@@ -18,12 +18,9 @@ import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
-import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
-import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
 
 import com.sun.j3d.utils.geometry.Sphere;
 
@@ -89,10 +86,7 @@ public class GrxShapeUtil{
         Node sphere = new Sphere((float)radius, Sphere.GENERATE_NORMALS, app);
         sphere.setPickable(false);
 
-        Transform3D trans = new Transform3D();
-        trans.setTranslation(new Vector3d(0.0, 0.0, 0.0));
-        trans.setRotation(new AxisAngle4d(1.0, 0.0, 0.0, 0.0));
-        TransformGroup tg = new TransformGroup(trans);
+        TransformGroup tg = new TransformGroup();
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);

@@ -502,7 +502,6 @@ public class GrxShapeItem extends GrxTransformItem{
         public	short			height;
         public	boolean			repeatS;
         public	boolean			repeatT;
-        private  BufferedImage	bimageRead;
         public  ImageComponent2D readImage;
         String url;
 
@@ -518,7 +517,6 @@ public class GrxShapeItem extends GrxTransformItem{
                 numComponents = 3;
                 repeatS = false;
                 repeatT = false;
-                bimageRead = null;
                 width = 0;
                 height = 0;
                 return;

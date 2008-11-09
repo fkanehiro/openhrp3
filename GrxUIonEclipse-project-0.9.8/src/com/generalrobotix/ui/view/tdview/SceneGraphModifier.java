@@ -282,14 +282,14 @@ public class SceneGraphModifier {
                 shape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
                 shape.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
 
-		if (appearance != null){
-		    appearance.setCapability(
-                        Appearance.ALLOW_POLYGON_ATTRIBUTES_READ
-                    );
-		    appearance.setCapability(
-                        Appearance.ALLOW_POLYGON_ATTRIBUTES_WRITE
-                    );
-		}
+                if (appearance != null){
+                	appearance.setCapability(
+                			Appearance.ALLOW_POLYGON_ATTRIBUTES_READ
+                	);
+                	appearance.setCapability(
+                			Appearance.ALLOW_POLYGON_ATTRIBUTES_WRITE
+                	);
+                }
             }
 
             if (mode_ == SHADING_MODE) {
@@ -352,41 +352,22 @@ public class SceneGraphModifier {
      */
 
     public Point3f[] _makePoints() {
-        Point3f[] points = new Point3f[24];
-        points[0]  = new Point3f(upper_[0], upper_[1], upper_[2]); // A
-        points[1]  = new Point3f(lower_[0], upper_[1], upper_[2]); // B
-        points[2]  = new Point3f(lower_[0], lower_[1], upper_[2]); // C
-        points[3]  = new Point3f(upper_[0], lower_[1], upper_[2]); // D
-        points[4]  = new Point3f(upper_[0], lower_[1], lower_[2]); // H
-        points[5]  = new Point3f(lower_[0], lower_[1], lower_[2]); // G
-        points[6]  = new Point3f(lower_[0], upper_[1], lower_[2]); // F
-        points[7]  = new Point3f(upper_[0], upper_[1], lower_[2]); // E
-        points[8]  = new Point3f(upper_[0], upper_[1], upper_[2]); // A
-        points[9]  = new Point3f(upper_[0], lower_[1], upper_[2]); // D
-        points[10] = new Point3f(upper_[0], lower_[1], lower_[2]); // H
-        points[11] = new Point3f(upper_[0], upper_[1], lower_[2]); // E
-        points[12] = new Point3f(lower_[0], upper_[1], lower_[2]); // F
-        points[13] = new Point3f(lower_[0], lower_[1], lower_[2]); // G
-        points[14] = new Point3f(lower_[0], lower_[1], upper_[2]); // C
-        points[15] = new Point3f(lower_[0], upper_[1], upper_[2]); // B
-        points[16] = new Point3f(upper_[0], lower_[1], upper_[2]); // C
-        points[17] = new Point3f(lower_[0], lower_[1], upper_[2]); // D
-        points[18] = new Point3f(lower_[0], lower_[1], lower_[2]); // H
-        points[19] = new Point3f(upper_[0], lower_[1], lower_[2]); // G
-        points[20] = new Point3f(upper_[0], upper_[1], lower_[2]); // A
-        points[21] = new Point3f(lower_[0], upper_[1], lower_[2]); // B
-        points[22] = new Point3f(lower_[0], upper_[1], upper_[2]); // F
-        points[23] = new Point3f(upper_[0], upper_[1], upper_[2]); // E
-        return points;
+    	return _makePoints(upper_, lower_);
     }
 
+    public static Point3f[] _makePoints(float x, float y, float z){
+    	float[] upper = new float[]{x/2,y/2,z/2};
+    	float[] lower = new float[]{-x/2,-y/2,-z/2};
+    	return _makePoints(upper, lower);
+    }
+    
     /**
      * @brief make array of vertices of cube
      * @param upper coordinates of upper corner of this cube
      * @param lower coordinates of lower corner of this cube
      * @return array of vertices(24)
      */
-    public Point3f[] _makePoints(float[] upper, float[] lower) {
+    public static Point3f[] _makePoints(float[] upper, float[] lower) {
         Point3f[] points = new Point3f[24];
         points[0]  = new Point3f(upper[0], upper[1], upper[2]); // A
         points[1]  = new Point3f(lower[0], upper[1], upper[2]); // B
@@ -415,7 +396,7 @@ public class SceneGraphModifier {
         return points;
     }
 
-    private Vector3f[] _makeNormals() {
+    private static Vector3f[] _makeNormals() {
         Vector3f[] normal = new Vector3f[24];
         normal[0] = new Vector3f(0.0f, 0.0f, 1.0f);
         normal[1] = normal[0];
@@ -444,7 +425,7 @@ public class SceneGraphModifier {
         return normal;
     }
 
-    public Shape3D _makeCube(Color3f color, Point3f[] points){
+    public static Shape3D _makeCube(Color3f color, Point3f[] points){
         QuadArray quads = new QuadArray(
                 points.length,
                 QuadArray.COLOR_3 | QuadArray.COORDINATES | QuadArray.NORMALS
@@ -478,29 +459,33 @@ public class SceneGraphModifier {
     }
 
     /**
-     * @breif make both end points of axis line
+     * @brief make both end points of axis line
      * @param jointAxis joint axis
      * @return array of points(length=2)
      */
     public Point3f[] makeAxisPoints(Vector3d jointAxis){
         Point3f[] points = new Point3f[2];
         
-        float[] offset = new float[3];
-        
-        offset[0] = (upper_[0] - lower_[0]) / 2.0f;
-        offset[1] = (upper_[1] - lower_[1]) / 2.0f;
-        offset[2] = (upper_[2] - lower_[2]) / 2.0f;
+        float upperlen = (float)(
+        		upper_[0]*jointAxis.x+
+        		upper_[1]*jointAxis.y+
+        		upper_[2]*jointAxis.z);
+        float lowerlen = (float)(
+        		lower_[0]*jointAxis.x+
+        		lower_[1]*jointAxis.y+
+        		lower_[2]*jointAxis.z);
+        float offset = 0.05f;
         
         points[0]  = new Point3f(
-            (upper_[0] + offset[0]) * (float)jointAxis.x,
-            (upper_[1] + offset[1]) * (float)jointAxis.y,
-            (upper_[2] + offset[2]) * (float)jointAxis.z
+            (upperlen + offset) * (float)jointAxis.x,
+            (upperlen + offset) * (float)jointAxis.y,
+            (upperlen + offset) * (float)jointAxis.z
         ); // A
 
         points[1]  = new Point3f(
-            (lower_[0] - offset[0]) * (float)jointAxis.x,
-            (lower_[1] - offset[1]) * (float)jointAxis.y,
-            (lower_[2] - offset[2]) * (float)jointAxis.z
+            (lowerlen - offset) * (float)jointAxis.x,
+            (lowerlen - offset) * (float)jointAxis.y,
+            (lowerlen - offset) * (float)jointAxis.z
         ); // B
         return points;
     }
@@ -543,13 +528,13 @@ public class SceneGraphModifier {
     /**
      * Switch_Nodeを作成
      */
-    public Switch _makeSwitchNode(Shape3D shape) {
+    public static Switch _makeSwitchNode(Shape3D shape) {
         Switch switchNode = _makeSwitchNode();
         switchNode.addChild(shape);
         return switchNode;
     }
 
-    public Switch _makeSwitchNode() {
+    public static Switch _makeSwitchNode() {
         Switch switchNode = new Switch();
         switchNode.setCapability(Switch.ALLOW_CHILDREN_EXTEND);
         switchNode.setCapability(Switch.ALLOW_CHILDREN_READ);

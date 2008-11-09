@@ -169,5 +169,20 @@ public class GrxBaseView extends GrxBasePlugin {
 	public boolean isSleeping() {
 		return (view_state_ == GRX_VIEW_SLEEP);
 	}
+
+	/**
+	 * @brief this method is called by PluginManager when list of items is changed
+	 */
+	public void itemListChanged() {
+	}
+
+	public void currentItemChanged(GrxBaseItem item) {
+	}
+
+	/**
+	 * @brief This method is called when a property of plugin is changed
+	 */
+	public void propertyChanged() {
+	}
     
 }

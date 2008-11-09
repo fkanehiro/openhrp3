@@ -12,6 +12,7 @@ package com.generalrobotix.ui.view.tdview;
 import java.util.EventObject;
 import javax.media.j3d.TransformGroup;
 
+@SuppressWarnings("serial")
 class ViewChangeEvent extends EventObject {
     TransformGroup transform_;
 
