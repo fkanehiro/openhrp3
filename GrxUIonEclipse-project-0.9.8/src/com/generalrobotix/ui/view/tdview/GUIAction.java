@@ -29,6 +29,7 @@ import com.generalrobotix.ui.util.MessageBundle;
 /**
  * 
  */
+@SuppressWarnings("serial")
 public class GUIAction extends AbstractAction {
     public static final GUIAction EXIT  = new GUIAction("exit");
     public static final GUIAction ABOUT = new GUIAction("about");

@@ -52,7 +52,7 @@ public class MyBufferToImage
         for(int i = 0; i < codecList.size(); i++)
         {
             String codecName = (String)codecList.elementAt(i);
-            Class codecClass = null;
+            Class<?> codecClass = null;
             Codec codec = null;
             try
             {

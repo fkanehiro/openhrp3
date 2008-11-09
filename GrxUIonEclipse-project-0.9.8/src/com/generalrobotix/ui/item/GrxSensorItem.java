@@ -197,8 +197,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
             camera_ = new Camera_impl(prm, offScreen);
 
             tg_.addChild(camera_.getBranchGroup());
-            SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-            switchCamera_ = modifier._makeSwitchNode(_createShapeOfVisibleArea());
+            switchCamera_ = SceneGraphModifier._makeSwitchNode(_createShapeOfVisibleArea());
             tg_.addChild(switchCamera_);
         }else if(info.type.equals("RateGyro")){
         	float[] max = new float[3];
@@ -491,16 +490,8 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     /**
      * @brief see doc for parent class
      */
-    public void selected(){
-    	super.selected();
-    	setVisibleArea(true);
-    }
-
-    /**
-     * @brief see doc for parent class
-     */
-    public void unselected(){
-    	super.selected();
-    	setVisibleArea(false);
+    public void setSelected(boolean b){
+    	super.setSelected(b);
+    	setVisibleArea(b);
     }
 }

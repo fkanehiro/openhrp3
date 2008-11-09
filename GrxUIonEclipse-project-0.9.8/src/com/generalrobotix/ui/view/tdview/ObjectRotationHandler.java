@@ -227,6 +227,7 @@ class ObjectRotationHandler extends OperationHandler {
         if (model == null) 
         	return false; 
         
+        info.manager_.currentItem(model);
         SceneGraphModifier modifier = SceneGraphModifier.getInstance();
         modifier.resizeBounds(model);
         TransformGroup tgTarget = model.getTransformGroupRoot();

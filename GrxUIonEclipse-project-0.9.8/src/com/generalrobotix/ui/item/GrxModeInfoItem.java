@@ -52,7 +52,7 @@ public class GrxModeInfoItem extends GrxBaseItem {
 		for (int i = 0; i < list.getLength(); i++) {
 			Element el = (Element) list.item(i);
 			manager_.pluginLoader_.addURL(GrxXmlUtil.expandEnvVal(el.getAttribute("lib")));
-			Class cls = manager_.registerPlugin(el);
+			Class<?> cls = manager_.registerPlugin(el);
 			if ( cls != null && GrxBaseItem.class.isAssignableFrom(cls) &&
 					!activeItemClassList_.contains(cls)) {
 				activeItemClassList_.add((Class<? extends GrxBaseItem>)cls);

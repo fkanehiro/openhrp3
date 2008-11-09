@@ -16,7 +16,6 @@
 
 package com.generalrobotix.ui.view.tdview;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.media.j3d.*;
@@ -42,8 +41,6 @@ class JointRotationHandler extends OperationHandler {
     // インスタンス変数
     private int mode_;
     private TransformGroup tgTarget_;
-    private Switch bbSwitch_;
-    private Switch axisSwitch_;
     private Point prevPoint_ = new Point();
     private double angle_;
     private boolean isPicked_;
@@ -65,30 +62,14 @@ class JointRotationHandler extends OperationHandler {
             info.pickCanvas.setShapeLocation(prevPoint_.x, prevPoint_.y);
             PickResult pickResult = info.pickCanvas.pickClosest();
             if (pickResult == null) {
-                //_disableBoundingBox();
                 return;
             }
             TransformGroup tg = (TransformGroup)pickResult.getNode(
                 PickResult.TRANSFORM_GROUP
             );
-            if (tg == null) {
-                //_disableBoundingBox();
-                return;
-            }
-
-            if (tg != tgTarget_) {
-                if (!_enableBoundingBox(tg, info)) {
-                    return;
-                }
-            }
-           // Point3d startPoint = info.pickCanvas.getStartPosition();
-           // PickIntersection intersection =
-           //     pickResult.getClosestIntersection(startPoint);
+            setPickTarget(tg, info);
         } catch (CapabilityNotSetException ex) {
-            // もう出ることはないと思うが、読み込むモデルによっては
-            // 出るかもしれないので、スタックトレースは表示する。
             ex.printStackTrace();
-            _disableBoundingBox();
         }
 
         isPicked_ = true;
@@ -96,7 +77,7 @@ class JointRotationHandler extends OperationHandler {
     }
 
     public void processStartDrag(MouseEvent evt, BehaviorInfo info) {
-        if (bbSwitch_ == null || !isPicked_) {
+        if (!isPicked_) {
             mode_ = MODE_NONE;
             return;
         }
@@ -249,45 +230,15 @@ class JointRotationHandler extends OperationHandler {
     //--------------------------------------------------------------------
     // OperationHandlerの実装
     public void disableHandler() {
-        _disableBoundingBox();
     }
 
     public void setPickTarget(TransformGroup tg, BehaviorInfo info) {
         if (tg != tgTarget_) {
-            _enableBoundingBox(tg, info);
+            GrxLinkItem l = SceneGraphModifier.getLinkFromTG(tg);
+            if (l == null) return;
+            info.manager_.currentItem(l);
+    		tgTarget_ = l.tg_;
         }
-    }
-
-    //--------------------------------------------------------------------
-    // プライベートメソッド
-    private void _disableBoundingBox() {
-        if (bbSwitch_ != null) {
-            bbSwitch_.setWhichChild(Switch.CHILD_NONE);
-            axisSwitch_.setWhichChild(Switch.CHILD_NONE);
-            tgTarget_ = null;
-            bbSwitch_ = null;
-            axisSwitch_ = null;
-        }
-    }
-
-    private boolean _enableBoundingBox(TransformGroup tg, BehaviorInfo info) {
-        Hashtable<String, Object> ht = SceneGraphModifier.getHashtableFromTG(tg);
-        GrxLinkItem l = SceneGraphModifier.getLinkFromTG(tg);
-        if (l == null)
-        	return false;
-        
-        if (l.jointType().equals("rotate") || l.jointType().equals("slide")) {
-            _disableBoundingBox();
-            GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
-            model.activeLink_ = l;
-            tgTarget_ = l.tg_;
-            bbSwitch_ = (Switch)ht.get("boundingBoxSwitch");
-            axisSwitch_ = (Switch)ht.get("axisLineSwitch");
-            bbSwitch_.setWhichChild(Switch.CHILD_ALL);
-            axisSwitch_.setWhichChild(Switch.CHILD_ALL);
-            return true;
-        }
-        return false;               	
     }
 
     private void _jointAngleChanged(BehaviorInfo info) {

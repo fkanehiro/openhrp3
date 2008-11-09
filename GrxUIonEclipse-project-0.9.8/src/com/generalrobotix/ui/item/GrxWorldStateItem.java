@@ -469,7 +469,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			logger_.openCollisionLogAsRead();
 			
             preStat_ = new WorldStateEx();
-            Enumeration e = new ZipFile(fname).entries();
+            Enumeration<? extends ZipEntry> e = new ZipFile(fname).entries();
             while (e.hasMoreElements()) {
             	String entry = ((ZipEntry)e.nextElement()).getName();
             	if (entry.indexOf(".col") > 0)

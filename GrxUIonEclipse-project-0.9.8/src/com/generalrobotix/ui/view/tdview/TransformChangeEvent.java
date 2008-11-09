@@ -19,6 +19,7 @@ package com.generalrobotix.ui.view.tdview;
 import java.util.EventObject;
 import javax.media.j3d.*;
 
+@SuppressWarnings("serial")
 public class TransformChangeEvent extends EventObject
 {
 

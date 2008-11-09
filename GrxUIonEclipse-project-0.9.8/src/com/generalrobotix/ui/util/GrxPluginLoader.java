@@ -69,7 +69,7 @@ public class GrxPluginLoader extends URLClassLoader {
 		}
 	}
 
-	public Class loadClass(String cname){
+	public Class<?> loadClass(String cname){
 		try {
 			return super.loadClass(cname, true);
 		} catch (ClassNotFoundException e) {

@@ -139,7 +139,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			element_.setAttribute("url", getURL(false));
 		element_.appendChild(doc_.createTextNode("\n"));
 
-		Enumeration keys = propertyNames();
+		Enumeration<?> keys = propertyNames();
 		while (keys.hasMoreElements()) {
 			String key = (String)keys.nextElement();
 			String val = getProperty(key);
@@ -213,7 +213,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	 * @brief set selected flag
 	 * @param b flag
 	 */
-	protected void setSelected(boolean b) {
+	public void setSelected(boolean b) {
 		selected_ = b;
 	}
 
@@ -315,8 +315,8 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	}
 
 	/**
-	 * @brief set url
-	 * @param url
+	 * @brief set URL property
+	 * @param url URL to be set
 	 */
 	public void setURL(String url) {
 		setProperty("url", url);
@@ -394,5 +394,14 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			return true;
 		}
 		return false;
+	}
+	
+
+	
+	public Object setProperty(String key, String value){
+		//System.out.println("GrxBasePlugin.setProperty("+key+","+value+")");
+		Object o = super.setProperty(key, value);
+		manager_.itemPropertyChanged();
+		return o;
 	}
 }

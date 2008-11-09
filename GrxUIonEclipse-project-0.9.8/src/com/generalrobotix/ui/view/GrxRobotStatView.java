@@ -438,9 +438,9 @@ public class GrxRobotStatView extends GrxBaseView {
 
         public Color getBackground(Object element, int columnIndex) {
             int rowIndex = ((Integer)element).intValue();;
-            
-            if (currentModel_ != null) {
-                if (jointList_.get(rowIndex) == currentModel_.activeLink_) {
+            GrxBaseItem bitem = manager_.currentItem();
+            if (currentModel_ != null && bitem instanceof GrxLinkItem) {
+                if (jointList_.get(rowIndex) == (GrxLinkItem)bitem) {
                     return yellow_;
                 }
             }

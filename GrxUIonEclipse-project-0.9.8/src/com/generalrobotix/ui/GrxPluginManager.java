@@ -43,11 +43,9 @@ import com.generalrobotix.ui.util.GrxPluginLoader;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.OrderedHashMap;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
-import com.generalrobotix.ui.view.GrxItemView;
 import com.generalrobotix.ui.view.GrxProcessManagerView;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxProjectItem;
-import com.generalrobotix.ui.item.GrxModelItem;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -63,7 +61,7 @@ import org.eclipse.ui.PlatformUI;
 /**
  * @brief プラグイン管理クラス
  * GrxUIの核になるクラス。プラグインのロード等の、初期化を実行する。
- * また、タイマーを使ったプラグイン間の動機を行う。
+ * また、タイマーを使ったプラグイン間の同期を行う。
  * プラグインとそのアイテムのマップ（#pluginMap_）、プラグインとその情報のマップ（#pinfoMap_）などを持つ。
  * 各種プラグインはこのクラスへの参照を持ち、必要に応じてこのクラスから情報を取得する事ができる。
  * @see GrxUIFrame
@@ -74,18 +72,20 @@ public class GrxPluginManager
 {
 	// project
 	private GrxProjectItem  rcProject_;
-	private GrxProjectItem  currentProject_; // 現在編集中のプログラム
+	private GrxProjectItem  currentProject_;
 	private GrxModeInfoItem currentMode_;
+	private GrxBaseItem currentItem_=null;
 
 	// for managing items
-	public  GrxPluginLoader pluginLoader_; // プラグインのローダ
+	public  GrxPluginLoader pluginLoader_;
 	public HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap> pluginMap_ =
 		new HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap>(); // プラグインとその生成したアイテムのマップ
 	private List<GrxBaseItem> selectedItemList_ = new ArrayList<GrxBaseItem>();//ダブルクリックによるトグルステータス
-	private List<GrxBaseItem> selectedItemOnTreeViewList_ = new ArrayList<GrxBaseItem>(); //通常のTreeView上の選択アイテムのリスト
 	private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
 	private boolean isItemSelectionChanged_ = false;
 	private boolean isItemModelChanged_ = false;
+	private boolean bCurrentItemChanged_ = false;
+	private boolean bItemPropertyChanged_ = false;
     private String homePath_;
 	private Map<Class<? extends GrxBasePlugin>, PluginInfo> pinfoMap_ =
 		new HashMap<Class<? extends GrxBasePlugin>, PluginInfo>();
@@ -165,17 +165,12 @@ public class GrxPluginManager
 		display = Display.getCurrent();
 		Runnable runnable = new Runnable() {
 			public void run() {
-				if ( isItemSelectionChanged_ )
-					_updateItemSelection();
-		        if ( isItemModelChanged_ ) {
-		        	GrxDebugUtil.println("[PM THREAD] Item Model Changed");
-		        	//treeModel_.reload();
-		        	GrxItemView iv = (GrxItemView)getView( GrxItemView.class );
-		        	if( iv!=null )
-		        		iv.updateTree();
-		        	isItemModelChanged_ = false;
-                }
-				if( isPerspectiveVisible() )
+				if ( isItemSelectionChanged_ ) _updateItemSelection();
+				updateViewList();
+		        if ( isItemModelChanged_ ) _notifyItemListChanged();
+		        if ( bCurrentItemChanged_ ) _notifyCurrentItemChanged();
+		        if ( bItemPropertyChanged_ ) _notifyItemPropertyChanged();
+		        if( isPerspectiveVisible() )
 					_control();
 				if ( ! display.isDisposed() )
 					display.timerExec(delay_, this);
@@ -188,6 +183,27 @@ public class GrxPluginManager
 		initSucceed = true;
 	}
 
+	/**
+	 * @brief set focused item
+	 * @param item focused item
+	 */
+	public void currentItem(GrxBaseItem item){
+		if (currentItem_ != item){
+			if (currentItem_ != null && currentItem_.isSelected()) currentItem_.setSelected(false);
+			currentItem_ = item;
+			if (!currentItem_.isSelected()) currentItem_.setSelected(true);
+			bCurrentItemChanged_ = true;
+		}
+	}
+	
+	/**
+	 * @brief get current focused item
+	 * @return item
+	 */
+	public GrxBaseItem currentItem() {
+		return currentItem_;
+	}
+	
 	/**
 	 * @brief check if GrxUI perspective is visible or not
 	 * @return true if visible, false otherwise
@@ -207,25 +223,13 @@ public class GrxPluginManager
 	}
 
 	/**
-	 * @brief
+	 * @brief update list of selected items and notify all views
 	 */
 	private void _updateItemSelection() {
-		GrxDebugUtil.println("[PM THREAD] update Item Selections");
+		//GrxDebugUtil.println("[PM THREAD] update Item Selections");
 
 		isItemSelectionChanged_ = false;
 		selectedItemList_.clear();
-		//選択されているアイテムの一覧を更新する
-		/*
-		Enumeration e = root_.depthFirstEnumeration();
-		while (e.hasMoreElements()) {
-			DefaultMutableTreeNode n = (DefaultMutableTreeNode) e.nextElement();
-			Object o = n.getUserObject();
-			if (o instanceof GrxBaseItem && ((GrxBaseItem) o).isSelected())
-				selectedItemList_.add((GrxBaseItem) o);
-		}
-		*/
-		// 各ビューにItemSelectionChangedで渡されるリスト。実際にはほとんどのビューは対応するアイテムをmanagerから取得しているのでどうでもいいと言えばどうでもいい
-		// TODO: とりあえず全部更新アイテムリストにつっこみ。全アイテムをさらってisSelected()を実行すればええんちゃうの？除外すべきものもあるかな。ビューとか。
 		Collection<OrderedHashMap> oMaps = pluginMap_.values();
 		for( OrderedHashMap om : oMaps ) {
 			for( Object o : om.values() ){
@@ -234,7 +238,7 @@ public class GrxPluginManager
 			}
 		}
 		
-		//GrxDebugUtil.println("[PM THREAD] selectedItems = "+selectedItemList_.toString());
+		GrxDebugUtil.println("[PM THREAD] selectedItems = "+selectedItemList_.toString());
 
 		updateViewList();
 		for (int i=0; i<selectedViewList_.size(); i++) {
@@ -249,7 +253,47 @@ public class GrxPluginManager
 	}
 
 	/**
-	 * @brief パースペクティブ中の全ビューを取得、selectedViewList_へ
+	 * @brief notify all views that list of items is changed
+	 */
+	private void _notifyItemListChanged() {
+		for (int i=0; i<selectedViewList_.size(); i++){
+			GrxBaseView v = (GrxBaseView)selectedViewList_.get(i);
+			v.itemListChanged();
+			isItemModelChanged_ = false;
+		}
+	}
+
+	/**
+	 * @brief notify all views that property of current item is changed
+	 */
+	private void _notifyItemPropertyChanged() {
+		//System.out.println("GrxPluginManager.propertyChanged()");
+		System.out.println("size of view = "+selectedViewList_.size());
+		for (int i=0; i<selectedViewList_.size(); i++){
+			GrxBaseView v = (GrxBaseView)selectedViewList_.get(i);
+			v.propertyChanged();
+		}
+		bItemPropertyChanged_ = false;
+	}
+
+	/**
+	 * @brief notify this manager that property of current item is changed
+	 */
+	public void itemPropertyChanged() {
+		bItemPropertyChanged_ = true;
+	}
+
+
+	private void _notifyCurrentItemChanged() {
+		//System.out.println("GrxPluginManager._notifyCurrentItemChanged()");
+		for (int i=0; i<selectedViewList_.size(); i++){
+			GrxBaseView v = (GrxBaseView)selectedViewList_.get(i);
+			v.currentItemChanged(currentItem_);
+		}
+		bCurrentItemChanged_ = false;
+	}
+	/**
+	 * @brief update list of views
 	 */
 	private void updateViewList(){
 		selectedViewList_.clear();
@@ -354,7 +398,7 @@ public class GrxPluginManager
 		GrxModeInfoItem mode = (GrxModeInfoItem)getItem(GrxModeInfoItem.class, defaultMode);
 		GrxDebugUtil.println("[PM] current mode="+mode);
 
-		Map m = pluginMap_.get(GrxModeInfoItem.class);
+		Map<?, ?> m = pluginMap_.get(GrxModeInfoItem.class);
 		GrxModeInfoItem[] modes = (GrxModeInfoItem[])m.values().toArray(new GrxModeInfoItem[0]);
 
 		System.out.println("[PM] try to setMode");
@@ -363,11 +407,6 @@ public class GrxPluginManager
 			if (mode == null) {
 				int ans = 0;
  				if (modes.length > 1) {
-				    GrxBaseItem initialMode = null;
-				    for (int i=0; i<modes.length; i++) {
-					    if (modes[i].isSelected())
-						    initialMode = modes[i];
-				    }
 					String[] modeInfoNames = new String[modes.length];
 					for( int i=0; i<modes.length; i++ )
 						modeInfoNames[i] = modes[i].getName();
@@ -420,6 +459,14 @@ public class GrxPluginManager
 
 		currentProject_.restoreProject();
 	}
+	
+	/**
+	 * @brief get current mode
+	 * @return current mode
+	 */
+	public GrxModeInfoItem getMode(){
+		return currentMode_;
+	}
 
 	public void setDelay(int msec) {
 		delay_ = msec;
@@ -429,8 +476,8 @@ public class GrxPluginManager
 		return delay_;
 	}
 
-	public Class registerPlugin(String className) {
-		Class cls = pluginLoader_.loadClass(className);
+	public Class<? extends GrxBasePlugin> registerPlugin(String className) {
+		Class<?> cls = pluginLoader_.loadClass(className);
 		return registerPlugin((Class<? extends GrxBasePlugin>) cls);
 	}
 
@@ -439,9 +486,9 @@ public class GrxPluginManager
 	 * @param el
 	 * @return
 	 */
-	public Class registerPlugin(Element el) {
-		Class cls = pluginLoader_.loadClass( el.getAttribute("class") );
-		Class ret = registerPlugin((Class<? extends GrxBasePlugin>) cls);
+	public Class<?> registerPlugin(Element el) {
+		Class<?> cls = pluginLoader_.loadClass( el.getAttribute("class") );
+		Class<? extends GrxBasePlugin> ret = registerPlugin((Class<? extends GrxBasePlugin>) cls);
 		if( ret != null){
 			PluginInfo pi = pinfoMap_.get(ret);
 			pi.visible = GrxXmlUtil.getBoolean(el, PluginInfo.VISIBLE, true);
@@ -455,7 +502,7 @@ public class GrxPluginManager
 	 * 該当するプラグインが無い場合、nullを返す。
 	 * @return プラグインへの参照（GrxBasePluginにキャストして使う）、該当無しの場合はnull
 	 */
-	public Class registerPlugin(Class<? extends GrxBasePlugin> cls) {
+	public Class<? extends GrxBasePlugin> registerPlugin(Class<? extends GrxBasePlugin> cls) {
 		if (cls != null && GrxBasePlugin.class.isAssignableFrom(cls)) {
 		    if (pluginMap_.get(cls) == null) {
 				GrxDebugUtil.println( "[PM] register " + cls.getName() );
@@ -594,23 +641,32 @@ public class GrxPluginManager
 			return null;
 		}
 		try {
-			HashMap<String, GrxBasePlugin> map = pluginMap_.get(cls);
-			GrxBasePlugin plugin = map.get(name);
-			if (plugin != null) {
-				GrxDebugUtil.println("[PM]@createPlugin Plugin Instance already registed.");
-				return null;
+			GrxBasePlugin plugin = pluginLoader_.createPlugin(cls, name, this);
+			if (registerPluginInstance(plugin)){
+				return plugin;
 			}
-
-			plugin = pluginLoader_.createPlugin(cls, name, this);
-			map.put(name, plugin);
 			return plugin;
-
 		} catch (Exception e) {
 			showExceptionTrace("Couldn't load Class:" + cls.getName(), e);
 		}
 		return null;
 	}
 
+	/**
+	 * @brief register instance of plugin to this manager
+	 * @param instance instance of plugin
+	 * @return true if registered successfully, false otherwise
+	 */
+	public boolean registerPluginInstance(GrxBasePlugin instance){
+		HashMap<String, GrxBasePlugin> map = pluginMap_.get(instance.getClass());
+		if (map.get(instance.getName()) != null) {
+			GrxDebugUtil.println("[PM]@createPlugin Plugin Instance already registered.");
+			return false;
+		}
+		map.put(instance.getName(), instance);
+		return true;
+	}
+	
 	/**
 	 * @brief
 	 * @param m
@@ -656,31 +712,31 @@ public class GrxPluginManager
 	}
 
 	/**
-	 * @brief
-	 * @param item
+	 * @brief remove item
+	 * @param item item to be removed
 	 */
 	public void removeItem(GrxBaseItem item) {
-		Map m = pluginMap_.get(item.getClass());
+		Map<?, ?> m = pluginMap_.get(item.getClass());
 		if (m != null) {
 			setSelectedItem(item, false);
 			m.remove(item.getName());
-			isItemModelChanged_ = true;
+			reselectItems();
 		}
 	}
 
 	/**
-	 * @brief
-	 * @param cls
+	 * @brief remove all items which are instances of specified class
+	 * @param cls class
 	 */
 	public void removeItems(Class<? extends GrxBaseItem> cls) {
 		Map<?, ?> m = pluginMap_.get(cls);
 		GrxBaseItem[] items = m.values().toArray(new GrxBaseItem[0]);
 		for (int i = 0; i < items.length; i++)
-			removeItem(items[i]);
+			items[i].delete();
 	}
 
 	/**
-	 * @brief
+	 * @brief remove all items which are instances of active classes in the current mode
 	 */
 	public void removeAllItems() {
 		if (currentMode_ == null)
@@ -696,7 +752,7 @@ public class GrxPluginManager
 	 * @return true renamed successfully, false otherwise
 	 */
 	public boolean renamePlugin(GrxBasePlugin item, String newName) {
-		Map<String, GrxBasePlugin> m = pluginMap_.get(item.getClass());
+		OrderedHashMap m = pluginMap_.get(item.getClass());
 		if (m == null){
 			System.out.println("map for "+item.getClass()+" doesn't exist in pluginMap_");
 			return false;
@@ -719,11 +775,8 @@ public class GrxPluginManager
 	 * @brief
 	 */
 	public void setVisibleItem() {
-		// root_.removeAllChildren();
-
 		ArrayList<Class<? extends GrxBaseItem>> cList = currentMode_.activeItemClassList_;
 		for (int i = 0; i < cList.size(); i++) {
-			//root_.add(new DynamicUtilTreeNode(cList.get(i), new Hashtable()));
 			Iterator it = pluginMap_.get(cList.get(i)).values().iterator();
 			while (it.hasNext())
 				_addItemNode((GrxBaseItem) it.next());
@@ -773,7 +826,7 @@ public class GrxPluginManager
 	 * @return
 	 */
 	public GrxBaseItem getItem(String name) {
-		Iterator it = pluginMap_.values().iterator();
+		Iterator<OrderedHashMap> it = pluginMap_.values().iterator();
 		while (it.hasNext()) {
 			HashMap m = (HashMap) it.next();
 			Object o = m.get(name);
@@ -788,7 +841,7 @@ public class GrxPluginManager
 	 * @param cls
 	 * @return
 	 */
-	public Map getItemMap(Class<? extends GrxBaseItem> cls) {
+	public Map<?, ?> getItemMap(Class<? extends GrxBaseItem> cls) {
 		return pluginMap_.get(cls);
 	}
 
@@ -858,46 +911,45 @@ public class GrxPluginManager
 	}
 
 	/**
-	 * @brief
-	 * @param item
-	 * @param select
+	 * @brief select/unselect item
+	 * @param item item to be selected/unselected
+	 * @param select true to select, false to unselect
 	 */
 	public void setSelectedItem(GrxBaseItem item, boolean select) {
 		if (item == null)
 			return;
 
-		GrxDebugUtil.println("[PM]@setSelectedItem "+item.getName()+" selection to "+select );
+		//GrxDebugUtil.println("[PM]@setSelectedItem "+item.getName()+" selection to "+select );
 
-		if (select ^ item.isSelected())
-			isItemSelectionChanged_ = true;
+		if (select ^ item.isSelected()) reselectItems();
 
 		if (select && item.isExclusive()) {
 			for( GrxBaseItem i: (Collection<GrxBaseItem>)getItemMap(item.getClass()).values() ){
-				if( i != item ) {
+				if( i != item) {
 					i.setSelected(false);
 				}
 			}
 		}
 
-		GrxDebugUtil.println("[PM]@setSelectedItem "+item.getName()+" to "+select+". and now changed? "+isItemSelectionChanged_ );
+		//GrxDebugUtil.println("[PM]@setSelectedItem "+item.getName()+" to "+select+". and now changed? "+isItemSelectionChanged_ );
 
 		item.setSelected(select);
 	}
 
 	/**
-	 * @brief
+	 * @brief set flag to update item selection list
 	 */
 	public void reselectItems() {
 		isItemSelectionChanged_ = true;
 	}
 
 	/**
-	 * @brief
+	 * @brief unselect all items
 	 */
 	public void clearItemSelection() {
-		Iterator i = pluginMap_.values().iterator();
+		Iterator<OrderedHashMap> i = pluginMap_.values().iterator();
 		while (i.hasNext()) {
-			Iterator j = ((Map) i.next()).values().iterator();
+			Iterator j = (i.next()).values().iterator();
 			while (j.hasNext()) {
 				GrxBasePlugin p = (GrxBasePlugin)j.next();
 				if (p instanceof GrxBaseItem)
@@ -907,22 +959,25 @@ public class GrxPluginManager
 	}
 
 	/**
-	 * @brief
-	 * @param cls
-	 * @return
+	 * @brief get title of item class
+	 * @param cls item class
+	 * @return title
 	 */
 	public String getItemTitle(Class<? extends GrxBasePlugin> cls) {
         return pinfoMap_.get(cls).title;
 	}
 
+	/**
+	 * @brief check an item class is visible or not
+	 * @param cls item class
+	 * @return true if visible, false otherwise
+	 */
 	public boolean isItemVisible(Class<? extends GrxBasePlugin> cls) {
         return pinfoMap_.get(cls).visible;
 	}
 
-
 	/**
-	 * @brief
-	 *
+	 * @brief information of plugin class
 	 */
 	private class PluginInfo {
 		static final String VISIBLE="visible";
@@ -954,7 +1009,7 @@ public class GrxPluginManager
 				return "create";
 			}
 			public void run(){
-				GrxBaseItem item = createItem(cls, null);
+				createItem(cls, null);
 			}
 		};
 		menu.add(create);
@@ -973,7 +1028,7 @@ public class GrxPluginManager
 				String fPath = fdlg.open();
 				if( fPath != null ) {
 					File f = new File(fPath);
-					GrxBaseItem item = loadItem(cls, null, f.getAbsolutePath() );
+					loadItem(cls, null, f.getAbsolutePath() );
 					pi.lastDir = f.getParentFile();
 				}
 			}
@@ -996,7 +1051,7 @@ public class GrxPluginManager
 
 		try {
 			Method m = cls.getMethod("create", (Class[]) null);
-			Class c = m.getDeclaringClass();
+			Class<?> c = m.getDeclaringClass();
 			create.setEnabled(!(c == GrxBaseItem.class));
 
 			m = cls.getMethod("load", File.class);
@@ -1009,7 +1064,7 @@ public class GrxPluginManager
 	                public String getText(){ return "paste"; }
 	                public void run(){
 	                	GrxDebugUtil.println("GrxPluginManager.GrxModelItemClass paste Action");
-	                	paste();
+	                	//paste();
 	                }
 	            };
 	            paste.setEnabled( !isEmptyClipBord() );
@@ -1028,7 +1083,7 @@ public class GrxPluginManager
 	private void dynamicChangeMenu(final Class<? extends GrxBaseItem> cls, Vector<Action> menu)	{
         try {
             Method m = cls.getMethod("paste", String.class);
-            Class c = m.getDeclaringClass();
+            Class<?> c = m.getDeclaringClass();
             if( c != GrxBaseItem.class ){
                 for(Action action : menu){
                     if( action.getText().equals("paste") ){
@@ -1050,14 +1105,14 @@ public class GrxPluginManager
 	    return GrxPluginManager.getClipBoardVal().isEmpty();
 	}
 	/**
-	 * @brief
+	 * @brief shutdown this manager
 	 */
 	public void shutdown() {
 		GrxDebugUtil.println("[PM] shutdown.");
 
-		Iterator it = pluginMap_.values().iterator();
+		Iterator<OrderedHashMap> it = pluginMap_.values().iterator();
 		for (; it.hasNext();) {
-			Iterator it2 = ((Map) it.next()).values().iterator();
+			Iterator it2 = (it.next()).values().iterator();
 			for (; it2.hasNext();)
 				((GrxBasePlugin) it2.next()).shutdown();
 		}
@@ -1140,30 +1195,22 @@ public class GrxPluginManager
 		return currentProject_.getName();
 	}
 
-	/**
-	 * @brief Set selected GrxBaseItem List on tree view as snap shot
-	 * @return List<GrxBaseItem>
-	 */
-	public void setSelectedGrxBaseItemList(){
-		selectedItemOnTreeViewList_.clear();
-		GrxItemView iv = (GrxItemView)getView( GrxItemView.class );
-		if(iv != null){
-			selectedItemOnTreeViewList_ = iv.getSelectedTreeGrxBaseItem();
-		}
-	}
 
 	/**
 	 * @brief Get selected GrxBaseItem List on tree view
 	 * @return List<GrxBaseItem>
 	 */
+	/* comment out by kanehiro. This class should be independent from any specific view class
 	public List<GrxBaseItem> getSelectedGrxBaseItemList(){
 		return selectedItemOnTreeViewList_;
 	}
+	*/
 
 	/**
 	 * @brief Paste event 
 	 * 
 	 */
+	/* comment out by kanehiro. This class should be independent from any specific view class
 	private void paste(){
 		GrxDebugUtil.println("GrxPluginManager.paste.");
 		for (Object o : selectedItemOnTreeViewList_.toArray() ){
@@ -1172,6 +1219,7 @@ public class GrxPluginManager
 			}
 		}
 	}
+	*/
 	
     /**
      * @brief Get clip board value
@@ -1183,7 +1231,7 @@ public class GrxPluginManager
 
 
     /**
-     * @brief Set clip bord value GrxPluginManager.clipValue_
+     * @brief Set clip board value GrxPluginManager.clipValue_
      */
     private static void setClipBordVal(){
         Clipboard clp = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -1200,5 +1248,6 @@ public class GrxPluginManager
      }
 
     private static SynchronizedAccessor<String> clipValue_ = new SynchronizedAccessor<String>("");
+
 
 }

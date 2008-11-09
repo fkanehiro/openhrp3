@@ -30,6 +30,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.IViewerLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerLabel;
@@ -65,12 +66,11 @@ public class GrxItemView extends GrxBaseView {
 
 	TreeViewer tv;
 	MenuManager menuMgr= new MenuManager();
-	ISelection lastSelection_=null;
 
 	/**
 	 * @brief constructor
-	 * @param name
-	 * @param manager
+	 * @param name name of this view
+	 * @param manager PluginManager
 	 * @param vp
 	 * @param parent
 	 */
@@ -83,20 +83,14 @@ public class GrxItemView extends GrxBaseView {
 
 		Tree t = tv.getTree();
 		
+		// When an item is left-clicked, the item becomes "current item".
 		t.addListener(SWT.Selection, new Listener() {
 			public void handleEvent (Event event){
 				try{
-					if (lastSelection_ != null){
-						for (Object o : ((IStructuredSelection) lastSelection_).toArray() ){
-							if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
-								((GrxBaseItem)o).unselected();
-							}
-						}
-					}
-					lastSelection_ = tv.getSelection();
-					for (Object o : ((IStructuredSelection) lastSelection_).toArray() ){
+					ISelection selection = tv.getSelection();
+					for (Object o : ((IStructuredSelection) selection).toArray() ){
 						if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
-							((GrxBaseItem)o).selected();
+							manager_.currentItem((GrxBaseItem)o);
 						}
 					}
 				}catch(Exception ex){
@@ -114,7 +108,6 @@ public class GrxItemView extends GrxBaseView {
 						manager_.setSelectedItem( (GrxBaseItem)o, !((GrxBaseItem)o).isSelected() );
 					}
 				}
-				updateTree();
     		}
     	});
 
@@ -164,10 +157,10 @@ public class GrxItemView extends GrxBaseView {
 
 			// プロジェクト名 -> アイテムのクラスのリスト
 			if( o instanceof String ) {
-		        GrxModeInfoItem mode = (GrxModeInfoItem)(manager_.getItem( manager_.getCurrentModeName()));
+		        GrxModeInfoItem mode = manager_.getMode();
 
 		        ArrayList<Class<? extends GrxBaseItem>> localList = new ArrayList<Class<? extends GrxBaseItem>>();
-		        Iterator it = mode.activeItemClassList_.listIterator();
+		        Iterator<Class<? extends GrxBaseItem>> it = mode.activeItemClassList_.listIterator();
 		        //grxuirc.xmlの属性値grxui.mode.item.visibleを導入してvisibleがtrueのものをふるい分けして表示
 		        while (it.hasNext()){
 		        	Class<? extends GrxBaseItem> local = (Class<? extends GrxBaseItem>)it.next();
@@ -237,9 +230,6 @@ public class GrxItemView extends GrxBaseView {
 				if( GrxBaseItem.class.isAssignableFrom( object.getClass() ) ) {
 					return ((GrxBaseItem)object).getName();
 				}
-				if (object instanceof GrxLinkItem){
-					return ((GrxLinkItem)object).getName();
-				}
 			}
 			// Other
 			return object.toString();
@@ -255,7 +245,7 @@ public class GrxItemView extends GrxBaseView {
 			return PlatformUI.getWorkbench().getSharedImages().getImage(
                     ISharedImages.IMG_OBJ_FOLDER);
 		}
-
+		
 		public void updateLabel(ViewerLabel label, Object element) {
 			label.setText( getText(element) );
 			label.setImage( getImage(element) );
@@ -281,44 +271,29 @@ public class GrxItemView extends GrxBaseView {
 	}
 
 	/**
-	 * @brief
+	 * @brief This method is called when new item is selected
 	 */
-	public void itemSelectionChanged( List<GrxBaseItem> itemList )
-	{
+	public void currentItemChanged( GrxBaseItem item ){
+    	//System.out.println("GrxItemView.currentItemChanged()");
+		List<GrxBasePlugin> l = new ArrayList<GrxBasePlugin>();
+		l.add(item);
+		tv.setSelection(new StructuredSelection(l), true);
+	}
+
+	/**
+	 * @brief This method is called by PluginManager when list of items is changed
+	 */
+	public void itemListChanged(){
+		//System.out.println("GrxItemView.itemListChanged()");
 		updateTree();
 	}
 
 	/**
-	 * @brief
-	 * @return
+	 * @brief This method is called by PluginManager when list of selected items is changed
 	 */
-	public GrxBasePlugin getFocusedItem() {
-		ISelection selection = tv.getSelection();
-		if( selection==null )
-			return null;
-		Object o = ((IStructuredSelection) selection).getFirstElement();
-		if( o!=null &&  GrxBasePlugin.class.isAssignableFrom( o.getClass() ) )
-			return (GrxBasePlugin) o;
-		return null;
+	public void itemSelectionChanged(List<GrxBaseItem> itemList){
+		//System.out.println("GrxItemView.itemSelectionChanged()");
+		updateTree();
 	}
 	
-	/**
-	 * @brief  Return selected node and item on tree view
-	 * @return List<GrxBaseItem>
-	 */
-	public List<GrxBaseItem> getSelectedTreeGrxBaseItem(){
-		List<GrxBaseItem> retList = new ArrayList<GrxBaseItem>();
-		
-		IStructuredSelection iStructuredSelection = (IStructuredSelection) tv.getSelection();
-		Object oFirst  =  iStructuredSelection.getFirstElement();
-		if ( GrxBaseItem.class.isAssignableFrom(oFirst.getClass()) ){
-			retList.add((GrxBaseItem)oFirst);	
-		}
-		for (Object o : iStructuredSelection.toArray() ){
-			if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) && oFirst != o){
-				retList.add((GrxBaseItem)o);	
-			}
-		}
-		return retList;
-	}
 }

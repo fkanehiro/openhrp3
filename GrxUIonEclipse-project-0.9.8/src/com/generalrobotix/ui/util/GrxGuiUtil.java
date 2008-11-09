@@ -58,8 +58,8 @@ public class GrxGuiUtil {
 	public static void setWholeFont(Font f){
 		FontUIResource fontUIResource = new FontUIResource(f);
 		UIDefaults defaultTable = UIManager.getLookAndFeelDefaults();
-		Set set = defaultTable.keySet();
-		Iterator it = set.iterator();
+		Set<Object> set = defaultTable.keySet();
+		Iterator<Object> it = set.iterator();
 		while (it.hasNext()) {
 			Object o = it.next();
 			if (o instanceof String) {
