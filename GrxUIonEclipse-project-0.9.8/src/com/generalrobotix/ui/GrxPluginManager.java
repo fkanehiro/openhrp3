@@ -82,8 +82,8 @@ public class GrxPluginManager
 		new HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap>(); // プラグインとその生成したアイテムのマップ
 	private List<GrxBaseItem> selectedItemList_ = new ArrayList<GrxBaseItem>();//ダブルクリックによるトグルステータス
 	private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
-	private boolean isItemSelectionChanged_ = false;
-	private boolean isItemModelChanged_ = false;
+	private boolean bItemSelectionChanged_ = false;
+	private boolean bItemListChanged_ = false;
 	private boolean bfocusedItemChanged_ = false;
 	private boolean bItemPropertyChanged_ = false;
     private String homePath_;
@@ -165,9 +165,9 @@ public class GrxPluginManager
 		display = Display.getCurrent();
 		Runnable runnable = new Runnable() {
 			public void run() {
-				if ( isItemSelectionChanged_ ) _updateItemSelection();
+				if ( bItemSelectionChanged_ ) _updateItemSelection();
 				updateViewList();
-		        if ( isItemModelChanged_ ) _notifyItemListChanged();
+		        if ( bItemListChanged_ ) _notifyItemListChanged();
 		        if ( bfocusedItemChanged_ ) _notifyFocusedItemChanged();
 		        if ( bItemPropertyChanged_ ) _notifyItemPropertyChanged();
 		        if( isPerspectiveVisible() )
@@ -228,7 +228,7 @@ public class GrxPluginManager
 	private void _updateItemSelection() {
 		//GrxDebugUtil.println("[PM THREAD] update Item Selections");
 
-		isItemSelectionChanged_ = false;
+		bItemSelectionChanged_ = false;
 		selectedItemList_.clear();
 		Collection<OrderedHashMap> oMaps = pluginMap_.values();
 		for( OrderedHashMap om : oMaps ) {
@@ -260,7 +260,7 @@ public class GrxPluginManager
 			GrxBaseView v = (GrxBaseView)selectedViewList_.get(i);
 			v.itemListChanged();
 		}
-		isItemModelChanged_ = false;
+		bItemListChanged_ = false;
 	}
 
 	/**
@@ -707,7 +707,8 @@ public class GrxPluginManager
 	 * @param item
 	 */
 	private void _addItemNode(GrxBaseItem item) {
-		isItemModelChanged_ = true;
+		if (item.isSelected()) bItemSelectionChanged_ = true;
+		bItemListChanged_ = true;
 	}
 
 	/**
@@ -761,7 +762,7 @@ public class GrxPluginManager
         		m.remove(item.getName());
         		m.put(newName, item);
         		item.setName(newName);
-        		isItemModelChanged_ = true;
+        		bItemListChanged_ = true;
         	}
         	return true;
         }else{
@@ -780,7 +781,7 @@ public class GrxPluginManager
 			while (it.hasNext())
 				_addItemNode((GrxBaseItem) it.next());
 		}
-		isItemModelChanged_ = true;
+		bItemListChanged_ = true;
 	}
 
 	/**
@@ -939,7 +940,7 @@ public class GrxPluginManager
 	 * @brief set flag to update item selection list
 	 */
 	public void reselectItems() {
-		isItemSelectionChanged_ = true;
+		bItemSelectionChanged_ = true;
 	}
 
 	/**

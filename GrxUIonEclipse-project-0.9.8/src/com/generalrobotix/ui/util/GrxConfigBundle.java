@@ -296,7 +296,11 @@ public class GrxConfigBundle extends Properties {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(digits);
 		for (int i=0; i<value.length; i++) {
-			val += nf.format(value[i])+" ";
+			if (Double.isNaN(value[i])){
+				val += "NaN ";
+			}else{
+				val += nf.format(value[i])+" ";
+			}
 		}
 		setProperty(key,val);
 	}

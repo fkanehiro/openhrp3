@@ -13,6 +13,7 @@ package com.generalrobotix.ui.item;
 
 import java.util.Vector;
 
+import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
@@ -123,9 +124,15 @@ public class GrxTransformItem extends GrxBaseItem {
     	if (pos == null || pos.length != 3) return false;
         Transform3D t3d = new Transform3D();
         tg_.getTransform(t3d);
-        t3d.setTranslation(new Vector3d(pos));
-        tg_.setTransform(t3d);
+        Vector3d v = new Vector3d(pos);
+        t3d.setTranslation(v);
         setDblAry("translation", pos, 4);
+        try{
+        	tg_.setTransform(t3d);
+        }catch(BadTransformException e){
+        	System.out.println("Invalid translation:"+v+" is applied to "+getName());
+        	return false;
+        }
         return true;
     }
 

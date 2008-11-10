@@ -384,7 +384,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 						collisionPane_.setEnabled(true);
 						IAction action = getAction();
 						if(action==null) {
-							GrxDebugUtil.println("[OpenHRPView]@thread getAction was returned null.");
+							GrxDebugUtil.println("[OpenHRPView]@thread getAction returned null.");
 						}else{
 							action = getAction();
 							action.setChecked(false);
