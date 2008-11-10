@@ -1,18 +1,18 @@
 
 # @author Shin'ichiro Nakaoka
 
-include(${OpenHRP_SOURCE_DIR}/idl/OpenHRP/IDL_FILE_BASENAMES.cmake)
+include(${OPENHRP_IDL_DIR}/OpenHRP/IDL_FILE_BASENAMES.cmake)
 
-set(idl_flags -bcxx -Wbuse_quotes -Wbh=.hh -Wbs=Sk.cpp -I ${OPENHRP_IDL_DIR} -I${OPENRTM_IDL_DIR})
+set(idl_flags -bcxx -Wbuse_quotes -Wbh=.hh -Wbs=Sk.cpp -I${OPENRTM_IDL_DIR})
 
 foreach(name ${IDL_FILE_BASENAMES})
-  set(idl_files ${idl_files} ${OPENHRP_IDL_DIR}/${name}.idl)
+  set(idl_files ${idl_files} ${OPENHRP_IDL_DIR}/OpenHRP/${name}.idl)
   set(idl_cpp_files ${idl_cpp_files} ${CMAKE_CURRENT_BINARY_DIR}/${name}Sk.cpp)
   set(idl_h_files ${idl_h_files} ${CMAKE_CURRENT_BINARY_DIR}/${name}.hh)
 endforeach()
 
 foreach(idl_basename ${IDL_FILE_BASENAMES})
-  set(idl_file ${OPENHRP_IDL_DIR}/${idl_basename}.idl)
+  set(idl_file ${OPENHRP_IDL_DIR}/OpenHRP/${idl_basename}.idl)
   if(UNIX)
     add_custom_command(
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${idl_basename}.hh ${CMAKE_CURRENT_BINARY_DIR}/${idl_basename}Sk.cpp

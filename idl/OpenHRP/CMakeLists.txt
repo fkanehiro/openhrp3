@@ -1,5 +1,5 @@
 
-include(${OPENHRP_IDL_DIR}/IDL_FILE_BASENAMES.cmake)
+include(IDL_FILE_BASENAMES.cmake)
 
 set(idl_files)
 foreach(name ${IDL_FILE_BASENAMES})
