@@ -32,6 +32,7 @@ import jp.go.aist.hrp.simulator.*;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.Grx3DViewClickListener;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
@@ -270,9 +271,9 @@ public class BehaviorManager implements WorldReplaceListener {
 				if (model.links_ == null)
 					continue;
 				
-				String base = model.rootLink().getName();
+				GrxLinkItem base = model.rootLink();
 				currentDynamics_.setCharacterLinkData(
-					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
+					model.getName(), base.getName(), LinkDataType.ABS_TRANSFORM, 
 					model.getTransformArray(base));
 				
 				currentDynamics_.setCharacterAllLinkData(
@@ -314,9 +315,9 @@ public class BehaviorManager implements WorldReplaceListener {
 		for (int i=0; i<modelList.size(); i++)  {
 			GrxModelItem model = modelList.get(i);
 			String name = model.getName();
-			String base = model.rootLink().getName();
+			GrxLinkItem base = model.rootLink();
 			double[] data = model.getTransformArray(base);
-			currentDynamics_.setCharacterLinkData(name, base, LinkDataType.ABS_TRANSFORM, data);
+			currentDynamics_.setCharacterLinkData(name, base.getName(), LinkDataType.ABS_TRANSFORM, data);
 			data = model.getJointValues();
 			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
 		}

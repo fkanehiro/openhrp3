@@ -292,12 +292,11 @@ class InvKinemaHandler extends OperationHandler {
         }
         
         GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tg);
-        String jointName = link.getName();
-        if (jointName == null) {
+        if (link == null) {
             return false;
         }
         
-        resolver_.setFromJoint(model.getName(), jointName);
+        resolver_.setFromJoint(model, link);
         bbSwitchFrom_.setWhichChild(Switch.CHILD_ALL);
         return true;
      }
@@ -317,12 +316,8 @@ class InvKinemaHandler extends OperationHandler {
         }
      
         GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tg);
-        String jointName = link.getName();
         GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
-        if (bbSwitchTo_ != null && 
-        		resolver_.setToJoint(
-                model.getName(),
-                jointName)) {
+        if (bbSwitchTo_ != null && resolver_.setToJoint(model, link)) {
             bbSwitchTo_.setWhichChild(Switch.CHILD_ALL);
             tgTarget_ = tg;
             return true;

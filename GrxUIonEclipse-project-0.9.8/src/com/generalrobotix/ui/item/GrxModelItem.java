@@ -60,8 +60,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
     // jontId -> link
     private int[] jointToLink_; 
-    // link name -> link
-    private final Map<String, GrxLinkItem> linkMap_ = new HashMap<String, GrxLinkItem>(); 
     // sensor type name -> list of sensors
     private final Map<String, List<GrxSensorItem>> sensorMap_ = new HashMap<String, List<GrxSensorItem>>();
     // list of cameras
@@ -75,6 +73,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     private Switch switchComZ0_;
     private TransformGroup tgComZ0_;
 
+    // bounding box of the whole body
+    private Switch switchBb_;
+    
     /**
      * @brief get BodyInfo
      * @return BodyInfo
@@ -120,7 +121,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         // create root link
         GrxLinkItem link = new GrxLinkItem("root", manager_, this);
         link.jointType("free");
-        links_.add(link);
         bgRoot_.addChild(link.bg_);
         
         setProperty("url","");
@@ -128,6 +128,26 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         _setupMarks();
     }
 
+	/**
+	 * @brief add a link
+	 * 
+	 * This method is called by constructor of GrxLinkItem
+	 * @param link link to be added
+	 */
+	public void addLink(GrxLinkItem link){
+		System.out.println("link is added : "+link.getName());
+		links_.add(link);
+	}
+	
+	/**
+	 * @brief remove a link
+	 * @param link linke to be removed
+	 */
+	public void removeLink(GrxLinkItem link){
+		System.out.println("link is removed : "+link.getName());
+		links_.remove(link);
+	}
+	
 	/**
 	 * @brief initialize right-click menu
 	 */
@@ -331,6 +351,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             root.addChild(switchCom_);
             root.addChild(switchComZ0_);
         }
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+        modifier.init_ = true;
+        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        
+        Color3f color = new Color3f(0.0f, 1.0f, 0.0f);
+        switchBb_ = SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
+        getTransformGroupRoot().addChild(switchBb_);
     }
 
     /**
@@ -355,13 +382,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             bInfo_ = mloader.getBodyInfo(url);
             //
             LinkInfo[] linkInfoList = bInfo_.links();
-            linkMap_.clear();
 
             // delete existing model data
             if (rootLink() != null){
             	rootLink().delete();
             }
-            links_.clear();
             switchCom_ = null;
 
             for (int i=0; i<cameraList_.size(); i++){
@@ -372,12 +397,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             int jointCount = 0;
             for (int i = 0; i < linkInfoList.length; i++) {
             	GrxLinkItem link = new GrxLinkItem(linkInfoList[i].name, manager_, this, linkInfoList[i]); 
-                links_.add(link);
-                linkMap_.put(links_.get(i).getName(), links_.get(i));
-                if (links_.get(i).jointId() >= 0){
+                if (link.jointId() >= 0){
                     jointCount++;
                 }
             }
+            System.out.println("links_.size() = "+links_.size());
 
             // Search root node.
             int rootIndex = -1;
@@ -532,9 +556,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         
         _setupMarks();
         
-        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-        modifier.modifyRobot(this);
-        
         setDblAry(rootLink().getName()+".translation", rootLink().translation());
         setDblAry(rootLink().getName()+".rotation", rootLink().rotation());
         
@@ -667,17 +688,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     /**
-     * @brief set joint value
-     * @param jname name of the joint
-     * @param value of the joint
-     */
-    public void setJointValue(String jname, double value) {
-        GrxLinkItem l = getLink(jname);
-        if (l != null)
-            l.jointValue(value);
-    }
-
-    /**
      * @brief set joint values
      * @param values joint values
      */
@@ -711,12 +721,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     /**
      * @brief update joint value property from current joint value
-     * @param jname name of the joint
+     * @param link link
      */
-    public void updateInitialJointValue(String jname) {
-        GrxLinkItem l = getLink(jname);
-        if (l != null)
-            setDbl(jname+".angle", l.jointValue());
+    public void updateInitialJointValue(GrxLinkItem link) {
+        if (link != null)
+            setDbl(link.getName()+".angle", link.jointValue());
     }
 
     /**
@@ -804,50 +813,18 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return ret;
     }
 
-    /**
-     * @brief get link from its name
-     * @param linkName name of the link
-     * @return link
-     */
-    public GrxLinkItem getLink(String linkName) {
-        return linkMap_.get(linkName);
-    }
-
-    /**
-     * @brief get Transform3D of this link
-     * @param linkName name of the link
-     * @return Transform3D
-     */
-    public Transform3D getTransform(String linkName) {
-        GrxLinkItem l = getLink(linkName);
-        if (l == null)
-            return null;
-        Transform3D ret = new Transform3D();
-        l.tg_.getTransform(ret);
-        return ret;
-    }
-
-    public Transform3D getTransformfromRoot(String linkName) {
-        Transform3D t3d = getTransform(linkName);
-        if (t3d == null)
-            return null;
-        Transform3D t3dr = new Transform3D();
-        getTransformGroupRoot().getTransform(t3dr);
-        t3d.mulTransposeLeft(t3dr, t3d);
-        return t3d;
-    }
-
     public TransformGroup getTransformGroupRoot() {
         return rootLink().tg_;
     }
 
     /**
      * @brief get transform of link in array form
-     * @param linkName name of link
+     * @param link link
      * @return array. lenth = 12 = position(3)+rotation(9)
      */
-    public double[] getTransformArray(String linkName) {
-        Transform3D t3d = getTransform(linkName);
+    public double[] getTransformArray(GrxLinkItem link) {
+        Transform3D t3d = new Transform3D();
+        link.tg_.getTransform(t3d);
         Matrix3d mat = new Matrix3d();
         Vector3d vec = new Vector3d();
         t3d.get(mat, vec);
@@ -861,15 +838,15 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return ret;
     }
 
-    public double[] getInitialTransformArray(String linkName) {
-        double[] ret = getTransformArray(linkName);
+    public double[] getInitialTransformArray(GrxLinkItem link) {
+        double[] ret = getTransformArray(link);
 
-        double[] p = getDblAry(linkName+".translation", null);
+        double[] p = getDblAry(link.getName()+".translation", null);
         if (p != null && p.length == 3) {
             System.arraycopy(p, 0, ret, 0, 3);
         }
 
-        double[] r = getDblAry(linkName+".rotation", null);
+        double[] r = getDblAry(link.getName()+".rotation", null);
         if (r != null && r.length == 4) {
             Matrix3d mat = new Matrix3d();
             mat.set(new AxisAngle4d(r));
@@ -892,13 +869,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         for (int i=0; i<jointToLink_.length; i++)
             names[i] = links_.get(jointToLink_[i]).getName();
         return names;
-    }
-
-    public double getJointValue(String jname) {
-        GrxLinkItem l = getLink(jname);
-        if (l != null)
-            return l.jointValue();
-        return 0.0;
     }
 
     public double[] getJointValues() {
@@ -942,10 +912,50 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
         */
     }
+    
+    /**
+     * @brief set/unset focus on this item
+     * 
+     * When this item is focused, its bounding box is displayed.
+     * @param true to focus, false to unfocus
+     */
+    public void setFocused(boolean b){
+    	if (b) resizeBoundingBox();
+    	switchBb_.setWhichChild(b ? Switch.CHILD_ALL : Switch.CHILD_NONE);
+    }
 
+    /**
+     * delete this item
+     */
     public void delete() {
         super.delete();
         bgRoot_.detach();
+    }
+    
+    /**
+     * @brief resize bounding box which covers the whole body
+     */
+    public void resizeBoundingBox() {
+    	SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+        modifier.init_  = true;
+        modifier.mode_ = SceneGraphModifier.RESIZE_BOUNDS;
+
+        // ノードのRootのTransformGroupを取得
+        TransformGroup tg = getTransformGroupRoot();
+        Transform3D t3dLocal = new Transform3D();
+        tg.getTransform(t3dLocal);
+		t3dLocal.invert();
+		for (int i=0; i<links_.size(); i++) 
+        	modifier._calcUpperLower(links_.get(i).tg_, t3dLocal);
+
+    	Shape3D shapeNode = (Shape3D)switchBb_.getChild(0);
+    	Geometry gm = (Geometry)shapeNode.getGeometry(0);
+
+    	Point3f[] p3fW = modifier._makePoints();
+    	if (gm instanceof QuadArray) {
+    		QuadArray qa = (QuadArray) gm;
+    		qa.setCoordinates(0, p3fW);  // 座標
+		}
     }
 
     /**

@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
+import org.eclipse.swt.widgets.Text;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
@@ -70,6 +71,7 @@ public class GrxLoggerView extends GrxBaseView {
 	private Button btnSFwd_;
 	private Button btnFFwd_;
 	private Button[] btns_ = new Button[6];
+	private Text tFldTime_;
 
 	private String[] btnToolTips = new String[] {
 			"fast-rwd x-2...","slow-rwd x -1/8 (1/2...)",
@@ -86,8 +88,8 @@ public class GrxLoggerView extends GrxBaseView {
 
 	private Label  lblPlayRate_;
 	
-	private static DecimalFormat FORMAT_FAST  =  new DecimalFormat(" Play x ##; Play x-##");
-	private static DecimalFormat FORMAT_SLOW  =  new DecimalFormat(" Play x 1/##; Play x-1/##");
+	private static DecimalFormat FORMAT_FAST  =  new DecimalFormat("Play x ##;Play x-##");
+	private static DecimalFormat FORMAT_SLOW  =  new DecimalFormat("Play x 1/##;Play x-1/##");
 	private static String timeFormat   = "%8.3f"; //"###0.000"
 
 	//private static final Font MONO_PLAIN_12 = new Font("Monospaced", Font.PLAIN, 12);
@@ -102,9 +104,18 @@ public class GrxLoggerView extends GrxBaseView {
 	public GrxLoggerView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
 		super(name, manager, vp, parent);
 
-		GridLayout gl = new GridLayout(3,false);
+		GridLayout gl = new GridLayout(2,false);
 		composite_.setLayout( gl );
+		
+		// playback rate label
+		lblPlayRate_ = new Label( composite_, SWT.NONE);
+		lblPlayRate_.setText("Pause");
+		GridData lblGridData = new GridData();
+        lblGridData.widthHint = 100;
+        lblPlayRate_.setLayoutData(lblGridData);
 
+
+        // playback controller
 		Composite btnComp = new Composite ( composite_, SWT.BORDER);
 		GridLayout buttonLayout = new GridLayout(6,false);
 		btnComp.setLayout( buttonLayout );
@@ -188,7 +199,27 @@ public class GrxLoggerView extends GrxBaseView {
 			btns_[i].setToolTipText( btnToolTips[i] );
 		}
 
+		// text field to display current time
+		tFldTime_ = new Text(composite_, SWT.SINGLE|SWT.BORDER);
+        tFldTime_.setText("NO DATA");
+        GridData textGridData = new GridData();
+        textGridData.widthHint = 100;
+        tFldTime_.setLayoutData(textGridData);
+
+		//時間変更スライダ
+		sliderTime_ = new Scale( composite_, SWT.NONE );
+		sliderTime_.addSelectionListener(new SelectionAdapter(){
+            public void widgetSelected(SelectionEvent e){
+        		if (!isChanging_) {
+        			isChanging_ = true;
+        			current_ = sliderTime_.getSelection();
+        		}
+            }
+		} );
+		GridData gd = new GridData(SWT.HORIZONTAL|SWT.FILL);
+		sliderTime_.setLayoutData(gd);
 		
+		// frame rate
 		lblFrameRate_ = new Label(composite_, SWT.NONE);
 		lblFrameRate_.setText("FPS:"+10);
 		
@@ -202,27 +233,12 @@ public class GrxLoggerView extends GrxBaseView {
             }
 		} );
 		//sliderFrameRate_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		sliderFrameRate_.setSize(100, 27);
+		sliderFrameRate_.setSize(80, 27);
 		sliderFrameRate_.setMaximum(50);
 		sliderFrameRate_.setMinimum(1);
 		sliderFrameRate_.setSelection(10);
 
-		//時間変更スライダ
-		sliderTime_ = new Scale( composite_, SWT.HORIZONTAL );
-		sliderTime_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-        		if (!isChanging_) {
-        			isChanging_ = true;
-        			current_ = sliderTime_.getSelection();
-        		}
-            }
-		} );
-		//sliderTime_.setMaximum(1);
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 3; // 三つ分のスペースを使う
-		sliderTime_.setLayoutData(gd);
 		
-		lblPlayRate_ = new Label( composite_, SWT.NONE);
 		setScrollMinSize();
 	}
 
@@ -233,7 +249,6 @@ public class GrxLoggerView extends GrxBaseView {
 	 */
 	public void play() {
 		if (!isPlaying_) {
-			//current_ = sliderTime_.getValue();
 			current_ = sliderTime_.getSelection();
 			if (current_ == sliderTime_.getMaximum() && playRate_ > 0)
 				current_ = 0;
@@ -243,7 +258,6 @@ public class GrxLoggerView extends GrxBaseView {
 			else 
 				interval_ = 1;
 			isPlaying_ = true;
-//			lblPlayRate_.setForeground(Color.green);
 		}
 
 		if (Math.abs(playRate_)<1.0)
@@ -276,6 +290,7 @@ public class GrxLoggerView extends GrxBaseView {
 	 */
 	public void pause() {
 		isPlaying_ = false;
+		lblPlayRate_.setText("Pause");
 		playRateLogTime_ = 0;
 	}
 	
@@ -310,7 +325,7 @@ public class GrxLoggerView extends GrxBaseView {
 			}
 			if (currentItem_ == null) {
 				sliderTime_.setSelection(0);
-				sliderTime_.setMaximum(0);
+				sliderTime_.setMaximum(1);
 				setEnabled(false);
 				return;
 			}
@@ -326,7 +341,7 @@ public class GrxLoggerView extends GrxBaseView {
 		
 		int sliderMax = sliderTime_.getMaximum();
 		int loggerMax = Math.max(currentItem_.getLogSize()-1, 0);
-		
+
 		if (playRateLogTime_ > 0) {
 			//for (int p=sliderTime_.getValue();p < sliderMax; p++) {
 			for (int p=sliderTime_.getSelection();p < sliderMax; p++) {
@@ -344,14 +359,18 @@ public class GrxLoggerView extends GrxBaseView {
 			return;
 		} 
 		
-		if (sliderMax != loggerMax) {
+		if (sliderMax != loggerMax) { // slider is extended
 			isChanging_ = true;
 			sliderTime_.setMaximum(loggerMax);
-//			if (sliderMax == 0 || sliderTime_.getValue() == sliderMax) 
-	//			sliderTime_.setValue(loggerMax);
-			if (sliderMax == 0 || sliderTime_.getSelection() == sliderMax || sliderTime_.getSelection() == 0 ) 
+			if (getCurrentPos() == 0 || getCurrentPos() == sliderMax) {
 				sliderTime_.setSelection(loggerMax);
+				lblPlayRate_.setText("Live");
+			}else{
+				if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
+			}
 			sliderMax = loggerMax;
+		}else{
+			if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
 		}
 			
 		if (isPlaying_) {
@@ -379,24 +398,24 @@ public class GrxLoggerView extends GrxBaseView {
 		}
 	
 		if (isChanging_) {
-			//currentItem_.setPosition(sliderTime_.getValue());
 			currentItem_.setPosition(sliderTime_.getSelection());
 			isChanging_ = false;
 			setEnabled(sliderMax > 0);
-//		} else if (currentItem_.getPosition() != sliderTime_.getValue()){
 		} else if (currentItem_.getPosition() != sliderTime_.getSelection()){
-			//sliderTime_.setValue(currentItem_.getPosition());
 			sliderTime_.setSelection(currentItem_.getPosition());
 		}
 		_updateTimeField();
 	}
-	
+
+	/**
+	 * update time field
+	 */
 	private void _updateTimeField() {
 		Double t = currentItem_.getTime();
 		if (t != null) {
-//			tFldTime_.setText(String.format(timeFormat, t));
+			tFldTime_.setText(String.format(timeFormat, t));
 		} else if (currentItem_.getLogSize() == 0){
-	//		tFldTime_.setText("NO DATA");
+			tFldTime_.setText("NO DATA");
 			setEnabled(false);
 		}
 	}
@@ -404,12 +423,19 @@ public class GrxLoggerView extends GrxBaseView {
 	public int getMaximum() {
 		return sliderTime_.getMaximum();
 	}
-	
+
+	/**
+	 * get slider position
+	 * @return slider position
+	 */
 	public int getCurrentPos() {
-		//return sliderTime_.getValue();
 		return sliderTime_.getSelection();
 	}
 
+	/**
+	 * get playback rate
+	 * @return playback rate
+	 */
     public double getPlayRate() {
         return playRate_;
     }
@@ -417,11 +443,12 @@ public class GrxLoggerView extends GrxBaseView {
 	public void setEnabled(boolean b) {
         if (isControlDisabled_) return;
 		sliderTime_.setEnabled(b);
-//		tFldTime_.setEnabled(b);
+		tFldTime_.setEnabled(b);
 		lblPlayRate_.setEnabled(b);
 		for (int i=0; i<btns_.length; i++)
 			btns_[i].setEnabled(b);
 	}
+	
     public void disableControl() {
         setEnabled(false);
         isControlDisabled_ = true;

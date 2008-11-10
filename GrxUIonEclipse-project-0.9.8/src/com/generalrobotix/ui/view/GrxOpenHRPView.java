@@ -64,6 +64,7 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
+import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
@@ -632,9 +633,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 					continue;
 
 				// SET INITIAL ROBOT POSITION AND ATTITUDE 				
-				String base = model.rootLink().getName(); 
+				GrxLinkItem base = model.rootLink(); 
 				currentDynamics_.setCharacterLinkData(
-					model.getName(), base, LinkDataType.ABS_TRANSFORM, 
+					model.getName(), base.getName(), LinkDataType.ABS_TRANSFORM, 
 					model.getInitialTransformArray(base));
 				
 			

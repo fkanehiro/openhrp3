@@ -90,7 +90,7 @@ public class GrxItemView extends GrxBaseView {
 					ISelection selection = tv.getSelection();
 					for (Object o : ((IStructuredSelection) selection).toArray() ){
 						if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
-							manager_.currentItem((GrxBaseItem)o);
+							manager_.focusedItem((GrxBaseItem)o);
 						}
 					}
 				}catch(Exception ex){
@@ -273,7 +273,7 @@ public class GrxItemView extends GrxBaseView {
 	/**
 	 * @brief This method is called when new item is selected
 	 */
-	public void currentItemChanged( GrxBaseItem item ){
+	public void focusedItemChanged( GrxBaseItem item ){
     	//System.out.println("GrxItemView.currentItemChanged()");
 		List<GrxBasePlugin> l = new ArrayList<GrxBasePlugin>();
 		l.add(item);

@@ -44,7 +44,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	private String name_;
 	protected GrxPluginManager manager_;
 	private String url_;
-	private boolean selected_ = false;
+	private boolean selected_ = true;
 	private boolean isExclusive_= false;
 
 	private ImageRegistry ireg_;
@@ -397,11 +397,23 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	}
 	
 
-	
+	/**
+	 * @brief set property value associated with a keyword
+	 * @param key keyword
+	 * @param value value of property associated with a keyword
+	 */
 	public Object setProperty(String key, String value){
 		//System.out.println("GrxBasePlugin.setProperty("+key+","+value+")");
 		Object o = super.setProperty(key, value);
 		manager_.itemPropertyChanged();
 		return o;
+	}
+	
+	/**
+	 * @brief set/unset focus on this plugin
+	 * @param b true to focus, false to unfocus
+	 */
+	public void setFocused(boolean b){
+		
 	}
 }

@@ -613,7 +613,7 @@ public class Grx3DView
     }
     
     public void control(List<GrxBaseItem> items) {
-        GrxBaseItem item = manager_.currentItem();
+        GrxBaseItem item = manager_.focusedItem();
         if (item instanceof GrxTransformItem){
         	GrxTransformItem tform = (GrxTransformItem)item;
         	if (tform.tg_ != axes_.getParent()){
@@ -965,7 +965,7 @@ public class Grx3DView
     private class ModelEditKeyAdapter extends KeyAdapter {
         public void keyPressed(KeyEvent arg0) {
         	GrxLinkItem li = null;
-        	GrxBaseItem bitem = manager_.currentItem();
+        	GrxBaseItem bitem = manager_.focusedItem();
         	if (bitem instanceof GrxLinkItem){
         		li = (GrxLinkItem)bitem;
         	}else{
