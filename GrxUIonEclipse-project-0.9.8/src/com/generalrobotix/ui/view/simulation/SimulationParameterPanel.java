@@ -39,6 +39,7 @@ public class SimulationParameterPanel extends Composite{
   private static final SEEnumeration seTemp_ = new SEEnumeration(METHOD_NAMES, 0);
   
   private static final int COMBO_WIDTH = 100;
+  private static final double MIN_TIME_STEP = 0.00001;
   
   ItemPropertyDoubleSpinForSWT spinTotalTime_;
   ItemPropertyDoubleSpinForSWT spinStepTime_;
@@ -65,7 +66,7 @@ public class SimulationParameterPanel extends Composite{
     label.setLayoutData(gridData);
     //label.setBounds(12, 12 + 36, 130, 24);
     
-    spinTotalTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,0.1, Double.POSITIVE_INFINITY, 0.1);
+    spinTotalTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,MIN_TIME_STEP, Double.POSITIVE_INFINITY, 0.1);
     //spinTotalTime_.setBounds(12 + 130 + 6, 12 + 36, 100, 24);
 
     label = new Label(this,SWT.SHADOW_NONE);
@@ -75,7 +76,7 @@ public class SimulationParameterPanel extends Composite{
     label.setLayoutData(gridData);
     //label.setBounds(12, 12 + 36 + 36, 130, 24);
     
-    spinStepTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,0.00001, 0.1, 0.001);
+    spinStepTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,MIN_TIME_STEP, 0.1, 0.001);
     //spinStepTime_.setBounds(12 + 130 + 6, 12 + 36 + 36, 100, 24);
     
     label = new Label(this,SWT.SHADOW_NONE);

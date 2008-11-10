@@ -171,13 +171,11 @@ public class LogManager {
         System.out.println("deleteFrame() " + startFrame + "-" + length);
         synchronized(this){
             for(Enumeration elements = header_.elements();elements.hasMoreElements();){
-                //ヘッダーちゃん
                 LogHeader header = (LogHeader)elements.nextElement();
                 _deleteFrameRobot(header,startFrame,length);
             }
             
-            //コリジョン
-            //ヘッダーちゃん
+            //コリジョンヘッダー
             collisionLog_ = _deleteFrameCollision(collisionLog_,startFrame,length);
         }
         System.out.println("sore,OK");
@@ -236,7 +234,7 @@ public class LogManager {
         newHeader.currentPos_ = newHeader.headerSize_;
         newHeader.position_[0] = newHeader.currentPos_;
         
-        //ファイルちゃん
+        //ファイル
         //ソースファイル
         RandomAccessFile source = collisionIn_;
         source.seek(oldHeader.headerSize_);
@@ -326,7 +324,6 @@ public class LogManager {
             )
         );
         
-        //ファイルちゃん
         //ソースファイル
         RandomAccessFile source = readFile_.get(header.objectName_);
         
