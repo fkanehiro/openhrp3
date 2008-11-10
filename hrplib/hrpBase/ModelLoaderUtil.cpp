@@ -64,7 +64,7 @@ namespace {
 
     void dumpBodyInfo(BodyInfo_ptr bodyInfo)
     {
-        cout << "<<< CharacterInfo >>>\n";
+        cout << "<<< BodyInfo >>>\n";
 
         CORBA::String_var charaName = bodyInfo->name();
 
@@ -273,7 +273,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
 
     Matrix33 Io;
     getMatrix33FromRowMajorArray(Io, linkInfo.inertia);
-    link->I = Rs * Io;
+    link->I = Rs * Io * trans(Rs);
 
     // a stack is used for keeping the same order of children
     std::stack<Link*> children;

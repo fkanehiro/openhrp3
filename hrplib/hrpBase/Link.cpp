@@ -228,6 +228,7 @@ void Link::putInformation(std::ostream& os)
     os << "\n";
 
     os << "b = "  << b << "\n";
+    os << "Rs = " << Rs << "\n";
     os << "c = "  << c << "\n";
     os << "m = "  << m << "\n";
     os << "Ir = " << Ir << "\n";
