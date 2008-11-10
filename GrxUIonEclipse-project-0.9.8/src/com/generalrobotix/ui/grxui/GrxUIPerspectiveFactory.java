@@ -33,8 +33,6 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
         String editorArea = layout.getEditorArea();
 
         // フォルダの作成
-	    IFolderLayout right_top = layout.createFolder("RightTOPViews",
-	    		IPageLayout.RIGHT, (float)0.7f, editorArea);
 	    IFolderLayout right_middle = layout.createFolder("RightMIDDLEViews",
 	    		IPageLayout.BOTTOM, (float)0.2f, "RightTOPViews");
 	    IFolderLayout top_right = layout.createFolder("TopRightViews",
@@ -49,8 +47,7 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
 		top_right.addView( "com.generalrobotix.ui.view.GrxJythonPromptViewPart" );
 		top_right.addView( "com.generalrobotix.ui.view.GrxORBMonitorViewPart" );
 		top_right.addView( "com.generalrobotix.ui.view.GrxProcessManagerViewPart" );
-
-		right_top.addView( "com.generalrobotix.ui.view.GrxLoggerViewPart" );
+		top_right.addView( "com.generalrobotix.ui.view.GrxLoggerViewPart" );
 
 		right_middle.addView( "com.generalrobotix.ui.view.GrxGraphViewPart" );
 		right_middle.addView( "com.generalrobotix.ui.view.GrxPropertyViewPart" );

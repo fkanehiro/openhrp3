@@ -16,7 +16,6 @@
 
 package com.generalrobotix.ui.view.tdview;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.media.j3d.*;
@@ -34,7 +33,6 @@ class ObjectRotationHandler extends OperationHandler {
     private static final float ROTATION_FACTOR = 0.006f;
 
     private TransformGroup tgTarget_;
-    private Switch bbSwitch_;
     private Vector3f norm_;
     private Vector3f axis_;
     private Vector3f dir_ = new Vector3f();
@@ -213,38 +211,19 @@ class ObjectRotationHandler extends OperationHandler {
     //--------------------------------------------------------------------
     // プライベートメソッド
     private void _disableBoundingBox() {
-        if (bbSwitch_ != null) {
-            bbSwitch_.setWhichChild(Switch.CHILD_NONE);
+        if (tgTarget_ != null) {
             tgTarget_ = null;
-            bbSwitch_ = null;
             norm_ = null;
         }
     }
 
     private boolean _enableBoundingBox(TransformGroup tg, BehaviorInfo info) {
-        Hashtable<String, Object> hashTable = SceneGraphModifier.getHashtableFromTG(tg);
         GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
         if (model == null) 
         	return false; 
         
-        info.manager_.currentItem(model);
-        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-        modifier.resizeBounds(model);
-        TransformGroup tgTarget = model.getTransformGroupRoot();
-        hashTable = SceneGraphModifier.getHashtableFromTG(tgTarget);
-        if (hashTable == null) 
-        	return false;
-        
-        Switch sw = (Switch)hashTable.get("fullBoundingBoxSwitch");
-        if (sw != null) {
-            _disableBoundingBox();
-            tgTarget_ = tgTarget;
-            bbSwitch_ = sw;
-            bbSwitch_.setWhichChild(Switch.CHILD_ALL);
-            return true;
-        } else {
-            return false;
-        }
+        info.manager_.focusedItem(model);
+        return true;
     }
 
     private Vector3f _createAxisVector(Vector3f mouse) {

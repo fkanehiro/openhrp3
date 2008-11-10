@@ -74,7 +74,7 @@ public class GrxPluginManager
 	private GrxProjectItem  rcProject_;
 	private GrxProjectItem  currentProject_;
 	private GrxModeInfoItem currentMode_;
-	private GrxBaseItem currentItem_=null;
+	private GrxBaseItem focusedItem_=null;
 
 	// for managing items
 	public  GrxPluginLoader pluginLoader_;
@@ -84,7 +84,7 @@ public class GrxPluginManager
 	private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
 	private boolean isItemSelectionChanged_ = false;
 	private boolean isItemModelChanged_ = false;
-	private boolean bCurrentItemChanged_ = false;
+	private boolean bfocusedItemChanged_ = false;
 	private boolean bItemPropertyChanged_ = false;
     private String homePath_;
 	private Map<Class<? extends GrxBasePlugin>, PluginInfo> pinfoMap_ =
@@ -168,7 +168,7 @@ public class GrxPluginManager
 				if ( isItemSelectionChanged_ ) _updateItemSelection();
 				updateViewList();
 		        if ( isItemModelChanged_ ) _notifyItemListChanged();
-		        if ( bCurrentItemChanged_ ) _notifyCurrentItemChanged();
+		        if ( bfocusedItemChanged_ ) _notifyFocusedItemChanged();
 		        if ( bItemPropertyChanged_ ) _notifyItemPropertyChanged();
 		        if( isPerspectiveVisible() )
 					_control();
@@ -187,12 +187,12 @@ public class GrxPluginManager
 	 * @brief set focused item
 	 * @param item focused item
 	 */
-	public void currentItem(GrxBaseItem item){
-		if (currentItem_ != item){
-			if (currentItem_ != null && currentItem_.isSelected()) currentItem_.setSelected(false);
-			currentItem_ = item;
-			if (!currentItem_.isSelected()) currentItem_.setSelected(true);
-			bCurrentItemChanged_ = true;
+	public void focusedItem(GrxBaseItem item){
+		if (focusedItem_ != item){
+			if (focusedItem_ != null) focusedItem_.setFocused(false);
+			focusedItem_ = item;
+			focusedItem_.setFocused(true);
+			bfocusedItemChanged_ = true;
 		}
 	}
 	
@@ -200,8 +200,8 @@ public class GrxPluginManager
 	 * @brief get current focused item
 	 * @return item
 	 */
-	public GrxBaseItem currentItem() {
-		return currentItem_;
+	public GrxBaseItem focusedItem() {
+		return focusedItem_;
 	}
 	
 	/**
@@ -259,8 +259,8 @@ public class GrxPluginManager
 		for (int i=0; i<selectedViewList_.size(); i++){
 			GrxBaseView v = (GrxBaseView)selectedViewList_.get(i);
 			v.itemListChanged();
-			isItemModelChanged_ = false;
 		}
+		isItemModelChanged_ = false;
 	}
 
 	/**
@@ -268,7 +268,6 @@ public class GrxPluginManager
 	 */
 	private void _notifyItemPropertyChanged() {
 		//System.out.println("GrxPluginManager.propertyChanged()");
-		System.out.println("size of view = "+selectedViewList_.size());
 		for (int i=0; i<selectedViewList_.size(); i++){
 			GrxBaseView v = (GrxBaseView)selectedViewList_.get(i);
 			v.propertyChanged();
@@ -284,13 +283,13 @@ public class GrxPluginManager
 	}
 
 
-	private void _notifyCurrentItemChanged() {
-		//System.out.println("GrxPluginManager._notifyCurrentItemChanged()");
+	private void _notifyFocusedItemChanged() {
+		//System.out.println("GrxPluginManager._notifyFocusedItemChanged()");
 		for (int i=0; i<selectedViewList_.size(); i++){
 			GrxBaseView v = (GrxBaseView)selectedViewList_.get(i);
-			v.currentItemChanged(currentItem_);
+			v.focusedItemChanged(focusedItem_);
 		}
-		bCurrentItemChanged_ = false;
+		bfocusedItemChanged_ = false;
 	}
 	/**
 	 * @brief update list of views

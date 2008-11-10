@@ -63,18 +63,18 @@ public class InvKinemaResolver {
      * setFromJoint
      *
      * 移動原点になる Joint の名前を格納する
-     * @param   objectName
-     * @param   jointName
+     * @param   model
+     * @param   link
      */
-    public boolean setFromJoint(String objectName,String jointName) {
+    public boolean setFromJoint(GrxModelItem model, GrxLinkItem link) {
         if (robot_ == null) {
-            robot_ = (GrxModelItem)manager_.getItem(GrxModelItem.class, objectName);
-        } else if(!robot_.getName().equals(objectName)) {
+            robot_ = model;
+        } else if(robot_ != model) {
             to_ = null;
-            robot_ = (GrxModelItem)manager_.getItem(GrxModelItem.class, objectName);
+            robot_ = model;
         }
         
-        from_ = (GrxLinkItem)robot_.getLink(jointName);
+        from_ = link;
         
         // fromジョイントのグローバル座標での位置姿勢を保持
         TransformGroup tg = from_.tg_;
@@ -91,17 +91,17 @@ public class InvKinemaResolver {
      * setToJoint
      *
      * 実際にマウスの動きに合わせて動く Joint の名前を格納する
-     * @param   objectName
-     * @param   jointName
+     * @param   model
+     * @param   link
      */
-    public boolean setToJoint(String objectName,String jointName) {
+    public boolean setToJoint(GrxModelItem model, GrxLinkItem link) {
         if (robot_ == null) {
-            robot_ = (GrxModelItem)manager_.getItem(GrxModelItem.class, objectName);
-        } else if(!robot_.getName().equals(objectName)) {
+            robot_ = model;
+        } else if(robot_ != model) {
             return false;
         }
         
-        to_ = (GrxLinkItem)robot_.getLink(jointName);
+        to_ = link;
         
         return true;
     }

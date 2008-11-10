@@ -20,6 +20,7 @@ package com.generalrobotix.ui.item;
 import java.util.Hashtable;
 import java.util.Map;
 
+import javax.media.j3d.BadTransformException;
 import javax.media.j3d.Geometry;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.QuadArray;
@@ -437,7 +438,6 @@ public class GrxLinkItem extends GrxTransformItem{
     private void _updateScaleOfBall(){
 		Matrix3d I = new Matrix3d(inertia());
 		double m = mass();
-		double s = 0.01;
 		Matrix3d R = new Matrix3d();
 		Matrix3d II = new Matrix3d();
 		if (diagonalize(I,R,II)){
@@ -445,11 +445,16 @@ public class GrxLinkItem extends GrxTransformItem{
 			tgCom_.getTransform(t3d);
 			double sum = II.m00+II.m11+II.m22;
 			Vector3d sv = new Vector3d(
-					s*m*Math.sqrt(sum/II.m00),
-					s*m*Math.sqrt(sum/II.m11),
-					s*m*Math.sqrt(sum/II.m22));
+					m*Math.sqrt(sum/II.m00),
+					m*Math.sqrt(sum/II.m11),
+					m*Math.sqrt(sum/II.m22));
 			t3d.setScale(sv);
-			tgCom_.setTransform(t3d);
+			try{
+				tgCom_.setTransform(t3d);
+			}catch(BadTransformException ex){
+				System.out.println("BadTransformException in _updateScaleOfBall");
+				System.out.println("I = ("+II.m00+", "+II.m11+", "+II.m22+"), mass = "+m);
+			}
 		}else{
 			System.out.println("diagonalization failed");
 		}
@@ -751,10 +756,11 @@ public class GrxLinkItem extends GrxTransformItem{
 		_initMenu();
 		
 		model_ = model;
+		model_.addLink(this);
 
 		// CoM display
-		// 1.0 is tentative. It will be resized later
-        switchCom_ = GrxShapeUtil.createBall(1.0, new Color3f(1.0f, 1.0f, 0.0f));
+		// 0.01 is default scale of ellipsoid
+        switchCom_ = GrxShapeUtil.createBall(0.01, new Color3f(1.0f, 1.0f, 0.0f));
         tgCom_ = (TransformGroup)switchCom_.getChild(0);
         tg_.addChild(switchCom_);
 
@@ -946,10 +952,13 @@ public class GrxLinkItem extends GrxTransformItem{
     }
     
     /**
-     * @brief see doc for parent class
+     * @brief set/unset fucus on this item
+     * 
+     * When this item is focused, some geometries are displayed
+     * @param b true to fucus, false to unfocus
      */
-    public void setSelected(boolean b){
-    	//if (b!=isSelected()) System.out.println("GrxLinkItem.setSelected("+getName()+" of "+model_.getName()+", flag = "+b+")");
+    public void setFocused(boolean b){
+    	//if (b!=isSelected()) System.out.println("GrxLinkItem.setFocused("+getName()+" of "+model_.getName()+", flag = "+b+")");
     	super.setSelected(b);
     	setVisibleCoM(b);
     	if (b){
@@ -1068,5 +1077,13 @@ public class GrxLinkItem extends GrxTransformItem{
      */
 	public GrxModelItem model() {
 		return model_;
+	}
+	
+	/**
+	 * delete this link and children
+	 */
+	public void delete(){
+		super.delete();
+		model_.removeLink(this);
 	}
 }

@@ -236,7 +236,7 @@ class JointRotationHandler extends OperationHandler {
         if (tg != tgTarget_) {
             GrxLinkItem l = SceneGraphModifier.getLinkFromTG(tg);
             if (l == null) return;
-            info.manager_.currentItem(l);
+            info.manager_.focusedItem(l);
     		tgTarget_ = l.tg_;
         }
     }
@@ -247,7 +247,7 @@ class JointRotationHandler extends OperationHandler {
             GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tgTarget_);
             link.jointValue(link.jointValue()+angle_);
             link.setJointValuesWithinLimit();
-            model.updateInitialJointValue(link.getName());
+            model.updateInitialJointValue(link);
             model.calcForwardKinematics();
         } catch (Exception e) { 
         	e.printStackTrace();

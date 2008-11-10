@@ -176,7 +176,7 @@ public class GrxBaseView extends GrxBasePlugin {
 	public void itemListChanged() {
 	}
 
-	public void currentItemChanged(GrxBaseItem item) {
+	public void focusedItemChanged(GrxBaseItem item) {
 	}
 
 	/**

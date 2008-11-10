@@ -117,11 +117,11 @@ public class GrxPropertyView extends GrxBaseView {
     }
 
     /**
-     * @brief This method is called by PluginManager when "current item" is changed
-     * @param item current item
+     * @brief This method is called by PluginManager when "focused item" is changed
+     * @param item focused item
      */
-    public void currentItemChanged(GrxBaseItem item) {
-    	//System.out.println("GrxPropertyView.currentItemChanged()");
+    public void focusedItemChanged(GrxBaseItem item) {
+    	//System.out.println("GrxPropertyView.focusedItemChanged()");
         if (item != currentPlugin_) {
             table_.setVisible(false);
             currentPlugin_ = item;
@@ -131,7 +131,7 @@ public class GrxPropertyView extends GrxBaseView {
     }
 
     public void propertyChanged(){
-    	System.out.println("GrxPropertyView.propertyChanged()");
+    	//System.out.println("GrxPropertyView.propertyChanged()");
     	_refresh();
 	}
 
