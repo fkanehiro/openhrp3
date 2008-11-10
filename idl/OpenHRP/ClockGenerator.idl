@@ -1,7 +1,7 @@
 #ifndef OPENHRP_CLOCK_GENERATOR_IDL_INCLUDED
 #define OPENHRP_CLOCK_GENERATOR_IDL_INCLUDED
 
-#include "OpenRTM.idl"
+#include <OpenRTM.idl>
 
 module OpenHRP {
 

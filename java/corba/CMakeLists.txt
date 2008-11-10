@@ -13,12 +13,12 @@
 set(package jp.go.aist.hrp.simulator)
 string(REPLACE "." "/" package_path ${package})
 
-include(${OPENHRP_IDL_DIR}/IDL_FILE_BASENAMES.cmake)
+include(${OPENHRP_IDL_DIR}/OpenHRP/IDL_FILE_BASENAMES.cmake)
 
 set(idl_files)
 foreach(name ${IDL_FILE_BASENAMES})
   set(idl_file ${CMAKE_CURRENT_BINARY_DIR}/${name}.idl)
-  set(src_idl_file ${OPENHRP_IDL_DIR}/${name}.idl)
+  set(src_idl_file ${OPENHRP_IDL_DIR}/OpenHRP/${name}.idl)
   if(UNIX) 
     add_custom_command(
       OUTPUT ${idl_file}
@@ -41,7 +41,7 @@ endforeach()
 
 
 # TODO: '-pkgPrefix' option should be used instead of '-pkgTranslate'
-set(idlj_flags -fclient -fserver -pkgTranslate OpenHRP ${package} -td ${CMAKE_CURRENT_BINARY_DIR}/src -I${OPENRTM_IDL_DIR})
+set(idlj_flags -fclient -fserver -pkgTranslate OpenHRP ${package} -td ${CMAKE_CURRENT_BINARY_DIR}/src -I${OPENHRP_IDL_DIR}/OpenRTM)
 
 foreach(idl_file ${idl_files})
   get_filename_component(idl_file_basename ${idl_file} NAME_WE)
