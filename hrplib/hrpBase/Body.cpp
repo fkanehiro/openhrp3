@@ -219,7 +219,7 @@ Link* Body::link(const std::string& name) const
 void Body::initializeConfiguration()
 {
     rootLink_->p = defaultRootPosition;
-    rootLink_->R = defaultRootAttitude;
+    rootLink_->setAttitude(defaultRootAttitude);
 
     rootLink_->v = 0.0;
     rootLink_->dv = 0.0;
