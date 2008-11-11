@@ -534,7 +534,7 @@ module OpenHRP {
       @endif
     */
     BodyInfo getBodyInfo(in string url) raises (ModelLoaderException);
-
+    BodyInfo getBodyInfoEx(in string url, in boolean readImage) raises (ModelLoaderException);
 
     /**
        @if jp
@@ -543,7 +543,7 @@ module OpenHRP {
        @endif
     */
     BodyInfo loadBodyInfo(in string url) raises (ModelLoaderException);
-
+    BodyInfo loadBodyInfoEx(in string url, in boolean readImage) raises (ModelLoaderException);
 
     /**
        @if jp

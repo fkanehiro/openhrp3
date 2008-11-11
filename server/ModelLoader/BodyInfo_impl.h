@@ -45,6 +45,9 @@ class BodyInfo_impl :
     void setLastUpdateTime(time_t time) { lastUpdate_ = time;};
     time_t getLastUpdateTime() { return lastUpdate_; }
 
+    bool getParam(std::string param);
+    void setParam(std::string param, bool value);
+
 protected:
 
     virtual const std::string& topUrl();
@@ -52,6 +55,7 @@ protected:
 private:
         
     time_t lastUpdate_;
+    bool readImage_;
 
     std::string name_;
     std::string url_;

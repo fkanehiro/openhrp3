@@ -192,7 +192,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     public boolean load(File f) {
-        long load_stime = System.currentTimeMillis();
+        //long load_stime = System.currentTimeMillis();
         if (bgRoot_ != null)
             manager_.setSelectedItem(this, false);
         bgRoot_ = new BranchGroup();
@@ -204,6 +204,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         try {
             ModelLoader mloader = ModelLoaderHelper.narrow(
                 GrxCorbaUtil.getReference("ModelLoader", "localhost", 2809));
+            //bInfo_ = mloader.getBodyInfoEx(url, true);
             bInfo_ = mloader.getBodyInfo(url);
             //
             LinkInfo[] linkInfoList = bInfo_.links();
@@ -255,10 +256,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             while (it.hasNext()) {
                 Collections.sort(it.next());
             }
-            long stime = System.currentTimeMillis();
+            //long stime = System.currentTimeMillis();
             _loadVrmlScene(linkInfoList);
-            long etime = System.currentTimeMillis();
-            System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms");
+            //long etime = System.currentTimeMillis();
+            //System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms");
             setURL(url);
             manager_.setSelectedItem(this, true);
             setProperty("isRobot", Boolean.toString(isRobot_));
@@ -268,8 +269,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             ex.printStackTrace();
             return false;
         }
-        long load_etime = System.currentTimeMillis();
-        System.out.println("load time = " + (load_etime-load_stime) + "ms");
+        //long load_etime = System.currentTimeMillis();
+        //System.out.println("load time = " + (load_etime-load_stime) + "ms");
         return true;
     }
 
@@ -302,7 +303,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         ShapeInfo[] shapes = bInfo_.shapes();
         AppearanceInfo[] appearances = bInfo_.appearances();
         MaterialInfo[] materials = bInfo_.materials();
+        //long stime = System.currentTimeMillis();
         TextureInfo[] textures = bInfo_.textures();
+        //long etime = System.currentTimeMillis();
+        //System.out.println("textureInfo time = " + (etime-stime) + "ms");
+        
 
         int numLinks = links.length;
         for(int linkIndex = 0; linkIndex < numLinks; linkIndex++) {
@@ -683,13 +688,27 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     private void setTexture( Appearance appearance, TextureInfo textureInfo ){
         TextureInfoLocal texInfo = new TextureInfoLocal(textureInfo);
-        if(texInfo.url.length()==0){
-            if((texInfo.width != 0) && (texInfo.height != 0)){
-                ImageComponent2D icomp2d = texInfo.readImage;
-                Texture2D texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
-                texture2d.setImage(0, icomp2d);
-                appearance.setTexture(texture2d);
+        if((texInfo.width != 0) && (texInfo.height != 0)){
+            ImageComponent2D icomp2d = texInfo.readImage;
+            Texture2D texture2d=null;
+            switch (texInfo.numComponents) {
+                case 1:
+                    texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.LUMINANCE, texInfo.width, texInfo.height);
+                    break;
+                case 2:
+                    texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.LUMINANCE_ALPHA, texInfo.width, texInfo.height);
+                    appearance.setTransparencyAttributes( new TransparencyAttributes(TransparencyAttributes.BLENDED, 1.0f));
+                    break;
+                case 3:
+                    texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGB, texInfo.width, texInfo.height);
+                    break;
+                case 4:
+                    texture2d = new Texture2D(Texture.BASE_LEVEL, Texture.RGBA, texInfo.width, texInfo.height);
+                    appearance.setTransparencyAttributes( new TransparencyAttributes(TransparencyAttributes.BLENDED, 1.0f));
+                    break;
             }
+            texture2d.setImage(0, icomp2d);
+            appearance.setTexture(texture2d);
         }else{
             //System.out.println("url: "+texInfo.url);
             TextureLoader tloader = new TextureLoader(texInfo.url, manager_.getFrame());  
@@ -1239,28 +1258,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return ret;
     }
 
-
-
-    // ##### [Changed] NewModelLoader.IDL
-    //==================================================================================================
-    /*!
-      @brief		"TextureInfoLocal" class
-      @author		ErgoVision
-      @version	0.00
-      @date		2008-04-06 M.YASUKAWA <BR>
-      @note		2008-04-06 M.YASUKAWA modify <BR>
-      @note		"TextureInfoLocal" class
-    */
-    //==================================================================================================
     public class TextureInfoLocal
     {
-//		public	ImageData		image;
         public	short			numComponents;
         public	short			width;
         public	short			height;
-        public	boolean			repeatS;
-        public	boolean			repeatT;
-        private  BufferedImage	bimageRead;
+        public	boolean		repeatS;
+        public	boolean		repeatT;
         public  ImageComponent2D readImage;
         String url;
 
@@ -1268,193 +1272,109 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             width = texinfo.width;
             height = texinfo.height;
             numComponents = texinfo.numComponents;
+            //System.out.println("numComponents= " + numComponents);
             repeatS = texinfo.repeatS;
             repeatT = texinfo.repeatT;
             url = texinfo.url;
 
-
             if((width == 0) || (height == 0)){
-//System.out.println( "   TextureInfoLocal width = 0  & height = 0  => No Generate " );
                 numComponents = 3;
                 repeatS = false;
                 repeatT = false;
-                bimageRead = null;
                 width = 0;
                 height = 0;
                 return;
             }
             
-            // set TextureInfo image
-//System.out.println( "   TextureInfo.image  " );
-            // create color infomation for reading color buffer
-            // type int, (Alpha:8bit,) R:8bit, G:8bit, B:8bit
-            BufferedImage bimageRead = null;
-            readImage = null;
+            //width and height must be power of 2
+            short w=1;
+            do{
+            	w *=2;	
+            }while(w<=width);
+            short width_new = (short)(w);
+            if(width_new-width > width-width_new/2)
+            	width_new /=2;
+            w=1;
+            do{
+            	w *=2;	
+            }while(w<=height);
+            short height_new = (short)(w);
+            if(height_new-height > height-height_new/2)
+            	height_new /=2;
             
-            bimageRead = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            
-            //int[] imagefield =((DataBufferInt)bimageRead.getRaster().getDataBuffer()).getData();
-            //System.out.println( "   imagefield =((DataBufferInt)bimageRead.getRaster().getDataBuffer()).getData()" );			
-            byte mByteCode;
-            byte rByteCode;
-            byte gByteCode;
-            byte bByteCode;
-            byte aByteCode;
-            int mCode;
-            int rCode;
-            int gCode;
-            int bCode;
-            int aCode;
-            int rgbCode;
-            int[] pixels;
-            pixels = ( (DataBufferInt)bimageRead.getRaster().getDataBuffer() ).getData();
-            int img_i=0;
-            int img_j=0;
-            int imgsize = texinfo.image.length;
-            int imgrgbsize = imgsize/3;
-            //System.out.println( "   texinfo.image.length   = " + imgsize + " imgrgbsize = " + imgrgbsize );
-            
-            for(int img_a=0; img_a<imgrgbsize; img_a++){
-                
-                switch (numComponents) {
-                    
-                    // 1byte:Kido MonoColor
-                case 1:
-                    
-                    mByteCode = (byte)(texinfo.image[img_a]);
-                    mCode = mByteCode & 0xFF;
-                    rCode = mCode;
-                    gCode = mCode;
-                    bCode = mCode;
-                    
-                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;	
-                    
-                    //            rgbCode =(  ( ((mByteCode) & 0xE0) << 16 ) | ( ((mByteCode) & 0xE0) << 13 ) | ( ((mByteCode) & 0x00C0) << 10 ) | 
-                    //( ((mByteCode) & 0x1C) << 11 ) | ( ((mByteCode) & 0x1C) <<  8 ) | ( ((mByteCode) & 0x0018) <<  5 ) | 
-                    //( ((mByteCode) & 0x03) <<  6 ) | ( ((mByteCode) & 0x03) <<  4 ) | 
-                    //( ((mByteCode) & 0x03) <<  2 ) | ( ((mByteCode) & 0x03)       ) );
-                    
-//System.out.println( "   bimageRead numComponents = 1 rgbCode: " + rgbCode );
-                    
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    
-                    break;
-                    
-                    // 1byte:Kido 2byte:Transparency
-                case 2:
-                    mByteCode = (byte)(texinfo.image[img_a]);
-                    mCode = mByteCode & 0xFF;
-                    aByteCode = (byte)(texinfo.image[img_a * 2 + 1]);
-                    aCode = aByteCode & 0xFF;
-                    rCode = mCode;
-                    gCode = mCode;
-                    bCode = mCode;
-                    
-                    //            rgbCode =(  ( ((mByteCode) & 0xE0) << 16 ) | ( ((mByteCode) & 0xE0) << 13 ) | ( ((mByteCode) & 0x00C0) << 10 ) | 
-                    //( ((mByteCode) & 0x1C) << 11 ) | ( ((mByteCode) & 0x1C) <<  8 ) | ( ((mByteCode) & 0x0018) <<  5 ) | 
-                    //( ((mByteCode) & 0x03) <<  6 ) | ( ((mByteCode) & 0x03) <<  4 ) | 
-                    //( ((mByteCode) & 0x03) <<  2 ) | ( ((mByteCode) & 0x03)       ) );
-                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;	
-                    
-                    rgbCode = aCode * 0x1000000 + rgbCode;
-                    
-//System.out.println( "   bimageRead numComponents = 2 rgbCode: " + rgbCode );
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    break;
-                    
-                    // RGB
-                case 3:
-                    rByteCode = (byte)(texinfo.image[img_a * 3]);
-                    rCode = rByteCode & 0xFF;
-                    gByteCode = (byte)(texinfo.image[img_a * 3 + 1]);
-                    gCode = gByteCode & 0xFF;
-                    bByteCode = (byte)(texinfo.image[img_a * 3 + 2]);
-                    bCode = bByteCode & 0xFF;
-//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ")");
-                    
-                    rgbCode = rCode * 0x10000 + gCode * 0x100 + bCode;
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
-                    //img_i++;
-                    //if(img_i >= width){
-                    //    img_i = 0;
-                    //    img_j++;
-                    //}			
-                    
-                    break;
-                    
-                    // RGB+Transparency
-                case 4:
-                    rByteCode = (byte)(texinfo.image[img_a * 4]);
-                    rCode = rByteCode & 0xFF;
-                    gByteCode = (byte)(texinfo.image[img_a * 4 + 1]);
-                    gCode = gByteCode & 0xFF;
-                    bByteCode = (byte)(texinfo.image[img_a * 4 + 2]);
-                    bCode = bByteCode & 0xFF;
-                    aByteCode = (byte)(texinfo.image[img_a * 4 + 3]);
-                    aCode = aByteCode & 0xFF;
-//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ", Alfa: " + aCode + ")");
-                    
-                    rgbCode =  aCode * 0x1000000 + rCode * 0x10000 + gCode * 0x100 + bCode;
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
-                    //img_i++;
-                    //if(img_i >= width){
-                    //    img_i = 0;
-                    //    img_j++;
-                    //}	
-                    
-                    break;
-                    
-                default:
-                    rByteCode = (byte)(texinfo.image[img_a * 3]);
-                    rCode = rByteCode & 0xFF;
-                    gByteCode = (byte)(texinfo.image[img_a * 3 + 1]);
-                    gCode = gByteCode & 0xFF;
-                    bByteCode = (byte)(texinfo.image[img_a * 3 + 2]);
-                    bCode = bByteCode & 0xFF;
-//System.out.println( "   bimageRead R: " + rCode  + ", G: " + gCode  + ", B: " + bCode + ")");
-                    
-                    rgbCode = rCode * 65536 + gCode * 256 + bCode;
-                    
-                    //bimageRead.setRGB(img_i, img_j, rgbCode);
-                    pixels[ (width * img_j) + img_i ] = rgbCode;
-                    //System.out.println( "   bimageRead.setRGB( " + img_i  + "," + img_j  + "," + rgbCode + ")");
-                    //img_i++;
-                    //if(img_i >= width){
-                    //    img_i = 0;
-                    //    img_j++;
-                    //}		
-                    break;		
+     
+            BufferedImage bimageRead=null;
+            switch(numComponents){
+            case 1:    
+                bimageRead = new BufferedImage(width_new, height_new, BufferedImage.TYPE_BYTE_GRAY);
+                byte[] bytepixels = ( ( DataBufferByte)bimageRead.getRaster().getDataBuffer() ).getData();
+                for(int i=0; i<height_new; i++){
+                	for(int j=0; j<width_new; j++){
+                		int k = (int)(i*height/height_new)*width+(int)(j*width/width_new);
+                		bytepixels[i*width_new+j] = texinfo.image[k];
+                	}
                 }
-                
-                img_i++;
-                if(img_i >= width){
-                    img_i = 0;
-                    img_j++;
-                }			
+                break;
+            case 2:
+                bimageRead = new BufferedImage(width_new, height_new, BufferedImage.TYPE_USHORT_GRAY);
+                short[] shortpixels = ( ( DataBufferUShort)bimageRead.getRaster().getDataBuffer() ).getData();
+                for(int i=0; i<height_new; i++){
+                	for(int j=0; j<width_new; j++){
+                		int k = (int)(i*height/height_new)*width*2+(int)(j*width/width_new)*2;
+                		short l = texinfo.image[k];
+                		short a = texinfo.image[k+1];
+                		shortpixels[i*width_new+j] = (short)((l&0xff) << 8 | (a&0xff)) ;
+                	}
+                }
+                break;
+            case 3:
+                bimageRead = new BufferedImage(width_new, height_new, BufferedImage.TYPE_INT_RGB);
+                int[] intpixels = ( (DataBufferInt)bimageRead.getRaster().getDataBuffer() ).getData();
+                for(int i=0; i<height_new; i++){
+                	for(int j=0; j<width_new; j++){
+                		int k = (int)(i*height/height_new)*width*3+(int)(j*width/width_new)*3;
+                		short r = texinfo.image[k];
+                		short g = texinfo.image[k+1];
+                		short b = texinfo.image[k+2];
+                		intpixels[i*width_new+j] = (r&0xff) << 16 | (g&0xff) << 8 | (b&0xff);
+                	}
+                }
+                break;
+            case 4:
+                bimageRead = new BufferedImage(width_new, height_new, BufferedImage.TYPE_INT_ARGB);
+                intpixels = ( (DataBufferInt)bimageRead.getRaster().getDataBuffer() ).getData();
+                for(int i=0; i<height_new; i++){
+                	for(int j=0; j<width_new; j++){
+                		int k = (int)(i*height/height_new)*width*4+(int)(j*width/width_new)*4;
+                		short r = texinfo.image[k];
+                		short g = texinfo.image[k+1];
+                		short b = texinfo.image[k+2];
+                		short a = texinfo.image[k+3];
+                		intpixels[i*width_new+j] = (a&0xff) << 24 | (r&0xff) << 16 | (g&0xff) << 8 | (b&0xff);
+                	}
+                }
+                break;
             }
-            
-            
-            readImage = new ImageComponent2D(ImageComponent.FORMAT_RGB, bimageRead);
-//System.out.println( "   new ImageComponent2D(ImageComponent.FORMAT_RGB, bimageRead)"  );
-            
-            
-            
+            height = height_new;
+            width = width_new;    
+ 
+        switch(numComponents){
+            case 1:
+                readImage = new ImageComponent2D(ImageComponent.FORMAT_CHANNEL8, bimageRead); 
+                break;
+            case 2:
+                readImage = new ImageComponent2D(ImageComponent.FORMAT_LUM8_ALPHA8, bimageRead); 
+                break;
+            case 3:
+                readImage = new ImageComponent2D(ImageComponent.FORMAT_RGB, bimageRead); 
+                break;
+            case 4:
+                readImage = new ImageComponent2D(ImageComponent.FORMAT_RGBA, bimageRead); 
+                break;
+        }
+           
         }
     }
-    // ##### [Changed]
-
-
-
 
     //==================================================================================================
     /*!

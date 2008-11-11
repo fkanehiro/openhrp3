@@ -548,7 +548,7 @@ int ShapeSetInfo_impl::createMaterialInfo(VrmlMaterialPtr& materialNode)
 /*!
   @if jp
   textureノードが存在すれば，TextureInfoを生成，textures_ に追加する。
-  なお，ImageTextureノードの場合は，画像のurlと、imageの変換に成功すればimageデータと両方を持つ。
+  なお，ImageTextureノードの場合は，画像のurlと、readImageフラグが真ならimageデータと両方を持つ。
 　いまのところ、movieTextureノードには対応しいない。
 
   @return long TextureInfo(textures_)のインデックス，textureノードが存在しない場合は -1
@@ -568,20 +568,24 @@ int ShapeSetInfo_impl::createTextureInfo(VrmlTexturePtr& textureNode, const SFSt
             VrmlImageTexturePtr imageTextureNode = dynamic_pointer_cast<VrmlImageTexture>(textureNode);
             if(imageTextureNode){
                 string url = setTexturefileUrl(getModelFileDirPath(*currentUrl), imageTextureNode->url);
-                if(!url.empty()){
+                texture->url = CORBA::string_dup(url.c_str());
+                texture->repeatS = imageTextureNode->repeatS;
+                texture->repeatT = imageTextureNode->repeatT;
+                if(readImage && !url.empty()){
                     ImageConverter  converter;
-                    SFImage* image = converter.convert(url);
-                    texture->url = CORBA::string_dup(url.c_str());
-                    texture->repeatS = imageTextureNode->repeatS;
-                    texture->repeatT = imageTextureNode->repeatT;
+                    SFImage* image = converter.convert(url);          
                     texture->height = image->height;
                     texture->width = image->width;
                     texture->numComponents = image->numComponents;
-		            size_t pixelsLength = image->pixels.size();
+                    unsigned long pixelsLength = image->pixels.size();
                     texture->image.length( pixelsLength );
-                    for(size_t j = 0 ; j < pixelsLength ; j++ ){
+                    for(unsigned long j = 0 ; j < pixelsLength ; j++ ){
                         texture->image[j] = image->pixels[j];
                     }
+                }else{
+                    texture->height = 0;
+                    texture->width = 0;
+                    texture->numComponents = 0;
                 }
             }
         }else if(pixelTextureNode){

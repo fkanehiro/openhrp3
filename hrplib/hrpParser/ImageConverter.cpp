@@ -65,12 +65,12 @@ SFImage* ImageConverter::convert( string url )
     }
     else if( !ext.compare( ".jpg" ) )
     {
-        if(!loadJPEG( url ))
+        if(loadJPEG( url ))
             return image;
     }
     else
     {
-       cout << "ImageTexture read error: unsupported format." << '\n';
+      // cout << "ImageTexture read error: unsupported format." << '\n';
     }
 
     image->height = 0;
@@ -98,9 +98,7 @@ ImageConverter::loadPNG(
     string &    filePath
 )
 {
-    return(false);
-
-    initializeSFImage( );
+   initializeSFImage( );
 
     FILE *  fp;
 
@@ -143,86 +141,75 @@ ImageConverter::loadPNG(
         png_init_io( pPng, fp );
         png_set_sig_bytes( pPng, (int)number );
 
-
-        // 高水準読み込みI/F
-        png_read_png( pPng, pInfo, PNG_TRANSFORM_IDENTITY, NULL );
-
-
-        // 画像の幅・高さ・チャンネル数取得
-        int         numComponents;
+        png_read_info(pPng, pInfo);
         png_uint_32 width   = png_get_image_width( pPng, pInfo );
         png_uint_32 height  = png_get_image_height( pPng, pInfo );
-        int    depth   = png_get_bit_depth( pPng, pInfo );
-    /*
-        png_uint_32 width, height;
-        int depth, color_type;
-        int interlace_type;
-        int compression_type;
-        int filter_method;
-        png_get_IHDR(pPng, pInfo, &width, &height,
-       &depth, &color_type, &interlace_type,
-       &compression_type, &filter_method);
-*/
-        //if( 8 != depth )
-        //    throw "Unsupported color depth.";
-
-        cout << "COLOR_TYPE= " << (int)(png_get_color_type( pPng, pInfo )) << endl;
-        switch( png_get_color_type( pPng, pInfo ) )
+        png_byte color_type = png_get_color_type( pPng, pInfo );
+        png_byte depth = png_get_bit_depth( pPng, pInfo );
+        
+        if (png_get_valid( pPng, pInfo, PNG_INFO_tRNS)) 
+            png_set_tRNS_to_alpha(pPng);
+        if (depth < 8)
+            png_set_packing(pPng);
+        
+        int numComponents;
+        switch( color_type )
         {
         case PNG_COLOR_TYPE_GRAY:
             numComponents = 1;
+            if(depth < 8) 
+                png_set_gray_1_2_4_to_8(pPng);
             break;
 
         case PNG_COLOR_TYPE_GRAY_ALPHA:
             numComponents = 2;
+            if (depth == 16)
+                png_set_strip_16(pPng);
             break;
 
         case PNG_COLOR_TYPE_RGB:
             numComponents = 3;
+            if (depth == 16)
+                png_set_strip_16(pPng);
             break;
             
         case PNG_COLOR_TYPE_RGB_ALPHA:
             numComponents = 4;
+            if (depth == 16)
+                png_set_strip_16(pPng);
             break;
 
         case PNG_COLOR_TYPE_PALETTE:
-            //????????
-            numComponents = 1;
+            png_set_palette_to_rgb(pPng);
+            numComponents = 3;
             break;
+
         default:
             numComponents = 1;
           //  throw "Unsupported color type.";
 
         }
 
+        png_read_update_info( pPng, pInfo );        
 
-        // 画像データへのアクセス窓口
-        png_bytep   *row_pointers;   // 各行のピクセル・データのポインタ配列
-        row_pointers = png_get_rows( pPng, pInfo );
+        unsigned char** row_pointers;
+        row_pointers = (png_bytepp)malloc(height * sizeof(png_bytep)); 
+        png_uint_32 rowbytes = png_get_rowbytes(pPng, pInfo);
+        image->pixels.resize(rowbytes*height);
+        for(int i=0; i<height; i++)
+            row_pointers[i] = &(image->pixels[i*rowbytes]);
 
+	    png_read_image(pPng, row_pointers);  
 
-        // SFImageに展開
         image->width = width;
         image->height = height;
         image->numComponents = numComponents;
+                  
+	    free(row_pointers);
+	    png_destroy_read_struct( &pPng, &pInfo, NULL );
 
-        unsigned char   byteData;
+	    fclose(fp);
 
-        for( png_uint_32 y=0 ; y<height ; y++ )
-        {
-            for( png_uint_32 x=0 ; x<width*numComponents ; x++ )
-            {
-                byteData = (unsigned char)row_pointers[y][x];
-                image->pixels.push_back( byteData );
-            }
-        }
-
-
-        // メモリ解放
-        //png_destroy_read_struct( &pPng, &pInfo, &pEndInfo );
-        png_destroy_read_struct( &pPng, &pInfo, NULL );
-
-        fclose( fp );
     }
 
     catch( char * str )
@@ -266,10 +253,6 @@ ImageConverter::loadJPEG(
         struct jpeg_decompress_struct   cinfo;
         struct jpeg_error_mgr           jerr;
 
-        JSAMPARRAY  buffer;         // output row buffer
-        int         row_stride;     // physical row width in output buffer
-
-
         // Step 1: allocate and initialize JPEG decompression object
         cinfo.err = jpeg_std_error( &jerr );
         jpeg_create_decompress( &cinfo );
@@ -293,32 +276,21 @@ ImageConverter::loadJPEG(
         image->width         = cinfo.output_width;
         image->height        = cinfo.output_height;
         image->numComponents = cinfo.out_color_components;
-        if( 1 == cinfo.output_components )  throw "Index color is not supported currentry.";
+       
+        JSAMPARRAY row_pointers;
+ 	    row_pointers = (JSAMPARRAY)malloc( sizeof( JSAMPROW ) * image->height );
+        image->pixels.resize(cinfo.output_components * image->width * image->height);
+	    for (int i = 0; i < image->height; i++ ) 
+		    row_pointers[i] = &(image->pixels[i * cinfo.output_components * image->width]);
 
+		while( cinfo.output_scanline < cinfo.output_height ) {
+		    jpeg_read_scanlines( &cinfo,
+			    row_pointers + cinfo.output_scanline,
+			    cinfo.output_height - cinfo.output_scanline
+		    );
+	    }
 
-        // JSAMPLEs per row in output buffer
-        row_stride = cinfo.output_width * cinfo.output_components;
-
-        // Make a one-row-high sample array that will go away when done with image
-        buffer = (*cinfo.mem->alloc_sarray)( (j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1 );
-
-        // Step 6: while (scan lines remain to be read)
-        //           jpeg_read_scanlines(...);
-        unsigned int    x = 0, y = 0;
-        unsigned int    bufferLength = cinfo.output_width * cinfo.out_color_components;
-        unsigned char   byteData;
-
-        while( cinfo.output_scanline < cinfo.output_height )
-        {
-            (void)jpeg_read_scanlines( &cinfo, buffer, 1 );
-
-            for( x=0 ; x<bufferLength ; x++ )
-            {
-                byteData = (unsigned char)buffer[0][x];
-                image->pixels.push_back( byteData );
-            }
-            y++;
-        }
+        free(row_pointers);
 
         // Step 7: Finish decompression
         (void)jpeg_finish_decompress( &cinfo );

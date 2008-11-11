@@ -51,8 +51,15 @@ BodyInfo_ptr ModelLoader_impl::loadBodyInfo(const char* url)
     return bodyInfo->_this();
 }
 
+BodyInfo_ptr ModelLoader_impl::loadBodyInfoEx(const char* url, const bool readImage)
+    throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
+{
+    BodyInfo_impl* bodyInfo = loadBodyInfoFromModelFile(url, readImage);
+    return bodyInfo->_this();
+}
 
-BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url0)
+
+BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readImage)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
     string url(url0);
@@ -74,30 +81,41 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url0)
     //if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime()){
     if(false){
         bodyInfo = p->second;
-        cout << string("cache found for ") + url << endl;
-    } else {
-        bodyInfo = loadBodyInfoFromModelFile(url);
-        bodyInfo->setLastUpdateTime( mtime );
-    }
+        if(bodyInfo->getParam("readImage")==readImage){
+            cout << string("cache found for ") + url << endl;
+            return bodyInfo->_this();
+        }else{
+            urlToBodyInfoMap.erase(p);
+        }
+    } 
 
+    bodyInfo = loadBodyInfoFromModelFile(url, readImage);
+    bodyInfo->setLastUpdateTime( mtime );
+    
     return bodyInfo->_this();
 }
 
+BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url)
+    throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
+{
+    return getBodyInfoEx(url, false);
+}
 
-BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url)
+BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url, bool readImage)
 {
     cout << "loading " << url << endl;
 
     BodyInfo_impl* bodyInfo = new BodyInfo_impl(poa);
+    bodyInfo->setParam("readImage", readImage);
 
     try {
-	bodyInfo->loadModelFile(url);
+	    bodyInfo->loadModelFile(url);
     }
     catch(OpenHRP::ModelLoader::ModelLoaderException& ex){
-	cout << "loading failed.\n";
-	cout << ex.description << endl;
-	//bodyInfo->_remove_ref();
-	throw;
+	    cout << "loading failed.\n";
+	    cout << ex.description << endl;
+	    //bodyInfo->_remove_ref();
+	    throw;
     }
     cout << "The model was successfully loaded ! " << endl;
     
