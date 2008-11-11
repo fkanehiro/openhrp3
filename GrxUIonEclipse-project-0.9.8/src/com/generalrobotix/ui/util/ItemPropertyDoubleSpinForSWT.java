@@ -114,12 +114,12 @@ public class ItemPropertyDoubleSpinForSWT extends Composite{
     public void setValue(double v) {
         if (isOk(v)) {
             value_.setValue(new Double(v));
+            if (item_ != null && key_ != null){
+                item_.setDbl(key_, v);
+            }
         }
         
         text_.setText(value_.toString());
-        
-        if (item_ != null && key_ != null)
-            item_.setDbl(key_, v);
     }
     
     public void setItem(GrxBaseItem item, String key) {
