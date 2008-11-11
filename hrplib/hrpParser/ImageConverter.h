@@ -8,12 +8,12 @@
 #define OPENHRP_PARSER_IMAGECONVERTER_H_INCLUDED
 
 #include "config.h"
-
+typedef unsigned char boolean;
 extern "C" {
 #define XMD_H
+#define HAVE_BOOLEAN
 #include "jpeglib.h"
 }
-
 #include "png.h"
 #include "VrmlNodes.h"
 
