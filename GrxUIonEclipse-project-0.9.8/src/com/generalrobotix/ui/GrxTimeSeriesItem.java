@@ -19,6 +19,9 @@ package com.generalrobotix.ui;
 
 import java.util.Vector;
 
+/**
+ * series of timed objects
+ */
 public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 	private Vector<TValue> log_ = new Vector<TValue>();
 	private int maxLogSize_ = 1000000;
@@ -33,34 +36,84 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 		}
 	}
 
+	/**
+	 * constructor
+	 * @param name name of this item
+	 * @param manager plugin manager
+	 */
 	public GrxTimeSeriesItem(String name, GrxPluginManager manager) {
 		super(name, manager);
 	}
 	
+	/**
+	 * set position of pointer
+	 * @param pos position
+	 */
 	public void setPosition(Integer pos) {
 		if (0 <= pos && pos < log_.size())
 			currentPos_ = pos;
 	}
 
+	/**
+	 * get current position of pointer
+	 * @return position
+	 */
 	public int getPosition() {
 		return currentPos_;
 	}
 	
+	/**
+	 * get position of timed object which is nearest to the specified time.
+	 * If there is no object in this series -1 is returned. 
+	 */
+	public int getPositionAt(Double t){
+		if (getLogSize() == 0) return -1;
+		int pos = 0;
+		Double dt = Math.abs(t - getTime(pos));
+		for (int i=1; i<getLogSize(); i++){
+			Double new_dt = Math.abs(t - getTime(i));
+			if (new_dt < dt){
+				dt = new_dt;
+				pos = i;
+			}
+		}
+		return pos;
+	}
+	
+	/**
+	 * set time to current object
+	 * @param pos position
+	 * @param t time
+	 */
 	public void setTimeAt(int pos, Double t) {
 		if (0 <= pos && pos < log_.size())
 			log_.get(pos).time = t;
 	}
 
+	/**
+	 * get time of current object
+	 * @return time
+	 */
 	public Double getTime() {
 		return getTime(currentPos_);
 	}
 	
+	/**
+	 * get time of object at specified position
+	 * @param pos position of the object
+	 * @return time
+	 */
 	public Double getTime(int pos) {
 		if (0 <= pos && pos < log_.size())
 			return log_.get(pos).time;
 		return null;
 	}
 	
+	/**
+	 * add timed object to this series
+	 * @param t time
+	 * @param val object
+	 */
 	public void addValue(Double t, Object val) {
 		TValue tv = new TValue(t,val);
 		log_.add(tv);
@@ -68,26 +121,47 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 			log_.removeElementAt(0);
 	}
 	
+	/**
+	 * get current object
+	 * @return current object
+	 */
 	public Object getValue() {
 		return getValue(currentPos_);
 	}
 	
+	/**
+	 * get an object at specified position
+	 * 
+	 * @param pos position
+	 * @return object
+	 */
 	public Object getValue(int pos) {
 		if (0 <= pos && pos < log_.size())
 			return log_.get(pos).value;
 		return null;
 	}
 
+	/**
+	 * set maximum length of this series
+	 * @param maxLogSize maximum length
+	 */
 	public final void setMaximumLogSize(int maxLogSize) {
 		if (maxLogSize > 0) {
 			maxLogSize_ = maxLogSize;
 		}
 	}
 
+	/**
+	 * get length of this series
+	 * @return length
+	 */
 	public final int getLogSize() {
 		return log_.size();
 	}
 
+	/**
+	 * clear this series
+	 */
 	public void clearLog() {
 		currentPos_ = -1;
 		log_.clear();

@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -51,19 +53,18 @@ public class GrxLoggerView extends GrxBaseView {
 
 	private GrxTimeSeriesItem currentItem_;
 
-	private double current_ = 0;
-	private double playRate_ = 1.0;
-	private double interval_ = 100;
-	private boolean isChanging_ = false;
+	private int current_ = 0;    // current position
+	private double playRate_ = 1.0; // playback rate
+	private double interval_ = 100; // position increment/decrement step
 	private boolean isPlaying_ = false;
     private boolean isControlDisabled_ = false; 
-
+	private double prevTime_ = 0.0;
+	private double playRateLogTime_ = -1;
+	
+    // widgets
 	private Scale sliderFrameRate_;
 	private Label  lblFrameRate_;
-
-	
 	private Scale sliderTime_;
-
 	private Button btnFRwd_;
 	private Button btnSRwd_;
 	private Button btnPause_;
@@ -205,15 +206,29 @@ public class GrxLoggerView extends GrxBaseView {
         GridData textGridData = new GridData();
         textGridData.widthHint = 100;
         tFldTime_.setLayoutData(textGridData);
+        tFldTime_.addKeyListener(new KeyListener(){
+            public void keyPressed(KeyEvent e) {}
+            public void keyReleased(KeyEvent e) {
+                if (e.character == SWT.CR) {
+            		String str = tFldTime_.getText();
+            		try{
+            			double tm = Double.parseDouble(str);
+            			int newpos = currentItem_.getPositionAt(tm);
+            			if (newpos >= 0){
+            				setCurrentPos(newpos);
+            			}
+            		}catch(Exception ex){
+            			
+            		}
+                }
+            }
+        });
 
 		//時間変更スライダ
 		sliderTime_ = new Scale( composite_, SWT.NONE );
 		sliderTime_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
-        		if (!isChanging_) {
-        			isChanging_ = true;
-        			current_ = sliderTime_.getSelection();
-        		}
+        			setCurrentPos(sliderTime_.getSelection());
             }
 		} );
 		GridData gd = new GridData(SWT.HORIZONTAL|SWT.FILL);
@@ -244,14 +259,20 @@ public class GrxLoggerView extends GrxBaseView {
 
 	private double stepTime_ = -1.0;
 	
+	private boolean _isAtTheEndAfterPlayback(){
+		int pos = getCurrentPos();
+		if (pos == sliderTime_.getMaximum() && playRate_ > 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
 	/**
 	 * @brief
 	 */
 	public void play() {
 		if (!isPlaying_) {
-			current_ = sliderTime_.getSelection();
-			if (current_ == sliderTime_.getMaximum() && playRate_ > 0)
-				current_ = 0;
+			if (_isAtTheEndAfterPlayback()) setCurrentPos(0);
 			stepTime_ = currentItem_.getDbl("logTimeStep", -1.0)*1000;
 			if (stepTime_ > 0)
 				interval_ = Math.ceil((double)(manager_.getDelay())/stepTime_*1.1);
@@ -266,18 +287,13 @@ public class GrxLoggerView extends GrxBaseView {
 			lblPlayRate_.setText(FORMAT_FAST.format(playRate_));
 	}
 	
-	private double prevTime_ = 0.0;
-	private double playRateLogTime_ = -1;
-	
 	/**
-	 * @brief
-	 * @param intervalMsec
+	 * @brief playback witch specified interval
+	 * @param intervalMsec interval time
 	 */
 	public void playLogTime(int intervalMsec) {
 		if (!isPlaying_) {
-			current_ = sliderTime_.getSelection();
-			if (current_ == sliderTime_.getMaximum() && playRate_ > 0)
-				current_ = 0;
+			if (_isAtTheEndAfterPlayback()) setCurrentPos(0);
 			
 			playRateLogTime_ = (double)intervalMsec/1000.0;
 			prevTime_ = 0.0;
@@ -286,7 +302,7 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 
 	/**
-	 * @brief
+	 * @brief pause playback
 	 */
 	public void pause() {
 		isPlaying_ = false;
@@ -295,8 +311,8 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 	
 	/**
-	 * @brief
-	 * @return
+	 * @brief check where playing now or not
+	 * @return true if playing, false otherwise
 	 */
 	public boolean isPlaying() {
 		return isPlaying_;
@@ -335,23 +351,18 @@ public class GrxLoggerView extends GrxBaseView {
 	public void control(List<GrxBaseItem> itemList) {
 	    
 		if (currentItem_ == null) {
-			setEnabled(false);
 			return;
 		}
 		
-		int sliderMax = sliderTime_.getMaximum();
 		int loggerMax = Math.max(currentItem_.getLogSize()-1, 0);
 
+		// playback with specified time interval(It is used for recording)
 		if (playRateLogTime_ > 0) {
-			//for (int p=sliderTime_.getValue();p < sliderMax; p++) {
-			for (int p=sliderTime_.getSelection();p < sliderMax; p++) {
+			for (int p=getCurrentPos();p < getMaximum(); p++) {
 				double time = currentItem_.getTime(p);
 				if (time - prevTime_ >= playRateLogTime_) {
 					prevTime_ = time;
-					//sliderTime_.setValue(p);
-					sliderTime_.setSelection(p);
-					currentItem_.setPosition(p);
-					_updateTimeField();
+					setCurrentPos(p);
 					return;
 				}
 			}
@@ -359,52 +370,35 @@ public class GrxLoggerView extends GrxBaseView {
 			return;
 		} 
 		
-		if (sliderMax != loggerMax) { // slider is extended
-			isChanging_ = true;
+		if (getMaximum() != loggerMax) { // slider is extended
+			int oldMax = getMaximum();
 			sliderTime_.setMaximum(loggerMax);
-			if (getCurrentPos() == 0 || getCurrentPos() == sliderMax) {
-				sliderTime_.setSelection(loggerMax);
+			if (getCurrentPos() == 0 || getCurrentPos() == oldMax) {
+				setCurrentPos(loggerMax);
 				lblPlayRate_.setText("Live");
 			}else{
 				if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
 			}
-			sliderMax = loggerMax;
 		}else{
 			if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
 		}
 			
+		// playback with specified position rate
 		if (isPlaying_) {
-			int before = (int) current_;
-			current_ += interval_*playRate_;
-			int after = (int)current_;
+			int newpos = getCurrentPos()+(int)(interval_*playRate_);
 			
-			if (sliderMax < after) {
-				current_ = sliderMax;
+			if (getMaximum() < newpos) {
+				newpos = getMaximum();
+				setCurrentPos(newpos);
 				pause();
-			} else if (current_ < 0) {
-				current_ = 0;
+			} else if (newpos < 0) {
+				newpos = 0;
+				setCurrentPos(newpos);
 				pause();
-			} /*else {
-				Double t1 = currentItem_.getTime(before);
-				Double t2 = currentItem_.getTime(after);
-				interval_ = Math.pow(manager_.now, 2) * playRate_ * Math.abs(playRate_)/(t2 - t1)*0.001;
-			} */
-			
-			if (before != after) {
-				isChanging_ = true;
-				//sliderTime_.setValue(after);
-				sliderTime_.setSelection(after);
+			}else{
+				setCurrentPos(newpos);
 			}
 		}
-	
-		if (isChanging_) {
-			currentItem_.setPosition(sliderTime_.getSelection());
-			isChanging_ = false;
-			setEnabled(sliderMax > 0);
-		} else if (currentItem_.getPosition() != sliderTime_.getSelection()){
-			sliderTime_.setSelection(currentItem_.getPosition());
-		}
-		_updateTimeField();
 	}
 
 	/**
@@ -414,22 +408,41 @@ public class GrxLoggerView extends GrxBaseView {
 		Double t = currentItem_.getTime();
 		if (t != null) {
 			tFldTime_.setText(String.format(timeFormat, t));
+			setEnabled(true);
 		} else if (currentItem_.getLogSize() == 0){
 			tFldTime_.setText("NO DATA");
 			setEnabled(false);
 		}
 	}
 
+	/**
+	 * get maximum position
+	 * @return maximum position
+	 */
 	public int getMaximum() {
 		return sliderTime_.getMaximum();
 	}
 
 	/**
-	 * get slider position
-	 * @return slider position
+	 * get current position of playback
+	 * @return current position
 	 */
 	public int getCurrentPos() {
-		return sliderTime_.getSelection();
+		return current_;
+	}
+
+	/**
+	 * set current position of playback
+	 * @param pos position
+	 */
+	public void setCurrentPos(int pos){
+		if (current_ == pos || pos < 0 || getMaximum() < pos){
+			return;
+		}
+		current_ = pos;
+		sliderTime_.setSelection(pos);
+		currentItem_.setPosition(pos);
+		_updateTimeField();
 	}
 
 	/**
