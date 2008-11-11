@@ -46,6 +46,7 @@ protected:
     std::string& replace(std::string& str, const std::string& sb, const std::string& sa);
     void traverseShapeNodes(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices, const SFString* url = NULL);
     virtual const std::string& topUrl() = 0;
+    bool readImage;
 
 private:
         

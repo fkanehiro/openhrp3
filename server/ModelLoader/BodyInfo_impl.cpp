@@ -408,3 +408,17 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
         throw ModelLoader::ModelLoaderException( error.c_str() );
     }
 }
+
+void BodyInfo_impl::setParam(std::string param, bool value){
+    if(param == "readImage")
+        readImage = value;
+    else
+        ;
+}
+
+bool BodyInfo_impl::getParam(std::string param){
+    if(param == "readImage")
+        return readImage;
+    else
+        ;
+}
