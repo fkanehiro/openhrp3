@@ -91,8 +91,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private boolean isInteractive_ = true;
 	private boolean isExecuting_ = false;
 	private boolean isSuspending_ = false;
-	private long startTime_ = 0;
-	private long suspendedTime_ = 0;
+	private double simulateTime_ = 0;
 	private boolean isIntegrate_ = true;
 	private double stepTime_ = 0.001;
 	private double totalTime_ = 20;
@@ -215,12 +214,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 				}
 			}
 
-			/*
-			startBtn_.setIcon(stopSimIcon_);
-			startBtn_.setToolTipText("Stop Simulation");
-			startBtn_.setSelected(true);
-			*/
-
 			simParamPane_.setEnabled(false);
 			controllerPane_.setEnabled(false);
 			collisionPane_.setEnabled(false);
@@ -243,45 +236,12 @@ public class GrxOpenHRPView extends GrxBaseView {
 				return;
 			}
 
-			simThread_ = new Thread(){
-				public void run() {
-					isExecuting_ = true;
-					try {
-						Thread.sleep(manager_.getDelay());
-						while (isExecuting_) {
-							if (isSuspending_) {
-								long s = System.currentTimeMillis();
-								Thread.sleep(200);
-								suspendedTime_ += System.currentTimeMillis() - s;
-							} else {
-								simLoop(null);
-							}
-						}
-					} catch (Exception e) {
-						GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
-
-						execSWT( new Runnable(){
-							public void run(){
-						        IWorkbench workbench = PlatformUI.getWorkbench();
-						        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-						        MessageDialog.openError( window.getShell(),
-										"Simulation Interupted", "Simulation Interrupted by Exception.");
-							}
-						}, false );
-						stopSimulation();
-					}
-				}
-			};
-
-			simThread_.setPriority(Thread.currentThread().getPriority() - 1);
+			simThread_ = _createSimulationThread();
 			isIntegrate_ = simParamPane_.isIntegrate();
 			totalTime_   = simParamPane_.getTotalTime();
 			stepTime_    = simParamPane_.getStepTime();
 			logStepTime_ = simParamPane_.getLogStepTime();
 			
-			simTime_ = 0.0;
-			startTime_ = System.currentTimeMillis();
-			suspendedTime_ = 0;
 			isSimulatingView_ = simParamPane_.isSimulatingView();
 			if (isSimulatingView_){
 				tdview_ = (Grx3DView)manager_.getView("3DView");
@@ -294,7 +254,69 @@ public class GrxOpenHRPView extends GrxBaseView {
 				tdview_.showViewSimulator();
 				lgview_.disableControl();
 			}
-			
+
+			// TODO disable "start simulation" button and menu
+			_resetClockReceivers();
+
+			simTime_ = 0.0;
+			simulateTime_ = 0;
+			simThread_.start();
+			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
+		}
+
+		String timeMsg_;
+		String updateTimeMsg(){
+			timeMsg_ = 
+				"   (A)Sim. Time = " + String.format(FORMAT1, simTime_) + "[s]\n" +
+				"   (B)Real Time = " + String.format(FORMAT1, simulateTime_) + "[s]\n" +
+				"     (B) / (A)  = " + String.format(FORMAT1, simulateTime_/simTime_);
+			return timeMsg_;
+		}
+
+		private Thread _createSimulationThread(){
+			Thread thread = new Thread(){
+				public void run() {
+					isExecuting_ = true;
+					long suspendT = 0;
+					long startT = System.currentTimeMillis();
+					try {
+						// Why this line was here ?
+						//Thread.sleep(manager_.getDelay());
+						while (isExecuting_) {
+							if (isSuspending_) {
+								long s = System.currentTimeMillis();
+								Thread.sleep(200);
+								suspendT += System.currentTimeMillis() - s;
+							} else {
+								if (!simulateOneStep()){
+									simulateTime_ += (System.currentTimeMillis() - startT - suspendT)/1000.0;
+									return;
+								}
+							}
+						}
+					} catch (Exception e) {
+						GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
+
+						execSWT( new Runnable(){
+							public void run(){
+						        IWorkbench workbench = PlatformUI.getWorkbench();
+						        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+						        MessageDialog.openError( window.getShell(),
+										"Simulation Interrupted", "Simulation Interrupted by Exception.");
+							}
+						}, false );
+						stopSimulation();
+					}
+				}
+			};
+
+			thread.setPriority(Thread.currentThread().getPriority() - 1);
+			return thread;
+		}
+		/**
+		 * reset execution contexts(clock receivers)
+		 */
+		private void _resetClockReceivers(){
 			for (int i=0; i<ecs_.size();){
 				ExecutionContext ec = ecs_.get(i);
 				try{
@@ -305,18 +327,11 @@ public class GrxOpenHRPView extends GrxBaseView {
 					ecs_.remove(ec);
 				}
 			}
-			simThread_.start();
-			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
 		}
-
-		String timeMsg_;
-		String updateTimeMsg(){
-			double time = (double)(System.currentTimeMillis() - startTime_ - suspendedTime_)/1000.0;
-			timeMsg_ = 
-				"   (A)Sim. Time = " + String.format(FORMAT1, simTime_) + "[s]\n" +
-				"   (B)Real Time = " + String.format(FORMAT1, time) + "[s]\n" +
-				"     (B) / (A)  = " + String.format(FORMAT1, time/simTime_);
-			return timeMsg_;
+		
+		public void continueSimulation(){
+			simThread_ = _createSimulationThread();
+			simThread_.start();
 		}
 
 		public void stopSimulation() {
@@ -386,7 +401,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 						if(action==null) {
 							GrxDebugUtil.println("[OpenHRPView]@thread getAction returned null.");
 						}else{
-							action = getAction();
 							action.setChecked(false);
 							action.setEnabled(false);
 						}
@@ -396,19 +410,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 			);
 		}
 		
-		public void waitStopSimulation() {
-			try {
-				if (Thread.currentThread() != simThread_)
-					simThread_.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		private void simLoop(List<GrxBaseItem> itemList) {
-			if (simTime_ > totalTime_) { // && !extendTime()) {
-				stopSimulation();
-				return;
+		/**
+		 * @biref simulate one step
+		 * @return true if simulatin should be continued, false otherwise
+		 */
+		private boolean simulateOneStep() {
+			if (simTime_ > totalTime_ ) {
+				return false;
 			}
 
 			// input
@@ -464,10 +472,21 @@ public class GrxOpenHRPView extends GrxBaseView {
 				ControllerAttribute attr = controllers_.get(i);
 				attr.output();
 			}
+			return true;
 		}
 		
 	}
 	
+    public void control(List<GrxBaseItem> items) {
+    	if (isExecuting_ && simThread_.getState() == Thread.State.TERMINATED){
+    		if (extendTime()){
+    			clockGenerator_.continueSimulation();
+    		}else{
+    			stopSimulation();
+    		}
+    	}
+    }
+    
 	/**
 	 * @brief start simulation
 	 * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation

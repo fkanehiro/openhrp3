@@ -40,6 +40,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	public static final String TITLE = "World State";
 	public static final String DEFAULT_DIR = "log";
 	public static final String FILE_EXTENSION = "log";
+	
+	public static final double DEFAULT_TOTAL_TIME = 20.0;
 
 	private static String LOG_DIR;
 	
@@ -326,7 +328,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		stime.setTimeStep(val);
 		setDbl("logTimeStep",val);
 			
-		val = getDbl("totalTime", 20.0);
+		val = getDbl("totalTime", DEFAULT_TOTAL_TIME);
 		stime.setTotalTime(val);
 		setDbl("totalTime", val);
 
@@ -609,7 +611,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		stime.setTimeStep(val);
 		setDbl("logTimeStep",val);
 		
-		val = getDbl("totalTime", 20.0) + time;
+		val = getDbl("totalTime", DEFAULT_TOTAL_TIME) + time;
 	    stime.setTotalTime(val);
 	    setDbl("totalTime", val);
 	    
