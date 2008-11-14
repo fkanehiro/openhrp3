@@ -50,7 +50,7 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
             nshape += tsis.length();
             for (unsigned int j=0; j<tsis.length(); j++){
                 shapeIndex = tsis[j].shapeIndex;
-                const DblArray12 &tform = shapeIndices[i].transformMatrix;
+                const DblArray12 &tform = tsis[j].transformMatrix;
                 R[0] = tform[0]; R[1] = tform[1]; R[2] = tform[2]; p[0] = tform[3];
                 R[3] = tform[4]; R[4] = tform[5]; R[5] = tform[6]; p[1] = tform[7];
                 R[6] = tform[8]; R[7] = tform[9]; R[8] = tform[10]; p[2] = tform[11];
