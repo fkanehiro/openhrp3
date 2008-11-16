@@ -19,8 +19,6 @@
 #include "psim.h"
 #include "Sensor.h"
 
-using namespace OpenHRP;
-
 static const double DEFAULT_GRAVITY_ACCELERATION = 9.80665;
 
 static const bool debugMode = false;
@@ -86,7 +84,7 @@ World::~World()
 	int n_sensors = sensors.size();
 	for(int i=0; i<n_sensors; i++)
 	{
-		OpenHRP::Sensor::destroy(sensors[i]);
+		Sensor::destroy(sensors[i]);
 	}
 	sensors.clear();
 	int n_pairs = contact_pairs.size();
@@ -145,7 +143,7 @@ void World::initialize()
 }
 
 
-void World::calcNextState(CollisionSequence& corbaCollisionSequence)
+void World::calcNextState(OpenHRP::CollisionSequence& corbaCollisionSequence)
 {
 	if(debugMode){
 		cout << "World current time = " << currentTime_ << endl;
@@ -156,14 +154,14 @@ void World::calcNextState(CollisionSequence& corbaCollisionSequence)
 	for(int i=0; i<n_pair; i++)
 	{
 		contact_pairs[i]->Clear();
-		Collision& col = corbaCollisionSequence[i];
+		OpenHRP::Collision& col = corbaCollisionSequence[i];
 		int n_point = col.points.length();
 		if(n_point == 0) continue;
 		Joint* joint0 = contact_pairs[i]->GetJoint(0);
 		static fVec3 pos0, norm0, pos, norm;
 		for(int j=0; j<n_point; j++)
 		{
-			CollisionPoint& point = col.points[j];
+			OpenHRP::CollisionPoint& point = col.points[j];
 			// inertia frame -> joint0 frame
 			pos0(0) = point.position[0];
 			pos0(1) = point.position[1];
@@ -353,7 +351,7 @@ int World::numSensors(int sensorType, const char* charName)
 	return count;
 }
 
-void World::getAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::LinkDataType type, DblSequence_out& rdata)
+void World::getAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::LinkDataType type, OpenHRP::DblSequence_out& rdata)
 {
 	int index = -1, nchar = characters.size();
 	for(int i=0; i<nchar; i++)
@@ -377,7 +375,7 @@ void World::getAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::Li
 	}
 }
 
-void World::_get_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, DblSequence_out& rdata)
+void World::_get_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, OpenHRP::DblSequence_out& rdata)
 {
 	if(cur->j_type == ::JROTATE || cur->j_type == ::JSLIDE)
 	{
@@ -405,7 +403,7 @@ void World::_get_all_character_data_sub(Joint* cur, int index, OpenHRP::Dynamics
 	}
 }
 
-void World::setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::LinkDataType type, const DblSequence& wdata)
+void World::setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::LinkDataType type, const OpenHRP::DblSequence& wdata)
 {
 	int index = -1, nchar = characters.size();
 	for(int i=0; i<nchar; i++)
@@ -428,7 +426,7 @@ void World::setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::Li
 	}
 }
 
-void World::_set_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, const DblSequence& wdata)
+void World::_set_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, const OpenHRP::DblSequence& wdata)
 {
 	if(index < wdata.length() &&
 	   (cur->j_type == ::JROTATE || cur->j_type == ::JSLIDE))
@@ -465,24 +463,24 @@ static void vec3_to_array(const fVec3& vec, double* a, int offset = 0)
 	a[offset] = vec(2);
 }
 
-static void mat33_to_array(const fMat33& mat, DblArray9& a)
+static void mat33_to_array(const fMat33& mat, OpenHRP::DblArray9& a)
 {
 	a[0] = mat(0,0);  a[1] = mat(0,1);  a[2] = mat(0,2);
 	a[3] = mat(1,0);  a[4] = mat(1,1);  a[5] = mat(1,2);
 	a[6] = mat(2,0);  a[7] = mat(2,1);  a[8] = mat(2,2);
 }
 
-void World::getAllCharacterPositions(CharacterPositionSequence& all_char_pos)
+void World::getAllCharacterPositions(OpenHRP::CharacterPositionSequence& all_char_pos)
 {
 	int nchar = characters.size();
 	for(int i=0; i<nchar; i++)
 	{
 		CharacterInfo& cinfo = characters[i];
-		CharacterPosition& char_pos = all_char_pos[i];
+		OpenHRP::CharacterPosition& char_pos = all_char_pos[i];
 		int nlink = cinfo.links.size();
 		for(int j=0; j<nlink; j++)
 		{
-			LinkPosition& link_pos = char_pos.linkPositions[j];
+			OpenHRP::LinkPosition& link_pos = char_pos.linkPositions[j];
 			Joint* cur = cinfo.links[j];
 //			logfile << "[" << j << "] " << cur->name << ": " << cur->abs_pos << endl;
 			vec3_to_array(cur->abs_pos, link_pos.p);
@@ -491,12 +489,12 @@ void World::getAllCharacterPositions(CharacterPositionSequence& all_char_pos)
 	}
 }
 
-void World::getAllSensorStates(SensorStateSequence& all_sensor_states)
+void World::getAllSensorStates(OpenHRP::SensorStateSequence& all_sensor_states)
 {
 	int nchar = characters.size();
 	for(int i=0; i<nchar; i++)
 	{
-		SensorState& state = all_sensor_states[i];
+		OpenHRP::SensorState& state = all_sensor_states[i];
 		// joint angles and torques
 		CharacterInfo& cinfo = characters[i];
 		int n_links = cinfo.links.size();
@@ -615,13 +613,13 @@ void World::addCollisionCheckLinkPair(Joint* jnt1, Joint* jnt2, double staticFri
 	contact_pairs.push_back(sd_pair);
 }
 
-void World::addCharacter(Joint* rjoint, const std::string& name, LinkInfoSequence_var links)
+void World::addCharacter(Joint* rjoint, const std::string& name, OpenHRP::LinkInfoSequence_var links)
 {
 	CharacterInfo cinfo(rjoint, name);
 	int n_links = links->length();
 	for(int i=0; i<n_links; i++)
 	{
-		LinkInfo linfo = links[i];
+		OpenHRP::LinkInfo linfo = links[i];
 		Joint* jnt = chain->FindJoint(linfo.name, name.c_str());
 		if(jnt)
 		{

@@ -16,9 +16,6 @@
 
 #include "Sensor.h"
 
-using namespace OpenHRP;
-
-
 Sensor::Sensor()
 {
 	type = COMMON;

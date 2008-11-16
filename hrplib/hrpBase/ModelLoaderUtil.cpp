@@ -407,7 +407,7 @@ void ModelLoaderHelper::createColdetModel(Link* link, const LinkInfo& linkInfo)
 {
     int totalNumTriangles = 0;
     const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
-    for(int i=0; i < shapeIndices.length(); i++){
+    for(unsigned int i=0; i < shapeIndices.length(); i++){
         short shapeIndex = shapeIndices[i].shapeIndex;
         const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
         totalNumTriangles += shapeInfo.triangles.length() / 3;
@@ -433,7 +433,7 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel,
 
     const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
     
-    for(int i=0; i < shapeIndices.length(); i++){
+    for(unsigned int i=0; i < shapeIndices.length(); i++){
         const TransformedShapeIndex& tsi = shapeIndices[i];
         short shapeIndex = tsi.shapeIndex;
         const DblArray12& M = tsi.transformMatrix;;
@@ -455,7 +455,7 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel,
                 long orgVertexIndex = shapeInfo.triangles[j * 3 + k];
                 int p = orgVertexIndex * 3;
                 Vector4 v(T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0));
-                coldetModel->setVertex(vertexIndex++, v[0], v[1], v[2]);
+                coldetModel->setVertex(vertexIndex++, (float)v[0], (float)v[1], (float)v[2]);
             }
             coldetModel->setTriangle(triangleIndex++, vertexIndexTop, vertexIndexTop + 1, vertexIndexTop + 2);
         }

@@ -135,7 +135,7 @@ void ColdetBody::addLinkVerticesAndTriangles
             long orgVertexIndex = shapeInfo.triangles[j * 3 + k];
             int p = orgVertexIndex * 3;
             Vector4 v(T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0));
-            coldetModel->setVertex(vertexIndex++, v[0], v[1], v[2]);
+            coldetModel->setVertex(vertexIndex++, (float)v[0], (float)v[1], (float)v[2]);
         }
         coldetModel->setTriangle(triangleIndex++, vertexIndexTop, vertexIndexTop + 1, vertexIndexTop + 2);
     }
@@ -151,7 +151,7 @@ void ColdetBody::addLinkVerticesAndTriangles
     const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
 
     Matrix44 E(tvmet::identity<Matrix44>());
-    for(int i=0; i < shapeIndices.length(); i++){
+    for(unsigned int i=0; i < shapeIndices.length(); i++){
         addLinkVerticesAndTriangles(coldetModel, shapeIndices[i], E, shapes,
                                     vertexIndex, triangleIndex);
     }

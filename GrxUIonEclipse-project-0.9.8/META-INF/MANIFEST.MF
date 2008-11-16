@@ -80,7 +80,6 @@ Export-Package: com.generalrobotix.ui;
  jp.go.aist.hrp.simulator.CameraPackage,
  jp.go.aist.hrp.simulator.DynamicsSimulatorPackage,
  jp.go.aist.hrp.simulator.ModelLoaderPackage,
- jp.go.aist.hrp.simulator.ViewSimulatorPackage,
  jp.go.aist.rtm,
  jp.go.aist.rtm.RTC,
  jp.go.aist.rtm.RTC.SDOPackage,

@@ -15,7 +15,7 @@
 #ifndef OPENHRP_BASE_MODEL_LOADER_UTIL_H_INCLUDED
 #define OPENHRP_BASE_MODEL_LOADER_UTIL_H_INCLUDED
 
-#include "hrpModelExportDef.h"
+#pragma warning(disable:4996)
 
 #include <string>
 #include <sstream>

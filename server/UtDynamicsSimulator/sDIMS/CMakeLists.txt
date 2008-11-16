@@ -34,6 +34,14 @@ include_directories(.)
 add_definitions(-DSEGA -DUSE_CLAPACK_INTERFACE)
 
 add_library(sDIMS SHARED ${sources})
+set_target_properties(sDIMS PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 target_link_libraries(sDIMS ${LAPACK_LIBRARIES})
+
+if (WIN32)
+  add_definitions(-DHRPBASE_MAKE_DLL)
+  set_target_properties(sDIMS PROPERTIES LINK_FLAGS /NODEFAULTLIB:MSVCRT)
+  set_target_properties(sDIMS PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
+  set_target_properties(sDIMS PROPERTIES DEBUG_POSTFIX d )
+endif()
 

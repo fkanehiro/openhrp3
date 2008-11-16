@@ -24,6 +24,7 @@
 #endif
 #include <list>
 #include <cstring>
+#include "hrpModelExportDef.h"
 
 //! Defines for IntegAdaptiveEuler
 #define DEFAULT_MIN_TIMESTEP 1e-6
@@ -141,7 +142,7 @@ struct JointData
  * @class Chain
  * @brief The class representing the whole mechanism. May contain multiple characters.
  */
-class Chain
+class HRPBASE_EXPORT Chain
 {
 	friend class Joint;
 public:
@@ -535,7 +536,7 @@ protected:
  * @class Joint
  * @brief The class for representing a joint.
  */
-class Joint
+class HRPBASE_EXPORT Joint
 {
 	friend class Chain;
 public:

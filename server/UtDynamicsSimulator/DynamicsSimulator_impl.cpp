@@ -160,7 +160,7 @@ void DynamicsSimulator_impl::registerCharacter(
 {
 //	logfile << "registerCharacter(" << name << ", " << body->name() << ")" << endl;
 	loadBodyFromBodyInfo(&world, name, body);
-	collisionDetector->addModel(name, body);
+	collisionDetector->registerCharacter(name, body);
 //	logfile << "total dof = " << world.Chain()->NumDOF() << endl;
 }
 

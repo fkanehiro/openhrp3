@@ -16,6 +16,7 @@
 #ifndef __F_MATRIX3_H__
 #define __F_MATRIX3_H__
 
+#include "hrpModelExportDef.h"
 #include <dims_common.h>
 #include "fMatrix.h"
 
@@ -25,7 +26,7 @@ class fVec3;
  * @class  fMat33 fMatrix3.h
  * @brief  3x3 matrix class.
  */
-class fMat33
+class HRPBASE_EXPORT fMat33
 {
 	friend class fVec3;
 public:
@@ -147,7 +148,7 @@ public:
 	friend fMat33 operator / (const fMat33& mat, double d);
 
 	//! Outputs the elements to a stream.
-	friend ostream& operator << (ostream& ost, const fMat33& mat);
+	friend HRPBASE_EXPORT ostream& operator << (ostream& ost, const fMat33& mat);
 
 	//! Converts to an array.
 	operator double *() {
@@ -202,7 +203,7 @@ protected:
  * @class  fVec3 fMatrix3.h
  * @brief  3-element vector class.
  */
-class fVec3
+class HRPBASE_EXPORT fVec3
 {
 	friend class fMat33;
 public:
@@ -277,7 +278,7 @@ public:
 	void cross(const fVec3& vec1, const fVec3& vec2);
 	friend fVec3 operator & (const fVec3& vec1, const fVec3& vec2);
 	//! Outputs to a stream.
-	friend ostream& operator << (ostream& ost, const fVec3& mat);
+	friend HRPBASE_EXPORT ostream& operator << (ostream& ost, const fVec3& mat);
 	//! Creates a zero vector.
 	void zero() {
 		m1 = m2 = m3 = 0.0;

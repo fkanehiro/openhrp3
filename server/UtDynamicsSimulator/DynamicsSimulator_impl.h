@@ -26,9 +26,7 @@
 #include "World.h"
 #include "TimeMeasure.h"
 
-
-namespace OpenHRP {
-
+using namespace OpenHRP;
 	/**
 	 * DynamicsSimulator_impl class
 	 */
@@ -40,7 +38,7 @@ namespace OpenHRP {
 		 */
 		CORBA::ORB_var orb_;
 
-		OpenHRP::World world;
+		::World world;
 
 		CollisionDetector_var collisionDetector;
 
@@ -217,6 +215,5 @@ namespace OpenHRP {
 		void shutdown();
 		
 	};
-}
 
 #endif

@@ -7,8 +7,8 @@
  * @endif
  */
 
-#include "OpenHRPCommon.idl"
 #include "ModelLoader.idl"
+#include "World.idl"
 
 module OpenHRP {
 
@@ -20,22 +20,9 @@ module OpenHRP {
    * 通常、 DynamicsSimulator から呼び出されるため、直接このサーバにアクセスする必要はありません。
    * @endif
    */
-  interface CollisionDetector
+  interface CollisionDetector : World
   {
     void destroy();
-  
-    /**
-     * @if jp
-     * @brief キャラクタを追加します。
-     * @param   charName    キャラクタ名
-     * @param   model	    モデル情報
-     * @else
-     * Adding Objects
-     * @param   charName    Character Name
-     * @param   model	    model information
-     * @endif
-    */
-    void addModel(in string name, in BodyInfo model);
   
     /**
      * @if jp
