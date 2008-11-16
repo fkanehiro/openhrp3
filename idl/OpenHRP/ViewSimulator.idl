@@ -12,7 +12,7 @@
  * @date	2001.02.22
  */
 
-#include "OpenHRPCommon.idl"
+#include "World.idl"
 
 
 module OpenHRP {
@@ -272,25 +272,8 @@ module OpenHRP {
    * @version	1.0(2001.02.22)
    * @endif
    */
-  interface ViewSimulator
+  interface ViewSimulator : World
   {
-    /**
-     * @if jp
-     * ViewSimulator 例外
-     * @else
-     * ViewSimulator exception
-     * @endif
-     */
-    exception ViewSimulatorException
-    {
-      /**
-       * @if jp
-       * @brief 例外の詳細
-       * @endif
-       */
-      string	description; //!< description of the exception
-    };
-
     /**
      * @if jp
      * サーバを終了します。
@@ -299,24 +282,6 @@ module OpenHRP {
      * @endif
      */
     void destroy();
-
-    /**
-     * @if jp
-     * モデルを読み込みます。
-     * @param src キャラクタのモデルファイルURL
-     * @param objectName キャラクタ名
-     * @else
-     * Loat object
-     * @param	src			object's URL
-     * @param	objectName	object's Name
-     * @endif
-     */
-    void
-    loadObject(
-	       in	string	src,
-	       in	string	objectName
-	       )
-      raises (ViewSimulatorException);
 
     /**
      * @if jp

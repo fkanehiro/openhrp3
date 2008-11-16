@@ -1,4 +1,4 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+// -*- mode: c++; indent-tabs-mode: nil; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -79,9 +79,7 @@ static void array_to_vec3(const DblArray3& a, fVec3& vec)
 	vec(2) = a[2];
 }
 
-
-//static void createSensors(OpenHRP::World* world, Joint* jnt,  SensorInfoSequence_var iSensors)
-static void createSensors(OpenHRP::World* world, Joint* jnt,  SensorInfoSequence iSensors)
+static void createSensors(::World* world, Joint* jnt,  SensorInfoSequence iSensors)
 {
 	int numSensors = iSensors.length();
 
@@ -137,7 +135,7 @@ static inline double getLimitValue(DblSequence_var limitseq, double defaultValue
 }
 
 
-static Joint* createLink(OpenHRP::World* world, const char* charname, int index, LinkInfoSequence_var iLinks, Joint* pjoint)
+static Joint* createLink(::World* world, const char* charname, int index, LinkInfoSequence_var iLinks, Joint* pjoint)
 {
 	Chain* _chain = (Chain*)world->Chain();
 	LinkInfo iLink = iLinks[index];
@@ -310,7 +308,7 @@ static Joint* createLink(OpenHRP::World* world, const char* charname, int index,
 	//int sindex = iLinks[index].sister();
 	//	createLink(world, charname, sindex, iLinks, pjoint);
 
-	for( int i = 0 ; i < iLinks[index].childIndices.length() ; i++ ) 
+	for( unsigned int i = 0 ; i < iLinks[index].childIndices.length() ; i++ ) 
 	{
 		if( 0 <= iLinks[index].childIndices[i] )
 		{
@@ -324,7 +322,7 @@ static Joint* createLink(OpenHRP::World* world, const char* charname, int index,
 }
 
 
-int OpenHRP::loadBodyFromBodyInfo(World* world, const char* _name, BodyInfo_ptr bodyInfo)
+int loadBodyFromBodyInfo(::World* world, const char* _name, BodyInfo_ptr bodyInfo)
 {
 //	logfile << "loadBody(" << _name << ")" << endl;
 	pSim* _chain = world->Chain();
@@ -379,7 +377,7 @@ int OpenHRP::loadBodyFromBodyInfo(World* world, const char* _name, BodyInfo_ptr 
 }
 
 
-int OpenHRP::loadBodyFromModelLoader(World* world, const char* name, const char *url, CosNaming::NamingContext_var cxt)
+int loadBodyFromModelLoader(::World* world, const char* name, const char *url, CosNaming::NamingContext_var cxt)
 {
     CosNaming::Name ncName;
     ncName.length(1);
@@ -425,7 +423,7 @@ int OpenHRP::loadBodyFromModelLoader(World* world, const char* name, const char 
 }
 
 
-int OpenHRP::loadBodyFromModelLoader(World* world, const char* name, const char *url, CORBA_ORB_var orb)
+int loadBodyFromModelLoader(::World* world, const char* name, const char *url, CORBA_ORB_var orb)
 {
     CosNaming::NamingContext_var cxt;
     try {
@@ -440,14 +438,14 @@ int OpenHRP::loadBodyFromModelLoader(World* world, const char* name, const char 
 }
 
 
-int OpenHRP::loadBodyFromModelLoader(World* world, const char* name, const char *url, int argc, char *argv[])
+int loadBodyFromModelLoader(::World* world, const char* name, const char *url, int argc, char *argv[])
 {
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
     return loadBodyFromModelLoader(world, name, url, orb);
 }
 
 
-int OpenHRP::loadBodyFromModelLoader(World* world, const char* name, const char *URL, istringstream &strm)
+int loadBodyFromModelLoader(::World* world, const char* name, const char *URL, istringstream &strm)
 {
     vector<string> argvec;
     while (!strm.eof()){

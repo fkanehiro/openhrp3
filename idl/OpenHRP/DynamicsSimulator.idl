@@ -2,7 +2,6 @@
 #ifndef OPENHRP_DYNAMICS_SIMULATOR_IDL_INCLUDED
 #define OPENHRP_DYNAMICS_SIMULATOR_IDL_INCLUDED
 
-#include "OpenHRPCommon.idl"
 #include "CollisionDetector.idl"
 /**
  * @file DynamicsSimulator/corba/DynamicsSimulator.idl
@@ -93,7 +92,7 @@ module OpenHRP {
 	 * modified	2006.02.24 some functions needed to specify character name
 	 * @endif
 	 */
-	interface DynamicsSimulator
+	interface DynamicsSimulator : World
 	{
 		/**
 		 * @if jp
@@ -132,21 +131,6 @@ module OpenHRP {
 		 * @endif
 		 */
 		void destroy();
-
-		/**
-		 * @if jp
-		 * @brief キャラクタを登録する。
-		 * 
-		 * ModelLoader から得られた情報でキャラクタを登録します。
-		 * @param name シミュレーションでのキャラクタ名
-		 * @param cinfo ModelLoader から得られる CharacterInfo
-		 * @else
-		 * Register a character
-		 * @param	name	Object Character Name for Simulation
-		 * @param	cinfo	CharacterInfo
-		 * @endif
-		 */
-		void registerCharacter(in string name, in BodyInfo cinfo);
 
 		/**
 		 * @if jp

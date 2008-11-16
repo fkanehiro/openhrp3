@@ -87,7 +87,7 @@ protected:
 	double temp;
 };
 
-class fVec4
+class HRPBASE_EXPORT fVec4
 {
 	friend class fMat44;
 public:

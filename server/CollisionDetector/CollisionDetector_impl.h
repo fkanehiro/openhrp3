@@ -41,7 +41,7 @@ public:
 
     virtual void destroy();
 
-    virtual void addModel(const char* name,	BodyInfo_ptr bodyInfo);
+    virtual void registerCharacter(const char* name,	BodyInfo_ptr bodyInfo);
 
     virtual void addCollisionPair(const LinkPair& colPair, CORBA::Boolean convexsize1, CORBA::Boolean convexsize2);
 

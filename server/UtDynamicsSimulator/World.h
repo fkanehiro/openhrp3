@@ -1,4 +1,4 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+// -*- mode: c++; indent-tabs-mode: nil; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -18,22 +18,20 @@
 #include <vector>
 #include <fMatrix3.h>
 #include <hrpCorba/DynamicsSimulator.hh>
-#include "hrpModelExportDef.h"
 
 class pSim;
 class Joint;
 class SDContactPair;
 
-namespace OpenHRP {
 
-	class CollisionSequence;
+	class OpenHRP::CollisionSequence;
 	class Sensor;
 	class ForceSensor;
 	class RateGyroSensor;
 	class AccelSensor;
     
 
-    class HRPMODEL_EXPORT World
+    class World
     {
 //		friend class CharacterInfo;
 		class CharacterInfo
@@ -74,7 +72,7 @@ namespace OpenHRP {
 		void setRungeKuttaMethod();
 
 		void initialize();
-		void calcNextState(CollisionSequence& corbaCollisionSequence);
+		void calcNextState(OpenHRP::CollisionSequence& corbaCollisionSequence);
 
 //		std::pair<int,bool> getIndexOfLinkPairs(BodyPtr body1, Link* link1, BodyPtr body2, Link* link2);
 
@@ -91,15 +89,15 @@ namespace OpenHRP {
 			return sensors.size();
 		}
 
-		void getAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::LinkDataType type, DblSequence_out& rdata);
-		void setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::LinkDataType type, const DblSequence& wdata);
-		void getAllCharacterPositions(CharacterPositionSequence& all_char_pos);
-		void getAllSensorStates(SensorStateSequence& all_sensor_states);
+		void getAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::LinkDataType type, OpenHRP::DblSequence_out& rdata);
+		void setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::LinkDataType type, const OpenHRP::DblSequence& wdata);
+		void getAllCharacterPositions(OpenHRP::CharacterPositionSequence& all_char_pos);
+		void getAllSensorStates(OpenHRP::SensorStateSequence& all_sensor_states);
 		void calcCharacterJacobian(const char* characterName, const char* baseLink, const char* targetLink, fMat& J);
 
 		void addCollisionCheckLinkPair(Joint* jnt1, Joint* jnt2, double staticFriction, double slipFriction, double epsilon);
 
-		void addCharacter(Joint* rjoint, const std::string& _name, LinkInfoSequence_var links);
+		void addCharacter(Joint* rjoint, const std::string& _name, OpenHRP::LinkInfoSequence_var links);
 		Joint* rootJoint(int index);
 		int numLinks(int index) {
 			return characters[index].links.size();
@@ -115,15 +113,15 @@ namespace OpenHRP {
 	protected:
 		pSim* chain;
 		std::vector<SDContactPair*> contact_pairs;
-		std::vector<OpenHRP::Sensor*> sensors;
+		std::vector<Sensor*> sensors;
 
 		std::vector<CharacterInfo> characters;
 
 	private:
 		
-		void _get_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, DblSequence_out& rdata);
-		void _set_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, const DblSequence& wdata);
-		void _get_all_sensor_states_sub(Joint* cur, int& count, SensorState& state);
+		void _get_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, OpenHRP::DblSequence_out& rdata);
+		void _set_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, const OpenHRP::DblSequence& wdata);
+		void _get_all_sensor_states_sub(Joint* cur, int& count, OpenHRP::SensorState& state);
 
         double currentTime_;
         double timeStep_;
@@ -159,7 +157,5 @@ namespace OpenHRP {
 		
 	};
 
-
-};
 
 #endif

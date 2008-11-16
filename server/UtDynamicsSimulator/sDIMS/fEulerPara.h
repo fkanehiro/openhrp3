@@ -16,6 +16,7 @@
 #ifndef __FEULERPARA_H_
 #define __FEULERPARA_H_
 
+#include "hrpModelExportDef.h"
 #include "fMatrix4.h"
 
 /*!
@@ -24,7 +25,7 @@
  *
  * Euler parameter class, based on 4-element vector class.
  */
-class fEulerPara 
+class HRPBASE_EXPORT fEulerPara 
 	: public fVec4
 {
 public:

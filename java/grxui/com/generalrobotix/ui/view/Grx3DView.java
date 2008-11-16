@@ -49,7 +49,6 @@ import org.omg.PortableServer.POAPackage.WrongPolicy;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 import jp.go.aist.hrp.simulator.*;
-import jp.go.aist.hrp.simulator.ViewSimulatorPackage.ViewSimulatorException;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
@@ -974,7 +973,7 @@ public class Grx3DView
 			arg1.value = new Camera[0];
 		}
 
-		public void loadObject(String arg0, String arg1) throws ViewSimulatorException {}
+		public void registerCharacter(String name, BodyInfo bInfo) {}
 		public void updateScene(WorldState arg0) { }
 
 	}

@@ -45,7 +45,7 @@ void CollisionDetector_impl::destroy()
 }
 
 
-void CollisionDetector_impl::addModel(const char* name,	BodyInfo_ptr bodyInfo)
+void CollisionDetector_impl::registerCharacter(const char* name,	BodyInfo_ptr bodyInfo)
 {
     cout << "adding " << name << " ";
     ColdetBodyPtr coldetBody;
@@ -137,7 +137,7 @@ CORBA::Boolean CollisionDetector_impl::queryContactDeterminationForGivenPairs
 
     vector<ColdetModelPairEx> tmpColdetPairs;
 	
-    for(int i=0; i < checkPairs.length(); ++i){
+    for(unsigned int i=0; i < checkPairs.length(); ++i){
         const LinkPair& linkPair = checkPairs[i];
         addCollisionPairSub(linkPair, tmpColdetPairs);
     }
@@ -149,7 +149,7 @@ CORBA::Boolean CollisionDetector_impl::queryContactDeterminationForGivenPairs
 void CollisionDetector_impl::updateAllLinkPositions
 (const CharacterPositionSequence& characterPositions)
 {
-    for(int i=0; i < characterPositions.length(); i++){
+    for(unsigned int i=0; i < characterPositions.length(); i++){
         const CharacterPosition& characterPosition = characterPositions[i];
         const string bodyName(characterPosition.characterName);
         StringToColdetBodyMap::iterator it = nameToColdetBodyMap.find(bodyName);
@@ -255,7 +255,7 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForGivenPairs
 
     vector<ColdetModelPairEx> tmpColdetPairs;
 	
-    for(int i=0; i < checkPairs.length(); ++i){
+    for(unsigned int i=0; i < checkPairs.length(); ++i){
         const LinkPair& linkPair = checkPairs[i];
         addCollisionPairSub(linkPair, tmpColdetPairs);
     }
@@ -274,7 +274,7 @@ bool CollisionDetector_impl::detectCollidedLinkPairs
     vector<int> collidedPairIndices;
     collidedPairIndices.reserve(coldetPairs.size());
 
-    for(int i=0; i < coldetPairs.size(); ++i){
+    for(unsigned int i=0; i < coldetPairs.size(); ++i){
         if(detectCollisionsOfLinkPair(coldetPairs[i], dummy, false)){
             detected = true;
             collidedPairIndices.push_back(i);

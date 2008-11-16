@@ -1,4 +1,4 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+// -*- mode: c++; indent-tabs-mode: nil; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -16,15 +16,12 @@
    @file DynamicsSimulator/server/Sensor.h
  */
 
-#include "hrpModelExportDef.h"
 #include <string>
 #include <iostream>
 #include "fMatrix3.h"
 #include "chain.h"
 
-namespace OpenHRP {
-
-	class HRPMODEL_EXPORT Sensor
+	class Sensor
 	{
 	public:
 
@@ -64,7 +61,7 @@ namespace OpenHRP {
 	};
 
 
-	class HRPMODEL_EXPORT ForceSensor : public Sensor
+	class ForceSensor : public Sensor
 	{
 	public:
 		static const int TYPE = FORCE;
@@ -78,7 +75,7 @@ namespace OpenHRP {
 	};
 
 
-	class HRPMODEL_EXPORT RateGyroSensor : public Sensor
+	class RateGyroSensor : public Sensor
 	{
 	public:
 		static const int TYPE = RATE_GYRO;
@@ -91,7 +88,7 @@ namespace OpenHRP {
 	};
 
 
-	class HRPMODEL_EXPORT AccelSensor : public Sensor
+	class AccelSensor : public Sensor
 	{
 	public:
 		static const int TYPE = ACCELERATION;
@@ -104,8 +101,5 @@ namespace OpenHRP {
 		virtual void putInformation(std::ostream& os);
 
 	};
-
-};
-
 
 #endif

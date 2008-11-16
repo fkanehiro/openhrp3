@@ -443,7 +443,7 @@ struct JointInfo
  * @class pSim
  * @brief Main class for forward dynamics computation.
  */
-class pSim
+class HRPBASE_EXPORT pSim
 	: virtual public Chain
 {
 	friend class pJoint;

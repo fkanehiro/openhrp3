@@ -19,7 +19,12 @@
 #include <stdio.h>
 
 #ifdef USE_CLAPACK_INTERFACE
+#ifdef __WIN32__
+#undef USE_CLAPACK_INTERFACE
+#include <blaswrap.h>
+#else
 #include <cblas.h>
+#endif
 #endif
 
 /* CLAPACK native functions */

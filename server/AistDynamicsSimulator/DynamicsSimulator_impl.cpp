@@ -184,7 +184,7 @@ void DynamicsSimulator_impl::registerCharacter
             std::cout << "Loaded Model:\n" << *body << std::endl;
         }
         if(!USE_INTERNAL_COLLISION_DETECTOR){
-            collisionDetector->addModel(name, bodyInfo);
+            collisionDetector->registerCharacter(name, bodyInfo);
         }
         world.addBody(body);
     }

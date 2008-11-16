@@ -255,7 +255,7 @@ string setTexturefileUrl(string modelfileDir, MFString urls){
         error += "ImageTexture read error: No urls in ImageTexture node";
         throw ModelLoader::ModelLoaderException(error.c_str());
     }else{
-        for(int i=0; i<urls.size(); i++){
+        for(unsigned int i=0; i<urls.size(); i++){
             string urlString = urls[i];
             size_t pos = urlString.find("http:");
             if (pos == string::npos){   // ローカルファイル //
