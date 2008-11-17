@@ -40,6 +40,7 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
     CollisionDetector_var collisionDetector;
 
     CollisionSequence_var         collisions;
+    LinkPairSequence_var          collidingLinkPairs;
 
     CharacterPositionSequence_var allCharacterPositions;
     bool needToUpdatePositions;
@@ -165,7 +166,7 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
 
     virtual void calcWorldForwardKinematics();
 
-    virtual void checkCollision();
+    virtual bool checkCollision(bool checkAll);
 
     virtual void getWorldState(WorldState_out wstate);
 

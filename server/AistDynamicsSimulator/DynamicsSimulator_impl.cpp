@@ -27,7 +27,6 @@ using namespace std;
 using namespace hrp;
 
 
-// #define INTEGRATOR_DEBUG
 static const bool USE_INTERNAL_COLLISION_DETECTOR = false;
 static const int debugMode = false;
 static const bool enableTimeMeasure = false;
@@ -137,6 +136,7 @@ DynamicsSimulator_impl::DynamicsSimulator_impl(CORBA::ORB_ptr orb)
     }
 
     collisions = new CollisionSequence;
+    collidingLinkPairs = new LinkPairSequence;
     allCharacterPositions = new CharacterPositionSequence;
     allCharacterSensorStates = new SensorStateSequence;
 
@@ -974,12 +974,16 @@ void DynamicsSimulator_impl::calcWorldForwardKinematics()
 }
 
 
-void DynamicsSimulator_impl::checkCollision() 
+bool DynamicsSimulator_impl::checkCollision(bool checkAll) 
 {
     calcWorldForwardKinematics();
     _updateCharacterPositions();
     if(!USE_INTERNAL_COLLISION_DETECTOR){
-        collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+        if (checkAll){
+            return collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+        }else{
+            return collisionDetector->queryIntersectionForDefinedPairs(checkAll, allCharacterPositions.in(), collidingLinkPairs.out());
+        }
     }
 }
 
@@ -993,7 +997,7 @@ void DynamicsSimulator_impl::getWorldState(WorldState_out wstate)
     if (needToUpdatePositions) _updateCharacterPositions();
 
     wstate = new WorldState;
-	
+
     wstate->time = world.currentTime();
     wstate->characterPositions = allCharacterPositions;
     wstate->collisions = collisions;

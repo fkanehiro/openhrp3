@@ -267,9 +267,12 @@ public class BehaviorManager implements WorldReplaceListener {
 			data = model.getJointValues();
 			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
 		}
-		currentDynamics_.checkCollision();
-		WorldStateHolder wsH = new WorldStateHolder();
-		currentDynamics_.getWorldState(wsH);
-		return wsH.value.collisions;
+		if (currentDynamics_.checkCollision(true)){
+		    WorldStateHolder wsH = new WorldStateHolder();
+		    currentDynamics_.getWorldState(wsH);
+		    return wsH.value.collisions;
+		}else{
+		    return null;
+		}
 	}
 }

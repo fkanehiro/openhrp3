@@ -43,6 +43,7 @@ using namespace OpenHRP;
 		CollisionDetector_var collisionDetector;
 
 		CollisionSequence_var collisions;
+		LinkPairSequence_var collidingLinkPairs;
 
 		CharacterPositionSequence_var allCharacterPositions;
 		bool needToUpdatePositions;
@@ -174,7 +175,7 @@ using namespace OpenHRP;
 				const char* targetLink,
 				DblSequence_out jacobian);
 
-		virtual void checkCollision();
+		virtual bool checkCollision(bool checkAll);
 	};
 
 	/**
