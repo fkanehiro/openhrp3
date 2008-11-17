@@ -213,6 +213,7 @@ set(OMNIORB_CFLAGS ${OMNIORB_CFLAGS} CACHE STRING "Compile flags for omniORB")
 
 # OpenRTM-aist
 find_package(OpenRTM REQUIRED)
+set(OPENRTM_IDL_DIR "${OpenHRP_SOURCE_DIR}/idl/OpenRTM")
 
 # Version should be checked here if possible
 include_directories(${OPENRTM_INCLUDE_DIRS})
