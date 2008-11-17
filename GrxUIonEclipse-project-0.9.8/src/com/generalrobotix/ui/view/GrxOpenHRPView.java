@@ -872,7 +872,7 @@ public class GrxOpenHRPView extends GrxBaseView {
             InputDialog dialog = new InputDialog(getParent().getShell(),"Extend Time","Input time value[s] to extend.","5.0",null);
             int result = dialog.open();
 			str = dialog.getValue();
-			if (result == SWT.CANCEL)
+			if (result == InputDialog.CANCEL)
 				return false;
 			try {
 				double d = Double.parseDouble(str);
