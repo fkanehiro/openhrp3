@@ -198,6 +198,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			}
 
 			if (currentWorld_ == null) {
+				MessageDialog.openError(null, "Failed to start simulation", "There is no WorldState item.");
 				GrxDebugUtil.println("[HRP]@startSimulation there is no world.");
 				stopSimulation();
 				return;
@@ -775,7 +776,7 @@ public class GrxOpenHRPView extends GrxBaseView {
                     MessageDialog dialog =new MessageDialog(getParent().getShell(),"Restart the Controller",null,
                         "Controller '"+controllerName+"' may already exist.\n" + "Restart it ?" ,MessageDialog.QUESTION, new String[]{"YES","NO","CANCEL"}, 2);
                     int ans = dialog.open();
-                    if (ans == SWT.YES)
+                    if (ans == 0) // 0 == "YES"
                         doRestart = true;
                 }
 
