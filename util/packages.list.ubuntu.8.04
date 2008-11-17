@@ -15,14 +15,16 @@ g77
 cmake
 
 # omniORB
-libcos4-dev 
-libomnievents-dev 
+libcos4-dev
+libomnievents-dev
 libomniorb4-dev
 libomnithread3-dev
+libomnithread3c2
 omnievents
 omniidl4
 omniidl4-python
 omniorb4
+omniorb4-idl
 omniorb4-nameserver
 python-omniorb2
 python-tk
@@ -59,3 +61,4 @@ libpng12-dev
 # for hrpsys
 # libncurses5-dev
 # libreadline5-dev
+
