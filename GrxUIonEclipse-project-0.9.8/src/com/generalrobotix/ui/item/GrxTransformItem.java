@@ -43,14 +43,17 @@ public class GrxTransformItem extends GrxBaseItem {
 	
 	public GrxTransformItem parent_;
 	public Vector<GrxTransformItem> children_;
+	
+	protected GrxModelItem model_;
 
     /**
      * @brief constructor
      * @name name of this item
      * @manager PluginManager
      */
-    public GrxTransformItem(String name, GrxPluginManager manager) {
+    public GrxTransformItem(String name, GrxPluginManager manager, GrxModelItem model) {
     	super(name, manager);
+    	model_ = model;
     	
         tg_ = new TransformGroup();
         tg_.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
@@ -127,10 +130,11 @@ public class GrxTransformItem extends GrxBaseItem {
         Vector3d v = new Vector3d(pos);
         t3d.setTranslation(v);
         setDblAry("translation", pos, 4);
+        if (model_ != null && parent_ != null) model_.notifyModified();
         try{
         	tg_.setTransform(t3d);
         }catch(BadTransformException e){
-        	System.out.println("Invalid translation:"+v+" is applied to "+getName());
+        	//System.out.println("Invalid translation:"+v+" is applied to "+getName());
         	return false;
         }
         return true;
@@ -162,6 +166,7 @@ public class GrxTransformItem extends GrxBaseItem {
         t3d.setRotation(new AxisAngle4d(rot));
         tg_.setTransform(t3d);
         setDblAry("rotation", rot, 4);
+        if (model_ != null && parent_ != null) model_.notifyModified();
         return true;
     }
 
@@ -198,7 +203,7 @@ public class GrxTransformItem extends GrxBaseItem {
                         	textureInfo = textures[appearanceInfo.textureIndex];
                         }
                     }
-                    GrxShapeItem shape = new GrxShapeItem(getName()+"_shape_"+i, manager_, tsi.transformMatrix,
+                    GrxShapeItem shape = new GrxShapeItem(getName()+"_shape_"+i, manager_, model_, tsi.transformMatrix,
 							shapeInfo, appearanceInfo, materialInfo, textureInfo);
                     shape.setURL(fPath);
 					addChild(shape);
@@ -211,4 +216,13 @@ public class GrxTransformItem extends GrxBaseItem {
 		}
 
     }
+
+    /**
+     * @brief get model item to which this item belongs
+     * @return model item
+     */
+	public GrxModelItem model() {
+		return model_;
+	}
+
 }

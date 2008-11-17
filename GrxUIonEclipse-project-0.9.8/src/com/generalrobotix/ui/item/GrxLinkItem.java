@@ -55,7 +55,6 @@ import com.generalrobotix.ui.util.GrxShapeUtil;
 public class GrxLinkItem extends GrxTransformItem{
 
 	private LinkInfo info_;
-	private GrxModelItem model_;
 	
     // display
     private Switch switchCom_;
@@ -202,7 +201,7 @@ public class GrxLinkItem extends GrxTransformItem{
 	    	info.translation = new double[]{0.0, 0.0, 0.0};
 	    	info.rotation = new double[]{0.0, 0.0, 1.0, 0.0};
 	    	info.specValues = new float[]{-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
-	    	GrxSensorItem sensor = new GrxSensorItem(name, manager_, info);
+	    	GrxSensorItem sensor = new GrxSensorItem(name, manager_, model_, info);
 	    	addSensor(sensor);
     	}catch(Exception ex){
     		ex.printStackTrace();
@@ -242,7 +241,7 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void addSensor(GrxSensorItem sensor){
     	addChild(sensor);
-        // TODO : GrxModelItem.sensorMap_ and GrxModelItem.cameraList_ must be updated later
+        // TODO : GrxModelItem.sensorMap_ and GrxModelItem.cameraList_ must be updated
     }
 
     public void removeSensor(GrxSensorItem sensor){
@@ -320,9 +319,10 @@ public class GrxLinkItem extends GrxTransformItem{
      * @param type type of this joint. It must be one of "fixed", "free", "rotate" and "slide"
      */
     void jointType(String type){
-		if (type.equals("fixed")||type.equals("rotate")||type.equals("free")||type.equals("slide")){
+		if (!jointType().equals(type) && (type.equals("fixed")||type.equals("rotate")||type.equals("free")||type.equals("slide"))){
 	    	info_.jointType = type;
 	    	setProperty("jointType", type);
+    		if (model_ != null) model_.notifyModified();
 		}
     }
     /**
@@ -342,7 +342,22 @@ public class GrxLinkItem extends GrxTransformItem{
     		info_.jointAxis = newAxis;
     		setProperty("jointAxis", axis);
     		resizeBoundingBox();
+    		if (model_ != null) model_.notifyModified();
     	}  	
+    }
+
+    
+    /**
+     * set joint id from string
+     * @param value string
+     */
+    void jointId(String value){
+    	Short id = getShort(value);
+    	if (id != null && id != info_.jointId){
+    		info_.jointId = id;
+    		setShort("jointId", id);
+    		if (model_ != null) model_.notifyModified();
+    	}
     }
     
     /**
@@ -391,6 +406,7 @@ public class GrxLinkItem extends GrxTransformItem{
 		if (com != null && com.length==3){
         	info_.centerOfMass = com;
         	setDblAry("centerOfMass", com);
+    		if (model_ != null) model_.notifyModified();
         	Transform3D t3d = new Transform3D();
         	tgCom_.getTransform(t3d);
         	t3d.setTranslation(new Vector3d(centerOfMass()));
@@ -411,6 +427,7 @@ public class GrxLinkItem extends GrxTransformItem{
     		info_.inertia = newI;
     		setDblAry("momentsOfInertia", info_.inertia);
     		_updateScaleOfBall();
+    		if (model_ != null) model_.notifyModified();
     		return true;
        	}
     	return false;
@@ -433,6 +450,7 @@ public class GrxLinkItem extends GrxTransformItem{
     	info_.mass = m;
         setDbl("mass", info_.mass);
         _updateScaleOfBall();
+		if (model_ != null) model_.notifyModified();
     }
     
     private void _updateScaleOfBall(){
@@ -485,58 +503,62 @@ public class GrxLinkItem extends GrxTransformItem{
     	}else if(property.equals("jointType")){
     		jointType(value);
     	}else if(property.equals("jointId")){
-    		Short id = getShort(value);
-    		if (id != null){
-        		info_.jointId = id;
-        		setProperty(property, value);
-    		}
+    		jointId(value);
     	}else if(property.equals("ulimit")){
     		double[] limit = getDblAry(value);
     		if (limit != null){
     			info_.ulimit = limit;
         		setProperty(property, value);
+        		if (model_ != null) model_.notifyModified();
     		}
     	}else if(property.equals("vlimit")){
     		double[] limit = getDblAry(value);
     		if (limit != null){
     			info_.llimit = limit;
         		setProperty(property, value);
+        		if (model_ != null) model_.notifyModified();
     		}
     	}else if(property.equals("uvlimit")){
     		double[] limit = getDblAry(value);
     		if (limit != null){
     			info_.uvlimit = limit;
         		setProperty(property, value);
+        		if (model_ != null) model_.notifyModified();
     		}
     	}else if(property.equals("lvlimit")){
     		double[] limit = getDblAry(value);
     		if (limit != null){
     			info_.lvlimit = limit;
         		setProperty(property, value);
+        		if (model_ != null) model_.notifyModified();
     		}
     	}else if(property.equals("torqueConst")){
     		Double tc = getDbl(value);
     		if (tc != null){
         		info_.torqueConst = tc;
         		setProperty(property, value);
+        		if (model_ != null) model_.notifyModified();
     		}
     	}else if(property.equals("rotorResistor")){
     		Double rr = getDbl(value);
     		if (rr != null){
         		info_.rotorResistor = rr;
         		setProperty(property, value);
+        		if (model_ != null) model_.notifyModified();
     		}
     	}else if(property.equals("encoderPulse")){
     		Double tc = getDbl(value);
     		if (tc != null){
         		info_.torqueConst = tc;
         		setProperty(property, value);
+        		if (model_ != null) model_.notifyModified();
     		}
     	}else if(property.equals("gearRatio")){
     		Double gr = getDbl(value);
     		if (gr != null){
         		info_.gearRatio = gr;
         		setProperty(property, value);
+        		if (model_ != null) model_.notifyModified();
     		}
     	}else if(property.equals("centerOfMass")){
     		CoM(value);
@@ -615,12 +637,13 @@ public class GrxLinkItem extends GrxTransformItem{
     }
 
     protected GrxLinkItem(String name, GrxPluginManager manager, GrxModelItem model){
-    	super(name, manager);
+    	super(name, manager, model);
 		info_ = new LinkInfo();
 		info_.translation = new double[]{0.0, 0.0, 0.0};
 		info_.rotation = new double[]{0.0, 0.0, 1.0, 0.0};
 		info_.centerOfMass = new double[]{0.0, 0.0, 0.0};
-		info_.inertia = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+		info_.inertia = new double[]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+		info_.mass = 1.0;
 		info_.jointAxis = new double[]{0.0, 0.0, 1.0};
 		info_.jointId = -1;
 		info_.gearRatio = 1.0;
@@ -631,16 +654,16 @@ public class GrxLinkItem extends GrxTransformItem{
 		info_.llimit = new double[]{};
 		info_.uvlimit = new double[]{};
 		info_.lvlimit = new double[]{};
-    	_init(model);
+    	_init();
     }
 	/**
      * @constructor
      * @param info link information retrieved through ModelLoader
      */
 	protected GrxLinkItem(String name, GrxPluginManager manager, GrxModelItem model, LinkInfo info) {
-		super(name, manager);
+		super(name, manager, model);
 		info_ = info;
-		_init(model);
+		_init();
     }
 
 	/**
@@ -752,10 +775,9 @@ public class GrxLinkItem extends GrxTransformItem{
 	/**
 	 * @brief common initialization
 	 */
-	private void _init(GrxModelItem model){
+	private void _init(){
 		_initMenu();
 		
-		model_ = model;
 		model_.addLink(this);
 
 		// CoM display
@@ -820,7 +842,7 @@ public class GrxLinkItem extends GrxTransformItem{
         SensorInfo[] sinfo = info_.sensors;
         if (sinfo != null){
             for (int i=0; i<sinfo.length; i++) {
-            	GrxSensorItem sensor = new GrxSensorItem(sinfo[i].name, manager_, sinfo[i]);
+            	GrxSensorItem sensor = new GrxSensorItem(sinfo[i].name, manager_, model_, sinfo[i]);
             	addSensor(sensor);
             }
         }
@@ -1071,14 +1093,6 @@ public class GrxLinkItem extends GrxTransformItem{
     	}
     }
 
-    /**
-     * @brief get model item to which this link belongs
-     * @return model item
-     */
-	public GrxModelItem model() {
-		return model_;
-	}
-	
 	/**
 	 * delete this link and children
 	 */

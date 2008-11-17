@@ -24,6 +24,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbench;
@@ -55,6 +56,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public boolean update_ = true;
 
     private BodyInfo bInfo_;
+    private boolean bModified_ = false; //< true if this model is modified, false otherwise
 
     public BranchGroup bgRoot_ = new BranchGroup();
     public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
@@ -77,11 +79,25 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     private Switch switchBb_;
     
     /**
+     * @brief notify this model is modified
+     */
+    public void notifyModified(){
+    	System.out.println(getName()+" : modification is notified");
+    	bModified_ = true;
+    }
+    
+    /**
      * @brief get BodyInfo
      * @return BodyInfo
      */
     public BodyInfo getBodyInfo(){
-    	// TODO gather all information
+    	String url = getURL(true);
+    	if (bModified_ || url == null || url.equals("")){
+        	MessageDialog.openInformation(null, "", "Please save model("+getName()+") before starting simulation");
+        	_saveAs();
+        	File f = new File(getURL(true));
+        	load(f);
+    	}
     	return bInfo_;
     }
     
@@ -137,6 +153,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	public void addLink(GrxLinkItem link){
 		System.out.println("link is added : "+link.getName());
 		links_.add(link);
+		notifyModified();
 	}
 	
 	/**
@@ -146,6 +163,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	public void removeLink(GrxLinkItem link){
 		System.out.println("link is removed : "+link.getName());
 		links_.remove(link);
+		notifyModified();
 	}
 	
 	/**
@@ -448,6 +466,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
         long load_etime = System.currentTimeMillis();
         System.out.println("load time = " + (load_etime-load_stime) + "ms");
+        bModified_ = false;
         return true;
     }
 
@@ -511,7 +530,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             	textureInfo = textures[appearanceInfo.textureIndex];
             }
         }
-        GrxShapeItem shape = new GrxShapeItem(name, manager_,
+        GrxShapeItem shape = new GrxShapeItem(name, manager_, this,
         tsi.transformMatrix, shapeInfo, appearanceInfo, materialInfo, textureInfo);
 		return shape;
 	}
@@ -613,6 +632,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param q sequence of joint values
      */
     public void setCharacterPos(LinkPosition[] lpos, double[] q) {
+    	if (bModified_) return;
+    	
         if (!update_)
             return;
 

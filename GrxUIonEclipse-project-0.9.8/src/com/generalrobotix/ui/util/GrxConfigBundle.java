@@ -162,6 +162,18 @@ public class GrxConfigBundle extends Properties {
 	   	}
 		return ret;
 	}
+
+	/**
+	 * @brief associate short value to key
+	 * @param key keyword
+	 * @param value short value
+	 */
+	public final void setShort(String key, short value) {
+		String val = new String();
+		val += String.valueOf(value)+" ";
+		setProperty(key,val);
+	}
+	
 	/**
 	 * @brief get integer array associated to key
 	 * @param key keyword

@@ -85,9 +85,9 @@ public class GrxShapeItem extends GrxTransformItem{
      * @param materialInfo MaterialInfo retrieved through ModelLoader
      * @param textureInfo TextureInfo retrieved through ModelLoader
      */
-    public GrxShapeItem(String name, GrxPluginManager manager, double [] transform,
+    public GrxShapeItem(String name, GrxPluginManager manager, GrxModelItem model, double [] transform,
     		ShapeInfo shapeInfo, AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo) {
-    	super(name, manager);
+    	super(name, manager, model);
 
     	transform_ = transform;
     	shapeInfo_ = shapeInfo;
@@ -669,6 +669,4 @@ public class GrxShapeItem extends GrxTransformItem{
 		
 		return ret;
 	}
-
-				
 }
