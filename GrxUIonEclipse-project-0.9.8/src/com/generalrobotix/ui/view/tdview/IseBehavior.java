@@ -16,8 +16,6 @@
 
 package com.generalrobotix.ui.view.tdview;
 
-//import com.generalrobotix.ui.view.GrxHandView; //kaizo-
-
 import java.awt.AWTEvent;
 import java.awt.event.*;
 import java.util.Enumeration;
@@ -67,10 +65,9 @@ class IseBehavior extends Behavior {
     private Vector<Grx3DViewClickListener> listeners_ = new Vector<Grx3DViewClickListener>();
 
     //--------------------------------------------------------------------
-    // コンストラクタ いじりーksk
+    // コンストラクタ
     public IseBehavior(BehaviorHandler handler/*, GrxHandView v*/) {
         handler_ = handler;
-        //v_ = v; //CHU!
         setSchedulingBounds(
             new BoundingSphere(new Point3d(), Double.POSITIVE_INFINITY)
         );
@@ -104,13 +101,13 @@ class IseBehavior extends Behavior {
         }
 
         wakeupOn(wakeupCondition_);
+
     }
 
     private synchronized void _processMouseEvent(MouseEvent evt) {
         //System.out.println("IseBehavior: processMouseEvent()");
         switch (evt.getID()) {
         case MouseEvent.MOUSE_PRESSED:
-
 			//改造中
 			//v_.addPoint( evt.getPoint().x, evt.getPoint().y );
         	for( Grx3DViewClickListener l : listeners_ )

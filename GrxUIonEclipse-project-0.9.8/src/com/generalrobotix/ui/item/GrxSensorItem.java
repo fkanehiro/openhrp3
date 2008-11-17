@@ -72,8 +72,8 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
      * @param info SensorInfo retrieved through ModelLoader
      * @param parentLink link to which this sensor is attached
      */
-    public GrxSensorItem(String name, GrxPluginManager manager, SensorInfo info) {
-    	super(name, manager);
+    public GrxSensorItem(String name, GrxPluginManager manager, GrxModelItem model, SensorInfo info) {
+    	super(name, manager, model);
 
 		getMenu().clear();
 
@@ -302,7 +302,20 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		}
 	}
 
-    /**
+	/**
+	 * set id from string
+	 * @param value string 
+	 */
+	void id(String value){
+		Short id = getShort(value);
+		if (id != null && info_.id != id){
+			info_.id = id;
+			setShort("id", id);
+			if (model_ != null) model_.notifyModified();
+		}
+	}
+
+	/**
      * @brief check validity of new value of property and update if valid
      * @param property name of property
      * @param value value of property
@@ -315,10 +328,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     	}else if(property.equals("rotation")){
     		rotation(value);
     	}else if(property.equals("id")){
-    		Short id = getShort(value);
-    		if (id != null){
-    			info_.id = id;
-    		}
+    		id(value);
     	}else if(property.equals("type")){
     		type(value);
     	}else{
@@ -328,6 +338,8 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     }
 
     public void type(String type){
+    	if (type().equals(type)) return;
+    	
     	if (type.equals("Vision")){
     		if (info_.specValues == null || info_.specValues.length != 7){
     			info_.specValues = new float[7];
@@ -398,6 +410,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     	}
     	info_.type = type;
     	setProperty("type", type);
+    	if (model_ != null) model_.notifyModified();
     }
     private void _removeSensorSpecificProperties() {
 		// properties of ForceSensor
@@ -488,9 +501,12 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     }
     
     /**
-     * @brief see doc for parent class
+     * @brief set/unset fucus on this item
+     * 
+     * When this item is focused, some geometries are displayed
+     * @param b true to fucus, false to unfocus
      */
-    public void setSelected(boolean b){
+    public void setFocused(boolean b){
     	super.setSelected(b);
     	setVisibleArea(b);
     }

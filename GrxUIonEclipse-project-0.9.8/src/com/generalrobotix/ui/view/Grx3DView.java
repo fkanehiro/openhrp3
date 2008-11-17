@@ -59,7 +59,7 @@ import org.omg.PortableServer.POAPackage.ServantNotActive;
 import org.omg.PortableServer.POAPackage.WrongPolicy;
 import org.eclipse.jface.dialogs.MessageDialog;
 
-import com.sun.j3d.utils.pickfast.PickCanvas;
+//import com.sun.j3d.utils.pickfast.PickCanvas;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 import jp.go.aist.hrp.simulator.*;
@@ -1465,6 +1465,7 @@ public class Grx3DView
         behaviorManager_.removeClickListener( listener );
     }
 
+    /*
     private PickCanvas initPickCanvas(int x, int y){
         PickCanvas pickCanvas = new PickCanvas(
                 getCanvas3D(),
@@ -1536,7 +1537,7 @@ public class Grx3DView
 
         return tg;
     }
-
+*/
     
     
     public void saveScreenShot( File file ){
