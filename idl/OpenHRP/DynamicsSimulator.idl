@@ -533,11 +533,14 @@ module OpenHRP {
 		/**
 		 * @if jp
 		 * @brief 全てのキャラクタ順運動学を計算し、干渉チェックを行います。
+		 * @param checkAll 全てをチェックするか(falseを設定するとひとつ衝突を検出した時点で終了します)
 		 * @else
 		 * Check for collision after calculation of kinematics.
+		 * @param  checkAll     true:  Check All Pairs
+		 * 		  false: Stop when 1 collision is found
 		 * @endif
 		 */
-		void checkCollision();
+		boolean checkCollision(in boolean checkAll);
 
 		/**
 		 * @if jp

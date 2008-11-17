@@ -133,6 +133,7 @@ DynamicsSimulator_impl::DynamicsSimulator_impl(CORBA::ORB_ptr orb)
 	collisionDetector = collisionDetectorFactory->create();
 
 	collisions = new CollisionSequence;
+	collidingLinkPairs = new LinkPairSequence;
 	allCharacterPositions = new CharacterPositionSequence;
 	allCharacterSensorStates = new SensorStateSequence;
 
@@ -824,10 +825,15 @@ void DynamicsSimulator_impl::calcCharacterJacobian(
 	}
 }
 
-void DynamicsSimulator_impl::checkCollision() 
+bool DynamicsSimulator_impl::checkCollision(bool checkAll) 
 {
 	calcWorldForwardKinematics();	
-	collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+    _updateCharacterPositions();
+	if (checkAll){
+		return collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+	}else{
+		return collisionDetector->queryIntersectionForDefinedPairs(checkAll, allCharacterPositions.in(), collidingLinkPairs.out());
+	}
 }
 
 /**
