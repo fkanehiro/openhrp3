@@ -295,7 +295,7 @@ public class GrxVrmlExporter {
 			writer.write(indent+"    DEF "+link.getName()+"_Link Segment{\n");
 			writer.write(indent+"      centerOfMass "+link.getProperty("centerOfMass")+"\n");
 			writer.write(indent+"      mass "+link.mass()+"\n");
-			writer.write(indent+"      momentsOfInertia [ "+link.getProperty("inertia")+"]\n");
+			writer.write(indent+"      momentsOfInertia [ "+link.getProperty("momentsOfInertia")+"]\n");
 			writer.write(indent+"      children[\n");
 			String exported_url = null;
 			for (int i=0; i<link.children_.size(); i++){
