@@ -1,11 +1,6 @@
 
 ADD_SUBDIRECTORY(hrpCorba)
 ADD_SUBDIRECTORY(hrpUtil)
-if(PNG_JPEG_BUILD)
-  ADD_SUBDIRECTORY(hrpParser/lpng1232)
-  ADD_SUBDIRECTORY(hrpParser/Jpeg-6b)
-  ADD_SUBDIRECTORY(hrpParser/zlib123)
-endif()
 ADD_SUBDIRECTORY(hrpParser)
 ADD_SUBDIRECTORY(hrpCollision)
 ADD_SUBDIRECTORY(hrpBase)

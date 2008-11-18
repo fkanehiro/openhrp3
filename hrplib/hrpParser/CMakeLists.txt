@@ -9,6 +9,13 @@
 
 # @author Shin'ichiro Nakaoka
 
+if(PNG_JPEG_BUILD)
+  ADD_SUBDIRECTORY(lpng1232)
+  ADD_SUBDIRECTORY(Jpeg-6b)
+  ADD_SUBDIRECTORY(zlib123)
+endif()
+ADD_SUBDIRECTORY(triangulator)
+
 set(sources
   VrmlNodes.cpp
   VrmlParser.cpp
