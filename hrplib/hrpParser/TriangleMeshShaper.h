@@ -18,6 +18,8 @@
 
 #include "config.h"
 #include "VrmlNodes.h"
+#include "triangulator/geometry.h"
+#include "triangulator/triangulator.h"
 #include <string>
 #include <boost/signal.hpp>
 

@@ -290,6 +290,7 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
     indexPositionMap.clear();
     faceIndexMap.clear();
 
+    PolygonTriangulator<SFFloat> triangulate(vertices);
     for(int i=0; i < numOrgIndices; ++i){
 
         int index = orgIndices[i];
@@ -305,31 +306,50 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
 
         } else {
             trianglesInPolygon.clear();
-            int numTriangles = addTrianglesDividedFromPolygon(polygon, vertices, trianglesInPolygon);
-            
-            if(numTriangles > 0){
-                // \todo ここで3頂点に重なりはないか、距離が短すぎないかなどのチェックを行った方がよい //
-                for(int j=0; j < numTriangles; ++j){
-                    if(faceSet->ccw){
-                        for(int k=0; k < 3; ++k){
-                            int indexInPolygon = trianglesInPolygon[j*3 + k];
-                            indices.push_back(polygon[indexInPolygon]);
-                            indexPositionMap.push_back(polygonTopIndexPosition + indexInPolygon);
+            int numTriangles = 1;
+            if(polygon.size() >3){
+                triangulate(polygon, trianglesInPolygon);
+                numTriangles = trianglesInPolygon.size()/3;
+            }
+            // \todo ここで3頂点に重なりはないか、距離が短すぎないかなどのチェックを行った方がよい //
+            for(int j=0; j < numTriangles; ++j){
+                if(faceSet->ccw){
+                    for(int k=0; k < 3; ++k){
+                        int indexInPolygon;
+                        if(polygon.size() >3) 
+                            indexInPolygon = trianglesInPolygon[j*3 + k];
+                        else
+                            indexInPolygon = polygon[k];
+                        indices.push_back(indexInPolygon);
+                        int j;
+                        for(j=0; j<polygon.size(); j++){
+                            if(polygon[j]==indexInPolygon)
+                                break;
                         }
-                    } else {
-                        for(int k=2; k >= 0; --k){
-                            int indexInPolygon = trianglesInPolygon[j*3 + k];
-                            indices.push_back(polygon[indexInPolygon]);
-                            indexPositionMap.push_back(polygonTopIndexPosition + indexInPolygon);
-                        }
+                        indexPositionMap.push_back(polygonTopIndexPosition + j);
                     }
-                    indices.push_back(-1);
-                    indexPositionMap.push_back(-1);
+                } else {
+                    for(int k=2; k >= 0; --k){
+                        int indexInPolygon;
+                        if(polygon.size() >3) 
+                            indexInPolygon = trianglesInPolygon[j*3 + k];
+                        else
+                            indexInPolygon = polygon[k];
+                        indices.push_back(indexInPolygon);
+                        int j;
+                        for(j=0; j<polygon.size(); j++){
+                            if(polygon[j]==indexInPolygon) 
+                                break;
+                        }
+                        indexPositionMap.push_back(polygonTopIndexPosition + j);
+                    }
                 }
+                indices.push_back(-1);
+                indexPositionMap.push_back(-1);
+            }
                 
-                for(int j=0; j < numTriangles; ++j){
-                    faceIndexMap.push_back(orgFaceIndex);
-                }
+            for(int j=0; j < numTriangles; ++j){
+                faceIndexMap.push_back(orgFaceIndex);
             }
             polygonTopIndexPosition = i + 1;
             orgFaceIndex++;

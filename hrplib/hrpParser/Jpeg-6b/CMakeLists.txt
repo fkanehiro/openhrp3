@@ -97,4 +97,4 @@ install(
   ARCHIVE DESTINATION lib CONFIGURATIONS Release
 )
 
-install(FILES ${headers} DESTINATION include/hrpParser)
+install(FILES ${headers} DESTINATION include/hrpParser/${JPEG_LIBRARY})
