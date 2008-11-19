@@ -232,7 +232,7 @@ RTC::ReturnCode_t PA10Controller::onExecute(RTC::UniqueId ec_id)
 
 extern "C"
 {
-	DllExport void PA10ControllerInit(RTC::Manager* manager)
+	DLL_EXPORT void PA10ControllerInit(RTC::Manager* manager)
 	{
 		RTC::Properties profile(PA10Controller_spec);
 		manager->registerFactory(profile,

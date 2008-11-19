@@ -255,7 +255,7 @@ RTC::ReturnCode_t SamplePD::onExecute(RTC::UniqueId ec_id)
 extern "C"
 {
 
-	DllExport void SamplePDInit(RTC::Manager* manager)
+	DLL_EXPORT void SamplePDInit(RTC::Manager* manager)
 	{
 		RTC::Properties profile(samplepd_spec);
 		manager->registerFactory(profile,

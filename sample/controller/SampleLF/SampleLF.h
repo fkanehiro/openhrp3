@@ -152,17 +152,7 @@ class SampleLF
 
 extern "C"
 {
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-# if defined MAKE_RTC_DLL
-#   define DllExport __declspec(dllexport)
-# else
-#   define DllExport /* Not dll generate */
-# endif 
-#else /* Windows */
-# define DllExport /* Not Windows platform */
-#endif
-
-DllExport void SampleLFInit(RTC::Manager* manager);
+DLL_EXPORT void SampleLFInit(RTC::Manager* manager);
 };
 
 #endif // NEWSAMPLELF_H

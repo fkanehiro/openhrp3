@@ -317,7 +317,7 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
 extern "C"
 {
 
-	DllExport void SampleLFInit(RTC::Manager* manager)
+	DLL_EXPORT void SampleLFInit(RTC::Manager* manager)
 	{
 		RTC::Properties profile(samplepd_spec);
 		manager->registerFactory(profile,
