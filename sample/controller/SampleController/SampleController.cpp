@@ -363,7 +363,7 @@ RTC::ReturnCode_t SampleController::onRateChanged(RTC::UniqueId ec_id)
 extern "C"
 {
  
-  DllExport void SampleControllerInit(RTC::Manager* manager)
+  DLL_EXPORT void SampleControllerInit(RTC::Manager* manager)
   {
     RTC::Properties profile(samplecontroller_spec);
     manager->registerFactory(profile,

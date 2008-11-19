@@ -168,7 +168,6 @@ RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
     std::cout << "SampleSV::onExecute" << std::endl;
   }
 
-  // £é"ËèÕîÇâËîU¤ç5Áâ¡àÎåontroller_impl::control£öÃÉ¿ë¼å­î½Û³û»ô£õ1ÍçÛâ¡¦
   m_steerIn.update();
   m_velIn.update();
 
@@ -177,11 +176,9 @@ RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
   steer >> dummy; // skip time
   int i;
 
-  //¥Õ¥¡¥¤¥ë£å"¡¦f¡¼¥¿¤ê¡¦µÔÅô"¡¦Ûâ¡¦¡¦|¡¼¥È£õ7¡¦
   double steer_ref;
   steer >> steer_ref;
 
-  //m_torque£ö¡Ç¡¼¥¿¤ê¡¼¥í£õ#³ãZ¥Ã¥È
   for(int i=0; i<DOF; i++) m_torque.data[i] = 0.0;
   
   m_torque.data[STEERING_ID] = (steer_ref - m_steer.data[STEERING_ID]) * STEERING_P_GAIN - m_vel.data[STEERING_ID] * STEERING_D_GAIN;
@@ -239,7 +236,7 @@ RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
 extern "C"
 {
 
-	DllExport void SampleSVInit(RTC::Manager* manager)
+	DLL_EXPORT void SampleSVInit(RTC::Manager* manager)
 	{
 		RTC::Properties profile(samplepd_spec);
 		manager->registerFactory(profile,

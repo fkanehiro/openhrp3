@@ -244,7 +244,7 @@ RTC::ReturnCode_t SampleHG::onExecute(RTC::UniqueId ec_id)
 extern "C"
 {
 
-	DllExport void SampleHGInit(RTC::Manager* manager)
+	DLL_EXPORT void SampleHGInit(RTC::Manager* manager)
 	{
 		RTC::Properties profile(samplepd_spec);
 		manager->registerFactory(profile,
