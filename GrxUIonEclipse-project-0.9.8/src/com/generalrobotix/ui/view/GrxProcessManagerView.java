@@ -90,7 +90,9 @@ public class GrxProcessManagerView extends GrxBaseView {
 
 			ProcessInfo pi = new ProcessInfo();
 			pi.id = id;
-			pi.com.add(GrxXmlUtil.getString(e, "com", ""));
+//			pi.com.add(GrxXmlUtil.getString(e, "com", ""));
+			pi.args = GrxXmlUtil.getString(e, "args" , "");
+			pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args );
 			String str = null;
 			for (int j = 0; !(str = GrxXmlUtil.getString(e, "env"+j, "")).equals(""); j++)
 				pi.env.add(str);
