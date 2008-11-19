@@ -14,6 +14,7 @@ import org.osgi.framework.BundleContext;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.GrxServerManager;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -95,6 +96,11 @@ public class Activator extends AbstractUIPlugin {
 	public void stop(BundleContext context) throws Exception {
 
 		manager_.shutdown();
+        try{
+            GrxServerManager.ShutdownServerInfo();
+        } catch(Exception    e) {
+            e.printStackTrace();
+        }
 		
 		plugin = null;
 		super.stop(context);

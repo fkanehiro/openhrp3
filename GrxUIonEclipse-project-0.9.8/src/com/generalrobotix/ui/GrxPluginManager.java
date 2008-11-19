@@ -145,8 +145,38 @@ public class GrxPluginManager
 
 		// load default plugin settings
 		// 移植前はhomePath_においてある事を期待していたが、プラグインに含めるようにした。
+		// homePath_にgrxuirc.xmlがあるかチェックし、なければプラグインフォルダからデフォルトをコピーする。
 		rcProject_ = new GrxProjectItem("grxuirc", this);
-	    File rcFile = new File( Activator.getPath() + "/grxuirc.xml");
+//	    File rcFile = new File( Activator.getPath() + "/grxuirc.xml");
+		// Windows と Linuxで使い分ける。
+		File rcFile;
+		if( System.getProperty("os.name").equals("Linux"))
+		{
+			rcFile = new File( homePath_ + "grxuirc.xml");
+		}
+		else
+		{
+			rcFile = new File( System.getenv("TEMP") + File.separator + "grxuirc.xml" );
+		}
+				
+		if( !rcFile.exists())
+	    {
+	    	// File copy
+	    	try{
+	    		InputStream in = new FileInputStream( Activator.getPath() + File.separator + "grxuirc.xml");
+	    		OutputStream out = new FileOutputStream( rcFile.toString() );
+	    		byte[] buf = new byte[1024];
+	    		int len ;
+	    		while(( len = in.read( buf )) > 0 )
+	    		{
+	    			out.write( buf , 0 , len );
+	    		}
+	    		in.close();
+	    		out.close();
+	    	}catch ( IOException e) {
+	    	    e.printStackTrace();
+	    	}
+	    }
 	    if (!rcProject_.load( rcFile )) {
 			MessageDialog.openError(null,"Can't Start GrxUI", "Can't find grxuirc.xml. on "+rcFile );
 			//TODO: プラグインを閉じる方法があればそれを採用する?

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grxui>
     <processmanagerconfig>
-        <process dir="$(BIN_DIR)" waitcount="500"/>
-        <process com="$(BIN_DIR)/NameServer$(BIN_SFX)" id="NameService"/>
-        <process com="$(BIN_DIR)/ModelLoader$(BIN_SFX)" hasshutdown="true" id="ModelLoader"/>
-        <process com="$(BIN_DIR)/CollisionDetector$(BIN_SFX)" hasshutdown="true" id="CollisionDetectorFactory"/>
-        <process com="$(BIN_DIR)/DynamicsSimulator$(BIN_SFX)" hasshutdown="true" id="DynamicsSimulatorFactory" waitcount="1000"/>
+        <process dir="$(BIN_DIR)" id="" waitcount="500"/>
+        <process args="" autostart="true" com="$(BIN_DIR)/NameServer$(BIN_SFX)" id="NameService"/>
+        <process args="-ORBInitRef NameService=corbaloc:iiop:localhost:2809/NameService" autostart="true" com="$(BIN_DIR)/../openhrp-model-loader" hasshutdown="true" id="ModelLoader"/>
+        <process args="-ORBInitRef NameService=corbaloc:iiop:localhost:2809/NameService" autostart="true" com="$(BIN_DIR)/../openhrp-collision-detector" hasshutdown="true" id="CollisionDetectorFactory"/>
+        <process args="-ORBInitRef NameService=corbaloc:iiop:localhost:2809/NameService" autostart="true" com="$(BIN_DIR)/../openhrp-aist-dynamics-simulator" hasshutdown="true" id="DynamicsSimulatorFactory" waitcount="1000"/>
     </processmanagerconfig>
 
     <mode name="Simulation" select="true">

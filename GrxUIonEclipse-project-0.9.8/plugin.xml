@@ -63,6 +63,10 @@
             id="com.generalrobotix.ui.view.GrxTextEditorViewPart"
             name="Text Editor">
       </view>
+      <view
+            class="com.generalrobotix.ui.view.GrxServerManagerViewPart"
+            id="com.generalrobotix.ui.view.GrxServerManagerViewPart"
+            name="Server Manager"/>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">

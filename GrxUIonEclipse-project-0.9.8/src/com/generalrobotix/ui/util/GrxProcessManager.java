@@ -239,6 +239,7 @@ public class GrxProcessManager {
 		public boolean doKillall = false;
 		public boolean autoStart = true;
 		public boolean autoStop = true;
+		public String args = null;
 		
 		public void print(){
 			GrxDebugUtil.println("\nID: " + id);
