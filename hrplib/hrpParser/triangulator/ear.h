@@ -2,6 +2,7 @@
 #define __EAR_H__
 
 #include "polygon.h"
+#include <iostream>
 
 
 namespace geometry {
@@ -87,22 +88,25 @@ protected:
 };//class IsEar
 
 template<typename Scalar>
-class IsFlatPoint: IsEar<Scalar>
+class IsFlatPoint: public IsEar<Scalar>
 {
 public:
-    IsFlatPoint(PolygonType& polygon): IsEar(polygon) {}
+    typedef Vertex<Scalar> VertexType;
+    typedef Polygon<Scalar> PolygonType;
+  
+    IsFlatPoint(PolygonType& polygon): IsEar<Scalar>::IsEar(polygon) {}
 
     bool operator()(const VertexType& cvtx)
-  {
-    VertexType& vtx = const_cast<VertexType&>(cvtx);
-    if (vtx.convexity(_ccs) != Flat) return false;
-    else return true;
-  }
+    {
+        VertexType& vtx = const_cast<VertexType&>(cvtx);
+        if (vtx.convexity(IsEar<Scalar>::_ccs) != Flat) return false;
+        else return true;
+    }
 };
 
 
 template<typename Scalar>
-void triangulate(Polygon<Scalar>& pgn, std::vector< Triangle<Scalar,3> >& mesh, std::vector<Point<Scalar,3>>& removePoint )
+void triangulate(Polygon<Scalar>& pgn, std::vector< Triangle<Scalar,3> >& mesh, std::vector< Point<Scalar,3> >& removePoint )
 {
   typedef Vertex<Scalar> Vtx;
   if (pgn.size() < 3) { return; }
