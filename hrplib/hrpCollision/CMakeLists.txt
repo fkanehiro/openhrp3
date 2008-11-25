@@ -14,6 +14,8 @@ set(sources
   ColdetModelPair.cpp
   InsertCollisionPair.cpp
   TriOverlap.cpp
+  SSVTreeCollider.cpp
+  DistFuncs.cpp
   Opcode/Ice/IceAABB.cpp
   Opcode/Ice/IceContainer.cpp
   Opcode/Ice/IceIndexedTriangle.cpp
