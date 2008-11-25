@@ -1,11 +1,11 @@
 /*
- *  GrxProcessManager.java
- *
- *  Copyright (C) 2007 GeneralRobotix, Inc.
- *  All Rights Reserved
- *
- *  @author Yuichiro Kawasumi (General Robotix, Inc.)
- *  2004/03/16
+ * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
+ * All rights reserved. This program is made available under the terms of the
+ * Eclipse Public License v1.0 which accompanies this distribution, and is
+ * available at http://www.eclipse.org/legal/epl-v10.html
+ * Contributors:
+ * General Robotix Inc.
+ * National Institute of Advanced Industrial Science and Technology (AIST) 
  */
 
 package com.generalrobotix.ui.util;
@@ -390,10 +390,10 @@ public class GrxServerManager extends Composite{
             pi.id = vecServerInfo.elementAt(localDim).id ;
             pi.args = vecArgsText.elementAt(localDim).getText();
             pi.com.add( vecPathText.elementAt(localDim).getText() + " " + pi.args);
-            pm.register(pi);
             GrxProcessManager.AProcess p = pm.get(pi.id);
             if( p.stop()){
             	vecButton.elementAt(localDim).setText(START);
+                pm.unregister(pi.id);
             }
         }
     }
@@ -401,6 +401,7 @@ public class GrxServerManager extends Composite{
     //タブウィンドウが閉じるときGUIによって生じた変更を反映する。
     private void storevecServerInfo()throws Exception{
         for (int i = 0; i < GrxServerManager.DIM_SERVERS.length; ++i){
+            vecServerInfo.elementAt(i).com.clear();
             vecServerInfo.elementAt(i).com.add(vecPathText.elementAt(i).getText());
             vecServerInfo.elementAt(i).args = vecArgsText.elementAt(i).getText();
             vecServerInfo.elementAt(i).autoStart = vecChkBox.elementAt(i).getSelection();
