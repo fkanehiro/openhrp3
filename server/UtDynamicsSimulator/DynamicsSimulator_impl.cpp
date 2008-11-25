@@ -836,6 +836,13 @@ bool DynamicsSimulator_impl::checkCollision(bool checkAll)
 	}
 }
 
+void DynamicsSimulator_impl::checkDistance(DistanceSequence_out distances)
+{
+    calcWorldForwardKinematics();
+    _updateCharacterPositions();
+	collisionDetector->queryDistanceForDefinedPairs(allCharacterPositions.in(), distances);
+}
+
 /**
  * constructor
  * @param   orb     reference to ORB

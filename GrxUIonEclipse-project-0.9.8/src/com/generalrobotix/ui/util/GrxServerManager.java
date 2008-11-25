@@ -10,37 +10,9 @@
 
 package com.generalrobotix.ui.util;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
 import java.util.Vector;
 
-import jp.go.aist.hrp.simulator.ServerObject;
-import jp.go.aist.hrp.simulator.ServerObjectHelper;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.DisposeEvent;
@@ -52,14 +24,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
@@ -78,7 +48,6 @@ public class GrxServerManager extends Composite{
     static private final String DIM_SERVERS[] = {
         "CollisionDetectorFactory", "DynamicsSimulatorFactory", "ModelLoader", "NameService"
         };
-    static private final int HEIGHT_HINT = 26;
     static private final int HORIZON_INDENT = 4;
     static private final int LABEL_LENGTH = 32;
     static private final int TEXT_LENGTH = 256;
@@ -126,7 +95,7 @@ public class GrxServerManager extends Composite{
     //Xmlファイルハンドルの取得
     static private File getConfigXml(){
         File ret = null;
-        if (System.getProperty("os.name").equals("Linux")) {
+        if (System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X")) {
             strTempDir = LINUX_TMP_DIR;
         } else { //Windows と　仮定
             strTempDir = new String( System.getenv("TEMP") );

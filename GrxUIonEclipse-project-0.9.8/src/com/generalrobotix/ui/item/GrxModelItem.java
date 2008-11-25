@@ -132,6 +132,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		_initMenu();
 		
         bgRoot_.setCapability(BranchGroup.ALLOW_DETACH);
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
         // create root link
@@ -389,6 +390,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             manager_.setSelectedItem(this, false);
         bgRoot_ = new BranchGroup();
         bgRoot_.setCapability(BranchGroup.ALLOW_DETACH);
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
         file_ = f;
@@ -966,9 +968,17 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         Transform3D t3dLocal = new Transform3D();
         tg.getTransform(t3dLocal);
 		t3dLocal.invert();
-		for (int i=0; i<links_.size(); i++) 
+		for (int i=0; i<links_.size(); i++) {
+			System.out.println("resizeBoundingBox : "+links_.get(i).getName()+", tg = "+links_.get(i).tg_);
+			for (int j=0; j<links_.get(i).children_.size(); j++){
+				System.out.println("  "+links_.get(i).children_.get(j).getName()+"("+links_.get(i).children_.get(j).tg_+")");
+			}
+			System.out.println(" children of tg_:");
+			for (int j=0; j<links_.get(i).tg_.numChildren(); j++){
+				System.out.println("    "+links_.get(i).tg_.getChild(j));
+			}
         	modifier._calcUpperLower(links_.get(i).tg_, t3dLocal);
-
+		}
     	Shape3D shapeNode = (Shape3D)switchBb_.getChild(0);
     	Geometry gm = (Geometry)shapeNode.getGeometry(0);
 
@@ -1021,16 +1031,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public void setWireFrame(boolean b, Node node){
         if (node instanceof Switch) {
             return;
-        } else if (node instanceof BranchGroup) {
-            BranchGroup bg = (BranchGroup) node;
-            for (int i = 0; i < bg.numChildren(); i++)
-                setWireFrame(b, bg.getChild(i));
-
-        } else if (node instanceof TransformGroup) {
-            TransformGroup tg = (TransformGroup) node;
-            for (int i = 0; i < tg.numChildren(); i++)
-                setWireFrame(b, tg.getChild(i));
-
         } else if (node instanceof Group) {
             Group g = (Group) node;
             for (int i = 0; i < g.numChildren(); i++)
@@ -1074,16 +1074,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     private void setTransparencyMode(boolean b, Node node) {
         if (node instanceof Switch) {
             return;
-        } else if (node instanceof BranchGroup) {
-            BranchGroup bg = (BranchGroup) node;
-            for (int i = 0; i < bg.numChildren(); i++)
-                setTransparencyMode(b, bg.getChild(i));
-
-        } else if (node instanceof TransformGroup) {
-            TransformGroup tg = (TransformGroup) node;
-            for (int i = 0; i < tg.numChildren(); i++)
-                setTransparencyMode(b, tg.getChild(i));
-
         } else if (node instanceof Group) {
             Group g = (Group) node;
             for (int i = 0; i < g.numChildren(); i++)

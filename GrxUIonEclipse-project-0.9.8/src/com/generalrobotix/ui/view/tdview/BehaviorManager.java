@@ -330,4 +330,26 @@ public class BehaviorManager implements WorldReplaceListener {
 		}
 	}
 
+	/**
+	 * @brief get distance information
+	 * 
+	 * Before calling this method, dynamics server object must be initialized by calling initDynamicsSimulator()
+	 * @param modelList list of model items. Positions of these items are updated
+	 * @return distance information
+	 */
+	public Distance[] getDistance(List<GrxModelItem> modelList) {
+		if (currentDynamics_ == null) return null;
+		for (int i=0; i<modelList.size(); i++)  {
+			GrxModelItem model = modelList.get(i);
+			String name = model.getName();
+			GrxLinkItem base = model.rootLink();
+			double[] data = model.getTransformArray(base);
+			currentDynamics_.setCharacterLinkData(name, base.getName(), LinkDataType.ABS_TRANSFORM, data);
+			data = model.getJointValues();
+			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
+		}
+		DistanceSequenceHolder dsh = new DistanceSequenceHolder();
+		currentDynamics_.checkDistance(dsh);
+		return dsh.value;
+	}
 }

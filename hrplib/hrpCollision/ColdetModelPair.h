@@ -39,6 +39,8 @@ namespace hrp {
             return (detectCollisionsSub(false) != 0);
         }
 
+        double computeDistance(double *point0, double *point1);
+
       private:
         collision_data* detectCollisionsSub(bool detectAllContacts);
         collision_data* detectMeshMeshCollisions(bool detectAllContacts);

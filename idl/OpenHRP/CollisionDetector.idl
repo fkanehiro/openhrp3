@@ -136,7 +136,44 @@ module OpenHRP {
 						   in CharacterPositionSequence positions,
 						   out CollisionSequence collisions
 						   );
-    
+
+    /**
+     * @if jp
+     * 既に設定されたペアに対して距離計算を行います。
+     * @param positions キャラクタの位置/姿勢
+     * @param distances 各ペアに対する距離情報の配列
+     * @else
+     * Check for Distance between pre-defined Pairs
+     * @param  positions    Position and Attitude of Object
+     * @param  distances  Array of distance information 
+     * @endif
+     */
+    void queryDistanceForDefinedPairs
+    (
+     in CharacterPositionSequence positions,
+     out DistanceSequence distances
+     );
+  
+    /**
+     * @if jp
+     * ペアを設定し距離計算を行います。
+     * @param checkPairs ペア
+     * @param positions キャラクタの位置/姿勢
+     * @param distances 各ペアに対する距離情報の配列
+     * @else
+     * Check for Distance between Given Pairs
+     * @param  checkPairs   Array of Pairs to check for Collision
+     * @param  positions    Position and Attitude of Object
+     * @param  distances  Array of distance information 
+     * @endif
+     */
+    void queryDistanceForGivenPairs
+    (
+     in LinkPairSequence checkPairs,
+     in CharacterPositionSequence positions,
+     out DistanceSequence distances
+     );
+  
   };
 
   /**

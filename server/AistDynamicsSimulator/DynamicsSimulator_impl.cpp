@@ -988,6 +988,16 @@ bool DynamicsSimulator_impl::checkCollision(bool checkAll)
 }
 
 
+void DynamicsSimulator_impl::checkDistance(DistanceSequence_out distances)
+{
+    calcWorldForwardKinematics();
+    _updateCharacterPositions();
+    if(!USE_INTERNAL_COLLISION_DETECTOR){
+        collisionDetector->queryDistanceForDefinedPairs(allCharacterPositions.in(), distances);
+    }
+}
+
+
 void DynamicsSimulator_impl::getWorldState(WorldState_out wstate)
 {
     if(debugMode){

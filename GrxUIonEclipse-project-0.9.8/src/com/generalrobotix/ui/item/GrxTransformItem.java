@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.AxisAngle4d;
@@ -32,6 +33,7 @@ import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
+import com.generalrobotix.ui.util.GrxShapeUtil;
 
 /**
  * @brief item which have a transformation
@@ -43,6 +45,8 @@ public class GrxTransformItem extends GrxBaseItem {
 	
 	public GrxTransformItem parent_;
 	public Vector<GrxTransformItem> children_;
+	
+	private Switch switchAxes_;
 	
 	protected GrxModelItem model_;
 
@@ -56,12 +60,18 @@ public class GrxTransformItem extends GrxBaseItem {
     	model_ = model;
     	
         tg_ = new TransformGroup();
+        tg_.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
         tg_.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
         tg_.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+        tg_.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         tg_.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 
+        switchAxes_ = GrxShapeUtil.createAxes();
+        tg_.addChild(switchAxes_);
+        
         bg_ = new BranchGroup();
         bg_.setCapability(BranchGroup.ALLOW_DETACH);
+        bg_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
         bg_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
         
         bg_.addChild(tg_);
@@ -223,6 +233,11 @@ public class GrxTransformItem extends GrxBaseItem {
      */
 	public GrxModelItem model() {
 		return model_;
+	}
+	
+	public void setFocused(boolean b){
+		super.setFocused(b);
+		switchAxes_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
 	}
 
 }

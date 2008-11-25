@@ -185,6 +185,36 @@ module OpenHRP {
 
 	/**
 	 * @if jp
+	 * 距離，最近点情報
+	 * @endif
+	 */
+	struct Distance
+	{
+		/**
+		 * @if jp
+		 * ペア
+		 * @endif
+		 */
+		LinkPair				pair;
+		/**
+		 * @if jp
+		 * 距離
+		 * @endif
+		 */
+		double 					minD;
+		/**
+		 * @if jp
+		 * 最近点
+		 * @endif
+		 */
+		DblArray3				point0;
+		DblArray3				point1;
+	};
+
+	typedef sequence <Distance> DistanceSequence;
+
+	/**
+	 * @if jp
 	 * シミュレーションの情報
 	 * @endif
 	 */

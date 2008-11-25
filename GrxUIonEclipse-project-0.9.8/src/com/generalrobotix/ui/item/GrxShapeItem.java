@@ -118,6 +118,12 @@ public class GrxShapeItem extends GrxTransformItem{
         	tg_.addChild(linkShape3D);
         }else{
         	Primitive primitive = createPrimitive(shapeInfo, appearanceInfo, materialInfo, textureInfo);
+        	for (int i=0; i<primitive.numChildren(); i++){
+        		if (primitive.getChild(i) instanceof Shape3D){
+        			Shape3D shape = (Shape3D)primitive.getChild(i);
+        			shape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+        		}
+        	}
         	tg_.addChild(primitive);
         }
 

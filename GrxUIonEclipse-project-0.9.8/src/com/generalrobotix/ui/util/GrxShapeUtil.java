@@ -11,7 +11,6 @@
 package com.generalrobotix.ui.util;
 
 import javax.media.j3d.Appearance;
-import javax.media.j3d.BranchGroup;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
@@ -33,7 +32,7 @@ public class GrxShapeUtil{
 	 * @brief create X(red),Y(green) and Z(blue) axes
 	 * @return
 	 */
-	public static BranchGroup createAxes(){
+	public static Switch createAxes(){
         Shape3D shape = new Shape3D();
         shape.setPickable(false);
         shape.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
@@ -63,10 +62,16 @@ public class GrxShapeUtil{
         }
         TransformGroup tg = new TransformGroup();
         tg.addChild(shape);
-        BranchGroup bg = new BranchGroup();
-        bg.setCapability(BranchGroup.ALLOW_DETACH);
-        bg.addChild(tg);
-        return bg;
+        
+        Switch ret = new Switch();
+        ret.setCapability(Switch.ALLOW_CHILDREN_EXTEND);
+        ret.setCapability(Switch.ALLOW_CHILDREN_READ);
+        ret.setCapability(Switch.ALLOW_CHILDREN_WRITE);
+        ret.setCapability(Switch.ALLOW_SWITCH_READ);
+        ret.setCapability(Switch.ALLOW_SWITCH_WRITE);
+        ret.addChild(tg);
+
+        return ret;
     }
 
 

@@ -176,6 +176,9 @@ using namespace OpenHRP;
 				DblSequence_out jacobian);
 
 		virtual bool checkCollision(bool checkAll);
+
+		virtual void checkDistance(DistanceSequence_out distances);
+
 	};
 
 	/**

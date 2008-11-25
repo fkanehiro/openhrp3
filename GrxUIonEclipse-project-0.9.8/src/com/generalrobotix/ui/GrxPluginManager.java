@@ -150,7 +150,8 @@ public class GrxPluginManager
 //	    File rcFile = new File( Activator.getPath() + "/grxuirc.xml");
 		// Windows と Linuxで使い分ける。
 		File rcFile;
-		if( System.getProperty("os.name").equals("Linux"))
+		System.out.println("os.name = "+System.getProperty("os.name"));
+		if( System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X"))
 		{
 			rcFile = new File( homePath_ + "grxuirc.xml");
 		}
@@ -158,7 +159,7 @@ public class GrxPluginManager
 		{
 			rcFile = new File( System.getenv("TEMP") + File.separator + "grxuirc.xml" );
 		}
-				
+		System.out.println("rcFile="+rcFile);
 		if( !rcFile.exists())
 	    {
 	    	// File copy
