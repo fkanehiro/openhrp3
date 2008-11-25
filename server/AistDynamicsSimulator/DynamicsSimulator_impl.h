@@ -168,6 +168,8 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
 
     virtual bool checkCollision(bool checkAll);
 
+    virtual void checkDistance(DistanceSequence_out distances);
+
     virtual void getWorldState(WorldState_out wstate);
 
     virtual void getCharacterSensorState(const char* characterName, SensorState_out sstate);

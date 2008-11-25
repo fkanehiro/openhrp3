@@ -981,7 +981,7 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void setFocused(boolean b){
     	//if (b!=isSelected()) System.out.println("GrxLinkItem.setFocused("+getName()+" of "+model_.getName()+", flag = "+b+")");
-    	super.setSelected(b);
+    	super.setFocused(b);
     	setVisibleCoM(b);
     	if (b){
     		if (jointType().equals("rotate") || jointType().equals("slide")) {

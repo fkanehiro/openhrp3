@@ -264,6 +264,37 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForGivenPairs
 }
 
 
+void CollisionDetector_impl::queryDistanceForDefinedPairs
+(
+    const CharacterPositionSequence& characterPositions,
+    DistanceSequence_out out_distances
+    )
+{
+    updateAllLinkPositions(characterPositions);
+    computeDistances(coldetModelPairs, out_distances);
+}
+
+
+void CollisionDetector_impl::queryDistanceForGivenPairs
+(
+    const LinkPairSequence& checkPairs,
+    const CharacterPositionSequence& characterPositions,
+    DistanceSequence_out out_distances
+    )
+{
+    updateAllLinkPositions(characterPositions);
+
+    vector<ColdetModelPairEx> tmpColdetPairs;
+	
+    for(unsigned int i=0; i < checkPairs.length(); ++i){
+        const LinkPair& linkPair = checkPairs[i];
+        addCollisionPairSub(linkPair, tmpColdetPairs);
+    }
+
+    computeDistances(tmpColdetPairs, out_distances);
+}
+
+
 bool CollisionDetector_impl::detectCollidedLinkPairs
 (vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll)
 {
@@ -298,6 +329,24 @@ bool CollisionDetector_impl::detectCollidedLinkPairs
     }
 
     return detected;
+}
+
+void CollisionDetector_impl::computeDistances
+(vector<ColdetModelPairEx>& coldetPairs, DistanceSequence_out& out_distances)
+{
+    out_distances = new DistanceSequence();
+    out_distances->length(coldetPairs.size());
+
+    for(unsigned int i=0; i < coldetPairs.size(); ++i){
+        ColdetModelPairEx& coldetPair = coldetPairs[i];
+        Distance& dinfo = out_distances[i];
+        dinfo.minD = coldetPair.computeDistance(dinfo.point0, dinfo.point1);
+        LinkPair& linkPair = dinfo.pair;
+        linkPair.charName1 = CORBA::string_dup(coldetPair.body0->name());
+        linkPair.linkName1 = CORBA::string_dup(coldetPair.model0()->name());
+        linkPair.charName2 = CORBA::string_dup(coldetPair.body1->name());
+        linkPair.linkName2 = CORBA::string_dup(coldetPair.model1()->name());
+    }
 }
 
 

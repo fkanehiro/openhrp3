@@ -544,6 +544,17 @@ module OpenHRP {
 
 		/**
 		 * @if jp
+		 * @brief 全てのキャラクタの順運動学を計算し、距離計算を行います。
+ 		 * @brief distances 距離情報の配列
+		 * @else
+		 * Check for distance after calculation of kinematics.
+		 * @brief distances array of distance information
+		 * @endif
+		 */
+		void checkDistance(out DistanceSequence distances);
+
+		/**
+		 * @if jp
 		 * @brief シミュレーションの状態を表すWorldStateを取得します。
 		 * @param state シミュレーションの状態
 		 * @else

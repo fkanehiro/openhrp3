@@ -35,7 +35,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -128,6 +127,8 @@ public class Grx3DView
     private JButton btnHomePos_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/home.png")));
     private JToggleButton btnFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/floor.png")));
     private JToggleButton btnCollision_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/collision.png")));
+    private JToggleButton btnDistance_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/distance.png")));
+    private JToggleButton btnProximity_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/proximity.png")));
     private JToggleButton btnCoM_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/com.png")));
     private JToggleButton btnCoMonFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/com_z0.png")));
     private JToggleButton btnRec_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/record.png")));
@@ -139,8 +140,8 @@ public class Grx3DView
     private JLabel lblTarget_ = new JLabel("");
     private JLabel lblValue_  = new JLabel("");
     
-    private Shape3D coll;
-    private BranchGroup axes_;
+    private Shape3D collision_;
+    private Shape3D distance_;
     
     // for "Linux resize problem"
     Frame frame_;
@@ -208,23 +209,37 @@ public class Grx3DView
         contentPane.add(objectToolBar_, BorderLayout.WEST);
         contentPane.add(viewToolBar_, BorderLayout.NORTH);
         
-        coll = new Shape3D();
-        coll.setPickable(false);
-        coll.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+        collision_ = new Shape3D();
+        collision_.setPickable(false);
+        collision_.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
         try {
             Appearance app = new Appearance();
             LineAttributes latt = new LineAttributes();
             latt.setLineWidth(LineWidth_);
             app.setLineAttributes(latt);
-            coll.setAppearance(app);
+            collision_.setAppearance(app);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         BranchGroup bg = new BranchGroup();
-        bg.addChild(coll);
+        bg.addChild(collision_);
         bgRoot_.addChild(bg);
         
-        axes_ = GrxShapeUtil.createAxes();
+        distance_ = new Shape3D();
+        distance_.setPickable(false);
+        distance_.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+        try {
+            Appearance app = new Appearance();
+            LineAttributes latt = new LineAttributes();
+            latt.setLineWidth(LineWidth_);
+            app.setLineAttributes(latt);
+            distance_.setAppearance(app);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        BranchGroup bgDistance = new BranchGroup();
+        bgDistance.addChild(distance_);
+        bgRoot_.addChild(bgDistance);
         
         setScrollMinSize();
     }
@@ -407,6 +422,28 @@ public class Grx3DView
             }
         });
         
+        btnDistance_.setToolTipText("show Distance");
+        btnDistance_.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                if (btnDistance_.isSelected())
+                    btnDistance_.setToolTipText("hide Distance");
+                else {
+                    btnDistance_.setToolTipText("show Distance");
+                    distance_.removeAllGeometries();
+                }
+            }
+        });
+        
+        btnProximity_.setToolTipText("check proximity");
+        btnProximity_.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                if (btnProximity_.isSelected())
+                    btnProximity_.setToolTipText("nocheck proximity");
+                else
+                    btnProximity_.setToolTipText("check proximity");
+            }
+        });
+        
         btnCoM_.setToolTipText("show Center of Mass");
         btnCoM_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
@@ -468,8 +505,10 @@ public class Grx3DView
         viewToolBar_.add(btnHomePos_,0);
         viewToolBar_.add(btnFloor_, 8);
         viewToolBar_.add(btnCollision_, 9);
-        viewToolBar_.add(btnCoM_, 10);
-        viewToolBar_.add(btnCoMonFloor_, 11);
+        viewToolBar_.add(btnDistance_, 10);
+        viewToolBar_.add(btnProximity_, 11);
+        viewToolBar_.add(btnCoM_, 12);
+        viewToolBar_.add(btnCoMonFloor_, 13);
         viewToolBar_.add(btnRec_);
         viewToolBar_.add(btnPlayer_);
         viewToolBar_.add(btnCamera);
@@ -610,24 +649,21 @@ public class Grx3DView
 
            return registerCORBA();
     }
-    
+
     public void control(List<GrxBaseItem> items) {
-        GrxBaseItem item = manager_.focusedItem();
-        if (item instanceof GrxTransformItem){
-        	GrxTransformItem tform = (GrxTransformItem)item;
-        	if (tform.tg_ != axes_.getParent()){
-        		axes_.detach();
-            	tform.tg_.addChild(axes_);
-        	}
-        }else{
-        	if (axes_.getParent() != null) axes_.detach();
-        }
-        
         if (currentModels_.size() == 0)
             return;
 
-        if (behaviorManager_.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE && btnCollision_.isSelected()) {
-            _showCollision(behaviorManager_.getCollision(currentModels_));
+        if (behaviorManager_.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE){
+        	if (btnCollision_.isSelected()) {
+                _showCollision(behaviorManager_.getCollision(currentModels_));
+        	}
+        	if (btnDistance_.isSelected()){
+        		_showDistance(behaviorManager_.getDistance(currentModels_));
+        	}
+        	if (btnProximity_.isSelected()){
+        		//_showProximity(behaviorManager_.getProximity(currentModels_));
+        	}
             if (updateModels_) updateViewSimulator(0);
             return;
         }
@@ -828,11 +864,7 @@ public class Grx3DView
     }
     
     private void _showCollision(Collision[] collisions) {
-        /*if (collisionBg_ != null)
-            collisionBg_.detach();
-        collisionBg_ = null;*/
-        
-        coll.removeAllGeometries();
+        collision_.removeAllGeometries();
         if (collisions == null || collisions.length <= 0 || !btnCollision_.isSelected()) 
             return;
             
@@ -877,27 +909,41 @@ public class Grx3DView
             }
             la.setNormals(0, v3f);
             la.setColors(0, c3f);
-            coll.addGeometry(la);
-            /*Shape3D s3d = new Shape3D();
-            s3d.setPickable(false);
-            s3d.addGeometry(la);
-            try {
-                Appearance app = new Appearance();
-                LineAttributes latt = new LineAttributes();
-                latt.setLineWidth(LineWidth_);
-                app.setLineAttributes(latt);
-                s3d.setAppearance(app);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            TransformGroup tg = new TransformGroup();
-            tg.addChild(s3d);
-            collisionBg_ = new BranchGroup();
-            collisionBg_.setCapability(BranchGroup.ALLOW_DETACH);
-            collisionBg_.addChild(tg);
-            bgRoot_.addChild(collisionBg_);*/
+            collision_.addGeometry(la);
         } else {
-            coll.addGeometry(null);
+            collision_.addGeometry(null);
+        }
+    }
+
+    private void _showDistance(Distance[] distances) {
+        distance_.removeAllGeometries();
+        if (distances == null || distances.length <= 0 || !btnDistance_.isSelected()) 
+            return;
+            
+        int length = distances.length;
+
+        if (length > 0) {
+            Point3d[] p3d = new Point3d[length * 2];
+            for (int j=0; j<length; j++) {
+                p3d[j*2] = new Point3d(distances[j].point0);
+                p3d[j*2+1] = new Point3d(distances[j].point1);
+            }
+
+            LineArray la = new LineArray(p3d.length, LineArray.COLOR_3
+                    | LineArray.COORDINATES | LineArray.NORMALS);
+            la.setCoordinates(0, p3d);
+            
+            Vector3f[] v3f = new Vector3f[p3d.length];
+            Color3f[]  c3f =  new Color3f[p3d.length];
+            for (int i=0; i<v3f.length; i++) {
+                v3f[i] = new Vector3f(0.0f, 0.0f, 1.0f);
+                c3f[i] = new Color3f(1.0f, 0.0f, 0.0f);
+            }
+            la.setNormals(0, v3f);
+            la.setColors(0, c3f);
+            distance_.addGeometry(la);
+        } else {
+            distance_.addGeometry(null);
         }
     }
 

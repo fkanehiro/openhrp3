@@ -71,6 +71,18 @@ public:
         CollisionSequence_out collisions
         );
     
+    virtual void queryDistanceForDefinedPairs(
+        const CharacterPositionSequence& characterPositions,
+        DistanceSequence_out distances
+        );
+
+
+    virtual void queryDistanceForGivenPairs(
+        const LinkPairSequence& checkPairs,
+        const CharacterPositionSequence& characterPositions,
+        DistanceSequence_out distances
+        );
+
 private:
 
     CORBA_ORB_var orb;
@@ -103,7 +115,8 @@ private:
         ColdetModelPairEx& coldetPair, CollisionPointSequence& out_collisionPoints, const bool addCollisionPoints);
     bool detectCollidedLinkPairs(
         vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll);
-
+    void computeDistances(
+        vector<ColdetModelPairEx>& coldetPairs, DistanceSequence_out& out_distances);
 };
 
 

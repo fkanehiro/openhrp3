@@ -141,6 +141,7 @@ public class Camera_impl extends CameraPOA {
 		bgVp_.setUserData(param_.defName);
 
 		tgVp_ = new TransformGroup();
+		tgVp_.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
 		tgVp_.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 		tgVp_.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 

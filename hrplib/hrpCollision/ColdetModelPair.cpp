@@ -13,6 +13,7 @@
 #include "ColdetModelPair.h"
 #include "ColdetModelSharedDataSet.h"
 #include "Opcode/Opcode.h"
+#include "SSVTreeCollider.h"
 
 using namespace hrp;
 
@@ -170,4 +171,31 @@ collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllCon
         return cdata;
     }
     return NULL;
+}
+
+double ColdetModelPair::computeDistance(double *point0, double *point1)
+{
+    if(model0_->isValid() && model1_->isValid()){
+
+        Opcode::BVTCache colCache;
+
+        colCache.Model0 = &model1_->dataSet->model;
+        colCache.Model1 = &model0_->dataSet->model;
+        
+        SSVTreeCollider collider;
+        
+        float d;
+        Point p0, p1;
+        d = collider.Distance(colCache, p0, p1,
+                              model1_->transform, model0_->transform);
+        point0[0] = p0.x;
+        point0[1] = p0.y;
+        point0[2] = p0.z;
+        point1[0] = p1.x;
+        point1[1] = p1.y;
+        point1[2] = p1.z;
+        return d;
+    }
+
+    return -1;
 }
