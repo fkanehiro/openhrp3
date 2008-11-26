@@ -969,14 +969,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         tg.getTransform(t3dLocal);
 		t3dLocal.invert();
 		for (int i=0; i<links_.size(); i++) {
-			System.out.println("resizeBoundingBox : "+links_.get(i).getName()+", tg = "+links_.get(i).tg_);
-			for (int j=0; j<links_.get(i).children_.size(); j++){
-				System.out.println("  "+links_.get(i).children_.get(j).getName()+"("+links_.get(i).children_.get(j).tg_+")");
-			}
-			System.out.println(" children of tg_:");
-			for (int j=0; j<links_.get(i).tg_.numChildren(); j++){
-				System.out.println("    "+links_.get(i).tg_.getChild(j));
-			}
         	modifier._calcUpperLower(links_.get(i).tg_, t3dLocal);
 		}
     	Shape3D shapeNode = (Shape3D)switchBb_.getChild(0);

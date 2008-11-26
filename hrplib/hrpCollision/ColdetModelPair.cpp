@@ -186,8 +186,8 @@ double ColdetModelPair::computeDistance(double *point0, double *point1)
         
         float d;
         Point p0, p1;
-        d = collider.Distance(colCache, p0, p1,
-                              model1_->transform, model0_->transform);
+        collider.Distance(colCache, d, p0, p1,
+                          model1_->transform, model0_->transform);
         point0[0] = p0.x;
         point0[1] = p0.y;
         point0[2] = p0.z;

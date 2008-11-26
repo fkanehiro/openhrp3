@@ -3,12 +3,13 @@
 #include "DistFuncs.h"
 
 
-SSVTreeCollider::SSVTreeCollider() : mMinD(-1)
+SSVTreeCollider::SSVTreeCollider()
 {
 }
 
-float SSVTreeCollider::Distance(BVTCache& cache, Point &point0, Point&point1,
-                                const Matrix4x4* world0, const Matrix4x4* world1)
+bool SSVTreeCollider::Distance(BVTCache& cache, 
+                               float& minD, Point &point0, Point&point1,
+                               const Matrix4x4* world0, const Matrix4x4* world1)
 {
     // Checkings
     if(!cache.Model0 || !cache.Model1)								return false;
@@ -21,13 +22,14 @@ float SSVTreeCollider::Distance(BVTCache& cache, Point &point0, Point&point1,
     // Simple double-dispatch
     const AABBCollisionTree* T0 = (const AABBCollisionTree*)cache.Model0->GetTree();
     const AABBCollisionTree* T1 = (const AABBCollisionTree*)cache.Model1->GetTree();
-    return Distance(T0, T1, world0, world1, &cache, point0, point1);
+    Distance(T0, T1, world0, world1, &cache, minD, point0, point1);
+	return true;
 }
 
-float SSVTreeCollider::Distance(const AABBCollisionTree* tree0, 
-                                const AABBCollisionTree* tree1, 
-                                const Matrix4x4* world0, const Matrix4x4* world1, 
-                                Pair* cache, Point &point0, Point&point1)
+void SSVTreeCollider::Distance(const AABBCollisionTree* tree0, 
+                               const AABBCollisionTree* tree1, 
+                               const Matrix4x4* world0, const Matrix4x4* world1, 
+                               Pair* cache, float& minD, Point &point0, Point&point1)
 {
     // Init collision query
     InitQuery(world0, world1);
@@ -51,10 +53,10 @@ float SSVTreeCollider::Distance(const AABBCollisionTree* tree0,
         }
     } 
     Point p0, p1;
-    mMinD = PrimDist(mId0, mId1, p0, p1);
+    minD = PrimDist(mId0, mId1, p0, p1);
     
     // Perform distance computation
-    _Distance(tree0->GetNodes(), tree1->GetNodes(), p0, p1);
+    _Distance(tree0->GetNodes(), tree1->GetNodes(), minD, p0, p1);
 
     // transform points
     TransformPoint4x3(point0, p0, *world1);
@@ -72,8 +74,8 @@ float SSVTreeCollider::PssPssDist(float r0, const Point& center0, float r1, cons
     return (center1-c0).Magnitude() - r0 - r1;
 }
 
-float SSVTreeCollider::_Distance(const AABBCollisionNode* b0, const AABBCollisionNode* b1,
-                                 Point& point0, Point& point1)
+void SSVTreeCollider::_Distance(const AABBCollisionNode* b0, const AABBCollisionNode* b1,
+                                float& minD, Point& point0, Point& point1)
 {
     mNowNode0 = b0;
     mNowNode1 = b1;
@@ -83,30 +85,30 @@ float SSVTreeCollider::_Distance(const AABBCollisionNode* b0, const AABBCollisio
     d = PssPssDist(sqrtf(b0->GetSize()), b0->mAABB.mCenter, 
                    sqrtf(b1->GetSize()), b1->mAABB.mCenter);
 
-    if(d > mMinD) return d;
+    if(d > minD) return;
     
     if(b0->IsLeaf() && b1->IsLeaf()) { 
         Point p0, p1;
         d = PrimDist(b0->GetPrimitive(), b1->GetPrimitive(), p0, p1);
-        if (d < mMinD){
-            mMinD = d;
+        if (d < minD){
+            minD = d;
             point0 = p0;
             point1 = p1;
             mId0 = b0->GetPrimitive();
             mId1 = b1->GetPrimitive(); 
         }
-        return d;  
+        return;
     }
     
     if(b1->IsLeaf() || (!b0->IsLeaf() && (b0->GetSize() > b1->GetSize())))
 	{
-            _Distance(b0->GetNeg(), b1, point0, point1);
-            _Distance(b0->GetPos(), b1, point0, point1);
+            _Distance(b0->GetNeg(), b1, minD, point0, point1);
+            _Distance(b0->GetPos(), b1, minD, point0, point1);
 	}
     else
 	{
-            _Distance(b0, b1->GetNeg(), point0, point1);
-            _Distance(b0, b1->GetPos(), point0, point1);
+            _Distance(b0, b1->GetNeg(), minD, point0, point1);
+            _Distance(b0, b1->GetPos(), minD, point0, point1);
 	}
 }
 
@@ -120,7 +122,7 @@ float SSVTreeCollider::PrimDist(udword id0, udword id1, Point& point0, Point& po
     
     // Modified by S-cubed, Inc.
     // Transform from space 0 (old : 1) to space 1 (old : 0)
-    // CD では変換が逆なのであわせる。
+    // CD では変換が逆なのであわせる。  
     Point u0,u1,u2;
     TransformPoint(u0, *VP0.Vertex[0], mR0to1, mT0to1);
     TransformPoint(u1, *VP0.Vertex[1], mR0to1, mT0to1);
