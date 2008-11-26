@@ -67,7 +67,6 @@ import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
-import com.generalrobotix.ui.item.GrxTransformItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
@@ -1396,30 +1395,36 @@ public class Grx3DView
 
         GUIAction.OBJECT_TRANSLATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	behaviorManager_.initDynamicsSimulator();
-                setModelUpdate(false);
-                behaviorManager_.setOperationMode(BehaviorManager.OBJECT_TRANSLATION_MODE);
-                objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-                lblMode_.setText("[ EDIT : Translate Object ]");
+            	if (behaviorManager_.getOperationMode() != BehaviorManager.OBJECT_TRANSLATION_MODE){
+                	behaviorManager_.initDynamicsSimulator();
+                    setModelUpdate(false);
+                    behaviorManager_.setOperationMode(BehaviorManager.OBJECT_TRANSLATION_MODE);
+                    objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
+                    lblMode_.setText("[ EDIT : Translate Object ]");
+            	}
             }
         });
 
         GUIAction.OBJECT_ROTATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	behaviorManager_.initDynamicsSimulator();
-                setModelUpdate(false);
-                behaviorManager_.setOperationMode(BehaviorManager.OBJECT_ROTATION_MODE);
-                objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-                lblMode_.setText("[ EDIT : Rotate Object ]");
+            	if (behaviorManager_.getOperationMode() != BehaviorManager.OBJECT_ROTATION_MODE){
+            		behaviorManager_.initDynamicsSimulator();
+            		setModelUpdate(false);
+            		behaviorManager_.setOperationMode(BehaviorManager.OBJECT_ROTATION_MODE);
+            		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
+            		lblMode_.setText("[ EDIT : Rotate Object ]");
+            	}
             }
         });
         GUIAction.JOINT_ROTATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	behaviorManager_.initDynamicsSimulator();
-                setModelUpdate(false);
-                behaviorManager_.setOperationMode(BehaviorManager.JOINT_ROTATION_MODE);
-                objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-                lblMode_.setText("[ EDIT : Move Joint ]");
+            	if (behaviorManager_.getOperationMode() != BehaviorManager.JOINT_ROTATION_MODE){
+            		behaviorManager_.initDynamicsSimulator();
+            		setModelUpdate(false);
+            		behaviorManager_.setOperationMode(BehaviorManager.JOINT_ROTATION_MODE);
+            		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
+            		lblMode_.setText("[ EDIT : Move Joint ]");
+            	}
             }
         });
 

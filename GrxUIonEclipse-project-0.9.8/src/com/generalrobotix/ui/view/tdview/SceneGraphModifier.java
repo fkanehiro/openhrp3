@@ -146,7 +146,6 @@ public class SceneGraphModifier {
      * @param t3dParent
      */
     public  void _calcUpperLower(Node node, Transform3D t3dParent) {
-    	System.out.println("_calcUpperLower : node = "+node);
         if (init_) {
             for (int i = 0; i < 3; i  ++) {
                 upper_[i] = 0.0f;
@@ -158,9 +157,7 @@ public class SceneGraphModifier {
             if (node instanceof BranchGroup) {
             	BranchGroup bg = (BranchGroup)node;
                 for (int i = 0; i < bg.numChildren(); i++) {
-                	System.out.println("call");
                     _calcUpperLower(bg.getChild(i), t3dParent);
-                	System.out.println("return");
                 }
             } else 
             // added for GrxUI	
@@ -174,9 +171,7 @@ public class SceneGraphModifier {
                 Transform3D t3dWorld = new Transform3D(t3dParent);
                 t3dWorld.mul(t3dLocal);
                 for (int i = 0; i < tg.numChildren(); i++) {
-                	System.out.println("call");
                     _calcUpperLower(tg.getChild(i), t3dWorld);
-                	System.out.println("return");
                 }
             }else{
                 boolean flag = true;
@@ -193,9 +188,7 @@ public class SceneGraphModifier {
                         group.setCapability(Group.ALLOW_CHILDREN_READ);
                     }
                     for (int i = 0; i < group.numChildren(); i++) {
-                    	System.out.println("call");
                         _calcUpperLower(group.getChild(i), t3dParent);
-                    	System.out.println("return");
                     }
                 }
             }
@@ -210,9 +203,7 @@ public class SceneGraphModifier {
             }
             Group group = (Group) sg;
             for (int i = 0; i < group.numChildren(); i++) {
-            	System.out.println("call");
                 _calcUpperLower(group.getChild(i), t3dParent);
-            	System.out.println("return");
             }
         } else if (node instanceof Shape3D) {
             Shape3D shape = (Shape3D) node;

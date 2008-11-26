@@ -174,6 +174,7 @@ class ObjectTranslationHandler extends OperationHandler {
         if (model == null) 
         	return false;
 
+        tgTarget_ = tg;
         info.manager_.focusedItem(model);
         return true;
     }
