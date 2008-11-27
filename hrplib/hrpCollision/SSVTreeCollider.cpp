@@ -67,6 +67,44 @@ void SSVTreeCollider::Distance(const AABBCollisionTree* tree0,
     cache->id1 = mId1;
 }
 
+bool SSVTreeCollider::Collide(BVTCache& cache, double tolerance,
+                              const Matrix4x4* world0, const Matrix4x4* world1)
+{
+    // Checkings
+    if(!cache.Model0 || !cache.Model1)								return false;
+    if(cache.Model0->HasLeafNodes()!=cache.Model1->HasLeafNodes())	return false;
+    if(cache.Model0->IsQuantized()!=cache.Model1->IsQuantized())	return false;
+
+    // Checkings
+    if(!Setup(cache.Model0->GetMeshInterface(), cache.Model1->GetMeshInterface()))	return false;
+    
+    // Simple double-dispatch
+    const AABBCollisionTree* T0 = (const AABBCollisionTree*)cache.Model0->GetTree();
+    const AABBCollisionTree* T1 = (const AABBCollisionTree*)cache.Model1->GetTree();
+    return Collide(T0, T1, world0, world1, &cache, tolerance);
+}
+
+bool SSVTreeCollider::Collide(const AABBCollisionTree* tree0, 
+                              const AABBCollisionTree* tree1, 
+                              const Matrix4x4* world0, const Matrix4x4* world1, 
+                              Pair* cache, double tolerance)
+{
+    // Init collision query
+    InitQuery(world0, world1);
+    
+    // todo : cache should be used 
+
+    // Perform collision detection
+    if (_Collide(tree0->GetNodes(), tree1->GetNodes(), tolerance)){
+        // update cache
+        cache->id0 = mId0;
+        cache->id1 = mId1;
+        return true;
+    }
+
+    return false;
+}
+
 float SSVTreeCollider::PssPssDist(float r0, const Point& center0, float r1, const Point& center1)
 {
     Point c0;
@@ -110,6 +148,44 @@ void SSVTreeCollider::_Distance(const AABBCollisionNode* b0, const AABBCollision
             _Distance(b0, b1->GetNeg(), minD, point0, point1);
             _Distance(b0, b1->GetPos(), minD, point0, point1);
 	}
+}
+
+bool SSVTreeCollider::_Collide(const AABBCollisionNode* b0, const AABBCollisionNode* b1,
+                               double tolerance)
+{
+    mNowNode0 = b0;
+    mNowNode1 = b1;
+    float d;
+
+    // Perform BV-BV distance test
+    d = PssPssDist(sqrtf(b0->GetSize()), b0->mAABB.mCenter, 
+                   sqrtf(b1->GetSize()), b1->mAABB.mCenter);
+
+    if(d > tolerance) return false;
+    
+    if(b0->IsLeaf() && b1->IsLeaf()) { 
+        Point p0, p1;
+        d = PrimDist(b0->GetPrimitive(), b1->GetPrimitive(), p0, p1);
+        if (d <= tolerance){
+            mId0 = b0->GetPrimitive();
+            mId1 = b1->GetPrimitive(); 
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
+    if(b1->IsLeaf() || (!b0->IsLeaf() && (b0->GetSize() > b1->GetSize())))
+	{
+            if (_Collide(b0->GetNeg(), b1, tolerance)) return true;
+            if (_Collide(b0->GetPos(), b1, tolerance)) return true;
+	}
+    else
+	{
+            if (_Collide(b0, b1->GetNeg(), tolerance)) return true;
+            if (_Collide(b0, b1->GetPos(), tolerance)) return true;
+	}
+    return false;
 }
 
 float SSVTreeCollider::PrimDist(udword id0, udword id1, Point& point0, Point& point1)

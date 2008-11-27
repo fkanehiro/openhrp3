@@ -264,7 +264,64 @@ void DynamicsSimulator_impl::registerCollisionCheckPair(
 				linkPair->linkName1 = CORBA::string_dup(j1->basename);
 				linkPair->charName2  = CORBA::string_dup(charName2);
 				linkPair->linkName2 = CORBA::string_dup(j2->basename);
-				collisionDetector->addCollisionPair(linkPair, false, false);
+				linkPair->tolerance = 0;
+				collisionDetector->addCollisionPair(linkPair);
+			}
+		}
+	}
+}
+
+void DynamicsSimulator_impl::registerIntersectionCheckPair(
+		const char *charName1,
+		const char *linkName1,
+		const char *charName2,
+		const char *linkName2,
+		const double tolerance)
+{
+	const double epsilon = 0.0;
+//	logfile << "registerCollisionCheckPair" << endl;
+
+	std::string emptyString = "";
+	std::vector<Joint*> joints1;
+	std::vector<Joint*> joints2;
+	pSim* chain = world.Chain();
+
+	if(emptyString == linkName1)
+	{
+		Joint* r = chain->FindCharacterRoot(charName1);
+		if(r) joint_traverse(r, joints1);
+	}
+	else
+	{
+		Joint* jnt1 = chain->FindJoint(linkName1, charName1);
+		if(jnt1) joints1.push_back(jnt1);
+	}
+	if(emptyString == linkName2)
+	{
+		Joint* r = chain->FindCharacterRoot(charName2);
+		if(r) joint_traverse(r, joints2);
+	}
+	else
+	{
+		Joint* jnt2 = chain->FindJoint(linkName2, charName2);
+		if(jnt2) joints2.push_back(jnt2);
+	}
+
+	for(size_t i=0; i < joints1.size(); ++i)
+	{
+		Joint* j1 = joints1[i];
+		for(size_t j=0; j < joints2.size(); ++j)
+		{
+			Joint* j2 = joints2[j];
+			if(j1 && j2 && j1 != j2)
+			{
+				LinkPair_var linkPair = new LinkPair();
+				linkPair->charName1  = CORBA::string_dup(charName1);
+				linkPair->linkName1 = CORBA::string_dup(j1->basename);
+				linkPair->charName2  = CORBA::string_dup(charName2);
+				linkPair->linkName2 = CORBA::string_dup(j2->basename);
+				linkPair->tolerance = tolerance;
+				collisionDetector->addCollisionPair(linkPair);
 			}
 		}
 	}
@@ -836,11 +893,22 @@ bool DynamicsSimulator_impl::checkCollision(bool checkAll)
 	}
 }
 
-void DynamicsSimulator_impl::checkDistance(DistanceSequence_out distances)
+DistanceSequence *DynamicsSimulator_impl::checkDistance()
 {
     calcWorldForwardKinematics();
     _updateCharacterPositions();
+	DistanceSequence_var distances = new DistanceSequence;
 	collisionDetector->queryDistanceForDefinedPairs(allCharacterPositions.in(), distances);
+	return distances._retn();
+}
+
+LinkPairSequence *DynamicsSimulator_impl::checkIntersection(CORBA::Boolean checkAll)
+{
+    calcWorldForwardKinematics();
+    _updateCharacterPositions();
+	LinkPairSequence_var pairs = new LinkPairSequence;
+	collisionDetector->queryIntersectionForDefinedPairs(checkAll, allCharacterPositions.in(), pairs);
+	return pairs._retn();
 }
 
 /**

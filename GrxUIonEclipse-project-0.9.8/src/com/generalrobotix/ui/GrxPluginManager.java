@@ -1226,6 +1226,13 @@ public class GrxPluginManager
 		return currentProject_.getName();
 	}
 
+	/**
+	 * @brief get current project
+	 * @return current project
+	 */
+	public GrxProjectItem getProject(){
+		return currentProject_;
+	}
 
 	/**
 	 * @brief Get selected GrxBaseItem List on tree view

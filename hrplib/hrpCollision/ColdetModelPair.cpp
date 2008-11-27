@@ -24,10 +24,12 @@ ColdetModelPair::ColdetModelPair()
 }
 
 
-ColdetModelPair::ColdetModelPair(ColdetModelPtr model0, ColdetModelPtr model1)
+ColdetModelPair::ColdetModelPair(ColdetModelPtr model0, ColdetModelPtr model1,
+                                 double tolerance)
 {
     model0_ = model0;
     model1_ = model1;
+    tolerance_ = tolerance;
 }
 
 
@@ -35,6 +37,7 @@ ColdetModelPair::ColdetModelPair(const ColdetModelPair& org)
 {
     model0_ = org.model0_;
     model1_ = org.model1_;
+    tolerance_ = org.tolerance_;
 }
 
 
@@ -198,4 +201,22 @@ double ColdetModelPair::computeDistance(double *point0, double *point1)
     }
 
     return -1;
+}
+
+bool ColdetModelPair::detectIntersection()
+{
+    if(model0_->isValid() && model1_->isValid()){
+
+        Opcode::BVTCache colCache;
+
+        colCache.Model0 = &model1_->dataSet->model;
+        colCache.Model1 = &model0_->dataSet->model;
+        
+        SSVTreeCollider collider;
+        
+        return collider.Collide(colCache, tolerance_, 
+                                model1_->transform, model0_->transform);
+    }
+
+    return false;
 }

@@ -13,12 +13,20 @@ package com.generalrobotix.ui.item;
 
 import java.util.Vector;
 
+import javax.media.j3d.Appearance;
 import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Group;
+import javax.media.j3d.Link;
+import javax.media.j3d.Material;
+import javax.media.j3d.Node;
+import javax.media.j3d.Shape3D;
+import javax.media.j3d.SharedGroup;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.AxisAngle4d;
+import javax.vecmath.Color3f;
 import javax.vecmath.Vector3d;
 
 import jp.go.aist.hrp.simulator.AppearanceInfo;
@@ -33,6 +41,7 @@ import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
+import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 
 /**
@@ -239,5 +248,4 @@ public class GrxTransformItem extends GrxBaseItem {
 		super.setFocused(b);
 		switchAxes_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
 	}
-
 }

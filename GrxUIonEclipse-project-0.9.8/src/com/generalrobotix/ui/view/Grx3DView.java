@@ -38,6 +38,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 import javax.swing.*;
 import javax.media.j3d.*;
@@ -127,7 +129,7 @@ public class Grx3DView
     private JToggleButton btnFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/floor.png")));
     private JToggleButton btnCollision_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/collision.png")));
     private JToggleButton btnDistance_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/distance.png")));
-    private JToggleButton btnProximity_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/proximity.png")));
+    private JToggleButton btnIntersection_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/proximity.png")));
     private JToggleButton btnCoM_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/com.png")));
     private JToggleButton btnCoMonFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/com_z0.png")));
     private JToggleButton btnRec_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/record.png")));
@@ -141,6 +143,7 @@ public class Grx3DView
     
     private Shape3D collision_;
     private Shape3D distance_;
+    private Vector<GrxLinkItem> intersectingLinks_;
     
     // for "Linux resize problem"
     Frame frame_;
@@ -239,6 +242,8 @@ public class Grx3DView
         BranchGroup bgDistance = new BranchGroup();
         bgDistance.addChild(distance_);
         bgRoot_.addChild(bgDistance);
+        
+        intersectingLinks_ = new Vector<GrxLinkItem>();
         
         setScrollMinSize();
     }
@@ -373,9 +378,9 @@ public class Grx3DView
         tg[3].setTransform(transform);
 
         // Ambient Light for Alert
-//        AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
-//        alight.setInfluencingBounds(bounds);
-//        tg[0].addChild(alight);
+        AmbientLight alight = new AmbientLight(new Color3f(1.0f, 1.0f, 1.0f));
+        alight.setInfluencingBounds(bounds);
+        tg[0].addChild(alight);
 
         // background
         backGround_.setCapability(Background.ALLOW_COLOR_READ);
@@ -416,8 +421,10 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnCollision_.isSelected())
                     btnCollision_.setToolTipText("hide Collision");
-                else
+                else{
                     btnCollision_.setToolTipText("show Collision");
+                    _showCollision(null);
+                }
             }
         });
         
@@ -433,13 +440,18 @@ public class Grx3DView
             }
         });
         
-        btnProximity_.setToolTipText("check proximity");
-        btnProximity_.addActionListener(new ActionListener() {
+        btnIntersection_.setToolTipText("check intersection");
+        btnIntersection_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                if (btnProximity_.isSelected())
-                    btnProximity_.setToolTipText("nocheck proximity");
-                else
-                    btnProximity_.setToolTipText("check proximity");
+                if (btnIntersection_.isSelected())
+                    btnIntersection_.setToolTipText("nocheck intersection");
+                else{
+                    btnIntersection_.setToolTipText("check intersection");
+                    for (int i=0; i<intersectingLinks_.size(); i++){
+                    	intersectingLinks_.get(i).restoreColor();
+                    }
+                    intersectingLinks_.clear();
+                }
             }
         });
         
@@ -505,7 +517,7 @@ public class Grx3DView
         viewToolBar_.add(btnFloor_, 8);
         viewToolBar_.add(btnCollision_, 9);
         viewToolBar_.add(btnDistance_, 10);
-        viewToolBar_.add(btnProximity_, 11);
+        viewToolBar_.add(btnIntersection_, 11);
         viewToolBar_.add(btnCoM_, 12);
         viewToolBar_.add(btnCoMonFloor_, 13);
         viewToolBar_.add(btnRec_);
@@ -577,12 +589,21 @@ public class Grx3DView
 
     public void restoreProperties() {
         super.restoreProperties();
+        if (getStr("showScale")==null) setProperty("showScale", "true");
+        if (getStr("showCollision")==null) setProperty("showCollision", "true");
+        if (getStr("showDistance")==null) setProperty("showDistance", "false");
+        if (getStr("showIntersection")==null) setProperty("showIntersection", "false");
+        if (getStr("showCoM")==null) setProperty("showCoM", "false");
+        if (getStr("showCoMonFloor")==null) setProperty("showCoMonFloor", "false");
+        
         default_eye    = getDblAry("view.eye",    default_eye);
         default_lookat = getDblAry("view.lookat", default_lookat);
         default_upward = getDblAry("view.upward", default_upward);
         
         btnFloor_.setSelected(isTrue("showScale", true));
         btnCollision_.setSelected(isTrue("showCollision", true));
+        btnDistance_.setSelected(isTrue("showDistance", false));
+        btnIntersection_.setSelected(isTrue("showIntersection", false));
         btnCoM_.setSelected(isTrue("showCoM", false));
         btnCoMonFloor_.setSelected(isTrue("showCoMonFloor",false));
         
@@ -660,8 +681,8 @@ public class Grx3DView
         	if (btnDistance_.isSelected()){
         		_showDistance(behaviorManager_.getDistance(currentModels_));
         	}
-        	if (btnProximity_.isSelected()){
-        		//_showProximity(behaviorManager_.getProximity(currentModels_));
+        	if (btnIntersection_.isSelected()){
+        		_showIntersection(behaviorManager_.getIntersection(currentModels_));
         	}
             if (updateModels_) updateViewSimulator(0);
             return;
@@ -944,6 +965,40 @@ public class Grx3DView
         } else {
             distance_.addGeometry(null);
         }
+    }
+    
+    private void _showIntersection(LinkPair[] pairs){
+    	if (pairs == null) return;
+    	
+    	Map<String, GrxModelItem> modelMap = (Map<String, GrxModelItem>)manager_.getItemMap(GrxModelItem.class);
+    	Vector<GrxLinkItem> links = new Vector<GrxLinkItem>();
+    	for (int i=0; i<pairs.length; i++){
+    		GrxModelItem m1 = modelMap.get(pairs[i].charName1);
+    		if (m1 != null){
+    			GrxLinkItem l = m1.getLink(pairs[i].linkName1);
+    			if (l != null){
+    				links.add(l);
+    				if (!intersectingLinks_.contains(l)){
+    					l.setColor(java.awt.Color.RED);
+    				}
+    			}
+    		}
+    		GrxModelItem m2 = modelMap.get(pairs[i].charName2);
+    		if (m2 != null){
+    			GrxLinkItem l = m2.getLink(pairs[i].linkName2);
+    			if (l != null) links.add(l);
+				if (!intersectingLinks_.contains(l)){
+					l.setColor(java.awt.Color.RED);
+				}
+    		}
+    	}
+    	for (int i=0; i<intersectingLinks_.size(); i++){
+    		GrxLinkItem l = intersectingLinks_.get(i);
+    		if (!links.contains(l)){
+    			l.restoreColor();
+    		}
+    	}
+    	intersectingLinks_ = links;
     }
 
     public void updateViewSimulator(double time) {

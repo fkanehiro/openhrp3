@@ -17,6 +17,8 @@
 package com.generalrobotix.ui.view.tdview;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Transform3D;
@@ -32,6 +34,7 @@ import jp.go.aist.hrp.simulator.*;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.Grx3DViewClickListener;
@@ -252,6 +255,7 @@ public class BehaviorManager implements WorldReplaceListener {
 		getDynamicsSimulator(true);
 
 		try {
+			// register characters
 			List<GrxBaseItem> modelList = manager_.getSelectedItemList(GrxModelItem.class);
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem)modelList.get(i);
@@ -263,9 +267,7 @@ public class BehaviorManager implements WorldReplaceListener {
 			currentDynamics_.init(0.005, m, SensorOption.ENABLE_SENSOR);
 			currentDynamics_.setGVector(new double[] { 0.0, 0.0, 9.8});
 			
-			double[] K = new double[] { 0,0,0,0,0,0 };
-			double[] C = new double[] { 0,0,0,0,0,0 };
-
+			// set position/orientation and joint angles
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = (GrxModelItem) modelList.get(i);
 				if (model.links_ == null)
@@ -279,15 +281,42 @@ public class BehaviorManager implements WorldReplaceListener {
 				currentDynamics_.setCharacterAllLinkData(
 					model.getName(), LinkDataType.JOINT_VALUE, 
 					model.getJointValues());
-
-				for (int j=i+1; j<modelList.size(); j++){
-					GrxModelItem model2 = (GrxModelItem)modelList.get(j);
-					currentDynamics_.registerCollisionCheckPair(
-							model.getName(), "", model2.getName(), "", 0.5, 0.5, K, C);
-				}
 			}
 			
-			
+            // set collision check pairs 
+			List<GrxBaseItem> collisionPair = manager_.getSelectedItemList(GrxCollisionPairItem.class);
+			Map<String, GrxModelItem> modelmap = (Map<String, GrxModelItem>)manager_.getItemMap(GrxModelItem.class);
+			for (int i=0; i<collisionPair.size(); i++) {
+				GrxCollisionPairItem item = (GrxCollisionPairItem) collisionPair.get(i);
+				GrxModelItem m1 = modelmap.get(item.getStr("objectName1", ""));
+				GrxModelItem m2 = modelmap.get(item.getStr("objectName2", ""));
+				if (m1 == null || m2 == null) continue;
+				Vector<GrxLinkItem> links1, links2;
+				String lname1 = item.getStr("jointName1","");
+				if (lname1.equals("")){
+					links1 = m1.links_;
+				}else{
+					links1 = new Vector<GrxLinkItem>();
+					GrxLinkItem l = m1.getLink(lname1);
+					if (l != null) links1.add(l);
+				}
+				String lname2 = item.getStr("jointName2","");
+				if (lname2.equals("")){
+					links2 = m2.links_;
+				}else{
+					links2 = new Vector<GrxLinkItem>();
+					GrxLinkItem l = m2.getLink(lname2);
+					if (l != null) links2.add(l);
+				}
+				for (int j=0; j<links1.size(); j++){
+					for (int k=0; k<links2.size(); k++){
+						currentDynamics_.registerIntersectionCheckPair(
+								m1.getName(), links1.get(j).getName(),
+								m2.getName(), links2.get(k).getName(),
+								links1.get(j).getDbl("tolerance",0.0)+links2.get(k).getDbl("tolerance",0.0));
+					}
+				}
+			}
             //state_.value = null;
 		} catch (Exception e) {
 			GrxDebugUtil.printErr("initDynamicsSimulator:", e);
@@ -348,8 +377,27 @@ public class BehaviorManager implements WorldReplaceListener {
 			data = model.getJointValues();
 			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
 		}
-		DistanceSequenceHolder dsh = new DistanceSequenceHolder();
-		currentDynamics_.checkDistance(dsh);
-		return dsh.value;
+		return currentDynamics_.checkDistance();
+	}
+	
+	/**
+	 * @brief get intersection information
+	 * 
+	 * Before calling this method, dynamics server object must be initialized by calling initDynamicsSimulator()
+	 * @param modelList list of model items. Positions of these items are updated
+	 * @return intersecting pairs
+	 */
+	public LinkPair[] getIntersection(List<GrxModelItem> modelList) {
+		if (currentDynamics_ == null) return null;
+		for (int i=0; i<modelList.size(); i++)  {
+			GrxModelItem model = modelList.get(i);
+			String name = model.getName();
+			GrxLinkItem base = model.rootLink();
+			double[] data = model.getTransformArray(base);
+			currentDynamics_.setCharacterLinkData(name, base.getName(), LinkDataType.ABS_TRANSFORM, data);
+			data = model.getJointValues();
+			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
+		}
+		return currentDynamics_.checkIntersection(true);
 	}
 }

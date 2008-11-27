@@ -33,13 +33,18 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBasePlugin;
@@ -61,6 +66,8 @@ public class GrxPropertyView extends GrxBaseView {
     private TableViewer viewer_ = null;
 
     private Table table_ = null;
+    
+    private Text nameText_ = null;
 
     private final String[] clmName_ = { "Name", "Value" };
 
@@ -78,17 +85,44 @@ public class GrxPropertyView extends GrxBaseView {
         Composite parent) {
 
         super(name, manager, vp, parent);
+        
         GrxDebugUtil.println("GrxPropertyView init");
+
+		GridLayout gl = new GridLayout(1,false);
+		composite_.setLayout( gl );
+
+		nameText_ = new Text(composite_, SWT.SINGLE|SWT.BORDER);
+        GridData textGridData = new GridData(GridData.FILL_HORIZONTAL);
+        textGridData.heightHint = 20;
+        nameText_.setLayoutData(textGridData);
+		
+        nameText_.addKeyListener(new KeyListener(){
+            public void keyPressed(KeyEvent e) {}
+            public void keyReleased(KeyEvent e) {
+                if (e.character == SWT.CR) {
+                	GrxBasePlugin p = null;
+                	if ((p = manager_.getView(nameText_.getText())) != null){
+                		_setInput(p);
+                	}else if ((p = manager_.getItem(nameText_.getText())) != null){
+                		_setInput(p);
+                	}else{
+                		nameText_.setText("");
+                	}
+                }
+            }
+        });
 
         viewer_ = new TableViewer(composite_, SWT.MULTI | SWT.FULL_SELECTION
             | SWT.BORDER);
         
         TableLayout layout = new TableLayout();
-        layout.addColumnData(new ColumnWeightData(1, true));
-        layout.addColumnData(new ColumnWeightData(1, true));
+        layout.addColumnData(new ColumnWeightData(40, true));
+        layout.addColumnData(new ColumnWeightData(60, true));
         table_ = viewer_.getTable();
         table_.setLayout(layout);
-
+        GridData tableGridData = new GridData(GridData.FILL_BOTH);
+        table_.setLayoutData(tableGridData);
+        
         TableColumn column1 = new TableColumn(table_, SWT.LEFT);
         TableColumn column2 = new TableColumn(table_, SWT.LEFT);
         column1.setText(clmName_[0]);
@@ -112,8 +146,8 @@ public class GrxPropertyView extends GrxBaseView {
 
         table_.setLinesVisible(true);
         table_.setHeaderVisible(true);
-        setScrollMinSize();
 
+        setScrollMinSize();
     }
 
     /**
@@ -122,12 +156,7 @@ public class GrxPropertyView extends GrxBaseView {
      */
     public void focusedItemChanged(GrxBaseItem item) {
     	//System.out.println("GrxPropertyView.focusedItemChanged()");
-        if (item != currentPlugin_) {
-            table_.setVisible(false);
-            currentPlugin_ = item;
-            viewer_.setInput(currentPlugin_);
-            table_.setVisible(true);
-        }
+    	_setInput(item);
     }
 
     public void propertyChanged(){
@@ -220,6 +249,15 @@ public class GrxPropertyView extends GrxBaseView {
 
     }
 
+    private void _setInput(GrxBasePlugin p){
+        if (p != currentPlugin_) {
+            table_.setVisible(false);
+            currentPlugin_ = p;
+            nameText_.setText(p.getName());
+            viewer_.setInput(currentPlugin_);
+            table_.setVisible(true);
+        }    	
+    }
     /**
      * @brief refresh contents of table
      */

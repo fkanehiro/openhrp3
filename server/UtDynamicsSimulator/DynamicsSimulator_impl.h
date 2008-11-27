@@ -94,6 +94,13 @@ using namespace OpenHRP;
 				const DblSequence6& K,
 				const DblSequence6& C);
 
+		virtual void registerIntersectionCheckPair(
+                const char* char1, 
+				const char* name1, 
+				const char* char2,
+				const char* name2,
+				const double tolerance);
+
 		virtual void registerVirtualLink(
 				const char* char1,
 				const char* link1,
@@ -177,8 +184,9 @@ using namespace OpenHRP;
 
 		virtual bool checkCollision(bool checkAll);
 
-		virtual void checkDistance(DistanceSequence_out distances);
+		virtual LinkPairSequence *checkIntersection(CORBA::Boolean checkAll);
 
+		virtual DistanceSequence *checkDistance();
 	};
 
 	/**

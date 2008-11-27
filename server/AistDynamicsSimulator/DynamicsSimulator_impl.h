@@ -90,6 +90,14 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
             const DblSequence6& K,
             const DblSequence6& C);
 
+    virtual void registerIntersectionCheckPair
+        (
+            const char* char1, 
+            const char* name1, 
+            const char* char2,
+            const char* name2,
+            const double tolerance);
+
     virtual void registerVirtualLink
         (
             const char* char1,
@@ -168,7 +176,9 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
 
     virtual bool checkCollision(bool checkAll);
 
-    virtual void checkDistance(DistanceSequence_out distances);
+    virtual LinkPairSequence *checkIntersection(CORBA::Boolean checkAll);
+
+    virtual DistanceSequence *checkDistance();
 
     virtual void getWorldState(WorldState_out wstate);
 

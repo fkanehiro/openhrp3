@@ -23,7 +23,8 @@ namespace hrp {
     {
       public:
         ColdetModelPair();
-        ColdetModelPair(ColdetModelPtr model0, ColdetModelPtr model1);
+        ColdetModelPair(ColdetModelPtr model0, ColdetModelPtr model1,
+                        double tolerance=0);
         ColdetModelPair(const ColdetModelPair& org);
         virtual ~ColdetModelPair();
 
@@ -41,6 +42,8 @@ namespace hrp {
 
         double computeDistance(double *point0, double *point1);
 
+        bool detectIntersection();
+
       private:
         collision_data* detectCollisionsSub(bool detectAllContacts);
         collision_data* detectMeshMeshCollisions(bool detectAllContacts);
@@ -48,6 +51,7 @@ namespace hrp {
         
         ColdetModelPtr model0_;
         ColdetModelPtr model1_;
+        double tolerance_;
     };
 }
 

@@ -43,7 +43,7 @@ public:
 
     virtual void registerCharacter(const char* name,	BodyInfo_ptr bodyInfo);
 
-    virtual void addCollisionPair(const LinkPair& colPair, CORBA::Boolean convexsize1, CORBA::Boolean convexsize2);
+    virtual void addCollisionPair(const LinkPair& colPair);
 
 
     virtual CORBA::Boolean queryIntersectionForDefinedPairs(
@@ -97,13 +97,14 @@ private:
     class ColdetModelPairEx : public ColdetModelPair
     {
     public:
-        ColdetModelPairEx(ColdetBodyPtr& body0, ColdetModelPtr& link0, ColdetBodyPtr& body1, ColdetModelPtr& link1) :
-            ColdetModelPair(link0, link1),
+        ColdetModelPairEx(ColdetBodyPtr& body0, ColdetModelPtr& link0, ColdetBodyPtr& body1, ColdetModelPtr& link1, double tolerance=0) :
+            ColdetModelPair(link0, link1, tolerance),
             body0(body0),
             body1(body1)
             { }
         ColdetBodyPtr body0;
         ColdetBodyPtr body1;
+        double tolerance;
     };
 
     vector<ColdetModelPairEx> coldetModelPairs;
@@ -113,7 +114,10 @@ private:
     bool detectAllCollisions(vector<ColdetModelPairEx>& coldetPairs, CollisionSequence_out& out_collisions);
     bool detectCollisionsOfLinkPair(
         ColdetModelPairEx& coldetPair, CollisionPointSequence& out_collisionPoints, const bool addCollisionPoints);
+    bool detectIntersectionOfLinkPair(ColdetModelPairEx& coldetPair);
     bool detectCollidedLinkPairs(
+        vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll);
+    bool detectIntersectingLinkPairs(
         vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll);
     void computeDistances(
         vector<ColdetModelPairEx>& coldetPairs, DistanceSequence_out& out_distances);

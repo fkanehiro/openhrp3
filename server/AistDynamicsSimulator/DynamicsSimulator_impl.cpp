@@ -315,7 +315,75 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
                         linkPair->linkName1 = CORBA::string_dup(link1->name.c_str());
                         linkPair->charName2  = CORBA::string_dup(charName2);
                         linkPair->linkName2 = CORBA::string_dup(link2->name.c_str());
-                        collisionDetector->addCollisionPair(linkPair, false, false);
+                        linkPair->tolerance = 0;
+                        collisionDetector->addCollisionPair(linkPair);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+void DynamicsSimulator_impl::registerIntersectionCheckPair
+(
+    const char *charName1,
+    const char *linkName1,
+    const char *charName2,
+    const char *linkName2,
+    const double tolerance
+    )
+{
+    const double epsilon = 0.0;
+
+    if(debugMode){
+        cout << "DynamicsSimulator_impl::registerIntersectionCheckPair("
+             << charName1 << ", " << linkName1 << ", "
+             << charName2 << ", " << linkName2 << ", "
+             << tolerance << ")" << endl;
+    }
+
+    int bodyIndex1 = world.bodyIndex(charName1);
+    int bodyIndex2 = world.bodyIndex(charName2);
+
+    if(bodyIndex1 >= 0 && bodyIndex2 >= 0){
+
+        BodyPtr body1 = world.body(bodyIndex1);
+        BodyPtr body2 = world.body(bodyIndex2);
+
+        std::string emptyString = "";
+        vector<Link*> links1;
+        if(emptyString == linkName1){
+            const LinkTraverse& traverse = body1->linkTraverse();
+            links1.resize(traverse.numLinks());
+            std::copy(traverse.begin(), traverse.end(), links1.begin());
+        } else {
+            links1.push_back(body1->link(linkName1));
+        }
+
+        vector<Link*> links2;
+        if(emptyString == linkName2){
+            const LinkTraverse& traverse = body2->linkTraverse();
+            links2.resize(traverse.numLinks());
+            std::copy(traverse.begin(), traverse.end(), links2.begin());
+        } else {
+            links2.push_back(body2->link(linkName2));
+        }
+
+        for(size_t i=0; i < links1.size(); ++i){
+            for(size_t j=0; j < links2.size(); ++j){
+                Link* link1 = links1[i];
+                Link* link2 = links2[j];
+
+                if(link1 && link2 && link1 != link2){
+                    if(!USE_INTERNAL_COLLISION_DETECTOR){
+                        LinkPair_var linkPair = new LinkPair();
+                        linkPair->charName1  = CORBA::string_dup(charName1);
+                        linkPair->linkName1 = CORBA::string_dup(link1->name.c_str());
+                        linkPair->charName2  = CORBA::string_dup(charName2);
+                        linkPair->linkName2 = CORBA::string_dup(link2->name.c_str());
+                        linkPair->tolerance = tolerance;
+                        collisionDetector->addCollisionPair(linkPair);
                     }
                 }
             }
@@ -988,15 +1056,30 @@ bool DynamicsSimulator_impl::checkCollision(bool checkAll)
 }
 
 
-void DynamicsSimulator_impl::checkDistance(DistanceSequence_out distances)
+DistanceSequence *DynamicsSimulator_impl::checkDistance()
 {
     calcWorldForwardKinematics();
     _updateCharacterPositions();
     if(!USE_INTERNAL_COLLISION_DETECTOR){
+        DistanceSequence_var distances = new DistanceSequence;
         collisionDetector->queryDistanceForDefinedPairs(allCharacterPositions.in(), distances);
+        return distances._retn();
     }
+    return NULL;
 }
 
+
+LinkPairSequence *DynamicsSimulator_impl::checkIntersection(CORBA::Boolean checkAll)
+{
+    calcWorldForwardKinematics();
+    _updateCharacterPositions();
+    if(!USE_INTERNAL_COLLISION_DETECTOR){
+        LinkPairSequence_var pairs = new LinkPairSequence;
+        collisionDetector->queryIntersectionForDefinedPairs(checkAll, allCharacterPositions.in(), pairs);
+        return pairs._retn();
+    }
+    return NULL;
+}
 
 void DynamicsSimulator_impl::getWorldState(WorldState_out wstate)
 {

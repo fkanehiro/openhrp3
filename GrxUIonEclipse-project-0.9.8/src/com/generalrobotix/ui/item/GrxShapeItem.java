@@ -188,6 +188,7 @@ public class GrxShapeItem extends GrxTransformItem{
         appearance.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_READ);
         appearance.setCapability(Appearance.ALLOW_POLYGON_ATTRIBUTES_READ);
         appearance.setCapability(Appearance.ALLOW_MATERIAL_READ);
+        appearance.setCapability(Appearance.ALLOW_MATERIAL_WRITE);
 
         PolygonAttributes pa = new PolygonAttributes();
         pa.setCapability(PolygonAttributes.ALLOW_MODE_READ);
@@ -674,5 +675,54 @@ public class GrxShapeItem extends GrxTransformItem{
 */
 		
 		return ret;
+	}
+	
+	void setColor(java.awt.Color color){
+		Color3f c3f = new Color3f(color);
+		for (int i=0; i<tg_.numChildren(); i++){
+			if (tg_.getChild(i) instanceof Shape3D){
+	    	    Shape3D s3d = (Shape3D)tg_.getChild(i);
+	    	    Appearance app = s3d.getAppearance();
+	    	    if (app != null){
+	                Material ma = app.getMaterial();
+	                if (ma != null){
+	                    ma.setAmbientColor(c3f);
+	                }
+	      	    }
+			}else if (tg_.getChild(i) instanceof Primitive){
+				Primitive prim = (Primitive)tg_.getChild(i);
+				for (int j=0; j<prim.numChildren(); j++){
+					if (prim.getChild(j) instanceof Shape3D){
+			    	    Shape3D s3d = (Shape3D)prim.getChild(j);
+			    	    Appearance app = s3d.getAppearance();
+			    	    if (app != null){
+			                Material ma = app.getMaterial();
+			                if (ma != null){
+			                    ma.setAmbientColor(c3f);
+			                }
+			      	    }	
+					}
+				}
+			}
+		}
+	}
+	
+	void restoreColor(){
+		for (int i=0; i<tg_.numChildren(); i++){
+			if (tg_.getChild(i) instanceof Shape3D){
+	    	    Shape3D s3d = (Shape3D)tg_.getChild(i);
+	    	    Appearance app = s3d.getAppearance();
+	    	    setMaterial(app, materialInfo_);
+			}else if (tg_.getChild(i) instanceof Primitive){
+				Primitive prim = (Primitive)tg_.getChild(i);
+				for (int j=0; j<prim.numChildren(); j++){
+					if (prim.getChild(j) instanceof Shape3D){
+			    	    Shape3D s3d = (Shape3D)prim.getChild(j);
+			    	    Appearance app = s3d.getAppearance();
+			    	    setMaterial(app, materialInfo_);
+					}
+				}
+			}
+		}
 	}
 }
