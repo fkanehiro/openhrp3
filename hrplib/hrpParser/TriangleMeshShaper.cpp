@@ -871,6 +871,10 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
         extrusion->spine[0][1] == extrusion->spine[numSpine-1][1] &&
         extrusion->spine[0][2] == extrusion->spine[numSpine-1][2] )
         isClosed = true;
+    bool crossSectionisClosed = false;
+    if( extrusion->crossSection[0][0] == extrusion->crossSection[numcross-1][0] &&
+        extrusion->crossSection[0][1] == extrusion->crossSection[numcross-1][1] )
+        crossSectionisClosed = true;
 
     MFVec3f& vertices = triangleMesh->coord->point;
     vertices.reserve(numSpine*numcross);
@@ -879,54 +883,64 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
     int definedZaxis=-1;
     std::vector<Vector3> Yaxisarray;
     std::vector<Vector3> Zaxisarray;
-    for(int i=0; i<numSpine; i++){
-        Vector3 spine1, spine2, spine3;
-        Vector3 Yaxis, Zaxis;
-        if(i==0){
-            if(isClosed){
-                spine1 = Vector3(extrusion->spine[numSpine-2].begin(),3);
-                spine2 = Vector3(extrusion->spine[0].begin(),3);
-                spine3 = Vector3(extrusion->spine[1].begin(),3);
+    if(numSpine > 2){
+        for(int i=0; i<numSpine; i++){
+            Vector3 spine1, spine2, spine3;
+            Vector3 Yaxis, Zaxis;
+            if(i==0){
+                if(isClosed){
+                    spine1 = Vector3(extrusion->spine[numSpine-2].begin(),3);
+                    spine2 = Vector3(extrusion->spine[0].begin(),3);
+                    spine3 = Vector3(extrusion->spine[1].begin(),3);
+                    Yaxis = Vector3(spine3-spine1);
+                    Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                }else{
+                    spine1 = Vector3(extrusion->spine[0].begin(),3);
+                    spine2 = Vector3(extrusion->spine[1].begin(),3);
+                    spine3 = Vector3(extrusion->spine[2].begin(),3);
+                    Yaxis = Vector3(spine2-spine1);
+                    Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                }
+            }else if(i==numSpine-1){
+                if(isClosed){
+                    spine1 = Vector3(extrusion->spine[numSpine-2].begin(),3);
+                    spine2 = Vector3(extrusion->spine[0].begin(),3);
+                    spine3 = Vector3(extrusion->spine[1].begin(),3);
+                    Yaxis = Vector3(spine3-spine1);
+                    Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                }else{
+                    spine1 = Vector3(extrusion->spine[numSpine-3].begin(),3);
+                    spine2 = Vector3(extrusion->spine[numSpine-2].begin(),3);
+                    spine3 = Vector3(extrusion->spine[numSpine-1].begin(),3);
+                    Yaxis = Vector3(spine3-spine2);
+                    Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                }
+            }else{
+                spine1 = Vector3(extrusion->spine[i-1].begin(),3);
+                spine2 = Vector3(extrusion->spine[i].begin(),3);
+                spine3 = Vector3(extrusion->spine[i+1].begin(),3);
                 Yaxis = Vector3(spine3-spine1);
                 Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
-            }else{
-                spine1 = Vector3(extrusion->spine[0].begin(),3);
-                spine2 = Vector3(extrusion->spine[1].begin(),3);
-                spine3 = Vector3(extrusion->spine[2].begin(),3);
-                Yaxis = Vector3(spine2-spine1);
-                Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
             }
-        }else if(i==numSpine-1){
-            if(isClosed){
-                spine1 = Vector3(extrusion->spine[numSpine-2].begin(),3);
-                spine2 = Vector3(extrusion->spine[0].begin(),3);
-                spine3 = Vector3(extrusion->spine[1].begin(),3);
-                Yaxis = Vector3(spine3-spine1);
-                Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+            if(!norm2(Zaxis)){
+                if(definedZaxis!=-1)
+                    Zaxis=preZaxis;
             }else{
-                spine1 = Vector3(extrusion->spine[numSpine-3].begin(),3);
-                spine2 = Vector3(extrusion->spine[numSpine-2].begin(),3);
-                spine3 = Vector3(extrusion->spine[numSpine-1].begin(),3);
-                Yaxis = Vector3(spine3-spine2);
-                Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                if(definedZaxis==-1)
+                    definedZaxis=i;
+                preZaxis = Zaxis;
             }
-        }else{
-            spine1 = Vector3(extrusion->spine[i-1].begin(),3);
-            spine2 = Vector3(extrusion->spine[i].begin(),3);
-            spine3 = Vector3(extrusion->spine[i+1].begin(),3);
-            Yaxis = Vector3(spine3-spine1);
-            Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+            Yaxisarray.push_back(Yaxis);
+            Zaxisarray.push_back(Zaxis);
         }
-        if(!norm2(Zaxis)){
-            if(definedZaxis!=-1)
-                Zaxis=preZaxis;
-        }else{
-            if(definedZaxis==-1)
-                definedZaxis=i;
-            preZaxis = Zaxis;
-        }
+    }else{
+        Vector3 spine1, spine2;
+        Vector3 Yaxis;
+        spine1 = Vector3(extrusion->spine[0].begin(),3);
+        spine2 = Vector3(extrusion->spine[1].begin(),3);
+        Yaxis = Vector3(spine2-spine1);
         Yaxisarray.push_back(Yaxis);
-        Zaxisarray.push_back(Zaxis);
+        Yaxisarray.push_back(Yaxis);
     }
     for(int i=0; i<numSpine; i++){
         Matrix33 Scp;
@@ -971,7 +985,6 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
     }
 
     MFInt32& indices = triangleMesh->coordIndex;
-    indices.reserve((numSpine-1)*(numcross-1)*2*4);
     for(int i=0; i < numSpine-1 ; i++){
         const int upper = i * numcross;
         const int lower = (i + 1) * numcross;
@@ -982,27 +995,34 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
             addTriangle(indices, j + upper, (j + 1)+ upper, j + 1 + lower);
         }
     }
-     
+    
+    int j=0;
+    if(crossSectionisClosed)
+        j=1;
     if(extrusion->beginCap && !isClosed){
-         //todo 四角形以上の分割ができるようになったら　//
-        for(int i=0; i<numcross; i++){
-            cout << vertices[i][0] << " " 
-                 << vertices[i][1] << " " 
-                 << vertices[i][2] << endl;
-        }
+        PolygonTriangulator<SFFloat> triangulate(vertices);
+        polygon.clear();
+        trianglesInPolygon.clear();
+        for(int i=0; i<numcross-j; i++)
+            polygon.push_back(i);
+        triangulate(polygon, trianglesInPolygon);
+        for(int i=0; i<trianglesInPolygon.size(); i+=3 )
+            addTriangle(indices, trianglesInPolygon[i], trianglesInPolygon[i+1], trianglesInPolygon[i+2]);
     }
 
     if(extrusion->endCap && !isClosed){
-         //todo
-        for(int i=0; i<numcross; i++){
-            cout << vertices[numcross*(numSpine-1)+i][0] << " "
-                << vertices[numcross*(numSpine-1)+i][1]  << " "
-                << vertices[numcross*(numSpine-1)+i][2] << endl;
-        }
+        PolygonTriangulator<SFFloat> triangulate(vertices);
+        polygon.clear();
+        trianglesInPolygon.clear();
+        for(int i=0; i<numcross-j; i++)
+            polygon.push_back(numcross*(numSpine-1)+i);
+        triangulate(polygon, trianglesInPolygon);
+        for(int i=0; i<trianglesInPolygon.size(); i+=3 )
+            addTriangle(indices, trianglesInPolygon[i], trianglesInPolygon[i+1], trianglesInPolygon[i+2]);
     }
 
     triangleMesh->creaseAngle = extrusion->creaseAngle;
-  
+ 
     return true;
 }
 
@@ -1556,6 +1576,10 @@ void TriangleMeshShaper::defaultTextureMappingSphere(VrmlIndexedFaceSet* triangl
 }
 
 void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* triangleMesh, VrmlExtrusion* extrusion ){
+    
+    int numSpine = extrusion->spine.size();
+    int numcross = extrusion->crossSection.size();
+        
     triangleMesh->texCoord = new VrmlTextureCoordinate();
     std::vector<double> s;
     std::vector<double> t;
@@ -1585,7 +1609,18 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
         }
     }
 
+    int endofspin = (numSpine-1)*(numcross-1)*2*4;
+    triangleMesh->texCoordIndex.resize(endofspin);
+    copy( triangleMesh->coordIndex.begin(), triangleMesh->coordIndex.begin()+endofspin, 
+		triangleMesh->texCoordIndex.begin() );
+    int endofbegincap = endofspin;
+    int endofpoint = triangleMesh->texCoord->point.size();
+
     if(extrusion->beginCap){
+        if(extrusion->endCap)
+            endofbegincap += (triangleMesh->coordIndex.size()-endofspin)/2;
+        else
+            endofbegincap = triangleMesh->coordIndex.size();
         double xmin, xmax;
         double zmin, zmax;
         xmin = xmax = extrusion->crossSection[0][0];
@@ -1598,11 +1633,18 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
         }
         double xsize = xmax-xmin;
         double zsize = zmax-zmin;
-        for(int i=0; i<extrusion->crossSection.size(); i++){
+        for(int i=0; i<numcross; i++){
             SFVec2f point;
             point[0] = (extrusion->crossSection[i][0]-xmin)/xsize;
             point[1] = (extrusion->crossSection[i][1]-zmin)/zsize;
             triangleMesh->texCoord->point.push_back(point);
+        }
+        for(int i=endofspin; i<endofbegincap; i++){
+            int k=triangleMesh->coordIndex[i];
+            if(k != -1)
+                triangleMesh->texCoordIndex.push_back(k+endofpoint);
+            else
+                triangleMesh->texCoordIndex.push_back(-1);
         }
     }
 
@@ -1625,10 +1667,15 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
             point[1] = (extrusion->crossSection[i][1]-zmin)/zsize;
             triangleMesh->texCoord->point.push_back(point);
         }
+        for(int i=endofbegincap; i<triangleMesh->coordIndex.size(); i++){
+            int k=triangleMesh->coordIndex[i];
+            if(k!=-1)   
+                triangleMesh->texCoordIndex.push_back(triangleMesh->texCoord->point.size()+k-endofpoint);
+            else
+                triangleMesh->texCoordIndex.push_back(-1);
+        }
     }
 
-    triangleMesh->texCoordIndex.resize(triangleMesh->coordIndex.size());
-    copy( triangleMesh->coordIndex.begin(), triangleMesh->coordIndex.end(), 
-		triangleMesh->texCoordIndex.begin() );
+    
 
 }
