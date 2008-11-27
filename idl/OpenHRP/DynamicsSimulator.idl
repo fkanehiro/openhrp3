@@ -197,6 +197,36 @@ module OpenHRP {
 
 		/**
 		 * @if jp
+		 * @brief 衝突検出ペアを追加します。
+		 *
+		 * ここで登録されたペア同士の衝突検出が行われます。
+		 *
+		 * @param	char1	  リンクのキャラクタ名
+		 * @param	name1	  リンク名
+		 * @param	char2     もう一方のキャラクタ名
+		 * @param	name2     リンク名
+		 * @param	tolerance リンク間の距離がこの値以下になると干渉と見なされる
+		 * @else
+		 * Add Collision Pairs
+		 * @param	char1	  Name of character for first link
+		 * @param	name1	  Name of first link
+		 * @param	char2     Name of character for second link
+		 * @param	name2     Name of second link
+		 * @param	tolerance When distance between links is smaller than this value, it is regarded as collision
+		 * @endif
+		 */
+		void registerIntersectionCheckPair
+		(
+		 in string char1,
+		 in string name1,
+		 in string char2,
+		 in string name2,
+		 in double tolerance
+		 );
+  
+
+		/**
+		 * @if jp
 		 * @brief 仮想リンクを追加します。
 		 *
 		 * @note 実装されていません。
@@ -544,14 +574,28 @@ module OpenHRP {
 
 		/**
 		 * @if jp
-		 * @brief 全てのキャラクタの順運動学を計算し、距離計算を行います。
- 		 * @brief distances 距離情報の配列
+		 * @brief 全てのキャラクタの順運動学を計算し、干渉検査を行います。
+		 * @param checkAll 全てをチェックするか(falseを設定するとひとつ衝突を検出した時点で終了します)
+		 * @return 干渉しているペアの配列
 		 * @else
-		 * Check for distance after calculation of kinematics.
-		 * @brief distances array of distance information
+		 * @brief Check for collision after calculation of kinematics.
+		 * @param  checkAll     true:  Check All Pairs
+		 * 		  false: Stop when 1 collision is found
+		 * @return colliding link pairs
 		 * @endif
 		 */
-		void checkDistance(out DistanceSequence distances);
+		LinkPairSequence checkIntersection(in boolean checkAll);
+
+		/**
+		 * @if jp
+		 * @brief 全てのキャラクタの順運動学を計算し、距離計算を行います。
+ 		 * @return 距離情報の配列
+		 * @else
+		 * @brief Check for distance after calculation of kinematics.
+		 * @return distances array of distance information
+		 * @endif
+		 */
+		DistanceSequence checkDistance();
 
 		/**
 		 * @if jp

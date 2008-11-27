@@ -46,7 +46,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public static final String TITLE = "Model";
     public static final String DEFAULT_DIR = "../../etc";
     public static final String FILE_EXTENSION = "wrl";
-    private static final double DEFAULT_RADIOUS = 0.05;
+    private static final double DEFAULT_RADIUS = 0.05;
 
     // icons
    	private static final String robotIcon = "robot.png";
@@ -264,6 +264,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	 */
     public void restoreProperties() {
         super.restoreProperties();
+        if (getStr("markRadius")==null) setDbl("markRadius", DEFAULT_RADIUS);
 
         _setModelType(isTrue("isRobot", isRobot_));
         _setupMarks();
@@ -278,7 +279,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             if (d == null)
                 setDbl(l.getName()+".angle", 0.0);
         }
-        //propertyChanged();
     }
 
     /**
@@ -360,8 +360,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @brief create spheres to display CoM and projected CoM
      */
     private void _setupMarks() {
-        double radius = getDbl("markRadius", DEFAULT_RADIOUS);
-        if (switchCom_ == null || radius != DEFAULT_RADIOUS) {
+        double radius = getDbl("markRadius", DEFAULT_RADIUS);
+        if (switchCom_ == null || radius != DEFAULT_RADIUS) {
             switchCom_ = GrxShapeUtil.createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
             switchComZ0_= GrxShapeUtil.createBall(radius, new Color3f(0.0f, 1.0f, 0.0f));
             tgCom_ = (TransformGroup)switchCom_.getChild(0);
@@ -1109,42 +1109,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param color color
      */
     public void setJointColor(int jid, java.awt.Color color) {
-        if (color == null)
-            setAmbientColorRecursive(links_.get(jointToLink_[jid]).tg_, new Color3f(0.0f, 0.0f, 0.0f));
-        else
-            setAmbientColorRecursive(links_.get(jointToLink_[jid]).tg_, new Color3f(color));
-    }
-
-
-    private void setAmbientColorRecursive(Node node, Color3f color) {
-    	if (node instanceof BranchGroup) {
-            BranchGroup bg = (BranchGroup)node;
-            for (int i = 0; i < bg.numChildren(); i++)
-                setAmbientColorRecursive(bg.getChild(i), color);
-    	} else if (node instanceof TransformGroup) {
-            TransformGroup tg = (TransformGroup)node;
-            for (int i = 0; i < tg.numChildren(); i++)
-                setAmbientColorRecursive(tg.getChild(i), color);
-    	} else if (node instanceof Group) {
-            Group g = (Group)node;
-            for (int i = 0; i < g.numChildren(); i++)
-                setAmbientColorRecursive(g.getChild(i), color);
-    	} else if (node instanceof Link) {
-    	    Link l = (Link)node;
-    	    SharedGroup sg = l.getSharedGroup();
-    	    for (int i = 0; i < sg.numChildren(); i++)
-    	    	setAmbientColorRecursive(sg.getChild(i), color);
-    	} else if (node instanceof Shape3D) { // Is the node Shape3D ?
-    	    Shape3D s3d = (Shape3D)node;
-    	    Appearance app = s3d.getAppearance();
-    	    if (app != null){
-                Material ma = app.getMaterial();
-                if (ma != null)
-                    ma.setAmbientColor(color);
-      	    }
-    	} else {
-    	    GrxDebugUtil.print("* The node " + node.toString() + " is not supported.");
-    	}
+    	GrxLinkItem l = links_.get(jointToLink_[jid]);
+    	if (l != null) l.setColor(color);
     }
 
 
@@ -1206,5 +1172,19 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 */
     	
     	return ret;
+    }
+    
+    /**
+     * @brief get link from name
+     * @param name name of the link
+     * @return link if found, null otherwise
+     */
+    public GrxLinkItem getLink(String name){
+    	for (int i=0; i<links_.size(); i++){
+    		if (links_.get(i).getName().equals(name)){
+    			return links_.get(i);
+    		}
+    	}
+    	return null;
     }
 }

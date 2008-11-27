@@ -13,20 +13,18 @@ std::ostream &operator<<(std::ostream &ost, const Point& p)
  * 
  * This function is implemented referring the following webpage
  * http://www.softsurfer.com/Archive/algorithm_0106/algorithm_0106.htm
- * @param u0 one of end points of the first line segment
- * @param u1 the other end point of the first line segment
- * @param v0 one of end points of the second line segment
- * @param v1 the other end point of the second line segment
+ * @param u0 start point of the first line segment
+ * @param u vector from u0 to the other end point of the first line segment
+ * @param v0 start point of the second line segment
+ * @param v vector from v0 the other end point of the second line segment
  * @param cp0 the closest point on the first line segment 
  * @param cp1 the closest point on the second line segment
  * @return the minimum distance
  */
-inline float SegSegDist(const Point& u0, const Point& u1,
-                 const Point& v0, const Point& v1,
-                 Point& cp0, Point& cp1)
+inline float SegSegDist(const Point& u0, const Point& u,
+                        const Point& v0, const Point& v,
+                        Point& cp0, Point& cp1)
 {
-    Point    u = u1 - u0;
-    Point    v = v1 - v0;
     Point    w = u0 - v0;
     float    a = u|u;        // always >= 0
     float    b = u|v;
@@ -117,52 +115,20 @@ inline float PointPlaneDist(const Point& P, const Point& pointOnPlane, const Poi
  * @brief check whether a point is in Voroni region of a face
  * @param p a point to be tested
  * @param vertices vertices of the triangle
- * @param outers normal vectors of edges
- * @return true if the point is in the Voronoi region, false otherwise
- */
-inline bool PointFaceAppTest(const Point& P, const Point** vertices,
-                             const Point* outers)
-{
-    Point v;
-    for (unsigned int i=0; i<3; i++){
-        v = P - *vertices[i];
-        if ((v|outers[i])>0) return false;
-    }
-    return true;
-}
-
-/**
- * @brief check whether a point is in Voroni region of a face
- * @param p a point to be tested
- * @param vertices vertices of the triangle
  * @param edges edges of the triangle
  * @param n normal vector of the triangle
  * @return true if the point is in the Voronoi region, false otherwise
  */
-inline bool PointFaceAppTest(const Point& P, const Point** vertices, 
+inline bool PointFaceAppTest(const Point& P, const Point** vertices,
                              const Point* edges, const Point& n)
 {
-    Point outers[3];
+    Point v, outer;
     for (unsigned int i=0; i<3; i++){
-        outers[i] = edges[i]^n;
+        v = P - *vertices[i];
+        outer = edges[i]^n;
+        if ((v|outer)>0) return false;
     }
-    return PointFaceAppTest(P, vertices, outers);
-}
-
-/**
- * @brief check whether a point is in Voroni region of a face
- * @param p a point to be tested
- * @param vertices vertices of the triangle
- * @return true if the point is in the Voronoi region, false otherwise
- */
-inline bool PointFaceAppTest(const Point& P, const Point** vertices)
-{
-    Point edges[3];
-    for (unsigned int i=0; i<3; i++){
-        edges[i] = *vertices[(i+1)%3]-*vertices[i];
-    }
-    Point n = edges[0]^edges[1];
-    return PointFaceAppTest(P, vertices, edges, n);
+    return true;
 }
 
 // see DistFuncs.h
@@ -173,7 +139,15 @@ float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
     const Point* uvertices[] = {&U0, &U1, &U2};
     const Point* vvertices[] = {&V0, &V1, &V2};
     float min_d, d;
-    Point p0, p1;
+    Point p0, p1, n, vec;
+    bool overlap = true;
+
+    // edges
+    Point uedges[3], vedges[3];
+    for (unsigned int i=0; i<3; i++){
+        uedges[i] = *uvertices[(i+1)%3] - *uvertices[i];
+        vedges[i] = *vvertices[(i+1)%3] - *vvertices[i];
+    }
 
     // set initial values
     cp0 = U0;
@@ -183,21 +157,27 @@ float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
     // vertex-vertex, vertex-edge, edge-edge
     for (unsigned int i=0; i<3; i++){
         for (unsigned int j=0; j<3; j++){
-            d = SegSegDist(*uvertices[i], *uvertices[(i+1)%3],
-                           *vvertices[j], *vvertices[(j+1)%3],
+            d = SegSegDist(*uvertices[i], uedges[i],
+                           *vvertices[j], vedges[j],
                            p0, p1);
-            if (d < min_d){
+            n = p0 - p1;
+            if (d <= min_d){
                 min_d = d;
                 cp0 = p0;
                 cp1 = p1;
+                // check overlap
+                vec = *uvertices[(i+2)%3] - cp0;
+                float u = vec|n;
+                vec = *vvertices[(j+2)%3] - cp1;
+                float v = vec|n;
+                // n directs from v -> u
+                if (u>=0 && v<=0) return min_d;
+
+                if (u > 0) u = 0;
+                if (v < 0) v = 0;
+                if ((n.Magnitude() + u - v) > 0) overlap = false;
             }
         }
-    }
-
-    Point uedges[3], vedges[3];
-    for (unsigned int i=0; i<3; i++){
-        uedges[i] = *uvertices[(i+1)%3] - *uvertices[i];
-        vedges[i] = *vvertices[(i+1)%3] - *vvertices[i];
     }
 
     Point un = uedges[0]^uedges[1];
@@ -205,35 +185,65 @@ float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
     Point vn = vedges[0]^vedges[1];
     vn.Normalize();
 
-    Point uouters[3], vouters[3];
-    for (unsigned int i=0; i<3; i++){
-        uouters[i] = uedges[i]^un;
-        vouters[i] = vedges[i]^vn;
-    }
-
     // vertex-face, edge-face, face-face
-    for (unsigned int i=0; i<3; i++){
-        if (PointFaceAppTest(*uvertices[i], vvertices, vouters)){
-            d = fabsf(PointPlaneDist(*uvertices[i], *vvertices[0], vn, p1));
-            if (d < min_d){
-                min_d = d;
-                cp0 = *uvertices[i];
-                cp1 = p1;
-            }
-        }
+    // plane-triangle overlap test
+    float ds[3];
+    int rank;
+    //   u and plane including v
+    rank = -1;
+    for (int i=0; i<3; i++){
+        vec = *uvertices[i] - *vvertices[0];
+        ds[i] = vec|vn; 
     }
-    for (unsigned int i=0; i<3; i++){
-        if (PointFaceAppTest(*vvertices[i], uvertices, uouters)){
-            d = fabsf(PointPlaneDist(*vvertices[i], *uvertices[0], un, p0));
-            if (d < min_d){
-                min_d = d;
-                cp0 = p0;
-                cp1 = *vvertices[i];
-            }
+    if (ds[0] > 0 && ds[1] > 0 && ds[2] > 0){
+        // find rank of the nearest vertex to the plane
+        rank = ds[0] > ds[1] ? 1 : 0;
+        rank = ds[rank] > ds[2] ? 2 : rank;
+    }else if(ds[0] < 0 && ds[1] < 0 && ds[2] < 0){
+        // find rank of the nearest vertex to the plane
+        rank = ds[0] > ds[1] ? 0 : 1;
+        rank = ds[rank] > ds[2] ? rank : 2;
+    }
+    if (rank >=0){
+        overlap = false;
+        if (PointFaceAppTest(*uvertices[rank], vvertices, vedges, vn)){
+            min_d = fabsf(PointPlaneDist(*uvertices[rank], *vvertices[0], vn, p1));
+            cp0 = *uvertices[rank];
+            cp1 = p1;
+            return min_d;
         }
     }
 
-    return min_d;
+    //   v and plane including u
+    rank = -1;
+    for (int i=0; i<3; i++){
+        vec = *vvertices[i] - *uvertices[0];
+        ds[i] = vec|un; 
+    }
+    if (ds[0] > 0 && ds[1] > 0 && ds[2] > 0){
+        // find rank of the nearest vertex to the plane
+        rank = ds[0] > ds[1] ? 1 : 0;
+        rank = ds[rank] > ds[2] ? 2 : rank;
+    }else if(ds[0] < 0 && ds[1] < 0 && ds[2] < 0){
+        // find rank of the nearest vertex to the plane
+        rank = ds[0] > ds[1] ? 0 : 1;
+        rank = ds[rank] > ds[2] ? rank : 2;
+    }
+    if (rank >= 0){
+        overlap = false;
+        if (PointFaceAppTest(*vvertices[rank], uvertices, uedges, un)){
+            min_d = fabsf(PointPlaneDist(*vvertices[rank], *uvertices[0], un, p0));
+            cp0 = p0;
+            cp1 = *vvertices[rank];
+            return min_d;
+        }
+    }
+
+    if (overlap){
+        return 0;
+    }else{
+        return min_d;
+    }
 }
 
 #if 1
@@ -241,21 +251,21 @@ float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
 int main()
 {
     Point p0(0,0,0), p1(2,0,0), p2(1, 1, -1), p3(1, 1, 1);
-    Point cp1, cp2;
+    Point cp1, cp2, n;
     float d;
 
     d= SegSegDist(p0, p1, p2, p3, cp1, cp2);
-    std::cout << "test1 : d = " << d << ", cp1 = " << cp1 << ", cp2 = " << cp2 
-              << std::endl;
+    std::cout << "test1 : d = " << d << ", cp1 = " << cp1 
+              << ", cp2 = " << cp2 << std::endl;
 
     Point p4(0,1,0), p5(2,1,0);
     d= SegSegDist(p0, p1, p4, p5, cp1, cp2);
-    std::cout << "test2 : d = " << d << ", cp1 = " << cp1 << ", cp2 = " << cp2 
-              << std::endl;
+    std::cout << "test2 : d = " << d << ", cp1 = " << cp1 
+              << ", cp2 = " << cp2 << std::endl;
 
     d= SegSegDist(p0, p1, p0, p1, cp1, cp2);
-    std::cout << "test3 : d = " << d << ", cp1 = " << cp1 << ", cp2 = " << cp2 
-              << std::endl;
+    std::cout << "test3 : d = " << d << ", cp1 = " << cp1 
+              << ", cp2 = " << cp2 << std::endl;
 
     Point p6(0, 2, 0), p7(-2, 1, 0);
     d = TriTriDist(p0, p1, p5, p4, p6, p7, cp1, cp2);
@@ -284,6 +294,13 @@ int main()
               << std::endl;
     std::cout << "answer: d = 1, cp1 = (2, 0, 0), cp2 = (2, 0, 1)" 
               << std::endl; 
+
+    Point pp0(-2, 2, 0), pp1(-2, -2, 0), pp2(5, -2, 0),
+        pp3(-0.1, 0.4, -0.1), pp4(-0.1, -0.4, -0.1), pp5(-0.1, -0.4, 0.1);
+    d = TriTriDist(pp0, pp1, pp2, pp3, pp4, pp5, cp1, cp2);
+    std::cout << "test9 : d = " << d << ", cp1 = " << cp1 << ", cp2 = " << cp2 
+              << std::endl;
+    std::cout << "answer: d = 0.0" << std::endl;
 
     return 0;
 }

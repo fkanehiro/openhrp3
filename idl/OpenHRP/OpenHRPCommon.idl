@@ -125,6 +125,14 @@ module OpenHRP {
 		 * @endif
 		 */
 		string linkName2;
+		/**
+		 * @if jp
+		 * リンク間の距離がこの値よりも小さい場合，干渉と見なす
+		 * @else
+		 * When distance between links is smaller than this value, it is regarded as collision
+		 * @endif
+		 */
+		double tolerance;
 	};
 
 	typedef sequence<LinkPair> LinkPairSequence;

@@ -28,18 +28,12 @@ module OpenHRP {
      * @if jp
      * @brief 干渉チェックペアを追加します。
      * @param   colPair       干渉チェックペア
-     * @param   convexsize1   ペアのうち、1つ目を凸包集合に変換するか
-     * @param   convexsize2   ペアのうち、2つ目を凸包集合に変換するか
      * @else
      * Adding Polygon Set Pairs
      * @param   colPair       Collision Pair
-     * @param   convexsize1   Flag to set whether object1 
-     *  			      should be converted to a set of Convexes
-     * @param   convexsize2   Flag to set whether object2
-     * 			      should be converted to a set of Convexes
      * @endif
     */
-    void addCollisionPair(in LinkPair collisionPair, in boolean convexsize1, in boolean convexsize2);
+    void addCollisionPair(in LinkPair collisionPair);
   
 
     /**

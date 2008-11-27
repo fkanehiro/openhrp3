@@ -400,7 +400,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		String dir = f.getParent();
 		if (dir!=null) {
 		    System.setProperty("PROJECT_DIR", dir);
-		    System.out.println(dir);
+		    System.out.println("PROJECT_DIR is set to "+dir);
 		}
 		
     	try {
@@ -443,7 +443,6 @@ public class GrxProjectItem extends GrxBaseItem {
 	
 	public void restoreProject() {
 
-//		manager_.processingWindow_.setTitle("Restore Project (Mode:" +mode+")");
 		String mode = manager_.getCurrentModeName();
 		System.out.println("Restore Project (Mode:" +mode+")");
 
@@ -477,7 +476,6 @@ public class GrxProjectItem extends GrxBaseItem {
 
         monitor.worked(1);
         
-		clear();
 		List propList = minfo.propList;
 		if (propList != null) {
 			for (int i=0; i<propList.size(); i++) {

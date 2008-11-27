@@ -20,11 +20,18 @@ package com.generalrobotix.ui.item;
 import java.util.Hashtable;
 import java.util.Map;
 
+import javax.media.j3d.Appearance;
 import javax.media.j3d.BadTransformException;
+import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
+import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
+import javax.media.j3d.Link;
+import javax.media.j3d.Material;
+import javax.media.j3d.Node;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
+import javax.media.j3d.SharedGroup;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
@@ -48,6 +55,7 @@ import jp.go.aist.hrp.simulator.SensorInfo;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
+import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 
 
@@ -567,6 +575,11 @@ public class GrxLinkItem extends GrxTransformItem{
     	}else if(property.equals("momentsOfInertia")){
     		double [] I = getDblAry(value);
     		inertia(I);
+    	}else if (property.equals("tolerance")){
+    		Double tr = getDbl(value);
+    		if (tr != null){
+    			setProperty("tolerance", value);
+    		}
     	}else{
     		return false;
     	}
@@ -780,6 +793,8 @@ public class GrxLinkItem extends GrxTransformItem{
 		
 		model_.addLink(this);
 
+		setDbl("tolerance", 0.0);
+		
 		// CoM display
 		// 0.01 is default scale of ellipsoid
         switchCom_ = GrxShapeUtil.createBall(0.01, new Color3f(1.0f, 1.0f, 0.0f));
@@ -1100,4 +1115,32 @@ public class GrxLinkItem extends GrxTransformItem{
 		super.delete();
 		model_.removeLink(this);
 	}
+	
+	public void setColor(java.awt.Color color){
+		for (int i=0; i<children_.size(); i++){
+			if (children_.get(i) instanceof GrxShapeItem){
+				GrxShapeItem shape = (GrxShapeItem)children_.get(i);
+				shape.setColor(color);
+			}else if (children_.get(i) instanceof GrxSensorItem){
+				for (int j=0; j<children_.get(i).children_.size(); j++){
+					GrxShapeItem shape = (GrxShapeItem)children_.get(i).children_.get(j);
+					shape.setColor(color);
+				}
+			}
+		}
+    }
+	
+	public void restoreColor(){
+		for (int i=0; i<children_.size(); i++){
+			if (children_.get(i) instanceof GrxShapeItem){
+				GrxShapeItem shape = (GrxShapeItem)children_.get(i);
+				shape.restoreColor();
+			}else if (children_.get(i) instanceof GrxSensorItem){
+				for (int j=0; j<children_.get(i).children_.size(); j++){
+					GrxShapeItem shape = (GrxShapeItem)children_.get(i).children_.get(j);
+					shape.restoreColor();
+				}
+			}
+		}
+    }
 }

@@ -91,6 +91,8 @@ public class GrxItemView extends GrxBaseView {
 					for (Object o : ((IStructuredSelection) selection).toArray() ){
 						if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
 							manager_.focusedItem((GrxBaseItem)o);
+						}else if(o instanceof String){
+							manager_.focusedItem(manager_.getProject());
 						}
 					}
 				}catch(Exception ex){
