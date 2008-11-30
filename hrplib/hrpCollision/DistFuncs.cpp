@@ -83,8 +83,8 @@ inline float SegSegDist(const Point& u0, const Point& u,
         }
     }
     // finally do the division to get sc and tc
-    sc = (fabsf(sN) < EPS ? 0.0 : sN / sD);
-    tc = (fabsf(tN) < EPS ? 0.0 : tN / tD);
+    sc = (fabsf(sN) < EPS ? 0.0f : sN / sD);
+    tc = (fabsf(tN) < EPS ? 0.0f : tN / tD);
 
     cp0 = u0 + sc * u;
     cp1 = v0 + tc * v;
@@ -167,15 +167,17 @@ float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
                 cp1 = p1;
                 // check overlap
                 vec = *uvertices[(i+2)%3] - cp0;
-                float u = vec|n;
+                float u = (vec|n)/min_d;
                 vec = *vvertices[(j+2)%3] - cp1;
-                float v = vec|n;
+                float v = (vec|n)/min_d;
                 // n directs from v -> u
                 if (u>=0 && v<=0) return min_d;
 
                 if (u > 0) u = 0;
                 if (v < 0) v = 0;
-                if ((n.Magnitude() + u - v) > 0) overlap = false;
+                if ((n.Magnitude() + u - v) > 0){
+                    overlap = false;
+                }
             }
         }
     }
@@ -295,13 +297,32 @@ int main()
     std::cout << "answer: d = 1, cp1 = (2, 0, 0), cp2 = (2, 0, 1)" 
               << std::endl; 
 
-    Point pp0(-2, 2, 0), pp1(-2, -2, 0), pp2(5, -2, 0),
-        pp3(-0.1, 0.4, -0.1), pp4(-0.1, -0.4, -0.1), pp5(-0.1, -0.4, 0.1);
-    d = TriTriDist(pp0, pp1, pp2, pp3, pp4, pp5, cp1, cp2);
-    std::cout << "test9 : d = " << d << ", cp1 = " << cp1 << ", cp2 = " << cp2 
-              << std::endl;
-    std::cout << "answer: d = 0.0" << std::endl;
+    {
+        Point pp0(-2, 2, 0), pp1(-2, -2, 0), pp2(5, -2, 0),
+            pp3(-0.1, 0.4, -0.1), pp4(-0.1, -0.4, -0.1), pp5(-0.1, -0.4, 0.1);
+        d = TriTriDist(pp0, pp1, pp2, pp3, pp4, pp5, cp1, cp2);
+        std::cout << "test9 : d = " << d << ", cp1 = " << cp1 << ", cp2 = " 
+                  << cp2 << std::endl;
+        std::cout << "answer: d = 0.0" << std::endl;
+    }
 
+    {
+        Point pp0(-2, 2, 0), pp1(-2, -2, 0), pp2(5, -2, 0),
+            pp3(-0.1, 0.4, -0.1), pp4(-0.1, -0.4, -0.1), pp5(-0.1, -0.4, 0.1);
+        d = TriTriDist(pp0, pp1, pp2, pp3, pp4, pp5, cp1, cp2);
+        std::cout << "test9 : d = " << d << ", cp1 = " << cp1 << ", cp2 = " 
+                  << cp2 << std::endl;
+        std::cout << "answer: d = 0.0" << std::endl;
+    }
+
+    {
+        Point p0(0.1, 0.4, 0), p1(-0.1, 0.4, 0), p2(0.1, -0.4, 0);
+        Point p3(0.05, 0.45, -0.15), p4(0.05, 0.45, 0.05), p5(0.05, -0.35, -0.15);
+        d = TriTriDist(p0, p1, p2, p3, p4, p5, cp1, cp2);
+        std::cout << "test10 : d = " << d << ", cp1 = " << cp1 << ", cp2 = " 
+                  << cp2 << std::endl;
+        std::cout << "answer: d = 0.0" << std::endl;
+    }
     return 0;
 }
 #endif
