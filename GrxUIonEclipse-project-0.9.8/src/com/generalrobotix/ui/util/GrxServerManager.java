@@ -347,18 +347,24 @@ public class GrxServerManager extends Composite{
         {
             pi.id = vecServerInfo.elementAt(localDim).id ;
             pi.args = vecArgsText.elementAt(localDim).getText();
-            pi.com.add( vecPathText.elementAt(localDim).getText() + " " + pi.args);
+            pi.com.clear();
+            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
             pm.register(pi);
             GrxProcessManager.AProcess p = pm.get(pi.id);
             if( p.start(null)){
                 vecButton.elementAt(localDim).setText(STOP);
+            }
+            else // start 失敗
+            {
+                pm.unregister(pi.id);
             }
         }
         else
         {
             pi.id = vecServerInfo.elementAt(localDim).id ;
             pi.args = vecArgsText.elementAt(localDim).getText();
-            pi.com.add( vecPathText.elementAt(localDim).getText() + " " + pi.args);
+            pi.com.clear();
+            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
             GrxProcessManager.AProcess p = pm.get(pi.id);
             if( p.stop()){
             	vecButton.elementAt(localDim).setText(START);
