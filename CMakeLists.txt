@@ -94,8 +94,9 @@ link_directories(${LAPACK_LIBRARY_DIRS})
 
 # tvmet
 find_package(Tvmet REQUIRED)
-
 include_directories(${TVMET_INCLUDE_DIR})
+add_definitions(-DTVMET_OPTIMIZE)
+
 
 # build flag of jpeg and png library
 if(UNIX)
@@ -259,7 +260,7 @@ if(JYTHON_JAR)
 	set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JYTHON_JAR}")
 endif()
 
-set(JAVA3D_LIB_DIR CACHE FILEPATH "set the location of Java3D 'lib' directory when it is not installed in the JDK")
+set(JAVA3D_LIB_DIR CACHE PATH "set the location of Java3D 'lib' directory when it is not installed in the JDK")
 
 if(JAVA3D_LIB_DIR)
   string(REGEX REPLACE "/$" "" JAVA3D_LIB_DIR ${JAVA3D_LIB_DIR})
@@ -273,7 +274,7 @@ if(JAVA3D_LIB_DIR)
   endif()
 endif()
 
-set(JMFHOME $ENV{JMFHOME} CACHE FILEPATH "set the location of Java Media Framework when it is not in the class path")
+set(JMFHOME $ENV{JMFHOME} CACHE PATH "set the location of Java Media Framework when it is not in the class path")
 if(JMFHOME)
   string(REGEX REPLACE "/$" "" JMFHOME ${JMFHOME})
   set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JMFHOME}/lib/jmf.jar")
@@ -307,10 +308,6 @@ if(CHECK_UNRESOLVED_SYMBOLS)
   if(UNIX)
     list(APPEND CMAKE_SHARED_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-shared-libs")
   endif()
-endif()
-
-if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
-  add_definitions(-DTVMET_OPTIMIZE)
 endif()
 
 include_directories(${PROJECT_BINARY_DIR}/hrplib)
