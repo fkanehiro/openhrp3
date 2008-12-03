@@ -153,7 +153,18 @@ public class GrxPluginManager
 		System.out.println("os.name = "+System.getProperty("os.name"));
 		if( System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X"))
 		{
-			rcFile = new File( homePath_ + "grxuirc.xml");
+			rcFile = new File( homePath_ + "/.OpenHRP-3.1/grxuirc.xml");
+			File rcFileDir;
+			rcFileDir = new File( homePath_ + "/.OpenHRP-3.1" );
+			if( !rcFileDir.exists())
+			{
+				rcFileDir.mkdir();
+			}
+			rcFileDir = new File( homePath_ + "/.OpenHRP-3.1/omninames-log");
+			if( !rcFileDir.exists())
+			{
+				rcFileDir.mkdir();
+			}
 		}
 		else
 		{

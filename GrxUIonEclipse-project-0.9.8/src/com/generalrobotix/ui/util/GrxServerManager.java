@@ -41,7 +41,7 @@ public class GrxServerManager extends Composite{
       MODEL_LOADER,
       NAME_SERVER
     };
-    static public final String LINUX_TMP_DIR = System.getenv( "HOME" ) + File.separator ;
+    static public final String LINUX_TMP_DIR = System.getenv( "HOME" ) + File.separator + ".OpenHRP-3.1" + File.separator;
     static private final String START = "Start";
     static private final String STOP = "Stop";
     static private final String CONFIG_XML = "grxuirc.xml";
