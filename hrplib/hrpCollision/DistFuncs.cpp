@@ -111,6 +111,25 @@ inline float PointPlaneDist(const Point& P, const Point& pointOnPlane, const Poi
     return l;
 }
 
+// see DistFuncs.h
+float PointSegDist(const Point& P, const Point& u0, const Point& u1)
+{
+    Point v = P - u0;
+    Point dir = u1 - u0;
+    float l = dir.Magnitude();
+    dir /= l;
+    
+    float x = v|dir;
+    if (x < 0){
+        return v.Magnitude();
+    }else if (x > l){
+        Point dv = P - u1;
+        return dv.Magnitude();
+    }else{
+        return sqrtf(v.SquareMagnitude() - x*x);
+    }
+}
+
 /**
  * @brief check whether a point is in Voroni region of a face
  * @param p a point to be tested
@@ -246,6 +265,14 @@ float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
     }else{
         return min_d;
     }
+}
+
+// see DistFuncs.h
+float SegSegDist(const Point& u0, const Point& u1,
+                 const Point& v0, const Point& v1)
+{
+    Point cp0, cp1;
+    return SegSegDist(u0, u1-u0, v0, v1-v0, cp0, cp1);
 }
 
 #if 1

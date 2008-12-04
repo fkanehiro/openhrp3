@@ -54,7 +54,7 @@
 		 *	\param		max			[in] the max point
 		 */
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		inline_	void		SetMinMax(const Point& min, const Point& max)		{ mCenter = (max + min)*0.5f; mExtents = (max - min)*0.5f;		}
+		inline_	void		SetMinMax(const Point& min, const Point& max)		{ mCenter = (max + min)*0.5f; mExtents = (max - min)*0.5f; }
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/**
@@ -76,6 +76,30 @@
 
 				Point		mCenter;				//!< Box center
 				Point		mExtents;				//!< Box extents
+#if 1 // Added by AIST
+                                typedef enum {SSV_PSS, SSV_LSS} ssv_type;
+                                ssv_type	mType; //!< Type of SSV 
+                                float		mRadius;
+                                Point		mPoint0, mPoint1; //!< End points of line segment
+                                void CreateSSV(){
+                                    PointComponent maxAxis, minAxis;
+                                    maxAxis = mExtents.LargestAxis();
+                                    minAxis = mExtents.SmallestAxis();
+                                    if (mExtents[maxAxis]/mExtents[minAxis] > 2){
+                                        mType = SSV_LSS;
+                                        mPoint0 = mCenter;
+                                        mPoint0[maxAxis] -= mExtents[maxAxis];
+                                        mPoint1 = mCenter;
+                                        mPoint1[maxAxis] += mExtents[maxAxis];
+                                        Point p = mExtents;
+                                        p[maxAxis] = 0;
+                                        mRadius = p.Magnitude();
+                                    }else{
+                                        mType = SSV_PSS;
+                                        mRadius = mExtents.Magnitude();
+                                    }
+                                }
+#endif
 	};
 
 	class OPCODE_API QuantizedAABB

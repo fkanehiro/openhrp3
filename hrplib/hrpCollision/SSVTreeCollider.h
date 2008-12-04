@@ -60,6 +60,14 @@ private:
                   double tolerance);
 
     /**
+     * @brief compute distance between SSV(Swept Sphere Volume)s
+     * @param b0 collision node from the left tree
+     * @param b1 collision node from the right tree 
+     * @param return distance
+     */
+    float SsvSsvDist(const AABBCollisionNode* b0, const AABBCollisionNode *b1);
+
+    /**
      * @brief compute distance between primitives(triangles)
      * @param id0 index of the first primitive
      * @param id1 index of the second primitive
@@ -78,6 +86,31 @@ private:
      * @return distance
      */
     float PssPssDist(float r0, const Point& center0, float r1, const Point& center1);
+
+    /**
+     * @brief compute distance between PSS(Point Swept Sphere) and LSS(Line Swept Sphere)
+     * @param r0 radius of the PSS
+     * @param center0 center of the PSS
+     * @param r1 radius of the LSS
+     * @param point0 one of end points of the line segment
+     * @param point1 the other end points of the line segment
+     * @return distance
+     */
+    float PssLssDist(float r0, const Point& center0, 
+                     float r1, const Point& point0, const Point& point1);
+
+    /**
+     * @brief compute distance between LSS(Line Swept Sphere)s
+     * @param r0 radius of the first LSS
+     * @param point0 one of end points of the first line segment
+     * @param point1 the other end points of the first line segment
+     * @param r1 radius of the second LSS
+     * @param point2 one of end points of the second line segment
+     * @param point3 the other end points of the second line segment
+     * @return distance
+     */
+    float LssLssDist(float r0, const Point& point0, const Point& point1,
+                     float r1, const Point& point2, const Point& point3);
 };
 
 #endif
