@@ -10,7 +10,10 @@
 
 package com.generalrobotix.ui.util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Vector;
 
 import org.eclipse.swt.SWT;
@@ -32,9 +35,11 @@ import org.eclipse.ui.PlatformUI;
 
 import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
+import com.generalrobotix.ui.GrxPluginManager;
 
 @SuppressWarnings("serial")
 public class GrxServerManager extends Composite{
+    private String homePath_;
     enum  GrxServer{
       COLLISION_DETECTOR,
       DYNAMIS_SIMULATOR,
@@ -119,6 +124,11 @@ public class GrxServerManager extends Composite{
         for (int i = 0; i < GrxServer.values().length; ++i ){
             InitPanels(GrxServer.values()[i]);
         }
+		String dir = System.getenv("ROBOT_DIR");
+		if (dir != null && new File(dir).isDirectory())
+			homePath_ = dir+File.separator;
+		else
+			homePath_ = System.getProperty( "user.home", "" )+File.separator;
         
         parent.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e) {
@@ -346,11 +356,33 @@ public class GrxServerManager extends Composite{
         if( vecButton.elementAt(localDim).getText().equals(START))
         {
             pi.id = vecServerInfo.elementAt(localDim).id ;
-            pi.args = vecArgsText.elementAt(localDim).getText();
+            pi.args = GrxXmlUtil.expandEnvVal(vecArgsText.elementAt(localDim).getText());
             pi.com.clear();
             pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
             pm.register(pi);
             GrxProcessManager.AProcess p = pm.get(pi.id);
+            if( pi.id.equals("NameService")) {
+            	// log のクリア TODO LinuxとWindowsの使い分け
+				String[] com ;
+				if( System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X"))
+				{
+					com = new String[] {"/bin/sh" , "-c" , "rm "+ homePath_ + ".OpenHRP-3.1/omninames-log/*"};
+				}
+				else{
+					com = new String[] {"cmd" , "/c" , "del "+ System.getenv("TEMP") + File.separator +"omninames-*.*"};
+				}
+				try{
+					Process pr = Runtime.getRuntime().exec( com );
+					InputStream is = pr.getInputStream();
+					BufferedReader br = new BufferedReader(new InputStreamReader(is));
+					String line ;
+					while ((line = br.readLine()) != null) {
+				        System.out.println(line);
+				    }
+				}catch (Exception e){
+					;
+				}
+            }
             if( p.start(null)){
                 vecButton.elementAt(localDim).setText(STOP);
             }
@@ -362,11 +394,11 @@ public class GrxServerManager extends Composite{
         else
         {
             pi.id = vecServerInfo.elementAt(localDim).id ;
-            pi.args = vecArgsText.elementAt(localDim).getText();
+            pi.args = GrxXmlUtil.expandEnvVal(vecArgsText.elementAt(localDim).getText());
             pi.com.clear();
             pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
             GrxProcessManager.AProcess p = pm.get(pi.id);
-            if( p.stop()){
+            if( p.stop() ) {
             	vecButton.elementAt(localDim).setText(START);
                 pm.unregister(pi.id);
             }

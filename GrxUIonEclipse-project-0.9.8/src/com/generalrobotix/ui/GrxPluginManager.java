@@ -129,9 +129,6 @@ public class GrxPluginManager
 		if (dir != null && new File(dir).isDirectory())
 			homePath_ = dir+File.separator;
 		else
-			// TODO:デフォルトのディレクトリの検討。現在暫定でユーザホーム
-			// 前はuser.dirになっていたが、これだとEclipse実行ファイルの位置になってしまいLinux等では権限エラーになったりする。
-			//homePath_ = System.getProperty("user.dir","")+File.separator;
 			homePath_ = System.getProperty( "user.home", "" )+File.separator;
 
 		System.out.println("[PM] WORKSPACE PATH="+ ResourcesPlugin.getWorkspace().getRoot().getLocation() );
@@ -153,29 +150,66 @@ public class GrxPluginManager
 		System.out.println("os.name = "+System.getProperty("os.name"));
 		if( System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X"))
 		{
-			rcFile = new File( homePath_ + "/.OpenHRP-3.1/grxuirc.xml");
+			rcFile = new File( homePath_ + ".OpenHRP-3.1/grxuirc.xml");
 			File rcFileDir;
-			rcFileDir = new File( homePath_ + "/.OpenHRP-3.1" );
+			rcFileDir = new File( homePath_ + ".OpenHRP-3.1" );
 			if( !rcFileDir.exists())
 			{
 				rcFileDir.mkdir();
 			}
-			rcFileDir = new File( homePath_ + "/.OpenHRP-3.1/omninames-log");
+			rcFileDir = new File( homePath_ + ".OpenHRP-3.1/omninames-log");
 			if( !rcFileDir.exists())
 			{
 				rcFileDir.mkdir();
+			}
+			else{
+				// log のクリア
+				String[] com ;
+				com = new String[] {"/bin/sh" , "-c" , "rm "+ homePath_ + ".OpenHRP-3.1/omninames-log/*"};
+				try{
+					Process pr = Runtime.getRuntime().exec( com );
+					InputStream is = pr.getInputStream();
+					BufferedReader br = new BufferedReader(new InputStreamReader(is));
+					String line ;
+					while ((line = br.readLine()) != null) {
+				        System.out.println(line);
+				    }
+				}catch (Exception e){
+					;
+				}
 			}
 		}
 		else
 		{
 			rcFile = new File( System.getenv("TEMP") + File.separator + "grxuirc.xml" );
+			String[] com ;
+			com = new String[] {"cmd" , "/c" , "del "+ System.getenv("TEMP") + File.separator +"omninames-*.*"};
+			try{
+				Process pr = Runtime.getRuntime().exec( com );
+				InputStream is = pr.getInputStream();
+				BufferedReader br = new BufferedReader(new InputStreamReader(is));
+				String line ;
+				while ((line = br.readLine()) != null) {
+			        System.out.println(line);
+			    }
+			}catch (Exception e){
+				;
+			}
 		}
 		System.out.println("rcFile="+rcFile);
 		if( !rcFile.exists())
 	    {
 	    	// File copy
 	    	try{
-	    		InputStream in = new FileInputStream( Activator.getPath() + File.separator + "grxuirc.xml");
+	    		InputStream in;
+	    		if( System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X"))
+	    		{
+	    			in = new FileInputStream( Activator.getPath() + File.separator + "grxuirc.xml");
+	    		}
+	    		else
+    			{
+	    			in = new FileInputStream( Activator.getPath() + File.separator + "grxuirc_win.xml");
+    			}
 	    		OutputStream out = new FileOutputStream( rcFile.toString() );
 	    		byte[] buf = new byte[1024];
 	    		int len ;
