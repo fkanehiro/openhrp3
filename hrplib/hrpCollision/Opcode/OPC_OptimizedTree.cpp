@@ -103,6 +103,9 @@ static void _BuildCollisionTree(AABBCollisionNode* linear, const udword box_id, 
 	// Store the AABB
 	current_node->GetAABB()->GetCenter(linear[box_id].mAABB.mCenter);
 	current_node->GetAABB()->GetExtents(linear[box_id].mAABB.mExtents);
+#if 1 // Added by AIST
+        linear[box_id].mAABB.CreateSSV();
+#endif
 	// Store remaining info
 	if(current_node->IsLeaf())
 	{

@@ -1,6 +1,26 @@
 #include "Opcode/Opcode.h"
 
 /**
+ * @brief compute distance between a point and a line segment
+ * @param P the point
+ * @param u0 one of end points of the line segment
+ * @param u1 the other end point of the line segment
+ * @return distance between the point and the line segment
+ */
+float PointSegDist(const Point& P, const Point& u0, const Point& u1);
+
+/**
+ * @brief compute distance between line segments
+ * @brief u0 one of end points of the first line segment
+ * @brief u1 the other end point of the first line segment
+ * @brief v0 one of end points of the second line segment
+ * @brief v1 the other end point of the second line segment
+ * @return distance between line segments
+ */
+float SegSegDist(const Point& u0, const Point& u1,
+                 const Point& v0, const Point& v1);
+
+/**
  * @brief compute the minimum distance and the closest points between two triangles
  * @param U0 the first vertex of the first triangle
  * @param U1 the second vertex of the first triangle

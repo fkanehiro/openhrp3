@@ -105,11 +105,51 @@ bool SSVTreeCollider::Collide(const AABBCollisionTree* tree0,
     return false;
 }
 
+float SSVTreeCollider::SsvSsvDist(const AABBCollisionNode *b0, 
+                                  const AABBCollisionNode *b1)
+{
+    CollisionAABB::ssv_type t1, t2;
+    t1 = b0->mAABB.mType;
+    t2 = b1->mAABB.mType;
+    if (t1 == CollisionAABB::SSV_PSS && t2 == CollisionAABB::SSV_PSS){
+        return PssPssDist(sqrtf(b0->GetSize()), b0->mAABB.mCenter, 
+                          sqrtf(b1->GetSize()), b1->mAABB.mCenter);
+    }else if (t1 == CollisionAABB::SSV_PSS && t2 == CollisionAABB::SSV_LSS){
+        return PssLssDist(sqrtf(b0->GetSize()), b0->mAABB.mCenter,
+                          sqrtf(b1->GetSize()), b1->mAABB.mPoint0, b1->mAABB.mPoint1);
+    }else if (t1 == CollisionAABB::SSV_LSS && t2 == CollisionAABB::SSV_PSS){
+        return PssLssDist(sqrtf(b1->GetSize()), b1->mAABB.mCenter,
+                          sqrtf(b0->GetSize()), b0->mAABB.mPoint0, b0->mAABB.mPoint1);
+    }else if (t1 == CollisionAABB::SSV_LSS && t2 == CollisionAABB::SSV_LSS){
+        return LssLssDist(sqrtf(b0->GetSize()), b0->mAABB.mPoint0, b0->mAABB.mPoint1,
+                          sqrtf(b1->GetSize()), b1->mAABB.mPoint0, b1->mAABB.mPoint1);
+    }else{
+        std::cerr << "this ssv combination is not supported" << std::endl;
+    }
+}
+
 float SSVTreeCollider::PssPssDist(float r0, const Point& center0, float r1, const Point& center1)
 {
     Point c0;
     TransformPoint(c0, center0, mR0to1, mT0to1);
     return (center1-c0).Magnitude() - r0 - r1;
+}
+
+float SSVTreeCollider::PssLssDist(float r0, const Point& center0, float r1, const Point& point0, const Point& point1)
+{
+    Point c0;
+    TransformPoint(c0, center0, mR0to1, mT0to1);
+    float d = PointSegDist(c0, point0, point1);
+    return d - r0 - r1;
+}
+
+float SSVTreeCollider::LssLssDist(float r0, const Point& point0, const Point& point1, float r1, const Point& point2, const Point& point3)
+{
+    Point p0, p1;
+    TransformPoint(p0, point0, mR0to1, mT0to1);
+    TransformPoint(p1, point1, mR0to1, mT0to1);
+    float d = SegSegDist(p0, p1, point2, point3);
+    return d - r0 - r1;
 }
 
 void SSVTreeCollider::_Distance(const AABBCollisionNode* b0, const AABBCollisionNode* b1,
@@ -120,8 +160,7 @@ void SSVTreeCollider::_Distance(const AABBCollisionNode* b0, const AABBCollision
     float d;
 
     // Perform BV-BV distance test
-    d = PssPssDist(sqrtf(b0->GetSize()), b0->mAABB.mCenter, 
-                   sqrtf(b1->GetSize()), b1->mAABB.mCenter);
+    d = SsvSsvDist(b0, b1);
 
     if(d > minD) return;
     
@@ -158,8 +197,7 @@ bool SSVTreeCollider::_Collide(const AABBCollisionNode* b0, const AABBCollisionN
     float d;
 
     // Perform BV-BV distance test
-    d = PssPssDist(sqrtf(b0->GetSize()), b0->mAABB.mCenter, 
-                   sqrtf(b1->GetSize()), b1->mAABB.mCenter);
+    d = SsvSsvDist(b0, b1);
 
     if(d > tolerance) return false;
     
