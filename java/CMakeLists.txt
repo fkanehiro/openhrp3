@@ -1,3 +1,4 @@
+set(GrxUI_ON_ECLIPSE_DIR ${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8)
 
 ADD_SUBDIRECTORY(corba)
 ADD_SUBDIRECTORY(grxui)
