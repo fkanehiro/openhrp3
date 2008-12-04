@@ -58,10 +58,10 @@ endforeach()
 
 if(UNIX)
 set(javac_flags -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
-  -classpath ${package_path}:${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/OpenRTM-aist-0.4.1.jar -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
+  -classpath ${package_path}:${GrxUI_ON_ECLIPSE_DIR}/OpenRTM-aist-0.4.1.jar -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
 elseif(WIN32)
 set(javac_flags -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
-  -classpath "${package_path}\;${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/OpenRTM-aist-0.4.1.jar" -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
+  -classpath "${package_path}\;${GrxUI_ON_ECLIPSE_DIR}/OpenRTM-aist-0.4.1.jar" -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
@@ -76,15 +76,20 @@ if(UNIX)
     OUTPUT ${jarfile}
     COMMAND ${JAVAC} ${javac_flags} ${CMAKE_CURRENT_BINARY_DIR}/src/${package_path}/*.java
     COMMAND ${JAR} cf ${jarfile} -C ${CMAKE_CURRENT_BINARY_DIR} jp
+    COMMAND cp -fu ${jarfile} ${GrxUI_ON_ECLIPSE_DIR}/
     DEPENDS ${idl_compiled_flag_files}
   )
 elseif(WIN32)
+  STRING( REPLACE "/" "\\" win32_jarfile "${jarfile}")
+  STRING( REPLACE "/" "\\" win32_GrxUIonEclipseDir "${GrxUI_ON_ECLIPSE_DIR}/" )
   add_custom_command(
     OUTPUT ${jarfile} 
     COMMAND ${JAVAC} ${javac_flags} ${CMAKE_CURRENT_BINARY_DIR}/src/${package_path}/*.java
     COMMAND ${JAR} cf ${jarfile} -C ${CMAKE_CURRENT_BINARY_DIR} jp
+    COMMAND copy /Y /D ${win32_jarfile} ${win32_GrxUIonEclipseDir}
     DEPENDS ${idl_compiled_flag_files}
   )
+  
 endif()
 
 add_custom_target(JavaSutbSkel ALL DEPENDS ${jarfile})
