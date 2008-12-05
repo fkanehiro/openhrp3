@@ -352,17 +352,17 @@ public class GrxServerManager extends Composite{
         Composite output = null;
         GrxProcessManager pm = GrxProcessManager.getInstance(output);
         ProcessInfo pi = new ProcessInfo();
+        String nsHost = GrxORBMonitor.textNsHost.getText();
+        String nsPort = GrxORBMonitor.textNsPort.getText();
+        String nsOpt = " -ORBInitRef NameService=corbaloc:iiop:" + nsHost +":" + nsPort + "/NameService" ;
         
         if( vecButton.elementAt(localDim).getText().equals(START))
         {
             pi.id = vecServerInfo.elementAt(localDim).id ;
             pi.args = GrxXmlUtil.expandEnvVal(vecArgsText.elementAt(localDim).getText());
             pi.com.clear();
-            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
-            pm.register(pi);
-            GrxProcessManager.AProcess p = pm.get(pi.id);
             if( pi.id.equals("NameService")) {
-            	// log のクリア TODO LinuxとWindowsの使い分け
+            	// log のクリア
 				String[] com ;
 				if( System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X"))
 				{
@@ -382,7 +382,14 @@ public class GrxServerManager extends Composite{
 				}catch (Exception e){
 					;
 				}
+	            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
             }
+            else
+            {
+	            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args + nsOpt );
+            }
+            pm.register(pi);
+            GrxProcessManager.AProcess p = pm.get(pi.id);
             if( p.start(null)){
                 vecButton.elementAt(localDim).setText(STOP);
             }
@@ -396,7 +403,13 @@ public class GrxServerManager extends Composite{
             pi.id = vecServerInfo.elementAt(localDim).id ;
             pi.args = GrxXmlUtil.expandEnvVal(vecArgsText.elementAt(localDim).getText());
             pi.com.clear();
-            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
+            if( pi.id.equals("NameService")) {
+            	pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
+            }
+            else
+            {
+	            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args + nsOpt );
+            }
             GrxProcessManager.AProcess p = pm.get(pi.id);
             if( p.stop() ) {
             	vecButton.elementAt(localDim).setText(START);

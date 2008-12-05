@@ -33,8 +33,10 @@ import org.eclipse.swt.widgets.Text;
 public class GrxORBMonitor extends Composite {
     private MessageBox dialog_ = null;
     
-    private Text textNsHost = null;
-    private Text textNsPort = null;
+//    private Text textNsHost = null;
+//    private Text textNsPort = null;
+    static public Text textNsHost = null;
+    static public Text textNsPort = null;
     private Label labelNs = null;
     private Text multiText = null;
 
