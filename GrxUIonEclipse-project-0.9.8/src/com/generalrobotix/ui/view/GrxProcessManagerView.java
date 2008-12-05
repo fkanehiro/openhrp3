@@ -44,6 +44,7 @@ import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
+import com.generalrobotix.ui.util.GrxORBMonitor;
 
 @SuppressWarnings("serial")
 public class GrxProcessManagerView extends GrxBaseView {
@@ -59,6 +60,10 @@ public class GrxProcessManagerView extends GrxBaseView {
 	}
 
 	public void loadProcessList(Element root) {
+        String nsHost = GrxORBMonitor.textNsHost.getText();
+        String nsPort = GrxORBMonitor.textNsPort.getText();
+        String nsOpt = " -ORBInitRef NameService=corbaloc:iiop:" + nsHost +":" + nsPort + "/NameService" ;
+		
 		NodeList processList = root.getElementsByTagName("processmanagerconfig");
 		if (processList == null || processList.getLength() == 0)
 			return;
@@ -92,7 +97,14 @@ public class GrxProcessManagerView extends GrxBaseView {
 			pi.id = id;
 //			pi.com.add(GrxXmlUtil.getString(e, "com", ""));
 			pi.args = GrxXmlUtil.getString(e, "args" , "");
-			pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args );
+			if (id.equals("ModelLoader") || id.equals("CollisionDetectorFactory") || id.equals("DynamicsSimulatorFactory"))
+			{
+				pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args + nsOpt );
+			}
+			else
+			{
+				pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args );
+			}
 			String str = null;
 			for (int j = 0; !(str = GrxXmlUtil.getString(e, "env"+j, "")).equals(""); j++)
 				pi.env.add(str);
