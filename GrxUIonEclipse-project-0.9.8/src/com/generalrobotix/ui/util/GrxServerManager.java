@@ -370,7 +370,7 @@ public class GrxServerManager extends Composite{
 					com = new String[] {"/bin/sh" , "-c" , "rm "+ homePath_ + ".OpenHRP-3.1/omninames-log/*"};
 				}
 				else{
-					com = new String[] {"cmd" , "/c" , "del "+ WIN_TMP_DIR  + "omninames-*.*"};
+					com = new String[] {"cmd" , "/c" , "del " + "\"" + WIN_TMP_DIR  + "omninames-*.*" + "\""};
 				}
 				try{
 					Process pr = Runtime.getRuntime().exec( com );

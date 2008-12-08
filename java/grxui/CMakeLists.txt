@@ -46,6 +46,7 @@ set(sources_short
   util/OrderedHashMap.java
   util/TableSorter.java
   util/WarningDialog.java
+  util/SynchronizedAccessor.java
 
   view/Grx3DView.java
   view/GrxDutyMonitorView.java

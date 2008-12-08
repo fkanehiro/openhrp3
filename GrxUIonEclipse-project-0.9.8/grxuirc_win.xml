@@ -2,7 +2,7 @@
 <grxui>
     <processmanagerconfig>
         <process dir="$(BIN_DIR)" id="" waitcount="500"/>
-        <process args="-start 2809 -logdir $(APPDATA)/OpenHRP-3.1/omninames-log" autostart="true" com="$(OMNI_ROOT)/bin/x86_win32/omniNames" id="NameService"/>
+        <process args="-start 2809 -logdir &quot;$(APPDATA)/OpenHRP-3.1/omninames-log&quot;" autostart="true" com="&quot;$(OMNI_ROOT)/bin/x86_win32/omniNames&quot;" id="NameService"/>
         <process args="" autostart="true" com="$(BIN_DIR)/openhrp-model-loader" hasshutdown="true" id="ModelLoader"/>
         <process args="" autostart="true" com="$(BIN_DIR)/openhrp-collision-detector" hasshutdown="true" id="CollisionDetectorFactory"/>
         <process args="" autostart="true" com="$(BIN_DIR)/openhrp-aist-dynamics-simulator" hasshutdown="true" id="DynamicsSimulatorFactory" waitcount="1000"/>

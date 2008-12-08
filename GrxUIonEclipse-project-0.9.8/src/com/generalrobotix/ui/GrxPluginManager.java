@@ -183,7 +183,7 @@ public class GrxPluginManager {
             } else {
                 // log のクリア
                 String[] com;
-                com = new String[] { "cmd", "/c", "del " + rcFileDir.getPath() + File.separator + "omninames-*.*" };
+                com = new String[] { "cmd", "/c", "del " + "\"" + rcFileDir.getPath() + File.separator + "omninames-*.*" + "\""};
                 try {
                     Process pr = Runtime.getRuntime().exec(com);
                     InputStream is = pr.getInputStream();

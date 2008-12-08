@@ -465,7 +465,7 @@ public class GrxProjectItem extends GrxBaseItem {
         if (we != null)
 		    manager_.getFrame().restoreConfig(we);
 
-		manager_.processingWindow_.setVisible(false);
+		//manager_.processingWindow_.setVisible(false);
 		manager_.processingWindow_.setMessage("restore view plugin  ... ");
 		manager_.processingWindow_.setVisible(true);
 
