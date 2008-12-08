@@ -280,17 +280,12 @@ public class GrxPluginManager
 				selectedViewList_.add(view);
 		}
 		
+		frame_.setVisible(false);
 		// update window config
 		frame_.updateTab(selectedViewList_);
 		frame_.setConfigElement(rcProject_.getWindowConfigElement(currentMode_.getName()));
 		final Element el = currentProject_.getWindowConfigElement(currentMode_.getName());
-		SwingUtilities.invokeLater(
-			new Runnable(){
-				public void run() {
-					frame_.restoreConfig(el);
-				}
-			}
-		);
+		frame_.restoreConfig(el);
 		
 		now = max = min = 0.0;
 		for (int i=0; i<selectedViewList_.size(); i++)
@@ -303,6 +298,7 @@ public class GrxPluginManager
 	void setFrame(GrxUIFrame frame) {
 		frame_ = frame;
 		processingWindow_ = new GrxProcessingWindow(frame_, false);
+		processingWindow_.initInvoker();
 		frame_.setConfigFileName(rcProject_.getURL(true));
 	}
 
@@ -854,7 +850,7 @@ System.out.println(pi.lastDir);
 		if (pmView == null) 
 			return;
 		
-		processingWindow_.setVisible(false);
+		//processingWindow_.setVisible(false);
 		processingWindow_.setMessage("loading process manager settings ...");
 		processingWindow_.setVisible(true);
 		pmView.loadProcessList(rcProject_.getElement());
