@@ -47,6 +47,7 @@ public class GrxServerManager extends Composite{
       NAME_SERVER
     };
     static public final String LINUX_TMP_DIR = System.getenv( "HOME" ) + File.separator + ".OpenHRP-3.1" + File.separator;
+    static public final String WIN_TMP_DIR = System.getenv( "APPDATA" ) + File.separator + "OpenHRP-3.1" + File.separator;
     static private final String START = "Start";
     static private final String STOP = "Stop";
     static private final String CONFIG_XML = "grxuirc.xml";
@@ -103,7 +104,7 @@ public class GrxServerManager extends Composite{
         if (System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X")) {
             strTempDir = LINUX_TMP_DIR;
         } else { //Windows と　仮定
-            strTempDir = new String( System.getenv("TEMP") );
+            strTempDir = WIN_TMP_DIR;
         }
         ret = new File(strTempDir, CONFIG_XML);
         return ret;
@@ -369,7 +370,7 @@ public class GrxServerManager extends Composite{
 					com = new String[] {"/bin/sh" , "-c" , "rm "+ homePath_ + ".OpenHRP-3.1/omninames-log/*"};
 				}
 				else{
-					com = new String[] {"cmd" , "/c" , "del "+ System.getenv("TEMP") + File.separator +"omninames-*.*"};
+					com = new String[] {"cmd" , "/c" , "del "+ WIN_TMP_DIR  + "omninames-*.*"};
 				}
 				try{
 					Process pr = Runtime.getRuntime().exec( com );
