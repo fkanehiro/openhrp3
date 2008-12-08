@@ -14,7 +14,6 @@
 
 module OpenHRP {
 
-
   /**
      @if jp
      ShapeInfo へのインデックス。ShapeInfo に対しては transformMatrix に格納された
@@ -29,6 +28,17 @@ module OpenHRP {
 	@endif
     */
     DblArray12	transformMatrix;
+
+    /**
+       @if jp
+       本構造体が LinkInfo に格納されている場合、LinkInfo の inlinedShapeMatrices へのインデックスを格納する.
+       この行列は、形状がモデルファイルにおいて inline ノードとして別ファイルに記述されている場合に、
+       inline ノードを読み込む側における変換行列とする。そしてこの場合、本構造体のtransformMatrixは、inline ノード
+       内での変換行列を表すものとする。
+       モデルローダを利用したモデルエディタにおいてinlineノードを正しく扱うために本情報が必要となっている。
+       対応する行列がない場合は -1 とする。
+    */
+    short inlinedShapeMatrixIndex;
 
     /** 
 	@if jp
@@ -128,6 +138,13 @@ module OpenHRP {
 
     /// 本リンクに対応する形状情報の変換行列付きインデックス列  
     TransformedShapeIndexSequence shapeIndices;  
+
+    /**
+       @if jp
+       shapeIndices の inlinedShapeMatrixIndex によって指し示される行列リスト
+       @endif
+    */
+    DblArray12Seq inlinedShapeMatrices;
 
     SensorInfoSequence sensors; ///< 本リンクに設置されたセンサの情報  
 
