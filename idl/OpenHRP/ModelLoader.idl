@@ -31,11 +31,12 @@ module OpenHRP {
 
     /**
        @if jp
-       本構造体が LinkInfo に格納されている場合、LinkInfo の inlinedShapeTransformMatrices へのインデックスを格納する.
-       形状がモデルファイルにおいて inline ノードとして別ファイルに記述されている場合、
-       inline ノードを読み込む側における変換のみを集積した行列とする。
-       モデルローダを利用したモデルエディタにおいてinlineノードを正しく扱うために本情報が必要となっている。
-       inlineノードが使われていない場合は -1 とする。
+       本構造体が LinkInfo に格納されている場合、LinkInfo の inlinedShapeTransformMatrices へのインデックスを格納する.  
+       形状がモデルファイルにおいて inline ノードとして別ファイルに記述されている場合、  
+       inline ノードを読み込む側における変換のみを集積した行列とする。  
+       モデルローダを利用したモデルエディタにおいてinlineノードを正しく扱うために本情報が必要となっている。  
+       inlineノードが使われていない場合は -1 とする。  
+       @endif
     */
     short inlinedShapeTransformMatrixIndex;
 
@@ -140,7 +141,7 @@ module OpenHRP {
 
     /**
        @if jp
-       shapeIndices の inlinedShapeTransformMatrixIndex によって指し示される行列リスト
+       shapeIndices の inlinedShapeTransformMatrixIndex によって指し示される行列リスト  
        @endif
     */
     DblArray12Sequence inlinedShapeTransformMatrices;
