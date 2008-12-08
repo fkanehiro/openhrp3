@@ -144,7 +144,7 @@ module OpenHRP {
        shapeIndices の inlinedShapeMatrixIndex によって指し示される行列リスト
        @endif
     */
-    DblArray12Seq inlinedShapeMatrices;
+    DblArray12Sequence inlinedShapeMatrices;
 
     SensorInfoSequence sensors; ///< 本リンクに設置されたセンサの情報  
 
