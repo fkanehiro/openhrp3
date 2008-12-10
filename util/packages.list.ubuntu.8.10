@@ -1,0 +1,64 @@
+# package list for ubuntu 8.10
+
+
+# java
+sun-java6-jdk
+sun-java6-fonts
+jython
+libreadline-java
+java-common
+
+# compiler & lib
+g++
+gfortran-4.3
+
+# build tools
+cmake
+
+# omniORB
+libcos4-dev 
+libomnievents-dev 
+libomniorb4-dev
+libomnithread3-dev
+libomnithread3c2
+omnievents
+omniidl4
+omniidl4-python
+omniorb4
+omniorb4-idl
+omniorb4-nameserver
+python-omniorb2
+python-tk
+
+# math 
+liblapack3gf
+liblapack-dev
+libatlas-base-dev
+libatlas-headers
+libblas3gf
+libblas-dev
+f2c
+libf2c2
+libf2c2-dev 
+libg2c0
+libgfortran3
+libgfortran3-dbg
+
+# boost
+libboost-dev
+libboost-filesystem-dev 
+libboost-program-options-dev 
+libboost-regex-dev
+libboost-signals-dev
+libboost-thread-dev
+
+# etc
+libc6-dev
+zlib1g-dev
+libace-dev
+libjpeg62-dev
+libpng12-dev
+
+# for hrpsys
+# libncurses5-dev
+# libreadline5-dev
