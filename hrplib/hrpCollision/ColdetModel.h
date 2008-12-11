@@ -68,6 +68,12 @@ namespace hrp {
         void setNumVertices(int n);
 
         /**
+         * @brief get the number of vertices
+         * @return the number of vertices
+         */
+        int getNumVertices() const;
+
+        /**
          * @brief set the number of triangles
          * @param n the number of triangles
          */
@@ -81,6 +87,15 @@ namespace hrp {
          * @param z z position of the vertex
          */
         void setVertex(int index, float x, float y, float z);
+
+        /**
+         * @brief get a vertex
+         * @param index index of the vertex
+         * @param x x position of the vertex
+         * @param y y position of the vertex
+         * @param z z position of the vertex
+         */
+        void getVertex(int index, float& x, float& y, float& z) const;
 
         /**
          * @brief add a triangle

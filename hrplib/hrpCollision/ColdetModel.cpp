@@ -72,6 +72,12 @@ void ColdetModel::setNumVertices(int n)
 }
 
 
+int ColdetModel::getNumVertices() const
+{
+    return dataSet->vertices.size();
+}
+
+
 void ColdetModel::setNumTriangles(int n)
 {
     dataSet->triangles.resize(n);
@@ -81,6 +87,15 @@ void ColdetModel::setNumTriangles(int n)
 void ColdetModel::setVertex(int index, float x, float y, float z)
 {
     dataSet->vertices[index].Set(x, y, z);
+}
+
+        
+void ColdetModel::getVertex(int index, float& x, float& y, float& z) const
+{
+    const Point& v = dataSet->vertices[index];
+    x = v.x;
+    y = v.y;
+    z = v.z;
 }
 
         
