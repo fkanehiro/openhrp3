@@ -116,16 +116,18 @@ void triangulate(Polygon<Scalar>& pgn, std::vector< Triangle<Scalar,3> >& mesh, 
       removePoint.push_back(removeVertex[i]->point());   
       pgn.remove(removeVertex[i]);
   }
-  while (pgn.size() > 3) {
-    Vtx* ear = pgn.find_vertices(IsEar<Scalar>(pgn));
-    if (ear==0) { 
-        std::cout << "triangulate(Polygon): no ear detected" << std::endl;
-        break;
-    }
-    mesh.push_back(ear->triangle());
-    pgn.remove(ear);
+  if(pgn.size() >=3){
+      while (pgn.size() > 3) {
+        Vtx* ear = pgn.find_vertices(IsEar<Scalar>(pgn));
+        if (ear==0) { 
+            std::cout << "triangulate(Polygon): no ear detected" << std::endl;
+            break;
+        }
+        mesh.push_back(ear->triangle());
+        pgn.remove(ear);
+      }
+      mesh.push_back(pgn.head()->triangle());
   }
-  mesh.push_back(pgn.head()->triangle());
 }
 
 
