@@ -51,6 +51,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 	public Camera_impl camera_;
 	private Switch switchCamera_ = null;
 
+
     /**
      * @brief get type of sensor
      * @return type of sensor
@@ -507,7 +508,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
      * @param b true to fucus, false to unfocus
      */
     public void setFocused(boolean b){
-    	super.setSelected(b);
+    	super.setFocused(b);
     	setVisibleArea(b);
     }
 }

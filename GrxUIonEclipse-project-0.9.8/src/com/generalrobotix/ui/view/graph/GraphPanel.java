@@ -48,6 +48,7 @@ import com.generalrobotix.ui.item.GrxGraphItem;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.MessageDialog;
 
+@SuppressWarnings("serial")
 public class GraphPanel extends JPanel {
     //--------------------------------------------------------------------
     private static final int BORDER_GAP = 12;
