@@ -33,6 +33,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
+import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.view.tdview.*;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
@@ -67,6 +68,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     // list of cameras
     private List<Camera_impl> cameraList_ = new ArrayList<Camera_impl>();
 
+    public ShapeInfo[] shapes = null;
+    public AppearanceInfo[] appearances = null;
+    public MaterialInfo[] materials = null;
+    public TextureInfo[] textures = null;
+    
     // CoM
     private Switch switchCom_;
     private TransformGroup tgCom_;
@@ -235,6 +241,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		FileDialog fdlg = new FileDialog( window.getShell(), SWT.SAVE);
 		String fPath = fdlg.open();
 		if( fPath != null ) {
+			fPath = fPath.replace('\\','/');
 			if (GrxVrmlExporter.export(GrxModelItem.this, fPath)){
 				setURL(fPath);
 			}
@@ -505,54 +512,50 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             }
     }
 
-
-    /**
-     * @brief create shape item from information obtained from ModelLoader
-     * @param name name of the shape
-     * @param tsi TransformedShapeIndex of the shape to be created
-     * @return created shape
-     */
-    private GrxShapeItem _createShape(String name, TransformedShapeIndex tsi) {
-        ShapeInfo[] shapes = bInfo_.shapes();
-        AppearanceInfo[] appearances = bInfo_.appearances();
-        MaterialInfo[] materials = bInfo_.materials();
-        TextureInfo[] textures = bInfo_.textures();
-
-        int shapeIndex = tsi.shapeIndex;
-        ShapeInfo shapeInfo = shapes[shapeIndex];
-        AppearanceInfo appearanceInfo = null;
-        MaterialInfo materialInfo = null;
-        TextureInfo textureInfo = null;
-        if (shapeInfo.appearanceIndex >= 0){
-            appearanceInfo = appearances[shapeInfo.appearanceIndex];
-            if (appearanceInfo.materialIndex >= 0){
-                materialInfo = materials[appearanceInfo.materialIndex];
-            }
-            if (appearanceInfo.textureIndex >= 0){
-            	textureInfo = textures[appearanceInfo.textureIndex];
-            }
-        }
-        GrxShapeItem shape = new GrxShapeItem(name, manager_, this,
-        tsi.transformMatrix, shapeInfo, appearanceInfo, materialInfo, textureInfo);
-		return shape;
-	}
     /**
      * @brief create shapes of links
      * @param links array of LinkInfo retrieved from ModelLoader
      * @throws BadLinkStructureException
      */
     private void _loadVrmlScene(LinkInfo[] links) throws BadLinkStructureException {
-
+    	shapes = bInfo_.shapes();
+        appearances = bInfo_.appearances();
+        materials = bInfo_.materials();
+        textures = bInfo_.textures();
+        
         int numLinks = links.length;
         for(int linkIndex = 0; linkIndex < numLinks; linkIndex++) {
             LinkInfo linkInfo = links[linkIndex];
             GrxLinkItem link = links_.get(linkIndex);
-        
-            int numShapes = linkInfo.shapeIndices.length;
-            for(int localShapeIndex = 0; localShapeIndex < numShapes; localShapeIndex++) {
-                TransformedShapeIndex tsi = linkInfo.shapeIndices[localShapeIndex];
-                link.addShape(_createShape(linkInfo.name+"_shape_"+localShapeIndex, tsi));
-        
+   
+            
+            List list = new ArrayList();
+            for(int i=0; i<linkInfo.shapeIndices.length; i++)
+            	list.add(new Integer(i));
+            int l=0;
+            while(!list.isEmpty()){
+            	int inlinedSTMIndex = linkInfo.shapeIndices[(Integer)list.get(0)].inlinedShapeTransformMatrixIndex;
+            	List index = new ArrayList();
+            	index.add(list.get(0));
+            	if(inlinedSTMIndex == -1){ 
+            		link.addShape(new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this,
+                			linkInfo.shapeIndices, null, index));
+            		l++;
+            	}else{  
+            		for(int i=1; i<list.size(); i++){
+	            		Integer j = (Integer)list.get(i);
+	            		if(inlinedSTMIndex == linkInfo.shapeIndices[j].inlinedShapeTransformMatrixIndex){
+	            			index.add(j);       			
+	            		}
+	            	}
+            		link.addShape(new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this,
+            			linkInfo.shapeIndices, linkInfo.inlinedShapeTransformMatrices[inlinedSTMIndex], index));
+            		l++;
+            	}
+            	for(int i=0; i<index.size(); i++)
+            		list.remove(index.get(i));
+            }
+            
                 /* normal visualization */
                 /*
                 if(false){
@@ -561,16 +564,36 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     linkTopTransformNode.addChild(nshape);
                 }
                 */
-            }
             
             for (int i=0; i<link.children_.size(); i++){
             	if (link.children_.get(i) instanceof GrxSensorItem){
             		GrxSensorItem sensor = (GrxSensorItem)link.children_.get(i);
-            		for (int j=0; j<sensor.info_.shapeIndices.length; j++){
-            			TransformedShapeIndex tsi = sensor.info_.shapeIndices[j];
-            			GrxShapeItem shape = _createShape(sensor.getName()+"_shape_"+j, tsi);
-            			sensor.addChild(shape);
-            		}
+                	list = new ArrayList();
+                    for(int j=0; j<sensor.info_.shapeIndices.length; j++)
+                    	list.add(new Integer(j));
+                    l=0;
+                    while(!list.isEmpty()){
+                    	int inlinedSTMIndex = sensor.info_.shapeIndices[(Integer)list.get(0)].inlinedShapeTransformMatrixIndex;
+                    	List index = new ArrayList();
+                    	index.add(list.get(0));
+                    	if(inlinedSTMIndex == -1){ 
+                    		sensor.addChild(new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this,
+                        			sensor.info_.shapeIndices, null, index));
+                    		l++;
+                    	}else{  
+                    		for(int j=1; j<list.size(); j++){
+        	            		Integer k = (Integer)list.get(j);
+        	            		if(inlinedSTMIndex == sensor.info_.shapeIndices[k].inlinedShapeTransformMatrixIndex){
+        	            			index.add(k);       			
+        	            		}
+        	            	}
+                    		sensor.addChild(new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this,
+                    			sensor.info_.shapeIndices, sensor.info_.inlinedShapeTransformMatrices[inlinedSTMIndex], index));
+                    		l++;
+                    	}
+                    	for(int j=0; j<index.size(); j++)
+                    		list.remove(index.get(j));
+                    }
             	}
             }
         }
@@ -738,7 +761,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         setDblAry(rootLink().getName()+".translation", new double[]{v3d.x, v3d.y, v3d.z});
 
         AxisAngle4d a4d = new AxisAngle4d();
-        a4d.set(m3d);
+        a4d.setMatrix(m3d);
         setDblAry(rootLink().getName()+".rotation", new double[]{a4d.x, a4d.y, a4d.z, a4d.angle});
     }
 

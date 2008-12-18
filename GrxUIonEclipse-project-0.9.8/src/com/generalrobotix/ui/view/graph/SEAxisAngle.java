@@ -16,6 +16,7 @@
 
 package com.generalrobotix.ui.view.graph;
 
+import com.generalrobotix.ui.util.AxisAngle4d;
 import java.util.StringTokenizer;
 import java.text.DecimalFormat;
 import javax.vecmath.*;

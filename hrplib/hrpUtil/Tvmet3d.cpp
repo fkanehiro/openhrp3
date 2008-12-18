@@ -64,15 +64,15 @@ Vector3 hrp::omegaFromRot(const Matrix33& r)
 
     double alpha = (r(0,0) + r(1,1) + r(2,2) - 1.0) / 2.0;
 
-    if(fabs(alpha - 1.0) < 1.0e-6) {
+    if(fabs(alpha - 1.0) < 1.0e-6) {   //th=0,2PI;
         return Vector3(0.0);
 
     } else {
         double th = acos(alpha);
         double s = sin(th);
 
-        if (s < numeric_limits<double>::epsilon()) {
-            return Vector3(0.0);
+        if (s < numeric_limits<double>::epsilon()) {   //th=PI
+            return Vector3( sqrt((r(0,0)+1)*0.5)*th, sqrt((r(1,1)+1)*0.5)*th, sqrt((r(2,2)+1)*0.5)*th );
         }
 
         double k = -0.5 * th / s;

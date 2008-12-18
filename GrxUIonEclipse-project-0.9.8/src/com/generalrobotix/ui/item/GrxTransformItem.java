@@ -13,35 +13,22 @@ package com.generalrobotix.ui.item;
 
 import java.util.Vector;
 
-import javax.media.j3d.Appearance;
 import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Group;
-import javax.media.j3d.Link;
-import javax.media.j3d.Material;
-import javax.media.j3d.Node;
-import javax.media.j3d.Shape3D;
-import javax.media.j3d.SharedGroup;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
-import javax.vecmath.AxisAngle4d;
-import javax.vecmath.Color3f;
 import javax.vecmath.Vector3d;
 
-import jp.go.aist.hrp.simulator.AppearanceInfo;
-import jp.go.aist.hrp.simulator.MaterialInfo;
 import jp.go.aist.hrp.simulator.ModelLoader;
 import jp.go.aist.hrp.simulator.ModelLoaderHelper;
 import jp.go.aist.hrp.simulator.SceneInfo;
-import jp.go.aist.hrp.simulator.ShapeInfo;
-import jp.go.aist.hrp.simulator.TextureInfo;
 import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
-import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 
 /**
@@ -200,33 +187,20 @@ public class GrxTransformItem extends GrxBaseItem {
                         GrxCorbaUtil.getReference("ModelLoader"));
                     
                 SceneInfo sInfo = mloader.loadSceneInfo(fPath);
-                ShapeInfo[] shapes = sInfo.shapes();
-                AppearanceInfo[] appearances = sInfo.appearances();
-                MaterialInfo[] materials = sInfo.materials();
-                TextureInfo[] textures = sInfo.textures();
+                model_.shapes = sInfo.shapes();
+                model_.appearances = sInfo.appearances();
+                model_.materials = sInfo.materials();
+                model_.textures = sInfo.textures();
                 TransformedShapeIndex[] tsiDim = sInfo.shapeIndices();
+                double[] inlinedSTM = {1,0,0,0,
+                						0,1,0,0,
+                						0,0,1,0};
                 
-                for (int i=0; i<tsiDim.length; i++){
-                    TransformedShapeIndex tsi = tsiDim[i];
-                    int shapeIndex = tsi.shapeIndex;
-                    ShapeInfo shapeInfo = shapes[shapeIndex];
-                    AppearanceInfo appearanceInfo = null;
-                    MaterialInfo materialInfo = null;
-                    TextureInfo textureInfo = null;
-                    if (shapeInfo.appearanceIndex >= 0){
-                        appearanceInfo = appearances[shapeInfo.appearanceIndex];
-                        if (appearanceInfo.materialIndex >= 0){
-                            materialInfo = materials[appearanceInfo.materialIndex];
-                        }
-                        if (appearanceInfo.textureIndex >= 0){
-                        	textureInfo = textures[appearanceInfo.textureIndex];
-                        }
-                    }
-                    GrxShapeItem shape = new GrxShapeItem(getName()+"_shape_"+i, manager_, model_, tsi.transformMatrix,
-							shapeInfo, appearanceInfo, materialInfo, textureInfo);
-                    shape.setURL(fPath);
-					addChild(shape);
-                }
+                int n=children_.size();
+                GrxShapeItem shape = new GrxShapeItem(getName()+"_shape_"+n, manager_, model_, tsiDim, inlinedSTM, null);
+                shape.setURL(fPath);
+                addChild(shape);
+                
             	manager_.reselectItems();
             } catch(Exception ex){
                 System.out.println("Failed to load scene info:" + fPath);

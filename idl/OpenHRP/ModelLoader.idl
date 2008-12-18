@@ -85,6 +85,7 @@ module OpenHRP {
 
     /// 本リンクに対応する形状情報の変換行列付きインデックス列  
     TransformedShapeIndexSequence shapeIndices;  
+    DblArray12Sequence inlinedShapeTransformMatrices;
   };
 
   typedef sequence<SensorInfo> SensorInfoSequence;

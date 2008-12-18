@@ -22,7 +22,6 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix3d;
 
 import org.eclipse.jface.action.Action;
@@ -32,6 +31,7 @@ import jp.go.aist.hrp.simulator.*;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.GrxTimeSeriesItem;
+import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.view.graph.*;
 

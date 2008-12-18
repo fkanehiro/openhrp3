@@ -20,22 +20,14 @@ package com.generalrobotix.ui.item;
 import java.util.Hashtable;
 import java.util.Map;
 
-import javax.media.j3d.Appearance;
 import javax.media.j3d.BadTransformException;
-import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
-import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
-import javax.media.j3d.Link;
-import javax.media.j3d.Material;
-import javax.media.j3d.Node;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
-import javax.media.j3d.SharedGroup;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
-import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Point3f;
@@ -55,7 +47,7 @@ import jp.go.aist.hrp.simulator.SensorInfo;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
-import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 
 
@@ -147,7 +139,7 @@ public class GrxLinkItem extends GrxTransformItem{
     	return info_.rotorInertia;
     }
 
-    public double rotorResister(){
+    public double rotorResistor(){
     	return info_.rotorResistor;
     }
 
@@ -932,7 +924,7 @@ public class GrxLinkItem extends GrxTransformItem{
     	}
     	if (rot != null){
     		AxisAngle4d a4d = new AxisAngle4d();
-    		a4d.set(rot);
+    		a4d.setMatrix(rot);
     		double[] newrot = new double[4];
     		a4d.get(newrot);
     		rotation(newrot);
