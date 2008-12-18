@@ -1190,7 +1190,7 @@ public class GrxPluginManager {
      */
     private boolean isEmptyClipBord() {
         GrxPluginManager.setClipBordVal();
-        return GrxPluginManager.getClipBoardVal().isEmpty();
+        return GrxPluginManager.getClipBoardVal().length()==0;
     }
 
     /**

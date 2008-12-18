@@ -82,7 +82,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @brief notify this model is modified
      */
     public void notifyModified(){
-    	System.out.println(getName()+" : modification is notified");
+    	//System.out.println(getName()+" : modification is notified");
     	bModified_ = true;
     }
     

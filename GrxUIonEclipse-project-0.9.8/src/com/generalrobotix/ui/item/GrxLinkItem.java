@@ -999,8 +999,8 @@ public class GrxLinkItem extends GrxTransformItem{
     	super.setFocused(b);
     	setVisibleCoM(b);
     	if (b){
+			switchBb_.setWhichChild(Switch.CHILD_ALL);
     		if (jointType().equals("rotate") || jointType().equals("slide")) {
-    			switchBb_.setWhichChild(Switch.CHILD_ALL);
     			switchAxis_.setWhichChild(Switch.CHILD_ALL);
     		}
     	}else{

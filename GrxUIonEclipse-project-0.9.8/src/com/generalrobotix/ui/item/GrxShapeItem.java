@@ -29,6 +29,7 @@ import javax.media.j3d.ImageComponent2D;
 import javax.media.j3d.Material;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.Shape3D;
+import javax.media.j3d.Switch;
 import javax.media.j3d.Texture;
 import javax.media.j3d.Texture2D;
 import javax.media.j3d.TextureAttributes;
@@ -54,6 +55,7 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
@@ -74,6 +76,8 @@ public class GrxShapeItem extends GrxTransformItem{
     public MaterialInfo materialInfo_;
     public TextureInfo textureInfo_;
     public double[] transform_;
+    
+    private Switch switchBb_;
 
     /**
      * @brief constructor
@@ -95,24 +99,6 @@ public class GrxShapeItem extends GrxTransformItem{
     	materialInfo_ = materialInfo;
     	textureInfo_ = textureInfo;
 
-        Vector3d v3d = new Vector3d(transform[3], transform[7], transform[11]);
-        Matrix3d m3d = new Matrix3d(transform[0], transform[1], transform[2],
-                transform[4], transform[5], transform[6],
-                transform[8], transform[9], transform[10]);
-        AxisAngle4d a4d = new AxisAngle4d();
-        a4d.set(m3d);
-        Transform3D t3d = new Transform3D();
-        t3d.setTranslation(v3d);
-        t3d.setRotation(a4d);
-
-        double [] pos = new double[3];
-        v3d.get(pos);
-        translation(pos);
-        double [] rot = new double[4];
-        a4d.get(rot);
-        rotation(rot);
-
-        tg_.setTransform(t3d);
         if(shapeInfo.primitiveType == ShapePrimitiveType.SP_MESH ){
         	Shape3D linkShape3D = createShape3D(shapeInfo, appearanceInfo, materialInfo, textureInfo);
         	tg_.addChild(linkShape3D);
@@ -126,6 +112,31 @@ public class GrxShapeItem extends GrxTransformItem{
         	}
         	tg_.addChild(primitive);
         }
+
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+
+        modifier.init_ = true;
+        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        Transform3D tr = new Transform3D();
+        modifier._calcUpperLower(tg_, tr);
+        
+        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
+        tg_.addChild(switchBb_);
+
+        Vector3d v3d = new Vector3d(transform[3], transform[7], transform[11]);
+        Matrix3d m3d = new Matrix3d(transform[0], transform[1], transform[2],
+                transform[4], transform[5], transform[6],
+                transform[8], transform[9], transform[10]);
+        AxisAngle4d a4d = new AxisAngle4d();
+        a4d.set(m3d);
+
+        double [] pos = new double[3];
+        v3d.get(pos);
+        translation(pos);
+        double [] rot = new double[4];
+        a4d.get(rot);
+        rotation(rot);
 
 		getMenu().clear();
 
@@ -723,6 +734,14 @@ public class GrxShapeItem extends GrxTransformItem{
 					}
 				}
 			}
+		}
+	}
+	
+	public void setFocused(boolean b){
+		if (b){
+			switchBb_.setWhichChild(Switch.CHILD_ALL);
+		}else{
+			switchBb_.setWhichChild(Switch.CHILD_NONE);
 		}
 	}
 }
