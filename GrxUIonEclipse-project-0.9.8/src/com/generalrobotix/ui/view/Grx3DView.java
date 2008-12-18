@@ -621,6 +621,7 @@ public class Grx3DView
     }
     
     public void itemSelectionChanged(List<GrxBaseItem> itemList) {
+    	System.out.println("Grx3DView : itemSelectionChanged");
         boolean selectionChanged = false;
         for (int i = currentModels_.size()-1 ; i>-1; i--) {
             GrxModelItem item = currentModels_.get(i);
@@ -636,11 +637,19 @@ public class Grx3DView
             GrxBaseItem item = (GrxBaseItem) it.next();
             if (item instanceof GrxModelItem) {
                 GrxModelItem modelItem = (GrxModelItem) item;
-                if (currentModels_.contains(modelItem))
-                    continue;
-                bgRoot_.addChild(modelItem.bgRoot_);
-                currentModels_.add(modelItem);
-                selectionChanged = true;
+                if (currentModels_.contains(modelItem)){
+                	if (!modelItem.bgRoot_.isLive()){
+                		// !isLive() means this item is reloaded
+                		bgRoot_.addChild(modelItem.bgRoot_);
+                	}else{
+                    	//System.out.println(modelItem.getName() + " is skipped");
+                	}
+                }else{
+                    bgRoot_.addChild(modelItem.bgRoot_);
+                    currentModels_.add(modelItem);
+                    //System.out.println(modelItem.getName() + " is added");
+                    selectionChanged = true;
+                }
             } else if (item instanceof GrxWorldStateItem) {
                 currentWorld_ = (GrxWorldStateItem) item;
             }

@@ -33,6 +33,9 @@ import javax.vecmath.Matrix3d;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 
+import jp.go.aist.hrp.simulator.LinkInfo;
+import jp.go.aist.hrp.simulator.SensorInfo;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -41,9 +44,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-
-import jp.go.aist.hrp.simulator.LinkInfo;
-import jp.go.aist.hrp.simulator.SensorInfo;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;

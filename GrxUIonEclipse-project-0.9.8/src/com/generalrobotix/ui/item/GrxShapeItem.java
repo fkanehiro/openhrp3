@@ -200,8 +200,10 @@ public class GrxShapeItem extends GrxTransformItem{
 			}
 			public void run(){
 				if( MessageDialog.openQuestion( null, "delete shape",
-						"Are you sure to delete " + getName() + " ?") )
+						"Are you sure to delete " + getName() + " ?") ){
 					delete();
+				}
+				
 			}
 		};
 		setMenuItem(item);
