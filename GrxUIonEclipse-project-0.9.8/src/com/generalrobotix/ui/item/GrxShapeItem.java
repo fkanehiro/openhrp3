@@ -148,8 +148,19 @@ public class GrxShapeItem extends GrxTransformItem{
             t3d.setRotation(m3d);
             addShape( tsi[(Integer)index.get(0)].shapeIndex, tg_, model, 0);
     	}
-       	tg_.setTransform(t3d);
     	
+    	SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+
+        modifier.init_ = true;
+        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        Transform3D tr = new Transform3D();
+        modifier._calcUpperLower(tg_, tr);
+        
+        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
+        tg_.addChild(switchBb_);
+
+       	tg_.setTransform(t3d);
        	Vector3d trans = new Vector3d();
         Matrix3d rotat = new Matrix3d();
         t3d.get(rotat, trans);
@@ -273,18 +284,6 @@ public class GrxShapeItem extends GrxTransformItem{
         	}
         	tg.addChild(primitive);
         }
-        
-        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-
-        modifier.init_ = true;
-        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
-        Transform3D tr = new Transform3D();
-        modifier._calcUpperLower(tg_, tr);
-        
-        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
-        tg_.addChild(switchBb_);
-
     }
     
 	/**
