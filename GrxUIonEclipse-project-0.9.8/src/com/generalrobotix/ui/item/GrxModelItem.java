@@ -139,6 +139,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		
         bgRoot_.setCapability(BranchGroup.ALLOW_DETACH);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
         // create root link
@@ -158,7 +159,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	 * @param link link to be added
 	 */
 	public void addLink(GrxLinkItem link){
-		System.out.println("link is added : "+link.getName());
+		//System.out.println("link is added : "+link.getName());
 		links_.add(link);
 		notifyModified();
 	}
@@ -168,7 +169,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	 * @param link linke to be removed
 	 */
 	public void removeLink(GrxLinkItem link){
-		System.out.println("link is removed : "+link.getName());
+		//System.out.println("link is removed : "+link.getName());
 		links_.remove(link);
 		notifyModified();
 	}
@@ -274,7 +275,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         if (getStr("markRadius")==null) setDbl("markRadius", DEFAULT_RADIUS);
 
         _setModelType(isTrue("isRobot", isRobot_));
-        _setupMarks();
 
         if (getDblAry(rootLink().getName()+".translation", null) == null &&
             getDblAry(rootLink().getName()+".rotation", null) == null)
@@ -365,25 +365,28 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     /**
      * @brief create spheres to display CoM and projected CoM
+     * 
+     * @note switches for CoM spheres and bounding box are attached to TransformGroup of
+     * the root link. As the result, this method must be called after the root link is
+     * created. And if the root link is re-created, this function must be called again.
      */
     private void _setupMarks() {
         double radius = getDbl("markRadius", DEFAULT_RADIUS);
-        if (switchCom_ == null || radius != DEFAULT_RADIUS) {
-            switchCom_ = GrxShapeUtil.createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
-            switchComZ0_= GrxShapeUtil.createBall(radius, new Color3f(0.0f, 1.0f, 0.0f));
-            tgCom_ = (TransformGroup)switchCom_.getChild(0);
-            tgComZ0_ = (TransformGroup)switchComZ0_.getChild(0);
-            TransformGroup root = getTransformGroupRoot();
-            root.addChild(switchCom_);
-            root.addChild(switchComZ0_);
-        }
+        switchCom_ = GrxShapeUtil.createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
+        switchComZ0_= GrxShapeUtil.createBall(radius, new Color3f(0.0f, 1.0f, 0.0f));
+        tgCom_ = (TransformGroup)switchCom_.getChild(0);
+        tgComZ0_ = (TransformGroup)switchComZ0_.getChild(0);
+        TransformGroup root = getTransformGroupRoot();
+        root.addChild(switchCom_);
+        root.addChild(switchComZ0_);
+
         SceneGraphModifier modifier = SceneGraphModifier.getInstance();
         modifier.init_ = true;
         modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
         
         Color3f color = new Color3f(0.0f, 1.0f, 0.0f);
         switchBb_ = SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
-        getTransformGroupRoot().addChild(switchBb_);
+        root.addChild(switchBb_);
     }
 
     /**
@@ -393,13 +396,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public boolean load(File f) {
         long load_stime = System.currentTimeMillis();
-        if (bgRoot_ != null)
-            manager_.setSelectedItem(this, false);
+        manager_.setSelectedItem(this, false);
+        bgRoot_.detach();
         bgRoot_ = new BranchGroup();
         bgRoot_.setCapability(BranchGroup.ALLOW_DETACH);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-
         file_ = f;
         String url = "file:///" + f.getAbsolutePath();
         GrxDebugUtil.println("Loading " + url);
@@ -414,7 +417,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             if (rootLink() != null){
             	rootLink().delete();
             }
-            switchCom_ = null;
 
             for (int i=0; i<cameraList_.size(); i++){
                 cameraList_.get(i).destroy();
@@ -466,6 +468,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms");
             setURL(url);
             manager_.setSelectedItem(this, true);
+
             setProperty("isRobot", Boolean.toString(isRobot_));
 
         } catch (Exception ex) {
@@ -597,9 +600,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             	}
             }
         }
-        
-        _setupMarks();
-        
         setDblAry(rootLink().getName()+".translation", rootLink().translation());
         setDblAry(rootLink().getName()+".rotation", rootLink().rotation());
         
@@ -611,6 +611,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         calcForwardKinematics();
         updateInitialTransformRoot();
         updateInitialJointValues();
+
+        _setupMarks();
     }
 
 

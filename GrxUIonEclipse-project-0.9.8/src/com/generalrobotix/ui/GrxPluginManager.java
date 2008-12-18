@@ -786,8 +786,7 @@ public class GrxPluginManager {
 
     /**
      * @brief remove item
-     * @param item
-     *            item to be removed
+     * @param item item to be removed
      */
     public void removeItem(GrxBaseItem item) {
         Map<?, ?> m = pluginMap_.get(item.getClass());
@@ -800,8 +799,7 @@ public class GrxPluginManager {
 
     /**
      * @brief remove all items which are instances of specified class
-     * @param cls
-     *            class
+     * @param cls class
      */
     public void removeItems(Class<? extends GrxBaseItem> cls) {
         Map<?, ?> m = pluginMap_.get(cls);
@@ -933,11 +931,11 @@ public class GrxPluginManager {
         for (int i = 0; i < selectedItemList_.size(); i++) {
             GrxBaseItem item = selectedItemList_.get(i);
             if (cls.isAssignableFrom(item.getClass()) && (name == null || name.equals(item.getName()))) {
-                System.out.println("[PM]@getSelectedItem get " + item.getName() + "(" + cls.getName() + ")");
+                //System.out.println("[PM]@getSelectedItem get " + item.getName() + "(" + cls.getName() + ")");
                 return item;
             }
         }
-        System.out.println("[PM]@getSelectedItem " + cls.getName() + ":" + name + " NOT FOUND.");
+        //System.out.println("[PM]@getSelectedItem " + cls.getName() + ":" + name + " NOT FOUND.");
         return null;
     }
 

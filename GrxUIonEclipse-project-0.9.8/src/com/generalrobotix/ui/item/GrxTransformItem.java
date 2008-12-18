@@ -18,6 +18,7 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Vector3d;
 
 import jp.go.aist.hrp.simulator.ModelLoader;
@@ -27,7 +28,6 @@ import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
-import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 
@@ -98,15 +98,21 @@ public class GrxTransformItem extends GrxBaseItem {
      * @brief delete this item and children
      */
     public void delete() {
+    	try{
     	// delete children first
     	while (children_.size() > 0){
     		children_.get(0).delete();
     	}
 
-    	// TODO : implement delete this link
     	super.delete();
     	if (parent_ != null){
     		parent_.removeChild(this);
+    		// I don't know why the following line is required.
+    		// But without the line, this transform is moved to the origin.
+			model_.calcForwardKinematics();
+    	}
+    	}catch(Exception ex){
+    		ex.printStackTrace();
     	}
     }
 
