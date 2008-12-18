@@ -319,6 +319,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	 * @param url URL to be set
 	 */
 	public void setURL(String url) {
+		url = url.replace('\\','/');
 		setProperty("url", url);
 		url_ =url;
 	}

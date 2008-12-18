@@ -45,6 +45,7 @@ private:
         
     std::string url_;
     TransformedShapeIndexSequence shapeIndices_;
+    DblArray12Sequence inlinedShapeTransformMatrices_;
 };
 
 

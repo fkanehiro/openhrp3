@@ -21,12 +21,14 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferUShort;
+import java.util.List;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.ImageComponent;
 import javax.media.j3d.ImageComponent2D;
 import javax.media.j3d.Material;
+import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
@@ -34,8 +36,8 @@ import javax.media.j3d.Texture;
 import javax.media.j3d.Texture2D;
 import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
-import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
@@ -49,12 +51,14 @@ import jp.go.aist.hrp.simulator.MaterialInfo;
 import jp.go.aist.hrp.simulator.ShapeInfo;
 import jp.go.aist.hrp.simulator.ShapePrimitiveType;
 import jp.go.aist.hrp.simulator.TextureInfo;
+import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cone;
@@ -71,11 +75,11 @@ import com.sun.j3d.utils.picking.PickTool;
  * @brief sensor item
  */
 public class GrxShapeItem extends GrxTransformItem{
-    public ShapeInfo shapeInfo_;
-    public AppearanceInfo appearanceInfo_;
-    public MaterialInfo materialInfo_;
-    public TextureInfo textureInfo_;
-    public double[] transform_;
+    public ShapeInfo[] shapes_;
+    public AppearanceInfo[] appearances_;
+    public MaterialInfo[] materials_;
+    public TextureInfo[] textures_;
+    //public double transform_;
     
     private Switch switchBb_;
 
@@ -89,51 +93,73 @@ public class GrxShapeItem extends GrxTransformItem{
      * @param materialInfo MaterialInfo retrieved through ModelLoader
      * @param textureInfo TextureInfo retrieved through ModelLoader
      */
-    public GrxShapeItem(String name, GrxPluginManager manager, GrxModelItem model, double [] transform,
-    		ShapeInfo shapeInfo, AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo) {
+   	
+   	public GrxShapeItem(String name, GrxPluginManager manager, GrxModelItem model, TransformedShapeIndex[] tsi,
+       		double[] inlinedSTM, List index) {
     	super(name, manager, model);
 
-    	transform_ = transform;
-    	shapeInfo_ = shapeInfo;
-    	appearanceInfo_ = appearanceInfo;
-    	materialInfo_ = materialInfo;
-    	textureInfo_ = textureInfo;
-
-        if(shapeInfo.primitiveType == ShapePrimitiveType.SP_MESH ){
-        	Shape3D linkShape3D = createShape3D(shapeInfo, appearanceInfo, materialInfo, textureInfo);
-        	tg_.addChild(linkShape3D);
-        }else{
-        	Primitive primitive = createPrimitive(shapeInfo, appearanceInfo, materialInfo, textureInfo);
-        	for (int i=0; i<primitive.numChildren(); i++){
-        		if (primitive.getChild(i) instanceof Shape3D){
-        			Shape3D shape = (Shape3D)primitive.getChild(i);
-        			shape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
-        		}
-        	}
-        	tg_.addChild(primitive);
-        }
-
-        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-
-        modifier.init_ = true;
-        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
-        Transform3D tr = new Transform3D();
-        modifier._calcUpperLower(tg_, tr);
-        
-        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
-        tg_.addChild(switchBb_);
-
-        Vector3d v3d = new Vector3d(transform[3], transform[7], transform[11]);
-        Matrix3d m3d = new Matrix3d(transform[0], transform[1], transform[2],
-                transform[4], transform[5], transform[6],
+    	Transform3D t3d = new Transform3D();
+    	if(inlinedSTM!=null){
+    		Vector3d v3d = new Vector3d(inlinedSTM[3], inlinedSTM[7], inlinedSTM[11]);
+    		Matrix3d m3d = new Matrix3d(inlinedSTM[0], inlinedSTM[1], inlinedSTM[2],
+    			inlinedSTM[4], inlinedSTM[5], inlinedSTM[6],
+    			inlinedSTM[8], inlinedSTM[9], inlinedSTM[10]);  
+            t3d.setTranslation(v3d);
+            t3d.setRotation(m3d);
+            Transform3D inverset3d = new Transform3D();
+            inverset3d.invert(t3d);
+            
+            int n = tsi.length;
+            if(index!=null)
+            	n = index.size();
+            shapes_ = new ShapeInfo[n];
+            appearances_ = new AppearanceInfo[n];
+            materials_ = new MaterialInfo[n];
+            textures_ = new TextureInfo[n];
+            for(int k=0; k<n; k++){
+            	int i=k;
+            	if(index!=null)
+            		i = (Integer)index.get(k);
+            	TransformGroup tfg = new TransformGroup();
+        		double[] transform = tsi[i].transformMatrix;
+        		v3d = new Vector3d(transform[3], transform[7], transform[11]);
+                m3d = new Matrix3d(transform[0], transform[1], transform[2],
+                	transform[4], transform[5], transform[6],
+                    transform[8], transform[9], transform[10]);
+                Transform3D transform3d = new Transform3D();
+                transform3d.setTranslation(v3d);
+                transform3d.setRotation(m3d);
+                transform3d.mul(inverset3d, transform3d);
+                tfg.setTransform(transform3d);
+                addShape( tsi[i].shapeIndex, tfg, model, k);
+                tg_.addChild(tfg);
+            } 
+    	}else{
+    		shapes_ = new ShapeInfo[1];
+            appearances_ = new AppearanceInfo[1];
+            materials_ = new MaterialInfo[1];
+            textures_ = new TextureInfo[1];
+    		double[] transform = tsi[(Integer)index.get(0)].transformMatrix;
+    		Vector3d v3d = new Vector3d(transform[3], transform[7], transform[11]);
+            Matrix3d m3d = new Matrix3d(transform[0], transform[1], transform[2],
+            	transform[4], transform[5], transform[6],
                 transform[8], transform[9], transform[10]);
-        AxisAngle4d a4d = new AxisAngle4d();
-        a4d.set(m3d);
+            t3d.setTranslation(v3d);
+            t3d.setRotation(m3d);
+            addShape( tsi[(Integer)index.get(0)].shapeIndex, tg_, model, 0);
+    	}
+       	tg_.setTransform(t3d);
+    	
+       	Vector3d trans = new Vector3d();
+        Matrix3d rotat = new Matrix3d();
+        t3d.get(rotat, trans);
 
         double [] pos = new double[3];
-        v3d.get(pos);
+        trans.get(pos);
         translation(pos);
+        AxisAngle4d a4d = new AxisAngle4d();
+        rotat.normalize();
+        a4d.setMatrix(rotat);
         double [] rot = new double[4];
         a4d.get(rot);
         rotation(rot);
@@ -168,7 +194,10 @@ public class GrxShapeItem extends GrxTransformItem{
 			}
 		};
 		setMenuItem(item);
-		setURL(shapeInfo_.url);
+		if(index!=null)
+			setURL(model.shapes[tsi[(Integer)index.get(0)].shapeIndex].url);
+		else
+			setURL(model.shapes[tsi[0].shapeIndex].url);
 		/* disable copy and paste menus until they are implemented
         // menu item : copy
         item = new Action(){
@@ -210,6 +239,52 @@ public class GrxShapeItem extends GrxTransformItem{
         appearance.setPolygonAttributes(pa);
 
         return appearance;
+    }
+    
+    private void addShape
+    (short shapeIndex, TransformGroup tg, GrxModelItem model, int id){
+    	ShapeInfo shapeInfo = model.shapes[shapeIndex];
+        AppearanceInfo appearanceInfo = null;
+        MaterialInfo materialInfo = null;
+        TextureInfo textureInfo = null;
+        if (shapeInfo.appearanceIndex >= 0){
+            appearanceInfo = model.appearances[shapeInfo.appearanceIndex];
+             if (appearanceInfo.materialIndex >= 0){
+                materialInfo = model.materials[appearanceInfo.materialIndex];
+            }
+            if (appearanceInfo.textureIndex >= 0){
+            	textureInfo = model.textures[appearanceInfo.textureIndex];
+            }
+        }
+        shapes_[id] = shapeInfo;
+        appearances_[id] = appearanceInfo;
+        materials_[id] = materialInfo;
+        textures_[id] = textureInfo;
+        if(model.shapes[shapeIndex].primitiveType == ShapePrimitiveType.SP_MESH ){
+        	Shape3D linkShape3D = createShape3D(shapeInfo, appearanceInfo, materialInfo, textureInfo);
+        	tg.addChild(linkShape3D);
+        }else{
+        	Primitive primitive = createPrimitive(shapeInfo, appearanceInfo, materialInfo, textureInfo);
+        	for (int j=0; j<primitive.numChildren(); j++){
+        		if (primitive.getChild(j) instanceof Shape3D){
+        			Shape3D shape = (Shape3D)primitive.getChild(j);
+        			shape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+        		}
+        	}
+        	tg.addChild(primitive);
+        }
+        
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+
+        modifier.init_ = true;
+        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        Transform3D tr = new Transform3D();
+        modifier._calcUpperLower(tg_, tr);
+        
+        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
+        tg_.addChild(switchBb_);
+
     }
     
 	/**
@@ -688,54 +763,56 @@ public class GrxShapeItem extends GrxTransformItem{
 		return ret;
 	}
 	
+	void setColor(java.awt.Color color, Node node){
+		if (node instanceof Shape3D){
+			Color3f c3f = new Color3f(color);
+    	    Shape3D s3d = (Shape3D)node;
+    	    Appearance app = s3d.getAppearance();
+    	    if (app != null){
+                Material ma = app.getMaterial();
+                if (ma != null){
+                    ma.setAmbientColor(c3f);
+                }
+      	    }
+		}else if (node instanceof Primitive){
+			Primitive prim = (Primitive)node;
+			for (int j=0; j<prim.numChildren(); j++){
+				setColor(color, (Shape3D)prim.getChild(j));
+			}
+		}else if(node instanceof TransformGroup){
+			TransformGroup tfg = (TransformGroup)node;
+			for(int j=0; j<tfg.numChildren(); j++){
+				setColor(color, tfg.getChild(j));
+			}
+		}
+	}
+	
 	void setColor(java.awt.Color color){
-		Color3f c3f = new Color3f(color);
-		for (int i=0; i<tg_.numChildren(); i++){
-			if (tg_.getChild(i) instanceof Shape3D){
-	    	    Shape3D s3d = (Shape3D)tg_.getChild(i);
-	    	    Appearance app = s3d.getAppearance();
-	    	    if (app != null){
-	                Material ma = app.getMaterial();
-	                if (ma != null){
-	                    ma.setAmbientColor(c3f);
-	                }
-	      	    }
-			}else if (tg_.getChild(i) instanceof Primitive){
-				Primitive prim = (Primitive)tg_.getChild(i);
-				for (int j=0; j<prim.numChildren(); j++){
-					if (prim.getChild(j) instanceof Shape3D){
-			    	    Shape3D s3d = (Shape3D)prim.getChild(j);
-			    	    Appearance app = s3d.getAppearance();
-			    	    if (app != null){
-			                Material ma = app.getMaterial();
-			                if (ma != null){
-			                    ma.setAmbientColor(c3f);
-			                }
-			      	    }	
-					}
-				}
+		setColor(color, tg_);
+	}
+	
+	void restoreColor(Node node, int id){
+		if(node instanceof Shape3D){
+			Shape3D s3d = (Shape3D)node;
+			Appearance app = s3d.getAppearance();
+    	    setMaterial(app, materials_[id]);
+		}else if(node instanceof Primitive){
+			Primitive prim = (Primitive)node;
+			for (int j=0; j<prim.numChildren(); j++){
+				restoreColor((Shape3D)prim.getChild(j), id);
+			}
+		}else if(node instanceof TransformGroup){
+			TransformGroup tfg = (TransformGroup)node;
+			for(int j=0; j<tfg.numChildren(); j++){
+				restoreColor(tfg.getChild(j), j);
 			}
 		}
 	}
 	
 	void restoreColor(){
-		for (int i=0; i<tg_.numChildren(); i++){
-			if (tg_.getChild(i) instanceof Shape3D){
-	    	    Shape3D s3d = (Shape3D)tg_.getChild(i);
-	    	    Appearance app = s3d.getAppearance();
-	    	    setMaterial(app, materialInfo_);
-			}else if (tg_.getChild(i) instanceof Primitive){
-				Primitive prim = (Primitive)tg_.getChild(i);
-				for (int j=0; j<prim.numChildren(); j++){
-					if (prim.getChild(j) instanceof Shape3D){
-			    	    Shape3D s3d = (Shape3D)prim.getChild(j);
-			    	    Appearance app = s3d.getAppearance();
-			    	    setMaterial(app, materialInfo_);
-					}
-				}
-			}
-		}
+		restoreColor(tg_, 0);
 	}
+	
 	
 	public void setFocused(boolean b){
 		if (b){
@@ -744,4 +821,5 @@ public class GrxShapeItem extends GrxTransformItem{
 			switchBb_.setWhichChild(Switch.CHILD_NONE);
 		}
 	}
+
 }

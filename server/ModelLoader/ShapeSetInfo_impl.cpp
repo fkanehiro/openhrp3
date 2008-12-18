@@ -119,12 +119,14 @@ TextureInfoSequence* ShapeSetInfo_impl::textures()
   @endif
 */
 void ShapeSetInfo_impl::traverseShapeNodes
-(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices, const SFString* url)
+(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices, DblArray12Sequence& inlinedShapeM, const SFString* url)
 {
+    static int inline_count=0;   
+    SFString url_ = *url;
     if(node->isCategoryOf(PROTO_INSTANCE_NODE)){
         VrmlProtoInstance* protoInstance = static_cast<VrmlProtoInstance*>(node);
         if(protoInstance->actualNode){
-            traverseShapeNodes(protoInstance->actualNode.get(), T, io_shapeIndices, url);
+            traverseShapeNodes(protoInstance->actualNode.get(), T, io_shapeIndices, inlinedShapeM, url);
         }
 
     } else if(node->isCategoryOf(GROUPING_NODE)) {
@@ -132,7 +134,22 @@ void ShapeSetInfo_impl::traverseShapeNodes
         VrmlTransform* transformNode = dynamic_cast<VrmlTransform*>(groupNode);
         VrmlInline* inlineNode = NULL;
         
+        inlineNode = dynamic_cast<VrmlInline*>(groupNode);
         const Matrix44* pT;
+        if(inlineNode){
+            if(!inline_count){
+                int inlinedShapeMIndex = inlinedShapeM.length();
+                inlinedShapeM.length(inlinedShapeMIndex+1);
+                int p = 0;
+                for(int row=0; row < 3; ++row){
+                    for(int col=0; col < 4; ++col){
+                        inlinedShapeM[inlinedShapeMIndex][p++] = T(row, col);
+                    }
+                }  
+                url_ = inlineNode->urls[0];
+            }
+            inline_count++;
+        }
         Matrix44 T2;
         if( transformNode ){
             Matrix44 Tlocal;
@@ -141,12 +158,15 @@ void ShapeSetInfo_impl::traverseShapeNodes
             pT = &T2;
         } else {
             pT = &T;
-            inlineNode = dynamic_cast<VrmlInline*>(groupNode);
         }
+
         MFNode& children = groupNode->children;
         for(size_t i=0; i < children.size(); ++i){
-            traverseShapeNodes(children[i].get(), *pT, io_shapeIndices, inlineNode ? &inlineNode->urls[i] : url );
+            traverseShapeNodes(children[i].get(), *pT, io_shapeIndices, inlinedShapeM, &url_);
         }
+        if(inlineNode)
+            inline_count--;
+
         
     } else if(node->isCategoryOf(SHAPE_NODE)) {
 
@@ -171,8 +191,11 @@ void ShapeSetInfo_impl::traverseShapeNodes
                     tsi.transformMatrix[p++] = T(row, col);
                 }
             }
+            if(inline_count)
+                tsi.inlinedShapeTransformMatrixIndex=inlinedShapeM.length()-1;
+            else
+                tsi.inlinedShapeTransformMatrixIndex=-1;
         }
-        
     }
 }
 

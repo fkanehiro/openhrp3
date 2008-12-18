@@ -67,6 +67,7 @@ import jp.go.aist.hrp.simulator.*;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
+import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;

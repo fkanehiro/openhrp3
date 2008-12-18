@@ -6,9 +6,11 @@ import java.io.FileWriter;
 import java.util.Vector;
 import java.util.regex.*;
 
+import jp.go.aist.hrp.simulator.AppearanceInfo;
 import jp.go.aist.hrp.simulator.MaterialInfo;
 import jp.go.aist.hrp.simulator.ShapeInfo;
 import jp.go.aist.hrp.simulator.ShapePrimitiveType;
+import jp.go.aist.hrp.simulator.TextureInfo;
 
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -25,6 +27,8 @@ public class GrxVrmlExporter {
 	public static boolean export(GrxModelItem model, String exportPath){
 		// TODO check existence of exportPath
 		int idx = exportPath.lastIndexOf(File.separatorChar);
+		if(idx==-1)
+			idx = exportPath.lastIndexOf('/');
 		String exportDir = exportPath.substring(0, idx);
 
 		BufferedWriter writer = null;
@@ -271,10 +275,10 @@ public class GrxVrmlExporter {
 			if (link.jointType().equals("rotate") || link.jointType().equals("slide")){
 				writer.write(indent+"  jointAxis \""+link.getProperty("jointAxis")+"\"\n");
 			}
-			if (!link.getProperty("translation").equals("0.0 0.0 0.0 ")){
+			if (!valueEquals(link.getProperty("translation"),"0.0 0.0 0.0 ")){
 				writer.write(indent+"  translation "+link.getProperty("translation")+"\n");
 			}
-			if (!link.getProperty("rotation").equals("0.0 0.0 1.0 0.0 ")){
+			if (!valueEquals(link.getProperty("rotation"),"0.0 1.0 0.0 0.0")){
 				writer.write(indent+"  rotation "+link.getProperty("rotation")+"\n");
 			}
 			if (!link.getProperty("ulimit").equals("")) writer.write(indent+"  ulimit ["+link.getProperty("ulimit")+"]\n");
@@ -283,7 +287,7 @@ public class GrxVrmlExporter {
 			if (!link.getProperty("lvlimit").equals("")) writer.write(indent+"  lvlimit ["+link.getProperty("lvlimit")+"]\n");
 			if (link.gearRatio() != 1.0) writer.write(indent+"  gearRatio "+link.gearRatio()+"\n");
 			if (link.rotorInertia() != 0.0) writer.write(indent+"  rotorInertia "+link.rotorInertia()+"\n");
-			if (link.rotorResister() != 0.0) writer.write(indent+"  rotorResister "+link.rotorResister()+"\n");
+			if (link.rotorResistor() != 0.0) writer.write(indent+"  rotorResistor "+link.rotorResistor()+"\n");
 			if (link.torqueConst() != 1.0) writer.write(indent+"  torqueConst "+link.torqueConst()+"\n");
 			if (link.encoderPulse() != 1.0) writer.write(indent+"  encoderPulse "+link.encoderPulse()+"\n");
 			writer.write(indent+"  children[\n");
@@ -297,15 +301,11 @@ public class GrxVrmlExporter {
 			writer.write(indent+"      mass "+link.mass()+"\n");
 			writer.write(indent+"      momentsOfInertia [ "+link.getProperty("momentsOfInertia")+"]\n");
 			writer.write(indent+"      children[\n");
-			String exported_url = null;
+			//String exported_url = null;
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxShapeItem){
 					GrxShapeItem shape = (GrxShapeItem)link.children_.get(i);
-					String url = shape.getURL(false);
-					if (url == null || (url != null && !url.equals(exported_url))){
-						exportShape(writer, shape, indent+"        ", exportDir, mainPath);
-						exported_url = url;
-					}
+					exportShape(writer, shape, indent+"        ", exportDir, mainPath);
 				}
 			}
 			writer.write(indent+"      ]\n");
@@ -347,30 +347,30 @@ public class GrxVrmlExporter {
 			}
 			writer.write(indent+"DEF "+sensor.getName()+" "+nodeType+" {\n");
 			writer.write(indent+"  sensorId "+sensor.id()+"\n");
-			if (!sensor.getProperty("translation").equals("0.0 0.0 0.0 ")){
+			if (!valueEquals(sensor.getProperty("translation"),"0.0 0.0 0.0 ")){
 				writer.write(indent+"  translation "+sensor.getProperty("translation")+"\n");
 			}
-			if (!sensor.getProperty("rotation").equals("0.0 0.0 1.0 0.0 ")){
+			if (!valueEquals(sensor.getProperty("rotation"),"0.0 1.0 0.0 0.0")){
 				writer.write(indent+"  rotation "+sensor.getProperty("rotation")+"\n");
 			}
 			// sensor specific parameters
 			if (nodeType.equals("VisionSensor")){
-				if (!sensor.getProperty("fieldOfView").equals("0.785398")){
+				if (!valueEquals(sensor.getProperty("fieldOfView"),"0.785398")){
 					writer.write(indent+"  fieldOfView "+sensor.getProperty("fieldOfView")+"\n");
 				}
-				if (!sensor.getProperty("frontClipDistance").equals("0.01")){
+				if (!valueEquals(sensor.getProperty("frontClipDistance"),"0.01")){
 					writer.write(indent+"  frontClipDistance "+sensor.getProperty("frontClipDistance")+"\n");
 				}
-				if (!sensor.getProperty("backClipDistance").equals("10.0")){
+				if (!valueEquals(sensor.getProperty("backClipDistance"),"10.0")){
 					writer.write(indent+"  backClipDistance "+sensor.getProperty("backClipDistance")+"\n");
 				}
-				if (!sensor.getProperty("width").equals("320")){
+				if (!valueEquals(sensor.getProperty("width"),"320")){
 					writer.write(indent+"  width "+sensor.getProperty("width")+"\n");
 				}
-				if (!sensor.getProperty("height").equals("240")){
+				if (!valueEquals(sensor.getProperty("height"),"240")){
 					writer.write(indent+"  height "+sensor.getProperty("height")+"\n");
 				}
-				if (!sensor.getProperty("frameRate").equals("30.0")){
+				if (!valueEquals(sensor.getProperty("frameRate"),"30.0")){
 					writer.write(indent+"  frameRate "+sensor.getProperty("frameRate")+"\n");
 				}
 				if (!sensor.getProperty("cameraType").equals("NONE")){
@@ -378,21 +378,21 @@ public class GrxVrmlExporter {
 				}
 			}else if(nodeType.equals("ForceSensor")){
 				String maxf = sensor.getProperty("maxForce");
-				if (!maxf.equals("-1.0 -1.0 -1.0 ")){
+				if (!valueEquals(maxf, "-1.0 -1.0 -1.0 ")){
 					writer.write(indent+"  maxForce "+maxf+"\n");
 				}
 				String maxt = sensor.getProperty("maxTorque");
-				if (!maxt.equals("-1.0 -1.0 -1.0 ")){
+				if (!valueEquals(maxt, "-1.0 -1.0 -1.0 ")){
 					writer.write(indent+"  maxTorque "+maxt+"\n");
 				}
 			}else if(nodeType.equals("Gyro")){
 				String max = sensor.getProperty("maxAngularVelocity");
-				if (!max.equals("-1.0 -1.0 -1.0 ")){
+				if (!valueEquals(max, "-1.0 -1.0 -1.0 ")){
 					writer.write(indent+"  maxAngularVelocity "+max+"\n");
 				}
 			}else if(nodeType.equals("AccelerationSensor")){
 				String max = sensor.getProperty("maxAcceleration");
-				if (!max.equals("-1.0 -1.0 -1.0 ")){
+				if (!valueEquals(max, "-1.0 -1.0 -1.0 ")){
 					writer.write(indent+"  maxAcceleration "+max+"\n");
 				}
 			}
@@ -425,25 +425,33 @@ public class GrxVrmlExporter {
 		try{
 			// If this model is created from scratch, modelPath == null and all shapes are loaded by Inline node
 			// If this shape is loaded by Inline node, modelPath != shape.getUrl()
-			// If this shape is directry written in the main file, modelPath == shape.getUrl()
+			// If this shape is directry written in the main file, modelPath == shape.getUrl() 
 			if (shape.getURL(false).equals(mainPath)){
 				writer.write(indent+"Transform {\n");
-				if (!shape.getProperty("translation").equals("0.0 0.0 0.0 ")){
+				if (!valueEquals(shape.getProperty("translation"),"0.0 0.0 0.0 ")){
 					writer.write(indent+"  translation "+shape.getProperty("translation")+"\n");
 				}
-				if (!shape.getProperty("rotation").equals("0.0 1.0 0.0 0.0 ")){
+				if (!valueEquals(shape.getProperty("rotation"),"0.0 1.0 0.0 0.0")){
 					writer.write(indent+"  rotation "+shape.getProperty("rotation")+"\n");
 				}
 				writer.write(indent+"  children[\n");
 				writer.write(indent+"    Shape{\n");
-				exportGeometry(writer, shape.shapeInfo_, indent+"      ");
-				if (shape.appearanceInfo_ != null){
+				exportGeometry(writer, shape, indent+"      ");
+				if (shape.appearances_[0] != null){
 					writer.write(indent+"      appearance Appearance{\n");
-					if (shape.materialInfo_ != null){
-						MaterialInfo mat = shape.materialInfo_;
+					if (shape.materials_[0] != null){
+						MaterialInfo mat = shape.materials_[0];
 						writer.write(indent+"        material Material{\n");
 						writer.write(indent+"          diffuseColor "
 								+mat.diffuseColor[0]+" "+mat.diffuseColor[1]+" "+mat.diffuseColor[2]+"\n");
+						writer.write(indent+"        }\n");
+					}
+					if(shape.textures_[0] != null){
+						TextureInfo tex = shape.textures_[0];
+						writer.write(indent+"        texture	ImageTexture {\n");
+						String url = tex.url;
+						url = url.replace('\\','/');
+						writer.write(indent+"          url \""+_absPath2relPath(url, exportDir)+"\"\n");
 						writer.write(indent+"        }\n");
 					}
 					writer.write(indent+"      }\n");
@@ -452,7 +460,17 @@ public class GrxVrmlExporter {
 				writer.write(indent+"  ]\n");
 				writer.write(indent+"}\n");
 			}else{
+				writer.write(indent+"Transform {\n");
+				if (!valueEquals(shape.getProperty("translation"),"0.0 0.0 0.0 ")){
+					writer.write(indent+"  translation "+shape.getProperty("translation")+"\n");
+				}
+				if (!valueEquals(shape.getProperty("rotation"),"0.0 1.0 0.0 0.0")){
+					writer.write(indent+"  rotation "+shape.getProperty("rotation")+"\n");
+				}
+				writer.write(indent+"  children[\n");
 				writer.write(indent+"Inline { url \""+_absPath2relPath(shape.getURL(false), exportDir)+"\" }\n");
+				writer.write(indent+"  ]\n");
+				writer.write(indent+"}\n");
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -467,7 +485,8 @@ public class GrxVrmlExporter {
 	 */
 	private static String _absPath2relPath(String absPath, String baseDir){
 		Pattern localPattern = Pattern.compile("\\\\");
-		Matcher localMatcher = localPattern.matcher(File.separator);
+		//Matcher localMatcher = localPattern.matcher(File.separator); は使わないで、すべて"/"として扱えるように前処理する
+		Matcher localMatcher = localPattern.matcher("/");
 		String localStr = localMatcher.replaceAll("\\\\\\\\");
 		
 		String [] dirs1 = absPath.split( localStr );
@@ -475,20 +494,86 @@ public class GrxVrmlExporter {
 		int cnt=0;
 		while (cnt < dirs1.length && cnt < dirs2.length && dirs1[cnt].equals(dirs2[cnt])) cnt++;
 		String relPath = "";
-		for (int i=0; i<dirs2.length-cnt; i++) relPath += ".."+File.separator;
+		for (int i=0; i<dirs2.length-cnt; i++) relPath += "../";
 		for (int i=cnt; i<dirs1.length; i++){
 			relPath += dirs1[i];
-			if (i != dirs1.length-1) relPath += File.separator;
+			if (i != dirs1.length-1) relPath += "/";
 		}
 		return relPath;
 	}
 	
-	public static void exportGeometry(BufferedWriter writer, ShapeInfo info, String indent){
+	public static void exportGeometry(BufferedWriter writer, GrxShapeItem shape, String indent){
 		try{
+			ShapeInfo info = shape.shapes_[0];
 			ShapePrimitiveType ptype = info.primitiveType;
 			float [] pparams = info.primitiveParameters;
 			
 			if (ptype == ShapePrimitiveType.SP_MESH){
+				writer.write(indent+"geometry IndexedFaceSet {\n");
+				writer.write(indent+"ccw TRUE\n");
+				writer.write(indent+"coord Coordinate {\n");
+				writer.write(indent+"point [\n");
+				for(int i=0; i<info.vertices.length;)
+					writer.write(indent+info.vertices[i++]+" "+info.vertices[i++]+" "+info.vertices[i++]+",\n");
+				writer.write(indent+"]\n");
+				writer.write(indent+"}\n");
+				writer.write(indent+"coordIndex [\n");
+				for(int i=0; i<info.triangles.length;)
+					writer.write(indent+info.triangles[i++]+" "+info.triangles[i++]+" "+info.triangles[i++]+" -1,\n");			
+				writer.write(indent+"]\n");
+				AppearanceInfo appinfo = shape.appearances_[0];
+				if(appinfo != null){
+					if(appinfo.normals.length != 0){
+						if(!appinfo.normalPerVertex)
+							writer.write(indent+"normalPerVertex FALSE\n");
+						writer.write(indent+"normal Normal  {\n");
+						writer.write(indent+"vector [\n");
+						for(int i=0; i<appinfo.normals.length;)
+							writer.write(indent+appinfo.normals[i++]+" "+appinfo.normals[i++]+" "+appinfo.normals[i++]+",\n");
+						writer.write(indent+"]\n");
+						writer.write(indent+"}\n");
+					}
+					if(appinfo.normalIndices.length != 0){
+						writer.write(indent+"normalIndex [\n");
+						for(int i=0; i<appinfo.normalIndices.length;)
+							writer.write(indent+appinfo.normalIndices[i++]+" "+appinfo.normalIndices[i++]+" "+appinfo.normalIndices[i++]+" -1,\n");			
+						writer.write(indent+"]\n");
+					}
+					if(!appinfo.solid)
+						writer.write(indent+"solid FALSE\n");
+					if (appinfo.creaseAngle != 0.0f)
+						writer.write(indent+"creaseAngle "+ appinfo.creaseAngle+"\n");
+					if(appinfo.colors.length != 0){
+						if(!appinfo.colorPerVertex)
+							writer.write(indent+"colorPerVertex FALSE\n");
+						writer.write(indent+"color Color  {\n");
+						writer.write(indent+"color [\n");
+						for(int i=0; i<appinfo.colors.length;)
+							writer.write(indent+appinfo.colors[i++]+" "+appinfo.colors[i++]+" "+appinfo.colors[i++]+",\n");
+						writer.write(indent+"]\n");
+						writer.write(indent+"}\n");
+					}
+					if(appinfo.colorIndices.length != 0){
+						writer.write(indent+"colorIndex [\n");
+						for(int i=0; i<appinfo.colorIndices.length; i++)
+							writer.write(indent+appinfo.colorIndices[i++]+",");
+						writer.write(indent+"]\n");
+					}				
+					TextureInfo texinfo = shape.textures_[0];
+					if(texinfo != null){
+						writer.write(indent+"texCoord TextureCoordinate {\n");
+						writer.write(indent+"point [\n");
+						for(int i=0; i<appinfo.textureCoordinate.length;)
+							writer.write(indent+appinfo.textureCoordinate[i++]+" "+appinfo.textureCoordinate[i++]+",\n");
+						writer.write(indent+"]\n");
+						writer.write(indent+"}\n");
+						writer.write(indent+"texCoordIndex [\n");
+						for(int i=0; i<appinfo.textureCoordIndices.length;)
+							writer.write(indent+appinfo.textureCoordIndices[i++]+" "+appinfo.textureCoordIndices[i++]+" "+appinfo.textureCoordIndices[i++]+" -1,\n");			
+						writer.write(indent+"]\n");
+					}
+				}
+				writer.write(indent+"}\n");
 			}else if (ptype == ShapePrimitiveType.SP_BOX){
 				writer.write(indent+"geometry Box{\n");
 				writer.write(indent+"  size "
@@ -512,7 +597,7 @@ public class GrxVrmlExporter {
 				writer.write(indent+"}\n");					
 			}else if (ptype == ShapePrimitiveType.SP_CONE){
 				writer.write(indent+"geometry Cone{\n");
-				writer.write(indent+"  radius "+pparams[0]+"\n");
+				writer.write(indent+"  bottomRadius "+pparams[0]+"\n");
 				writer.write(indent+"  height "+pparams[1]+"\n");
 				if (pparams[2]==0){
 					writer.write(indent+"  bottom FALSE\n");
@@ -533,5 +618,19 @@ public class GrxVrmlExporter {
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
+	}
+	
+	private static boolean valueEquals(String s1, String s2){
+		final double EPS = 0.00000001;
+		String[] ss1 = s1.split(" ");
+		String[] ss2 = s2.split(" ");
+		int n = ss1.length;
+		if(n!=ss2.length)
+			return false;
+		for(int i=0; i<n; i++){
+			if( Math.abs(Double.parseDouble(ss1[i]) - Double.parseDouble(ss2[i])) > EPS )
+				return false;
+		}
+		return true;
 	}
 }
