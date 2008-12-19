@@ -535,8 +535,16 @@ public class GrxVrmlExporter {
 					}
 					if(appinfo.normalIndices.length != 0){
 						writer.write(indent+"normalIndex [\n");
-						for(int i=0; i<appinfo.normalIndices.length;)
-							writer.write(indent+appinfo.normalIndices[i++]+" "+appinfo.normalIndices[i++]+" "+appinfo.normalIndices[i++]+" -1,\n");			
+						if(appinfo.normalPerVertex){
+							for(int i=0; i<appinfo.normalIndices.length;)
+								writer.write(indent+appinfo.normalIndices[i++]+" "+appinfo.normalIndices[i++]+" "+appinfo.normalIndices[i++]+" -1,\n");
+						}else{
+							for(int i=0; i<appinfo.normalIndices.length; i++){
+								if(i%3==0) writer.write(indent+"  ");
+								writer.write(appinfo.normalIndices[i]+" ");
+								if(i%3==2) writer.write("\n");
+							}
+						}
 						writer.write(indent+"]\n");
 					}
 					if(!appinfo.solid)
@@ -555,8 +563,16 @@ public class GrxVrmlExporter {
 					}
 					if(appinfo.colorIndices.length != 0){
 						writer.write(indent+"colorIndex [\n");
-						for(int i=0; i<appinfo.colorIndices.length; i++)
-							writer.write(indent+appinfo.colorIndices[i++]+",");
+						if(appinfo.colorPerVertex){
+							for(int i=0; i<appinfo.colorIndices.length;)
+								writer.write(indent+appinfo.colorIndices[i++]+" "+appinfo.colorIndices[i++]+" "+appinfo.colorIndices[i++]+" -1,\n");
+						}else{
+							for(int i=0; i<appinfo.colorIndices.length; i++){
+								if(i%3==0) writer.write(indent+"  ");
+								writer.write(appinfo.colorIndices[i]+" ");
+								if(i%3==2) writer.write("\n");
+							}
+						}
 						writer.write(indent+"]\n");
 					}				
 					TextureInfo texinfo = shape.textures_[0];
