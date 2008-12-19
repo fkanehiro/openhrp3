@@ -607,7 +607,7 @@ public class GrxPluginManager {
      * @return アイテムプラグイン。該当するプラグインが無い場合はnullを返す
      */
     public GrxBaseItem createItem(Class<? extends GrxBaseItem> cls, String name) {
-        System.out.println("[PM]@createItem " + name + "(" + cls + ")");
+        //System.out.println("[PM]@createItem " + name + "(" + cls + ")");
         if (name == null) {
             String baseName = "new" + getItemTitle(cls);
             baseName = baseName.toLowerCase().replaceAll(" ", "");
@@ -618,7 +618,7 @@ public class GrxPluginManager {
             }
         }
         GrxBaseItem item = (GrxBaseItem) createPlugin(cls, name);
-        GrxDebugUtil.println("[PM]@createItem createPlugin return " + item);
+        //GrxDebugUtil.println("[PM]@createItem createPlugin return " + item);
         if (item != null) {
             item.create();
             setSelectedItem(item, true);
@@ -644,7 +644,7 @@ public class GrxPluginManager {
             URL u = new URL(_url);
             f = new File(u.getFile());
         } catch (Exception e) {
-            GrxDebugUtil.printErr("loadItem(" + url + ") is not URL format\n", e);
+            //GrxDebugUtil.printErr("loadItem(" + url + ") is not URL format\n", e);
             f = new File(_url);
         }
 
@@ -732,7 +732,7 @@ public class GrxPluginManager {
     public boolean registerPluginInstance(GrxBasePlugin instance) {
         HashMap<String, GrxBasePlugin> map = pluginMap_.get(instance.getClass());
         if (map.get(instance.getName()) != null) {
-            GrxDebugUtil.println("[PM]@createPlugin Plugin Instance already registered.");
+            GrxDebugUtil.println("[PM]@createPlugin Plugin instance named "+instance.getName()+" is already registered.");
             return false;
         }
         map.put(instance.getName(), instance);
@@ -888,7 +888,7 @@ public class GrxPluginManager {
         while (it.hasNext()) {
             GrxBaseItem item = (GrxBaseItem) it.next();
             if (item.toString().equals(name) || name == null) {
-                GrxDebugUtil.println("[PM] getItem success " + item);
+                //GrxDebugUtil.println("[PM] getItem success " + item);
                 return item;
             }
         }

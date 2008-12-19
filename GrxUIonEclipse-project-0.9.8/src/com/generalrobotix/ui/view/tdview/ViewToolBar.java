@@ -285,4 +285,8 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
     }
 
     public void processTimerOperation(BehaviorInfo info) {}
+    
+    public void selectViewMode(int mode){
+    	cmb_.setSelectedIndex(mode);
+    }
 }

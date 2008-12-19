@@ -550,7 +550,7 @@ public class GrxProjectItem extends GrxBaseItem {
 
 			plugin = manager_.getItem(icls, iname);
 		} else {
-//			plugin = manager_.getView((Class<? extends GrxBaseView>) cls);
+			plugin = manager_.getView((Class<? extends GrxBaseView>) cls);
 		}
         
         if (plugin != null) {
