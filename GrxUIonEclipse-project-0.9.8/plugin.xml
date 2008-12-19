@@ -100,9 +100,9 @@
                tooltip="Start Simulation">
          </action>
          <action
-               class="com.generalrobotix.ui.actions.LoadProject"
-               id="com.generalrobotix.ui.actions.LoadProject"
-               label="Load Project"
+               class="com.generalrobotix.ui.actions.SaveProjectAs"
+               id="com.generalrobotix.ui.actions.SaveProjectAs"
+               label="Save Project As"
                menubarPath="GrxUIMenu/GrxUIGroup">
          </action>
          <action
@@ -117,6 +117,18 @@
                label="Restore Project"
                menubarPath="GrxUIMenu/GrxUIGroup"
                style="push">
+         </action>
+         <action
+               class="com.generalrobotix.ui.actions.LoadProject"
+               id="com.generalrobotix.ui.actions.LoadProject"
+               label="Load Project"
+               menubarPath="GrxUIMenu/GrxUIGroup">
+         </action>
+         <action
+               class="com.generalrobotix.ui.actions.NewProject"
+               id="com.generalrobotix.ui.actions.NewProject"
+               label="New Project"
+               menubarPath="GrxUIMenu/GrxUIGroup">
          </action>
       </actionSet>
    </extension>

@@ -60,7 +60,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	public static final String DEFAULT_DIR = "project";
 	public static final String FILE_EXTENSION = "xml";
 
-	public static final int MENU_CREATE=0, MENU_RESTORE=1, MENU_LOAD=2, MENU_SAVE=3, MENU_IMPORT=4;
+	public static final int MENU_CREATE=0, MENU_RESTORE=1, MENU_LOAD=2, MENU_SAVE=3, MENU_SAVE_AS=4, MENU_IMPORT=5;
 	private Vector<Action> menu_;
 	
     private static final String MODE_TAG = "mode";
@@ -253,6 +253,13 @@ public class GrxProjectItem extends GrxBaseItem {
 		menu_.add( new Action(){
 			public String getText(){ return "Save Project"; }
 			public void run(){
+				save();
+			}
+		} );
+		// MENU_SAVE_AS=4
+		menu_.add( new Action(){
+			public String getText(){ return "Save Project As ..."; }
+			public void run(){
 				saveAs();
 			}
 		} );
@@ -271,11 +278,6 @@ public class GrxProjectItem extends GrxBaseItem {
 		if (f.exists()) {
 			if (!f.isFile())
                return;
-			boolean ans = MessageDialog.openConfirm( null, "Save Project",
-					"Project: "+f.getName()+" is already exist.\n" +
-					"Overwrite this file ?" );
-			if (ans == false)
-				return;
 		}
 		
 		String mode = manager_.getCurrentModeName();
@@ -345,8 +347,28 @@ public class GrxProjectItem extends GrxBaseItem {
 		String fPath = fdlg.open();
 		if( fPath != null ) {
 			File f = new File(fPath);
+			if (f.exists() && f.isFile()){
+				boolean ans = MessageDialog.openConfirm( null, "Save Project",
+						"Project: "+f.getName()+" is already exist.\n" +
+				"Overwrite this file ?" );
+				if (ans == false)
+					return;
+			}
 			save( f );
 		}	
+	}
+	
+	public void save(){
+		if (getURL(true) == null){
+			saveAs();
+		}else{
+			File f = new File(getURL(true));
+			if (f.exists()){
+				save(f);
+			}else{
+				saveAs();
+			}
+		}
 	}
 
 	/**
