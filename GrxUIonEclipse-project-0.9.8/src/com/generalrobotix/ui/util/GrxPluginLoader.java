@@ -112,13 +112,13 @@ public class GrxPluginLoader extends URLClassLoader {
 		try {
 			// TODO: ビューの管理はEclipseにやらせている。以下は実際には不要
 			if( GrxBaseView.class.isAssignableFrom(cls) ) {
-				GrxDebugUtil.println("[PM] "+cls+" is view");
+				//GrxDebugUtil.println("[PM] "+cls+" is view");
 				//GrxBaseView vPlugin = createView( (Class<? extends GrxBaseView>) cls );
 				//vPlugin.setName(name);
 				//vPlugin.setManager(manager);
 				return null;//vPlugin;
 			}else{
-				GrxDebugUtil.println("[PM] "+cls+" is item");
+				//GrxDebugUtil.println("[PM] "+cls+" is item");
 				Constructor c = cls.getConstructor(new Class[] { String.class, GrxPluginManager.class });
 				return (GrxBasePlugin) c.newInstance(new Object[] { name, manager});
 			}

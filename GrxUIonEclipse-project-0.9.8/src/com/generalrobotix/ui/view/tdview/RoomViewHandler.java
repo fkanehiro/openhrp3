@@ -148,15 +148,21 @@ class RoomViewHandler extends ViewHandler {
     }
 
     private void _zoom(MouseEvent evt, BehaviorInfo info) {
-        double dy = - ZOOM_FACTOR * (prevPoint_.getY() - evt.getPoint().getY());
+    	if (parallelMode_){
+            View v = info.drawable.getView();
+            double s = v.getScreenScale()-ZOOM_FACTOR*0.05*(prevPoint_.getY() - evt.getPoint().getY());
+            if (s > 0) v.setScreenScale(s);
+    	}else{
+    		double dy = - ZOOM_FACTOR * (prevPoint_.getY() - evt.getPoint().getY());
 
-        Transform3D tr = new Transform3D();
-        Transform3D trView = new Transform3D();
+    		Transform3D tr = new Transform3D();
+    		Transform3D trView = new Transform3D();
 
-        TransformGroup tgView = info.drawable.getTransformGroupRoot();
-        tgView.getTransform(trView);
-        tr.set(new Vector3d(0.0f, 0.0f, -dy));
-        trView.mul(tr);
-        info.drawable.setTransform(trView);
+    		TransformGroup tgView = info.drawable.getTransformGroupRoot();
+    		tgView.getTransform(trView);
+    		tr.set(new Vector3d(0.0f, 0.0f, -dy));
+    		trView.mul(tr);
+    		info.drawable.setTransform(trView);
+    	}
     }
 }

@@ -344,7 +344,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			Field f = cls.getField(field);
 			return (Object)f.get(new Object());
 		} catch (Exception e) {
-			GrxDebugUtil.println(cls.getName() + ": " + field + " not defined");
+			//GrxDebugUtil.println(cls.getName() + ": " + field + " not defined");
 		}
 		return defaultValue;
     }

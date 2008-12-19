@@ -43,6 +43,8 @@ public interface ThreeDDrawable extends Serializable {
     //public void removeViewTransformListener(ViewTransformListener listener);
 
     public TransformGroup getTransformGroupRoot();
+    
+    public View getView();
 
     public ViewInfo getViewInfo();
 

@@ -285,6 +285,8 @@ public class Grx3DView
         ViewPlatform platform = new ViewPlatform();
         info_ = new ViewInfo(ViewInfo.VIEW_MODE_ROOM | ViewInfo.FRONT_VIEW, 3.0 );
         view_ = new View();
+        view_.setScreenScalePolicy(View.SCALE_EXPLICIT);
+        view_.setScreenScale(0.1);
         tgView_ = new TransformGroup();
         
         view_.setPhysicalBody(new PhysicalBody());
@@ -596,6 +598,7 @@ public class Grx3DView
         if (getStr("showIntersection")==null) setProperty("showIntersection", "false");
         if (getStr("showCoM")==null) setProperty("showCoM", "false");
         if (getStr("showCoMonFloor")==null) setProperty("showCoMonFloor", "false");
+        if (getStr("view.mode")==null) setInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM);
         
         default_eye    = getDblAry("view.eye",    default_eye);
         default_lookat = getDblAry("view.lookat", default_lookat);
@@ -608,7 +611,8 @@ public class Grx3DView
         btnCoM_.setSelected(isTrue("showCoM", false));
         btnCoMonFloor_.setSelected(isTrue("showCoMonFloor",false));
         
-        _setViewHomePosition();
+        viewToolBar_.selectViewMode(getInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM));
+        //_setViewHomePosition();
     }
     
     private void _setViewHomePosition() {
@@ -621,7 +625,6 @@ public class Grx3DView
     }
     
     public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-    	System.out.println("Grx3DView : itemSelectionChanged");
         boolean selectionChanged = false;
         for (int i = currentModels_.size()-1 ; i>-1; i--) {
             GrxModelItem item = currentModels_.get(i);
@@ -1286,6 +1289,7 @@ public class Grx3DView
                 view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
                 behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM);
             }
         });
 
@@ -1295,6 +1299,7 @@ public class Grx3DView
                 view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
                 behaviorManager_.setViewMode(BehaviorManager.WALK_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.WALK_MODE);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_WALK);
             }
         });
 
@@ -1307,6 +1312,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_FRONT);
             }
         });
 
@@ -1319,6 +1325,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_BACK);
             }
         });
 
@@ -1331,6 +1338,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_LEFT);
             }
         });
 
@@ -1343,6 +1351,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_RIGHT);
             }
         });
 
@@ -1355,6 +1364,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_TOP);
             }
         });
 
@@ -1367,6 +1377,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_BOTTOM);
             }
         });
         GUIAction.VIEW_ZOOM_MODE.addActionListener(new ActionListener() {
@@ -1702,5 +1713,9 @@ public class Grx3DView
             // この関数はSWTのEDTから呼ばれるのでSWT.syncExec()とかしなくていいはず
             MessageDialog.openWarning( getParent().getShell(), "", MessageBundle.get("message.ioexception") );
         }
+    }
+    
+    public View getView(){
+    	return view_;
     }
 }
