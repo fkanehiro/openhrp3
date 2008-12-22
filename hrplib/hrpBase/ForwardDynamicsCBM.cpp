@@ -136,8 +136,10 @@ void ForwardDynamicsMM::initialize()
 
 inline void ForwardDynamicsMM::solveUnknownAccels()
 {
-	initializeAccelSolver();
-	solveUnknownAccels(fextTotal, tauextTotal);
+    if(!isNoUnknownAccelMode){
+    	initializeAccelSolver();
+	    solveUnknownAccels(fextTotal, tauextTotal);
+    }
 }
 
 
@@ -150,7 +152,7 @@ inline void ForwardDynamicsMM::calcAccelFKandForceSensorValues()
 
 void ForwardDynamicsMM::calcNextState()
 {
-	if(isNoUnknownAccelMode){
+	if(isNoUnknownAccelMode && !body->numSensors(Sensor::FORCE)){
 
 		calcPositionAndVelocityFK();
 
