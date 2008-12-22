@@ -643,11 +643,13 @@ public class Grx3DView
                 if (currentModels_.contains(modelItem)){
                 	if (!modelItem.bgRoot_.isLive()){
                 		// !isLive() means this item is reloaded
+                		modelItem.setWireFrame(viewToolBar_.isWireFrameSelected());
                 		bgRoot_.addChild(modelItem.bgRoot_);
                 	}else{
                     	//System.out.println(modelItem.getName() + " is skipped");
                 	}
                 }else{
+            		modelItem.setWireFrame(viewToolBar_.isWireFrameSelected());
                     bgRoot_.addChild(modelItem.bgRoot_);
                     currentModels_.add(modelItem);
                     //System.out.println(modelItem.getName() + " is added");
