@@ -805,7 +805,7 @@ public class GrxShapeItem extends GrxTransformItem{
 		}else if(node instanceof TransformGroup){
 			TransformGroup tfg = (TransformGroup)node;
 			for(int j=0; j<tfg.numChildren(); j++){
-				restoreColor(tfg.getChild(j), j);
+				restoreColor(tfg.getChild(j), id);
 			}
 		}
 	}
