@@ -186,6 +186,9 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
             pan_.setEnabled(true);    
             zoom_.setEnabled(true);    
             rotate_.setEnabled(true);    
+        	if (pan_.isSelected()){
+        		rotate_.doClick();
+        	}
             wireFrame_.setEnabled(true);
             gamen_.setEnabled(true);
             break;
@@ -199,7 +202,6 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
             break;
         case PARALLEL_MODE:
             if (rotate_.isSelected()) {
-                //pan_.setSelected(true);
                 pan_.doClick();
             }
             cmb_.setEnabled(true);
