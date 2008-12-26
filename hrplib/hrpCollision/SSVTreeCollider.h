@@ -100,6 +100,18 @@ private:
                      float r1, const Point& point0, const Point& point1);
 
     /**
+     * @brief compute distance between PSS(Point Swept Sphere) and LSS(Line Swept Sphere)
+     * @param r0 radius of the PSS
+     * @param point0 one of end points of the line segment
+     * @param point1 the other end points of the line segment
+     * @param r1 radius of the LSS
+     * @param center0 center of the PSS
+     * @return distance
+     */
+    float LssPssDist(float r0, const Point& point0, const Point& point1,
+                     float r1, const Point& center0);
+
+    /**
      * @brief compute distance between LSS(Line Swept Sphere)s
      * @param r0 radius of the first LSS
      * @param point0 one of end points of the first line segment
