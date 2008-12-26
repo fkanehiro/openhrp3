@@ -28,8 +28,6 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -259,28 +257,7 @@ public class ControllerPanel extends Composite{
             GridData gridData = new GridData();
             gridData.widthHint = COMBO_WIDTH;
             boxController_.setLayoutData(gridData);
-            //boxController_.setEditable(true);
-            //boxController_.setLightWeightPopupEnabled(false);
-            
-            //もともとはSwingのPopupMenuListenrを使っていたが、MouseListenerで代用
-            boxController_.addMouseListener(new MouseListener(){
-
-                public void mouseDoubleClick(MouseEvent e) {
-                }
-
-                public void mouseDown(MouseEvent e) {
-                  String[] names = GrxCorbaUtil.getObjectNameList();
-                  if(names == null){
-                      names = new String[0];
-                  }
-                  boxController_.removeAll();
-                  boxController_.setItems(names);
-                }
-
-                public void mouseUp(MouseEvent e) {
-                }
-                
-            });
+            boxController_.setItems(new String[0]);
             
  			// Control Time
             lbl = new Label(this,SWT.SHADOW_NONE);
@@ -321,6 +298,7 @@ public class ControllerPanel extends Composite{
                             break;
                         }
                         setEnabled(false);
+                        viewer_.refresh();
                 }
                 
                 private boolean _setAttribute(GrxBaseItem node) {
@@ -374,6 +352,12 @@ public class ControllerPanel extends Composite{
             mode_ = MODE_EDIT;
             setNode(node);
             setEnabled(true);
+            String[] names = GrxCorbaUtil.getObjectNameList();
+            if(names == null){
+                names = new String[0];
+            }
+            boxController_.removeAll();
+            boxController_.setItems(names);
         }
         
         public void doCancel() {
