@@ -2,6 +2,7 @@
 #include "SSVTreeCollider.h"
 #include "DistFuncs.h"
 
+static bool debug = false;
 
 SSVTreeCollider::SSVTreeCollider()
 {
@@ -31,6 +32,7 @@ void SSVTreeCollider::Distance(const AABBCollisionTree* tree0,
                                const Matrix4x4* world0, const Matrix4x4* world1, 
                                Pair* cache, float& minD, Point &point0, Point&point1)
 {
+    if (debug) std::cout << "Distance()" << std::endl;
     // Init collision query
     InitQuery(world0, world1);
     
@@ -112,17 +114,17 @@ float SSVTreeCollider::SsvSsvDist(const AABBCollisionNode *b0,
     t1 = b0->mAABB.mType;
     t2 = b1->mAABB.mType;
     if (t1 == CollisionAABB::SSV_PSS && t2 == CollisionAABB::SSV_PSS){
+        return PssPssDist(b0->mAABB.mRadius, b0->mAABB.mCenter, 
+                          b1->mAABB.mRadius, b1->mAABB.mCenter);
+    }else if (t1 == CollisionAABB::SSV_PSS && t2 == CollisionAABB::SSV_LSS){
+        return PssLssDist(b0->mAABB.mRadius, b0->mAABB.mCenter,
+                          b1->mAABB.mRadius, b1->mAABB.mPoint0, b1->mAABB.mPoint1);
+    }else if (t1 == CollisionAABB::SSV_LSS && t2 == CollisionAABB::SSV_PSS){
+        return LssPssDist(b0->mAABB.mRadius, b0->mAABB.mPoint0, b0->mAABB.mPoint1,
+                          b1->mAABB.mRadius, b1->mAABB.mCenter);
+    }else if (t1 == CollisionAABB::SSV_LSS && t2 == CollisionAABB::SSV_LSS){
         return PssPssDist(sqrtf(b0->GetSize()), b0->mAABB.mCenter, 
                           sqrtf(b1->GetSize()), b1->mAABB.mCenter);
-    }else if (t1 == CollisionAABB::SSV_PSS && t2 == CollisionAABB::SSV_LSS){
-        return PssLssDist(sqrtf(b0->GetSize()), b0->mAABB.mCenter,
-                          sqrtf(b1->GetSize()), b1->mAABB.mPoint0, b1->mAABB.mPoint1);
-    }else if (t1 == CollisionAABB::SSV_LSS && t2 == CollisionAABB::SSV_PSS){
-        return PssLssDist(sqrtf(b1->GetSize()), b1->mAABB.mCenter,
-                          sqrtf(b0->GetSize()), b0->mAABB.mPoint0, b0->mAABB.mPoint1);
-    }else if (t1 == CollisionAABB::SSV_LSS && t2 == CollisionAABB::SSV_LSS){
-        return LssLssDist(sqrtf(b0->GetSize()), b0->mAABB.mPoint0, b0->mAABB.mPoint1,
-                          sqrtf(b1->GetSize()), b1->mAABB.mPoint0, b1->mAABB.mPoint1);
     }else{
         std::cerr << "this ssv combination is not supported" << std::endl;
     }
@@ -143,6 +145,15 @@ float SSVTreeCollider::PssLssDist(float r0, const Point& center0, float r1, cons
     return d - r0 - r1;
 }
 
+float SSVTreeCollider::LssPssDist(float r0, const Point& point0, const Point& point1, float r1, const Point& center0)
+{
+    Point p0, p1;
+    TransformPoint(p0, point0, mR0to1, mT0to1);
+    TransformPoint(p1, point1, mR0to1, mT0to1);
+    float d = PointSegDist(center0, p0, p1);
+    return d - r0 - r1;
+}
+
 float SSVTreeCollider::LssLssDist(float r0, const Point& point0, const Point& point1, float r1, const Point& point2, const Point& point3)
 {
     Point p0, p1;
@@ -155,6 +166,8 @@ float SSVTreeCollider::LssLssDist(float r0, const Point& point0, const Point& po
 void SSVTreeCollider::_Distance(const AABBCollisionNode* b0, const AABBCollisionNode* b1,
                                 float& minD, Point& point0, Point& point1)
 {
+    if (debug) std::cout << "_Distance()" << std::endl;
+
     mNowNode0 = b0;
     mNowNode1 = b1;
     float d;
