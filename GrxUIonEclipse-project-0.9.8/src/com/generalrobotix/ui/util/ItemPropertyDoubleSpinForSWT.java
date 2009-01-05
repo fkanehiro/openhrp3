@@ -2,6 +2,8 @@
 package com.generalrobotix.ui.util;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -41,15 +43,12 @@ public class ItemPropertyDoubleSpinForSWT extends Composite{
         setLayout(new GridLayout(2,false));
         
         text_ = new Text(this,SWT.SINGLE | SWT.BORDER);
-        text_.addSelectionListener(new SelectionListener(){
-
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-
-            public void widgetSelected(SelectionEvent e) {
-                setValue(text_.getText());
-            }
-            
+        text_.addFocusListener(new FocusListener(){
+        	public void focusLost(FocusEvent e){
+        		setValue(text_.getText());
+        	}
+        	public void focusGained(FocusEvent e){
+        	}
         });
         GridData gridData = new GridData();
         gridData.widthHint = 80;
