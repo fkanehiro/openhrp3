@@ -190,18 +190,18 @@ public class GrxOpenHRPView extends GrxBaseView {
 			}
 		}
 		
-		public void startSimulation(boolean isInteractive) {
+		public boolean startSimulation(boolean isInteractive) {
 
 			if (isExecuting_){
 				GrxDebugUtil.println("[HRP]@startSimulation now executing.");
-				return;
+				return false;
 			}
 
 			if (currentWorld_ == null) {
 				MessageDialog.openError(null, "Failed to start simulation", "There is no WorldState item.");
 				GrxDebugUtil.println("[HRP]@startSimulation there is no world.");
 				stopSimulation();
-				return;
+				return false;
 			}
 			
 			isInteractive_ = isInteractive;
@@ -211,7 +211,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 				
 				if (ans != true) {
 					stopSimulation();
-					return;
+					return false;
 				}
 			}
 
@@ -224,17 +224,17 @@ public class GrxOpenHRPView extends GrxBaseView {
 				if (!initDynamicsSimulator()) {
 					stopSimulation();
 	                MessageDialog.openInformation(getParent().getShell(),"", "Failed to initialize DynamicsSimulator.");
-					return;
+					return false;
 				}
 				if (!initController()) {
 					stopSimulation();
 	                MessageDialog.openInformation(getParent().getShell(), "", "Failed to initialize Controller.");
-					return;
+					return false;
 				}
 			} catch (Exception e) {
 				stopSimulation();
 				GrxDebugUtil.printErr("SimulationLoop:", e);
-				return;
+				return false;
 			}
 
 			simThread_ = _createSimulationThread();
@@ -249,7 +249,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 				lgview_ = (GrxLoggerView)manager_.getView("Logger View");
 				if (tdview_ == null || lgview_ == null){
 					GrxDebugUtil.printErr("can't find 3DView or Logger View");
-					return;
+					return false;
 				}
 				tdview_.disableUpdateModel();
 				tdview_.showViewSimulator();
@@ -263,6 +263,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			simulateTime_ = 0;
 			simThread_.start();
 			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
+			return true;
 		}
 
 		String timeMsg_;
@@ -492,8 +493,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 	 * @brief start simulation
 	 * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation
 	 */
-	public void startSimulation(boolean isInteractive){
-		clockGenerator_.startSimulation(isInteractive);
+	public boolean startSimulation(boolean isInteractive){
+		return clockGenerator_.startSimulation(isInteractive);
 	}
 	
 	/**
@@ -887,4 +888,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 		return true;
 	}	
+	
+	public boolean isSimulating(){
+		return isExecuting_;
+	}
 }
