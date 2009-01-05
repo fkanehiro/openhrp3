@@ -120,6 +120,15 @@ public class GrxItemView extends GrxBaseView {
     			ISelection selection = tv.getSelection();
     			Object o = ((IStructuredSelection) selection).getFirstElement();
                 menuMgr.removeAll(); // とりあえずメニュー削除
+                
+                // project name
+                if (o instanceof String){
+                	Vector<Action> menus = manager_.getProject().getMenu();
+   					for( Action a: menus){
+						menuMgr.add(a);
+					}                	
+                }
+                
     			// アイテムのクラス
     			if( Class.class.isAssignableFrom( o.getClass() ) ){
     				if( GrxBaseItem.class.isAssignableFrom( (Class<?>)o ) ) {

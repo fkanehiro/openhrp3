@@ -220,57 +220,59 @@ public class GrxProjectItem extends GrxBaseItem {
 	
 	public Vector<Action> getMenu() {
 
-		if( menu_ == null )
+		if( menu_ == null ){
 			menu_ = new Vector<Action>();
 
-		// MENU_CREATE=0
-		menu_.add( new Action(){
-			public String getText(){ return "Create Project"; }
-			public void run(){
-				boolean ans = MessageDialog.openConfirm( null, "Create New Project", "Before create new Project,\nRemove all items ?" );
-				if ( ans )
-					manager_.removeAllItems();
-				else if ( ans == false )
-					return;
-				GrxProjectItem.this.create();
-			}
-		} );
-		// MENU_RESTORE=1
-		menu_.add( new Action(){
-			public String getText(){ return "Restore Project"; }
-			public void run(){
-				restoreProject();
-			}
-		} );
-		// MENU_LOAD=2
-		menu_.add( new Action(){
-			public String getText(){ return "Load Project"; }
-			public void run(){
-				load();
-			}
-		} );
-		// MENU_SAVE=3
-		menu_.add( new Action(){
-			public String getText(){ return "Save Project"; }
-			public void run(){
-				save();
-			}
-		} );
-		// MENU_SAVE_AS=4
-		menu_.add( new Action(){
-			public String getText(){ return "Save Project As ..."; }
-			public void run(){
-				saveAs();
-			}
-		} );
-		// MENU_IMPORT=3
-		menu_.add( new Action(){
-			public String getText(){ return "Import ISE Project"; }
-			public void run(){
-				importISEProject();
-			}
-		} );
+			// MENU_CREATE=0
+			menu_.add( new Action(){
+				public String getText(){ return "Create Project"; }
+				public void run(){
+					boolean ans = MessageDialog.openConfirm( null, "Create New Project", "Before create new Project,\nRemove all items ?" );
+					if ( ans )
+						manager_.removeAllItems();
+					else if ( ans == false )
+						return;
+					GrxProjectItem.this.create();
+				}
+			} );
+			// MENU_RESTORE=1
+			menu_.add( new Action(){
+				public String getText(){ return "Restore Project"; }
+				public void run(){
+					restoreProject();
+				}
+			} );
+			// MENU_LOAD=2
+			menu_.add( new Action(){
+				public String getText(){ return "Load Project"; }
+				public void run(){
+					load();
+				}
+			} );
+			// MENU_SAVE=3
+			menu_.add( new Action(){
+				public String getText(){ return "Save Project"; }
+				public void run(){
+					save();
+				}
+			} );
+			// MENU_SAVE_AS=4
+			menu_.add( new Action(){
+				public String getText(){ return "Save Project As ..."; }
+				public void run(){
+					saveAs();
+				}
+			} );
+			// MENU_IMPORT=3
+			menu_.add( new Action(){
+				public String getText(){ return "Import ISE Project"; }
+				public void run(){
+					importISEProject();
+				}
+			} );
 
+		}
+		
 		return menu_;
 	}
 	
