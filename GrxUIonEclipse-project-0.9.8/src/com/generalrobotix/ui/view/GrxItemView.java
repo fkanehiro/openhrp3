@@ -269,7 +269,7 @@ public class GrxItemView extends GrxBaseView {
 	 */
 	public void updateTree() {
 		tv.refresh();
-		tv.expandAll();
+		tv.expandToLevel(3);
 	}
 
 	/**
