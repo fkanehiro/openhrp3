@@ -82,15 +82,6 @@
             </separator>
          </menu>
          <action
-               class="com.generalrobotix.ui.actions.StopSimulate"
-               icon="resources/images/sim_stop.png"
-               id="com.generalrobotix.ui.actions.StopSimulate"
-               label="Stop Simulation"
-               menubarPath="GrxUIMenu/GrxUIGroup"
-               toolbarPath="GrxUIGroup"
-               tooltip="Stop Simulation">
-         </action>
-         <action
                class="com.generalrobotix.ui.actions.StartSimulate"
                icon="resources/images/sim_start.png"
                id="com.generalrobotix.ui.actions.StartSimulate"
