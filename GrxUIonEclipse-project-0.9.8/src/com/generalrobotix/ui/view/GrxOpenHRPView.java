@@ -53,6 +53,7 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
@@ -63,6 +64,7 @@ import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -99,6 +101,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private boolean isSimulatingView_;
 	private Grx3DView tdview_;
 	private GrxLoggerView lgview_;
+	private IAction action_ = null;
 
 	private SimulationParameterPanel simParamPane_;
 	private ControllerPanel controllerPane_;
@@ -191,7 +194,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 		
 		public boolean startSimulation(boolean isInteractive) {
-
+			
 			if (isExecuting_){
 				GrxDebugUtil.println("[HRP]@startSimulation now executing.");
 				return false;
@@ -376,35 +379,15 @@ public class GrxOpenHRPView extends GrxBaseView {
 			startBtn_.setSelected(false);
 			*/
 			execSWT( new Runnable(){
-					private IAction getAction(){
-						ViewPart vp = getViewPart();
-						if(vp==null) {
-							GrxDebugUtil.println("[OpenHRPView]@thread ViewPart is null");
-							return null;
-						}
-						IViewSite vs = vp.getViewSite();
-						if(vs==null){
-							GrxDebugUtil.println("[OpenHRPView]@thread ViewSite is null");
-							return null;
-						}
-						IAction a = vs.getActionBars().getGlobalActionHandler("com.generalrobotix.ui.actions.StartSimulate");
-						if(a==null){
-							GrxDebugUtil.println("[OpenHRPView]@thread Action is null");
-							return null;
-						}
-						return a;
-					}
-				
 					public void run(){
 						simParamPane_.setEnabled(true);
 						controllerPane_.setEnabled(true);
 						collisionPane_.setEnabled(true);
-						IAction action = getAction();
-						if(action==null) {
-							GrxDebugUtil.println("[OpenHRPView]@thread getAction returned null.");
-						}else{
-							action.setChecked(false);
-							action.setEnabled(false);
+						if (action_ != null){
+							action_.setToolTipText("Start Simulation");
+							action_.setText("Start Simulation");
+							action_.setImageDescriptor(Activator.getDefault().getDescriptor("sim_start.png"));
+							action_ = null;
 						}
 					}
 				}, 
@@ -493,8 +476,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 	 * @brief start simulation
 	 * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation
 	 */
-	public boolean startSimulation(boolean isInteractive){
-		return clockGenerator_.startSimulation(isInteractive);
+	public void startSimulation(boolean isInteractive, IAction action){
+		if (clockGenerator_.startSimulation(isInteractive)){
+			action_ = action;
+			action.setToolTipText("Stop Simulation");
+			action.setText("Stop Simulation");
+			action.setImageDescriptor(Activator.getDefault().getDescriptor("sim_stop.png"));
+		}
 	}
 	
 	/**
@@ -548,6 +536,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	
 	public GrxOpenHRPView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
 		super(name, manager,vp,parent);
+		
         TabFolder folder = new TabFolder(composite_,SWT.TOP);
         
         TabItem tabItem = new TabItem(folder,SWT.NONE);

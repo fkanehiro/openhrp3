@@ -1,7 +1,6 @@
 package com.generalrobotix.ui.actions;
 
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
@@ -21,15 +20,8 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate {
 		GrxOpenHRPView hrp =  (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
 		if (hrp.isSimulating()){
 			hrp.stopSimulation();
-			action.setToolTipText("Start Simulation");
-			action.setText("Start Simulation");
-			action.setImageDescriptor(Activator.getDefault().getDescriptor("sim_start.png"));
 		}else{
-			if (hrp.startSimulation(true)){
-				action.setToolTipText("Stop Simulation");
-				action.setText("Stop Simulation");
-				action.setImageDescriptor(Activator.getDefault().getDescriptor("sim_stop.png"));
-			}
+			hrp.startSimulation(true, action);
 		}
 	}
 
