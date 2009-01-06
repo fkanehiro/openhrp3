@@ -407,10 +407,12 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnFloor_.isSelected()) {
                     btnFloor_.setToolTipText("hide z=0 plane");
+                    setProperty("showScale", "true");
                     if (bgRoot_.indexOfChild(getRuler()) == -1) 
                         bgRoot_.addChild(getRuler());
                 } else {
                     btnFloor_.setToolTipText("show z=0 plane");
+                    setProperty("showScale", "false");
                     if (bgRoot_.indexOfChild(getRuler()) != -1)
                         getRuler().detach();
                 }
@@ -604,7 +606,9 @@ public class Grx3DView
         default_lookat = getDblAry("view.lookat", default_lookat);
         default_upward = getDblAry("view.upward", default_upward);
         
-        btnFloor_.setSelected(isTrue("showScale", true));
+        if (isTrue("showScale", true) != btnFloor_.isSelected()){
+        	btnFloor_.doClick();
+        }
         btnCollision_.setSelected(isTrue("showCollision", true));
         btnDistance_.setSelected(isTrue("showDistance", false));
         btnIntersection_.setSelected(isTrue("showIntersection", false));
@@ -630,7 +634,8 @@ public class Grx3DView
             GrxModelItem item = currentModels_.get(i);
             if (item.isSelected())
                 continue;
-            currentModels_.remove(item);        
+            currentModels_.remove(item);
+            item.bgRoot_.detach();
             selectionChanged = true;
         }
 
@@ -1719,5 +1724,18 @@ public class Grx3DView
     
     public View getView(){
     	return view_;
+    }
+    
+    public boolean propertyChanged(String key, String value){
+    	if (super.propertyChanged(key, value)){
+    		
+    	}else if (key.equals("showScale")){
+    		if ((value.equals("true") && !btnFloor_.isSelected())
+    				|| (value.equals("false") && btnFloor_.isSelected())){
+    			btnFloor_.doClick();
+    		}
+    		return true;
+    	}
+    	return false;
     }
 }
