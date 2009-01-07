@@ -479,9 +479,11 @@ public class GrxOpenHRPView extends GrxBaseView {
 	public void startSimulation(boolean isInteractive, IAction action){
 		if (clockGenerator_.startSimulation(isInteractive)){
 			action_ = action;
-			action.setToolTipText("Stop Simulation");
-			action.setText("Stop Simulation");
-			action.setImageDescriptor(Activator.getDefault().getDescriptor("sim_stop.png"));
+			if (action_ != null){
+				action_.setToolTipText("Stop Simulation");
+				action_.setText("Stop Simulation");
+				action_.setImageDescriptor(Activator.getDefault().getDescriptor("sim_stop.png"));
+			}
 		}
 	}
 	
