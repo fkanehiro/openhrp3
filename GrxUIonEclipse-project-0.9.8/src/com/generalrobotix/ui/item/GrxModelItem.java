@@ -664,17 +664,17 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         if (!update_)
             return;
 
+        if (q != null) {
+            for (int i=0; i<jointToLink_.length; i++)
+                links_.get(jointToLink_[i]).jointValue(q[i]);
+        }
+
         boolean isAllPosProvided = true;
         for (int i=0; i<links_.size(); i++) {
             if (lpos[i].p == null || lpos[i].R == null)
                 isAllPosProvided = false;
             else
                 _setTransform(i, lpos[i].p, lpos[i].R);
-        }
-
-        if (q != null) {
-            for (int i=0; i<jointToLink_.length; i++)
-                links_.get(jointToLink_[i]).jointValue(q[i]);
         }
 
         if (isAllPosProvided)
