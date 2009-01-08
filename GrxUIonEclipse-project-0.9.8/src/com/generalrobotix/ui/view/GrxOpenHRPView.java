@@ -342,10 +342,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 		public void stopSimulation() {
 			if (isExecuting_) {
 				isExecuting_ = false;
-				if (isSimulatingView_) {
-					tdview_.enableUpdateModel();
-					lgview_.enableControl();
-				}
 				try {
 					if (Thread.currentThread() != simThread_) {
 						//simThread_.interrupt();
@@ -353,6 +349,10 @@ public class GrxOpenHRPView extends GrxBaseView {
 					}
 				} catch (Exception e) {
 					GrxDebugUtil.printErr("stopSimulation:", e);
+				}
+				if (isSimulatingView_) {
+					tdview_.enableUpdateModel();
+					lgview_.enableControl();
 				}
 				updateTimeMsg();
 				System.out.println(new java.util.Date()+timeMsg_.replace(" ", "").replace("\n", " : "));
