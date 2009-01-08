@@ -231,6 +231,19 @@ public class GrxLoggerView extends GrxBaseView {
         			setCurrentPos(sliderTime_.getSelection());
             }
 		} );
+		sliderTime_.addKeyListener(new KeyListener(){
+			public void keyPressed(KeyEvent e) {
+				System.out.println("keypressed");
+				if (e.keyCode == SWT.ARROW_LEFT){
+					setCurrentPos(sliderTime_.getSelection()-1);
+				}else if (e.keyCode == SWT.ARROW_RIGHT){
+					setCurrentPos(sliderTime_.getSelection()+1);
+				}
+			}
+			public void keyReleased(KeyEvent e) {
+				System.out.println("keyReleased");
+			}
+		});
 		GridData gd = new GridData(SWT.HORIZONTAL|SWT.FILL);
 		sliderTime_.setLayoutData(gd);
 		
@@ -352,6 +365,10 @@ public class GrxLoggerView extends GrxBaseView {
 	    
 		if (currentItem_ == null) {
 			return;
+		}
+		
+		if (!isControlDisabled_ && currentItem_.getTime() != null && !sliderTime_.isEnabled()){
+			setEnabled(true);
 		}
 		
 		int loggerMax = Math.max(currentItem_.getLogSize()-1, 0);
