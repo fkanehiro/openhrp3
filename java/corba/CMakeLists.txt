@@ -74,7 +74,7 @@ if(UNIX)
   add_custom_command(
 #    OUTPUT ${jarfile} jp
     OUTPUT ${jarfile}
-    COMMAND ${JAVAC} ${javac_flags} ${CMAKE_CURRENT_BINARY_DIR}/src/${package_path}/*.java
+    COMMAND ${JAVAC} ${javac_flags} src/${package_path}/*.java
     COMMAND ${JAR} cf ${jarfile} -C ${CMAKE_CURRENT_BINARY_DIR} jp
     COMMAND cp -fu ${jarfile} ${GrxUI_ON_ECLIPSE_DIR}/
     DEPENDS ${idl_compiled_flag_files}
@@ -84,7 +84,7 @@ elseif(WIN32)
   STRING( REPLACE "/" "\\" win32_GrxUIonEclipseDir "${GrxUI_ON_ECLIPSE_DIR}/" )
   add_custom_command(
     OUTPUT ${jarfile} 
-    COMMAND ${JAVAC} ${javac_flags} ${CMAKE_CURRENT_BINARY_DIR}/src/${package_path}/*.java
+    COMMAND ${JAVAC} ${javac_flags} src/${package_path}/*.java
     COMMAND ${JAR} cf ${jarfile} -C ${CMAKE_CURRENT_BINARY_DIR} jp
     COMMAND copy /Y /D ${win32_jarfile} ${win32_GrxUIonEclipseDir}
     DEPENDS ${idl_compiled_flag_files}
@@ -92,7 +92,7 @@ elseif(WIN32)
   
 endif()
 
-add_custom_target(JavaSutbSkel ALL DEPENDS ${jarfile})
+add_custom_target(JavaStubSkel ALL DEPENDS ${jarfile})
 
 #add_custom_target(clean COMMAND ${RMDIR} src jp)
 

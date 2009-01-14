@@ -207,7 +207,7 @@ endif()
 
 add_custom_target(GrxUI ALL DEPENDS ${grxui_jar})
 
-add_dependencies(GrxUI JavaSutbSkel)
+add_dependencies(GrxUI JavaStubSkel)
 
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES classes)
 
