@@ -273,6 +273,9 @@ public class GrxShapeItem extends GrxTransformItem{
         appearances_[id] = appearanceInfo;
         materials_[id] = materialInfo;
         textures_[id] = textureInfo;
+    	Shape3D linkShape3D = createShape3D(shapeInfo, appearanceInfo, materialInfo, textureInfo);
+    	tg.addChild(linkShape3D);
+    	/*
         if(model.shapes[shapeIndex].primitiveType == ShapePrimitiveType.SP_MESH ){
         	Shape3D linkShape3D = createShape3D(shapeInfo, appearanceInfo, materialInfo, textureInfo);
         	tg.addChild(linkShape3D);
@@ -286,6 +289,7 @@ public class GrxShapeItem extends GrxTransformItem{
         	}
         	tg.addChild(primitive);
         }
+        */
     }
     
 	/**
