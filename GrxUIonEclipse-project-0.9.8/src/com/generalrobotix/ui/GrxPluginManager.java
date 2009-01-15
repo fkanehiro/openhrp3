@@ -651,9 +651,19 @@ public class GrxPluginManager {
         if (!f.isFile())
             return null;
 
-        if (name == null)
-            name = f.getName().split("[.]")[0];
-
+        if (name == null){
+        	String basename = f.getName().split("[.]")[0];
+        	if (getItem(cls, basename) != null){
+        		Integer index = 0;
+        		do {
+        			name = basename + index.toString();
+        			index++;
+        		}while(getItem(cls, name) != null);
+        	}else{
+        		name = basename;
+        	}
+        }
+        
         GrxBaseItem item = (GrxBaseItem) createPlugin(cls, name);
         if (item != null) {
             if (item.load(f)) {
