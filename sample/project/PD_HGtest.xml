@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grxui>
+    <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
+            <property name="logTimeStep" value="0.0020 "/>
+            <property name="integrate" value="true"/>
+            <property name="viewsimulate" value="false"/>
+            <property name="totalTime" value="20.0 "/>
+            <property name="timeStep" value="0.0020 "/>
+            <property name="method" value="RUNGE_KUTTA"/>
+            <property name="gravity" value="9.8 "/>
+            <property name="viewsimulationTimeStep" value="0.033 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="testRobot" select="true" url="$(PROJECT_DIR)/../model/PD_HGtest.wrl">
+            <property name="isRobot" value="true"/>
+            <property name="controller" value="PD_HGtestController"/>
+            <property name="controlTime" value="0.002"/>
+            <property name="setupDirectory" value="$(PROJECT_DIR)/../controller/PD_HGtest"/>
+            <property name="setupCommand" value="PD_HGtest$(BIN_SFX)"/>
+            <property name="ROOT.mode" value="HighGain"/>
+            <property name="ROOT.translation" value="0.0 0.0 1.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(PROJECT_DIR)/../model/box.wrl">
+          <property name="isRobot" value="false"/>
+          <property name="WAIST.rotation" value="1.0 0.0 0.0 1.57 "/>
+          <property name="WAIST.translation" value="3.1 0.0 0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#testRobot#box" select="true">
+          <property name="objectName2" value="testRobot"/>
+          <property name="objectName1" value="box"/>
+          <property name="jointName1" value=""/>
+          <property name="jointName2" value=""/>
+          <property name="staticFriction" value="0.5"/>
+          <property name="slidingFriction" value="0.5"/>
+          <property name="sprintDamperModel" value="false"/>
+          <property name="springConstant" value="0 0 0 0 0 0"/>
+          <property name="damperConstant" value="0 0 0 0 0 0"/>
+        </item>
+    </mode>
+</grxui>

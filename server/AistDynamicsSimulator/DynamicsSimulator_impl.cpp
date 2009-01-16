@@ -674,7 +674,7 @@ void DynamicsSimulator_impl::setCharacterLinkData
         Matrix33 R;
         getMatrix33FromRowMajorArray(R, wdata.get_buffer(), 3);
         link->setSegmentAttitude(R);
-    }
+     }
     break;
 	
     case OpenHRP::DynamicsSimulator::ABS_VELOCITY:
@@ -685,6 +685,17 @@ void DynamicsSimulator_impl::setCharacterLinkData
         link->w(0) = wdata[3];
         link->w(1) = wdata[4];
         link->w(2) = wdata[5];
+    }
+    break;
+
+    case OpenHRP::DynamicsSimulator::ABS_ACCELERATION:
+    {
+        link->dv(0) = wdata[0];
+        link->dv(1) = wdata[1];
+        link->dv(2) = wdata[2];
+        link->dw(0) = wdata[3];
+        link->dw(1) = wdata[4];
+        link->dw(2) = wdata[5];
     }
     break;
 

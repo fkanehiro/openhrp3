@@ -133,6 +133,8 @@ void VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
     case JOINT_TORQUE:
     case EXTERNAL_FORCE:
     case ABS_TRANSFORM:
+    case ABS_VELOCITY:
+    case ABS_ACCELERATION:
       registerOutPortHandler(new LinkDataOutPortHandler(portInfo));
       break;
 
@@ -173,6 +175,8 @@ void VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
       registerInPortHandler(new LinkDataInPortHandler(portInfo));
       break;
     case ABS_TRANSFORM:
+    case ABS_VELOCITY:
+    case ABS_ACCELERATION:
       std::cout << "createInPortHandler()" << std::endl;
       registerInPortHandler(new LinkDataInPortHandler(portInfo));
       break;

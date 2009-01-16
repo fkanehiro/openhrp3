@@ -567,9 +567,7 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
         setDefaultAccelerationVector();
         setAccelerationMatrix();
 
-        if(globalNumConstraintVectors - globalNumContactNormalVectors > 0){
-            clearSingularPointConstraintsOfClosedLoopConnections();
-        }
+        clearSingularPointConstraintsOfClosedLoopConnections();
 		
         setConstantVectorAndMuBlock();
 
@@ -1088,7 +1086,8 @@ void CFSImpl::setAccelerationMatrix()
                         //! \todo This code does not work correctly when the links are in the same body. Fix it.
                         vector3 arm(constraint.point - *(bodyData.rootLinkPosRef));
                         vector3 tau(cross(arm, f));
-                        bodyData.forwardDynamicsMM->solveUnknownAccels(f, tau);
+                        vector3 tauext = cross(constraint.point, f);
+                        bodyData.forwardDynamicsMM->solveUnknownAccels(linkPair.link[k], f, tauext, f, tau);
                         calcAccelsMM(bodyData, constraintIndex);
                     } else {
                         vector3 tau(cross(constraint.point, f));
@@ -1112,7 +1111,8 @@ void CFSImpl::setAccelerationMatrix()
                             //! \todo This code does not work correctly when the links are in the same body. Fix it.
                             vector3 arm(constraint.point - *(bodyData.rootLinkPosRef));
                             vector3 tau(cross(arm, f));
-                            bodyData.forwardDynamicsMM->solveUnknownAccels(f, tau);
+                            vector3 tauext = cross(constraint.point, f);
+                            bodyData.forwardDynamicsMM->solveUnknownAccels(linkPair.link[k], f, tauext, f, tau);
                             calcAccelsMM(bodyData, constraintIndex);
                         } else {
                             vector3 tau(cross(constraint.point, f));
@@ -1306,6 +1306,7 @@ void CFSImpl::extractRelAccelsOfConstraintPoints
 {
     int maxConstraintIndexToExtract = ASSUME_SYMMETRIC_MATRIX ? constraintIndex : globalNumConstraintVectors;
 
+
     for(size_t i=0; i < constrainedLinkPairs.size(); ++i){
 
         LinkPair& linkPair = *constrainedLinkPairs[i];
@@ -1465,7 +1466,7 @@ void CFSImpl::copySymmetricElementsOfAccelerationMatrix
 
 void CFSImpl::clearSingularPointConstraintsOfClosedLoopConnections()
 {
-    for(int i = globalNumContactNormalVectors; i < globalNumConstraintVectors; ++i){
+    for(size_t i = 0; i < Mlcp.size1(); ++i){
         if(Mlcp(i, i) < 1.0e-4){
             for(size_t j=0; j < Mlcp.size1(); ++j){
                 Mlcp(j, i) = 0.0;

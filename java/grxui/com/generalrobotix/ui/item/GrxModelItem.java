@@ -1149,10 +1149,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     }
 
     public double[] getInitialJointMode() {
-        double[] ret = new double[jointToLink_.length];
+        double[] ret = new double[lInfo_.length];
         for (int i=0; i<ret.length; i++) {
-            String jname = lInfo_[jointToLink_[i]].name;
-            String mode = getStr(jname+".mode", "Torque");
+            String lname = lInfo_[i].name;
+            String mode = getStr(lname+".mode", "Torque");
             ret[i] = mode.equals("HighGain") ? 1.0 : 0.0;
         }
         return ret;

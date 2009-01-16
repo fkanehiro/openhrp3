@@ -102,7 +102,7 @@ void WorldBase::initialize()
 
 		bool hasHighGainModeJoints = false;
 		int nL = body->numLinks();
-		for(int j=1; j < nL; ++j){
+		for(int j=0; j < nL; ++j){
 			if(body->link(j)->isHighGainMode){
 				hasHighGainModeJoints = true;
 				break;

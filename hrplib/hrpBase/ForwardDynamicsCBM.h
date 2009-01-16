@@ -55,39 +55,57 @@ namespace hrp
 
 		void initializeAccelSolver();
 		void solveUnknownAccels(const vector3& fext, const vector3& tauext);
+        void solveUnknownAccels(Link* link, const vector3& fext, const vector3& tauext, const vector3& rootfext, const vector3& roottauext);
 
     private:
         
 		/*
 		   Elements of the motion equation
 		   
-		  |     |     |   | dv         |   | b1 |   | fext      |
-		  | M11 | M12 |   | dw         |   |    |   | tauext    |
-		  |     |     | * |ddq (unkown)| + |    | = | u (known) |
-		  |-----+-----|   |------------|   |----|   |-----------|
-		  | M21 | M22 |   | given ddq  |   | b2 |   | u2        |
-		*/
+		  |     |     |   | dv         |   | b1 |   | 0  |   | totalfext      |
+		  | M11 | M12 |   | dw         |   |    |   | 0  |   | totaltauext    |
+		  |     |     | * |ddq (unkown)| + |    | + | d1 | = | u (known)      |
+		  |-----+-----|   |------------|   |----|   |----|   |----------------|
+		  | M21 | M22 |   | given ddq  |   | b2 |   | d2 |   | u2             |
+		
+                         |fext  |
+            d1 = trans(s)|      |
+                         |tauext|
+
+        */
 		
 		dmatrix M11;
 		dmatrix M12;
 		dmatrix b1;
+        dmatrix d1;
 		dvector c1;
 
 		std::vector<Link*> torqueModeJoints;
 		std::vector<Link*> highGainModeJoints;
 
-		int rootDof; // dof of dv and dw (0 or 6)
+		//int rootDof; // dof of dv and dw (0 or 6)
+        int unknown_rootDof;
+        int given_rootDof;
+
 		bool isNoUnknownAccelMode;
 
 		dvector qGiven;
 		dvector dqGiven;
-		dmatrix ddqGiven;;
+		dmatrix ddqGiven;
+        vector3 pGiven;
+        Matrix33 RGiven;
+        vector3 voGiven;
+        vector3 wGiven;
 
 		bool accelSolverInitialized;
 		bool ddqGivenCopied;
 
 		dvector qGivenPrev;
 		dvector dqGivenPrev;
+        vector3 pGivenPrev;
+        Matrix33 RGivenPrev;
+        vector3 voGivenPrev;
+        vector3 wGivenPrev;
 
 		vector3 fextTotal;
 		vector3 tauextTotal;
@@ -132,6 +150,7 @@ namespace hrp
 		void calcMassMatrix();
 		void setColumnOfMassMatrix(dmatrix& M, int column);
 		void calcInverseDynamics(Link* link, vector3& out_f, vector3& out_tau);
+        void calcd1(Link* link, vector3& out_f, vector3& out_tau);
 		void sumExternalForces();
 		inline void solveUnknownAccels();
 		inline void calcAccelFKandForceSensorValues();
