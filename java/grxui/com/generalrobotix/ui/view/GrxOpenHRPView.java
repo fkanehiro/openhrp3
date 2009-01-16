@@ -463,19 +463,16 @@ public class GrxOpenHRPView extends GrxBaseView {
 							model.getInitialJointValues());
 			
 					// Set joint mode
-					JointDriveMode jm = JointDriveMode.TORQUE_MODE;
                 	if (isIntegrate_) {
                 		double[] jms = model.getInitialJointMode();
-						for (int j=0; j<jms.length; j++) {
-                  			if (jms[j] > 0) {
-								jm = JointDriveMode.HIGH_GAIN_MODE;
-								break;
-							}
+						for (int j=0; j<model.lInfo_.length; j++) {
+							double[] mode = new double[1];
+							mode[0] = jms[j];
+							dynamics.setCharacterLinkData(name, model.lInfo_[j].name, LinkDataType.POSITION_GIVEN, mode );
 						}
 					} else {
-						jm = JointDriveMode.HIGH_GAIN_MODE;
+						dynamics.setCharacterAllJointModes(name, JointDriveMode.HIGH_GAIN_MODE);
 					}
-					dynamics.setCharacterAllJointModes(name, jm);
 				}
 			}
 			dynamics.calcWorldForwardKinematics();

@@ -119,6 +119,8 @@ void BridgeConf::initLabelToDataTypeMap()
   m["JOINT_TORQUE"]        = JOINT_TORQUE;
   m["EXTERNAL_FORCE"]      = EXTERNAL_FORCE;
   m["ABS_TRANSFORM"]       = ABS_TRANSFORM;
+  m["ABS_VELOCITY"]        = ABS_VELOCITY;
+  m["ABS_ACCELERATION"]    = ABS_ACCELERATION;
   m["FORCE_SENSOR"]        = FORCE_SENSOR;
   m["RATE_GYRO_SENSOR"]    = RATE_GYRO_SENSOR;
   m["ACCELERATION_SENSOR"] = ACCELERATION_SENSOR;
@@ -138,8 +140,8 @@ void BridgeConf::parseCommandLineOptions(int argc, char* argv[])
     cout << commandLineOptions << endl;
   } else {
 
-    if(vmap.count("bridge-config-file")){
-      string fileName(vmap["bridge-config-file"].as<string>());
+    if(vmap.count("config-file")){
+      string fileName(vmap["config-file"].as<string>());
       ifstream ifs(fileName.c_str());
       
       if (ifs.fail()) {
