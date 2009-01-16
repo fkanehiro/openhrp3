@@ -53,7 +53,7 @@ public class GrxVrmlExporter {
 	        writer.write("  exposedField     MFFloat      uvlimit             []\n");       
 	        writer.write("  exposedField     SFString     jointType           \"\"\n");       
 	        writer.write("  exposedField     SFInt32      jointId             -1\n");       
-	        writer.write("  exposedField     SFString     jointAxis           \"Z\"\n");      
+	        writer.write("  exposedField     SFVec3f      jointAxis           0 0 1\n");      
 	        writer.write("\n");                                                             
 	        writer.write("  exposedField     SFFloat      gearRatio           1\n");        
 	        writer.write("  exposedField     SFFloat      rotorInertia        0\n");        
@@ -273,7 +273,7 @@ public class GrxVrmlExporter {
 			writer.write(indent+"  jointType \""+link.jointType()+"\"\n");
 			if (link.jointId() != -1) writer.write(indent+"  jointId "+link.jointId()+"\n");
 			if (link.jointType().equals("rotate") || link.jointType().equals("slide")){
-				writer.write(indent+"  jointAxis \""+link.getProperty("jointAxis")+"\"\n");
+				writer.write(indent+"  jointAxis "+link.getProperty("jointAxis")+"\n");
 			}
 			if (!valueEquals(link.getProperty("translation"),"0.0 0.0 0.0 ")){
 				writer.write(indent+"  translation "+link.getProperty("translation")+"\n");
