@@ -329,23 +329,19 @@ public class GrxLinkItem extends GrxTransformItem{
      * @brief set joint axis
      * @param axis axis of this joint. it must be one of "X", "Y" and "Z"
      */
-    void jointAxis(String axis){
-    	double[] newAxis = null;
-    	if (axis.equals("X")){
-    		newAxis = new double[]{1.0, 0.0, 0.0};
-    	}else if (axis.equals("Y")){
-    		newAxis = new double[]{0.0, 1.0, 0.0};
-    	}else if (axis.equals("Z")){
-    		newAxis = new double[]{0.0, 0.0, 1.0};
-    	}
-    	if (newAxis != null){
+    void jointAxis(double[] newAxis){
+    	if (newAxis != null && newAxis.length == 3){
     		info_.jointAxis = newAxis;
-    		setProperty("jointAxis", axis);
+    		setDblAry("jointAxis", newAxis);
     		resizeBoundingBox();
     		if (model_ != null) model_.notifyModified();
     	}  	
     }
 
+    void jointAxis(String axis){
+    	double[] newAxis = getDblAry(axis);
+    	jointAxis(newAxis);
+    }
     
     /**
      * set joint id from string
@@ -818,13 +814,7 @@ public class GrxLinkItem extends GrxTransformItem{
         rotation(info_.rotation);
         CoM(info_.centerOfMass);
         inertia(info_.inertia);
-    	if (info_.jointAxis[0] == 1.0){
-       		jointAxis("X");
-    	}else if (info_.jointAxis[1] == 1.0){
-       		jointAxis("Y");
-    	}else if (info_.jointAxis[2] == 1.0){
-       		jointAxis("Z");
-    	}
+        jointAxis(info_.jointAxis);
         jointType(info_.jointType);
         mass(info_.mass);
         setDblAry("ulimit", info_.ulimit);
