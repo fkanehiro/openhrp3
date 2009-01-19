@@ -13,7 +13,7 @@ macro(create_simple_controller CONTROLLER_NAME)
   
   if(WIN32)
 	  add_definitions(${OPENRTM_DEFINITIONS})
-	  set_target_properties(${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp PROPERTIES DEBUG_POSTFIX d )
+	  set_target_properties(${CONTROLLER_NAME}Comp PROPERTIES DEBUG_POSTFIX d )
   endif()
 
   set(controller_install_path ${RELATIVE_SAMPLE_INSTALL_PATH}/controller/${CONTROLLER_NAME})
