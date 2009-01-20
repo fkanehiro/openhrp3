@@ -17,7 +17,6 @@
             <property name="controlTime" value="0.1"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.2 "/>
             <property name="WAIST.translation" value="0.15 0.15 0.3 "/>
-            <property name="WAIST.mode" value="HighGain"/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(PROJECT_DIR)/../model/box.wrl">
             <property name="isRobot" value="false"/>
