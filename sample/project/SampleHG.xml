@@ -67,7 +67,6 @@
             <property name="RARM_WRIST_Y.mode" value="HighGain"/>
             <property name="RARM_ELBOW.mode" value="HighGain"/>
             <property name="RARM_SHOULDER_Y.mode" value="HighGain"/>
-            <property name="WAIST.mode" value="HighGain"/>
             <property name="WAIST_P.angle" value="0.0 "/>
             <property name="LARM_SHOULDER_P.mode" value="HighGain"/>
             <property name="WAIST_R.angle" value="0.0 "/>
