@@ -62,7 +62,6 @@
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.550000011920929 -0.019999999552965164 0.1509999930858612 "/>
             <property name="imageProcessor" value=""/>
-            <property name="WAIST.mode" value="HighGain"/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#floor#sample" select="true">
             <property name="springConstant" value="0 0 0 0 0 0"/>
