@@ -50,7 +50,7 @@ public class GrxPluginManager
 	
 	// for managing items
 	public  GrxPluginLoader pluginLoader_;
-	private HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap> pluginMap_ = new HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap>();
+	public HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap> pluginMap_ = new HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap>();
 	private List<GrxBaseItem> selectedItemList_ = new ArrayList<GrxBaseItem>();
 	private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
 	private boolean isItemSelectionChanged_ = false;
