@@ -240,6 +240,7 @@ public class GrxProcessManager {
 		public boolean autoStart = true;
 		public boolean autoStop = true;
 		public String args = null;
+		public boolean useORB = false;
 		
 		public void print(){
 			GrxDebugUtil.println("\nID: " + id);

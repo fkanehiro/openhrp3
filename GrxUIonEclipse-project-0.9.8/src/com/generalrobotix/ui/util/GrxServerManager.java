@@ -16,30 +16,50 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.TableLayout;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.custom.*;
 
+import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
+//import com.generalrobotix.ui.view.simulation.CollisionPairPanel.InnerTableLabelProvider;
+import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.util.GrxServerManagerPanel;
 
 @SuppressWarnings("serial")
 public class GrxServerManager extends Composite{
-    private String homePath_;
+    public static String homePath_;
+    
     enum  GrxServer{
       COLLISION_DETECTOR,
       DYNAMIS_SIMULATOR,
@@ -48,17 +68,9 @@ public class GrxServerManager extends Composite{
     };
     static public final String LINUX_TMP_DIR = System.getenv( "HOME" ) + File.separator + ".OpenHRP-3.1" + File.separator;
     static public final String WIN_TMP_DIR = System.getenv( "APPDATA" ) + File.separator + "OpenHRP-3.1" + File.separator;
-    static private final String START = "Start";
-    static private final String STOP = "Stop";
     static private final String CONFIG_XML = "grxuirc.xml";
-    static private final String DIM_SERVERS[] = {
-        "CollisionDetectorFactory", "DynamicsSimulatorFactory", "ModelLoader", "NameService"
-        };
-    static private final int HORIZON_INDENT = 4;
-    static private final int LABEL_LENGTH = 32;
-    static private final int TEXT_LENGTH = 256;
 
-    static volatile private Vector<ProcessInfo> vecServerInfo = new Vector<ProcessInfo>();
+    static volatile public Vector<ProcessInfo> vecServerInfo = new Vector<ProcessInfo>();
     static volatile private boolean bInitializedServerInfo = false;
     static volatile private String strTempDir = null;
     
@@ -74,12 +86,13 @@ public class GrxServerManager extends Composite{
     static private void loadConfigXml(File fileXml){
         GrxServerManagerConfigXml localXml = new GrxServerManagerConfigXml(fileXml);
         vecServerInfo.clear();
-        for (int i = 0; i < GrxServerManager.DIM_SERVERS.length; ++i){
-            ProcessInfo localInfo = localXml.getServerInfo( GrxServerManager.DIM_SERVERS[i]);
+        for (int i = 0; ; ++i){
+            ProcessInfo localInfo = localXml.getServerInfo( i );
             if ( localInfo == null ){
-                localInfo = new ProcessInfo();
-                localInfo.id = GrxServerManager.DIM_SERVERS[i];
+                break;
             }
+            if ( localInfo.id.equals(""))
+            	continue ;
             vecServerInfo.add( localInfo );
         }
         GrxDebugUtil.print(fileXml.getPath() + "\n");
@@ -90,8 +103,7 @@ public class GrxServerManager extends Composite{
     static public synchronized void ShutdownServerInfo(){
         if( bInitializedServerInfo ){
             GrxServerManagerConfigXml localXml = new GrxServerManagerConfigXml( getConfigXml() );
-            for (int i = 0; i < GrxServerManager.DIM_SERVERS.length; ++i){
-                // i=2の時ServerInfoのnameが設定されていないことのエラーがある
+            for (int i = 0; i < vecServerInfo.size(); ++i){
                 localXml.setServerNode( vecServerInfo.elementAt(i) );
             }
             localXml.SaveServerInfo();
@@ -110,11 +122,14 @@ public class GrxServerManager extends Composite{
         return ret;
     }
     
-    private Vector<Button> vecButton = new Vector<Button>();
-    private Vector<Button> vecChkBox = new Vector<Button>();
-    private Vector<Text> vecPathText = new Vector<Text>();
-    private Vector<Text> vecArgsText = new Vector<Text>();
+    public static Vector<Button> vecButton = new Vector<Button>();
+    public static Vector<Button> vecChkBox = new Vector<Button>();
+    public static Vector<Button> vecUseORBChkBox = new Vector<Button>();
+    public static Vector<Text> vecPathText = new Vector<Text>();
+    public static Vector<Text> vecArgsText = new Vector<Text>();
+    public static Vector<TabItem> vecTabItem = new Vector<TabItem>();
     
+
     /**
      * GrxServerManagerを作り、処理を開始する。
      */
@@ -122,9 +137,61 @@ public class GrxServerManager extends Composite{
 		super( parent, style);
         this.setLayout(new GridLayout(1,false));
         InitServerInfo();
-        for (int i = 0; i < GrxServer.values().length; ++i ){
-            InitPanels(GrxServer.values()[i]);
+
+        Composite top = new Composite(this,SWT.NONE);
+        top.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        top.setLayout(new RowLayout() );
+        Button insertBtn = new Button(top , SWT.PUSH);
+        insertBtn.setText("Insert");
+        Button addBtn = new Button(top , SWT.PUSH);
+        addBtn.setText("Add");
+        Button delBtn = new Button(top , SWT.PUSH);
+        delBtn.setText("Remove");
+/*
+        Button forwordBtn = new Button(top , SWT.PUSH);
+        forwordBtn.setText("<<");
+        Button backBtn = new Button(top , SWT.PUSH);
+        backBtn.setText(">>");
+*/
+        final TabFolder folder = new TabFolder(this,SWT.NONE);
+
+        insertBtn.addSelectionListener(new SelectionListener(){
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+
+            public void widgetSelected(SelectionEvent e) {
+                insertServerBtn( folder );
+            }
         }
+        );
+        addBtn.addSelectionListener(new SelectionListener(){
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+
+            public void widgetSelected(SelectionEvent e) {
+                addServerBtn( folder );
+            }
+        }
+        );
+        delBtn.addSelectionListener(new SelectionListener(){
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+
+            public void widgetSelected(SelectionEvent e) {
+                removeServerBtn( folder );
+            }
+        }
+        );
+
+        GrxServerManagerPanel panel ;
+        for (int i = 0; i < vecServerInfo.size() ; ++i ){
+            vecTabItem.add(new TabItem(folder,SWT.NONE)) ;
+            vecTabItem.elementAt(i).setText(vecServerInfo.elementAt(i).id);
+            folder.setSelection(i);
+            panel = new GrxServerManagerPanel(folder , SWT.NONE , i );
+            vecTabItem.elementAt(i).setControl(panel);
+        }
+        folder.setSelection(0);
 		String dir = System.getenv("ROBOT_DIR");
 		if (dir != null && new File(dir).isDirectory())
 			homePath_ = dir+File.separator;
@@ -143,289 +210,114 @@ public class GrxServerManager extends Composite{
         );
     }
     
-    /**
-     * プロセス設定用のパネルを作る。
-     */
-    private void InitPanels(GrxServer enLocal){
-        //雛形部分の作成
-        int localDim = enLocal.ordinal();
-        Composite localPanel = new Composite(this,SWT.NONE);
-        localPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
-        
-        GridLayout localGridLayout = new GridLayout(3, false);
-        
-        localGridLayout.marginWidth = 0;
-        localGridLayout.horizontalSpacing = 0;
-        localPanel.setLayout( localGridLayout );
-        
-        Group localGroup = new Group(localPanel, SWT.NONE);
-        GridData localGroupData = new GridData(GridData.FILL_HORIZONTAL);
-        //GridData localGroupData = new GridData();
-        localGroup.setLayoutData( localGroupData );
-        localGroup.setLayout(localGridLayout);
-        
-        Label localLabelPath = new Label(localGroup, SWT.RIGHT);
-        localLabelPath.setText("Path: ");
-        GridData labelPathGridData = new GridData();
-        //labelGridData.verticalIndent = 2;
-        labelPathGridData.widthHint = LABEL_LENGTH;
-        
-        Text localPath = new Text(localGroup, SWT.BORDER);
-        GridData pathGridData = new GridData(GridData.FILL_HORIZONTAL);
-        pathGridData.widthHint = TEXT_LENGTH;
-        localPath.setText( vecServerInfo.elementAt(localDim).com.get(0));
-        //pathGridData.heightHint = this.HEIGHT_HINT;
-        
-        Button localRefButton = new Button(localGroup, SWT.PUSH);
-        localRefButton.setText("...");
-        GridData refbtnGridData = new GridData();
-        refbtnGridData.horizontalIndent = HORIZON_INDENT;
-        //refbtnGridData.heightHint = this.HEIGHT_HINT;
-        
-        Label localLabelArgs = new Label(localGroup, SWT.RIGHT);
-        localLabelArgs.setText("Args: ");
-        GridData labelArgsGridData = new GridData();
-        //labelGridData.verticalIndent = 2;
-        labelArgsGridData.widthHint = LABEL_LENGTH;
-        
-        Text localArgs = new Text(localGroup, SWT.BORDER);
-        GridData argsGridData = new GridData(GridData.FILL_HORIZONTAL);
-        //argsGridData.horizontalIndent = HORIZON_INDENT;
-        argsGridData.widthHint = TEXT_LENGTH;
-        localArgs.setText( vecServerInfo.elementAt(localDim).args );
-        //argsGridData.heightHint = this.HEIGHT_HINT;
-        
-        Button localButton = new Button(localGroup, SWT.PUSH);
-        if(vecServerInfo.elementAt(localDim).autoStart)
-        {
-            localButton.setText(STOP);
+    private void insertServerBtn(final TabFolder folder){
+    	Display display = Display.getCurrent();
+    	final Shell shell = new Shell(display , SWT.TITLE | SWT.OK);
+    	shell.setLayout(new GridLayout(2,false));
+    	shell.setText("Insert New Server");
+    	Label idLabel = new Label( shell , SWT.RIGHT);
+    	idLabel.setText("id:");
+    	final Text id = new Text( shell , SWT.BORDER);
+    	Button okBtn = new Button( shell , SWT.PUSH);
+    	okBtn.setText("OK");
+    	Point point = display.getCursorLocation();
+    	shell.setLocation(point.x , point.y );
+    	shell.setSize(200, 100);
+    	shell.open();
+        okBtn.addSelectionListener(new SelectionListener(){
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+
+            public void widgetSelected(SelectionEvent e) {
+            	int index = folder.getSelectionIndex();
+            	ProcessInfo localInfo = new ProcessInfo();
+            	localInfo.id = id.getText();
+                localInfo.com.clear();
+                localInfo.com.add("");
+                localInfo.args = "";
+                localInfo.autoStart = false;
+                localInfo.useORB = false;
+
+            	vecServerInfo.add(index,localInfo);
+                vecTabItem.add(index , new TabItem(folder,SWT.NONE , index)) ;
+                vecTabItem.elementAt(index).setText(vecServerInfo.elementAt(index).id);
+            	GrxServerManagerConfigXml.insertServerNode(vecServerInfo.elementAt(index+1),localInfo);
+                folder.setSelection(index);
+                GrxServerManagerPanel panel = new GrxServerManagerPanel(folder , SWT.NONE , index );
+                vecTabItem.elementAt(index).setControl(panel);
+                shell.close();
+            }
         }
-        else
-        {
-            localButton.setText(START);
+        );
+
+    }
+
+    private void addServerBtn(final TabFolder folder){
+    	Display display = Display.getCurrent();
+    	final Shell shell = new Shell(display , SWT.TITLE | SWT.OK);
+    	shell.setLayout(new GridLayout(2,false));
+    	shell.setText("Add New Server");
+    	Label idLabel = new Label( shell , SWT.RIGHT);
+    	idLabel.setText("id:");
+    	final Text id = new Text( shell , SWT.BORDER);
+    	Button okBtn = new Button( shell , SWT.PUSH);
+    	okBtn.setText("OK");
+    	Point point = display.getCursorLocation();
+    	shell.setLocation(point.x , point.y );
+    	shell.setSize(200, 100);
+    	shell.open();
+        okBtn.addSelectionListener(new SelectionListener(){
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+
+            public void widgetSelected(SelectionEvent e) {
+            	int index = folder.getSelectionIndex() + 1;
+            	ProcessInfo localInfo = new ProcessInfo();
+            	localInfo.id = id.getText();
+                localInfo.com.clear();
+                localInfo.com.add("");
+                localInfo.args = "";
+                localInfo.autoStart = false;
+                localInfo.useORB = false;
+
+            	vecServerInfo.add(index,localInfo);
+                vecTabItem.add(index , new TabItem(folder,SWT.NONE , index)) ;
+                vecTabItem.elementAt(index).setText(vecServerInfo.elementAt(index).id);
+            	GrxServerManagerConfigXml.addServerNode(vecServerInfo.elementAt(index-1),localInfo);
+                folder.setSelection(index);
+                GrxServerManagerPanel panel = new GrxServerManagerPanel(folder , SWT.NONE , index );
+                vecTabItem.elementAt(index).setControl(panel);
+                shell.close();
+            }
         }
-        GridData btnGridData = new GridData();
-        btnGridData.horizontalIndent = HORIZON_INDENT;
-        //btnGridData.heightHint = this.HEIGHT_HINT;
-        btnGridData.widthHint = 64;
+        );
 
-        Label localLabelAuto = new Label(localGroup, SWT.RIGHT | SWT.FILL);
-        localLabelAuto.setText("Automatic start ");
-        GridData labelAutoGridData = new GridData(GridData.FILL_HORIZONTAL);
-        labelAutoGridData.horizontalSpan = 2;
-        //labelGridData.verticalIndent = 2;
-        labelAutoGridData.widthHint = LABEL_LENGTH + TEXT_LENGTH;
-        
-        Button localChkBox = new Button(localGroup, SWT.CHECK);
-        GridData chkbtnGridData = new GridData();
-        chkbtnGridData.horizontalIndent = HORIZON_INDENT;
-        localChkBox.setSelection( vecServerInfo.elementAt(localDim).autoStart );
-        //btnGridData.heightHint = this.HEIGHT_HINT;
-        
-        //各サーバ分GUIパーツの独自設定
-        //Groupタイトル名設定
-        String strServerName = GrxServerManager.DIM_SERVERS[localDim];
-        localGroup.setText(strServerName + " ");
-
-        //リスナー登録
-        switch ( enLocal ){
-            case DYNAMIS_SIMULATOR:
-                localRefButton.addSelectionListener(new SelectionListener(){
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                    }
-
-                    public void widgetSelected(SelectionEvent e) {
-                        updateRefBtn( GrxServerManager.GrxServer.DYNAMIS_SIMULATOR );
-                    }
-                }
-                );
-                
-                localButton.addSelectionListener(new SelectionListener(){
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                    }
-
-                    public void widgetSelected(SelectionEvent e) {
-                        updateBtn( GrxServerManager.GrxServer.DYNAMIS_SIMULATOR );
-                    }
-                }
-                );
-                break;
-            case COLLISION_DETECTOR:
-                localRefButton.addSelectionListener(new SelectionListener(){
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                    }
-
-                    public void widgetSelected(SelectionEvent e) {
-                        updateRefBtn( GrxServerManager.GrxServer.COLLISION_DETECTOR );
-                    }
-                }
-                );
-                localButton.addSelectionListener(new SelectionListener(){
-
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                    }
-
-                    public void widgetSelected(SelectionEvent e) {
-                        updateBtn( GrxServerManager.GrxServer.COLLISION_DETECTOR );
-                    }
-                }
-                );
-                break;
-            case MODEL_LOADER:
-                localRefButton.addSelectionListener(new SelectionListener(){
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                    }
-
-                    public void widgetSelected(SelectionEvent e) {
-                        updateRefBtn( GrxServerManager.GrxServer.MODEL_LOADER );
-                    }
-                }
-                );
-                localButton.addSelectionListener(new SelectionListener(){
-
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                    }
-
-                    public void widgetSelected(SelectionEvent e) {
-                        updateBtn( GrxServerManager.GrxServer.MODEL_LOADER );
-                    }
-                }
-                );
-                break;
-            case NAME_SERVER:
-                localRefButton.addSelectionListener(new SelectionListener(){
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                    }
-
-                    public void widgetSelected(SelectionEvent e) {
-                        updateRefBtn( GrxServerManager.GrxServer.NAME_SERVER );
-                    }
-                }
-                );
-                localButton.addSelectionListener(new SelectionListener(){
-
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                    }
-
-                    public void widgetSelected(SelectionEvent e) {
-                        updateBtn( GrxServerManager.GrxServer.NAME_SERVER );
-                    }
-                }
-                );
-                break;
-        }
-        localLabelPath.setLayoutData(labelPathGridData);
-        localPath.setLayoutData(pathGridData);
-        localRefButton.setLayoutData(refbtnGridData);
-        localLabelArgs.setLayoutData(labelArgsGridData);
-        localArgs.setLayoutData(argsGridData);
-        localButton.setLayoutData(btnGridData);
-        localLabelAuto.setLayoutData(labelAutoGridData);
-        localChkBox.setLayoutData(chkbtnGridData);
-        vecButton.add( localButton );
-        vecChkBox.add( localChkBox );
-        vecPathText.add( localPath );
-        vecArgsText.add( localArgs );
     }
     
-    //ファイル参照用のモーダルダイアログを開く
-    private void updateRefBtn(GrxServer enLocal){
-        //ファイル名の取得
-        String[] filterNames = new String[] { "すべてのファイル(*)" };
-        String[] filterExtensions = new String[] { "*" };
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        FileDialog fileDlg = new FileDialog( window.getShell(), SWT.OPEN);
-        
-        fileDlg.setText("");
-        //fileDlg.setFilterPath("C:/");
-        fileDlg.setFilterNames(filterNames);
-        fileDlg.setFilterExtensions(filterExtensions);
-
-        String strServerName = GrxServerManager.DIM_SERVERS[enLocal.ordinal()];
-        fileDlg.setText( "Select " + strServerName );
-        vecPathText.elementAt(enLocal.ordinal()).setText(fileDlg.open());
+    private void removeServerBtn(TabFolder folder){
+    	int index = folder.getSelectionIndex();
+    	vecTabItem.elementAt(index).getControl().dispose();
+    	folder.getItem(index).dispose();
+    	vecTabItem.remove(index);
+    	GrxServerManagerConfigXml.deleteServerNode(vecServerInfo.elementAt(index));
+    	vecServerInfo.remove(index);
+    	vecButton.remove(index);
+    	vecChkBox.remove(index);
+    	vecUseORBChkBox.remove(index);
+    	vecPathText.remove(index);
+    	vecArgsText.remove(index);
+    	
     }
-
-    //プロセス開始
-    private void updateBtn(GrxServer enLocal){
-        int localDim = enLocal.ordinal();
-        Composite output = null;
-        GrxProcessManager pm = GrxProcessManager.getInstance(output);
-        ProcessInfo pi = new ProcessInfo();
-        String nsHost = GrxORBMonitor.textNsHost.getText();
-        String nsPort = GrxORBMonitor.textNsPort.getText();
-        String nsOpt = " -ORBInitRef NameService=corbaloc:iiop:" + nsHost +":" + nsPort + "/NameService" ;
-        
-        if( vecButton.elementAt(localDim).getText().equals(START))
-        {
-            pi.id = vecServerInfo.elementAt(localDim).id ;
-            pi.args = GrxXmlUtil.expandEnvVal(vecArgsText.elementAt(localDim).getText());
-            pi.com.clear();
-            if( pi.id.equals("NameService")) {
-            	// log のクリア
-				String[] com ;
-				if( System.getProperty("os.name").equals("Linux")||System.getProperty("os.name").equals("Mac OS X"))
-				{
-					com = new String[] {"/bin/sh" , "-c" , "rm "+ homePath_ + ".OpenHRP-3.1/omninames-log/*"};
-				}
-				else{
-					com = new String[] {"cmd" , "/c" , "del " + "\"" + WIN_TMP_DIR  + "omninames-*.*" + "\""};
-				}
-				try{
-					Process pr = Runtime.getRuntime().exec( com );
-					InputStream is = pr.getInputStream();
-					BufferedReader br = new BufferedReader(new InputStreamReader(is));
-					String line ;
-					while ((line = br.readLine()) != null) {
-				        System.out.println(line);
-				    }
-				}catch (Exception e){
-					;
-				}
-	            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
-            }
-            else
-            {
-	            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args + nsOpt );
-            }
-            pm.register(pi);
-            GrxProcessManager.AProcess p = pm.get(pi.id);
-            if( p.start(null)){
-                vecButton.elementAt(localDim).setText(STOP);
-            }
-            else // start 失敗
-            {
-                pm.unregister(pi.id);
-            }
-        }
-        else
-        {
-            pi.id = vecServerInfo.elementAt(localDim).id ;
-            pi.args = GrxXmlUtil.expandEnvVal(vecArgsText.elementAt(localDim).getText());
-            pi.com.clear();
-            if( pi.id.equals("NameService")) {
-            	pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args);
-            }
-            else
-            {
-	            pi.com.add( GrxXmlUtil.expandEnvVal(vecPathText.elementAt(localDim).getText()) + " " + pi.args + nsOpt );
-            }
-            GrxProcessManager.AProcess p = pm.get(pi.id);
-            if( p.stop() ) {
-            	vecButton.elementAt(localDim).setText(START);
-                pm.unregister(pi.id);
-            }
-        }
-    }
+    
     
     //タブウィンドウが閉じるときGUIによって生じた変更を反映する。
     private void storevecServerInfo()throws Exception{
-        for (int i = 0; i < GrxServerManager.DIM_SERVERS.length; ++i){
+        for (int i = 0; i < vecServerInfo.size(); ++i){
             vecServerInfo.elementAt(i).com.clear();
             vecServerInfo.elementAt(i).com.add(vecPathText.elementAt(i).getText());
             vecServerInfo.elementAt(i).args = vecArgsText.elementAt(i).getText();
             vecServerInfo.elementAt(i).autoStart = vecChkBox.elementAt(i).getSelection();
+            vecServerInfo.elementAt(i).useORB = vecUseORBChkBox.elementAt(i).getSelection();
         }
     }
 }
