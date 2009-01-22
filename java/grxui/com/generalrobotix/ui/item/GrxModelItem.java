@@ -27,7 +27,6 @@ import javax.swing.*;
 import javax.vecmath.*;
 import javax.media.j3d.*;
 
-import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.geometry.*;
 import com.sun.j3d.utils.image.*;
 import java.awt.Image;
@@ -1174,6 +1173,17 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public void delete() {
         super.delete();
         bgRoot_.detach();
+        Map<?, ?> m = manager_.pluginMap_.get((GrxCollisionPairItem.class));
+        GrxCollisionPairItem[] collisionPairItems = m.values().toArray(new GrxCollisionPairItem[0]);
+        for (int i=0; i<collisionPairItems.length; i++) {
+			GrxCollisionPairItem item = (GrxCollisionPairItem) collisionPairItems[i];
+			String name = getName();
+			if(name.equals(item.getStr("objectName1", ""))){
+				manager_.removeItem(item);
+			}else if(name.equals(item.getStr("objectName2", ""))){
+				manager_.removeItem(item);
+			}
+        }
     }
 
     public void setVisibleCoM(boolean b) {
