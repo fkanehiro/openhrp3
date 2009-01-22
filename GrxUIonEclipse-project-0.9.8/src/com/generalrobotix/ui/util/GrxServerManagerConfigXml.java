@@ -54,8 +54,8 @@ import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 @SuppressWarnings("serial")
 public class GrxServerManagerConfigXml {
     private File xmlFile = null;
-    private Document document = null;         
-    private Element elementRoot = null;
+    private static Document document = null;         
+    private static Element elementRoot = null;
     
     public GrxServerManagerConfigXml( File refFile){
         xmlFile = refFile;
@@ -89,43 +89,44 @@ public class GrxServerManagerConfigXml {
         return ret; 
     }
     
-    //server.nameがnameに等しいserverエレメントのノードマップを取得
-    private NamedNodeMap getServerNodeMap(String name){
-        NamedNodeMap ret = null;
+    //server.nameがnameに等しいserverエレメントのノードを取得
+    private Node getServerNode(String name){
+        Node ret = null;
         NodeList localList = elementRoot.getElementsByTagName("process");
         for (int i = 0; i < localList.getLength(); ++i ){
             NamedNodeMap nodeMap = localList.item(i).getAttributes();
             if( nodeMap.getNamedItem("id").getNodeValue().equals(name) ){
-                ret = nodeMap;
+                ret = localList.item(i);
                 break;
             }
         }
         return ret;
     }
 
-    public ProcessInfo getServerInfo(String name){
+    public ProcessInfo getServerInfo(int index){
         ProcessInfo ret = null;
         NodeList localList = elementRoot.getElementsByTagName("process");
-        for (int i = 0; i < localList.getLength(); ++i ){
-            NamedNodeMap nodeMap = localList.item(i).getAttributes();
-            if( nodeMap.getNamedItem("id").getNodeValue().equals(name) ){
-                ret = new ProcessInfo();
-                ret.id = name;
-                ret.com.add( nodeMap.getNamedItem("com").getNodeValue());
-                ret.args = nodeMap.getNamedItem("args").getNodeValue();
-                ret.autoStart = nodeMap.getNamedItem("autostart").getNodeValue().equals("true");
-                break;
-            }
-        }
+        if( index >= localList.getLength())
+        	return ret ;
+		Node node = localList.item(index);
+        ret = new ProcessInfo();
+        ret.id = GrxXmlUtil.getString((Element)node, "id", "");
+        if( ret.id.equals(""))
+        	return ret;
+        ret.com.add( GrxXmlUtil.getString((Element)node , "com" , ""));
+        ret.args =  GrxXmlUtil.getString((Element)node ,"args" , "");
+        ret.autoStart = GrxXmlUtil.getBoolean((Element)node , "autostart", false);
+        ret.useORB = GrxXmlUtil.getBoolean((Element)node , "useORB", false);
         return ret;
     }
-    
+
     public void setServerNode(ProcessInfo refInfo){
-        NamedNodeMap localMap = getServerNodeMap(refInfo.id);
-        if( localMap != null ){
-            localMap.getNamedItem("com").setNodeValue(refInfo.com.get(0));
-            localMap.getNamedItem("args").setNodeValue(refInfo.args);
-            localMap.getNamedItem("autostart").setNodeValue(Boolean.toString(refInfo.autoStart));
+    	Node node = getServerNode(refInfo.id);
+    	if( node != null){
+    	    GrxXmlUtil.setString((Element)node ,"com" ,refInfo.com.get(0));
+            GrxXmlUtil.setString((Element)node , "args" ,refInfo.args);
+            GrxXmlUtil.setBoolean((Element)node , "autostart" , refInfo.autoStart);
+            GrxXmlUtil.setBoolean((Element)node , "useORB" ,refInfo.useORB);
         } else {
             createServerNode( refInfo );
         }
@@ -167,6 +168,8 @@ public class GrxServerManagerConfigXml {
 
     // Xml ファイルハンドルの初期化
     private void initXml() throws Exception{
+    	if( elementRoot != null )
+    		return ;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();   
         DocumentBuilder builder = factory.newDocumentBuilder();         
         builder.setErrorHandler(new DefaultHandler());
@@ -190,6 +193,73 @@ public class GrxServerManagerConfigXml {
         localElement.setAttribute( "com", refInfo.com.get(0));
         localElement.setAttribute( "args", refInfo.args );
         localElement.setAttribute( "autostart", Boolean.toString(refInfo.autoStart) );
+        localElement.setAttribute( "useORB", Boolean.toString(refInfo.useORB) );
         elementRoot.appendChild(localElement);
+    }
+
+    //server エレメントの削除
+    public static void deleteServerNode( ProcessInfo refInfo ){
+        
+        NodeList localList = elementRoot.getElementsByTagName("process");
+        for( int i = 0 ; i < localList.getLength() ; i++)
+        {
+        	NamedNodeMap nodeMap ;
+        	Node node = localList.item(i);
+        	nodeMap = node.getAttributes();
+        	if( nodeMap.getNamedItem("id").getNodeValue().equals(refInfo.id))
+        	{
+        		node.getParentNode().removeChild(node);
+        		break ;
+        	}
+        }
+    }
+    public static void insertServerNode( ProcessInfo refInfo , ProcessInfo newInfo){
+        
+        NodeList localList = elementRoot.getElementsByTagName("process");
+        for( int i = 0 ; i < localList.getLength() ; i++)
+        {
+        	NamedNodeMap nodeMap ;
+        	Node node = localList.item(i);
+        	nodeMap = node.getAttributes();
+        	if( nodeMap.getNamedItem("id").getNodeValue().equals(refInfo.id))
+        	{
+                Element localElement = document.createElement("process");
+                localElement.setAttribute( "id", newInfo.id );
+                localElement.setAttribute( "com", newInfo.com.get(0));
+                localElement.setAttribute( "args", newInfo.args );
+                localElement.setAttribute( "autostart", Boolean.toString(newInfo.autoStart) );
+                localElement.setAttribute( "useORB", Boolean.toString(newInfo.useORB) );
+        		node.getParentNode().insertBefore( localElement , node);
+        		break ;
+        	}
+        }
+    }
+    public static void addServerNode( ProcessInfo refInfo , ProcessInfo newInfo){
+        
+        NodeList localList = elementRoot.getElementsByTagName("process");
+        for( int i = 0 ; i < localList.getLength() ; i++)
+        {
+        	NamedNodeMap nodeMap ;
+        	Node node = localList.item(i);
+        	nodeMap = node.getAttributes();
+        	if( nodeMap.getNamedItem("id").getNodeValue().equals(refInfo.id))
+        	{
+                Element localElement = document.createElement("process");
+                localElement.setAttribute( "id", newInfo.id );
+                localElement.setAttribute( "com", newInfo.com.get(0));
+                localElement.setAttribute( "args", newInfo.args );
+                localElement.setAttribute( "autostart", Boolean.toString(newInfo.autoStart) );
+                localElement.setAttribute( "useORB", Boolean.toString(newInfo.useORB) );
+        		if( i == (localList.getLength() -1))
+        		{
+        			node.getParentNode().appendChild( localElement );
+        		}
+        		else{
+        			node = localList.item(i+1);
+        			node.getParentNode().insertBefore( localElement , node);
+        		}
+        		break ;
+        	}
+        }
     }
 }

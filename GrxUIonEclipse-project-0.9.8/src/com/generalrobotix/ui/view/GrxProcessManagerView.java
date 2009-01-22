@@ -95,9 +95,9 @@ public class GrxProcessManagerView extends GrxBaseView {
 
 			ProcessInfo pi = new ProcessInfo();
 			pi.id = id;
-//			pi.com.add(GrxXmlUtil.getString(e, "com", ""));
 			pi.args = GrxXmlUtil.getString(e, "args" , "");
-			if (id.equals("ModelLoader") || id.equals("CollisionDetectorFactory") || id.equals("DynamicsSimulatorFactory"))
+			pi.useORB = GrxXmlUtil.getBoolean(e, "useORB", false);
+			if (pi.useORB)
 			{
 				pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args + nsOpt );
 			}
