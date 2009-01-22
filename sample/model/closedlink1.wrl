@@ -19,7 +19,7 @@ PROTO Joint [
     exposedField     MFFloat      uvlimit              []
     exposedField     SFString     jointType           ""
     exposedField     SFInt32      jointId             -1
-    exposedField     SFString     jointAxis           "Z"
+    exposedField     SFVec3f      jointAxis           0 0 1
 
     exposedField     SFFloat	  equivalentInertia   0
     exposedField     SFFloat      gearRatio           1
@@ -264,7 +264,7 @@ humanoidBody [
 
                 jointType "rotate"
                 jointId 0
-                jointAxis "Z"
+                jointAxis 0 0 1
 
 
                 children [
@@ -451,7 +451,7 @@ humanoidBody [
 
                         jointType "rotate"
                         jointId 1
-                        jointAxis "Z"
+                        jointAxis 0 0 1
 
 
                         children [
@@ -638,7 +638,7 @@ humanoidBody [
 
                                 jointType "rotate"
                                 jointId 2
-                                jointAxis "Z"
+                                jointAxis 0 0 1
 
 
                                 children [
@@ -677,7 +677,7 @@ humanoidBody [
 
                 jointType "rotate"
                 jointId 3
-                jointAxis "Z"
+                jointAxis 0 0 1
 
 
                 children [
@@ -864,7 +864,7 @@ humanoidBody [
 
                         jointType "rotate"
                         jointId 4
-                        jointAxis "Z"
+                        jointAxis 0 0 1
 
 
                         children [
