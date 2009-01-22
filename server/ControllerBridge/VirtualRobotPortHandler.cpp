@@ -113,9 +113,19 @@ LinkDataOutPortHandler::LinkDataOutPortHandler(PortInfo& info) :
 
 void LinkDataOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 {
-  DblSequence_var data = controller->getLinkDataFromSimulator(linkName, linkDataType);
-  value.data = data;
-  setTime(value, controller->controlTime);
+    size_t n;
+    CORBA::ULong m;
+    n = linkName.size();
+    for(size_t i=0, k=0; i<n; i++){
+        DblSequence_var data = controller->getLinkDataFromSimulator(linkName[i], linkDataType);       
+        if(!i){
+            m = data->length();
+            value.data.length(n*m);
+        }
+        for(CORBA::ULong j=0; j < m; j++)
+            value.data[k++] = data[j];  
+    }  
+    setTime(value, controller->controlTime);
 }
 
 
@@ -135,9 +145,19 @@ SensorDataOutPortHandler::SensorDataOutPortHandler(PortInfo& info) :
 
 void SensorDataOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 {
-  DblSequence_var data = controller->getSensorDataFromSimulator(sensorName);
-  value.data = data;
-  setTime(value, controller->controlTime);
+    size_t n;
+    CORBA::ULong m;
+    n = sensorName.size();
+    for(size_t i=0, k=0; i<n; i++){
+        DblSequence_var data = controller->getSensorDataFromSimulator(sensorName[i]);    
+        if(!i){
+            m = data->length();
+            value.data.length(n*m);
+        }
+        for(CORBA::ULong j=0; j < m; j++)
+            value.data[k++] = data[j];  
+    }  
+    setTime(value, controller->controlTime);
 }
 
 
@@ -238,6 +258,7 @@ void JointDataSeqInPortHandler::readDataFromPort(Controller_impl* controller)
     data[i] = values.data[i];
   }
 }
+
 LinkDataInPortHandler::LinkDataInPortHandler(PortInfo& info) :
   inPort(info.portName.c_str(), values),
   linkName(info.dataOwnerName)
@@ -248,7 +269,18 @@ LinkDataInPortHandler::LinkDataInPortHandler(PortInfo& info) :
 
 void LinkDataInPortHandler::outputDataToSimulator(Controller_impl* controller)
 {
-  controller->flushLinkDataToSimulator(linkName, linkDataType, data);
+    if(!data.length())
+        return;
+    size_t n=linkName.size();
+    CORBA::ULong m=data.length()/n;
+    for(size_t i=0, k=0; i< n; i++){
+        DblSequence data0;
+        data0.length(m);
+        for(CORBA::ULong j=0; j<m; j++)
+            data0[j] = data[k++];
+        controller->flushLinkDataToSimulator(linkName[i], linkDataType, data0);
+    }
+
 }
 
 

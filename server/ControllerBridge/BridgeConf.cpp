@@ -206,26 +206,32 @@ void BridgeConf::setPortInfos(const char* optionLabel, PortInfoMap& portInfos)
     PortInfo info;
 
     info.portName = parameters[0];
-
+    
     int dataTypeParameterPos;
     if(n == 2){
       dataTypeParameterPos = 1;
     } else {
-      string st=parameters[1];
-      bool digit=true;
-      for(string::iterator itr=st.begin(); itr!=st.end(); itr++){
-          if(!isdigit(*itr)){
-              digit = false;             
-              break;
-          }
-      }
-      if(digit){
-        info.dataOwnerId = atoi(st.c_str());
-        info.dataOwnerName.clear();
-      }else{
-        info.dataOwnerId = -1;
-        info.dataOwnerName = st;
-      }
+        string st=parameters[1];
+        vector<string> owners = extractParameters(st, ',');
+        for(size_t i=0; i<owners.size(); i++){
+            bool digit=true;
+            for(string::iterator itr=owners[i].begin(); itr!=owners[i].end(); itr++){
+                if(!isdigit(*itr)){
+                    digit = false;             
+                    break;
+                }
+            }
+            if(digit){
+                info.dataOwnerId = atoi(owners[i].c_str());
+                info.dataOwnerName.push_back("");
+                if(owners.size() > 1){
+                    throw invalid_argument(string("invalid VisionSensor setting"));
+                }
+            }else{
+                info.dataOwnerId = -1;
+                info.dataOwnerName.push_back(owners[i]);
+            }
+        }
       dataTypeParameterPos = 2;
     }
     
@@ -317,15 +323,14 @@ const char* BridgeConf::getVirtualRobotRtcTypeName()
   return virtualRobotRtcTypeName.c_str();
 }
 
-
-std::vector<std::string> BridgeConf::extractParameters(const std::string& str)
+std::vector<std::string> BridgeConf::extractParameters(const std::string& str, const char delimiter )
 {
   vector<string> result;
   string::size_type sepPos = 0;
   string::size_type nowPos = 0;
   
   while (sepPos != string::npos) {
-    sepPos = str.find(":", nowPos);
+    sepPos = str.find(delimiter, nowPos);
 
     if(isProcessingConfigFile){
       result.push_back(expandEnvironmentVariables(str.substr(nowPos, sepPos-nowPos)));

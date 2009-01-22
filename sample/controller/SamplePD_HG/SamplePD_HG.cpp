@@ -21,6 +21,8 @@
 #include <iostream>
 
 #define DOF (29)
+#define PD_DOF (17)
+#define HG_DOF (12)
 #define TIMESTEP 0.002
 
 #define WAIST_P             26
@@ -88,60 +90,11 @@ SamplePD_HG::SamplePD_HG(RTC::Manager* manager)
   : RTC::DataFlowComponentBase(manager),
     // <rtc-template block="initializer">
     m_angle_inIn("angle_in", m_angle_in),
-    m_torque0Out("torque0", m_torque0),
-    m_torque1Out("torque1", m_torque1),
-    m_torque2Out("torque2", m_torque2),
-    m_torque3Out("torque3", m_torque3),
-    m_torque4Out("torque4", m_torque4),
-    m_torque5Out("torque5", m_torque5),
-    m_torque6Out("torque6", m_torque6),
-    m_torque7Out("torque7", m_torque7),
-    m_torque8Out("torque8", m_torque8),
-    m_torque9Out("torque9", m_torque9),
-    m_torque10Out("torque10", m_torque10),
-    m_torque11Out("torque11", m_torque11),
-    m_torque12Out("torque12", m_torque12),
-    m_torque13Out("torque13", m_torque13),
-    m_torque14Out("torque14", m_torque14),
-    m_torque15Out("torque15", m_torque15),
-    m_torque16Out("torque16", m_torque16),
-    m_angle_out0Out("angle_out0", m_angle_out0),
-    m_angle_out1Out("angle_out1", m_angle_out1),
-    m_angle_out2Out("angle_out2", m_angle_out2),
-    m_angle_out3Out("angle_out3", m_angle_out3),
-    m_angle_out4Out("angle_out4", m_angle_out4),
-    m_angle_out5Out("angle_out5", m_angle_out5),
-    m_angle_out6Out("angle_out6", m_angle_out6),
-    m_angle_out7Out("angle_out7", m_angle_out7),
-    m_angle_out8Out("angle_out8", m_angle_out8),
-    m_angle_out9Out("angle_out9", m_angle_out9),
-    m_angle_out10Out("angle_out10", m_angle_out10),
-    m_angle_out11Out("angle_out11", m_angle_out11),
-    m_vel0Out("vel0", m_vel0),
-    m_vel1Out("vel1", m_vel1),
-    m_vel2Out("vel2", m_vel2),
-    m_vel3Out("vel3", m_vel3),
-    m_vel4Out("vel4", m_vel4),
-    m_vel5Out("vel5", m_vel5),
-    m_vel6Out("vel6", m_vel6),
-    m_vel7Out("vel7", m_vel7),
-    m_vel8Out("vel8", m_vel8),
-    m_vel9Out("vel9", m_vel9),
-    m_vel10Out("vel10", m_vel10),
-    m_vel11Out("vel11", m_vel11),
-    m_acc0Out("acc0", m_acc0),
-    m_acc1Out("acc1", m_acc1),
-    m_acc2Out("acc2", m_acc2),
-    m_acc3Out("acc3", m_acc3),
-    m_acc4Out("acc4", m_acc4),
-    m_acc5Out("acc5", m_acc5),
-    m_acc6Out("acc6", m_acc6),
-    m_acc7Out("acc7", m_acc7),
-    m_acc8Out("acc8", m_acc8),
-    m_acc9Out("acc9", m_acc9),
-    m_acc10Out("acc10", m_acc10),
-    m_acc11Out("acc11", m_acc11),
-    
+    m_torqueOut("torque", m_torque),
+    m_angle_outOut("angle_out", m_angle_out),
+    m_velOut("vel", m_vel),
+    m_accOut("acc", m_acc),
+      
     // </rtc-template>
     dummy(0),
     qold(DOF)
@@ -157,60 +110,11 @@ SamplePD_HG::SamplePD_HG(RTC::Manager* manager)
   registerInPort("angle_in", m_angle_inIn);
   
   // Set OutPort buffer
-  registerOutPort("torque0", m_torque0Out);
-  registerOutPort("torque1", m_torque1Out);
-  registerOutPort("torque2", m_torque2Out);
-  registerOutPort("torque3", m_torque3Out);
-  registerOutPort("torque4", m_torque4Out);
-  registerOutPort("torque5", m_torque5Out);
-  registerOutPort("torque6", m_torque6Out);
-  registerOutPort("torque7", m_torque7Out);
-  registerOutPort("torque8", m_torque8Out);
-  registerOutPort("torque9", m_torque9Out);
-  registerOutPort("torque10", m_torque10Out);
-  registerOutPort("torque11", m_torque11Out);
-  registerOutPort("torque12", m_torque12Out);
-  registerOutPort("torque13", m_torque13Out);
-  registerOutPort("torque14", m_torque14Out);
-  registerOutPort("torque15", m_torque15Out);
-  registerOutPort("torque16", m_torque16Out);
-  registerOutPort("angle_out0", m_angle_out0Out);
-  registerOutPort("angle_out1", m_angle_out1Out);
-  registerOutPort("angle_out2", m_angle_out2Out);
-  registerOutPort("angle_out3", m_angle_out3Out);
-  registerOutPort("angle_out4", m_angle_out4Out);
-  registerOutPort("angle_out5", m_angle_out5Out);
-  registerOutPort("angle_out6", m_angle_out6Out);
-  registerOutPort("angle_out7", m_angle_out7Out);
-  registerOutPort("angle_out8", m_angle_out8Out);
-  registerOutPort("angle_out9", m_angle_out9Out);
-  registerOutPort("angle_out10", m_angle_out10Out);
-  registerOutPort("angle_out11", m_angle_out11Out);
-  registerOutPort("vel0", m_vel0Out);
-  registerOutPort("vel1", m_vel1Out);
-  registerOutPort("vel2", m_vel2Out);
-  registerOutPort("vel3", m_vel3Out);
-  registerOutPort("vel4", m_vel4Out);
-  registerOutPort("vel5", m_vel5Out);
-  registerOutPort("vel6", m_vel6Out);
-  registerOutPort("vel7", m_vel7Out);
-  registerOutPort("vel8", m_vel8Out);
-  registerOutPort("vel9", m_vel9Out);
-  registerOutPort("vel10", m_vel10Out);
-  registerOutPort("vel11", m_vel11Out);
-  registerOutPort("acc0", m_acc0Out);
-  registerOutPort("acc1", m_acc1Out);
-  registerOutPort("acc2", m_acc2Out);
-  registerOutPort("acc3", m_acc3Out);
-  registerOutPort("acc4", m_acc4Out);
-  registerOutPort("acc5", m_acc5Out);
-  registerOutPort("acc6", m_acc6Out);
-  registerOutPort("acc7", m_acc7Out);
-  registerOutPort("acc8", m_acc8Out);
-  registerOutPort("acc9", m_acc9Out);
-  registerOutPort("acc10", m_acc10Out);
-  registerOutPort("acc11", m_acc11Out);
-
+  registerOutPort("torque", m_torqueOut);
+  registerOutPort("angle_out", m_angle_outOut);
+  registerOutPort("vel", m_velOut);
+  registerOutPort("acc", m_accOut);
+  
   // Set service provider to Ports
   
   // Set service consumers to Ports
@@ -253,60 +157,11 @@ SamplePD_HG::SamplePD_HG(RTC::Manager* manager)
   }
   
   m_angle_in.data.length(DOF);
-  m_angle_out0.data.length(1);
-  m_angle_out1.data.length(1);
-  m_angle_out2.data.length(1);
-  m_angle_out3.data.length(1);
-  m_angle_out4.data.length(1);
-  m_angle_out5.data.length(1);
-  m_angle_out6.data.length(1);
-  m_angle_out7.data.length(1);
-  m_angle_out8.data.length(1);
-  m_angle_out9.data.length(1);
-  m_angle_out10.data.length(1);
-  m_angle_out11.data.length(1);
-  m_vel0.data.length(1);
-  m_vel1.data.length(1);
-  m_vel2.data.length(1);
-  m_vel3.data.length(1);
-  m_vel4.data.length(1);
-  m_vel5.data.length(1);
-  m_vel6.data.length(1);
-  m_vel7.data.length(1);
-  m_vel8.data.length(1);
-  m_vel9.data.length(1);
-  m_vel10.data.length(1);
-  m_vel11.data.length(1);
-  m_acc0.data.length(1);
-  m_acc1.data.length(1);
-  m_acc2.data.length(1);
-  m_acc3.data.length(1);
-  m_acc4.data.length(1);
-  m_acc5.data.length(1);
-  m_acc6.data.length(1);
-  m_acc7.data.length(1);
-  m_acc8.data.length(1);
-  m_acc9.data.length(1);
-  m_acc10.data.length(1);
-  m_acc11.data.length(1);
-  m_torque0.data.length(1);
-  m_torque1.data.length(1);
-  m_torque2.data.length(1);
-  m_torque3.data.length(1);
-  m_torque4.data.length(1);
-  m_torque5.data.length(1);
-  m_torque6.data.length(1);
-  m_torque7.data.length(1);
-  m_torque8.data.length(1);
-  m_torque9.data.length(1);
-  m_torque10.data.length(1);
-  m_torque11.data.length(1);
-  m_torque12.data.length(1);
-  m_torque13.data.length(1);
-  m_torque14.data.length(1);
-  m_torque15.data.length(1);
-  m_torque16.data.length(1);
-
+  m_angle_out.data.length(HG_DOF);
+  m_vel.data.length(HG_DOF);
+  m_acc.data.length(HG_DOF);
+  m_torque.data.length(PD_DOF);
+ 
 }
 
 SamplePD_HG::~SamplePD_HG()
@@ -408,118 +263,65 @@ RTC::ReturnCode_t SamplePD_HG::onExecute(RTC::UniqueId ec_id)
     tor_ref[i] = -(q - q_ref[i]) * Pgain[i] - (dq - dq_ref[i]) * Dgain[i];
   }
 
-  m_torque0.data[0] = tor_ref[WAIST_P];
-  m_torque1.data[0] = tor_ref[WAIST_R];
-  m_torque2.data[0] = tor_ref[CHEST];
-  m_torque3.data[0] = tor_ref[LARM_SHOULDER_P];
-  m_torque4.data[0] = tor_ref[LARM_SHOULDER_R];
-  m_torque5.data[0] = tor_ref[LARM_SHOULDER_Y];
-  m_torque6.data[0] = tor_ref[LARM_ELBOW];
-  m_torque7.data[0] = tor_ref[LARM_WRIST_Y];
-  m_torque8.data[0] = tor_ref[LARM_WRIST_P];
-  m_torque9.data[0] = tor_ref[LARM_WRIST_R];
-  m_torque10.data[0] = tor_ref[RARM_SHOULDER_P];
-  m_torque11.data[0] = tor_ref[RARM_SHOULDER_R];
-  m_torque12.data[0] = tor_ref[RARM_SHOULDER_Y];
-  m_torque13.data[0] = tor_ref[RARM_ELBOW];
-  m_torque14.data[0] = tor_ref[RARM_WRIST_Y];
-  m_torque15.data[0] = tor_ref[RARM_WRIST_P];
-  m_torque16.data[0] = tor_ref[RARM_WRIST_R];
+  m_torque.data[0] = tor_ref[WAIST_P];
+  m_torque.data[1] = tor_ref[WAIST_R];
+  m_torque.data[2] = tor_ref[CHEST];
+  m_torque.data[3] = tor_ref[LARM_SHOULDER_P];
+  m_torque.data[4] = tor_ref[LARM_SHOULDER_R];
+  m_torque.data[5] = tor_ref[LARM_SHOULDER_Y];
+  m_torque.data[6] = tor_ref[LARM_ELBOW];
+  m_torque.data[7] = tor_ref[LARM_WRIST_Y];
+  m_torque.data[8] = tor_ref[LARM_WRIST_P];
+  m_torque.data[9] = tor_ref[LARM_WRIST_R];
+  m_torque.data[10] = tor_ref[RARM_SHOULDER_P];
+  m_torque.data[11] = tor_ref[RARM_SHOULDER_R];
+  m_torque.data[12] = tor_ref[RARM_SHOULDER_Y];
+  m_torque.data[13] = tor_ref[RARM_ELBOW];
+  m_torque.data[14] = tor_ref[RARM_WRIST_Y];
+  m_torque.data[15] = tor_ref[RARM_WRIST_P];
+  m_torque.data[16] = tor_ref[RARM_WRIST_R];
 
-  m_angle_out0.data[0] = q_ref[LLEG_HIP_R];
-  m_angle_out1.data[0] = q_ref[LLEG_HIP_P];
-  m_angle_out2.data[0] = q_ref[LLEG_HIP_Y];
-  m_angle_out3.data[0] = q_ref[LLEG_KNEE];
-  m_angle_out4.data[0] = q_ref[LLEG_ANKLE_P];
-  m_angle_out5.data[0] = q_ref[LLEG_ANKLE_R];
-  m_angle_out6.data[0] = q_ref[RLEG_HIP_R];
-  m_angle_out7.data[0] = q_ref[RLEG_HIP_P];
-  m_angle_out8.data[0] = q_ref[RLEG_HIP_Y];
-  m_angle_out9.data[0] = q_ref[RLEG_KNEE];
-  m_angle_out10.data[0] = q_ref[RLEG_ANKLE_P];
-  m_angle_out11.data[0] = q_ref[RLEG_ANKLE_R];
-  m_vel0.data[0] = dq_ref[LLEG_HIP_R];
-  m_vel1.data[0] = dq_ref[LLEG_HIP_P];
-  m_vel2.data[0] = dq_ref[LLEG_HIP_Y];
-  m_vel3.data[0] = dq_ref[LLEG_KNEE];
-  m_vel4.data[0] = dq_ref[LLEG_ANKLE_P];
-  m_vel5.data[0] = dq_ref[LLEG_ANKLE_R];
-  m_vel6.data[0] = dq_ref[RLEG_HIP_R];
-  m_vel7.data[0] = dq_ref[RLEG_HIP_P];
-  m_vel8.data[0] = dq_ref[RLEG_HIP_Y];
-  m_vel9.data[0] = dq_ref[RLEG_KNEE];
-  m_vel10.data[0] = dq_ref[RLEG_ANKLE_P];
-  m_vel11.data[0] = dq_ref[RLEG_ANKLE_R];
-  m_acc0.data[0] = ddq_ref[LLEG_HIP_R];
-  m_acc1.data[0] = ddq_ref[LLEG_HIP_P];
-  m_acc2.data[0] = ddq_ref[LLEG_HIP_Y];
-  m_acc3.data[0] = ddq_ref[LLEG_KNEE];
-  m_acc4.data[0] = ddq_ref[LLEG_ANKLE_P];
-  m_acc5.data[0] = ddq_ref[LLEG_ANKLE_R];
-  m_acc6.data[0] = ddq_ref[RLEG_HIP_R];
-  m_acc7.data[0] = ddq_ref[RLEG_HIP_P];
-  m_acc8.data[0] = ddq_ref[RLEG_HIP_Y];
-  m_acc9.data[0] = ddq_ref[RLEG_KNEE];
-  m_acc10.data[0] = ddq_ref[RLEG_ANKLE_P];
-  m_acc11.data[0] = ddq_ref[RLEG_ANKLE_R];
+  m_angle_out.data[0] = q_ref[LLEG_HIP_R];
+  m_angle_out.data[1] = q_ref[LLEG_HIP_P];
+  m_angle_out.data[2] = q_ref[LLEG_HIP_Y];
+  m_angle_out.data[3] = q_ref[LLEG_KNEE];
+  m_angle_out.data[4] = q_ref[LLEG_ANKLE_P];
+  m_angle_out.data[5] = q_ref[LLEG_ANKLE_R];
+  m_angle_out.data[6] = q_ref[RLEG_HIP_R];
+  m_angle_out.data[7] = q_ref[RLEG_HIP_P];
+  m_angle_out.data[8] = q_ref[RLEG_HIP_Y];
+  m_angle_out.data[9] = q_ref[RLEG_KNEE];
+  m_angle_out.data[10] = q_ref[RLEG_ANKLE_P];
+  m_angle_out.data[11] = q_ref[RLEG_ANKLE_R];
+  m_vel.data[0] = dq_ref[LLEG_HIP_R];
+  m_vel.data[1] = dq_ref[LLEG_HIP_P];
+  m_vel.data[2] = dq_ref[LLEG_HIP_Y];
+  m_vel.data[3] = dq_ref[LLEG_KNEE];
+  m_vel.data[4] = dq_ref[LLEG_ANKLE_P];
+  m_vel.data[5] = dq_ref[LLEG_ANKLE_R];
+  m_vel.data[6] = dq_ref[RLEG_HIP_R];
+  m_vel.data[7] = dq_ref[RLEG_HIP_P];
+  m_vel.data[8] = dq_ref[RLEG_HIP_Y];
+  m_vel.data[9] = dq_ref[RLEG_KNEE];
+  m_vel.data[10] = dq_ref[RLEG_ANKLE_P];
+  m_vel.data[11] = dq_ref[RLEG_ANKLE_R];
+  m_acc.data[0] = ddq_ref[LLEG_HIP_R];
+  m_acc.data[1] = ddq_ref[LLEG_HIP_P];
+  m_acc.data[2] = ddq_ref[LLEG_HIP_Y];
+  m_acc.data[3] = ddq_ref[LLEG_KNEE];
+  m_acc.data[4] = ddq_ref[LLEG_ANKLE_P];
+  m_acc.data[5] = ddq_ref[LLEG_ANKLE_R];
+  m_acc.data[6] = ddq_ref[RLEG_HIP_R];
+  m_acc.data[7] = ddq_ref[RLEG_HIP_P];
+  m_acc.data[8] = ddq_ref[RLEG_HIP_Y];
+  m_acc.data[9] = ddq_ref[RLEG_KNEE];
+  m_acc.data[10] = ddq_ref[RLEG_ANKLE_P];
+  m_acc.data[11] = ddq_ref[RLEG_ANKLE_R];
 
-  m_torque0Out.write();
-  m_torque1Out.write();
-  m_torque2Out.write();
-  m_torque3Out.write();
-  m_torque4Out.write();
-  m_torque5Out.write();
-  m_torque6Out.write();
-  m_torque7Out.write();
-  m_torque8Out.write();
-  m_torque9Out.write();
-  m_torque10Out.write();
-  m_torque11Out.write();
-  m_torque12Out.write();
-  m_torque13Out.write();
-  m_torque14Out.write();
-  m_torque15Out.write();
-  m_torque16Out.write();
-
-  m_angle_out0Out.write();
-  m_angle_out1Out.write();
-  m_angle_out2Out.write();
-  m_angle_out3Out.write();
-  m_angle_out4Out.write();
-  m_angle_out5Out.write();
-  m_angle_out6Out.write();
-  m_angle_out7Out.write();
-  m_angle_out8Out.write();
-  m_angle_out9Out.write();
-  m_angle_out10Out.write();
-  m_angle_out11Out.write();
-
-  m_vel0Out.write();
-  m_vel1Out.write();
-  m_vel2Out.write();
-  m_vel3Out.write();
-  m_vel4Out.write();
-  m_vel5Out.write();
-  m_vel6Out.write();
-  m_vel7Out.write();
-  m_vel8Out.write();
-  m_vel9Out.write();
-  m_vel10Out.write();
-  m_vel11Out.write();
-
-  m_acc0Out.write();
-  m_acc1Out.write();
-  m_acc2Out.write();
-  m_acc3Out.write();
-  m_acc4Out.write();
-  m_acc5Out.write();
-  m_acc6Out.write();
-  m_acc7Out.write();
-  m_acc8Out.write();
-  m_acc9Out.write();
-  m_acc10Out.write();
-  m_acc11Out.write();
-  
+  m_torqueOut.write();
+  m_angle_outOut.write();
+  m_velOut.write();
+  m_accOut.write();
 
   return RTC::RTC_OK;
 }

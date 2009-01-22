@@ -92,7 +92,7 @@ public:
     virtual void writeDataToPort();
     RTC::OutPort<RTC::TimedDoubleSeq> outPort;
 private:
-    std::string linkName;
+    std::vector<std::string> linkName;
     DynamicsSimulator::LinkDataType linkDataType;
     RTC::TimedDoubleSeq value;
 };
@@ -107,7 +107,7 @@ public:
     RTC::OutPort<RTC::TimedDoubleSeq> outPort;
 private:
     RTC::TimedDoubleSeq value;
-    std::string sensorName;
+    std::vector<std::string> sensorName;
 };
 
 
@@ -171,7 +171,7 @@ public:
     RTC::InPort<RTC::TimedDoubleSeq> inPort;
 private:      
     RTC::TimedDoubleSeq values;
-    std::string linkName;
+    std::vector<std::string> linkName;
     DynamicsSimulator::LinkDataType linkDataType;
     DblSequence data;
 };
