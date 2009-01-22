@@ -15,7 +15,7 @@ PROTO Joint [
     exposedField     MFFloat      dh                  [ 0 0 0 0 ]
     exposedField     SFString     jointType           ""
     exposedField     SFInt32      jointId             -1
-    exposedField     SFString     jointAxis           "Z"
+    exposedField     SFVec3f      jointAxis           0 0 1
 ]
 {
     Transform {
