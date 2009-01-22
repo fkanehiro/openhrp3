@@ -44,8 +44,8 @@ enum DataTypeId {
 struct PortInfo {
     std::string portName;
     DataTypeId dataTypeId;
-    std::string dataOwnerName; // link name or sensor name
-    int dataOwnerId; // sensor id
+    std::vector<std::string> dataOwnerName; // link name or sensor name
+    int dataOwnerId;           // sensor id
 };
     
 typedef std::map<std::string, PortInfo> PortInfoMap;
@@ -120,8 +120,8 @@ private:
     void addPortConnection(const std::string& value);
       
     void addModuleInfo(const std::string& value);
-      
-    std::vector<std::string> extractParameters(const std::string& str);
+    
+    std::vector<std::string> extractParameters(const std::string& str, const char delimiter=':');
     std::string expandEnvironmentVariables(std::string str);
 };
 
