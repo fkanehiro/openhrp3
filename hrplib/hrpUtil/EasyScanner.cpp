@@ -661,6 +661,7 @@ bool EasyScanner::readSymbol()
 bool EasyScanner::readSymbol(int id)
 {
   char* org = text;
+  int orglineNumber = lineNumber;
 
   if(readWord()){
       symbolValue = getSymbolID(stringValue);
@@ -668,6 +669,7 @@ bool EasyScanner::readSymbol(int id)
 	  return true;
       } else {
 	  text = org;
+      lineNumber = orglineNumber;
       }
   }
 
