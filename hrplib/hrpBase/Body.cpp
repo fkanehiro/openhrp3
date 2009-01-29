@@ -86,6 +86,8 @@ void Body::initialize()
 {
 	refCounter = 0;
 
+	rootLink_ = 0;
+
 	customizerHandle = 0;
 	customizerInterface = 0;
 	bodyHandleEntity.body = this;
