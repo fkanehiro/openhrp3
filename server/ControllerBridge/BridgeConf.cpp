@@ -223,7 +223,7 @@ void BridgeConf::setPortInfos(const char* optionLabel, PortInfoMap& portInfos)
             }
             if(digit){
                 info.dataOwnerId = atoi(owners[i].c_str());
-                info.dataOwnerName.push_back("");
+                info.dataOwnerName.clear();
                 if(owners.size() > 1){
                     throw invalid_argument(string("invalid VisionSensor setting"));
                 }
