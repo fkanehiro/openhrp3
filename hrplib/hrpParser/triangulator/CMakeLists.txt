@@ -10,8 +10,16 @@
 # @author Shin'ichiro Nakaoka
 
 set(headers
+  ear.h
   geometry.h
   triangulator.h
+  gutil.h
+  point.h
+  segment.h
+  line.h
+  polygon.h
+  triangle.h
+  vector.h
 )
 
 install(FILES ${headers} DESTINATION include/hrpParser/triangulator)
