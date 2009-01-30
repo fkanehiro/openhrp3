@@ -18,6 +18,7 @@
 #include <hrpCollision/ColdetModel.h>
 #include <iostream>
 #include <string>
+#include <float.h>
 
 
 using namespace std;
@@ -295,6 +296,42 @@ void CollisionDetector_impl::queryDistanceForGivenPairs
     computeDistances(tmpColdetPairs, out_distances);
 }
 
+CORBA::Double CollisionDetector_impl::queryDistanceWithRay
+(
+ const DblArray3 point,
+ const DblArray3 dir
+ )
+{
+    CORBA::Double D, minD=FLT_MAX;
+    StringToColdetBodyMap::iterator it = nameToColdetBodyMap.begin();
+    for (; it!=nameToColdetBodyMap.end(); it++){
+        ColdetBodyPtr body = it->second;
+        for (unsigned int i=0; i<body->numLinks(); i++){
+            D = body->linkColdetModel(i)->computeDistanceWithRay(point, dir);
+            if (D < minD) minD = D;
+        }
+    }
+    return minD;
+}
+
+DblSequence* CollisionDetector_impl::scanDistanceWithRay(const DblArray3 p, const DblArray9 R, CORBA::Double step, CORBA::Double range)
+{
+    DblSequence *distances = new DblSequence();
+    int scan_half = (int)(range/2/step);
+    distances->length(scan_half*2+1);
+    double local[3], a;
+    DblArray3 dir;
+    local[1] = 0; 
+    for (int i = -scan_half; i<= scan_half; i++){
+        a = i*step;
+        local[0] = -sin(a); local[2] = -cos(a); 
+        dir[0] = R[0]*local[0]+R[1]*local[1]+R[2]*local[2]; 
+        dir[1] = R[3]*local[0]+R[4]*local[1]+R[5]*local[2]; 
+        dir[2] = R[6]*local[0]+R[7]*local[1]+R[8]*local[2]; 
+        (*distances)[i+scan_half] = queryDistanceWithRay(p, dir); 
+    }
+    return distances;
+}
 
 bool CollisionDetector_impl::detectCollidedLinkPairs
 (vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll)

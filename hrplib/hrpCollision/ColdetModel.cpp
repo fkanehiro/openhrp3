@@ -197,3 +197,16 @@ void ColdetModel::setPrimitivePosition(const double* R, const double* p)
                     (float)p[0], (float)p[1], (float)p[2], 1.0f);
 }
 
+double ColdetModel::computeDistanceWithRay(const double *point, 
+                                           const double *dir)
+{
+    Opcode::RayCollider RC;
+    Ray world_ray(Point(point[0], point[1], point[2]),
+                  Point(dir[0], dir[1], dir[2]));
+    Opcode::CollisionFace CF;
+    Opcode::SetupClosestHit(RC, CF);
+    udword Cache;
+    RC.Collide(world_ray, dataSet->model, transform, &Cache);
+    return CF.mDistance;
+}
+

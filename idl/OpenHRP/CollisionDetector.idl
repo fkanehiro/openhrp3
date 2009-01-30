@@ -167,7 +167,25 @@ module OpenHRP {
      in CharacterPositionSequence positions,
      out DistanceSequence distances
      );
-  
+
+    /**
+     * @brief query the minimum distance between a point and all meshes along ray
+     * @param point a point
+     * @param dir direction of the ray
+     * @return distance if the ray collides, FLT_MAX otherwise
+     */
+    double queryDistanceWithRay(in DblArray3 point, in DblArray3 dir);
+
+    /**
+     * @brief scan distances between a point and all meshes 
+     * @param p position of the ray source
+     * @param R orientation of the ray source 
+     * @param step step angle[rad] to scan
+     * @param range scan range[rad]. The ray scans in x-z plane from right to left, front direction is -z like camera coordinates.
+     * @return sequence of distance
+     */
+    DblSequence scanDistanceWithRay(in DblArray3 p, in DblArray9 R,
+				    in double step, in double range);
   };
 
   /**
