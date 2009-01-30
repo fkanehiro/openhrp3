@@ -92,14 +92,14 @@
 		#include "OPC_Collider.h"
 		#include "OPC_VolumeCollider.h"
 		#include "OPC_TreeCollider.h"
-	  //#include "OPC_RayCollider.h"
+	        #include "OPC_RayCollider.h"
 	  //#include "OPC_SphereCollider.h"
 	  //#include "OPC_OBBCollider.h"
 	  //#include "OPC_AABBCollider.h"
 	  //#include "OPC_LSSCollider.h"
 	  //#include "OPC_PlanesCollider.h"
 		// Usages
-		//#include "OPC_Picking.h"
+		#include "OPC_Picking.h"
 		// Sweep-and-prune
 		//#include "OPC_BoxPruning.h"
 		//#include "OPC_SweepAndPrune.h"

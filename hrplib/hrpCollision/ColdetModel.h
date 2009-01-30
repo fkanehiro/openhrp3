@@ -173,7 +173,14 @@ namespace hrp {
          * @param p position relative to link (length = 3)
          */
         void setPrimitivePosition(const double* R, const double* p);
-
+        
+        /**
+         * @brief compute distance between a point and this mesh along ray
+         * @param point a point
+         * @param dir direction of ray
+         * @return distance if ray collides with this mesh, FLT_MAX otherwise
+         */
+        double computeDistanceWithRay(const double *point, const double *dir);
       private:
         /**
          * @brief common part of constuctors

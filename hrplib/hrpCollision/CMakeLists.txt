@@ -35,6 +35,8 @@ set(sources
   Opcode/OPC_TreeBuilders.cpp
   Opcode/OPC_TreeCollider.cpp
   Opcode/OPC_VolumeCollider.cpp 
+  Opcode/OPC_RayCollider.cpp
+  Opcode/OPC_Picking.cpp
   )
 
 set(headers

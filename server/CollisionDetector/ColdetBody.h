@@ -41,7 +41,9 @@ public:
     void setName(const char* name) { name_ = name; }
     const char* name() { return name_.c_str(); }
     
-
+    unsigned int numLinks() const {
+        return linkColdetModels.size();
+    }
     ColdetModelPtr linkColdetModel(int linkIndex) {
         return linkColdetModels[linkIndex];
     }

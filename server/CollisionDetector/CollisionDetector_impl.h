@@ -82,6 +82,13 @@ public:
         const CharacterPositionSequence& characterPositions,
         DistanceSequence_out distances
         );
+    
+    virtual CORBA::Double queryDistanceWithRay(
+                                               const DblArray3 point,
+                                               const DblArray3 dir
+                                               );
+
+    virtual DblSequence* scanDistanceWithRay(const DblArray3 p, const DblArray9 R, CORBA::Double step, CORBA::Double range);
 
 private:
 
