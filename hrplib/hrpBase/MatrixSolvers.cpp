@@ -74,7 +74,7 @@ namespace hrp {
 				int ldb = n;
 				dgesv_(&n, &nrhs, &(a(0,0)), &lda, &(ipiv[0]), &(out_x(0,0)), &ldb, &info);
 #else
-				info = clapack_dgesv(CblasRowMajor,
+				info = clapack_dgesv(CblasColMajor,
 									 n, nrhs, &(a(0,0)), n, 
 									 &(ipiv[0]),
 									 &(out_x(0,0)),
@@ -152,7 +152,7 @@ namespace hrp {
 				delete [] af;
 #else
 				x = _b;
-				info = clapack_dgesv(CblasRowMajor,
+				info = clapack_dgesv(CblasColMajor,
 									 n, nrhs, &(a(0,0)), lda, &(ipiv[0]),
 									 &(x(0)), ldb);
 #endif
@@ -365,7 +365,7 @@ namespace hrp {
 				std::vector<int> ipiv(n);
 
 #ifdef USE_CLAPACK_INTERFACE
-				info = clapack_dgetrf(CblasRowMajor,
+				info = clapack_dgetrf(CblasColMajor,
 									  n, n, &(a(0,0)), lda, &(ipiv[0]));
 #else
 				dgetrf_(&n, &n, &a(0,0), &lda, &(ipiv[0]), &info);
