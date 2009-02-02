@@ -912,6 +912,9 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
     default:
         std::cerr << "ERROR - Invalid type: " << getLabelOfLinkDataType(type) << endl;
     }
+
+    needToUpdatePositions = true;
+    needToUpdateSensorStates = true;
 }
 
 
