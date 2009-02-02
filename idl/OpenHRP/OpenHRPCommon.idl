@@ -23,8 +23,6 @@ module OpenHRP {
 	typedef double DblArray4[4];
 	typedef float FloatArray3[3];
 
-
-
 	typedef sequence<double> DblSequence;
 	typedef sequence<string> StringSequence;
 	typedef sequence<long>   LongSequence;
@@ -38,7 +36,10 @@ module OpenHRP {
 	typedef sequence<double, 6> DblSequence6;
 	typedef sequence<double, 9> DblSequence9;
 
+	typedef sequence<DblArray3>   DblArray3Sequence;
 	typedef sequence<DblArray12> DblArray12Sequence;
+
+	typedef sequence<DblSequence> DblSequenceSequence;
 
 	/**
 	 * @if jp
