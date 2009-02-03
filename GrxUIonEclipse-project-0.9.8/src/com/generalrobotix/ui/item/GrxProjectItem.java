@@ -49,6 +49,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.generalrobotix.ui.*;
+import com.generalrobotix.ui.view.GrxOpenHRPView;
 import com.generalrobotix.ui.util.GrxConfigBundle;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -417,6 +418,11 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		if (f == null || !f.isFile())
 			return false;
+    	GrxOpenHRPView grxView = (GrxOpenHRPView)manager_.getView(GrxOpenHRPView.class);
+		if( grxView != null ){
+			grxView.stopSimulation();
+		}
+
 		manager_.removeAllItems();
 		setName(f.getName().split("[.]")[0]);
 
