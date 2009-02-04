@@ -172,7 +172,7 @@ module OpenHRP {
      * @brief query the minimum distance between a point and all meshes along ray
      * @param point a point
      * @param dir direction of the ray
-     * @return distance if the ray collides, FLT_MAX otherwise
+     * @return distance if the ray collides, 0 otherwise
      */
     double queryDistanceWithRay(in DblArray3 point, in DblArray3 dir);
 

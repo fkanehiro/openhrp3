@@ -207,6 +207,10 @@ double ColdetModel::computeDistanceWithRay(const double *point,
     Opcode::SetupClosestHit(RC, CF);
     udword Cache;
     RC.Collide(world_ray, dataSet->model, transform, &Cache);
-    return CF.mDistance;
+    if (CF.mDistance == FLT_MAX){
+        return 0;
+    }else{
+        return CF.mDistance;
+    }
 }
 
