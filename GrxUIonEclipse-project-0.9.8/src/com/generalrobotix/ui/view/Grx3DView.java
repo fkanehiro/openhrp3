@@ -70,6 +70,7 @@ import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
@@ -750,8 +751,18 @@ public class Grx3DView
             GrxModelItem model = currentModels_.get(i);
             CharacterStateEx charStat = state.get(model.getName());
             if (charStat != null) {
-                if (charStat.sensorState != null)
+                if (charStat.sensorState != null){
                     model.setCharacterPos(charStat.position, charStat.sensorState.q);
+                    if (charStat.sensorState.range.length > 0){
+                    	List<GrxSensorItem> sensors = model.getSensors("Range");
+                    	for (int j=0; j<sensors.size(); j++){
+                    		GrxSensorItem sensor = sensors.get(j);
+                    		if (sensor.isVisible() && sensor.id() >= 0 && sensor.id() < charStat.sensorState.range.length){
+                    			sensor.updateShapeOfVisibleArea(charStat.sensorState.range[sensor.id()]);
+                    		}
+                    	}
+                    }
+                }
                 else
                     model.setCharacterPos(charStat.position, null);
             }

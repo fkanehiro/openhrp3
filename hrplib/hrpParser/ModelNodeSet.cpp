@@ -129,6 +129,9 @@ ModelNodeSetImpl::ModelNodeSetImpl(ModelNodeSet* self) : self(self)
         protoNameToInfoMap["VisionSensor"]
             = ProtoInfo(PROTO_SENSOR, &ModelNodeSetImpl::checkSensorProtoCommon);
         
+        protoNameToInfoMap["RangeSensor"]
+            = ProtoInfo(PROTO_SENSOR, &ModelNodeSetImpl::checkSensorProtoCommon);
+        
         protoNameToInfoMap["HardwareComponent"]
             = ProtoInfo(PROTO_HARDWARECOMPONENT, &ModelNodeSetImpl::checkHardwareComponentProto);
     }
@@ -453,6 +456,11 @@ void ModelNodeSetImpl::extractChildNodes
                 
             case PROTO_SENSOR:
                 jointNodeSet->sensorNodes.push_back(protoInstance);
+                putMessage(protoName + protoInstance->defName);
+                break;
+                
+            case PROTO_HARDWARECOMPONENT:
+                jointNodeSet->hwcNodes.push_back(protoInstance);
                 putMessage(protoName + protoInstance->defName);
                 break;
                 

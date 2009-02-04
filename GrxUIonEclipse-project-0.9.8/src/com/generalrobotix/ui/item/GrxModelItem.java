@@ -597,6 +597,34 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     	for(int j=0; j<index.size(); j++)
                     		list.remove(index.get(j));
                     }
+            	}else if (link.children_.get(i) instanceof GrxHwcItem){
+            		GrxHwcItem hwc = (GrxHwcItem)link.children_.get(i);
+                	list = new ArrayList();
+                    for(int j=0; j<hwc.info_.shapeIndices.length; j++)
+                    	list.add(new Integer(j));
+                    l=0;
+                    while(!list.isEmpty()){
+                    	int inlinedSTMIndex = hwc.info_.shapeIndices[(Integer)list.get(0)].inlinedShapeTransformMatrixIndex;
+                    	List index = new ArrayList();
+                    	index.add(list.get(0));
+                    	if(inlinedSTMIndex == -1){ 
+                    		hwc.addChild(new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this,
+                        			hwc.info_.shapeIndices, null, index));
+                    		l++;
+                    	}else{  
+                    		for(int j=1; j<list.size(); j++){
+        	            		Integer k = (Integer)list.get(j);
+        	            		if(inlinedSTMIndex == hwc.info_.shapeIndices[k].inlinedShapeTransformMatrixIndex){
+        	            			index.add(k);       			
+        	            		}
+        	            	}
+                    		hwc.addChild(new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this,
+                    			hwc.info_.shapeIndices, hwc.info_.inlinedShapeTransformMatrices[inlinedSTMIndex], index));
+                    		l++;
+                    	}
+                    	for(int j=0; j<index.size(); j++)
+                    		list.remove(index.get(j));
+                    }
             	}
             }
         }
@@ -850,8 +878,18 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         pos.scale(1.0 / totalMass);
     }
 
+    public List<GrxSensorItem> getSensors(String type){
+    	List<GrxSensorItem> sensors = new ArrayList<GrxSensorItem>();
+    	rootLink().gatherSensors(type, sensors);
+    	if (sensors.size() > 0){
+    		return sensors;
+    	}else{
+    		return null;
+    	}
+    }
+    
     public String[] getSensorNames(String type) {
-        List<GrxSensorItem> l = sensorMap_.get(type);
+        List<GrxSensorItem> l = getSensors(type);
         if (l == null)
             return null;
 

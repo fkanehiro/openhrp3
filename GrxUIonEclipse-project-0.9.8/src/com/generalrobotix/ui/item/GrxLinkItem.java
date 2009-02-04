@@ -33,6 +33,7 @@ import javax.vecmath.Matrix3d;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 
+import jp.go.aist.hrp.simulator.HwcInfo;
 import jp.go.aist.hrp.simulator.LinkInfo;
 import jp.go.aist.hrp.simulator.SensorInfo;
 
@@ -249,6 +250,10 @@ public class GrxLinkItem extends GrxTransformItem{
     	if (sensor.camera_ != null){
     		// TODO : GrxModelItem.sensorMap_ and GrxModelItem.cameraList_ must be updated
     	}
+    }
+    
+    public void addHwc(GrxHwcItem hwc){
+    	addChild(hwc);
     }
     
     /**
@@ -843,6 +848,15 @@ public class GrxLinkItem extends GrxTransformItem{
             	addSensor(sensor);
             }
         }
+        
+        HwcInfo[] hinfo = info_.hwcs;
+        if (hinfo != null){
+        	for (int i=0; i<hinfo.length; i++) {
+        		GrxHwcItem hwc = new GrxHwcItem(hinfo[i].name, manager_, model_, hinfo[i]);
+        		addHwc(hwc);
+        	}
+        }
+        
         Map<String, Object> userData = new Hashtable<String, Object>();
         userData.put("linkInfo", this);
         userData.put("object", model_);

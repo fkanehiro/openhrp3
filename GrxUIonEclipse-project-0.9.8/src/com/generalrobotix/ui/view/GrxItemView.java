@@ -50,6 +50,7 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxHwcItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -209,6 +210,12 @@ public class GrxItemView extends GrxBaseView {
 			if (o instanceof GrxSensorItem){
 				GrxSensorItem sensor = (GrxSensorItem)o;
 				return sensor.children_.toArray();
+			}
+			
+			// GrxHwcItem -> 子供の形状を返す
+			if (o instanceof GrxHwcItem){
+				GrxHwcItem hwc = (GrxHwcItem)o;
+				return hwc.children_.toArray();
 			}
 			
 			// その他

@@ -131,8 +131,12 @@ DynamicsSimulator_impl::DynamicsSimulator_impl(CORBA::ORB_ptr orb)
         if (CORBA::is_nil(collisionDetectorFactory)) {
             std::cerr << "CollisionDetectorFactory not found" << std::endl;
         }
-        
-        collisionDetector = collisionDetectorFactory->create();
+
+        try {
+            collisionDetector = collisionDetectorFactory->create();
+        }catch(...){
+            std::cerr << "failed to create CollisionDetector" << std::endl;
+        }
     }
 
     collisions = new CollisionSequence;
@@ -503,6 +507,16 @@ void DynamicsSimulator_impl::getCharacterSensorValues
 #else
             sensorOutput[CORBA::ULong(0)] = accelSensor->dv(0); sensorOutput[CORBA::ULong(1)] = accelSensor->dv(1); sensorOutput[CORBA::ULong(2)] = accelSensor->dv(2);
 #endif
+        }
+        break;
+
+        case Sensor::RANGE:
+        {
+            RangeSensor *rangeSensor = static_cast<RangeSensor*>(sensor);
+            sensorOutput->length(rangeSensor->distances.size());
+            for (unsigned int i=0; i<rangeSensor->distances.size(); i++){
+                sensorOutput[i] = rangeSensor->distances[i];
+            }
         }
         break;
 
@@ -1157,6 +1171,7 @@ void DynamicsSimulator_impl::_setupCharacterData()
         sensorState.force.length(body->numSensors(Sensor::FORCE));
         sensorState.rateGyro.length(body->numSensors(Sensor::RATE_GYRO));
         sensorState.accel.length(body->numSensors(Sensor::ACCELERATION));
+        sensorState.range.length(body->numSensors(Sensor::RANGE));
 
         if(debugMode){
             std::cout << "character[" << i << "], nlinks = " << numLinks << "\n";
@@ -1253,6 +1268,27 @@ void DynamicsSimulator_impl::_updateSensorStates()
                 std::cout << "Accel:" << sensor->dv << std::endl;
             }
         }		
+
+        n = body->numSensors(Sensor::RANGE);
+        for (int id=0; id < n; ++id){
+            RangeSensor *rangeSensor = body->sensor<RangeSensor>(id);
+            if (world.currentTime() >= rangeSensor->nextUpdateTime){
+                vector3 gp(rangeSensor->link->p + (rangeSensor->link->R)*rangeSensor->localPos);
+                matrix33 gR(rangeSensor->link->R*rangeSensor->localR);
+                DblArray3 p;
+                DblArray9 R;
+                setVector3(gp, p);
+                setMatrix33ToRowMajorArray(gR, R);
+                DblSequence_var data = collisionDetector->scanDistanceWithRay(p, R,
+                                                                              rangeSensor->scanStep, rangeSensor->scanAngle);
+                rangeSensor->distances.resize(data->length());
+                for (unsigned int i=0; i<data->length(); i++){
+                    rangeSensor->distances[i] = data[i];
+                }
+                rangeSensor->nextUpdateTime += 1.0/rangeSensor->scanRate;
+                state.range[id] = data;
+            }
+        }
     }
     needToUpdateSensorStates = false;
 

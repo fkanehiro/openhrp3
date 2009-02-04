@@ -12,60 +12,76 @@
    </extension>
    <extension
          point="org.eclipse.ui.views">
+      <category
+            id="com.generalrobotix.ui.view"
+            name="GrxUI"/>
       <view
             class="com.generalrobotix.ui.view.GrxItemViewPart"
             id="com.generalrobotix.ui.view.GrxItemViewPart"
+            category="com.generalrobotix.ui.view"
             name="Item View">
       </view>
       <view
-            class="com.generalrobotix.ui.view.GrxTestViewPart"
-            id="com.generalrobotix.ui.view.GrxTestViewPart"
-            name="Test View">
+            class="com.generalrobotix.ui.view.GrxRangeSensorViewPart"
+            id="com.generalrobotix.ui.view.GrxRangeSensorViewPart"
+            category="com.generalrobotix.ui.view"
+            name="Range Sensor View">
       </view>
       <view
             class="com.generalrobotix.ui.view.GrxJythonPromptViewPart"
             id="com.generalrobotix.ui.view.GrxJythonPromptViewPart"
+            category="com.generalrobotix.ui.view"
             name="JythonPrompt View"/>
       <view
             class="com.generalrobotix.ui.view.GrxPropertyViewPart"
             id="com.generalrobotix.ui.view.GrxPropertyViewPart"
+            category="com.generalrobotix.ui.view"
             name="Property View"/>
       <view
             class="com.generalrobotix.ui.view.GrxORBMonitorViewPart"
             id="com.generalrobotix.ui.view.GrxORBMonitorViewPart"
+            category="com.generalrobotix.ui.view"
             name="NameService Monitor"/>
       <view
             class="com.generalrobotix.ui.view.Grx3DViewPart"
             id="com.generalrobotix.ui.view.Grx3DViewPart"
+            category="com.generalrobotix.ui.view"
             name="3DView"/>
       <view
             class="com.generalrobotix.ui.view.GrxLoggerViewPart"
             id="com.generalrobotix.ui.view.GrxLoggerViewPart"
+            category="com.generalrobotix.ui.view"
             name="Logger View"/>
       <view
             class="com.generalrobotix.ui.view.GrxGraphViewPart"
             id="com.generalrobotix.ui.view.GrxGraphViewPart"
+            category="com.generalrobotix.ui.view"
             name="Graph"/>
       <view
             class="com.generalrobotix.ui.view.GrxProcessManagerViewPart"
             id="com.generalrobotix.ui.view.GrxProcessManagerViewPart"
+            category="com.generalrobotix.ui.view"
             name="Process Manager"/>
       <view
             class="com.generalrobotix.ui.view.GrxOpenHRPViewPart"
             id="com.generalrobotix.ui.view.GrxOpenHRPViewPart"
+            category="com.generalrobotix.ui.view"
             name="OpenHRP"/>
       <view
             class="com.generalrobotix.ui.view.GrxRobotStatViewPart"
             id="com.generalrobotix.ui.view.GrxRobotStatViewPart"
+            category="com.generalrobotix.ui.view"
             name="Robot State"/>
       <view
             class="com.generalrobotix.ui.view.GrxTextEditorViewPart"
             id="com.generalrobotix.ui.view.GrxTextEditorViewPart"
+            category="com.generalrobotix.ui.view"
             name="Text Editor">
       </view>
       <view
             class="com.generalrobotix.ui.view.GrxServerManagerViewPart"
             id="com.generalrobotix.ui.view.GrxServerManagerViewPart"
+            category="com.generalrobotix.ui.view"
             name="Server Manager"/>
    </extension>
    <extension

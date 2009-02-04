@@ -18,10 +18,14 @@
 package com.generalrobotix.ui.item;
 
 
+import javax.media.j3d.Geometry;
 import javax.media.j3d.IndexedTriangleArray;
+import javax.media.j3d.Node;
+import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.TransparencyAttributes;
+import javax.media.j3d.TriangleFanArray;
 import javax.vecmath.Point3f;
 
 import org.eclipse.jface.action.Action;
@@ -49,7 +53,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 
 	SensorInfo info_;
 	public Camera_impl camera_;
-	private Switch switchCamera_ = null;
+	private Switch switchVisibleArea_ = null;
 
 
     /**
@@ -154,6 +158,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     	setProperty("id", String.valueOf(info_.id));
     	translation(info_.translation);
     	rotation(info_.rotation);
+    	setProperty("alwaysVisible", "false");
 
         setIcon("camera.png");
 
@@ -198,8 +203,8 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
             camera_ = new Camera_impl(prm, offScreen);
 
             tg_.addChild(camera_.getBranchGroup());
-            switchCamera_ = SceneGraphModifier._makeSwitchNode(_createShapeOfVisibleArea());
-            tg_.addChild(switchCamera_);
+            switchVisibleArea_ = SceneGraphModifier._makeSwitchNode(_createShapeOfVisibleArea());
+            tg_.addChild(switchVisibleArea_);
         }else if(info.type.equals("RateGyro")){
         	float[] max = new float[3];
         	max[0] = info.specValues[0];
@@ -223,6 +228,13 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
         	maxt[2] = info.specValues[5];
         	setFltAry("maxForce", maxf);
         	setFltAry("maxTorque", maxt);
+        }else if(info.type.equals("Range")){
+        	setFlt("scanAngle", info.specValues[0]);
+        	setFlt("scanStep", info.specValues[1]);
+        	setFlt("scanRate", info.specValues[2]);
+        	setFlt("maxDistance", info.specValues[3]);
+        	switchVisibleArea_ = SceneGraphModifier._makeSwitchNode(_createShapeOfVisibleArea());
+        	tg_.addChild(switchVisibleArea_);
         }
 
     }
@@ -254,6 +266,8 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
             return 2;
         else if (type.equals("Vision"))
             return 3;
+        else if (type.equals("Range"))
+            return 4;
         else
             return -1;
 
@@ -332,6 +346,14 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     		id(value);
     	}else if(property.equals("type")){
     		type(value);
+    	}else if(property.equals("alwaysVisible")){
+    		if (value.startsWith("true")){
+    			setProperty("alwaysVisible", "true");
+    			setVisibleArea(true);
+    		}else{
+    			setProperty("alwaysVisible", "false");
+    			setVisibleArea(false);
+    		}
     	}else{
     		return false;
     	}
@@ -405,6 +427,18 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     		info_.specValues[3] = maxt[0];
     		info_.specValues[4] = maxt[1];
     		info_.specValues[5] = maxt[2];
+    	}else if(type.equals("Range")){
+    		if (info_.specValues == null || info_.specValues.length != 3){
+    			info_.specValues = new float[]{3.14159f, 0.1f, 10.0f, 10.0f};
+    			_removeSensorSpecificProperties();
+    			setFlt("scanAngle", 3.14159f);
+    			setFlt("scanStep", 0.1f);
+    			setFlt("scanRate", 10.0f);
+    			setFlt("maxDistance", 10.0f);
+    		}
+    		info_.specValues[0] = getFlt("scanAngle", 3.14159f);
+    		info_.specValues[1] = getFlt("scanStep", 0.1f);
+    		info_.specValues[2] = getFlt("scanRate", 10.0f);
     	}else{
     		System.out.println("GrxSensorItem.propertyChanged() : unknown sensor type : "+info_.type);
     		return;
@@ -429,6 +463,11 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		remove("height");
 		remove("frameRate");
 		remove("cameraType");
+		// property of RangeSensor
+		remove("scanAngle");
+		remove("scanStep");
+		remove("scanRate");
+		remove("maxDistance");
 	}
 
 	/**
@@ -444,11 +483,81 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		return ret;
 	}
 
+	private Point3f[] _distances2points(double[] distances){
+    	if (info_.type.equals("Range")){
+    		float scanAngle = info_.specValues[0];
+    		float step = info_.specValues[1];
+    		float d = info_.specValues[3];
+    		int half = (int)(scanAngle/2/step);
+    		if (distances.length != half*2+1){
+    			System.out.println("_distance2points() : length mismatch");
+    			return null;
+    		}
+    		Point3f[] p3f = new Point3f[half*2+1+1];
+    		p3f[0] = new Point3f(0,0,0);
+    		for (int i=-half; i<=half; i++){
+    			double angle = scanAngle/2.0/half*i;
+    			p3f[i+half+1] = new Point3f(
+    					(float)(-distances[i+half]*Math.sin(angle)),
+    					0.0f,
+    					(float)(-distances[i+half]*Math.cos(angle)));
+    		}
+    		return p3f;
+    	}else{
+    		return null;
+    	}
+	}
+	/**
+	 * @brief update shape of visible area(only used for RangeSensor)
+	 * @param distances array of distances
+	 */
+	public void updateShapeOfVisibleArea(double[] distances){
+    	if (info_.type.equals("Range")){
+    		Point3f[] p3f = _distances2points(distances);
+    		if (p3f == null) return;
+        	Shape3D shapeNode = (Shape3D)switchVisibleArea_.getChild(0);
+        	Geometry gm = (Geometry)shapeNode.getGeometry(0);
+        	if (gm instanceof TriangleFanArray){
+        		TriangleFanArray tri = (TriangleFanArray)gm;
+        		tri.setCoordinates(0, p3f);
+        	}
+    	}
+	}
 	/**
 	 * @brief create shape of visible area
 	 * @return shape 
 	 */
     private Shape3D _createShapeOfVisibleArea() {
+    	if (info_.type.equals("Range")){
+    		float scanAngle = info_.specValues[0];
+    		float step = info_.specValues[1];
+    		float d = info_.specValues[3];
+    		int half = (int)(scanAngle/2/step);
+    		Point3f[] p3f = new Point3f[half*2+1+1];
+    		p3f[0] = new Point3f(0,0,0);
+    		for (int i=-half; i<=half; i++){
+    			double angle = scanAngle/2.0/half*i;
+    			p3f[i+half+1] = new Point3f(
+    					(float)(-d*Math.sin(angle)),
+    					0.0f,
+    					(float)(-d*Math.cos(angle)));
+    		}
+    		int[] stripVertexCounts = { p3f.length };
+    		TriangleFanArray tri = new TriangleFanArray(p3f.length,
+    				TriangleFanArray.COORDINATES,
+    				stripVertexCounts);
+            tri.setCapability(QuadArray.ALLOW_COORDINATE_READ);
+            tri.setCapability(QuadArray.ALLOW_COORDINATE_WRITE);
+    		tri.setCoordinates(0, p3f);
+    		javax.media.j3d.Appearance app  = new javax.media.j3d.Appearance();
+    		app.setTransparencyAttributes(
+    				new TransparencyAttributes(TransparencyAttributes.FASTEST, 0.5f)
+    		);
+    		Shape3D s3d = new Shape3D(tri, app);
+            s3d.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+            s3d.setCapability(Shape3D.ALLOW_GEOMETRY_WRITE);
+    		return s3d;
+    	}
     	if (camera_ == null) return null;
     	
     	CameraParameter prm = camera_.getCameraParameter();
@@ -486,8 +595,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
         app.setTransparencyAttributes(
             new TransparencyAttributes(TransparencyAttributes.FASTEST, 0.5f)
         );
-        Shape3D s3d = new Shape3D(tri);
-        s3d.setAppearance(app);
+        Shape3D s3d = new Shape3D(tri, app);
         return s3d;
     } 
     
@@ -496,9 +604,13 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 	 * @param b true to make visible, false otherwise
 	 */
     public void setVisibleArea(boolean b) {
-    	if (switchCamera_ != null){
-            switchCamera_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
+    	if (switchVisibleArea_ != null){
+            switchVisibleArea_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
     	}
+    }
+    
+    public boolean isVisible(){
+    	return switchVisibleArea_ != null && switchVisibleArea_.getWhichChild() == Switch.CHILD_ALL;
     }
     
     /**
@@ -509,6 +621,6 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
      */
     public void setFocused(boolean b){
     	super.setFocused(b);
-    	setVisibleArea(b);
+    	if (isFalse("alwaysVisible")) setVisibleArea(b);
     }
 }

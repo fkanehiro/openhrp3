@@ -11,6 +11,7 @@
 
 package com.generalrobotix.ui.item;
 
+import java.util.List;
 import java.util.Vector;
 
 import javax.media.j3d.BadTransformException;
@@ -146,7 +147,7 @@ public class GrxTransformItem extends GrxBaseItem {
         try{
         	tg_.setTransform(t3d);
         }catch(BadTransformException e){
-        	//System.out.println("Invalid translation:"+v+" is applied to "+getName());
+        	System.out.println("Invalid translation:"+v+" is applied to "+getName());
         	return false;
         }
         return true;
@@ -227,5 +228,17 @@ public class GrxTransformItem extends GrxBaseItem {
 	public void setFocused(boolean b){
 		super.setFocused(b);
 		switchAxes_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
+	}
+	
+	public void gatherSensors(String type, List<GrxSensorItem> sensors){
+		if (this instanceof GrxSensorItem){
+			GrxSensorItem sensor = (GrxSensorItem)this;
+			if (sensor.type().equals(type)){
+				sensors.add(sensor);
+			}
+		}
+		for (int i=0; i<children_.size(); i++){
+			children_.get(i).gatherSensors(type, sensors);
+		}
 	}
 }

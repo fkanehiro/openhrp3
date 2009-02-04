@@ -229,6 +229,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			}else if(sensList.get(i).type.equals("Acceleration")){
 			    logList.add(sname+".acceleration");
 			    logList.add("float[3]");
+			}else if(sensList.get(i).type.equals("Range")){
+				logList.add(sname+".range");
+				SensorInfo info = sensList.get(i).info;
+				int half = (int)(info.specValues[0]/info.specValues[1]);// = scanAngle/scanStep
+				logList.add("float["+half*2+1+"]");
 			}else{
 			}
 		}
@@ -301,6 +306,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 					for (int j=0; j<sdata.accel.length; j++) {
 						for (int m=0; m<sdata.accel[j].length; m++) 
 							recDat_[i][k++] = (float)sdata.accel[j][m];
+					}
+					for (int j=0; j<sdata.range.length; j++) {
+						for (int m=0; m<sdata.range[j].length; m++) 
+							recDat_[i][k++] = (float)sdata.range[j][m];
 					}
 				}
 				
@@ -426,6 +435,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 						for (int m=0; m<sdata.accel[j].length; m++) 
 							sdata.accel[j][m] = (double)f[k++];
 					}
+					for (int j=0; j<sdata.range.length; j++) {
+						for (int m=0; m<sdata.range[j].length; m++) 
+							sdata.range[j][m] = (double)f[k++];
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -484,6 +497,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             	int forceCount = 0;
             	int gyroCount = 0;
             	int accelCount = 0;
+            	int rangeCount = 0;
             	
             	for (int i=0; i<format.length; i++) {
             		String[] str = format[i].split("[.]");
@@ -504,19 +518,22 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             			gyroCount++;
             		} else if (str[1].equals("acceleration")) {
             			accelCount++;
+                	} else if (str[1].equals("range")){
+                		rangeCount++;
                 	}
             	}
             	
   				CharacterStateEx cpos = new CharacterStateEx();
   				cpos.characterName = lastCharName_;
   				cpos.position = lposList.toArray(new LinkPosition[0]);
-            	if (jointCount+forceCount+accelCount+gyroCount > 1) {
+            	if (jointCount+forceCount+accelCount+gyroCount+rangeCount > 1) {
             		SensorState	sdata = new SensorState();
        				sdata.q = new double[jointCount];
        				sdata.u = new double[jointCount];
       				sdata.force = new double[forceCount][6];
 					sdata.rateGyro  = new double[gyroCount][3];
 					sdata.accel = new double[accelCount][3];
+					sdata.range = new double[rangeCount][]; // TODO
     				cpos.sensorState = sdata;
             	}
             	preStat_.charList.add(cpos);
@@ -699,7 +716,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		String name;
 		String type; //#####[Changed] int -> string ｕ5・Xｌ"・I
 		int id;
-		public SensorInfoLocal(SensorInfo info) {
+		SensorInfo info;
+		public SensorInfoLocal(SensorInfo _info) {
+			info = _info;
 			name = info.name;
 			// ##### [Changed] NewModelLoader.IDL
 			//if( info.type.equals("Force") )
@@ -748,6 +767,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 				return 2;
 			else if (type.equals("Vision")) 
 				return 3;
+			else if (type.equals("Range"))
+				return 4;
 			else
 				return -1;
 
