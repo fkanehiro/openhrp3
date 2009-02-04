@@ -173,6 +173,7 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
         setJointParameters(index, jointNodeSet->jointNode);
         setSegmentParameters(index, jointNodeSet->segmentNode);
         setSensors(index, jointNodeSet);
+        setHwcs(index, jointNodeSet);
     }
     catch( ModelLoader::ModelLoaderException& ex ) {
         string name(linkInfo->name);
@@ -283,6 +284,23 @@ void BodyInfo_impl::setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet)
 }
 
 
+void BodyInfo_impl::setHwcs(int linkInfoIndex, JointNodeSetPtr jointNodeSet)
+{
+    LinkInfo& linkInfo = links_[linkInfoIndex];
+
+    vector<VrmlProtoInstancePtr>& hwcNodes = jointNodeSet->hwcNodes;
+
+    int numHwcs = hwcNodes.size();
+    linkInfo.hwcs.length(numHwcs);
+
+    for(int i = 0 ; i < numHwcs ; ++i) {
+        HwcInfo_var hwcInfo( new HwcInfo() );
+        readHwcNode( linkInfoIndex, hwcInfo, hwcNodes[i] );
+        linkInfo.hwcs[i] = hwcInfo;
+    }
+}
+
+
 void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode)
 {
     if(sensorTypeMap.empty()) {
@@ -293,6 +311,7 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
         sensorTypeMap["PhotoInterrupter"]   = "";
         sensorTypeMap["VisionSensor"]       = "Vision";
         sensorTypeMap["TorqueSensor"]       = "";
+        sensorTypeMap["RangeSensor"]	    = "Range";
     }
 
     try	{
@@ -381,6 +400,17 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
 	    double frameRate;
             copyVrmlField(fmap, "frameRate", frameRate);
             sensorInfo.specValues[6] = frameRate;
+        } else if( sensorType == "Range" ){
+            sensorInfo.specValues.length( CORBA::ULong(4) );
+            CORBA::Double v;
+            copyVrmlField(fmap, "scanAngle", v);
+            sensorInfo.specValues[0] = v;
+            copyVrmlField(fmap, "scanStep", v);
+            sensorInfo.specValues[1] = v;
+            copyVrmlField(fmap, "scanRate", v);
+            sensorInfo.specValues[2] = v;
+            copyVrmlField(fmap, "maxDistance", v);
+            sensorInfo.specValues[3] = v;
         }
 
         /*
@@ -406,6 +436,34 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
         error += ": ";
         error += ex.description;
         throw ModelLoader::ModelLoaderException( error.c_str() );
+    }
+}
+
+void BodyInfo_impl::readHwcNode(int linkInfoIndex, HwcInfo& hwcInfo, VrmlProtoInstancePtr hwcNode)
+{
+    try	{
+        hwcInfo.name = CORBA::string_dup( hwcNode->defName.c_str() );
+
+        TProtoFieldMap& fmap = hwcNode->fields;
+        
+        copyVrmlField(fmap, "id", hwcInfo.id );
+        copyVrmlField(fmap, "translation", hwcInfo.translation );
+        copyVrmlRotationFieldToDblArray4( fmap, "rotation", hwcInfo.rotation );
+        std::string url;
+        copyVrmlField( fmap, "url", url );
+        hwcInfo.url = CORBA::string_dup( url.c_str() );
+
+        Matrix44 E(tvmet::identity<Matrix44>());
+        VrmlVariantField *field = hwcNode->getField("children");
+        if (field){
+            MFNode &children = field->mfNode();
+            for (unsigned int i=0; i<children.size(); i++){
+                traverseShapeNodes(children[i].get(), E, 
+                                   hwcInfo.shapeIndices, hwcInfo.inlinedShapeTransformMatrices, &topUrl());
+            }
+        }
+    } catch(ModelLoader::ModelLoaderException& ex) {
+        throw ModelLoader::ModelLoaderException( ex.description );
     }
 }
 
