@@ -18,7 +18,6 @@
 #include <hrpCollision/ColdetModel.h>
 #include <iostream>
 #include <string>
-#include <float.h>
 
 
 using namespace std;
@@ -302,13 +301,13 @@ CORBA::Double CollisionDetector_impl::queryDistanceWithRay
  const DblArray3 dir
  )
 {
-    CORBA::Double D, minD=FLT_MAX;
+    CORBA::Double D, minD=-1;
     StringToColdetBodyMap::iterator it = nameToColdetBodyMap.begin();
     for (; it!=nameToColdetBodyMap.end(); it++){
         ColdetBodyPtr body = it->second;
         for (unsigned int i=0; i<body->numLinks(); i++){
             D = body->linkColdetModel(i)->computeDistanceWithRay(point, dir);
-            if (D < minD) minD = D;
+            if (minD < 0 || (D != 0 && D < minD)) minD = D;
         }
     }
     return minD;
