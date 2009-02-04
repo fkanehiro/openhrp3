@@ -174,12 +174,11 @@ RTC::ReturnCode_t SamplePD::onActivated(RTC::UniqueId ec_id)
 	return RTC::RTC_OK;
 }
 
-/*
 RTC::ReturnCode_t SamplePD::onDeactivated(RTC::UniqueId ec_id)
 {
+	std::cout << "on Deactivated" << std::endl;
   return RTC::RTC_OK;
 }
-*/
 
 
 RTC::ReturnCode_t SamplePD::onExecute(RTC::UniqueId ec_id)
