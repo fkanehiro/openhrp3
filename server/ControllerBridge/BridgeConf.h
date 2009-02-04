@@ -38,7 +38,8 @@ enum DataTypeId {
     ACCELERATION_SENSOR,
     COLOR_IMAGE,
     GRAYSCALE_IMAGE,
-    DEPTH_IMAGE
+    DEPTH_IMAGE,
+    RANGE_SENSOR
 };
 
 struct PortInfo {

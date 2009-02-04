@@ -331,6 +331,17 @@ public class GrxConfigBundle extends Properties {
 	}
 	
 	/**
+	 * @brief associate float value to key
+	 * @param key keyword
+	 * @param value double value
+	 */
+	public final void setFlt(String key, float value) {
+		String val = new String();
+		val += String.valueOf(value)+" ";
+		setProperty(key,val);
+	}
+	
+		/**
 	 * @brief associate float array to key
 	 * @param key keyword
 	 * @param value float array

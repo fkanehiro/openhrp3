@@ -71,6 +71,7 @@ module OpenHRP {
       "RateGyro"     - レートジャイロセンサ
       "Acceleration" - 加速度センサ
       "Vision"       - ビジョンセンサ
+      "Range"	     - 距離センサ
 
       @endif
     */
@@ -90,8 +91,26 @@ module OpenHRP {
 
   typedef sequence<SensorInfo> SensorInfoSequence;
 
+  /**
+     @if jp
+     ハードウェアコンポーネント情報を格納する構造体
+     @endif
+   */
+  struct HwcInfo
+  {
+    string         name;        ///< 本HWCの識別名  
+    long           id;          ///< HWCの種類ごとのセンサID  
+    DblArray3      translation; ///< HWC設置位置(リンクローカル座標)  
+    DblArray4      rotation;    ///< HWC設置姿勢(リンクローカル座標)  
+    string	   url;		///< HWCプロファイルのURL
 
+    /// 本HWCに対応する形状情報の変換行列付きインデックス列  
+    TransformedShapeIndexSequence shapeIndices;  
+    DblArray12Sequence inlinedShapeTransformMatrices;
+  };
 
+  typedef sequence<HwcInfo> HwcInfoSequence;
+  
   /**
      @if jp
      各リンクの情報を格納する構造体。
@@ -148,6 +167,7 @@ module OpenHRP {
     DblArray12Sequence inlinedShapeTransformMatrices;
 
     SensorInfoSequence sensors; ///< 本リンクに設置されたセンサの情報  
+    HwcInfoSequence hwcs;
 
     /**
        @if jp

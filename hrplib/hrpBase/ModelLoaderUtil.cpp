@@ -323,6 +323,7 @@ void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sens
             else if(type == "RateGyro")     { sensorType = Sensor::RATE_GYRO; }
             else if(type == "Acceleration")	{ sensorType = Sensor::ACCELERATION; }
             else if(type == "Vision")       { sensorType = Sensor::VISION; }
+            else if(type == "Range")        { sensorType = Sensor::RANGE; }
 
             CORBA::String_var name0 = sensorInfo.name;
             string name(name0);
@@ -337,6 +338,14 @@ void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sens
                 const Matrix33 R(rodrigues(axis, sensorInfo.rotation[3]));
                 sensor->localR = Rs * R;
             }
+            
+            if ( sensorType == Sensor::RANGE ) {
+                RangeSensor *range = dynamic_cast<RangeSensor *>(sensor);
+                range->scanAngle = sensorInfo.specValues[0];
+                range->scanStep = sensorInfo.specValues[1];
+                range->scanRate = sensorInfo.specValues[2];
+                range->maxDistance = sensorInfo.specValues[3];
+            } 
         }
     }
 }

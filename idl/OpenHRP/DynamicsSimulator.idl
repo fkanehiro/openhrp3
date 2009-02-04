@@ -60,6 +60,13 @@ module OpenHRP {
 		 * @endif
 		 */
 		sequence<DblArray3>	accel;
+
+		/**
+		 * @if jp
+		 * 距離センサ
+		 * @endif
+		 */
+		sequence<DblSequence> range;
 	};
 
 	typedef sequence<SensorState> SensorStateSequence;

@@ -19,6 +19,7 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 #include "tvmet3d.h"
 
 #include "hrpModelExportDef.h"
@@ -40,6 +41,7 @@ namespace hrp {
 			PHOTO_INTERRUPTER,
 			VISION,
 			TORQUE,
+			RANGE,
 			NUM_SENSOR_TYPES
 		};
 
@@ -112,6 +114,17 @@ namespace hrp {
 		bool isFirstUpdate;
 	};
 
+	class HRPBASE_EXPORT RangeSensor : public Sensor
+	{
+	public:
+		static const int TYPE = RANGE;
+
+		RangeSensor();
+
+		double scanAngle, scanStep, scanRate, maxDistance;  
+		std::vector<double> distances;
+		double nextUpdateTime;
+	};
 };
 
 

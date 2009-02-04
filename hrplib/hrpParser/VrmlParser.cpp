@@ -2106,7 +2106,9 @@ VrmlVariantField& VrmlParserImpl::readProtoField(VrmlFieldTypeId fieldTypeId)
     TProtoFieldMap::iterator p = currentProtoInstance->fields.find(scanner->stringValue);
 
     if(p == currentProtoInstance->fields.end()){
-        scanner->throwException("This field is not exist in proto node");
+        string msg = "This field(";
+        msg += scanner->stringValue +") does not exist in proto node";
+        scanner->throwException(msg);
     }
     if(p->second.typeId() != fieldTypeId){
         scanner->throwException("Unmatched field type");

@@ -234,6 +234,8 @@ public class GrxShapeItem extends GrxTransformItem{
         };
         setMenuItem(item);
         */
+		
+		setIcon("segment.png");
     }
 
     private Appearance createAppearance(AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo){

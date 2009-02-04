@@ -127,6 +127,7 @@ void BridgeConf::initLabelToDataTypeMap()
   m["COLOR_IMAGE"]         = COLOR_IMAGE;
   m["GRAYSCALE_IMAGE"]     = GRAYSCALE_IMAGE;
   m["DEPTH_IMAGE"]         = DEPTH_IMAGE;
+  m["RANGE_SENSOR"]	   = RANGE_SENSOR;
 }
 
 

@@ -41,7 +41,11 @@ Sensor* Sensor::create(int type)
     case ACCELERATION:
 		sensor = new AccelSensor();
 		break;
-		
+
+	case RANGE:
+		sensor = new RangeSensor();
+		break;
+
     case PRESSURE:
     case PHOTO_INTERRUPTER:
     case VISION:
@@ -152,4 +156,14 @@ void AccelSensor::putInformation(std::ostream& os)
 	os << "Acceleration Sensor\n";
 	Sensor::putInformation(os);
 	os << "dv = " << dv << std::endl;
+}
+
+RangeSensor::RangeSensor()
+{
+	type = RANGE;
+	scanAngle = M_PI;
+	scanStep = 0.1;
+	scanRate = 10;
+	maxDistance = 10;
+	nextUpdateTime = 0;
 }
