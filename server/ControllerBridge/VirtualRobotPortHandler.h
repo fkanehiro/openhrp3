@@ -56,6 +56,7 @@ public:
 			value.tm.nsec -= 1000000000;
 		}
     }
+    double stepTime;
 };
 
 typedef boost::shared_ptr<OutPortHandler> OutPortHandlerPtr;

@@ -14,6 +14,7 @@
 */
 
 #include"VirtualRobotRTC.h"
+#include "Controller_impl.h"
 
 #include <iostream>
 #include <boost/bind.hpp>
@@ -301,9 +302,19 @@ void VirtualRobotRTC::addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcL
 
 void VirtualRobotRTC::inputDataFromSimulator(Controller_impl* controller)
 {
-  for(OutPortHandlerMap::iterator it = outPortHandlers.begin(); it != outPortHandlers.end(); ++it){
-    it->second->inputDataFromSimulator(controller);
-  }
+    double controlTime = controller->controlTime;
+    double controlTimeStep = controller->getTimeStep();
+    for(OutPortHandlerMap::iterator it = outPortHandlers.begin(); it != outPortHandlers.end(); ++it){
+        double stepTime = it->second->stepTime;
+        if(stepTime){
+            double w = controlTime-(int)(controlTime/stepTime)*stepTime + controlTimeStep/2;
+            if(w >= stepTime) w=0;
+            if(w < controlTimeStep )
+                it->second->inputDataFromSimulator(controller);
+        }else{
+            it->second->inputDataFromSimulator(controller);
+        }
+    }
 }
 
 
@@ -315,11 +326,21 @@ void VirtualRobotRTC::outputDataToSimulator(Controller_impl* controller)
 }
 
 
-void VirtualRobotRTC::writeDataToOutPorts()
+void VirtualRobotRTC::writeDataToOutPorts(Controller_impl* controller)
 {
-  for(OutPortHandlerMap::iterator it = outPortHandlers.begin(); it != outPortHandlers.end(); ++it){
-    it->second->writeDataToPort();
-  }
+    double controlTime = controller->controlTime;
+    double controlTimeStep = controller->getTimeStep();
+    for(OutPortHandlerMap::iterator it = outPortHandlers.begin(); it != outPortHandlers.end(); ++it){
+        double stepTime = it->second->stepTime;
+        if(stepTime){
+            double w = controlTime-(int)(controlTime/stepTime)*stepTime + controlTimeStep/2;
+            if(w >= stepTime) w=0;
+            if(w < controlTimeStep )
+                it->second->writeDataToPort();
+        }else{
+                it->second->writeDataToPort();
+        }
+    }
 }
 
 

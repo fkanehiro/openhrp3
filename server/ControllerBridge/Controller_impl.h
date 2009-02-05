@@ -59,6 +59,9 @@ public:
 	void setTimeStep(CORBA::Double _timeStep){
         timeStep = _timeStep;
     }
+    double getTimeStep(){
+        return timeStep;
+    }
 
 	virtual void start();
 	virtual void control();
