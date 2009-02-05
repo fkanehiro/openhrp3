@@ -42,7 +42,7 @@ public:
     void inputDataFromSimulator(Controller_impl* controller);
     void outputDataToSimulator(Controller_impl* controller);
 
-    void writeDataToOutPorts();
+    void writeDataToOutPorts(Controller_impl* controller);
     void readDataFromInPorts(Controller_impl* controller);
 
     virtual RTC::ReturnCode_t onExecute(RTC::UniqueId ex_id);

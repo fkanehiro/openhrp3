@@ -64,6 +64,7 @@ SensorStateOutPortHandler::SensorStateOutPortHandler(PortInfo& info)
   : outPort(info.portName.c_str(), values)
 {
   dataTypeId = info.dataTypeId;
+  stepTime = info.stepTime;
 }
 
 
@@ -108,6 +109,7 @@ LinkDataOutPortHandler::LinkDataOutPortHandler(PortInfo& info) :
   linkName(info.dataOwnerName)
 {
   linkDataType = toDynamicsSimulatorLinkDataType(info.dataTypeId);
+  stepTime = info.stepTime;
 }
 
 
@@ -139,7 +141,7 @@ SensorDataOutPortHandler::SensorDataOutPortHandler(PortInfo& info) :
   outPort(info.portName.c_str(), value),
   sensorName(info.dataOwnerName)
 {
-
+    stepTime = info.stepTime;
 }
 
 
@@ -171,7 +173,7 @@ ColorImageOutPortHandler::ColorImageOutPortHandler(PortInfo& info) :
   outPort(info.portName.c_str(), image),
   cameraId(info.dataOwnerId)
 {
-
+    stepTime = info.stepTime;
 }
 
 
@@ -193,7 +195,7 @@ GrayScaleImageOutPortHandler::GrayScaleImageOutPortHandler(PortInfo& info)
   : outPort(info.portName.c_str(), image),
     cameraId(info.dataOwnerId)
 {
-
+    stepTime = info.stepTime;
 }
 
 
@@ -215,7 +217,7 @@ DepthImageOutPortHandler::DepthImageOutPortHandler(PortInfo& info) :
   outPort(info.portName.c_str(), image),
   cameraId(info.dataOwnerId)
 {
-
+    stepTime = info.stepTime;
 }
 
 

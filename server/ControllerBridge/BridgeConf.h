@@ -47,6 +47,7 @@ struct PortInfo {
     DataTypeId dataTypeId;
     std::vector<std::string> dataOwnerName; // link name or sensor name
     int dataOwnerId;           // sensor id
+    double stepTime;
 };
     
 typedef std::map<std::string, PortInfo> PortInfoMap;

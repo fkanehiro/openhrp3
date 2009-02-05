@@ -201,47 +201,51 @@ void BridgeConf::setPortInfos(const char* optionLabel, PortInfoMap& portInfos)
   for(size_t i=0; i < ports.size(); ++i){
     vector<string> parameters = extractParameters(ports[i]);
     int n = parameters.size();
-    if(n < 2 || n > 3){
+    if(n < 2 || n > 4){
       throw invalid_argument(string("invalid in port setting"));
     }
     PortInfo info;
 
     info.portName = parameters[0];
-    
-    int dataTypeParameterPos;
-    if(n == 2){
-      dataTypeParameterPos = 1;
-    } else {
-        string st=parameters[1];
-        vector<string> owners = extractParameters(st, ',');
-        for(size_t i=0; i<owners.size(); i++){
-            bool digit=true;
-            for(string::iterator itr=owners[i].begin(); itr!=owners[i].end(); itr++){
-                if(!isdigit(*itr)){
-                    digit = false;             
-                    break;
+    int j;
+    for(j=1; j<3; j++){
+        LabelToDataTypeIdMap::iterator it = labelToDataTypeIdMap.find(parameters[j]);
+        if(it == labelToDataTypeIdMap.end() ){
+            if(j==2)
+                throw invalid_argument(string("invalid data type"));
+            string st=parameters[j];
+            vector<string> owners = extractParameters(st, ',');
+            for(size_t i=0; i<owners.size(); i++){
+                bool digit=true;
+                for(string::iterator itr=owners[i].begin(); itr!=owners[i].end(); itr++){
+                    if(!isdigit(*itr)){
+                        digit = false;             
+                        break;
+                    }
+                }
+                if(digit){
+                    info.dataOwnerId = atoi(owners[i].c_str());
+                    info.dataOwnerName.clear();
+                    if(owners.size() > 1){
+                        throw invalid_argument(string("invalid VisionSensor setting"));
+                    }
+                }else{
+                    info.dataOwnerId = -1;
+                    info.dataOwnerName.push_back(owners[i]);
                 }
             }
-            if(digit){
-                info.dataOwnerId = atoi(owners[i].c_str());
-                info.dataOwnerName.clear();
-                if(owners.size() > 1){
-                    throw invalid_argument(string("invalid VisionSensor setting"));
-                }
-            }else{
-                info.dataOwnerId = -1;
-                info.dataOwnerName.push_back(owners[i]);
-            }
+        }else{
+            info.dataTypeId = it->second;
+            j++;
+            break;
         }
-      dataTypeParameterPos = 2;
     }
-    
-    LabelToDataTypeIdMap::iterator it = labelToDataTypeIdMap.find(parameters[dataTypeParameterPos]);
-    if(it == labelToDataTypeIdMap.end()){
-      throw invalid_argument(string("invalid data type"));
+    if(j<n){
+        info.stepTime = atof(parameters[j].c_str());
+    }else{
+        info.stepTime = 0;
     }
-    info.dataTypeId = it->second;
-    
+
     portInfos.insert(make_pair(info.portName, info));
   }
 }

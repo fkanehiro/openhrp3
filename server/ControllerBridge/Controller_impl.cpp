@@ -371,9 +371,7 @@ void Controller_impl::control()
     cout << "Controller_impl::control" << endl;
   }
 
-  controlTime += timeStep;
-
-  virtualRobotRTC->writeDataToOutPorts();
+  virtualRobotRTC->writeDataToOutPorts(this);
 
   for(RtcInfoMap::iterator p = rtcInfoMap.begin(); p != rtcInfoMap.end(); ++p){
     RtcInfoPtr& rtcInfo = p->second;
@@ -387,6 +385,8 @@ void Controller_impl::control()
   }
 
   virtualRobotRTC->readDataFromInPorts(this);
+
+  controlTime += timeStep;
 }
 
 
