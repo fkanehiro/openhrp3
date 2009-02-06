@@ -52,10 +52,12 @@ Link::Link()
 {
     jointId = -1;
     parent = 0;
-	sibling = 0;
-	child = 0;
-	
-	isHighGainMode = false;
+    sibling = 0;
+    child = 0;
+    
+    isHighGainMode = false;
+
+    defaultJointValue = 0.0;
 }
 
 
@@ -77,26 +79,26 @@ Link::~Link()
 
 
 namespace {
-	void setBodyIter(Link* link, Body* body)
-	{
-		link->body = body;
-		
-		if(link->sibling){
-			setBodyIter(link->sibling, body);
-		}
-		if(link->child){
-			setBodyIter(link->child, body);
-		}
-	}
+    void setBodyIter(Link* link, Body* body)
+    {
+        link->body = body;
+	
+        if(link->sibling){
+            setBodyIter(link->sibling, body);
+        }
+        if(link->child){
+            setBodyIter(link->child, body);
+        }
+    }
 }
 
 
 void Link::addChild(Link* link)
 {
-	if(link->parent){
-		link->parent->detachChild(link);
-	}
-
+    if(link->parent){
+        link->parent->detachChild(link);
+    }
+    
     link->sibling = child;
     link->parent = this;
     child = link;
@@ -125,7 +127,8 @@ void Link::copy(const Link& org)
     llimit = org.llimit;
     uvlimit = org.uvlimit;
     lvlimit = org.lvlimit;
-	isHighGainMode = org.isHighGainMode;
+    defaultJointValue = org.defaultJointValue;
+    isHighGainMode = org.isHighGainMode;
 
     parent = child = sibling = 0;
 
