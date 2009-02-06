@@ -153,6 +153,7 @@ namespace hrp {
         double	uvlimit;        ///< the upper limit of joint velocities
         double	lvlimit;        ///< the lower limit of joint velocities
 
+        double  defaultJointValue;
 		double	torqueConst;
         double	encoderPulse;
         double  Ir;     ///< rotor inertia [kg.m^2]
