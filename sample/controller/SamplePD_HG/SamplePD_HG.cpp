@@ -20,7 +20,6 @@
 
 #include <iostream>
 
-#define DOF (29)
 #define PD_DOF (17)
 #define HG_DOF (12)
 #define TIMESTEP 0.002
@@ -126,24 +125,6 @@ SamplePD_HG::SamplePD_HG(RTC::Manager* manager)
   Pgain = new double[DOF];
   Dgain = new double[DOF];
 
-  if (access(ANGLE_FILE, 0)){
-    std::cerr << ANGLE_FILE << " not found" << std::endl;
-  }else{
-    angle.open(ANGLE_FILE);
-  }
-
-  if (access(VEL_FILE, 0)){
-    std::cerr << VEL_FILE << " not found" << std::endl;
-  }else{
-    vel.open(VEL_FILE);
-  }
-
-   if (access(ACC_FILE, 0))
-  {
-    std::cerr << ACC_FILE << " not found" << std::endl;
-  }else{
-    acc.open(ACC_FILE);
-  }
 
   if (access(GAIN_FILE, 0)){
     std::cerr << GAIN_FILE << " not found" << std::endl;
@@ -166,9 +147,7 @@ SamplePD_HG::SamplePD_HG(RTC::Manager* manager)
 
 SamplePD_HG::~SamplePD_HG()
 {
-  if (angle.is_open()) angle.close();
-  if (vel.is_open()) vel.close();
-  if (acc.is_open())    acc.close();
+  closeFiles();
   delete [] Pgain;
   delete [] Dgain;
 }
@@ -212,25 +191,26 @@ RTC::ReturnCode_t SamplePD_HG::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t SamplePD_HG::onActivated(RTC::UniqueId ec_id)
 {
 	std::cout << "on Activated" << std::endl;
-	angle.seekg(0);
-	vel.seekg(0);
-   	acc.seekg(0);
+    openFiles();
 	
 	m_angle_inIn.update();
 	
 	for(int i=0; i < DOF; ++i){
 		qold[i] = m_angle_in.data[i];
+        q_ref[i] = dq_ref[i] = ddq_ref[i] = 0.0;
 	}
 	
 	return RTC::RTC_OK;
 }
 
-/*
+
 RTC::ReturnCode_t SamplePD_HG::onDeactivated(RTC::UniqueId ec_id)
 {
+  std::cout << "on Deactivated" << std::endl;
+  closeFiles();
   return RTC::RTC_OK;
 }
-*/
+
 
 
 RTC::ReturnCode_t SamplePD_HG::onExecute(RTC::UniqueId ec_id)
@@ -244,7 +224,6 @@ RTC::ReturnCode_t SamplePD_HG::onExecute(RTC::UniqueId ec_id)
 
   m_angle_inIn.update();
 
-  static double q_ref[DOF], dq_ref[DOF], ddq_ref[DOF];
   if(!angle.eof()){
 	angle >> q_ref[0]; vel >> dq_ref[0]; acc >> ddq_ref[0];// skip time
 	for (int i=0; i<DOF; i++){
@@ -362,6 +341,43 @@ RTC::ReturnCode_t SamplePD_HG::onExecute(RTC::UniqueId ec_id)
   }
 */
 
+void SamplePD_HG::openFiles()
+{
+  if (access(ANGLE_FILE, 0)){
+    std::cerr << ANGLE_FILE << " not found" << std::endl;
+  }else{
+    angle.open(ANGLE_FILE);
+  }
+
+  if (access(VEL_FILE, 0)){
+    std::cerr << VEL_FILE << " not found" << std::endl;
+  }else{
+    vel.open(VEL_FILE);
+  }
+
+   if (access(ACC_FILE, 0))
+  {
+    std::cerr << ACC_FILE << " not found" << std::endl;
+  }else{
+    acc.open(ACC_FILE);
+  }
+}
+
+void SamplePD_HG::closeFiles()
+{
+    if( angle.is_open() ){
+        angle.close();
+        angle.clear();
+    }
+    if( vel.is_open() ){
+        vel.close();
+        vel.clear();
+    }
+    if( acc.is_open() ){
+        acc.close();
+        acc.clear();
+    }
+}
 
 
 extern "C"

@@ -19,6 +19,8 @@
 #ifndef SamplePD_HG_H
 #define SamplePD_HG_H
 
+#define DOF (29)
+
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
 #include <rtm/CorbaPort.h>
@@ -69,7 +71,7 @@ class SamplePD_HG
 
   // The deactivated action (Active state exit action)
   // former rtc_active_exit()
-  // virtual RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id);
+   virtual RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id);
 
   // The execution action that is invoked periodically
   // former rtc_active_do()
@@ -143,6 +145,10 @@ class SamplePD_HG
   double *Pgain;
   double *Dgain;
   std::vector<double> qold;
+  double q_ref[DOF], dq_ref[DOF], ddq_ref[DOF];
+
+  void openFiles();
+  void closeFiles();
 };
 
 

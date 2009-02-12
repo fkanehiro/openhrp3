@@ -253,50 +253,50 @@ RTC::RTCList* VirtualRobotRTC::getConnectedRtcs()
 
 void VirtualRobotRTC::addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcList, std::set<std::string>& foundRtcNames)
 {
-  RTC::PortProfile_var portProfile = portRef->get_port_profile();
-  string portName(portProfile->name);
-	
-  RTC::ConnectorProfileList_var connectorProfiles = portRef->get_connector_profiles();
+    RTC::PortProfile_var portProfile = portRef->get_port_profile();
+    string portName(portProfile->name);
 
-  for(CORBA::ULong i=0; i < connectorProfiles->length(); ++i){
-    RTC::ConnectorProfile& connectorProfile = connectorProfiles[i];
-    RTC::PortList& connectedPorts = connectorProfile.ports;
+    RTC::ConnectorProfileList_var connectorProfiles = portRef->get_connector_profiles();
 
-    for(CORBA::ULong j=0; j < connectedPorts.length(); ++j){
-      RTC::Port_ptr connectedPortRef = connectedPorts[j];
-      RTC::PortProfile_var connectedPortProfile = connectedPortRef->get_port_profile();
-      RTC::RTObject_var connectedRtcRef = connectedPortProfile->owner;
-      RTC::RTObject_var thisRef = getObjRef();
+    for(CORBA::ULong i=0; i < connectorProfiles->length(); ++i){
+        RTC::ConnectorProfile& connectorProfile = connectorProfiles[i];
+        RTC::PortList& connectedPorts = connectorProfile.ports;
 
-      if(!CORBA::is_nil(connectedRtcRef) && !connectedRtcRef->_is_equivalent(thisRef)){
-	RTC::ComponentProfile_var componentProfile = connectedRtcRef->get_component_profile();
-	string connectedRtcName(componentProfile->instance_name);
-	set<string>::iterator it = foundRtcNames.find(connectedRtcName);
+        for(CORBA::ULong j=0; j < connectedPorts.length(); ++j){
+            RTC::Port_ptr connectedPortRef = connectedPorts[j];
+            RTC::PortProfile_var connectedPortProfile = connectedPortRef->get_port_profile();
+            RTC::RTObject_var connectedRtcRef = connectedPortProfile->owner;
+            RTC::RTObject_var thisRef = getObjRef();
 
-	cout << "detected a port connection: ";
-	cout << "\"" << portName << "\" of " << getInstanceName() << " <--> \"";
-	cout << connectedPortProfile->name << "\" of " << connectedRtcName << endl;
+            if(!CORBA::is_nil(connectedRtcRef) && !connectedRtcRef->_is_equivalent(thisRef)){
+                RTC::ComponentProfile_var componentProfile = connectedRtcRef->get_component_profile();
+                string connectedRtcName(componentProfile->instance_name);
+                set<string>::iterator it = foundRtcNames.find(connectedRtcName);
 
-	if(it == foundRtcNames.end()){
-	  RTC::ExecutionContextServiceList_var execServices = connectedRtcRef->get_execution_context_services();
-	  
-	  for(CORBA::ULong k=0; k < execServices->length(); k++) {
-	    RTC::ExecutionContextService_var execContext = execServices[k];
-	      
-	    RTC::ExtTrigExecutionContextService_var extTrigExecContext =
-	      RTC::ExtTrigExecutionContextService::_narrow(execContext);
-	    
-	    if(!CORBA::is_nil(extTrigExecContext)){
-	      CORBA::ULong n = rtcList.length();
-	      rtcList.length(n + 1);
-	      rtcList[n] = connectedRtcRef;
-	      foundRtcNames.insert(connectedRtcName);
-	    }
-	  }
-	}
-      }
+                cout << "detected a port connection: ";
+                cout << "\"" << portName << "\" of " << getInstanceName() << " <--> \"";
+                cout << connectedPortProfile->name << "\" of " << connectedRtcName << endl;
+
+                if(it == foundRtcNames.end()){
+                    RTC::ExecutionContextServiceList_var execServices = connectedRtcRef->get_execution_context_services();
+
+                    for(CORBA::ULong k=0; k < execServices->length(); k++) {
+                        RTC::ExecutionContextService_var execContext = execServices[k];
+
+                        RTC::ExtTrigExecutionContextService_var extTrigExecContext =
+                        RTC::ExtTrigExecutionContextService::_narrow(execContext);
+
+                        if(!CORBA::is_nil(extTrigExecContext)){
+                            CORBA::ULong n = rtcList.length();
+                            rtcList.length(n + 1);
+                            rtcList[n] = connectedRtcRef;
+                            foundRtcNames.insert(connectedRtcName);
+                        }
+                    }
+                }
+            }
+        }
     }
-  }
 }
 
 
@@ -351,8 +351,7 @@ void VirtualRobotRTC::readDataFromInPorts(Controller_impl* controller)
   }
 }
 
-
-RTC::ReturnCode_t VirtualRobotRTC::onExecute(RTC::UniqueId ec_id)
+void VirtualRobotRTC::stop()
 {
-  return RTC::RTC_OK;
+    
 }

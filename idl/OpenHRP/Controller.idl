@@ -25,7 +25,9 @@ module OpenHRP {
 	 *
 	 * 制御ソフトの役割を果たします。 Controller は以下の流れを行うように作成してください。
 	 *
-	 * -# コンストラクタで起動時の初期化
+	 * -# コンストラクタでサーバ起動時の初期化
+     * -# setModelName( modelName )で名前をセット
+     * -# initilize() でRTC部分の初期化
 	 * -# start() でシミュレーション開始時の初期化
 	 * -# input() でシミュレータからセンサ情報を得る
 	 * -# control() センサ情報から制御計算を行う
@@ -38,7 +40,23 @@ module OpenHRP {
 	 * Controller Interface
 	 * @endif
 	 */
-	interface Controller {
+	interface Controller : ServerObject
+    {
+		/**
+		   @if jp
+		   コントローラの処理においてエラーが生じたときに生成される例外。
+		   initilize排他制御において使用する予定です。
+		   @endif
+		 */
+		exception ControllerException
+		{
+		  /**
+		     @if jp
+		     エラーの説明
+		     @endif
+		  */
+		  string  description;
+		};
 		/**
 		 * @if jp
 		 * @brief DynamicsSimulator をセットする。
@@ -48,6 +66,16 @@ module OpenHRP {
 		 * @endif
 		 */
 		void setDynamicsSimulator(in DynamicsSimulator dynamicssimulator_);
+
+		/**
+		 * @if jp
+		 * @brief モデル名 をセットする。
+		 *
+		 * クライアントが Controller サーバを使用する際、モデル名をセットします。
+		 * @param localModelName モデル名
+		 * @endif
+		 */
+		void setModelName(in string localModelName);
 
 		/**
 		 * @if jp
@@ -74,6 +102,15 @@ module OpenHRP {
 		 * @endif
 		 */
 		void start();
+
+		/**
+		 * @if jp
+		 * @brief シミュレーションを開始・再開する際のコントローラーの初期化を行います。
+		 * 
+		 * start以前end以降のコントローラのリセットに使用します。start～end 中のコントローラでは排他制御を行う予定です。
+		 * @endif
+		 */
+		void initilize() raises (ControllerException);
 
 		/**
 		 * @if jp
@@ -124,32 +161,6 @@ module OpenHRP {
 		 * @endif
 		 */
         void setTimeStep(in double timeStep);
-	};
-	
-
-	/**
-	 * @if jp
-	 * Controller Factory
-	 * @else
-	 * Controller Object Factory
-	 * @endif
-	 */
-	interface ControllerFactory : ServerObject
-	{
-		
-		/**
-		 * @if jp
-		 * Controller を取得します。
-		 * @param charname このコントローラが制御するキャラクタ名
-		 * @return 新しく作成された Controller
-		 * @else
-		 * Create a controller object
-		 * @param charname name of the controlled character
-		 * @return a newly creatd controller
-		 * @endif
-		 */
-		Controller create(in string charname);
-		
 	};
 	
 };

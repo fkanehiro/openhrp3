@@ -20,7 +20,6 @@
 
 #include <iostream>
 
-#define DOF (29)
 #define TIMESTEP 0.002
 
 #define ANGLE_FILE "etc/angle.dat"
@@ -88,18 +87,6 @@ SamplePD::SamplePD(RTC::Manager* manager)
   Pgain = new double[DOF];
   Dgain = new double[DOF];
 
-  if (access(ANGLE_FILE, 0)){
-    std::cerr << ANGLE_FILE << " not found" << std::endl;
-  }else{
-    angle.open(ANGLE_FILE);
-  }
-
-  if (access(VEL_FILE, 0)){
-    std::cerr << VEL_FILE << " not found" << std::endl;
-  }else{
-    vel.open(VEL_FILE);
-  }
-
   if (access(GAIN_FILE, 0)){
     std::cerr << GAIN_FILE << " not found" << std::endl;
   }else{
@@ -117,8 +104,7 @@ SamplePD::SamplePD(RTC::Manager* manager)
 
 SamplePD::~SamplePD()
 {
-  if (angle.is_open()) angle.close();
-  if (vel.is_open()) vel.close();
+  closeFiles();
   delete [] Pgain;
   delete [] Dgain;
 }
@@ -132,10 +118,11 @@ RTC::ReturnCode_t SamplePD::onInitialize()
   {
     std::cout << "onInitialize" << std::endl;
   }
+
+
   // </rtc-template>
   return RTC::RTC_OK;
 }
-
 
 
 /*
@@ -155,6 +142,7 @@ RTC::ReturnCode_t SamplePD::onStartup(RTC::UniqueId ec_id)
 /*
 RTC::ReturnCode_t SamplePD::onShutdown(RTC::UniqueId ec_id)
 {
+    log("SamplePD::onShutdown");
   return RTC::RTC_OK;
 }
 */
@@ -162,23 +150,26 @@ RTC::ReturnCode_t SamplePD::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t SamplePD::onActivated(RTC::UniqueId ec_id)
 {
 	std::cout << "on Activated" << std::endl;
-	angle.seekg(0);
-	vel.seekg(0);
+    openFiles();
 	
 	m_angleIn.update();
 	
 	for(int i=0; i < DOF; ++i){
 		qold[i] = m_angle.data[i];
+        q_ref[i] = dq_ref[i] = 0.0;
 	}
 	
 	return RTC::RTC_OK;
 }
 
+
 RTC::ReturnCode_t SamplePD::onDeactivated(RTC::UniqueId ec_id)
 {
-	std::cout << "on Deactivated" << std::endl;
+  std::cout << "on Deactivated" << std::endl;
+  closeFiles();
   return RTC::RTC_OK;
 }
+
 
 
 RTC::ReturnCode_t SamplePD::onExecute(RTC::UniqueId ec_id)
@@ -192,7 +183,6 @@ RTC::ReturnCode_t SamplePD::onExecute(RTC::UniqueId ec_id)
 
   m_angleIn.update();
 
-  static double q_ref[DOF], dq_ref[DOF];
   if(!angle.eof()){
 	angle >> q_ref[0]; vel >> dq_ref[0];// skip time
 	for (int i=0; i<DOF; i++){
@@ -213,43 +203,67 @@ RTC::ReturnCode_t SamplePD::onExecute(RTC::UniqueId ec_id)
   return RTC::RTC_OK;
 }
 
-
 /*
-  RTC::ReturnCode_t SamplePD::onAborting(RTC::UniqueId ec_id)
-  {
-  return RTC::RTC_OK;
-  }
+RTC::ReturnCode_t SamplePD::onAborting(RTC::UniqueId ec_id)
+{
+    return RTC::RTC_OK;
+}
 */
 
 /*
-  RTC::ReturnCode_t SamplePD::onError(RTC::UniqueId ec_id)
-  {
-  return RTC::RTC_OK;
-  }
+RTC::ReturnCode_t SamplePD::onError(RTC::UniqueId ec_id)
+{
+    return RTC::RTC_OK;
+}
 */
 
 /*
-  RTC::ReturnCode_t SamplePD::onReset(RTC::UniqueId ec_id)
-  {
-  return RTC::RTC_OK;
-  }
+RTC::ReturnCode_t SamplePD::onReset(RTC::UniqueId ec_id)
+{
+    return RTC::RTC_OK;
+}
 */
 
 /*
-  RTC::ReturnCode_t SamplePD::onStateUpdate(RTC::UniqueId ec_id)
-  {
-  return RTC::RTC_OK;
-  }
+RTC::ReturnCode_t SamplePD::onStateUpdate(RTC::UniqueId ec_id)
+{
+    return RTC::RTC_OK;
+}
 */
 
 /*
-  RTC::ReturnCode_t SamplePD::onRateChanged(RTC::UniqueId ec_id)
-  {
-  return RTC::RTC_OK;
-  }
+RTC::ReturnCode_t SamplePD::onRateChanged(RTC::UniqueId ec_id)
+{
+    return RTC::RTC_OK;
+}
 */
 
+void SamplePD::openFiles()
+{
+    if (access(ANGLE_FILE, 0)){
+        std::cerr << ANGLE_FILE << " not found" << std::endl;
+    }else{
+        angle.open(ANGLE_FILE);
+    }
 
+    if (access(VEL_FILE, 0)){
+        std::cerr << VEL_FILE << " not found" << std::endl;
+    }else{
+        vel.open(VEL_FILE);
+    }   
+}
+
+void SamplePD::closeFiles()
+{
+    if( angle.is_open() ){
+        angle.close();
+        angle.clear();
+    }
+    if( vel.is_open() ){
+        vel.close();
+        vel.clear();
+    }
+}
 
 extern "C"
 {

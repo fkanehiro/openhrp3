@@ -9,7 +9,6 @@ set(script_list
   )
 
 set(grxui_script_list
-  openhrp-grxui
   openhrp-jython-prompt
   openhrp-shutdown-servers
   )
@@ -54,9 +53,6 @@ set(GRXUI_JYTHON_HOME ${JYTHON_HOME})
 set(GRXUI_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}")
 set(GRXUI_ADDITIONAL_PATH ${OPENHRPHOME}/bin${CPSEP}${OPENHRPHOME}/bin/${subbin})
 set(GRXUI_CLASSPATH ${PROJECT_BINARY_DIR}/java/grxui.jar${CPSEP}${PROJECT_BINARY_DIR}/java/openhrpstubskel.jar${CPSEP}${CLASSPATH})
-set(GRXUI_HOME ${PROJECT_SOURCE_DIR}/java/grxui)
-
-file(TO_NATIVE_PATH ${GRXUI_HOME} GRXUI_HOME)
 
 # TODO: set a full path if the program is not in the PATH
 if(UNIX)
@@ -79,8 +75,5 @@ if(NOT ${OPENHRPHOME} STREQUAL /usr OR ${OPENHRPHOME} STREQUAL /usr/local)
 endif()
 set(GRXUI_CLASSPATH ${OPENHRPHOME}/${RELATIVE_GRXUI_INSTALL_PATH}/grxui.jar${CPSEP}${OPENHRPHOME}/${RELATIVE_JAVA_INSTALL_PATH}/openhrpstubskel.jar${CPSEP}${CLASSPATH})
 set(RELATIVE_JAVA_INSTALL_PATH share/${OPENHRP_INSTALL_SUB_DIR}/java)
-
-set(GRXUI_HOME ${CMAKE_INSTALL_PREFIX}/${RELATIVE_GRXUI_INSTALL_PATH})
-file(TO_NATIVE_PATH ${GRXUI_HOME} GRXUI_HOME)
 
 create_bootscripts(${CMAKE_CURRENT_BINARY_DIR} true)

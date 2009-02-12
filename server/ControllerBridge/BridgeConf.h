@@ -15,6 +15,12 @@
 #ifndef OPENHRP_BRIDGE_CONF_H_INCLUDED
 #define OPENHRP_BRIDGE_CONF_H_INCLUDED
 
+#if ( defined ( WIN32 ) || defined ( _WIN32 ) || defined(__WIN32__) || defined(__NT__) )
+#define SUFFIX_SHARED_EXT   ".dll"
+#else
+#define SUFFIX_SHARED_EXT   ".so"
+#endif
+
 #include <map>
 #include <list>
 #include <vector>
@@ -85,7 +91,7 @@ public:
     bool isReady() { return isReady_; }
       
     const char* getOpenHRPNameServerIdentifier();
-    const char* getControllerFactoryName();
+    const char* getControllerName();
     const char* getVirtualRobotRtcTypeName();
 
     void setupModules();
@@ -110,7 +116,7 @@ private:
     bool isProcessingConfigFile;
       
     std::string virtualRobotRtcTypeName;
-    std::string controllerFactoryName;
+    std::string controllerName;
     std::string nameServerIdentifier;
 
     void initOptionsDescription();

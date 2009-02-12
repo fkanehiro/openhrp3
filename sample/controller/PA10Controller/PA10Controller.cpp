@@ -20,7 +20,6 @@
 
 #include <iostream>
 
-#define DOF (9)
 #define TIMESTEP 0.001
 
 #define ANGLE_FILE "etc/angle.dat"
@@ -76,18 +75,6 @@ PA10Controller::PA10Controller(RTC::Manager* manager)
   Pgain = new double[DOF];
   Dgain = new double[DOF];
 
-  if (access(ANGLE_FILE, 0)){
-    std::cerr << ANGLE_FILE << " not found" << std::endl;
-  }else{
-    angle.open(ANGLE_FILE);
-  }
-
-  if (access(VEL_FILE, 0)){
-    std::cerr << VEL_FILE << " not found" << std::endl;
-  }else{
-    vel.open(VEL_FILE);
-  }
-
   if (access(GAIN_FILE, 0)){
     std::cerr << GAIN_FILE << " not found" << std::endl;
   }else{
@@ -105,8 +92,7 @@ PA10Controller::PA10Controller(RTC::Manager* manager)
 
 PA10Controller::~PA10Controller()
 {
-  if (angle.is_open()) angle.close();
-  if (vel.is_open()) vel.close();
+  closeFiles();
   delete [] Pgain;
   delete [] Dgain;
 }
@@ -147,31 +133,30 @@ RTC::ReturnCode_t PA10Controller::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t PA10Controller::onActivated(RTC::UniqueId ec_id)
 {
 	std::cout << "on Activated" << std::endl;
-	angle.seekg(0);
-	vel.seekg(0);
+    openFiles();
 	
 	m_angleIn.update();
 	
 	for(int i=0; i < DOF; ++i){
 		qold[i] = m_angle.data[i];
+        q_ref[i] = dq_ref[i] = 0.0;
 	}
 	
 	return RTC::RTC_OK;
 }
 
-/*
 RTC::ReturnCode_t PA10Controller::onDeactivated(RTC::UniqueId ec_id)
 {
+  std::cout << "on Deactivated" << std::endl;
+  closeFiles();
   return RTC::RTC_OK;
 }
-*/
 
 
 RTC::ReturnCode_t PA10Controller::onExecute(RTC::UniqueId ec_id)
 {
   m_angleIn.update();
 
-  static double q_ref[DOF], dq_ref[DOF];
   if(!angle.eof()){
 	angle >> q_ref[0]; vel >> dq_ref[0];// skip time
 	for (int i=0; i<DOF; i++){
@@ -179,6 +164,7 @@ RTC::ReturnCode_t PA10Controller::onExecute(RTC::UniqueId ec_id)
 		vel >> dq_ref[i];
 	}
   }
+
   for(int i=0; i<DOF; i++){
     double q = m_angle.data[i];
     double dq = (q - qold[i]) / TIMESTEP;
@@ -228,7 +214,33 @@ RTC::ReturnCode_t PA10Controller::onExecute(RTC::UniqueId ec_id)
   }
 */
 
+void PA10Controller::openFiles()
+{
+    if (access(ANGLE_FILE, 0)){
+        std::cerr << ANGLE_FILE << " not found" << std::endl;
+    }else{
+        angle.open(ANGLE_FILE);
+    }
 
+    if (access(VEL_FILE, 0)){
+        std::cerr << VEL_FILE << " not found" << std::endl;
+    }else{
+        vel.open(VEL_FILE);
+    }
+}
+
+void PA10Controller::closeFiles()
+{
+    if(angle.is_open()){
+        angle.close();
+        angle.clear();
+    }
+
+    if(vel.is_open()){
+        vel.close();
+        angle.clear();
+    }
+}
 
 extern "C"
 {

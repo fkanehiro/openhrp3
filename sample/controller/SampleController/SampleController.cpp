@@ -19,7 +19,6 @@
 #include "SampleController.h"
 #include <iostream>
 
-#define DOF (29)
 #define TIMESTEP 0.002
 
 #define ANGLE_FILE "etc/Sample.pos"
@@ -65,7 +64,6 @@ SampleController::SampleController(RTC::Manager* manager)
 //    m_qOut("q", m_q),
 //    m_dqOut("dq", m_dq),
 //    m_ddqOut("ddq", m_ddq),
-    
     // </rtc-template>
 	dummy(0)
 {
@@ -104,18 +102,6 @@ RTC::ReturnCode_t SampleController::onInitialize()
 	Pgain = new double[DOF];
 	Dgain = new double[DOF];
 
-	if (access(ANGLE_FILE, 0)){
-		cerr << ANGLE_FILE << " not found" << endl;
-	}else{
-		angle.open(ANGLE_FILE);
-	}
-
-	if (access(VEL_FILE, 0)){
-		cerr << VEL_FILE << " not found" << endl;
-	}else{
-		vel.open(VEL_FILE);
-	}
-
 	if (access(GAIN_FILE, 0)){
 		cerr << GAIN_FILE << " not found" << endl;
 	}else{
@@ -135,7 +121,7 @@ RTC::ReturnCode_t SampleController::onInitialize()
 	}
 
 	m_torque.data.length(DOF);
-  m_rhsensor.data.length(6);
+    m_rhsensor.data.length(6);
 	m_angle.data.length(DOF);
 //	m_q.data.length(DOF);
 //	m_dq.data.length(DOF);
@@ -152,9 +138,8 @@ RTC::ReturnCode_t SampleController::onInitialize()
 
 RTC::ReturnCode_t SampleController::onFinalize()
 {
-	if (angle.is_open()) angle.close();
-	if (vel.is_open()) vel.close();
-	delete [] Pgain;
+    closeFiles();
+    delete [] Pgain;
 	delete [] Dgain;
 	delete[] qold;
 #ifdef SC_DEBUG
@@ -181,39 +166,41 @@ RTC::ReturnCode_t SampleController::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t SampleController::onActivated(RTC::UniqueId ec_id)
 {
 	std::cout << "on Activated" << std::endl;
-	angle.seekg(0);
-	vel.seekg(0);
-	
-  m_angleIn.read();
+	goal_set = true;
+	pattern = false;
+    remain_t = 2.0;
+    step = 0;
+    openFiles();
+
+    m_angleIn.update();
 	
 	for(int i=0; i < DOF; ++i){
 		qold[i] = m_angle.data[i];
+        q_ref[i] = dq_ref[i] = q_goal[i] = dq_goal[i] = 0.0;
 	}
-
-	goal_set = true;
-	pattern = false;
 
 	return RTC::RTC_OK;
 }
 
 
-/*
 RTC::ReturnCode_t SampleController::onDeactivated(RTC::UniqueId ec_id)
 {
+  std::cout << "on Deactivated" << std::endl;
+  closeFiles();
   return RTC::RTC_OK;
 }
-*/
 
 
 RTC::ReturnCode_t SampleController::onExecute(RTC::UniqueId ec_id)
 {
-	m_angleIn.read();
-	m_rhsensorIn.read();
-
+    m_angleIn.update();
+	m_rhsensorIn.update();
+/*
 	static double q_ref[DOF], dq_ref[DOF];
 	static double remain_t = 2.0;
 	static double q_goal[DOF], dq_goal[DOF];
 	static int step = 0;
+*/
 
 	if( goal_set ){
 		goal_set = false;
@@ -358,6 +345,32 @@ RTC::ReturnCode_t SampleController::onRateChanged(RTC::UniqueId ec_id)
 }
 */
 
+void SampleController::openFiles()
+{
+	if (access(ANGLE_FILE, 0)){
+		cerr << ANGLE_FILE << " not found" << endl;
+	}else{
+		angle.open(ANGLE_FILE);
+	}
+
+	if (access(VEL_FILE, 0)){
+		cerr << VEL_FILE << " not found" << endl;
+	}else{
+		vel.open(VEL_FILE);
+	}
+}
+void SampleController::closeFiles()
+{
+    if(angle.is_open())
+    {
+        angle.close();
+        angle.clear();
+    }
+    if(vel.is_open()){
+        vel.close();
+        vel.clear();
+    }
+}
 
 
 extern "C"

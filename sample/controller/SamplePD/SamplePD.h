@@ -18,6 +18,7 @@
 
 #ifndef SAMPLEPD_H
 #define SAMPLEPD_H
+#define DOF (29)
 
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
@@ -53,15 +54,15 @@ class SamplePD
 
   // The finalize action (on ALIVE->END transition)
   // formaer rtc_exiting_entry()
-  // virtual RTC::ReturnCode_t onFinalize();
+  //virtual RTC::ReturnCode_t onFinalize();
 
   // The startup action when ExecutionContext startup
   // former rtc_starting_entry()
-  // virtual RTC::ReturnCode_t onStartup(RTC::UniqueId ec_id);
+  //virtual RTC::ReturnCode_t onStartup(RTC::UniqueId ec_id);
 
   // The shutdown action when ExecutionContext stop
   // former rtc_stopping_entry()
-  // virtual RTC::ReturnCode_t onShutdown(RTC::UniqueId ec_id);
+  //virtual RTC::ReturnCode_t onShutdown(RTC::UniqueId ec_id);
 
   // The activated action (Active state entry action)
   // former rtc_active_entry()
@@ -77,23 +78,23 @@ class SamplePD
 
   // The aborting action when main logic error occurred.
   // former rtc_aborting_entry()
-  // virtual RTC::ReturnCode_t onAborting(RTC::UniqueId ec_id);
+  //virtual RTC::ReturnCode_t onAborting(RTC::UniqueId ec_id);
 
   // The error action in ERROR state
   // former rtc_error_do()
-  // virtual RTC::ReturnCode_t onError(RTC::UniqueId ec_id);
+  //virtual RTC::ReturnCode_t onError(RTC::UniqueId ec_id);
 
   // The reset action that is invoked resetting
   // This is same but different the former rtc_init_entry()
-  // virtual RTC::ReturnCode_t onReset(RTC::UniqueId ec_id);
+  //virtual RTC::ReturnCode_t onReset(RTC::UniqueId ec_id);
   
   // The state update action that is invoked after onExecute() action
   // no corresponding operation exists in OpenRTm-aist-0.2.0
-  // virtual RTC::ReturnCode_t onStateUpdate(RTC::UniqueId ec_id);
+  //virtual RTC::ReturnCode_t onStateUpdate(RTC::UniqueId ec_id);
 
   // The action that is invoked when execution context's rate is changed
   // no corresponding operation exists in OpenRTm-aist-0.2.0
-  // virtual RTC::ReturnCode_t onRateChanged(RTC::UniqueId ec_id);
+  //virtual RTC::ReturnCode_t onRateChanged(RTC::UniqueId ec_id);
 
 
  protected:
@@ -137,6 +138,9 @@ class SamplePD
   double *Pgain;
   double *Dgain;
   std::vector<double> qold;
+  double q_ref[DOF], dq_ref[DOF];
+  void openFiles();
+  void closeFiles();
 };
 
 

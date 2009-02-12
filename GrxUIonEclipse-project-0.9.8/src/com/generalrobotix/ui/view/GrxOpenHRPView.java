@@ -26,8 +26,7 @@ import java.util.Vector;
 
 import jp.go.aist.hrp.simulator.ClockGenerator;
 import jp.go.aist.hrp.simulator.Controller;
-import jp.go.aist.hrp.simulator.ControllerFactory;
-import jp.go.aist.hrp.simulator.ControllerFactoryHelper;
+import jp.go.aist.hrp.simulator.ControllerHelper;
 import jp.go.aist.hrp.simulator.DynamicsSimulator;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorFactory;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorFactoryHelper;
@@ -299,6 +298,11 @@ public class GrxOpenHRPView extends GrxBaseView {
 							}
 						}
 						simulateTime_ += (System.currentTimeMillis() - startT - suspendT)/1000.0;
+						
+			    		for (ControllerAttribute i: controllers_) {
+			    			i.deactive();
+			    		}
+
 					} catch (Exception e) {
 						GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
 
@@ -496,17 +500,26 @@ public class GrxOpenHRPView extends GrxBaseView {
 	
 	private class ControllerAttribute {
 		String modelName_;
+		String controllerName_;
 		Controller controller_;
 		double stepTime_;
 		int doCount_ = 0;
 		boolean doFlag_ = false;
-		
-		ControllerAttribute(String modelName, Controller controller, double stepTime) {
+		ControllerAttribute(String modelName, String controllerName, Controller controller, double stepTime) {
 			modelName_ = modelName;
+			controllerName_ = controllerName;
 			controller_ = controller;
 			stepTime_ = stepTime;
 		}
-        private void input(double time) {
+		
+		private void reset(Controller controller, double stepTime) {
+			controller_ = controller;
+			stepTime_ = stepTime;
+			doCount_ = 0;
+			doFlag_ = false;
+		}
+		
+        private void input(double time){
             try {
                 doFlag_ = false;
                 if (doCount_ <= time/stepTime_) {
@@ -532,6 +545,21 @@ public class GrxOpenHRPView extends GrxBaseView {
                 if (doFlag_) controller_.output();
             } catch (Exception e) {
                 GrxDebugUtil.printErr("Exception in output", e); 
+            }
+        }
+        
+        private void deactive(){
+            try {
+            	controller_.stop();
+            } catch (Exception e) {
+                GrxDebugUtil.printErr("Exception in deactive", e); 
+            }
+        }
+        private void active() {
+            try {
+            	controller_.initilize();
+            } catch (Exception e) {
+                GrxDebugUtil.printErr("Exception in active", e); 
             }
         }
 	}
@@ -723,24 +751,64 @@ public class GrxOpenHRPView extends GrxBaseView {
 	}
 
 	private boolean initController() {
-		for (int i=controllers_.size()-1; i>=0; i--) {
-			try {
-				controllers_.get(i).controller_.destroy();
-			} catch (Exception e) {}
-			controllers_.remove(i);
-		}
-
-		List<GrxBaseItem> models = manager_.getSelectedItemList(GrxModelItem.class);
-        for (int i=0; i<models.size(); i++) {
-            GrxModelItem model = (GrxModelItem) models.get(i);
-            if (model.isRobot() && _setupController(model) < 0)
-                return false;
+		boolean ret = true;
+		List<String> localStrList = new Vector<String>();
+        for (GrxBaseItem i: manager_.getSelectedItemList(GrxModelItem.class) ) {
+            GrxModelItem model = (GrxModelItem) i;
+            if( model.isRobot() ){
+        		if ( _setupController(model, _getControllerFromControllerName(model.getProperty("controller"))) < 0 )
+        			ret =  false;
+            	localStrList.add( model.getProperty("controller") );
+            }
         }
-        return true;
-
+        _refreshControllers( localStrList );
+        return ret;
 	}
 	
-	private short _setupController(GrxModelItem model) {
+	private ControllerAttribute _getController(String localID){
+		ControllerAttribute ret = null;
+		for (ControllerAttribute i: controllers_) {
+			if ( i.modelName_.equals(localID) ){
+				ret = i;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	private ControllerAttribute _getControllerFromControllerName(String controllerName){
+		ControllerAttribute ret = null;
+		for (ControllerAttribute i: controllers_) {
+			if ( i.controllerName_.equals(controllerName) ){
+				ret = i;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	
+	private void _refreshControllers(List<String> refStrList){
+		Vector<String> localStrVec = new Vector<String>();
+		for (ControllerAttribute i: controllers_) {
+			int index = refStrList.indexOf(i.controllerName_);
+			if ( index < 0 )
+				localStrVec.add(i.controllerName_);
+		}
+		for (String i: localStrVec) {
+            GrxProcessManagerView pManager = (GrxProcessManagerView)manager_.getView(GrxProcessManagerView.class);
+            AProcess proc = pManager.processManager.get(i);
+            if( proc != null && proc.stop() ){
+            	pManager.processManager.unregister(proc.pi_.id);
+            	_getControllerFromControllerName(i);
+            	int index = controllers_.indexOf( _getControllerFromControllerName(i) );
+    			if ( index >= 0 )
+    				controllers_.remove(index);
+            }
+		}
+	}
+	
+	private short _setupController(GrxModelItem model, ControllerAttribute deactivatedController) {
         String controllerName = model.getProperty("controller");
         double step = model.getDbl("controlTime", 0.005);
 		
@@ -764,9 +832,17 @@ public class GrxOpenHRPView extends GrxBaseView {
                 if (isInteractive_ && (!com.equals("") || proc != null)) { // ask only in case being abled to restart process
                     MessageDialog dialog =new MessageDialog(getParent().getShell(),"Restart the Controller",null,
                         "Controller '"+controllerName+"' may already exist.\n" + "Restart it ?" ,MessageDialog.QUESTION, new String[]{"YES","NO","CANCEL"}, 2);
-                    int ans = dialog.open();
-                    if (ans == 0) // 0 == "YES"
-                        doRestart = true;
+                    switch( dialog.open() ){
+                    case 0: // 0 == "YES"
+                    	doRestart = true;
+                    	break;
+                    case 1: // 1 == "NO"
+                    	if(deactivatedController != null)
+                    		deactivatedController.active();
+                    	break;
+                    default:
+                    	return -1;
+                    }
                 }
 
             } catch (Exception e) {
@@ -810,17 +886,22 @@ public class GrxOpenHRPView extends GrxBaseView {
             cobj = GrxCorbaUtil.getReference(controllerName);
             if (cobj != null) {
                 try {
-                    ControllerFactory cfactory = ControllerFactoryHelper.narrow(cobj);
-                    Controller controller = cfactory.create(model.getName());
+					Controller controller = ControllerHelper.narrow(cobj);
+                    controller.setModelName(model.getName());
                     controller.setDynamicsSimulator(currentDynamics_);
+                    controller.initilize();
 
                     if (simParamPane_.isSimulatingView()) {
                         cobj = GrxCorbaUtil.getReference("ViewSimulator");
                         ViewSimulator viewsim = ViewSimulatorHelper.narrow(cobj);
                         controller.setViewSimulator(viewsim);
                     }
-
-                    controllers_.add(new ControllerAttribute(model.getName(), controller, step));
+                    ControllerAttribute refAttr = _getControllerFromControllerName(controllerName);
+                    if( refAttr == null){
+                    	controllers_.add(new ControllerAttribute(model.getName(), controllerName, controller, step));
+                    }else{
+                    	refAttr.reset(controller, step);
+                    }
                     GrxDebugUtil.println(" connected to the Controller("+controllerName+")\n");
                     controller.setTimeStep(step);
                     controller.start();
