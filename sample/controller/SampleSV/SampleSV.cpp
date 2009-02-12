@@ -34,8 +34,6 @@
 
 #define TIMESTEP 0.002
 
-std::ofstream logfile("sv.log");
-
 namespace {
   const bool CONTROLLER_BRIDGE_DEBUG = false;
 }
@@ -91,12 +89,6 @@ SampleSV::SampleSV(RTC::Manager* manager)
   
   // </rtc-template>
 
-
-	if (access( STEERING_FILE, 0))
-    std::cerr << STEERING_FILE <<" not found" << std::endl;
-	else
-		steer.open( STEERING_FILE );
-
   m_torque.data.length(DOF);
   m_steer.data.length(2);
   m_vel.data.length(2);
@@ -104,7 +96,7 @@ SampleSV::SampleSV(RTC::Manager* manager)
 
 SampleSV::~SampleSV()
 {
-	if (steer.is_open()) steer.close();
+	closeFiles();
 }
 
 
@@ -148,17 +140,20 @@ RTC::ReturnCode_t SampleSV::onActivated(RTC::UniqueId ec_id)
 {
 
 	std::cout << "on Activated" << std::endl;
-	steer.seekg(0);
-	
+    openFiles();
+	wheel_ref = 0.0;
+
 	return RTC::RTC_OK;
 }
 
-/*
+
 RTC::ReturnCode_t SampleSV::onDeactivated(RTC::UniqueId ec_id)
 {
+  std::cout << "on Deactivated" << std::endl;
+  closeFiles();
   return RTC::RTC_OK;
 }
-*/
+
 
 
 RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
@@ -182,13 +177,8 @@ RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
   for(int i=0; i<DOF; i++) m_torque.data[i] = 0.0;
   
   m_torque.data[STEERING_ID] = (steer_ref - m_steer.data[STEERING_ID]) * STEERING_P_GAIN - m_vel.data[STEERING_ID] * STEERING_D_GAIN;
-	m_torque.data[WHEEL_ID] = (wheel_ref - m_steer.data[WHEEL_ID]) * WHEEL_P_GAIN + (WHEEL_REF_VEL - m_vel.data[WHEEL_ID]) * WHEEL_D_GAIN;
-	wheel_ref += WHEEL_REF_VEL * TIMESTEP;
-
-
-  logfile << "--" << std::endl;
-	logfile << "steer: ref=" << steer_ref << ", cur=" << m_steer.data[STEERING_ID] << ", u=" << m_torque.data[STEERING_ID] << std::endl;
-	logfile << "wheel: ref=" << wheel_ref << ", cur=" << m_steer.data[WHEEL_ID] << ", u=" << m_torque.data[WHEEL_ID] << std::endl;
+  m_torque.data[WHEEL_ID] = (wheel_ref - m_steer.data[WHEEL_ID]) * WHEEL_P_GAIN + (WHEEL_REF_VEL - m_vel.data[WHEEL_ID]) * WHEEL_D_GAIN;
+  wheel_ref += WHEEL_REF_VEL * TIMESTEP;
 
   m_torqueOut.write();
   
@@ -231,6 +221,22 @@ RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
   }
 */
 
+void SampleSV::openFiles()
+{
+	if (access( STEERING_FILE, 0))
+        std::cerr << STEERING_FILE <<" not found" << std::endl;
+	else
+		steer.open( STEERING_FILE );
+}
+
+void SampleSV::closeFiles()
+{
+    if( steer.is_open() )
+    {
+        steer.close();
+        steer.clear();
+    }
+}
 
 
 extern "C"

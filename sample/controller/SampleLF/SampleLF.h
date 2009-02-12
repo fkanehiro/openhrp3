@@ -49,7 +49,7 @@ class SampleLF
 
   // The initialize action (on CREATED->ALIVE transition)
   // formaer rtc_init_entry() 
- virtual RTC::ReturnCode_t onInitialize();
+  virtual RTC::ReturnCode_t onInitialize();
 
   // The finalize action (on ALIVE->END transition)
   // formaer rtc_exiting_entry()
@@ -69,7 +69,7 @@ class SampleLF
 
   // The deactivated action (Active state exit action)
   // former rtc_active_exit()
-  // virtual RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id);
+   virtual RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id);
 
   // The execution action that is invoked periodically
   // former rtc_active_do()
@@ -147,6 +147,8 @@ class SampleLF
   double *Pgain;
   double *Dgain;
   std::vector<double> qold,qref_old;
+  void openFiles();
+  void closeFiles();
 };
 
 

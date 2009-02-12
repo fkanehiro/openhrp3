@@ -89,25 +89,6 @@ SampleLF::SampleLF(RTC::Manager* manager)
   Pgain = new double[DOF];
   Dgain = new double[DOF];
 
-	if (access("etc/LFangle1.dat", 0))
-    std::cerr << "etc/LFangle1.dat not found" << std::endl;
-	else
-		angle1.open("etc/LFangle1.dat");
-
-	if (access("etc/LFangle2.dat", 0))
-		std::cerr << "etc/LFangle2.dat not found" << std::endl;
-	else
-		angle2.open("etc/LFangle2.dat");
-
-	if (access("etc/LFvel1.dat", 0))
-		std::cerr << "etc/LFvel1.dat not found" << std::endl;
-	else
-		vel1.open("etc/LFvel1.dat");
-
-	if (access("etc/LFvel2.dat", 0))
-		std::cerr << "etc/LFvel2.dat not found" << std::endl;
-	else
-		vel2.open("etc/LFvel2.dat");
 
   if (access(GAIN_FILE, 0)){
     std::cerr << GAIN_FILE << " not found" << std::endl;
@@ -124,16 +105,11 @@ SampleLF::SampleLF(RTC::Manager* manager)
   m_torqueR.data.length(1);
   m_angle.data.length(DOF);
 
-	check = true;
-	file = 1;
 }
 
 SampleLF::~SampleLF()
 {
-	if (angle1.is_open()) angle1.close();
-	if (angle2.is_open()) angle2.close();
-	if (vel1.is_open()) vel1.close();
-	if (vel2.is_open()) vel2.close();
+  closeFiles();
   delete [] Pgain;
   delete [] Dgain;
 }
@@ -151,7 +127,6 @@ RTC::ReturnCode_t SampleLF::onInitialize()
   // </rtc-template>
   return RTC::RTC_OK;
 }
-
 
 
 /*
@@ -179,26 +154,28 @@ RTC::ReturnCode_t SampleLF::onActivated(RTC::UniqueId ec_id)
 {
 
 	std::cout << "on Activated" << std::endl;
-	angle1.seekg(0);
-	vel1.seekg(0);
-	angle2.seekg(0);
-	vel2.seekg(0);
+	check = true;
+	file = 1;
+    openFiles();
 	
 	m_angleIn.update();
 	
 	for(int i=0; i < DOF; ++i){
 		qold[i] = m_angle.data[i];
+        qref_old[i] = 0.0;
 	}
 	
 	return RTC::RTC_OK;
 }
 
-/*
+
 RTC::ReturnCode_t SampleLF::onDeactivated(RTC::UniqueId ec_id)
 {
+  std::cout << "on Deactivated" << std::endl;
+  closeFiles();
   return RTC::RTC_OK;
 }
-*/
+
 
 
 RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
@@ -214,7 +191,7 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
   m_torqueInR.update();
 
   double q_ref, dq_ref;
-	double threshold = 30.0;
+  double threshold = 30.0;
 
 
   // *.datの読み込み //
@@ -311,6 +288,48 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
   return RTC::RTC_OK;
   }
 */
+void SampleLF::openFiles()
+{
+    if (access("etc/LFangle1.dat", 0))
+        std::cerr << "etc/LFangle1.dat not found" << std::endl;
+    else
+	    angle1.open("etc/LFangle1.dat");
+
+    if (access("etc/LFangle2.dat", 0))
+	    std::cerr << "etc/LFangle2.dat not found" << std::endl;
+    else
+	    angle2.open("etc/LFangle2.dat");
+
+    if (access("etc/LFvel1.dat", 0))
+	    std::cerr << "etc/LFvel1.dat not found" << std::endl;
+    else
+	    vel1.open("etc/LFvel1.dat");
+
+    if (access("etc/LFvel2.dat", 0))
+	    std::cerr << "etc/LFvel2.dat not found" << std::endl;
+    else
+	    vel2.open("etc/LFvel2.dat");
+}
+
+void SampleLF::closeFiles()
+{
+    if( angle1.is_open() ){
+        angle1.close();
+        angle1.clear();
+    }
+    if( angle2.is_open() ){
+        angle2.close();
+        angle2.clear();
+    }
+    if( vel1.is_open() ){
+        vel1.close();
+        vel1.clear();
+    }
+    if( vel2.is_open() ){
+        vel2.close();
+        vel2.clear();
+    }
+}
 
 
 

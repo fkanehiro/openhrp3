@@ -19,6 +19,8 @@
 #ifndef NEWSAMPLEHG_H
 #define NEWSAMPLEHG_H
 
+#define DOF (29)
+
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
 #include <rtm/CorbaPort.h>
@@ -69,7 +71,7 @@ class SampleHG
 
   // The deactivated action (Active state exit action)
   // former rtc_active_exit()
-  // virtual RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id);
+   virtual RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id);
 
   // The execution action that is invoked periodically
   // former rtc_active_do()
@@ -137,6 +139,9 @@ class SampleHG
 
  private:
   std::ifstream angle, vel, acc;
+  double angle_ref[DOF], vel_ref[DOF], acc_ref[DOF];
+  void openFiles();
+  void closeFiles();
 };
 
 

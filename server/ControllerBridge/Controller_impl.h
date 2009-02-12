@@ -31,16 +31,14 @@
 
 using namespace OpenHRP;
 
-
 class BridgeConf;
 class VirtualRobotRTC;
 
 class Controller_impl
-	: virtual public POA_OpenHRP::Controller,
-	  virtual public PortableServer::RefCountServantBase
+	: virtual public POA_OpenHRP::Controller
 {
 public:
-	Controller_impl(BridgeConf* bridgeConf, const char* robotName, VirtualRobotRTC* virtualRobotRTC);
+	Controller_impl(RTC::Manager* rtcManager, BridgeConf* bridgeConf);
 	~Controller_impl();
 
 	SensorState& getCurrentSensorState();
@@ -68,15 +66,19 @@ public:
 	virtual void input();
 	virtual void output();
 	virtual void stop();
-
 	virtual void destroy();
 
+    virtual void shutdown();
+    virtual omniObjRef* _do_get_interface(){return _this();}
+    virtual void setModelName(const char* localModelName){ modelName = localModelName;}
+    virtual void initilize();
     double controlTime;
   
 private:
 	BridgeConf* bridgeConf;
+	RTC::Manager* rtcManager;
 
-	std::string robotName;
+	std::string modelName;
 	VirtualRobotRTC* virtualRobotRTC;
 
 	typedef std::map<std::string, RTC::Port_var> PortMap;
@@ -119,26 +121,12 @@ private:
 	void setupRtcConnections();
 	bool connectPorts(RTC::Port_ptr outPort, RTC::Port_ptr inPort);
 
+    void activeComponents();
+    void deactiveComponents();
+    void disconnectRtcConnections(PortMap& refPortMap);
     double timeStep;
+    bool bRestart;
+    void restart();
 };
-
-
-class ControllerFactory_impl : virtual public POA_OpenHRP::ControllerFactory
-{
-public:
-	ControllerFactory_impl(RTC::Manager* rtcManager, BridgeConf* bridgeConf);
-	~ControllerFactory_impl();
-
-	virtual Controller_ptr create(const char* robotName);
-	virtual void shutdown();
-
-private:
-	RTC::Manager* rtcManager;
-	BridgeConf* bridgeConf;
-
-	VirtualRobotRTC* createVirtualRobotRTC();
-	VirtualRobotRTC* currentVirtualRobotRTC;
-};
-
 
 #endif

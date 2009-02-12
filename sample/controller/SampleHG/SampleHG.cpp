@@ -20,8 +20,6 @@
 
 #include <iostream>
 
-#define DOF (29)
-
 #define ANGLE_FILE "etc/angle.dat"
 #define VEL_FILE   "etc/vel.dat"
 #define ACC_FILE   "etc/acc.dat"
@@ -80,25 +78,6 @@ SampleHG::SampleHG(RTC::Manager* manager)
   
   // </rtc-template>
 
-  if (access(ANGLE_FILE, 0)){
-    std::cerr << ANGLE_FILE << " not found" << std::endl;
-  }else{
-    angle.open(ANGLE_FILE);
-  }
-
-  if (access(VEL_FILE, 0)){
-    std::cerr << VEL_FILE << " not found" << std::endl;
-  }else{
-    vel.open(VEL_FILE);
-  }
-
-  if (access(ACC_FILE, 0))
-  {
-    std::cerr << ACC_FILE << " not found" << std::endl;
-  }else{
-    acc.open(ACC_FILE);
-  }
-
   m_angle.data.length(DOF);
   m_vel.data.length(DOF);
   m_acc.data.length(DOF);
@@ -107,9 +86,7 @@ SampleHG::SampleHG(RTC::Manager* manager)
 
 SampleHG::~SampleHG()
 {
-	if (angle.is_open())  angle.close();
-	if (vel.is_open())    vel.close();
-	if (acc.is_open())    acc.close();
+    closeFiles();
 }
 
 
@@ -153,19 +130,21 @@ RTC::ReturnCode_t SampleHG::onActivated(RTC::UniqueId ec_id)
 {
 
 	std::cout << "on Activated" << std::endl;
-	angle.seekg(0);
-	vel.seekg(0);
-	acc.seekg(0);
+    openFiles();
+    for(int i = 0; i < DOF; ++i){
+        angle_ref[i] = vel_ref[i] = acc_ref[i] = 0.0;
+    }
 	
 	return RTC::RTC_OK;
 }
 
-/*
+
 RTC::ReturnCode_t SampleHG::onDeactivated(RTC::UniqueId ec_id)
 {
+  std::cout << "on Deactivated" << std::endl;
+  closeFiles();
   return RTC::RTC_OK;
 }
-*/
 
 
 RTC::ReturnCode_t SampleHG::onExecute(RTC::UniqueId ec_id)
@@ -175,7 +154,6 @@ RTC::ReturnCode_t SampleHG::onExecute(RTC::UniqueId ec_id)
     std::cout << "SampleHG::onExecute" << std::endl;
   }
   
-  static double angle_ref[DOF], vel_ref[DOF], acc_ref[DOF];
   if(!angle.eof()){
     double dummy;
     angle >> dummy; vel >> dummy; acc >> dummy; // skip time
@@ -239,6 +217,43 @@ RTC::ReturnCode_t SampleHG::onExecute(RTC::UniqueId ec_id)
   }
 */
 
+void SampleHG::openFiles()
+{
+  if (access(ANGLE_FILE, 0)){
+    std::cerr << ANGLE_FILE << " not found" << std::endl;
+  }else{
+    angle.open(ANGLE_FILE);
+  }
+
+  if (access(VEL_FILE, 0)){
+    std::cerr << VEL_FILE << " not found" << std::endl;
+  }else{
+    vel.open(VEL_FILE);
+  }
+
+  if (access(ACC_FILE, 0))
+  {
+    std::cerr << ACC_FILE << " not found" << std::endl;
+  }else{
+    acc.open(ACC_FILE);
+  }
+}
+
+void SampleHG::closeFiles()
+{
+    if( angle.is_open() ){
+        angle.close();
+        angle.clear();
+    }
+    if( vel.is_open() ){
+        vel.close();
+        vel.clear();
+    }
+    if( acc.is_open() ){
+        acc.close();
+        acc.clear();
+    }
+}
 
 
 extern "C"

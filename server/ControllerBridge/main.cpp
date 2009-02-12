@@ -70,30 +70,30 @@ namespace {
 		if(CORBA::is_nil(namingContext)){
 			return false;
 		}
+        Controller_impl* controllerServant = new Controller_impl( rtcManager, bridgeConf );
 
-		ControllerFactory_impl* controllerFactoryServant = new ControllerFactory_impl(rtcManager, bridgeConf);
-		CORBA::Object_var controllerFactory = controllerFactoryServant->_this();
+        CORBA::Object_var controller = controllerServant->_this();
 
-		CosNaming::Name controllerFactoryName;
-		controllerFactoryName.length(1);
-		controllerFactoryName[0].id = CORBA::string_dup(bridgeConf->getControllerFactoryName());
-		controllerFactoryName[0].kind = CORBA::string_dup("");
+        CosNaming::Name controllerName;
+        controllerName.length(1);
+        controllerName[0].id = CORBA::string_dup(bridgeConf->getControllerName());
+        controllerName[0].kind = CORBA::string_dup("");
 
-		namingContext->rebind(controllerFactoryName, controllerFactory);
+        namingContext->rebind(controllerName, controller);
 
-		bridgeConf->setupModules();
-    
+        bridgeConf->setupModules();
+
 		return true;
 	}
-  
 }
 
 
 int main(int argc, char* argv[])
 {
+	int ret = 0;
 	RTC::Manager* rtcManager;
 
-	try {
+    try {
 		rtcManager = RTC::Manager::init(0, 0);
 
 		rtcManager->activateManager();
@@ -112,7 +112,6 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
-	bool ret = 0;
 
 	if(bridgeConf->isReady()){
 		if(setup(rtcManager, bridgeConf)){
@@ -122,6 +121,5 @@ int main(int argc, char* argv[])
 			ret = 1;
 		}
 	}
-
 	return ret;
 }

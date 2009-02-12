@@ -101,7 +101,7 @@ PD_HGtest::PD_HGtest(RTC::Manager* manager)
 
 PD_HGtest::~PD_HGtest()
 {
-  if (waist.is_open())  waist.close();
+  closeFiles();
 }
 
 
@@ -143,17 +143,19 @@ RTC::ReturnCode_t PD_HGtest::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t PD_HGtest::onActivated(RTC::UniqueId ec_id)
 {
 	std::cout << "on Activated" << std::endl;
-    waist.seekg(0);
+    openFiles();
 	
 	return RTC::RTC_OK;
 }
 
-/*
+
 RTC::ReturnCode_t PD_HGtest::onDeactivated(RTC::UniqueId ec_id)
 {
+  std::cout << "on Deactivated" << std::endl;
+  closeFiles();
   return RTC::RTC_OK;
 }
-*/
+
 
 
 RTC::ReturnCode_t PD_HGtest::onExecute(RTC::UniqueId ec_id)
@@ -235,6 +237,23 @@ RTC::ReturnCode_t PD_HGtest::onExecute(RTC::UniqueId ec_id)
   }
 */
 
+void PD_HGtest::openFiles()
+{
+  if (access(WAIST_FILE, 0))
+  {
+    std::cerr << WAIST_FILE << " not found" << std::endl;
+  }else{
+    waist.open(WAIST_FILE);
+  }
+}
+
+void PD_HGtest::closeFiles()
+{
+    if(waist.is_open()){
+        waist.close();
+        waist.clear();
+    }
+}
 
 
 extern "C"

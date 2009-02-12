@@ -18,6 +18,7 @@
 
 #ifndef SAMPLECONTROLLER_H
 #define SAMPLECONTROLLER_H
+#define DOF (29)
 
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
@@ -67,7 +68,7 @@ class SampleController
 
   // The deactivated action (Active state exit action)
   // former rtc_active_exit()
-  // virtual RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id);
+   virtual RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id);
 
   // The execution action that is invoked periodically
   // former rtc_active_do()
@@ -146,8 +147,14 @@ class SampleController
 
   bool goal_set;
   bool pattern;
-
+  double q_ref[DOF], dq_ref[DOF];
+  double remain_t;
+  double q_goal[DOF], dq_goal[DOF];
+  int step;
   std::ofstream out;
+  void openFiles();
+  void closeFiles();
+
 };
 
 

@@ -23,7 +23,6 @@
 
 #include "VirtualRobotPortHandler.h"
 
-
 class Controller_impl;
 
 class VirtualRobotRTC : public RTC::DataFlowComponentBase
@@ -44,9 +43,7 @@ public:
 
     void writeDataToOutPorts(Controller_impl* controller);
     void readDataFromInPorts(Controller_impl* controller);
-
-    virtual RTC::ReturnCode_t onExecute(RTC::UniqueId ex_id);
-
+    void stop();
     bool isOwnedByController;
 
 private:
