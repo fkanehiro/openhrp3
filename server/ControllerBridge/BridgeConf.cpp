@@ -166,7 +166,12 @@ void BridgeConf::parseOptions()
   if(vmap.count("module")){
     vector<string> values = vmap["module"].as<vector<string> >();
     for(size_t i=0; i < values.size(); ++i){
-      addModuleInfo(values[i]);
+      string modulePath( values[i] );
+      if( filesystem::extension(filesystem::path( modulePath )).empty() )
+      {
+        modulePath += string( SUFFIX_SHARED_EXT );
+      }
+      addModuleInfo( modulePath );
     }
   }
 
@@ -188,7 +193,7 @@ void BridgeConf::parseOptions()
   string server(expandEnvironmentVariables(vmap["name-server"].as<string>()));
   nameServerIdentifier = string("corbaloc:iiop:") + server + "/NameService";
 
-  controllerFactoryName = expandEnvironmentVariables(vmap["server-name"].as<string>());
+  controllerName = expandEnvironmentVariables(vmap["server-name"].as<string>());
 
   virtualRobotRtcTypeName = expandEnvironmentVariables(vmap["robot-name"].as<string>());
 
@@ -317,9 +322,9 @@ const char* BridgeConf::getOpenHRPNameServerIdentifier()
 }
 
 
-const char* BridgeConf::getControllerFactoryName()
+const char* BridgeConf::getControllerName()
 {
-  return controllerFactoryName.c_str();
+  return controllerName.c_str();
 }
 
 
