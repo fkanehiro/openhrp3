@@ -1,6 +1,6 @@
 openhrp-controller-bridge ^
 --server-name SampleHGController ^
---module SampleHG.dll ^
+--module SampleHG ^
 --in-port angle:JOINT_VALUE ^
 --in-port vel:JOINT_VELOCITY ^
 --in-port acc:JOINT_ACCELERATION ^

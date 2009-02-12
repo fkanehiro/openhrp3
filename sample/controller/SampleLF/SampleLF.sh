@@ -2,7 +2,7 @@
 
 openhrp-controller-bridge \
 --server-name SampleLFController \
---module SampleLF.so \
+--module SampleLF \
 --out-port angle:JOINT_VALUE \
 --out-port r_torque_out:RARM_WRIST_R:JOINT_TORQUE \
 --out-port l_torque_out:LARM_WRIST_R:JOINT_TORQUE \
