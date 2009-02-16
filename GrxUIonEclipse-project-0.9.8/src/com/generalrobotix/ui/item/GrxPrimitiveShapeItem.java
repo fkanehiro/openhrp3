@@ -351,11 +351,10 @@ public class GrxPrimitiveShapeItem extends GrxShapeItem{
     void diffuseColor(float[] newValue){
     	if (newValue != null && newValue.length == 3){
     		Appearance appearance = primitive.getAppearance();
-    		Material material = appearance.getMaterial();
-    		material.setDiffuseColor(newValue[0], newValue[1], newValue[2]);
-    		if (model_ != null) model_.notifyModified();
-    		setFltAry("diffuseColor", newValue);
+    	    setFltAry("diffuseColor", newValue);
     		materials_[0].diffuseColor = newValue;
+    		setMaterial(appearance, materials_[0]);
+    		if (model_ != null) model_.notifyModified();
     	}
     }
     
