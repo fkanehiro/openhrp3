@@ -241,6 +241,16 @@ public class GrxConfigBundle extends Properties {
 		return ret;
 	}
 	
+	public final Float getFlt(String value) {
+		Float ret;
+		try {
+			ret = Float.parseFloat(value);
+		} catch(Exception e){
+			return null;
+		}
+		return ret;
+	}
+	
 	/**
 	 * @brief get double array associated to key
 	 * @param key keyword
@@ -294,6 +304,19 @@ public class GrxConfigBundle extends Properties {
 			return defaultVal;
 		}
 		
+		return ret;
+	}
+	
+	public float[] getFltAry(String value){
+		if (value == null) return null;
+		String[] str = value.split(" ");
+		float[] ret = new float[str.length];
+		try {
+			for (int i=0;i<str.length;i++)
+				ret[i] = Float.parseFloat(str[i]);
+		} catch(Exception e){
+			return null;
+		}
 		return ret;
 	}
 	
@@ -388,6 +411,13 @@ public class GrxConfigBundle extends Properties {
 		String val = new String();
 		val += String.valueOf(value)+" ";
 		setProperty(key,val);
+	}
+	
+	public final void setBool(String key, boolean value){
+		if(value)
+			setProperty(key,"true");
+		else
+			setProperty(key,"false");
 	}
 	
 	/**

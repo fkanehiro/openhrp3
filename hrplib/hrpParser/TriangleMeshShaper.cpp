@@ -686,11 +686,11 @@ bool TMSImpl::convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& triangleMesh)
 
     for(int i=0;  i < divisionNumber; ++i){
         const double angle = i * 2.0 * PI / divisionNumber;
-        addVertex(vertices, radius * cos(angle), 0.0, radius * sin(angle));
+        addVertex(vertices, radius * cos(angle), -cone->height/2.0, radius * sin(angle));
     }
 
-    const int topIndex = addVertex(vertices, 0.0, cone->height, 0.0);
-    const int bottomCenterIndex = addVertex(vertices, 0.0, 0.0, 0.0);
+    const int topIndex = addVertex(vertices, 0.0, cone->height/2.0, 0.0);
+    const int bottomCenterIndex = addVertex(vertices, 0.0, -cone->height/2.0, 0.0);
 
     MFInt32& indices = triangleMesh->coordIndex;
     indices.reserve((divisionNumber * 2) * 4);

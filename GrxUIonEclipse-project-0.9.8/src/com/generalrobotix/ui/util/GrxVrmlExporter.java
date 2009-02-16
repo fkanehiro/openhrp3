@@ -423,10 +423,10 @@ public class GrxVrmlExporter {
 		System.out.println("mainPath = "+ mainPath);
 		System.out.println("url of shape = "+shape.getURL(false));
 		try{
-			// If this model is created from scratch, modelPath == null and all shapes are loaded by Inline node
-			// If this shape is loaded by Inline node, modelPath != shape.getUrl()
-			// If this shape is directry written in the main file, modelPath == shape.getUrl() 
-			if (shape.getURL(false).equals(mainPath)){
+			// If this model is created from scratch and this shape is primitive, shape.getUrl() == null
+			// If this shape is loaded by Inline node, mainPath != shape.getUrl()
+			// If this shape is directry written in the main file, mainPath == shape.getUrl() 
+			if (shape.getURL(false)==null || shape.getURL(false).equals(mainPath)){
 				writer.write(indent+"Transform {\n");
 				if (!valueEquals(shape.getProperty("translation"),"0.0 0.0 0.0 ")){
 					writer.write(indent+"  translation "+shape.getProperty("translation")+"\n");
