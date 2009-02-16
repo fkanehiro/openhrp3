@@ -38,6 +38,7 @@ import jp.go.aist.hrp.simulator.LinkInfo;
 import jp.go.aist.hrp.simulator.SensorInfo;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -225,6 +226,11 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void addShape(String fPath){
     	super.addShape(fPath);
+    	resizeBoundingBox();
+    }
+    
+    public void addPrimitiveShape(String name){
+    	super.addPrimitiveShape(name);
     	resizeBoundingBox();
     }
     
@@ -752,7 +758,48 @@ public class GrxLinkItem extends GrxTransformItem{
 			}
 		};
         setMenuItem(item);
-
+        
+        // menu item : add primitive shape
+        MenuManager subMenu= new MenuManager("add primitive shape");
+        setSubMenu(subMenu);      
+        item = new Action(){
+			public String getText(){
+				return "Box";
+			}
+			public void run(){
+				addPrimitiveShape("Box");
+			}
+		};
+		subMenu.add(item);
+		item = new Action(){
+			public String getText(){
+				return "Cone";
+			}
+			public void run(){
+				addPrimitiveShape("Cone");
+			}
+		};
+		subMenu.add(item);
+		item = new Action(){
+			public String getText(){
+				return "Cylinder";
+			}
+			public void run(){
+				addPrimitiveShape("Cylinder");
+			}
+		};
+		subMenu.add(item);
+		item = new Action(){
+			public String getText(){
+				return "Sphere";
+			}
+			public void run(){
+				addPrimitiveShape("Sphere");
+			}
+		};
+		subMenu.add(item);
+		setSubMenu(subMenu);
+		
         /* diable copy and paste menus until they are implemented
         // menu item : copy
         item = new Action(){
@@ -868,6 +915,8 @@ public class GrxLinkItem extends GrxTransformItem{
 	 * @brief resize bounding box and axis line which are displayed when this joint is selected
 	 */
 	private void resizeBoundingBox(){
+		Transform3D trorg = new Transform3D();
+		tg_.getTransform(trorg);
         try{
 		Transform3D tr = new Transform3D();
         tg_.setTransform(tr);
@@ -898,6 +947,7 @@ public class GrxLinkItem extends GrxTransformItem{
         }catch(Exception ex){
         	ex.printStackTrace();
         }
+        tg_.setTransform(trorg);
 }
 	
     /**
@@ -995,6 +1045,7 @@ public class GrxLinkItem extends GrxTransformItem{
     	super.setFocused(b);
     	setVisibleCoM(b);
     	if (b){
+    		resizeBoundingBox();
 			switchBb_.setWhichChild(Switch.CHILD_ALL);
     		if (jointType().equals("rotate") || jointType().equals("slide")) {
     			switchAxis_.setWhichChild(Switch.CHILD_ALL);

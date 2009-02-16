@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -51,6 +52,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	private String iconName_;
 
 	private Vector<Action> menu_ = new Vector<Action>();
+	private Vector<MenuManager> subMenu_ = new Vector<MenuManager>();
 	private String[] menuPath_;
 
 	private Document doc_;
@@ -267,6 +269,14 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public void setMenuItem( Action a ) {
 		menu_.add(a);
 	}
+	
+	/**
+	 * @brief add a submenu
+	 * @param a new submenu
+	 */
+	public void setSubMenu( MenuManager m ) {
+		subMenu_.add(m);
+	}
 
 	/**
 	 * @brief get menu
@@ -276,6 +286,14 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		return menu_;
 	}
 
+	/**
+	 * @brief get subMenu
+	 * @return subMenu
+	 */
+	public Vector<MenuManager> getSubMenu() {
+		return subMenu_;
+	}
+	
 	/**
 	 * @brief set menu path
 	 * @param path menu path

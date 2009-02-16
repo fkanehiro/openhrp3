@@ -145,6 +145,10 @@ public class GrxItemView extends GrxBaseView {
         			for( Action a: menus){
         				menuMgr.add(a);
         			}
+        			Vector<MenuManager> subMenus = ((GrxBasePlugin)o).getSubMenu();
+        			for( MenuManager m: subMenus){
+        				menuMgr.add(m);
+        			}
     			}
     		}
     	});

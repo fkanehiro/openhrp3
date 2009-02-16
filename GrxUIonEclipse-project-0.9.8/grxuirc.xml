@@ -12,6 +12,7 @@
         <item class="com.generalrobotix.ui.item.GrxModelItem" visible="true"/>
         <item class="com.generalrobotix.ui.item.GrxLinkItem" visible="false"/>
         <item class="com.generalrobotix.ui.item.GrxShapeItem" visible="false"/>
+        <item class="com.generalrobotix.ui.item.GrxPrimitiveShapeItem" visible="false"/>
         <item class="com.generalrobotix.ui.item.GrxSensorItem" visible="false"/>
         <item class="com.generalrobotix.ui.item.GrxHwcItem" visible="false"/>
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" visible="true"/>

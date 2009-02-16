@@ -14,6 +14,7 @@ package com.generalrobotix.ui.item;
 import java.util.List;
 import java.util.Vector;
 
+import javax.media.j3d.Appearance;
 import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Switch;
@@ -25,12 +26,14 @@ import javax.vecmath.Vector3d;
 import jp.go.aist.hrp.simulator.ModelLoader;
 import jp.go.aist.hrp.simulator.ModelLoaderHelper;
 import jp.go.aist.hrp.simulator.SceneInfo;
+import jp.go.aist.hrp.simulator.ShapePrimitiveType;
 import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
+import com.sun.j3d.utils.geometry.Box;
 
 /**
  * @brief item which have a transformation
@@ -215,6 +218,24 @@ public class GrxTransformItem extends GrxBaseItem {
             }
 		}
 
+    }
+    
+    public void addPrimitiveShape(String name){
+    	int n=children_.size();
+    	int type;
+    	if(name.equals("Box"))
+    		type = ShapePrimitiveType._SP_BOX;
+    	else if(name.equals("Cone"))
+    		type = ShapePrimitiveType._SP_CONE;
+    	else if(name.equals("Cylinder"))
+    		type = ShapePrimitiveType._SP_CYLINDER;
+    	else if(name.equals("Sphere"))
+    		type = ShapePrimitiveType._SP_SPHERE;
+    	else
+    		type = -1;
+    	GrxPrimitiveShapeItem pShap = new GrxPrimitiveShapeItem(type, getName()+"_"+name+"_"+n, manager_, model_);
+    	addChild(pShap);
+    	manager_.reselectItems();
     }
 
     /**

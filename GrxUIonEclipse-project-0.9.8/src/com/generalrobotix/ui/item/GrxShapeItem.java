@@ -81,7 +81,7 @@ public class GrxShapeItem extends GrxTransformItem{
     public TextureInfo[] textures_;
     //public double transform_;
     
-    private Switch switchBb_;
+    protected Switch switchBb_;
 
     /**
      * @brief constructor
@@ -93,6 +93,9 @@ public class GrxShapeItem extends GrxTransformItem{
      * @param materialInfo MaterialInfo retrieved through ModelLoader
      * @param textureInfo TextureInfo retrieved through ModelLoader
      */
+   	public GrxShapeItem(String name, GrxPluginManager manager, GrxModelItem model){
+   		super(name, manager, model);
+   	}
    	
    	public GrxShapeItem(String name, GrxPluginManager manager, GrxModelItem model, TransformedShapeIndex[] tsi,
        		double[] inlinedSTM, List index) {
@@ -148,19 +151,9 @@ public class GrxShapeItem extends GrxTransformItem{
             t3d.setRotation(m3d);
             addShape( tsi[(Integer)index.get(0)].shapeIndex, tg_, model, 0);
     	}
-    	
-    	SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-
-        modifier.init_ = true;
-        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
-        Transform3D tr = new Transform3D();
-        modifier._calcUpperLower(tg_, tr);
-        
-        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
-        tg_.addChild(switchBb_);
 
        	tg_.setTransform(t3d);
+       	/*
        	Vector3d trans = new Vector3d();
         Matrix3d rotat = new Matrix3d();
         t3d.get(rotat, trans);
@@ -174,7 +167,46 @@ public class GrxShapeItem extends GrxTransformItem{
         double [] rot = new double[4];
         a4d.get(rot);
         rotation(rot);
+        */
+        if(index!=null)
+			setURL(model.shapes[tsi[(Integer)index.get(0)].shapeIndex].url);
+		else
+			setURL(model.shapes[tsi[0].shapeIndex].url);
+        
+        initialize(t3d);
 
+   	}
+   	
+   	protected void initialize(Transform3D t3d){
+   		Vector3d trans = new Vector3d();
+        Matrix3d rotat = new Matrix3d();
+        t3d.get(rotat, trans);
+
+        double [] pos = new double[3];
+        trans.get(pos);
+        translation(pos);
+        AxisAngle4d a4d = new AxisAngle4d();
+        rotat.normalize();
+        a4d.setMatrix(rotat);
+        double [] rot = new double[4];
+        a4d.get(rot);
+        rotation(rot);
+        
+        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+
+        modifier.init_ = true;
+        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+        Transform3D tr = new Transform3D();
+        Transform3D trorg = new Transform3D();
+		tg_.getTransform(trorg);
+		tg_.setTransform(tr);
+        modifier._calcUpperLower(tg_, tr);
+        tg_.setTransform(trorg);
+        
+        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
+        tg_.addChild(switchBb_);
+        
 		getMenu().clear();
 
 		Action item;
@@ -207,10 +239,7 @@ public class GrxShapeItem extends GrxTransformItem{
 			}
 		};
 		setMenuItem(item);
-		if(index!=null)
-			setURL(model.shapes[tsi[(Integer)index.get(0)].shapeIndex].url);
-		else
-			setURL(model.shapes[tsi[0].shapeIndex].url);
+		
 		/* disable copy and paste menus until they are implemented
         // menu item : copy
         item = new Action(){
@@ -238,7 +267,7 @@ public class GrxShapeItem extends GrxTransformItem{
 		setIcon("segment.png");
     }
 
-    private Appearance createAppearance(AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo){
+    protected Appearance createAppearance(){
         Appearance appearance = new Appearance();
         appearance.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_READ);
         appearance.setCapability(Appearance.ALLOW_POLYGON_ATTRIBUTES_READ);
@@ -317,7 +346,7 @@ public class GrxShapeItem extends GrxTransformItem{
         geometryInfo.setCoordinates(vertices);
         geometryInfo.setCoordinateIndices(shapeInfo.triangles);
         
-        Appearance appearance = createAppearance(appearanceInfo, materialInfo, textureInfo);
+        Appearance appearance = createAppearance();
         if (appearanceInfo != null){
             setColors(geometryInfo, shapeInfo, appearanceInfo);
             setNormals(geometryInfo, shapeInfo, appearanceInfo);
@@ -353,7 +382,7 @@ public class GrxShapeItem extends GrxTransformItem{
     private Primitive createPrimitive
     (ShapeInfo shapeInfo, AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo){
     	
-        Appearance appearance = createAppearance(appearanceInfo, materialInfo, textureInfo);
+        Appearance appearance = createAppearance();
         if(appearanceInfo != null){
             if(materialInfo != null)
                 setMaterial( appearance, materialInfo);
@@ -372,7 +401,7 @@ public class GrxShapeItem extends GrxTransformItem{
             }
         }
 
-        int flag = Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS | Primitive.ENABLE_GEOMETRY_PICKING;
+        int flag = Primitive.GEOMETRY_NOT_SHARED | Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS | Primitive.ENABLE_GEOMETRY_PICKING;
         if(shapeInfo.primitiveType == ShapePrimitiveType.SP_BOX || shapeInfo.primitiveType == ShapePrimitiveType.SP_PLANE){
             Box box = new Box((float)(shapeInfo.primitiveParameters[0]/2.0), (float)(shapeInfo.primitiveParameters[1]/2.0),
                 (float)(shapeInfo.primitiveParameters[2]/2.0), flag, appearance );
@@ -403,7 +432,7 @@ public class GrxShapeItem extends GrxTransformItem{
         return null; 
     }
 
-    private void setMaterial(Appearance appearance, MaterialInfo materialInfo){
+    protected void setMaterial(Appearance appearance, MaterialInfo materialInfo){
         if(materialInfo.transparency > 0.0f){
             TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
             ta.setCapability(TransparencyAttributes.ALLOW_MODE_READ);
@@ -452,7 +481,7 @@ public class GrxShapeItem extends GrxTransformItem{
     }
 
 
-    private Material createMaterial(MaterialInfo materialInfo){
+    protected Material createMaterial(MaterialInfo materialInfo){
 
         Material material = new Material();
 
@@ -594,7 +623,7 @@ public class GrxShapeItem extends GrxTransformItem{
     	}else if(property.equals("rotation")){
     		rotation(value);
     	}else{
-    		System.out.println("GrxShapeItem.propertyChanged() : unknown property : "+property);
+    		//System.out.println("GrxShapeItem.propertyChanged() : unknown property : "+property);
     		return false;
     	}
     	return true;
