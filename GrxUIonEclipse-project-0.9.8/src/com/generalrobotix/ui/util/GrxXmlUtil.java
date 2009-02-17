@@ -273,6 +273,22 @@ public class GrxXmlUtil {
 		return expandEnvVal(str);
 	}
 
+	public static String getStringNoexpand(String[] path, String atr,
+			String defaultValue) {
+		return getStringNoexpand(getElement(path), atr, defaultValue);
+	}
+
+	public static String getStringNoexpand(Element e, String atr, String defaultValue) {
+		if (e == null)
+			return defaultValue;
+
+		String str = e.getAttribute(atr);
+		if (str.equals(""))
+			return defaultValue;
+
+		return str;
+	}
+
 	public static String expandEnvVal(String str) {
 		if (str == null)
 			return null;
