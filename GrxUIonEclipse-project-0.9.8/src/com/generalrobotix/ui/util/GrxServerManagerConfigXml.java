@@ -110,11 +110,11 @@ public class GrxServerManagerConfigXml {
         	return ret ;
 		Node node = localList.item(index);
         ret = new ProcessInfo();
-        ret.id = GrxXmlUtil.getString((Element)node, "id", "");
+        ret.id = GrxXmlUtil.getStringNoexpand((Element)node, "id", "");
         if( ret.id.equals(""))
         	return ret;
-        ret.com.add( GrxXmlUtil.getString((Element)node , "com" , ""));
-        ret.args =  GrxXmlUtil.getString((Element)node ,"args" , "");
+        ret.com.add( GrxXmlUtil.getStringNoexpand((Element)node , "com" , ""));
+        ret.args =  GrxXmlUtil.getStringNoexpand((Element)node ,"args" , "");
         ret.autoStart = GrxXmlUtil.getBoolean((Element)node , "autostart", false);
         ret.useORB = GrxXmlUtil.getBoolean((Element)node , "useORB", false);
         return ret;
