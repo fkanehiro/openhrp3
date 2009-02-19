@@ -644,8 +644,12 @@ public class GrxVrmlExporter {
 		if(n!=ss2.length)
 			return false;
 		for(int i=0; i<n; i++){
-			if( Math.abs(Double.parseDouble(ss1[i]) - Double.parseDouble(ss2[i])) > EPS )
+			try{
+				if( Math.abs(Double.parseDouble(ss1[i]) - Double.parseDouble(ss2[i])) > EPS )
+					return false;
+			}catch(Exception ex){
 				return false;
+			}
 		}
 		return true;
 	}
