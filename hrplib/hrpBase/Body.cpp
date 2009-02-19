@@ -545,6 +545,7 @@ void Body::clearExternalForces()
         Link* link = linkTraverse_[i];
         link->fext = 0.0;
         link->tauext = 0.0;
+        link->constraintForceArray.clear();
     }
 }
 

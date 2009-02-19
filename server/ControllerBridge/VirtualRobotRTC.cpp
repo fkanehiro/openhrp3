@@ -136,6 +136,7 @@ void VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
     case ABS_TRANSFORM:
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
+    case CONSTRAINT_FORCE:
       registerOutPortHandler(new LinkDataOutPortHandler(portInfo));
       break;
 

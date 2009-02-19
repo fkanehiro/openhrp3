@@ -18,6 +18,7 @@
 
 #include <string>
 #include <ostream>
+#include <vector>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
@@ -30,6 +31,11 @@ namespace hrp {
 	typedef boost::shared_ptr<ColdetModel> ColdetModelPtr;
 
 	class Body;
+    
+    struct ConstraintForce{
+        Vector3 point;
+        Vector3 force;
+    };
 
     class HRPBASE_EXPORT Link {
 
@@ -164,6 +170,9 @@ namespace hrp {
 		bool isHighGainMode;
 
 		ColdetModelPtr coldetModel;
+
+        std::vector<ConstraintForce> constraintForceArray;
+        
 
 	private:
 		void calcInverseDynamicsIter(Vector3& out_f, Vector3& out_tau, bool calledFromParent, Link* prevLink);

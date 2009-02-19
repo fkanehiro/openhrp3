@@ -575,6 +575,8 @@ void DynamicsSimulator_impl::stepSimulation()
         cout << "DynamicsSimulator_impl::stepSimulation()" << endl;
     }
 
+    world.contactForceSolver.clearExternalForces();
+
     if(enableTimeMeasure) timeMeasure2.begin();
     world.calcNextState(collisions);
 
@@ -589,8 +591,7 @@ void DynamicsSimulator_impl::stepSimulation()
     }
     if(enableTimeMeasure) timeMeasure3.end();
 
-    world.contactForceSolver.clearExternalForces();
-
+    //world.contactForceSolver.clearExternalForces();
 
     if(enableTimeMeasure){
         if(world.currentTime() > 10.0 && !timeMeasureFinished){
@@ -805,6 +806,20 @@ void DynamicsSimulator_impl::getCharacterLinkData
         rdata[3] = link->tauext(0);
         rdata[4] = link->tauext(1);
         rdata[5] = link->tauext(2);
+        break;
+    
+    case OpenHRP::DynamicsSimulator::CONSTRAINT_FORCE:
+        int n;
+        n = link->constraintForceArray.size();
+        rdata->length(6*n);
+        for(int i=0; i<n; i++){
+            rdata[i*6] = link->constraintForceArray[i].point(0);
+            rdata[i*6+1] = link->constraintForceArray[i].point(1);
+            rdata[i*6+2] = link->constraintForceArray[i].point(2);
+            rdata[i*6+3] = link->constraintForceArray[i].force(0);
+            rdata[i*6+4] = link->constraintForceArray[i].force(1);
+            rdata[i*6+5] = link->constraintForceArray[i].force(2);
+        }
         break;
 
     default:
