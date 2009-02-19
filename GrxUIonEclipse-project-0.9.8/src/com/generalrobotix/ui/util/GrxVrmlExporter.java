@@ -278,7 +278,7 @@ public class GrxVrmlExporter {
 			if (!valueEquals(link.getProperty("translation"),"0.0 0.0 0.0 ")){
 				writer.write(indent+"  translation "+link.getProperty("translation")+"\n");
 			}
-			if (!valueEquals(link.getProperty("rotation"),"0.0 1.0 0.0 0.0")){
+			if (!valueEquals(link.getProperty("rotation"),"0.0 0.0 1.0 0.0")){
 				writer.write(indent+"  rotation "+link.getProperty("rotation")+"\n");
 			}
 			if (!link.getProperty("ulimit").equals("")) writer.write(indent+"  ulimit ["+link.getProperty("ulimit")+"]\n");
@@ -350,7 +350,7 @@ public class GrxVrmlExporter {
 			if (!valueEquals(sensor.getProperty("translation"),"0.0 0.0 0.0 ")){
 				writer.write(indent+"  translation "+sensor.getProperty("translation")+"\n");
 			}
-			if (!valueEquals(sensor.getProperty("rotation"),"0.0 1.0 0.0 0.0")){
+			if (!valueEquals(sensor.getProperty("rotation"),"0.0 0.0 1.0 0.0")){
 				writer.write(indent+"  rotation "+sensor.getProperty("rotation")+"\n");
 			}
 			// sensor specific parameters
@@ -431,7 +431,7 @@ public class GrxVrmlExporter {
 				if (!valueEquals(shape.getProperty("translation"),"0.0 0.0 0.0 ")){
 					writer.write(indent+"  translation "+shape.getProperty("translation")+"\n");
 				}
-				if (!valueEquals(shape.getProperty("rotation"),"0.0 1.0 0.0 0.0")){
+				if (!valueEquals(shape.getProperty("rotation"),"0.0 0.0 1.0 0.0")){
 					writer.write(indent+"  rotation "+shape.getProperty("rotation")+"\n");
 				}
 				writer.write(indent+"  children[\n");
@@ -464,7 +464,7 @@ public class GrxVrmlExporter {
 				if (!valueEquals(shape.getProperty("translation"),"0.0 0.0 0.0 ")){
 					writer.write(indent+"  translation "+shape.getProperty("translation")+"\n");
 				}
-				if (!valueEquals(shape.getProperty("rotation"),"0.0 1.0 0.0 0.0")){
+				if (!valueEquals(shape.getProperty("rotation"),"0.0 0.0 1.0 0.0")){
 					writer.write(indent+"  rotation "+shape.getProperty("rotation")+"\n");
 				}
 				writer.write(indent+"  children[\n");
