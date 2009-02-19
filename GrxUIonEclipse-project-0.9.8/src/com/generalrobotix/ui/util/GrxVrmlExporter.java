@@ -376,6 +376,9 @@ public class GrxVrmlExporter {
 				if (!sensor.getProperty("cameraType").equals("NONE")){
 					writer.write(indent+"  type \""+sensor.getProperty("cameraType")+"\"\n");
 				}
+				if (!sensor.getProperty("name").equals("")){
+					writer.write(indent+"  name \""+sensor.getProperty("name")+"\"\n");
+				}
 			}else if(nodeType.equals("ForceSensor")){
 				String maxf = sensor.getProperty("maxForce");
 				if (!valueEquals(maxf, "-1.0 -1.0 -1.0 ")){
