@@ -1576,6 +1576,7 @@ void CFSImpl::addConstraintForceToLink(LinkPair* linkPair, int ipair)
 
     ConstraintPointArray& constraintPoints = linkPair->constraintPoints;
     int numConstraintPoints = constraintPoints.size();
+    Link* link = linkPair->link[ipair];
 
     for(int i=0; i < numConstraintPoints; ++i){
 
@@ -1590,9 +1591,14 @@ void CFSImpl::addConstraintForceToLink(LinkPair* linkPair, int ipair)
 
         f_total   += f;
         tau_total += cross(constraint.point, f);
-    }
 
-    Link* link = linkPair->link[ipair];
+        ConstraintForce cforce;
+        cforce.point = constraint.point;
+        cforce.force = f;
+        link->constraintForceArray.push_back(cforce);
+
+    }
+    
     link->fext   += f_total;
     link->tauext += tau_total;
 

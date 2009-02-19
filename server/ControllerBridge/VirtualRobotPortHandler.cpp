@@ -47,8 +47,9 @@ namespace {
     case JOINT_TORQUE:       return DynamicsSimulator::JOINT_TORQUE;
     case EXTERNAL_FORCE:     return DynamicsSimulator::EXTERNAL_FORCE;
     case ABS_TRANSFORM:      return DynamicsSimulator::ABS_TRANSFORM;
-    case ABS_VELOCITY:      return DynamicsSimulator::ABS_VELOCITY;
-    case ABS_ACCELERATION:      return DynamicsSimulator::ABS_ACCELERATION;
+    case ABS_VELOCITY:       return DynamicsSimulator::ABS_VELOCITY;
+    case ABS_ACCELERATION:   return DynamicsSimulator::ABS_ACCELERATION;
+    case CONSTRAINT_FORCE:   return DynamicsSimulator::CONSTRAINT_FORCE;
     default:                 return DynamicsSimulator::INVALID_DATA_TYPE;
     }
   }

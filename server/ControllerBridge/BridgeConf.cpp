@@ -127,7 +127,8 @@ void BridgeConf::initLabelToDataTypeMap()
   m["COLOR_IMAGE"]         = COLOR_IMAGE;
   m["GRAYSCALE_IMAGE"]     = GRAYSCALE_IMAGE;
   m["DEPTH_IMAGE"]         = DEPTH_IMAGE;
-  m["RANGE_SENSOR"]	   = RANGE_SENSOR;
+  m["RANGE_SENSOR"]	       = RANGE_SENSOR;
+  m["CONSTRAINT_FORCE"]    = CONSTRAINT_FORCE;
 }
 
 
@@ -215,8 +216,8 @@ void BridgeConf::setPortInfos(const char* optionLabel, PortInfoMap& portInfos)
     int j;
     for(j=1; j<3; j++){
         LabelToDataTypeIdMap::iterator it = labelToDataTypeIdMap.find(parameters[j]);
-        if(it == labelToDataTypeIdMap.end() ){
-            if(j==2)
+        if(it == labelToDataTypeIdMap.end() ){     // プロパティ名でないので識別名　 //
+            if(j==2)    // 3番目までにプロパティ名がないのでエラー　//
                 throw invalid_argument(string("invalid data type"));
             string st=parameters[j];
             vector<string> owners = extractParameters(st, ',');
@@ -228,29 +229,32 @@ void BridgeConf::setPortInfos(const char* optionLabel, PortInfoMap& portInfos)
                         break;
                     }
                 }
-                if(digit){
+                if(digit){  //識別名が数字なので画像データ　２つ以上指定するとエラー　//
                     info.dataOwnerId = atoi(owners[i].c_str());
                     info.dataOwnerName.clear();
                     if(owners.size() > 1){
                         throw invalid_argument(string("invalid VisionSensor setting"));
                     }
-                }else{
+                }else{      //識別名が名前  //
                     info.dataOwnerId = -1;
                     info.dataOwnerName.push_back(owners[i]);
                 }
             }
-        }else{
+        }else{  // プロパティ名 //
             info.dataTypeId = it->second;
             j++;
             break;
         }
     }
-    if(j<n){
+    if(j<n){    // まだパラメターがあるならサンプリング時間　//
         info.stepTime = atof(parameters[j].c_str());
     }else{
         info.stepTime = 0;
     }
 
+    // プロパティがCONSTRAINT_FORCEのとき　識別名が２つ以上あってはいけない　   //
+    if(info.dataTypeId==CONSTRAINT_FORCE && info.dataOwnerName.size() > 1 )
+        throw invalid_argument(string("invalid in port setting"));
     portInfos.insert(make_pair(info.portName, info));
   }
 }
