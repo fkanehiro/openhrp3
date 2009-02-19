@@ -330,7 +330,7 @@ public class GrxLinkItem extends GrxTransformItem{
      * @param type type of this joint. It must be one of "fixed", "free", "rotate" and "slide"
      */
     void jointType(String type){
-		if (!jointType().equals(type) && (type.equals("fixed")||type.equals("rotate")||type.equals("free")||type.equals("slide"))){
+		if (type.equals("fixed")||type.equals("rotate")||type.equals("free")||type.equals("slide")){
 	    	info_.jointType = type;
 	    	setProperty("jointType", type);
     		if (model_ != null) model_.notifyModified();
