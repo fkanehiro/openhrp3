@@ -18,6 +18,7 @@ import javax.media.j3d.Node;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.TransformGroup;
+import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 
@@ -75,6 +76,7 @@ public class GrxShapeUtil{
     }
 
 
+	
 	/**
 	 * @brief create ball with switch node
 	 * @param radius radius of the ball
@@ -82,12 +84,27 @@ public class GrxShapeUtil{
 	 * @return switch node
 	 */
 	public static Switch createBall(double radius, Color3f c) {
+		return createBall(radius, c, 1.0f);
+	}
+	
+	/**
+	 * @brief create ball with switch node
+	 * @param radius radius of the ball
+	 * @param c color of the ball
+	 * @param transparency transparency
+	 * @return switch node
+	 */
+	public static Switch createBall(double radius, Color3f c, float transparency) {
         Material m = new Material();
         m.setDiffuseColor(c);
         m.setSpecularColor(0.01f, 0.10f, 0.02f);
         m.setLightingEnable(true);
+        TransparencyAttributes ta = new TransparencyAttributes();
+        ta.setTransparency(0.5f);
+        ta.setTransparencyMode(TransparencyAttributes.FASTEST);
         Appearance app = new Appearance();
         app.setMaterial(m);
+        app.setTransparencyAttributes(ta);
         Node sphere = new Sphere((float)radius, Sphere.GENERATE_NORMALS, app);
         sphere.setPickable(false);
 
