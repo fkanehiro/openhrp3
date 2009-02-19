@@ -837,7 +837,7 @@ public class GrxLinkItem extends GrxTransformItem{
 		
 		// CoM display
 		// 0.01 is default scale of ellipsoid
-        switchCom_ = GrxShapeUtil.createBall(0.01, new Color3f(1.0f, 1.0f, 0.0f));
+        switchCom_ = GrxShapeUtil.createBall(0.01, new Color3f(1.0f, 1.0f, 0.0f), 0.5f);
         tgCom_ = (TransformGroup)switchCom_.getChild(0);
         tg_.addChild(switchCom_);
 
