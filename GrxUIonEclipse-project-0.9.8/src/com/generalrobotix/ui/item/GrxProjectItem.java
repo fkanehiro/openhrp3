@@ -486,6 +486,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		};
 		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(null);
 		try {
+			manager_.setRestoreProjectWorking(true);
 			progressMonitorDlg.run(false,false, runnableProgress);
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
@@ -499,9 +500,11 @@ public class GrxProjectItem extends GrxBaseItem {
 
 		monitor.worked(1);
 
-		if (file_ == null || !file_.isFile()) 
+		if (file_ == null || !file_.isFile())
+		{
+			manager_.setRestoreProjectWorking(false);
 			return;
-	
+		}
 		ModeNodeInfo minfo =  modeInfoMap_.get(mode);
 
         monitor.worked(1);
@@ -553,7 +556,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 
 		monitor.worked(1);
-	
+		manager_.setRestoreProjectWorking(false);
 //		manager_.processingWindow_.setVisible(false);
 	}
 	

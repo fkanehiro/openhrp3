@@ -456,6 +456,10 @@ public class GrxLoggerView extends GrxBaseView {
 		if (current_ == pos || pos < 0 || getMaximum() < pos){
 			return;
 		}
+		if( pos == 0 )
+		{
+			current_ = pos;
+		}
 		current_ = pos;
 		sliderTime_.setSelection(pos);
 		currentItem_.setPosition(pos);

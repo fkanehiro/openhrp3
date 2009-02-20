@@ -80,6 +80,7 @@ public class GrxPluginManager {
     private List<GrxBaseItem> selectedItemList_ = new ArrayList<GrxBaseItem>();// ダブルクリックによるトグルステータス
     private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
     private boolean bItemSelectionChanged_ = false;
+    private SynchronizedAccessor<Boolean> bRestoreProjectWorking_ = new SynchronizedAccessor<Boolean>(false); 
     private boolean bItemListChanged_ = false;
     private boolean bfocusedItemChanged_ = false;
     private boolean bItemPropertyChanged_ = false;
@@ -236,8 +237,11 @@ public class GrxPluginManager {
         display = Display.getCurrent();
         Runnable runnable = new Runnable() {
             public void run() {
-                if (bItemSelectionChanged_)
-                    _updateItemSelection();
+	           	if ( bItemSelectionChanged_ &&
+	           		 getRestoreProjectWorking() == false )
+	            {
+	                _updateItemSelection();
+	            }
                 updateViewList();
                 if (bItemListChanged_)
                     _notifyItemListChanged();
@@ -304,7 +308,6 @@ public class GrxPluginManager {
      */
     private void _updateItemSelection() {
         // GrxDebugUtil.println("[PM THREAD] update Item Selections");
-
         bItemSelectionChanged_ = false;
         selectedItemList_.clear();
         Collection<OrderedHashMap> oMaps = pluginMap_.values();
@@ -321,7 +324,8 @@ public class GrxPluginManager {
         for (int i = 0; i < selectedViewList_.size(); i++) {
             GrxBaseView view = selectedViewList_.get(i);
             try {
-                view.itemSelectionChanged(selectedItemList_);
+            view.itemSelectionChanged(selectedItemList_);
+            	            	
             } catch (Exception e1) {
                 GrxDebugUtil.printErr("Control thread (itemSelectionChanged):" + view.getName() + " got exception.", e1);
             }
@@ -790,7 +794,7 @@ public class GrxPluginManager {
      */
     private void _addItemNode(GrxBaseItem item) {
         if (item.isSelected())
-            bItemSelectionChanged_ = true;
+        	reselectItems();
         bItemListChanged_ = true;
     }
 
@@ -1172,7 +1176,24 @@ public class GrxPluginManager {
 
         return menu;
     }
+    
+    /**
+     * @brief get ProgressMonitorDialog working state
+     * 
+     * @return boolean
+     */
+    public boolean getRestoreProjectWorking() {
+        return bRestoreProjectWorking_.get();
+    }
 
+    /**
+     * @brief set ProgressMonitorDialog working state
+     * @param boolean val 
+     */
+    public void setRestoreProjectWorking(boolean val) {
+        bRestoreProjectWorking_.set(val);
+    }
+    
     /**
      * @brief
      */
