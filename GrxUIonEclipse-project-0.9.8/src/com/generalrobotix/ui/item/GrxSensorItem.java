@@ -29,6 +29,7 @@ import javax.media.j3d.TriangleFanArray;
 import javax.vecmath.Point3f;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -151,6 +152,47 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 			}
 		};
         setMenuItem(item);
+        
+//      menu item : add primitive shape
+        MenuManager subMenu= new MenuManager("add primitive shape");
+        setSubMenu(subMenu);      
+        item = new Action(){
+			public String getText(){
+				return "Box";
+			}
+			public void run(){
+				addPrimitiveShape("Box");
+			}
+		};
+		subMenu.add(item);
+		item = new Action(){
+			public String getText(){
+				return "Cone";
+			}
+			public void run(){
+				addPrimitiveShape("Cone");
+			}
+		};
+		subMenu.add(item);
+		item = new Action(){
+			public String getText(){
+				return "Cylinder";
+			}
+			public void run(){
+				addPrimitiveShape("Cylinder");
+			}
+		};
+		subMenu.add(item);
+		item = new Action(){
+			public String getText(){
+				return "Sphere";
+			}
+			public void run(){
+				addPrimitiveShape("Sphere");
+			}
+		};
+		subMenu.add(item);
+		setSubMenu(subMenu);
 
     	info_ = info;
 
