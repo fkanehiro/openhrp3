@@ -1561,9 +1561,9 @@ void CFSImpl::addConstraintForceToLinks()
     for(int i=0; i < n; ++i){
         LinkPair* linkPair = constrainedLinkPairs[i];
         for(int j=0; j < 2; ++j){
-            if(!linkPair->link[j]->isRoot() || linkPair->link[j]->jointType != Link::FIXED_JOINT){
+           // if(!linkPair->link[j]->isRoot() || linkPair->link[j]->jointType != Link::FIXED_JOINT){
                 addConstraintForceToLink(linkPair, j);
-            }
+           // }
         }
     }
 }
