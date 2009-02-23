@@ -17,6 +17,8 @@
 
 #if ( defined ( WIN32 ) || defined ( _WIN32 ) || defined(__WIN32__) || defined(__NT__) )
 #define SUFFIX_SHARED_EXT   ".dll"
+#elif defined(__APPLE__)
+#define SUFFIX_SHARED_EXT   ".dylib"
 #else
 #define SUFFIX_SHARED_EXT   ".so"
 #endif
