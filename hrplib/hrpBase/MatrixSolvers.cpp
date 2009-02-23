@@ -94,19 +94,12 @@ namespace hrp {
 		{
 				assert(_a.size2() == _a.size1() && _a.size2() == _b.size() );
 
-				typedef boost::numeric::ublas::matrix<double> mlapack;
-				typedef boost::numeric::ublas::vector<double> vlapack;
-
 				int n = (int)_a.size2();
 				int nrhs = 1;
 
-				mlapack a = _a; // <-
-
 				int lda = n;
 
-				//int *ipiv = new int[n];
 				std::vector<int> ipiv(n);
-				vlapack x(n);
 
 				int ldb = n;
 
@@ -115,7 +108,7 @@ namespace hrp {
 				// compute the solution
 #ifndef USE_CLAPACK_INTERFACE
   				char fact      = 'N';
-				char transpose = 'T';
+				char transpose = 'N';
 
 				double *af = new double[n*n];
 
@@ -126,8 +119,6 @@ namespace hrp {
 				double *r = new double[n];
 				double *c = new double[n];
 
-				vlapack b = _b;
-		   
 				int ldx = n;
 
 				double rcond;
@@ -138,8 +129,8 @@ namespace hrp {
 
 				int *iwork = new int[n];
 
-				dgesvx_(&fact, &transpose, &n, &nrhs, &(a(0,0)), &lda, af, &ldaf, &(ipiv[0]),
-						&equed, r, c, &(b(0)), &ldb, &(x(0)), &ldx, &rcond,
+				dgesvx_(&fact, &transpose, &n, &nrhs, const_cast<double *>(&(_a(0,0))), &lda, af, &ldaf, &(ipiv[0]),
+						&equed, r, c, const_cast<double *>(&(_b(0))), &ldb, &(_x(0)), &ldx, &rcond,
 						ferr, berr, work, iwork, &info);
 
 				delete [] iwork;
@@ -151,14 +142,11 @@ namespace hrp {
 
 				delete [] af;
 #else
-				x = _b;
+				_x = _b;
 				info = clapack_dgesv(CblasColMajor,
-									 n, nrhs, &(a(0,0)), lda, &(ipiv[0]),
-									 &(x(0)), ldb);
+									 n, nrhs, const_cast<double *>(&(a(0,0))), lda, &(ipiv[0]),
+									 &(_x(0)), ldb);
 #endif
-				_x = x;		// result
-
-				//delete [] ipiv;
 
 				return info;
 		}
