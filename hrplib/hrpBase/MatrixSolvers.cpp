@@ -129,6 +129,7 @@ namespace hrp {
 
 				int *iwork = new int[n];
 
+			    _x.resize(n);			// memory allocation for the return vector
 				dgesvx_(&fact, &transpose, &n, &nrhs, const_cast<double *>(&(_a(0,0))), &lda, af, &ldaf, &(ipiv[0]),
 						&equed, r, c, const_cast<double *>(&(_b(0))), &ldb, &(_x(0)), &ldx, &rcond,
 						ferr, berr, work, iwork, &info);
