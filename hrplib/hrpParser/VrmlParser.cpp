@@ -405,6 +405,7 @@ namespace hrp {
         const list< string >* getAncestorPathsList() const {return &ancestorPathsList;}
         void setSymbols();
         void init();
+        bool isFileProtocol(const string& ref) const;
         list< string >     ancestorPathsList;
     };
 }
@@ -755,22 +756,41 @@ VrmlNodePtr VrmlParserImpl::readInlineNode(VrmlNodeCategory nodeCategory)
 
 VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
 {
-    filesystem::path parentPath( scanner->filename );
-    filesystem::path localPath(io_filename);
+    static const string fileProtocol("file://");
+    static const string fileProtocol2("file:");
 
-    localPath.normalize();
+    filesystem::path localPath;
+    string chkFile("");
+    if( isFileProtocol( io_filename ) )
+    {
+        string::size_type pos = io_filename.find( fileProtocol );
+        string::size_type nLength = 0;
+        if( pos != 0 )
+        {
+            if( io_filename.find( fileProtocol2 ) == 0 )
+                nLength = fileProtocol2.length();
+        } else {
+            nLength = fileProtocol.length();
+        }
+        localPath = filesystem::path( string(io_filename).erase(0,nLength) );
 
-    // Relative path check & translate to absolute path 
-    if ( ! localPath.is_complete() ){
-#if BOOST_VERSION < 103600
-        localPath = parentPath.branch_path() / localPath;
-#else
-        localPath = parentPath.parent_path() / localPath;
-#endif
         localPath.normalize();
-    }
 
-    const string chkFile(localPath.file_string());
+        // Relative path check & translate to absolute path 
+        if ( ! localPath.is_complete() ){
+            filesystem::path parentPath( scanner->filename );
+#if BOOST_VERSION < 103600
+            localPath = parentPath.branch_path() / localPath;
+#else
+            localPath = parentPath.parent_path() / localPath;
+#endif
+            localPath.normalize();
+        }
+        chkFile = localPath.file_string();
+    } else {
+        // Not file protocol implements   
+        chkFile = io_filename;
+    }
     for( list<string>::const_iterator cIte = ancestorPathsList.begin(); cIte != ancestorPathsList.end(); ++cIte){
         if( chkFile == *cIte )
         {
@@ -2761,4 +2781,19 @@ void VrmlParserImpl::setSymbols()
     for(int i=0; symbols[i].id != 0; i++){
         scanner->registerSymbol(symbols[i].id, symbols[i].symbol);
     }
+}
+
+bool VrmlParserImpl::isFileProtocol(const string& ref) const
+{
+    bool ret = false;
+    string::size_type pos = ref.find(":");
+    if ( pos == string::npos || pos == 1 )
+    {
+        // Directly local path || Windows drive letter separator
+        ret = true;
+    } else {
+        if( ref.find("file:") == 0 )
+            ret = true;
+    }
+    return ret;
 }
