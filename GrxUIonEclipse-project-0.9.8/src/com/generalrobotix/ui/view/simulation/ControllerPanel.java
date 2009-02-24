@@ -38,9 +38,14 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -236,7 +241,7 @@ public class ControllerPanel extends Composite{
         //private static final int MODE_ADD = 0 ;
         private static final int MODE_EDIT = 1 ;
 
-        private static final int COMBO_WIDTH = 100;
+        private static final int COMBO_WIDTH = 200;
         private static final int BUTTON_WIDTH = 50;
         
         private int mode_;
@@ -244,12 +249,12 @@ public class ControllerPanel extends Composite{
         private Combo boxController_;
         private SEDoubleTextWithSpinForSWT spinControlTime_;
         private Text tfSetupDirectory_;
-        private Combo boxSetupCommand_;
+        private Text tfSetupCommand_;
         private Button btnOk_,btnCancel_;
         
         public ControllerEditorPanel(Composite parent,int style,String[] initialNames) {
             super(parent,style);
-            setLayout(new GridLayout(2,true));
+            setLayout(new GridLayout(4,true));
 
             Label lbl = new Label(this,SWT.SHADOW_NONE);
             lbl.setText(MessageBundle.get("panel.controller.controller"));
@@ -270,24 +275,60 @@ public class ControllerPanel extends Composite{
             
             spinControlTime_ = new SEDoubleTextWithSpinForSWT(this,SWT.NONE,0,10,0.001);
             
- 			// Setup Command Working Directory
+            // Setup Command Working Directory
             lbl = new Label(this,SWT.SHADOW_NONE);
             lbl.setText(MessageBundle.get("panel.controller.setupDirectory"));
             lbl.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             
             tfSetupDirectory_ = new Text(this,SWT.DROP_DOWN);
             tfSetupDirectory_.setText("$(BIN_DIR)");
-            gridData = new GridData();
-            gridData.widthHint = COMBO_WIDTH;
+            gridData = new GridData(GridData.FILL_HORIZONTAL);
+            gridData.horizontalSpan = 2;
             tfSetupDirectory_.setLayoutData(gridData);
+            
+            Button btnDirRef = new Button(this, SWT.PUSH);
+            btnDirRef.setText("...");
+            btnDirRef.addSelectionListener(new SelectionListener(){
+				public void widgetDefaultSelected(SelectionEvent e) {
+				}
+
+				public void widgetSelected(SelectionEvent e) {
+					IWorkbench workbench = PlatformUI.getWorkbench();
+			        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					DirectoryDialog ddlg = new DirectoryDialog( window.getShell() );
+					String fPath = ddlg.open();
+					if( fPath != null ) {
+						tfSetupDirectory_.setText(fPath);
+					}
+				}
+            });
 
  			// Setup Command
             lbl = new Label(this,SWT.SHADOW_NONE);
             lbl.setText(MessageBundle.get("panel.controller.setupCommand"));
             lbl.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             
-            boxSetupCommand_ = new Combo(this,SWT.NONE);
+            tfSetupCommand_ = new Text(this, SWT.DROP_DOWN);
+            tfSetupCommand_.setLayoutData(gridData);
             
+            Button btnCmdRef = new Button(this, SWT.PUSH);
+            btnCmdRef.setText("...");
+            btnCmdRef.addSelectionListener(new SelectionListener(){
+				public void widgetDefaultSelected(SelectionEvent e) {
+				}
+
+				public void widgetSelected(SelectionEvent e) {
+					IWorkbench workbench = PlatformUI.getWorkbench();
+			        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					FileDialog fdlg = new FileDialog( window.getShell(), SWT.OPEN );
+					fdlg.setFilterPath(tfSetupDirectory_.getText());
+					String fPath = fdlg.open();
+					if( fPath != null ) {
+						tfSetupCommand_.setText(fPath);
+					}
+				}
+            });
+
             btnOk_ = new Button(this,SWT.PUSH);
             btnOk_.setText(MessageBundle.get("dialog.okButton"));
             btnOk_.addSelectionListener(new SelectionListener(){
@@ -321,7 +362,7 @@ public class ControllerPanel extends Composite{
                         );
                         node.setProperty(
                             ATTRIBUTE_SETUP_COMMAND,
-                            boxSetupCommand_.getText()
+                            tfSetupCommand_.getText()
                         );
                     } catch (Exception ex) {
                         MessageDialog.openWarning(getShell(),"", MessageBundle.get("message.attributeerror"));
@@ -354,14 +395,14 @@ public class ControllerPanel extends Composite{
 
         public void startEditMode(GrxModelItem node) {
             mode_ = MODE_EDIT;
-            setNode(node);
-            setEnabled(true);
             String[] names = GrxCorbaUtil.getObjectNameList();
             if(names == null){
                 names = new String[0];
             }
             boxController_.removeAll();
             boxController_.setItems(names);
+            setNode(node);
+            setEnabled(true);
         }
         
         public void doCancel() {
@@ -381,12 +422,7 @@ public class ControllerPanel extends Composite{
             	tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,"$(BIN_DIR)"));
                 
                 attr = node.getProperty(ATTRIBUTE_SETUP_COMMAND, "");
-                for (int i = 0; i < boxSetupCommand_.getItemCount(); i ++) {
-                	if (attr.equals(boxSetupCommand_.getItem(i).toString())) {
-                		boxSetupCommand_.select(i);
-                	    break;
-                	}
-                }
+                tfSetupCommand_.setText(attr);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
