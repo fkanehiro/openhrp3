@@ -80,7 +80,6 @@ public class GrxPluginManager {
     private List<GrxBaseItem> selectedItemList_ = new ArrayList<GrxBaseItem>();// ダブルクリックによるトグルステータス
     private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
     private boolean bItemSelectionChanged_ = false;
-    private SynchronizedAccessor<Boolean> bRestoreProjectWorking_ = new SynchronizedAccessor<Boolean>(false); 
     private boolean bItemListChanged_ = false;
     private boolean bfocusedItemChanged_ = false;
     private boolean bItemPropertyChanged_ = false;
@@ -237,8 +236,7 @@ public class GrxPluginManager {
         display = Display.getCurrent();
         Runnable runnable = new Runnable() {
             public void run() {
-	           	if ( bItemSelectionChanged_ &&
-	           		 getRestoreProjectWorking() == false )
+	           	if ( bItemSelectionChanged_ )
 	            {
 	                _updateItemSelection();
 	            }
@@ -1175,23 +1173,6 @@ public class GrxPluginManager {
         }
 
         return menu;
-    }
-    
-    /**
-     * @brief get ProgressMonitorDialog working state
-     * 
-     * @return boolean
-     */
-    public boolean getRestoreProjectWorking() {
-        return bRestoreProjectWorking_.get();
-    }
-
-    /**
-     * @brief set ProgressMonitorDialog working state
-     * @param boolean val 
-     */
-    public void setRestoreProjectWorking(boolean val) {
-        bRestoreProjectWorking_.set(val);
     }
     
     /**
