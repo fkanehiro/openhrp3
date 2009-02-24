@@ -141,6 +141,9 @@ public class ControllerPanel extends Composite{
                             (GrxBaseItem)vecRobot_.get(row);
                         try {
                             node.setProperty(ATTRIBUTE_CONTROLLER, "");
+                            node.setProperty(ATTRIBUTE_CONTROL_TIME, "");
+                            node.setProperty(ATTRIBUTE_SETUP_DIRECTORY, "");
+                            node.setProperty(ATTRIBUTE_SETUP_COMMAND, "");
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
@@ -191,6 +194,7 @@ public class ControllerPanel extends Composite{
     }
 
     private void _repaint() {
+    	viewer_.setInput(vecRobot_);
         viewer_.getTable().update();
         //viewer_.columnMarginChanged(new ChangeEvent(viewer_) );
         //scrollPane_.repaint();
