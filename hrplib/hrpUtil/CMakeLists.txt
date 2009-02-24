@@ -26,7 +26,9 @@ set(headers
 )
   
 add_library(hrpUtil3 SHARED ${sources})
-target_link_libraries(${program} boostfilesystem )
+if(UNIX)
+  target_link_libraries( hrpUtil3 boost_filesystem)
+endif()
 # interface version 0.0.0 - version 3.0.0 beta1
 set_target_properties(hrpUtil3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
