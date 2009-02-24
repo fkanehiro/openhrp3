@@ -763,7 +763,6 @@ VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
         localPath = filesystem::path( deleteURLScheme(io_filename) );
 
         localPath.normalize();
-        cout << localPath.string() << endl;
         // Relative path check & translate to absolute path 
         if ( ! exists(localPath) ){
 
@@ -776,7 +775,6 @@ VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
             localPath.normalize();
         }
         chkFile = complete( localPath ).string();
-        cout << chkFile << endl;
     } else {
         // Not file protocol implements   
         chkFile = io_filename;
