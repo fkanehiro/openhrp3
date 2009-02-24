@@ -233,7 +233,6 @@ public class GrxLoggerView extends GrxBaseView {
 		} );
 		sliderTime_.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e) {
-				System.out.println("keypressed");
 				if (e.keyCode == SWT.ARROW_LEFT){
 					setCurrentPos(sliderTime_.getSelection()-1);
 				}else if (e.keyCode == SWT.ARROW_RIGHT){
@@ -341,23 +340,31 @@ public class GrxLoggerView extends GrxBaseView {
 		GrxDebugUtil.println("LoggerView: timeFormat = \""+timeFormat+"\"\n");
 	}
 	
+	private void _setTimeSeriesItem(GrxTimeSeriesItem item){
+		currentItem_ = item;
+		current_ = 0;
+		sliderTime_.setSelection(0);
+		if (currentItem_ != null){
+			_updateTimeField();
+			sliderTime_.setMaximum(currentItem_.getLogSize());
+			setEnabled(true);
+		}else{
+			sliderTime_.setMaximum(1);
+			setEnabled(false);
+		}
+	}
+	
 	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
 		if (!itemList.contains(currentItem_)) {
-			currentItem_ = null;
 			Iterator<GrxBaseItem> it = itemList.iterator();
 			while (it.hasNext()) {
 				GrxBaseItem i = it.next();
 				if (i instanceof GrxTimeSeriesItem) {
-					currentItem_ = (GrxTimeSeriesItem) i;
-					break;
+					_setTimeSeriesItem((GrxTimeSeriesItem)i);
+					return;
 				}
 			}
-			if (currentItem_ == null) {
-				sliderTime_.setSelection(0);
-				sliderTime_.setMaximum(1);
-				setEnabled(false);
-				return;
-			}
+			_setTimeSeriesItem(null);
 		}
 	}
 
@@ -455,10 +462,6 @@ public class GrxLoggerView extends GrxBaseView {
 	public void setCurrentPos(int pos){
 		if (current_ == pos || pos < 0 || getMaximum() < pos){
 			return;
-		}
-		if( pos == 0 )
-		{
-			current_ = pos;
 		}
 		current_ = pos;
 		sliderTime_.setSelection(pos);
