@@ -15,13 +15,14 @@ set(sources
   SceneInfo_impl.cpp
   BodyInfo_impl.cpp
   ModelLoader_impl.cpp
-  UtilFunctions.cpp
+  VrmlUtil.cpp
   server.cpp )
 
 add_executable(${program} ${sources})
 
 if(UNIX)
-  target_link_libraries(${program} hrpUtil3 hrpParser3 hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} boost_filesystem)
+  target_link_libraries(${program} hrpUtil3 hrpParser3 hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES})
+
 elseif(WIN32)
   set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d )
   target_link_libraries(${program} optimized hrpUtil3 optimized hrpParser3 optimized hrpCorbaStubSkel3 

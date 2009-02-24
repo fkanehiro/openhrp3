@@ -24,7 +24,7 @@
 #include <hrpParser/VrmlNodes.h>
 #include <hrpParser/VrmlParser.h>
 
-#include "UtilFunctions.h"
+#include "VrmlUtil.h"
 
 
 using namespace std;
@@ -65,7 +65,7 @@ void SceneInfo_impl::load(const std::string& url)
 {
     string filename(deleteURLScheme(url));
 
-    // URL文字列の' \' 区切り子を'/' に置き換え  Windows ファイルパス対応 
+    // URL文字列の' \' 区切り子を'/' に置き換え  Windows ファイルパス対応  
     string url2;
     url2 = filename;
     replace( url2, string("\\"), string("/") );

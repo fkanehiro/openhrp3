@@ -20,6 +20,7 @@
 #include <list>
 #include <iostream>
 #include <hrpUtil/EasyScanner.h>
+#include <hrpUtil/UrlUtil.h>
 
 #if (BOOST_VERSION <= 103301)
 #include <boost/filesystem/path.hpp>
@@ -405,7 +406,6 @@ namespace hrp {
         const list< string >* getAncestorPathsList() const {return &ancestorPathsList;}
         void setSymbols();
         void init();
-        bool isFileProtocol(const string& ref) const;
         list< string >     ancestorPathsList;
     };
 }
@@ -756,28 +756,17 @@ VrmlNodePtr VrmlParserImpl::readInlineNode(VrmlNodeCategory nodeCategory)
 
 VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
 {
-    static const string fileProtocol("file://");
-    static const string fileProtocol2("file:");
-
     filesystem::path localPath;
     string chkFile("");
     if( isFileProtocol( io_filename ) )
     {
-        string::size_type pos = io_filename.find( fileProtocol );
-        string::size_type nLength = 0;
-        if( pos != 0 )
-        {
-            if( io_filename.find( fileProtocol2 ) == 0 )
-                nLength = fileProtocol2.length();
-        } else {
-            nLength = fileProtocol.length();
-        }
-        localPath = filesystem::path( string(io_filename).erase(0,nLength) );
+        localPath = filesystem::path( deleteURLScheme(io_filename) );
 
         localPath.normalize();
-
+        cout << localPath.string() << endl;
         // Relative path check & translate to absolute path 
-        if ( ! localPath.is_complete() ){
+        if ( ! exists(localPath) ){
+
             filesystem::path parentPath( scanner->filename );
 #if BOOST_VERSION < 103600
             localPath = parentPath.branch_path() / localPath;
@@ -786,7 +775,8 @@ VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
 #endif
             localPath.normalize();
         }
-        chkFile = localPath.file_string();
+        chkFile = complete( localPath ).string();
+        cout << chkFile << endl;
     } else {
         // Not file protocol implements   
         chkFile = io_filename;
@@ -800,8 +790,8 @@ VrmlNodePtr VrmlParserImpl::newInlineSource(string& io_filename)
 
     VrmlParserImpl  inlineParser( *this, ancestorPathsList );
 
-    inlineParser.load( localPath.file_string() );
-    io_filename = localPath.file_string();
+    inlineParser.load( chkFile );
+    io_filename = chkFile;
 
     VrmlGroupPtr group = new VrmlGroup();
     while(VrmlNodePtr node = inlineParser.readNode(TOP_NODE)){
@@ -2781,19 +2771,4 @@ void VrmlParserImpl::setSymbols()
     for(int i=0; symbols[i].id != 0; i++){
         scanner->registerSymbol(symbols[i].id, symbols[i].symbol);
     }
-}
-
-bool VrmlParserImpl::isFileProtocol(const string& ref) const
-{
-    bool ret = false;
-    string::size_type pos = ref.find(":");
-    if ( pos == string::npos || pos == 1 )
-    {
-        // Directly local path || Windows drive letter separator
-        ret = true;
-    } else {
-        if( ref.find("file:") == 0 )
-            ret = true;
-    }
-    return ret;
 }

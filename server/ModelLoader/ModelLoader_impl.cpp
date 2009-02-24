@@ -18,7 +18,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "UtilFunctions.h"
+#include "VrmlUtil.h"
+
 
 using namespace std;
 
