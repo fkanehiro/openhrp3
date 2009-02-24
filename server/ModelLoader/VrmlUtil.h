@@ -2,12 +2,13 @@
   @author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_MODEL_LOADER_UTIL_FUNCTIONS_H_INCLUDED
-#define OPENHRP_MODEL_LOADER_UTIL_FUNCTIONS_H_INCLUDED
+#ifndef OPENHRP_MODEL_LOADER_VRML_UTIL_H_INCLUDED
+#define OPENHRP_MODEL_LOADER_VRML_UTIL_H_INCLUDED
 
 #include <string>
 #include <hrpCorba/ModelLoader.hh>
 #include <hrpParser/VrmlNodes.h>
+#include <hrpUtil/UrlUtil.h>
 
 using namespace hrp;
 using namespace OpenHRP;
@@ -26,7 +27,5 @@ void copyVrmlField(TProtoFieldMap& fmap, const std::string& name, DblArray9& out
 void copyVrmlRotationFieldToDblArray9(TProtoFieldMap& fieldMap, const std::string name, DblArray9& out_R);
 void copyVrmlRotationFieldToDblArray4(TProtoFieldMap& fieldMap, const std::string name, DblArray4& out_R);
 
-std::string deleteURLScheme(std::string url);
-std::string setTexturefileUrl(std::string modelfileDir, hrp::MFString urls);
-
+std::string setTexturefileUrl( std::string modelfileDir, hrp::MFString urls);
 #endif

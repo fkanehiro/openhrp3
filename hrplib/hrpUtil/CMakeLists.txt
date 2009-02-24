@@ -13,6 +13,7 @@ set(sources
   EasyScanner.cpp
   Tvmet3d.cpp
   Tvmet4d.cpp
+  UrlUtil.cpp
 )
 
 set(headers
@@ -21,10 +22,11 @@ set(headers
   Tvmet3d.h
   Tvmet4d.h
   TimeMeasure.h
+  UrlUtil.h
 )
   
 add_library(hrpUtil3 SHARED ${sources})
-
+target_link_libraries(${program} boostfilesystem )
 # interface version 0.0.0 - version 3.0.0 beta1
 set_target_properties(hrpUtil3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
 

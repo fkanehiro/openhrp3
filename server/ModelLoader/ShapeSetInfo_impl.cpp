@@ -23,7 +23,8 @@
 #include <hrpParser/VrmlNodes.h>
 #include <hrpParser/ImageConverter.h>
 
-#include "UtilFunctions.h"
+#include "VrmlUtil.h"
+
 
 
 using namespace std;

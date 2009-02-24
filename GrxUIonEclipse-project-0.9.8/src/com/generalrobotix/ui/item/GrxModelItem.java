@@ -404,7 +404,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
         file_ = f;
-        String url = "file://" + f.getAbsolutePath();
+        
+        String url = f.getAbsolutePath();
         GrxDebugUtil.println("Loading " + url);
         try {
             ModelLoader mloader = ModelLoaderHelper.narrow(

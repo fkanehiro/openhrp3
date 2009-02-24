@@ -2,18 +2,10 @@
   @author S.NAKAOKA
 */
 
-#if (BOOST_VERSION <= 103301)
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
-#else
-#include <boost/filesystem.hpp>
-#endif
-
-#include "UtilFunctions.h"
+#include "VrmlUtil.h"
 #include <cmath>
 
 using namespace std;
-using namespace boost;
 
 namespace {
     void throwException(const std::string& fieldName, const std::string& expectedFieldType)
@@ -215,33 +207,8 @@ void copyVrmlRotationFieldToDblArray4
         }
 }
 
-
-/*!  
-  @if jp
-  @brief URLスキーム(file:)文字列を削除  
-  @return string URLスキーム文字列を取り除いた文字列  
-  @endif
-*/
-string deleteURLScheme(string url)
-{
-    static const string fileProtocolHeader1("file://");
-    static const string fileProtocolHeader2("file:");
-
-    size_t pos = url.find( fileProtocolHeader1 );
-    if( 0 == pos ) {
-        url.erase( 0, fileProtocolHeader1.size() );
-    } else {
-        size_t pos = url.find( fileProtocolHeader2 );
-        if( 0 == pos ) {
-            url.erase( 0, fileProtocolHeader2.size() );
-        }
-    }
-
-    return url;
-}
-
 string setTexturefileUrl(string modelfileDir, MFString urls){
-    string url("");
+    string retUrl("");
     //  ImageTextureに格納されている MFString url の数を確認 //
     if( 0 == urls.size() )
     {
@@ -250,24 +217,10 @@ string setTexturefileUrl(string modelfileDir, MFString urls){
         throw ModelLoader::ModelLoaderException(error.c_str());
     }else{
         for(unsigned int i=0; i<urls.size(); i++){
-            string urlString = urls[i];
-            size_t pos = urlString.find("http:");
-            if (pos == string::npos){   // ローカルファイル //
-                filesystem::path filepath(deleteURLScheme(urlString), filesystem::native);
-                if(filesystem::exists(filepath)){    // 元が絶対パス //
-                    url = filesystem::system_complete(filepath).file_string();
-                    return url;
-                }else{               // 元が相対パス //
-                    filesystem::path filepath(modelfileDir+deleteURLScheme(urlString), filesystem::native);
-                    if(filesystem::exists(filepath)){
-                        url = filesystem::system_complete(filepath).file_string();
-                     return url;
-                    }
-                }
-            }else{          
-                //  存在するか調べる... //
-            }
+        	getPathFromUrl( retUrl, modelfileDir, urls[i] );
+        	if( !retUrl.empty() )
+        		break;
         }
     }
-    return url;
+    return retUrl;
 }
