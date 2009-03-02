@@ -1,0 +1,3 @@
+// Excluding directories.
+util/admin
+sample/model/mockup
