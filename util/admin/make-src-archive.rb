@@ -86,7 +86,7 @@ if script_file
 end
 
 
-Dir.glob("**/*.*\0**/.*").each { |path|
+Dir.glob("**/*.*\0**/.*\0**/*").each { |path|
   next unless exclude_list.each { |pattern|
     if path =~ pattern
       print "skip ", path.chomp, "\n"
