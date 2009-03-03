@@ -22,4 +22,4 @@ set(headers
   vector.h
 )
 
-install(FILES ${headers} DESTINATION include/hrpParser/triangulator)
+install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpParser/triangulator)
