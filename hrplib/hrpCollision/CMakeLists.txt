@@ -79,5 +79,5 @@ install(TARGETS hrpCollision3
   ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug
   )
 
-install(FILES ${headers} DESTINATION include/hrpCollision)
+install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCollision)
 

@@ -50,6 +50,6 @@ install(TARGETS hrpCorbaStubSkel3
 
 set(given_headers ORBwrap.h)
 
-install(FILES ${given_headers} ${idl_h_files} DESTINATION include/hrpCorba)
+install(FILES ${given_headers} ${idl_h_files} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCorba)
 
 

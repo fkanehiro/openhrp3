@@ -72,4 +72,4 @@ install(TARGETS hrpBase3
   LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
   ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug)
 
-install(FILES ${headers} DESTINATION include/hrpBase)
+install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpBase)
