@@ -12,13 +12,16 @@ add_executable(${program} ${sources})
 
 if(UNIX)
   target_link_libraries(
-    ${program} hrpCorbaStubSkel3 ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES}
+    ${program}
+    hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES}
     boost_filesystem boost_program_options boost_regex)
 elseif(WIN32)
   add_definitions(${OPENRTM_DEFINITIONS})
   set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d )
-  target_link_libraries(
-    ${program} optimized hrpCorbaStubSkel3 debug hrpCorbaStubSkel3d 
+  target_link_libraries(${program}
+    optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d 
     ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES})
 endif()
 

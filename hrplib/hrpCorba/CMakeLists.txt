@@ -28,21 +28,23 @@ foreach(idl_basename ${IDL_FILE_BASENAMES})
   endif()
 endforeach()
 
-add_library(hrpCorbaStubSkel3 STATIC ${idl_cpp_files})
+set(target hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION})
+
+add_library(${target} STATIC ${idl_cpp_files})
 
 if(WIN32)
-  set_target_properties(hrpCorbaStubSkel3 PROPERTIES DEBUG_POSTFIX d)
+  set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d)
 endif() 
 
 if(WIN32)
-install(TARGETS hrpCorbaStubSkel3
+install(TARGETS ${target}
 	RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release Debug
 	LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
 	ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
 )
 endif()
 
-install(TARGETS hrpCorbaStubSkel3
+install(TARGETS ${target}
 	RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
 	LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
 	ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug
