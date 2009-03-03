@@ -68,4 +68,4 @@ install(
   ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug
 )
 
-install(FILES ${headers} DESTINATION include/hrpParser)
+install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpParser)

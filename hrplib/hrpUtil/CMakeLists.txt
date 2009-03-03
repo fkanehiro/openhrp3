@@ -52,4 +52,4 @@ install(TARGETS hrpUtil3
   ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug
 )
 
-install(FILES ${headers} DESTINATION include/hrpUtil)
+install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpUtil)
