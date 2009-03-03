@@ -34,27 +34,32 @@ set(headers
   ModelNodeSet.h
 )
 
+set(target hrpParser-${OPENHRP_LIBRARY_VERSION})
 
-add_library(hrpParser3 SHARED ${sources})
+add_library(${target} SHARED ${sources})
 
 # interface version 0.0.0 - version 3.0.0 beta1
-set_target_properties(hrpParser3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
+set_target_properties(${target} PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
-  target_link_libraries(hrpParser3 hrpUtil3 boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY} )
+  target_link_libraries(${target}
+    hrpUtil-${OPENHRP_LIBRARY_VERSION}
+    boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY})
     
 elseif(WIN32)
-  set_target_properties(hrpParser3 PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
+  set_target_properties(${target} PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
   add_definitions(-DHRP_PARSER_MAKE_DLL)
-  target_link_libraries(hrpParser3 
-    optimized hrpUtil3 optimized ${PNG_LIBRARY} optimized ${JPEG_LIBRARY} optimized ${ZLIB_LIBRARY}
-    debug hrpUtil3d debug ${PNG_LIBRARY}d debug ${JPEG_LIBRARY}d debug ${ZLIB_LIBRARY}d )
-  set_target_properties(hrpParser3 PROPERTIES DEBUG_POSTFIX d )
+  target_link_libraries(${target} 
+    optimized hrpUtil-${OPENHRP_LIBRARY_VERSION}
+    optimized ${PNG_LIBRARY} optimized ${JPEG_LIBRARY} optimized ${ZLIB_LIBRARY}
+    debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
+    debug ${PNG_LIBRARY}d debug ${JPEG_LIBRARY}d debug ${ZLIB_LIBRARY}d)
+  set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d)
 endif() 
 
 if(WIN32)
   install(
-    TARGETS hrpParser3
+    TARGETS ${target}
     RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release Debug
     LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
     ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
@@ -62,7 +67,7 @@ if(WIN32)
 endif()
 
 install(
-  TARGETS hrpParser3
+  TARGETS ${target}
   RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
   LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
   ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug

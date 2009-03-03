@@ -48,10 +48,12 @@ set(headers
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Opcode)
 
-add_library(hrpCollision3 SHARED ${sources})
+set(target hrpCollision-${OPENHRP_LIBRARY_VERSION})
+
+add_library(${target} SHARED ${sources})
 
 # interface version 0.0.0 - version 3.0.0 beta1
-set_target_properties(hrpCollision3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
+set_target_properties(${target} PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
   if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -59,21 +61,21 @@ if(UNIX)
     #set_source_files_properties(OPC_TreeCollider.cpp PROPERTIES COMPILE_FLAGS -O)
   endif()
 
-  target_link_libraries(hrpCollision3 m)
+  target_link_libraries(${target} m)
 elseif(WIN32)
   add_definitions(-DHRP_COLLISION_MAKE_DLL)
-  set_target_properties(hrpCollision3 PROPERTIES DEBUG_POSTFIX d )
+  set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d)
 endif()
 
 if(WIN32)
-  install(TARGETS hrpCollision3
+  install(TARGETS ${target}
     RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release Debug
     LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
     ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
     )
 endif()
 
-install(TARGETS hrpCollision3
+install(TARGETS ${target}
   RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
   LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
   ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug

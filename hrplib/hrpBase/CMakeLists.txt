@@ -38,36 +38,44 @@ set(headers
   )	
 
 
-add_library(hrpBase3 SHARED ${sources})
+set(target hrpBase-${OPENHRP_LIBRARY_VERSION})
+
+add_library(${target} SHARED ${sources})
 
 # interface version 0.0.0 - version 3.0.0 beta1
-set_target_properties(hrpBase3 PROPERTIES VERSION 0.0.0 SOVERSION 0)
+set_target_properties(${target} PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
-  target_link_libraries(hrpBase3
-    hrpUtil3 hrpCorbaStubSkel3 hrpCollision3
+  target_link_libraries(${target}
+    hrpUtil-${OPENHRP_LIBRARY_VERSION}
+    hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    hrpCollision-${OPENHRP_LIBRARY_VERSION}
     ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
     boost_filesystem boost_regex dl)
 
 elseif(WIN32)
   add_definitions(-DHRPBASE_MAKE_DLL)
-  target_link_libraries(hrpBase3
-    optimized hrpUtil3 optimized hrpCorbaStubSkel3 optimized hrpCollision3
-    debug hrpUtil3d debug hrpCorbaStubSkel3d debug hrpCollision3d
+  target_link_libraries(${target}
+    optimized hrpUtil-${OPENHRP_LIBRARY_VERSION}
+    optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    optimized hrpCollision-${OPENHRP_LIBRARY_VERSION}
+    debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
+    debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
+    debug hrpCollision-${OPENHRP_LIBRARY_VERSION}d
     ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES})  
-  set_target_properties(hrpBase3 PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT )
-  set_target_properties(hrpBase3 PROPERTIES DEBUG_POSTFIX d )
+  set_target_properties(${target} PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT )
+  set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d )
 endif()
 
 if(WIN32)
-  install(TARGETS hrpBase3
+  install(TARGETS ${target}
     RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release Debug
     LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
     ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
     )
 endif() 
 
-install(TARGETS hrpBase3
+install(TARGETS ${target}
   RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
   LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
   ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug)
