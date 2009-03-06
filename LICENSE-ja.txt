@@ -1,0 +1,41 @@
+
+本ソフトウェア(OpenHRP3)は、オープンソースライセンス Eclipse Public License v1.0
+により配布し、あなたがライセンス条項に従うことに同意する場合のみ利用す
+ることが可能です。あなたが本ソフトウェアを取得、使用、あるいは配布した
+時点で、ライセンス条項に同意したものとみなします。
+
+Eclipse Public License v1.0 の詳細については、Eclipse Foundation の
+Webサイトをご参照下さい。（EPLに関するFAQのURLは、
+http://www.eclipse.org/legal/eplfaq.php#EPLVERSION）
+
+本ソフトウェアの派生物のバイナリを販売したい場合等、その他の利用法を希
+望される場合は、（独）産業技術総合研究所にご相談下さい。
+
+
+本パッケージは以下のソフトウェアも含みます.
+これらのソフトウェアの使用については、それぞれのライセンスに従う必要があります。
+(これらのライセンスは、OpenHRP3本体に適用される上記EPLとは矛盾せずに利用することが可能です.）
+
+- Java Media Framewark
+
+java/JMF2.1.1e 以下に、ソフトウェアおよびライセンス文書を格納してあります。
+
+- vrml97.jar
+
+ModelLoader/server/vrml97 以下に、ソフトウェアおよびライセンス文書を格納してあります。
+
+- Opcode
+
+CollisionDetector/server 以下の一部のファイルが該当します.
+
+- zlib
+
+hrplib/hrpParser/zlib123 以下に、ソフトウェアおよびライセンス文書を格納してあります。
+
+- JPEG
+
+hrplib/hrpParser/Jpeg-6b 以下に、ソフトウェアおよびライセンス文書を格納してあります。
+
+- libpng
+
+hrplib/hrpParser/lping1232 以下に、ソフトウェアおよびライセンス文書を格納してあります。
