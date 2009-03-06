@@ -14,7 +14,8 @@ Ver.3.1.0.β 2009/03/03
 　接触力をコントローラブリッジから取得できるようになりました。
 ・Root以外に fixed ジョイントを持つ機構のシミュレーションも可能にしました。
 ・シミュレーション再開時新たなVirtualRobotが生成されないようにしました。
-・controller-bridgeで複数の識別名を指定できるようにしました。
+・ControllerBridgeの--in-port、--out-portオプションで複数の識別名を
+　指定できるようにしました。
 ・ControllerBridgeで複数のRTCを使えるようにしました。
 ・サンプルモデルの jointAxis を SfVec3f 形式に対応しました。
 
