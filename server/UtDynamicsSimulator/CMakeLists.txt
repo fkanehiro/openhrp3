@@ -14,7 +14,7 @@ add_definitions(-DSEGA -DUSE_CLAPACK_INTERFACE)
 include_directories(sDIMS)
 link_directories(sDIMS)
 
-target_link_libraries(${program} ${OMNIORB_LIBRARIES} sDIMS hrpCorbaStubSkel3)
+target_link_libraries(${program} ${OMNIORB_LIBRARIES} sDIMS hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION})
 
 if(WIN32)
 install(TARGETS ${program} DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release)
