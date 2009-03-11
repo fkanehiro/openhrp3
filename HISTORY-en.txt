@@ -1,0 +1,132 @@
+OpenHRP3 Updates History (Release Notes)
+
+
+Ver.3.1.0(BETA) (03-03-2009)
+============================
+
+ * Implemented GrxUI as an Eclipse plug-in.
+
+ * ModelLoader was rewritten in C++. Because of that, model reading speed 
+   was greatly improved the compared to the series 3.0 that written in Java.
+
+ * Added a feature that supports creating model files on GrxUI.
+
+ * Started using CMake to generate makefiles and project files. This helped 
+   to make the directory structure clear and eazy-to-use.
+
+ * Server Management Panel (Server Manager View) was added to control the 
+   starting of CORBA servers on GrxUI.
+
+ * Bacame compatible with Ubuntu 8.10 .
+
+ * When a link has contact with another object, the contact-point and the 
+   contact-force of the simulator can now get through controller bridge.
+
+ * Simulating a robot mechanism that has a fixed joint other than "Root", 
+   is also supported now.
+
+ * Prevented generating a new VirtualRobot, when simulation is restarted.
+
+ * Specifying multiple ID names for --in-port/--out-port options in 
+   ControllerBridge is now supported.
+
+ * ControllerBridge now supports with multiple RTC's.
+
+ * "jointAxis" data type that used in sample models, was converted to "SfVec3f".
+
+
+Ver.3.0.3 (28-11-2008)
+======================
+
+ * The issue of Modaless dialog remains displayed at start-up, was fixed.
+
+ * Image output properties (COLOR_IMAGE, GRAYSCALE_IMAGE, DEPTH_IMAGE) are 
+   now available to use.
+
+ * The issue of model's behavior becomes odd, when it is given the initial 
+   rotation value by editing VRML file.
+
+ * Embeded OpenRTM-aist-0.4.2 installer in to Ubuntu installer script and 
+   removed unnecessary packages.[Linux edition]
+
+ * Introduced environment configurator package for Windows.
+
+ * Function of dll export in rtc controller's sample, is modified to refer 
+   the macro provided by OpenRTM-aist-0.4.2.
+
+ * Updated English documentations.
+
+ * Updated Troubleshooting page.
+
+
+Ver.3.0.2 (19-09-2008)
+======================
+
+ * The trouble that the Series button doesn't activate, even if the graph 
+   contents were made after creating a new project on GrxUI, was resolved.
+
+ * Fixed the issue with omniNames, that had started with GrxUI doesn't exits 
+   automatically with GrxUI exit.
+
+ * The issue that InPort could not be created in type of ABS_TRANSFORM in 
+   ControllerBridge, was fixed.
+
+ * The Trouble that the identification name was not able to be used by 
+   specifying the input port of ControllerBridge, was corrected.
+
+ * When orientation of the robot's base coordinates system and the angles 
+   of all joints were given in the NoSim mode (the mode when Forward Dynamics 
+   is deselected) and the simulation started, the issue of displaying as 
+   it moves only the base link preceded, was resolved.
+
+ * Resolved the problem of which the OK/CANCEL button was not displayed, 
+   when GrxUI's OpenHRP Tab-window-size was too narrow.
+
+ * Fixed the issue of that unbale to simulate SampleController, When it was 
+   executed with "Tokyo University's server" (DynamicsSimulator/server.ut).
+
+ * The problem that the image generation of ViewSimulator was not going 
+   corresponding to the simulation time, was corrected.
+
+ * The error occured when DynamicsSimulator was started in debug mode of 
+   VC++, was resolved.[Windows edition]
+
+ * Fixed the trouble which was unable to refer jython.jar, since the jython 
+   distributors changed the installing location of jython.jar . [Linux edition]
+
+ * The definitions in config.sh and config.bat were changed to include only 
+   user-definable parameters.
+
+ * Java3D and JMF are now included in package it self.
+
+ * OpenHRP3 has changed to use Java3D Ver 1.4.1, since we found a trouble 
+   with 1.5 series, when acquisitioning depth buffer.
+
+ * Temp directory of GrxUI was changed to ${HOME}/.grxui .[Linux edition]
+
+ * The format of the configuration file, read by the config-file option of 
+   ControllerBridge was changed.
+
+ * The file-extension that had to specify for 'module' option in ControllerBridge 
+   was made to be able to omit.
+
+ * Added a function that outputs simulation time, when receiving data from 
+   DynamicsSimulator.
+
+ * English web manuals were published.
+
+
+Ver.3.0.1 (2008/06/18)
+======================
+
+ * The issue with matrix calculation library, in Ver.3.0.0 was resolved.
+
+ * OpenHRP3 is no more supported with Visual C++ 2005. Please use Visual 
+   C++ 2008 from now on.
+
+ * Added Make.vars and install script for Ubuntu 8.04.
+
+ * Added arm-type sample robot "PA10".(Model data was provided by 
+   "MITSUBISHI HEAVY INDUSTRIES, LTD")
+
+ * The license was changed to EPL along with the start of general distributing
