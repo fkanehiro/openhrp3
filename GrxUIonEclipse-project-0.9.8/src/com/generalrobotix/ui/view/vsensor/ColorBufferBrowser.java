@@ -21,6 +21,7 @@ import java.awt.image.MemoryImageSource;
 import javax.swing.JFrame;
 
 // Sun
+import com.generalrobotix.ui.view.Grx3DView;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
@@ -46,7 +47,7 @@ public final class ColorBufferBrowser extends JFrame {
 		super(title);
 
 		canvas_ = new CanvasDraw (
-			SimpleUniverse.getPreferredConfiguration(),
+			Grx3DView.graphicsConfiguration,
 			width, height
 		);
 		canvas_.setSize(width, height);
