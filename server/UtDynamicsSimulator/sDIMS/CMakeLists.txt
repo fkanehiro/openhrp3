@@ -32,7 +32,6 @@ set(sources
 
 include_directories(.)
 add_definitions(-DSEGA -DUSE_CLAPACK_INTERFACE)
-
 add_library(sDIMS SHARED ${sources})
 set_target_properties(sDIMS PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
@@ -45,3 +44,9 @@ if (WIN32)
   set_target_properties(sDIMS PROPERTIES DEBUG_POSTFIX d )
 endif()
 
+
+if(WIN32)
+install(TARGETS sDIMS DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release)
+endif()
+
+install(TARGETS sDIMS DESTINATION bin CONFIGURATIONS Release Debug)
