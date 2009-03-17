@@ -58,9 +58,7 @@ public class GrxLoggerView extends GrxBaseView {
 	private double interval_ = 100; // position increment/decrement step
 	private boolean isPlaying_ = false;
     private boolean isControlDisabled_ = false; 
-	private double prevTime_ = 0.0;
-	private double playRateLogTime_ = -1;
-	
+		
     // widgets
 	private Scale sliderFrameRate_;
 	private Label  lblFrameRate_;
@@ -215,7 +213,7 @@ public class GrxLoggerView extends GrxBaseView {
             			double tm = Double.parseDouble(str);
             			int newpos = currentItem_.getPositionAt(tm);
             			if (newpos >= 0){
-            				setCurrentPos(newpos);
+            				currentItem_.setPosition(newpos);
             			}
             		}catch(Exception ex){
             			
@@ -228,15 +226,15 @@ public class GrxLoggerView extends GrxBaseView {
 		sliderTime_ = new Scale( composite_, SWT.NONE );
 		sliderTime_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
-        			setCurrentPos(sliderTime_.getSelection());
+            	currentItem_.setPosition(sliderTime_.getSelection());
             }
 		} );
 		sliderTime_.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e) {
 				if (e.keyCode == SWT.ARROW_LEFT){
-					setCurrentPos(sliderTime_.getSelection()-1);
+					currentItem_.setPosition(sliderTime_.getSelection()-1);
 				}else if (e.keyCode == SWT.ARROW_RIGHT){
-					setCurrentPos(sliderTime_.getSelection()+1);
+					currentItem_.setPosition(sliderTime_.getSelection()+1);
 				}
 			}
 			public void keyReleased(KeyEvent e) {
@@ -284,10 +282,10 @@ public class GrxLoggerView extends GrxBaseView {
 	 */
 	public void play() {
 		if (!isPlaying_) {
-			if (_isAtTheEndAfterPlayback()) setCurrentPos(0);
+			if (_isAtTheEndAfterPlayback()) currentItem_.setPosition(0);
 			stepTime_ = currentItem_.getDbl("logTimeStep", -1.0)*1000;
 			if (stepTime_ > 0)
-				interval_ = Math.ceil((double)(manager_.getDelay())/stepTime_*1.1);
+				interval_ = Math.ceil((double)(manager_.getDelay())/stepTime_);//*1.1);
 			else 
 				interval_ = 1;
 			isPlaying_ = true;
@@ -300,26 +298,11 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 	
 	/**
-	 * @brief playback witch specified interval
-	 * @param intervalMsec interval time
-	 */
-	public void playLogTime(int intervalMsec) {
-		if (!isPlaying_) {
-			if (_isAtTheEndAfterPlayback()) setCurrentPos(0);
-			
-			playRateLogTime_ = (double)intervalMsec/1000.0;
-			prevTime_ = 0.0;
-			isPlaying_ = true;
-		}
-	}
-
-	/**
 	 * @brief pause playback
 	 */
 	public void pause() {
 		isPlaying_ = false;
 		lblPlayRate_.setText("Pause");
-		playRateLogTime_ = 0;
 	}
 	
 	/**
@@ -379,26 +362,12 @@ public class GrxLoggerView extends GrxBaseView {
 		}
 		
 		int loggerMax = Math.max(currentItem_.getLogSize()-1, 0);
-
-		// playback with specified time interval(It is used for recording)
-		if (playRateLogTime_ > 0) {
-			for (int p=getCurrentPos();p < getMaximum(); p++) {
-				double time = currentItem_.getTime(p);
-				if (time - prevTime_ >= playRateLogTime_) {
-					prevTime_ = time;
-					setCurrentPos(p);
-					return;
-				}
-			}
-			pause();
-			return;
-		} 
 		
 		if (getMaximum() != loggerMax) { // slider is extended
 			int oldMax = getMaximum();
 			sliderTime_.setMaximum(loggerMax);
 			if (getCurrentPos() == 0 || getCurrentPos() == oldMax) {
-				setCurrentPos(loggerMax);
+				currentItem_.setPosition(loggerMax);
 				lblPlayRate_.setText("Live");
 			}else{
 				if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
@@ -413,14 +382,14 @@ public class GrxLoggerView extends GrxBaseView {
 			
 			if (getMaximum() < newpos) {
 				newpos = getMaximum();
-				setCurrentPos(newpos);
+				currentItem_.setPosition(newpos);
 				pause();
 			} else if (newpos < 0) {
 				newpos = 0;
-				setCurrentPos(newpos);
+				currentItem_.setPosition(newpos);
 				pause();
 			}else{
-				setCurrentPos(newpos);
+				currentItem_.setPosition(newpos);
 			}
 		}
 	}
@@ -465,7 +434,6 @@ public class GrxLoggerView extends GrxBaseView {
 		}
 		current_ = pos;
 		sliderTime_.setSelection(pos);
-		currentItem_.setPosition(pos);
 		_updateTimeField();
 	}
 

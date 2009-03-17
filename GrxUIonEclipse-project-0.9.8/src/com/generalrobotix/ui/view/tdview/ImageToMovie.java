@@ -162,11 +162,11 @@ public class ImageToMovie implements ControllerListener, DataSinkListener {
     }
     
     //ムービー処理開始
-    public void startProcess() {
+    public boolean startProcess() {
         p_.realize();
         if (!_waitForState(p_, Controller.Realized)) {
             System.err.println("Failed to realize the processor.");
-            return;
+            return false;
         }
         // Now, we'll need to create a DataSink.
         if ((dsink_ = _createDataSink(p_, outML_)) == null) {
@@ -174,7 +174,7 @@ public class ImageToMovie implements ControllerListener, DataSinkListener {
                 "Failed to create a DataSink for the given output " +
                 "MediaLocator: " + outML_
             );
-            return;
+            return false;
         }
         dsink_.addDataSinkListener(this);
         fileDone_ = false;
@@ -187,8 +187,9 @@ public class ImageToMovie implements ControllerListener, DataSinkListener {
             dsink_.start();
         } catch (IOException e) {
             System.err.println("IO error during processing");
-            return;
+            return false;
         }
+        return true;
     }
     
     
@@ -390,8 +391,8 @@ public class ImageToMovie implements ControllerListener, DataSinkListener {
 
         int width_, height_;
         float frameRate_;
-        //VideoFormat format_;
-        Format format_;
+        VideoFormat format_;
+        //Format format_;
         Vector<Buffer> imageStack_; //イメージを貯えておくスタック
         boolean ending_ = false;//終了の要請あり
         boolean ended_ = false;//終了した

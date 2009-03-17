@@ -139,11 +139,14 @@ public class RecordingManager{
         return ret;
     }
 
-    public void startRecord(String formatStr){
+    public boolean startRecord(String formatStr){
         Format format=(Format)htFormat_.get(formatStr);
         movie_.setFormat(format);
 
-        movie_.startProcess();
+        if(movie_.startProcess())
+        	return true;
+        else 
+        	return false;
     }
 
     public void endRecord() {

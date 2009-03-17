@@ -83,14 +83,15 @@ public class Grx3DView
     implements ThreeDDrawable 
 {
     public static final String TITLE = "3DView";
-
+    //  java3D 1.4.1のバグ？　対策		
+    public static final GraphicsConfiguration graphicsConfiguration = SimpleUniverse.getPreferredConfiguration();
     // items
     private GrxWorldStateItem  currentWorld_ = null;
     private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
-    private GrxLoggerView stateLogger_;
     private double prevTime_ = -1;
     private double dAngle_ = Math.toRadians(0.1);
     private boolean updateModels_=true;
+    private int position_ = 0;
     
     // for scene graph
     private static VirtualUniverse universe_;
@@ -105,7 +106,9 @@ public class Grx3DView
     private float coldiff = 0.1f;
     
     // for view
-    private ImageCanvas3D  canvas_;
+    private Canvas3D  canvas_;
+    private Canvas3D offscreen_;
+    private BranchGroup offScreenBg_;
     private View view_;
     private TransformGroup tgView_;
     private Transform3D t3dViewHome_ = new Transform3D();
@@ -118,11 +121,9 @@ public class Grx3DView
     
     // for recording movie
     private RecordingManager recordingMgr_;
-    private Raster raster_;
-    private int imageCount;
     private String lastMovieFileName;
     private boolean isRecording_ = false;
-    private boolean firstImage;
+	private int recordingStep_;
     
     // UI objects
     private ObjectToolBar objectToolBar_ = new ObjectToolBar();
@@ -198,7 +199,7 @@ public class Grx3DView
         lblValue_.setFont(new Font("Monospaced", Font.BOLD, 12));
         lblValue_.setPreferredSize(new Dimension(300, 20));
         
-        canvas_ = new ImageCanvas3D(SimpleUniverse.getPreferredConfiguration());
+        canvas_ = new Canvas3D(graphicsConfiguration);
         canvas_.setDoubleBufferEnable(true);
         canvas_.addKeyListener(new ModelEditKeyAdapter());  
         _setupSceneGraph();
@@ -266,7 +267,7 @@ public class Grx3DView
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-        
+                
         //locale_.addBranchGraph(_createView());
         bgRoot_.addChild(_createLights());
         bgRoot_.addChild(_createView());
@@ -488,7 +489,7 @@ public class Grx3DView
                     else 
                         btnRec_.setSelected(false);
                 } else  {
-                    stateLogger_.pause();
+                	btnRec_.setSelected(false);
                 }
             }
         });
@@ -567,7 +568,7 @@ public class Grx3DView
     public BranchGroup getBranchGroupRoot() {
         return bgRoot_;
     }
-    
+    /*
     public class ImageCanvas3D extends Canvas3D {
         Raster readRaster;
         GraphicsContext3D gc;
@@ -587,12 +588,13 @@ public class Grx3DView
         public void postSwap() {
             super.postSwap();
             if (isRecording_) {
+            	System.out.println("postswap");
                 gc.readRaster(readRaster);
                 updated = true;
             }
         }
     }
-
+*/
     public void restoreProperties() {
         super.restoreProperties();
         if (getStr("showScale")==null) setProperty("showScale", "true");
@@ -686,12 +688,13 @@ public class Grx3DView
         behaviorManager_.replaceWorld(itemList);
         viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
         viewToolBar_.setOperation(ViewToolBar.ROTATE);
-        stateLogger_ = (GrxLoggerView)manager_.getView(GrxLoggerView.class);
 
            return registerCORBA();
     }
 
     public void control(List<GrxBaseItem> items) {
+    	if(isRecording_) return;
+    	
         if (currentModels_.size() == 0)
             return;
 
@@ -719,9 +722,7 @@ public class Grx3DView
             if (updateModels_) updateViewSimulator(0);
             return;
         }
-        
-        _checkRecordingFinish();
-        
+               
         if (state.time == prevTime_)
             return;
         _showCollision(state.collisions);
@@ -731,7 +732,6 @@ public class Grx3DView
             updateViewSimulator(state.time);
         }
 		
-        _doRecording();
         prevTime_ = state.time;
     }
 
@@ -774,27 +774,63 @@ public class Grx3DView
             return;
         
         RecordingDialog dialog = new RecordingDialog(frame_);
-        if (dialog.showModalDialog() != ModalDialog.OK_BUTTON)
-            return;
+        if (dialog.showModalDialog() != ModalDialog.OK_BUTTON){
+        	btnRec_.setSelected(false);		
+        	return;		
+        }
+    
+        Dimension imageSize = dialog.getImageSize();		
+        int framerate=10;		
+        try{		
+        	framerate = dialog.getFrameRate();		
+        }catch(Exception NumberFormatException ){		
+        	new ErrorDialog(frame_, "Error", "framerate must be integer" ).showModalDialog();		
+        	btnRec_.setSelected(false);		
+        	return;		
+        }		
+        double playbackRate = dialog.getPlaybackRate();
         
-        Dimension screen = canvas_.getSize();
-        GrxDebugUtil.println("ScreenSize: " + screen.width + "x" + screen.height + " (may be)");
-        screen.width = screen.width - (screen.width % 16);
-        screen.height = screen.height - (screen.height % 16);
-        ImageComponent2D readImageComponent = 
-            new ImageComponent2D(ImageComponent.FORMAT_RGB,screen.width,screen.height);
-        GrxDebugUtil.println("VideoSize: " + screen.width + "x" + screen.height);
-        raster_ = new Raster(new Point3f(0.0f,0.0f,0.0f),Raster.RASTER_COLOR,
-            0,0,screen.width,screen.height,readImageComponent,null);
-
+        Dimension canvasSize = imageSize;
+        GrxDebugUtil.println("ScreenSize: " + canvasSize.width + "x" + canvasSize.height + " (may be)");
+        canvasSize.width = canvasSize.width;
+        canvasSize.height = canvasSize.height;
+        
+        BufferedImage image=new BufferedImage(canvasSize.width,canvasSize.height,BufferedImage.TYPE_INT_ARGB);
+		// 参照型で画像を設定
+        ImageComponent2D buffer=new ImageComponent2D(ImageComponent.FORMAT_RGBA,image,true,false);
+		buffer.setCapability(ImageComponent2D.ALLOW_IMAGE_READ);
+		
+		// オフスクリーンレンダリングの設定
+		offscreen_=new Canvas3D(graphicsConfiguration,true);
+		offscreen_.setOffScreenBuffer(buffer);
+		
+		View view=new View();
+		view.setPhysicalBody(view_.getPhysicalBody());
+		view.setPhysicalEnvironment(view_.getPhysicalEnvironment());
+		view.addCanvas3D(offscreen_);
+		
+		offscreen_.getScreen3D().setSize(canvasSize);
+		Screen3D screen = canvas_.getScreen3D();
+		offscreen_.getScreen3D().setPhysicalScreenWidth(screen.getPhysicalScreenWidth());
+		offscreen_.getScreen3D().setPhysicalScreenHeight(screen.getPhysicalScreenHeight());
+		
+		ViewPlatform platform=new ViewPlatform();
+		view.attachViewPlatform(platform);
+		offScreenBg_ = new BranchGroup();
+		offScreenBg_.setCapability(BranchGroup.ALLOW_DETACH);
+		offScreenBg_.addChild(platform);
+		tgView_.addChild(offScreenBg_);
+				
         recordingMgr_ = RecordingManager.getInstance();
-        recordingMgr_.setImageSize(screen.width , screen.height);
-        recordingMgr_.setFrameRate(1000.0f/manager_.getDelay() * (float)stateLogger_.getPlayRate());
+        recordingMgr_.setImageSize(canvasSize.width , canvasSize.height);
+        recordingMgr_.setFrameRate((float)framerate);
         
         String fileName = dialog.getFileName();
         if (new File(fileName).exists()) {
-            if (!fileOverwriteDialog(fileName))
+            if (!fileOverwriteDialog(fileName)){
+            	btnRec_.setSelected(false);	
                 return;
+            }
         }
 
         lastMovieFileName = pathToURL(fileName);
@@ -804,36 +840,72 @@ public class Grx3DView
                 "Select Video format, Please.",
                 recordingMgr_.preRecord(lastMovieFileName, ImageToMovie.QUICKTIME));
         String format__ = (String)cmb.showComboBoxDialog();
-        if (format__ == null) 
+        if (format__ == null) {
+        	btnRec_.setSelected(false);	
             return;
+        }
         
         try {
-            recordingMgr_.startRecord(format__);
+            if(!recordingMgr_.startRecord(format__)){
+            	btnRec_.setSelected(false);	
+                return;
+            }
         } catch (Exception e) {
             GrxDebugUtil.printErr("Grx3DView.rec():",e);
             JOptionPane.showMessageDialog(frame_, "Failed to Record Movie");
+            btnRec_.setSelected(false);	
             return;
         }
-        canvas_.setRaster( raster_ );
-
-        canvas_.repaint();
-             
-          firstImage = true;
-          imageCount = 0;
-        isRecording_ = true;
+               
+        recordingStep_ = (int)(1000.0/framerate*playbackRate);
+        recordingStep_ = Math.max((int)(1000.0/framerate*playbackRate), recordingStep_);
         
-        //int step = (int)(currentWorld_.getDbl("logTimeStep", -1.0) * 1000);
-        
-        Display display = Display.getCurrent();
-        if ( display!=null && !display.isDisposed())
-                display.syncExec(
-                        new Runnable(){
-                            public void run() {
-                                stateLogger_.playLogTime(Math.max(manager_.getDelay(),
-                                        (int)(currentWorld_.getDbl("logTimeStep", -1.0) * 1000)));//.play();
-                            }
-                        }
-                );
+        Thread recThread_ = new Thread() {
+			public void run() {
+				try {
+					int startPosition =0;
+					int endPosition = currentWorld_.getLogSize();  
+					double playRateLogTime_ = (double)recordingStep_/1000.0;
+					double prevTime = -recordingStep_;
+					for (position_=startPosition; position_ < endPosition; position_++) {
+						if(!btnRec_.isSelected())break;
+						double time = currentWorld_.getTime(position_);
+						if (time - prevTime >= playRateLogTime_) {
+							prevTime = time;
+							Display display = comp.getDisplay();
+					        if ( display!=null && !display.isDisposed())
+					                display.syncExec(
+					                        new Runnable(){
+					                            public void run() {
+					                            	currentWorld_.setPosition(position_);
+					                            }
+					                        }
+					                );
+							WorldStateEx state = currentWorld_.getValue();
+							updateModels(state);
+							_doRecording();
+						}
+					}
+					stopRecording();
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(frame_,
+						"Recording Interrupted by Exception.");
+					stopRecording();
+					GrxDebugUtil.printErr("Recording Interrupted by Exception:",e);
+				}
+			}
+		};
+		
+		isRecording_ = true;
+		recThread_.start();
+    }
+    
+    private void stopRecording(){
+    	recordingMgr_.endRecord();
+		isRecording_ = false;
+		btnRec_.setSelected(false);
+		tgView_.removeChild(offScreenBg_);
+		JOptionPane.showMessageDialog(frame_,"Recording finished" );
     }
     
     private boolean fileOverwriteDialog(String fileName){
@@ -867,51 +939,11 @@ public class Grx3DView
         }
         return "file://" + path;
     }
-    
-    private void _checkRecordingFinish() {
-        if (isRecording_ && !stateLogger_.isPlaying()) {
-            if (imageCount == 0) {
-              stateLogger_.play();
-            } else {
-              recordingMgr_.endRecord();
-              isRecording_ = false;
-              btnRec_.setSelected(false);
-              
-              Display display = Display.getDefault();
-                if ( display!=null && !display.isDisposed())
-                        display.syncExec(
-                                new Runnable(){
-                                    public void run() {
-                                        MessageDialog.openConfirm( getParent().getShell(), "","Recording finished" );
-                                    }
-                                }
-                        );
-
-              //JOptionPane.showMessageDialog(frame_,"Recording finished" );
-              GrxDebugUtil.println("Processed image count: " + imageCount );
-           }
-        } 
-    }
-    
+        
     private void _doRecording() {
-        if(!isRecording_ || canvas_.updated == false)
-            return;
-        canvas_.updated = false;
-        
-        if (firstImage) {
-            firstImage = false;
-            return;
-        }
-        
-        try {
-            recordingMgr_.pushImage( raster_.getImage().getImage() );
-            imageCount ++;
-        } catch (Exception e) {
-            GrxDebugUtil.printErr("Grx3DView._doRecording():",e);
-            JOptionPane.showMessageDialog(frame_, "Failed to Record Movie");
-            stateLogger_.pause();
-            isRecording_ = false;
-        }
+    	offscreen_.renderOffScreenBuffer();
+		offscreen_.waitForOffScreenRendering();
+		recordingMgr_.pushImage( offscreen_.getOffScreenBuffer().getImage() );
     }
     
     private void _showCollision(Collision[] collisions) {
