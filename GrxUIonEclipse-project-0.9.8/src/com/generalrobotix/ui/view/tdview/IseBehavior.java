@@ -31,30 +31,6 @@ import com.generalrobotix.ui.util.Grx3DViewClickListener;
  * 実際の処理はハンドラクラスに委ねられる。
  */
 class IseBehavior extends Behavior {
-    private static final WakeupCondition WAKEUP_ON_MOUSE_PRESSED =
-        new WakeupOr(
-            new WakeupCriterion[] {
-                new WakeupOnAWTEvent(MouseEvent.MOUSE_PRESSED)
-            }
-        );
-
-    private static final WakeupCondition WAKEUP_ON_MOUSE_DRAGGED =
-        new WakeupOr(
-            new WakeupCriterion[] {
-                new WakeupOnAWTEvent(MouseEvent.MOUSE_DRAGGED),
-                new WakeupOnAWTEvent(MouseEvent.MOUSE_RELEASED)
-            }
-        );
-
-    private static final WakeupCondition WAKEUP_ON_TIMER_EVENT =
-        new WakeupOr(
-            new WakeupCriterion[] {
-                new WakeupOnAWTEvent(MouseEvent.MOUSE_DRAGGED),
-                new WakeupOnAWTEvent(MouseEvent.MOUSE_RELEASED),
-                new WakeupOnElapsedTime(10)
-            }
-        );
-
     //--------------------------------------------------------------------
     // インスタンス変数
     private BehaviorHandler handler_;
@@ -76,7 +52,11 @@ class IseBehavior extends Behavior {
     //--------------------------------------------------------------------
     // 公開メソッド
     public void initialize() {
-        wakeupCondition_ = WAKEUP_ON_MOUSE_PRESSED;
+        wakeupCondition_ = new WakeupOr(
+                new WakeupCriterion[] {
+                        new WakeupOnAWTEvent(MouseEvent.MOUSE_PRESSED)
+                    }
+                );
         wakeupOn(wakeupCondition_);
     }
 
@@ -116,19 +96,34 @@ class IseBehavior extends Behavior {
 
             //PickingInfo info = _makePickingInfo(evt);
             handler_.processPicking(evt, info_);
-            wakeupCondition_ = WAKEUP_ON_MOUSE_DRAGGED;
+            wakeupCondition_ = new WakeupOr(
+                    new WakeupCriterion[] {
+                            new WakeupOnAWTEvent(MouseEvent.MOUSE_DRAGGED),
+                            new WakeupOnAWTEvent(MouseEvent.MOUSE_RELEASED)
+                        }
+                    );
             break;
         case MouseEvent.MOUSE_RELEASED:
             info_.setTimerEnabled(false);
             handler_.processReleased(evt, info_);
             isDragging_ = false;
-            wakeupCondition_ = WAKEUP_ON_MOUSE_PRESSED;
+            wakeupCondition_ = new WakeupOr(
+                    new WakeupCriterion[] {
+                            new WakeupOnAWTEvent(MouseEvent.MOUSE_PRESSED)
+                        }
+                    );;
             break;
         case MouseEvent.MOUSE_DRAGGED:
             if (isDragging_) {
                 handler_.processDragOperation(evt, info_);
                 if (info_.isTimerEnabled()) {
-                    wakeupCondition_ = WAKEUP_ON_TIMER_EVENT;
+                    wakeupCondition_ = new WakeupOr(
+                            new WakeupCriterion[] {
+                                    new WakeupOnAWTEvent(MouseEvent.MOUSE_DRAGGED),
+                                    new WakeupOnAWTEvent(MouseEvent.MOUSE_RELEASED),
+                                    new WakeupOnElapsedTime(10)
+                                }
+                            );
                 }
             } else {
                 isDragging_ = true;
