@@ -525,20 +525,19 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		return ret;
 	}
 
+	/**
+	 * @brief convert array of distance into array of 3D point
+	 * @param distances array of distance
+	 * @return array of 3D point
+	 */
 	private Point3f[] _distances2points(double[] distances){
     	if (info_.type.equals("Range")){
-    		float scanAngle = info_.specValues[0];
     		float step = info_.specValues[1];
-    		float d = info_.specValues[3];
-    		int half = (int)(scanAngle/2/step);
-    		if (distances.length != half*2+1){
-    			System.out.println("_distance2points() : length mismatch");
-    			return null;
-    		}
+    		int half = distances.length/2;
     		Point3f[] p3f = new Point3f[half*2+1+1];
     		p3f[0] = new Point3f(0,0,0);
     		for (int i=-half; i<=half; i++){
-    			double angle = scanAngle/2.0/half*i;
+    			double angle = step*i;
     			p3f[i+half+1] = new Point3f(
     					(float)(-distances[i+half]*Math.sin(angle)),
     					0.0f,
@@ -571,14 +570,14 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 	 */
     private Shape3D _createShapeOfVisibleArea() {
     	if (info_.type.equals("Range")){
-    		float scanAngle = info_.specValues[0];
-    		float step = info_.specValues[1];
+    		double scanAngle = info_.specValues[0];
+    		double step = info_.specValues[1];
     		float d = info_.specValues[3];
     		int half = (int)(scanAngle/2/step);
     		Point3f[] p3f = new Point3f[half*2+1+1];
     		p3f[0] = new Point3f(0,0,0);
     		for (int i=-half; i<=half; i++){
-    			double angle = scanAngle/2.0/half*i;
+    			double angle = step*i;
     			p3f[i+half+1] = new Point3f(
     					(float)(-d*Math.sin(angle)),
     					0.0f,
