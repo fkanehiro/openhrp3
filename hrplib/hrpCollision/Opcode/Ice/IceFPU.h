@@ -28,7 +28,8 @@
 
 	//! Integer-based comparison of a floating point value.
 	//! Don't use it blindly, it can be faster or slower than the FPU comparison, depends on the context.
-	#define IS_NEGATIVE_FLOAT(x)	(IR(x)&0x80000000)
+	//#define IS_NEGATIVE_FLOAT(x)	(IR(x)&0x80000000)
+        #define IS_NEGATIVE_FLOAT(x)	((x)<0)
 
 	//! Fast fabs for floating-point values. It just clears the sign bit.
 	//! Don't use it blindy, it can be faster or slower than the FPU comparison, depends on the context.
