@@ -82,6 +82,8 @@ public class GrxOpenHRPView extends GrxBaseView {
     public static final String TITLE = "OpenHRP";
 
 	private GrxWorldStateItem currentWorld_;
+	private List<GrxModelItem> currentModels_;
+	private List<GrxCollisionPairItem> currentCollisionPairs_;
 	private DynamicsSimulator currentDynamics_;
 	private List<ControllerAttribute> controllers_ = new ArrayList<ControllerAttribute>();
 	private WorldStateHolder stateH_ = new WorldStateHolder();
@@ -588,6 +590,16 @@ public class GrxOpenHRPView extends GrxBaseView {
         controllerPane_.setEnabled(true);//false
         setScrollMinSize();
         
+        
+        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+		simParamPane_.updateItem(currentWorld_);
+		currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+		controllerPane_.updateRobots(currentModels_);
+		currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
+		collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
+		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+		manager_.registerItemChangeListener(this, GrxModelItem.class);
+		manager_.registerItemChangeListener(this, GrxCollisionPairItem.class);
 	}
 	
 	/**
@@ -619,17 +631,80 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 	}
 
-
+	/*
 	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
 		if (!isExecuting_) {
-			currentWorld_ = (GrxWorldStateItem)manager_.getSelectedItem(GrxWorldStateItem.class, null);
+			currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
 			simParamPane_.updateItem(currentWorld_);
 			controllerPane_.updateRobots(itemList);
 			collisionPane_.updateCollisionPairs(itemList);
 			return;
 		}
 	}
-
+	*/
+	
+	public void registerItemChange(GrxBaseItem item, int event){
+		if(item instanceof GrxWorldStateItem){
+			GrxWorldStateItem witem = (GrxWorldStateItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		simParamPane_.updateItem(witem);
+	    		currentWorld_ = witem;
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		simParamPane_.updateItem(null);
+	    		currentWorld_ = null;
+	    		break;
+	    	default:
+	    		break;
+	    	}
+		}else if(item instanceof GrxModelItem){
+			GrxModelItem mitem = (GrxModelItem)item;
+			switch(event){
+			case GrxPluginManager.SELECTED_ITEM:
+				if(!currentModels_.contains(mitem)){
+					currentModels_.add(mitem);
+					controllerPane_.updateRobots(currentModels_);
+					collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
+				}
+				break;
+			case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(currentModels_.contains(mitem)){
+		    		currentModels_.remove(mitem);
+					controllerPane_.updateRobots(currentModels_);
+					collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
+	    		}
+	    		break;
+	    	default:
+	    		break;	
+			}
+		}else if(item instanceof GrxCollisionPairItem){
+			GrxCollisionPairItem citem = (GrxCollisionPairItem)item;
+			switch(event){
+			case GrxPluginManager.SELECTED_ITEM:
+			case GrxPluginManager.ADD_ITEM:
+				if(!currentCollisionPairs_.contains(citem)){
+					currentCollisionPairs_.add(citem);
+					controllerPane_.updateRobots(currentModels_);
+					collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
+				}
+				break;
+			case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(currentCollisionPairs_.contains(citem)){
+		    		currentCollisionPairs_.remove(citem);
+					controllerPane_.updateRobots(currentModels_);
+					collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
+	    		}
+	    		break;
+	    	default:
+	    		break;	
+			}
+		}
+	}
+	
 	public void shutdown() {
 		if (currentDynamics_ != null) {
 			try {
@@ -639,6 +714,10 @@ public class GrxOpenHRPView extends GrxBaseView {
 			}
 			currentDynamics_ = null;
 		}
+		
+		manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+		manager_.removeItemChangeListener(this, GrxModelItem.class);
+		manager_.removeItemChangeListener(this, GrxCollisionPairItem.class);
 	}
 	
 
@@ -646,10 +725,10 @@ public class GrxOpenHRPView extends GrxBaseView {
 		getDynamicsSimulator(true);
 
 		try {
-			List<GrxBaseItem> modelList = manager_.getSelectedItemList(GrxModelItem.class);
+			List<GrxModelItem> modelList = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
 			robotEntry_.clear();
 			for (int i=0; i<modelList.size(); i++) {
-				GrxModelItem model = (GrxModelItem) modelList.get(i);
+				GrxModelItem model = modelList.get(i);
 				if (model.links_ == null)
 					continue;
 
@@ -668,7 +747,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			currentDynamics_.setGVector(new double[] { 0.0, 0.0, simParamPane_.getGravity() });
 			
 			for (int i=0; i<modelList.size(); i++) {
-				GrxModelItem model = (GrxModelItem) modelList.get(i);
+				GrxModelItem model = modelList.get(i);
 				if (model.links_ == null)
 					continue;
 
@@ -753,8 +832,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private boolean initController() {
 		boolean ret = true;
 		List<String> localStrList = new Vector<String>();
-        for (GrxBaseItem i: manager_.getSelectedItemList(GrxModelItem.class) ) {
-            GrxModelItem model = (GrxModelItem) i;
+        for (GrxModelItem model: manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class) ) {
             if( model.isRobot() ){
         		if ( _setupController(model, _getControllerFromControllerName(model.getProperty("controller"))) < 0 )
         			ret =  false;

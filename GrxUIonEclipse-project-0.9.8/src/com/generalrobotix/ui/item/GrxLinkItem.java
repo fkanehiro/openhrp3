@@ -174,10 +174,11 @@ public class GrxLinkItem extends GrxTransformItem{
     		GrxLinkItem newLink = new GrxLinkItem(name, manager_, model_);
     		addLink(newLink);
         	System.out.println("GrxLinkItem.addLink("+name+") is done");
+        	manager_.itemChange(newLink, GrxPluginManager.ADD_ITEM);
     	}catch(Exception ex){
     		ex.printStackTrace();
     	}
-    	manager_.reselectItems();
+    	//manager_.reselectItems();
     }
 
     /**
@@ -205,10 +206,11 @@ public class GrxLinkItem extends GrxTransformItem{
 	    	info.specValues = new float[]{-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
 	    	GrxSensorItem sensor = new GrxSensorItem(name, manager_, model_, info);
 	    	addSensor(sensor);
+	    	 manager_.itemChange(sensor, GrxPluginManager.ADD_ITEM);
     	}catch(Exception ex){
     		ex.printStackTrace();
     	}
-    	manager_.reselectItems();
+    	//manager_.reselectItems();
     }
 
     /**
@@ -1161,6 +1163,7 @@ public class GrxLinkItem extends GrxTransformItem{
 	public void delete(){
 		super.delete();
 		model_.removeLink(this);
+		manager_.itemChange(this, GrxPluginManager.REMOVE_ITEM);
 	}
 	
 	public void setColor(java.awt.Color color){

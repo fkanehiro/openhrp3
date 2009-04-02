@@ -77,6 +77,7 @@ public class GrxTransformItem extends GrxBaseItem {
         bg_.addChild(tg_);
 
         children_ = new Vector<GrxTransformItem>();
+
     }
 
     /**
@@ -111,6 +112,7 @@ public class GrxTransformItem extends GrxBaseItem {
     	super.delete();
     	if (parent_ != null){
     		parent_.removeChild(this);
+    		manager_.itemChange(this, GrxPluginManager.REMOVE_ITEM);
     		// I don't know why the following line is required.
     		// But without the line, this transform is moved to the origin.
 			model_.calcForwardKinematics();
@@ -211,7 +213,8 @@ public class GrxTransformItem extends GrxBaseItem {
                 shape.setURL(fPath);
                 addChild(shape);
                 
-            	manager_.reselectItems();
+            	//manager_.reselectItems();
+                manager_.itemChange(shape, GrxPluginManager.ADD_ITEM);
             } catch(Exception ex){
                 System.out.println("Failed to load scene info:" + fPath);
                 ex.printStackTrace();
@@ -235,7 +238,8 @@ public class GrxTransformItem extends GrxBaseItem {
     		type = -1;
     	GrxPrimitiveShapeItem pShap = new GrxPrimitiveShapeItem(type, getName()+"_"+name+"_"+n, manager_, model_);
     	addChild(pShap);
-    	manager_.reselectItems();
+    	//manager_.reselectItems();
+        manager_.itemChange(pShap, GrxPluginManager.ADD_ITEM);
     }
 
     /**

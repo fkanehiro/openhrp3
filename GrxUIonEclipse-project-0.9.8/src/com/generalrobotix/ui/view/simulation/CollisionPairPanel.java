@@ -55,7 +55,7 @@ import com.generalrobotix.ui.view.graph.SEBoolean;
 public class CollisionPairPanel extends Composite {
     private GrxPluginManager manager_;
     private TableViewer viewer_;
-    private Vector<GrxBaseItem> vecCollision_;
+    private Vector<GrxCollisionPairItem> vecCollision_;
     
     private Button btnAdd_;
     private Button btnRemove_;
@@ -118,7 +118,7 @@ public class CollisionPairPanel extends Composite {
         defaultStaticFriction_ = "0.5";//props.getProperty(ATTR_NAME_STATIC_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE);
         defaultSlidingFriction_ = "0.5";//props.getProperty(ATTR_NAME_SLIDING_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE);
         
-        vecCollision_ = new Vector<GrxBaseItem>();
+        vecCollision_ = new Vector<GrxCollisionPairItem>();
    
         setLayout(new GridLayout(1,false));
         
@@ -134,9 +134,7 @@ public class CollisionPairPanel extends Composite {
             public void widgetSelected(SelectionEvent e) {
                 int row = viewer_.getTable().getSelectionIndex();
                 if (row >= 0 && row < vecCollision_.size()) {
-                    editorPanel_.setNode(
-                        (GrxCollisionPairItem)vecCollision_.get(row)
-                    );
+                    editorPanel_.setNode(vecCollision_.get(row));
                 }
             }
         });
@@ -182,7 +180,7 @@ public class CollisionPairPanel extends Composite {
                 int row = viewer_.getTable().getSelectionIndex();
                 if (row >= 0 && row < vecCollision_.size()) {
                     if (_checkDialog(MessageBundle.get("collision.remove"))) {
-                        manager_.removeItem((GrxBaseItem)vecCollision_.get(row));
+                        vecCollision_.get(row).delete();
                     }
                 }
             }
@@ -200,9 +198,7 @@ public class CollisionPairPanel extends Composite {
                 int row = viewer_.getTable().getSelectionIndex() ;
                 if(row>=0 && row<vecCollision_.size()){
                     _setButtonEnabled(false);
-                    editorPanel_.startEditMode(
-                        (GrxCollisionPairItem)vecCollision_.get(row)
-                    );
+                    editorPanel_.startEditMode(vecCollision_.get(row));
                 }
             }
             
@@ -216,11 +212,11 @@ public class CollisionPairPanel extends Composite {
             }
 
             public void widgetSelected(SelectionEvent e) {
-                List<GrxBaseItem> list = manager_.getSelectedItemList(GrxModelItem.class);
+                List<GrxModelItem> list = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
                 for (int i=0; i<list.size(); i++) {
-                    GrxModelItem m1 = (GrxModelItem)list.get(i);
+                    GrxModelItem m1 = list.get(i);
                     for (int j=0; j<list.size(); j++) {
-                        GrxModelItem m2 = (GrxModelItem)list.get(j);
+                        GrxModelItem m2 = list.get(j);
                         for (int k=1; k<m1.links_.size(); k++) {
                             for (int l=1; l<m2.links_.size(); l++) {
                                 if (i != j || k != l)
@@ -660,19 +656,14 @@ public class CollisionPairPanel extends Composite {
         
     }
 
-    public void updateCollisionPairs(List<GrxBaseItem> list) {
+    public void updateCollisionPairs(List<GrxCollisionPairItem> clist, List<GrxModelItem> mlist) {
       editorPanel_.doCancel();
-      vecCollision_ = new Vector<GrxBaseItem>();
-      boolean isAnyRobot = false;
-      for (int i=0; i<list.size(); i++) {
-        if (list.get(i) instanceof GrxCollisionPairItem)
-          vecCollision_.add(list.get(i));
-        else if (list.get(i) instanceof GrxModelItem)
-          isAnyRobot = true;
-      }
+      vecCollision_ = new Vector<GrxCollisionPairItem>();
+      for (int i=0; i<clist.size(); i++)
+        vecCollision_.add(clist.get(i));
       viewer_.getTable().deselectAll();
       viewer_.setInput(vecCollision_);
-      setEnabled(vecCollision_.size() > 0 || isAnyRobot);
+      setEnabled(vecCollision_.size() > 0 || !mlist.isEmpty());
       _repaint();
     }
     
@@ -680,12 +671,11 @@ public class CollisionPairPanel extends Composite {
     public void replaceWorld(GrxWorldStateItem world) {
         editorPanel_.doCancel();
         
-        vecCollision_ = new Vector<GrxBaseItem>();
+        vecCollision_ = new Vector<GrxCollisionPairItem>();
         viewer_.setInput(vecCollision_);
     }
 
-    public void childAdded(GrxBaseItem item) {
-      if(item instanceof GrxCollisionPairItem){
+    public void childAdded(GrxCollisionPairItem item) {
         int i;
         for (i = 0; i < vecCollision_.size(); i ++) {
             vecCollision_.get(i);
@@ -695,7 +685,6 @@ public class CollisionPairPanel extends Composite {
         vecCollision_.add(i, item);
         _repaint();
         return;
-      }
     }
 /*
     public void childRemoved(SimulationNode node) {
@@ -735,6 +724,8 @@ public class CollisionPairPanel extends Composite {
            	item.setProperty("objectName2", oName2);
            	item.setProperty("jointName2",  jName2); 
         } 
+        manager_.itemChange(item, GrxPluginManager.ADD_ITEM);
+        manager_.setSelectedItem(item, true);
         return item;
 	}
 }

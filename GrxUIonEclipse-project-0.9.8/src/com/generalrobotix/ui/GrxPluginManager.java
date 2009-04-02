@@ -85,7 +85,16 @@ public class GrxPluginManager {
     private boolean bItemPropertyChanged_ = false;
     private String homePath_;
     private Map<Class<? extends GrxBasePlugin>, PluginInfo> pinfoMap_ = new HashMap<Class<? extends GrxBasePlugin>, PluginInfo>();
-
+    private Map<Class<? extends GrxBaseItem>, List<GrxBaseView>> itemChangeListener_ = 
+    	new HashMap<Class<? extends GrxBaseItem>, List<GrxBaseView>>(); 
+    public static final int ADD_ITEM=0;
+    public static final int REMOVE_ITEM=1;
+    public static final int SELECTED_ITEM=2;
+    public static final int NOTSELECTED_ITEM=3;
+    public static final int SETNAME_ITEM=4;
+    public static final int FOCUSED_ITEM=5;
+    public static final int NOTFOCUSED_ITEM=6;
+    
     // for cyclic execution
     private int delay_ = DEFAULT_INTERVAL;// [msec]
     private long prevTime_ = 0; // [msec]
@@ -267,11 +276,14 @@ public class GrxPluginManager {
      */
     public void focusedItem(GrxBaseItem item) {
         if (focusedItem_ != item) {
-            if (focusedItem_ != null)
+            if (focusedItem_ != null){
                 focusedItem_.setFocused(false);
+                itemChange(item, NOTFOCUSED_ITEM);
+            }
             focusedItem_ = item;
             focusedItem_.setFocused(true);
             bfocusedItemChanged_ = true;
+            itemChange(item, FOCUSED_ITEM);
         }
     }
 
@@ -623,7 +635,6 @@ public class GrxPluginManager {
         //GrxDebugUtil.println("[PM]@createItem createPlugin return " + item);
         if (item != null) {
             item.create();
-            setSelectedItem(item, true);
             _addItemNode(item);
         }
         return item;
@@ -670,7 +681,6 @@ public class GrxPluginManager {
         if (item != null) {
             if (item.load(f)) {
                 item.setURL(url);
-                setSelectedItem(item, true);
                 _addItemNode(item);
             } else {
                 removeItem(item);
@@ -743,8 +753,13 @@ public class GrxPluginManager {
      */
     public boolean registerPluginInstance(GrxBasePlugin instance) {
         HashMap<String, GrxBasePlugin> map = pluginMap_.get(instance.getClass());
-        if (map.get(instance.getName()) != null) {
+        GrxBasePlugin plugin = map.get(instance.getName());
+        if ( plugin != null) {
             GrxDebugUtil.println("[PM]@createPlugin Plugin instance named "+instance.getName()+" is already registered.");
+            if(plugin instanceof GrxBaseItem){
+            	((GrxBaseItem)plugin).delete();
+            	map.put(instance.getName(), instance);
+            }
             return false;
         }
         map.put(instance.getName(), instance);
@@ -806,6 +821,7 @@ public class GrxPluginManager {
             setSelectedItem(item, false);
             m.remove(item.getName());
             reselectItems();
+            itemChange(item, REMOVE_ITEM);
         }
     }
 
@@ -817,7 +833,7 @@ public class GrxPluginManager {
         Map<?, ?> m = pluginMap_.get(cls);
         GrxBaseItem[] items = m.values().toArray(new GrxBaseItem[0]);
         for (int i = 0; i < items.length; i++)
-            items[i].delete();
+        	items[i].delete();
     }
 
     /**
@@ -939,16 +955,23 @@ public class GrxPluginManager {
      * @param name
      * @return
      */
-    public GrxBaseItem getSelectedItem(Class<? extends GrxBaseItem> cls, String name) {
-        for (int i = 0; i < selectedItemList_.size(); i++) {
-            GrxBaseItem item = selectedItemList_.get(i);
-            if (cls.isAssignableFrom(item.getClass()) && (name == null || name.equals(item.getName()))) {
-                //System.out.println("[PM]@getSelectedItem get " + item.getName() + "(" + cls.getName() + ")");
-                return item;
-            }
-        }
-        //System.out.println("[PM]@getSelectedItem " + cls.getName() + ":" + name + " NOT FOUND.");
-        return null;
+    @SuppressWarnings("unchecked")
+	public <T> T getSelectedItem(Class<? extends GrxBaseItem> cls, String name) {
+    	Map<String, ? extends GrxBaseItem> oMap = pluginMap_.get(cls);
+    	if(oMap==null) return null;
+    	if(name != null){
+    		GrxBaseItem item = oMap.get(name);
+    		if(item.isSelected())
+    			return (T)item;
+    		else
+    			return null;
+    	}else{
+    		for(GrxBaseItem item : oMap.values()){
+    			if(item.isSelected())
+    				return (T)item;
+    		}
+    		return null;
+    	}
     }
 
     /**
@@ -956,12 +979,14 @@ public class GrxPluginManager {
      * @param cls
      * @return
      */
-    public List<GrxBaseItem> getSelectedItemList(Class<? extends GrxBaseItem> cls) {
-        ArrayList<GrxBaseItem> list = new ArrayList<GrxBaseItem>();
-        for (int i = 0; i < selectedItemList_.size(); i++) {
-            GrxBaseItem item = selectedItemList_.get(i);
-            if (cls.isInstance(item))
-                list.add(item);
+    @SuppressWarnings("unchecked")
+	public <T> List<T> getSelectedItemList(Class<? extends GrxBaseItem> cls) {
+        ArrayList<T> list = new ArrayList<T>();
+        Map<String, ? extends GrxBaseItem> oMap = pluginMap_.get(cls);
+        if(oMap==null) return list;
+        for(GrxBaseItem item : oMap.values()){
+            if (item.isSelected())
+                list.add((T)item);
         }
         return list;
     }
@@ -1019,6 +1044,7 @@ public class GrxPluginManager {
             for (GrxBaseItem i : (Collection<GrxBaseItem>) getItemMap(item.getClass()).values()) {
                 if (i != item) {
                     i.setSelected(false);
+                    itemChange(item, NOTSELECTED_ITEM);
                 }
             }
         }
@@ -1027,6 +1053,8 @@ public class GrxPluginManager {
         // );
 
         item.setSelected(select);
+        if(select)	itemChange(item, SELECTED_ITEM);
+        else		itemChange(item, NOTSELECTED_ITEM);
     }
 
     /**
@@ -1104,7 +1132,9 @@ public class GrxPluginManager {
             }
 
             public void run() {
-                createItem(cls, null);
+                GrxBaseItem item = createItem(cls, null);
+                itemChange(item, GrxPluginManager.ADD_ITEM);
+    	        setSelectedItem(item, true);
             }
         };
         menu.add(create);
@@ -1124,7 +1154,9 @@ public class GrxPluginManager {
                 String fPath = fdlg.open();
                 if (fPath != null) {
                     File f = new File(fPath);
-                    loadItem(cls, null, f.getAbsolutePath());
+                    GrxBaseItem newItem = loadItem(cls, null, f.getAbsolutePath());
+                    itemChange(newItem, GrxPluginManager.ADD_ITEM);
+                    setSelectedItem(newItem, true);
                     pi.lastDir = f.getParentFile();
                 }
             }
@@ -1352,5 +1384,32 @@ public class GrxPluginManager {
     }
 
     private static SynchronizedAccessor<String> clipValue_ = new SynchronizedAccessor<String>("");
-
+    
+    
+    public void registerItemChangeListener(GrxBaseView view, Class<? extends GrxBaseItem> cls){
+    	if(itemChangeListener_.get(cls)==null)
+    		itemChangeListener_.put(cls, new ArrayList<GrxBaseView>());
+    	List<GrxBaseView> list = itemChangeListener_.get(cls);
+    	list.add(view);
+    }
+    	
+    public void removeItemChangeListener(GrxBaseView view, Class<? extends GrxBaseItem> cls) {
+    	if(itemChangeListener_.get(cls)==null) return;
+    	List<GrxBaseView> list = itemChangeListener_.get(cls);
+    	list.remove(view);
+    }
+    
+    public void itemChange(GrxBaseItem item, int event){
+    	Iterator<Class<? extends GrxBaseItem>> it = itemChangeListener_.keySet().iterator();
+    	while(it.hasNext()){
+    		Class<? extends GrxBaseItem> cls = it.next();
+    		if(cls.isAssignableFrom(item.getClass())){
+    			List<GrxBaseView> list = itemChangeListener_.get(cls);
+    			Iterator<GrxBaseView> itView = list.iterator();
+        		while(itView.hasNext())
+        			itView.next().registerItemChange(item, event);
+    		}
+    	}
+    }
+    
 }

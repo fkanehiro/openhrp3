@@ -100,7 +100,7 @@ public class Grx3DView
     private BranchGroup  unclickableBgRoot_;
     
     private BranchGroup rulerBg_;
-    private BranchGroup collisionBg_;
+    //private BranchGroup collisionBg_;
     private float LineWidth_ = 1.0f;
     private float colprop = 10.0f;
     private float coldiff = 0.1f;
@@ -249,6 +249,22 @@ public class Grx3DView
         intersectingLinks_ = new Vector<GrxLinkItem>();
         
         setScrollMinSize();
+    
+        // View が開いたときモデルとWorldStateを取得　変化があればマネジャーに教えてもらう
+        currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        Iterator<GrxModelItem> it = currentModels_.iterator();
+        while(it.hasNext())	{
+        	bgRoot_.addChild(it.next().bgRoot_);
+        }
+        manager_.registerItemChangeListener(this, GrxModelItem.class);
+        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+        if(currentWorld_!=null){
+        	WorldStateEx state = currentWorld_.getValue();
+        	if (state!=null){
+            	updateModels(state);
+            }
+        }
+        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
     }
     
     public void disableUpdateModel(){
@@ -568,33 +584,7 @@ public class Grx3DView
     public BranchGroup getBranchGroupRoot() {
         return bgRoot_;
     }
-    /*
-    public class ImageCanvas3D extends Canvas3D {
-        Raster readRaster;
-        GraphicsContext3D gc;
-        boolean updated;
-
-        public ImageCanvas3D(GraphicsConfiguration graphicsConfiguration) {
-            super(graphicsConfiguration);
-            updated = false;
-        }
-
-        public void setRaster(Raster raster) {
-            this.readRaster = raster;
-            gc = getGraphicsContext3D();
-            updated = false;
-        }
-
-        public void postSwap() {
-            super.postSwap();
-            if (isRecording_) {
-            	System.out.println("postswap");
-                gc.readRaster(readRaster);
-                updated = true;
-            }
-        }
-    }
-*/
+    
     public void restoreProperties() {
         super.restoreProperties();
         if (getStr("showScale")==null) setProperty("showScale", "true");
@@ -631,7 +621,8 @@ public class Grx3DView
         tgView_.setTransform(t3dViewHome_);
     }
     
-    public void itemSelectionChanged(List<GrxBaseItem> itemList) {
+  //  public void itemSelectionChanged(List<GrxBaseItem> itemList) {
+    	/*
         boolean selectionChanged = false;
         for (int i = currentModels_.size()-1 ; i>-1; i--) {
             GrxModelItem item = currentModels_.get(i);
@@ -642,7 +633,6 @@ public class Grx3DView
             selectionChanged = true;
         }
 
-        currentWorld_ = null;
         Iterator<GrxBaseItem> it = itemList.iterator();
         while (it.hasNext()) {
             GrxBaseItem item = (GrxBaseItem) it.next();
@@ -663,20 +653,58 @@ public class Grx3DView
                     //System.out.println(modelItem.getName() + " is added");
                     selectionChanged = true;
                 }
-            } else if (item instanceof GrxWorldStateItem) {
-                currentWorld_ = (GrxWorldStateItem) item;
             }
         }
+     
         if (selectionChanged && isRunning()){
             behaviorManager_.replaceWorld(itemList);
             disableOperation();
         }
-        
-        prevTime_ = -1;
+        */
+       // prevTime_ = -1;
+        /*
         if (collisionBg_ != null) {
             collisionBg_.detach();
             collisionBg_ = null;
         }    
+        */
+   // }
+       
+    public void registerItemChange(GrxBaseItem item, int event){
+    	if(item instanceof GrxModelItem){
+    		GrxModelItem modelItem = (GrxModelItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		if(!modelItem.bgRoot_.isLive()){
+	    			modelItem.setWireFrame(viewToolBar_.isWireFrameSelected());
+	                bgRoot_.addChild(modelItem.bgRoot_);
+	        		currentModels_.add(modelItem);
+	    		}
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(modelItem.bgRoot_.isLive()){
+	    			modelItem.bgRoot_.detach();
+	        		currentModels_.remove(modelItem);
+	    		}
+	    		break;
+	    	default:
+	    		break;
+	    	}
+    	}else if(item instanceof GrxWorldStateItem){
+    		GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
+    		switch(event){
+    		case GrxPluginManager.SELECTED_ITEM:
+    			currentWorld_ = worldStateItem;
+    			break;
+    		case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		currentWorld_ = null;
+	    		break;
+	    	default:
+	    		break;
+    		}
+    	}
     }
     
     public boolean setup(List<GrxBaseItem> itemList) {
@@ -691,7 +719,7 @@ public class Grx3DView
 
            return registerCORBA();
     }
-
+   
     public void control(List<GrxBaseItem> items) {
     	if(isRecording_) return;
     	
@@ -1258,7 +1286,9 @@ public class Grx3DView
             try {
                 URL u = new URL(url);
                 url = u.getFile();
-                manager_.loadItem(GrxModelItem.class, name, url);
+                GrxBaseItem newItem = manager_.loadItem(GrxModelItem.class, name, url);
+                manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+                manager_.setSelectedItem(newItem, true);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -1277,6 +1307,8 @@ public class Grx3DView
             GrxWorldStateItem.WorldStateEx statex = new GrxWorldStateItem.WorldStateEx(arg0);
             if (currentWorld_ == null) {
                 currentWorld_ = (GrxWorldStateItem)manager_.createItem(GrxWorldStateItem.class, null);
+                manager_.itemChange(currentWorld_, GrxPluginManager.ADD_ITEM);
+    	        manager_.setSelectedItem(currentWorld_, true);
             }
             if (firstTime_) {
                 firstTime_ = false;
@@ -1781,4 +1813,14 @@ public class Grx3DView
     	}
     	return false;
     }
+    
+    // view が閉じられたときの処理
+    public void shutdown() {
+    	 Iterator<GrxModelItem> it = currentModels_.iterator();
+         while(it.hasNext())	{
+         	it.next().bgRoot_.detach();
+         }
+         manager_.removeItemChangeListener(this, GrxModelItem.class);
+         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+	}
 }

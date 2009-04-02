@@ -54,7 +54,7 @@ class BehaviorInfo {
     }
 
     Manipulatable getManipulatable(String name) {
-    	return (Manipulatable) manager_.getSelectedItem(GrxModelItem.class, name);
+    	return (Manipulatable) manager_.<GrxModelItem>getSelectedItem(GrxModelItem.class, name);
         /*
         SimulationNode node = world_.getChild(name);
         if (node instanceof Manipulatable) {

@@ -228,7 +228,7 @@ public class GraphPanel extends JPanel {
         hRangeButton_.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    GrxBasePlugin graphItem = manager_.getSelectedItem(GrxGraphItem.class, null);
+                    GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                     if (graphItem == null)
                     	return;
                     	
@@ -279,7 +279,7 @@ public class GraphPanel extends JPanel {
                     	double base = vRangeDialog_.getBase();
                         double extent = vRangeDialog_.getExtent();
                         tg.setRange(base, extent);
-                        GrxBasePlugin graphItem = manager_.getSelectedItem(GrxGraphItem.class, null);
+                        GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                         if (graphItem == null)
                         	return;
                         graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent});
@@ -294,7 +294,7 @@ public class GraphPanel extends JPanel {
         seriesButton_.addActionListener(
             new ActionListener() {
             	public void actionPerformed(ActionEvent evt) {
-                    GrxBasePlugin graphItem = manager_.getSelectedItem(GrxGraphItem.class, null);
+                    GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                     if (graphItem == null)
                     	return;
                     TrendGraph tg = currentGraph_.getTrendGraph();
@@ -493,7 +493,7 @@ public class GraphPanel extends JPanel {
         seriesButton_.setEnabled(true);
         epsButton_.setEnabled(enabled);
         
-        GrxBasePlugin p = manager_.getSelectedItem(GrxGraphItem.class, null);
+        GrxGraphItem p = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
         setEnabled(p != null);
     }
 

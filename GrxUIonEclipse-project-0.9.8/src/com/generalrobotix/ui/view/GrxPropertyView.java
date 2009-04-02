@@ -61,7 +61,7 @@ public class GrxPropertyView extends GrxBaseView {
     
     public static final String TITLE = "Property";
 
-    private GrxBasePlugin currentPlugin_;
+    private GrxBasePlugin currentPlugin_=null;
 
     private TableViewer viewer_ = null;
 
@@ -142,23 +142,43 @@ public class GrxPropertyView extends GrxBaseView {
         viewer_.setCellEditors(editors);
         viewer_.setCellModifier(new PropertyTableCellModifier());
         viewer_.setSorter(new PropertyTableViewerSorter());
-        viewer_.setInput(currentPlugin_);
-
+        
         table_.setLinesVisible(true);
         table_.setHeaderVisible(true);
 
         setScrollMinSize();
+        
+        GrxBaseItem item = manager_.focusedItem();
+        manager_.registerItemChangeListener(this, GrxBaseItem.class);
+        viewer_.setInput(item);
+
     }
 
     /**
      * @brief This method is called by PluginManager when "focused item" is changed
      * @param item focused item
      */
+    /*
     public void focusedItemChanged(GrxBaseItem item) {
     	//System.out.println("GrxPropertyView.focusedItemChanged()");
     	_setInput(item);
     }
-
+	*/
+    public void registerItemChange(GrxBaseItem item, int event){
+    	switch(event){
+    	case GrxPluginManager.FOCUSED_ITEM:
+    		_setInput(item);
+    		break;
+    	case GrxPluginManager.REMOVE_ITEM:
+    		if(currentPlugin_ == item){
+    			_setInput(null);
+    		}
+    		break;
+    	default:
+    		break;
+    	}
+    }
+    
     public void propertyChanged(){
     	//System.out.println("GrxPropertyView.propertyChanged()");
     	_refresh();
@@ -253,7 +273,11 @@ public class GrxPropertyView extends GrxBaseView {
     }
 
     private void _setInput(GrxBasePlugin p){
-        if (p != currentPlugin_) {
+    	if(p == null){
+    		table_.setVisible(false);
+            currentPlugin_ = p;
+            nameText_.setText("");
+    	}else if (p != currentPlugin_) {
             table_.setVisible(false);
             currentPlugin_ = p;
             nameText_.setText(p.getName());
@@ -338,6 +362,10 @@ public class GrxPropertyView extends GrxBaseView {
             viewer_.setSorter(new PropertyTableViewerSorter());
             e.doit = false;
         }
+    }
+    
+    public void shutdown(){
+    	manager_.removeItemChangeListener(this, GrxBaseItem.class);
     }
 
 }

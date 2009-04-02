@@ -22,6 +22,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Frame;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -100,8 +101,19 @@ public class GrxGraphView extends GrxBaseView {
 		contentPane_.add(gpanel_, BorderLayout.CENTER);
 		graphManager_.setMode(GUIStatus.EXEC_MODE);
         setScrollMinSize();
+        
+        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+        if(currentWorld_!=null)
+        	setLogManager(currentWorld_);
+        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+        currentGraph_ = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+        if(currentGraph_!=null)
+        	_updateGraph(currentGraph_);
+        manager_.registerItemChangeListener(this, GrxGraphItem.class);
 	}
 
+		
+	/*
 	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
 		if (!itemList.contains(currentWorld_)) {
 			currentWorld_ = (GrxWorldStateItem)manager_.getSelectedItem(GrxWorldStateItem.class, null);
@@ -123,6 +135,55 @@ public class GrxGraphView extends GrxBaseView {
 			_updateGraph(currentGraph_);
 		}
 	}
+	*/
+	
+	private void setLogManager(GrxWorldStateItem worldStateItem){
+		if(worldStateItem != null){
+			graphManager_.setLogManager(worldStateItem.logger_);
+			try {
+				double step = worldStateItem.getDbl("logTimeStep", 0.001);
+				graphManager_.trendGraphModel_.setStepTime((long)(1000000*step));
+			} catch (Exception e) {
+				GrxDebugUtil.printErr("Couldn't parse log step time.", e);
+			}
+		}else
+			graphManager_.setLogManager(null);
+	}
+	
+	public void registerItemChange(GrxBaseItem item, int event){
+		if(item instanceof GrxWorldStateItem){
+			GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		setLogManager(worldStateItem);
+	    		currentWorld_ = worldStateItem;
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		setLogManager(null);
+	    		currentWorld_ = null;
+	    		break;
+	    	default:
+	    		break;
+	    	}
+		}else if(item instanceof GrxGraphItem){
+			GrxGraphItem graphItem = (GrxGraphItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		_updateGraph(graphItem);
+	    		currentGraph_ = graphItem;
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		_updateGraph(null);
+	    		currentGraph_ = null;
+	    		break;
+	    	default:
+	    		break;
+	    	}
+		}
+	}
+	
 	
 	private void _updateGraph(GrxBasePlugin p) {
 		for (int i = 0; i < graphManager_.getNumGraph(); i++) {
@@ -240,5 +301,9 @@ public class GrxGraphView extends GrxBaseView {
 	public boolean setup(List<GrxBaseItem> itemList) {
 		currentWorld_ = null;
 		return true;
+	}
+	
+	 public void shutdown() {
+	        manager_.removeItemChangeListener(this, GrxGraphItem.class);
 	}
 }

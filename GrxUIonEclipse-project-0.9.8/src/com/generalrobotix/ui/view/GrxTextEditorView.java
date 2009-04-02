@@ -18,8 +18,6 @@
 
 package com.generalrobotix.ui.view;
 
-import java.util.List;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
@@ -31,6 +29,7 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
+import com.generalrobotix.ui.item.GrxPythonScriptItem;
 import com.generalrobotix.ui.item.GrxTextItem;
 
 @SuppressWarnings("serial")
@@ -38,7 +37,7 @@ public class GrxTextEditorView extends GrxBaseView {
 	private Text area_;
 	private Action save_,saveAs_;
 
-	private GrxTextItem currentItem_ = null;
+	private GrxPythonScriptItem currentItem_ = null;
 	
 	public GrxTextEditorView(String name, GrxPluginManager manager_,
 			GrxBaseViewPart vp, Composite parent) {
@@ -72,9 +71,26 @@ public class GrxTextEditorView extends GrxBaseView {
         saveAs_.setImageDescriptor( Activator.getDefault().getDescriptor("saveas_edit.png") );
         toolbar.add( saveAs_ );
         setScrollMinSize();
-
+        
+		currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
+		setTextItem(currentItem_);
+        manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
 	}
 
+	private void setTextItem(GrxPythonScriptItem item){
+		if(item != null){
+			area_.setText( (String)item.getValue() );
+			area_.setEnabled(true);
+			save_.setEnabled(true);
+			saveAs_.setEnabled(true);
+		}else{
+			area_.setText("");
+			area_.setEnabled(false);
+			save_.setEnabled(false);
+			saveAs_.setEnabled(false);
+		}
+	}
+	
 	private void _syncCurrentItem() {
 		if (currentItem_ != null) {
 			currentItem_.setValue(area_.getText());
@@ -82,15 +98,16 @@ public class GrxTextEditorView extends GrxBaseView {
 		}
 	}
 
+	/*
 	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
 		_syncCurrentItem();
 		
 		currentItem_ = null;
-		GrxBaseItem item = manager_.getSelectedItem(GrxTextItem.class, null);
+		GrxTextItem item = manager_.<GrxTextItem>getSelectedItem(GrxTextItem.class, null);
 		if (item != null) {
 			area_.setText( (String)item.getValue() );
 			// keep currentItem_ null until setValue not to set undo
-			currentItem_ = (GrxTextItem) item;
+			currentItem_ = item;
 //			area_.setCaretPosition(currentItem_.getCaretPositoin());
 			area_.setEnabled(true);
 	//		area_.setBackground(Color.white);
@@ -109,5 +126,30 @@ public class GrxTextEditorView extends GrxBaseView {
 		
 //		_updateCaretLabel();
 	//	_updateTitle();
+	}
+	*/
+	
+	public void registerItemChange(GrxBaseItem item, int event){
+		GrxPythonScriptItem textItem = (GrxPythonScriptItem)item;
+		switch(event){
+    	case GrxPluginManager.SELECTED_ITEM:
+    		setTextItem(textItem);
+			currentItem_ = textItem;
+    		break;
+    	case GrxPluginManager.REMOVE_ITEM:
+    	case GrxPluginManager.NOTSELECTED_ITEM:
+    		_syncCurrentItem();
+    		if(currentItem_ == textItem){
+	    		setTextItem(null);
+				currentItem_ = null;
+    		}
+    		break;
+    	default:
+    			break;
+		}
+	}
+	
+	public void shutdown(){
+		manager_.removeItemChangeListener(this, GrxPythonScriptItem.class);
 	}
 }

@@ -256,9 +256,9 @@ public class BehaviorManager implements WorldReplaceListener {
 
 		try {
 			// register characters
-			List<GrxBaseItem> modelList = manager_.getSelectedItemList(GrxModelItem.class);
+			List<GrxModelItem> modelList = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
 			for (int i=0; i<modelList.size(); i++) {
-				GrxModelItem model = (GrxModelItem)modelList.get(i);
+				GrxModelItem model = modelList.get(i);
 				if (model.getBodyInfo() != null)
 					currentDynamics_.registerCharacter(model.getName(), model.getBodyInfo());
 			}
@@ -269,7 +269,7 @@ public class BehaviorManager implements WorldReplaceListener {
 			
 			// set position/orientation and joint angles
 			for (int i=0; i<modelList.size(); i++) {
-				GrxModelItem model = (GrxModelItem) modelList.get(i);
+				GrxModelItem model = modelList.get(i);
 				if (model.links_ == null)
 					continue;
 				
