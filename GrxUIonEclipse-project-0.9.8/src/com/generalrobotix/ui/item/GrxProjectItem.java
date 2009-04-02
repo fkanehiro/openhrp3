@@ -446,7 +446,7 @@ public class GrxProjectItem extends GrxBaseItem {
     	}
 		
 		// register mode
-		GrxBaseItem selectedMode = manager_.getSelectedItem(GrxModeInfoItem.class, null);
+		GrxModeInfoItem selectedMode = manager_.<GrxModeInfoItem>getSelectedItem(GrxModeInfoItem.class, null);
 		NodeList list = doc_.getElementsByTagName(MODE_TAG);
 		for (int i=0; i<list.getLength(); i++) {
 			Element modeEl = (Element) list.item(i);
@@ -454,8 +454,9 @@ public class GrxProjectItem extends GrxBaseItem {
 			if (modeName == null) 
 				continue;
 			
-			GrxBaseItem item = manager_.createItem(GrxModeInfoItem.class, modeName);
+			GrxModeInfoItem item = (GrxModeInfoItem)manager_.createItem(GrxModeInfoItem.class, modeName);
 			if (item != null)  {
+				manager_.itemChange(item, GrxPluginManager.ADD_ITEM);
 				item.setElement(modeEl);
 				if (GrxXmlUtil.getBoolean(modeEl, "select", false)) {
 					selectedMode = item;
@@ -577,7 +578,8 @@ public class GrxProjectItem extends GrxBaseItem {
 				plugin = manager_.loadItem(icls, iname, url);
 			else
 				plugin = manager_.createItem(icls, iname);
-
+			manager_.itemChange((GrxBaseItem)plugin, GrxPluginManager.ADD_ITEM);
+	        manager_.setSelectedItem((GrxBaseItem)plugin, true);
 			plugin = manager_.getItem(icls, iname);
 		} else {
 			plugin = manager_.getView((Class<? extends GrxBaseView>) cls);
@@ -657,7 +659,8 @@ public class GrxProjectItem extends GrxBaseItem {
 		newItem.setDbl("timeStep",    prop.getDbl("Project.timeStep", 0.001));
 		newItem.setDbl("logTimeStep", prop.getDbl("Project.timeStep", 0.001));
 		newItem.setProperty("method", prop.getStr("Project.method"));
-		manager_.setSelectedItem(newItem, true);
+		manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+        manager_.setSelectedItem(newItem, true);
 
 		for (int i = 0; i < prop.getInt("Project.num_object", 0); i++) {
 			String header = "Object" + i + ".";
@@ -671,6 +674,8 @@ public class GrxProjectItem extends GrxBaseItem {
 				try {
 					URL url = new URL(prop.getStr(header + "url"));
 					newItem = manager_.loadItem((Class<? extends GrxBaseItem>)cls, oName, url.getPath());
+					manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+			        manager_.setSelectedItem(newItem, true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

@@ -185,4 +185,6 @@ public class GrxBaseView extends GrxBasePlugin {
 	public void propertyChanged() {
 	}
     
+	public void registerItemChange(GrxBaseItem item, int event){
+	}
 }

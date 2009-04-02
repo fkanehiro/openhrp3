@@ -60,7 +60,7 @@ public class ControllerPanel extends Composite{
     private TableViewer viewer_;
     //private JScrollPane scrollPane_;
     
-    private Vector<GrxBaseItem> vecRobot_;
+    private Vector<GrxModelItem> vecRobot_;
     
     private Button btnRemove_;
     private Button btnEdit_;
@@ -93,7 +93,7 @@ public class ControllerPanel extends Composite{
         super(parent,style);
         
         manager_ = manager;
-        vecRobot_ = new Vector<GrxBaseItem>();
+        vecRobot_ = new Vector<GrxModelItem>();
         
         setLayout(new GridLayout(1,false));
        
@@ -116,7 +116,7 @@ public class ControllerPanel extends Composite{
             public void widgetSelected(SelectionEvent e) {
                 int row = viewer_.getTable().getSelectionIndex();
                 if(row>=0 && row<vecRobot_.size()){
-                    editorPanel_.setNode((GrxModelItem)vecRobot_.get(row));
+                    editorPanel_.setNode(vecRobot_.get(row));
                 }
             }
         });
@@ -142,8 +142,7 @@ public class ControllerPanel extends Composite{
                 if (row >= 0 && row < vecRobot_.size()) {
                     if (_checkDialog(MessageBundle.get("controller.remove")))
                     {
-                        GrxBaseItem node =
-                            (GrxBaseItem)vecRobot_.get(row);
+                        GrxModelItem node = vecRobot_.get(row);
                         try {
                             node.setProperty(ATTRIBUTE_CONTROLLER, "");
                             node.setProperty(ATTRIBUTE_CONTROL_TIME, "");
@@ -170,7 +169,7 @@ public class ControllerPanel extends Composite{
                 int row = viewer_.getTable().getSelectionIndex();
                 if(row>=0 && row<vecRobot_.size()){
                     _setButtonEnabled(false);
-                    editorPanel_.startEditMode((GrxModelItem)vecRobot_.get(row));
+                    editorPanel_.startEditMode(vecRobot_.get(row));
                 }
             }
             
@@ -440,12 +439,11 @@ public class ControllerPanel extends Composite{
         
     }
     
-    public void childAdded(GrxBaseItem node) {
-      if(node instanceof GrxModelItem){
+    public void childAdded(GrxModelItem node) {
           int i;
           for (i = 0; i < vecRobot_.size(); i ++) {
               vecRobot_.get(i);
-              if (((GrxBaseItem)vecRobot_.get(i)).getName().compareTo(node.getName()) > 0)
+              if ((vecRobot_.get(i)).getName().compareTo(node.getName()) > 0)
                 break;
             //  if (viewable.compareTo(node) > 0)
             //      break;
@@ -453,7 +451,6 @@ public class ControllerPanel extends Composite{
           vecRobot_.add(i, node);
           _repaint();
           return;
-      }
   }
 
     private class ControllerPanelTableLabelProvider implements ITableLabelProvider{
@@ -496,7 +493,7 @@ public class ControllerPanel extends Composite{
         
     }
     
-  public void childRemoved(GrxBaseItem node) {
+  public void childRemoved(GrxModelItem node) {
       if(node instanceof GrxModelItem){
           vecRobot_.remove(node);
           _repaint();
@@ -505,9 +502,9 @@ public class ControllerPanel extends Composite{
       }
   }
   
-  public void updateRobots(List<GrxBaseItem> list) {
+  public void updateRobots(List<GrxModelItem> list) {
     editorPanel_.doCancel();
-    vecRobot_ = new Vector<GrxBaseItem>();
+    vecRobot_ = new Vector<GrxModelItem>();
     for (int i=0; i<list.size(); i++) {
       GrxBaseItem item = list.get(i);
       if (item instanceof GrxModelItem && ((GrxModelItem)item).isRobot()) 

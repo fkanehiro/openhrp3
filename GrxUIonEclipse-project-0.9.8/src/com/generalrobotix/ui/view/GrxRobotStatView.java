@@ -69,8 +69,8 @@ public class GrxRobotStatView extends GrxBaseView {
     private Font bold12_;
     //private Font bold20_;
 
-    private GrxWorldStateItem currentWorld_;
-    private GrxModelItem currentModel_;
+    private GrxWorldStateItem currentWorld_ = null;
+    private GrxModelItem currentModel_ = null;
     private SensorState  currentSensor_;
     private double[]     currentRefAng_;
     private long[]       currentSvStat_;
@@ -137,16 +137,7 @@ public class GrxRobotStatView extends GrxBaseView {
                     return;
 
                 currentModel_ = item;
-                jointList_.clear();
-                Vector<GrxLinkItem> lInfo = currentModel_.links_;
-                for (int i = 0; i < lInfo.size(); i++) {
-                    for (int j = 0; j < lInfo.size(); j++) {
-                        if (i == lInfo.get(j).jointId()) {
-                            jointList_.add(lInfo.get(j));
-                            break;
-                        }
-                    }
-                }
+                setJointList();
                 _resizeTables();
             }
             
@@ -189,6 +180,27 @@ public class GrxRobotStatView extends GrxBaseView {
             viewers_[i].getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
         setScrollMinSize();
+        
+        modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        manager_.registerItemChangeListener(this, GrxModelItem.class);
+        if(!modelList_.isEmpty()){
+	        Iterator<GrxModelItem> it = modelList_.iterator();
+	    	while(it.hasNext())
+	    		comboModelName_.add(it.next().getName());
+	    	comboModelName_.select(0);
+	    	currentModel_ = modelList_.get(0);
+	    	forceName_ = null;
+			setJointList();
+        }
+        comboVisible();
+        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+        if(currentWorld_!=null){
+        	WorldStateEx state = currentWorld_.getValue();
+        	if (state!=null){
+            	//TODO
+            }
+        }
+        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
     }
     
     
@@ -236,9 +248,29 @@ public class GrxRobotStatView extends GrxBaseView {
         _resizeTables();
     }
 
+    private void setJointList(){
+    	jointList_.clear();
+        Vector<GrxLinkItem> lInfo = currentModel_.links_;
+        for (int i = 0; i < lInfo.size(); i++) {
+            for (int j = 0; j < lInfo.size(); j++) {
+                if (i == lInfo.get(j).jointId()) {
+                    jointList_.add(lInfo.get(j));
+                    break;
+                }
+            }
+        }
+    }
+    
+    private void comboVisible(){
+    	if(comboModelName_.getItemCount() > 1)
+            comboModelName_.setVisible(true);
+        else//(comboModelName_.getItemCount() == 1)
+            comboModelName_.setVisible(false);	
+    }
+    /*
     public void itemSelectionChanged(List<GrxBaseItem> itemList) {
         Iterator<GrxBaseItem> it = itemList.iterator();
-        comboModelName_.removeAll();
+        //comboModelName_.removeAll();
         modelList_.clear();
         jointList_.clear();
         while (it.hasNext()) {
@@ -246,8 +278,8 @@ public class GrxRobotStatView extends GrxBaseView {
             if (item instanceof GrxWorldStateItem)
                 currentWorld_ = (GrxWorldStateItem) item;
             else if (item instanceof GrxModelItem && ((GrxModelItem)item).isRobot()) {
-                comboModelName_.add(item.getName());
-                modelList_.add((GrxModelItem)item);
+                //comboModelName_.add(item.getName());
+                //modelList_.add((GrxModelItem)item);
             }
         }
         
@@ -267,14 +299,79 @@ public class GrxRobotStatView extends GrxBaseView {
                     }
                 }
             }
-            if(comboModelName_.getItemCount() > 1)
-                comboModelName_.setVisible(true);
-            else//(comboModelName_.getItemCount() == 1)
-                comboModelName_.setVisible(false);
+            //if(comboModelName_.getItemCount() > 1)
+           //     comboModelName_.setVisible(true);
+           // else//(comboModelName_.getItemCount() == 1)
+            //    comboModelName_.setVisible(false);
         }
         _resizeTables();
     }
-
+    */
+    public void registerItemChange(GrxBaseItem item, int event){
+    	if(item instanceof GrxModelItem){
+    		GrxModelItem modelItem = (GrxModelItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		if(!modelList_.contains(modelItem)){
+	    			modelList_.add(modelItem);
+	    			comboModelName_.add(modelItem.getName());
+	    			comboVisible();
+	    			if(currentModel_ == null){
+	    				currentModel_ = modelItem;
+	    				comboModelName_.select(comboModelName_.indexOf(modelItem.getName()));
+	    				forceName_ = null;
+	    				setJointList();
+	    			}
+	    		}
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(modelList_.contains(modelItem)){
+	    			int index = modelList_.indexOf(modelItem);
+	    			modelList_.remove(modelItem);
+	    			comboModelName_.remove(modelItem.getName());
+	    			comboVisible();
+	    			if(currentModel_ == modelItem){
+	    				if(index < modelList_.size()){
+	    					currentModel_ = modelList_.get(index);
+	    					comboModelName_.select(comboModelName_.indexOf(currentModel_.getName()));
+	    					forceName_ = null;
+	    					setJointList();
+	    				}else{
+	    					index--;
+	    					if(index >= 0 ){
+	    						currentModel_ = modelList_.get(index);
+	    						comboModelName_.select(comboModelName_.indexOf(currentModel_.getName()));
+	    						forceName_ = null;
+	    						setJointList();
+	    					}else{
+	    						currentModel_ = null;
+	    						jointList_.clear();
+	    					}
+	    				}
+	    					
+	    			}
+	    		}
+	    		break;
+	    	default:
+	    		break;
+	    	}
+    	}else if(item instanceof GrxWorldStateItem){
+    		GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
+    		switch(event){
+    		case GrxPluginManager.SELECTED_ITEM:
+    			currentWorld_ = worldStateItem;
+    			break;
+    		case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		currentWorld_ = null;
+	    		break;
+	    	default:
+	    		break;
+    		}
+    	}
+    }
+    
     public void control(List<GrxBaseItem> itemList) {
         if (currentModel_ == null)
             return;
@@ -310,8 +407,8 @@ public class GrxRobotStatView extends GrxBaseView {
     }
 
     public boolean setup(List<GrxBaseItem> itemList) {
-        currentWorld_ = null;
-        currentModel_ = null;
+        //currentWorld_ = null;
+        //currentModel_ = null;
         _resizeTables();
         return true;
     }
@@ -615,4 +712,9 @@ public class GrxRobotStatView extends GrxBaseView {
         }
         
     }
+    
+    public void shutdown() {
+        manager_.removeItemChangeListener(this, GrxModelItem.class);
+        manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+	}
 }

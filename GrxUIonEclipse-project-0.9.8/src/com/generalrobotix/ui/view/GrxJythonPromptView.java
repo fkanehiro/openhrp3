@@ -58,6 +58,7 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxPythonScriptItem;
+import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 
 @SuppressWarnings("serial")
@@ -218,6 +219,10 @@ public class GrxJythonPromptView extends GrxBaseView {
         
         setMenuItem(new InitPythonAction());
         setScrollMinSize();
+        
+        currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
+        btnExec_.setEnabled(currentItem_ != null);
+        manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
     }
         
     private class InitPythonAction extends Action{
@@ -467,14 +472,35 @@ public class GrxJythonPromptView extends GrxBaseView {
             System.clearProperty("SCRIPT");
             File f = new File(defaultScript);
             String name = f.getName().replace(".py", "");
-            manager_.loadItem(GrxPythonScriptItem.class, name, f.getAbsolutePath());
+            GrxBaseItem newItem = manager_.loadItem(GrxPythonScriptItem.class, name, f.getAbsolutePath());
+            manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+            manager_.setSelectedItem(newItem, true);
             execFile();
         }
     }
-    
+    /*
     public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-        currentItem_ = (GrxPythonScriptItem)manager_.getSelectedItem(GrxPythonScriptItem.class, null);
+        currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
         btnExec_.setEnabled(currentItem_ != null);
+    }
+    */
+    public void registerItemChange(GrxBaseItem item, int event){
+    	if(item instanceof GrxPythonScriptItem){
+    		GrxPythonScriptItem pythonScriptItem = (GrxPythonScriptItem)item;
+    		switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		currentItem_ = pythonScriptItem;
+	    		btnExec_.setEnabled(true);
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		currentItem_ = null;
+	    		btnExec_.setEnabled(false);
+	    		break;
+	    	default:
+	    		break;
+	    	}
+    	}
     }
     
     public void control(List<GrxBaseItem> itemList) {
@@ -598,6 +624,9 @@ public class GrxJythonPromptView extends GrxBaseView {
         }
     }
     
+    public void sutdown(){
+    	manager_.removeItemChangeListener(this, GrxPythonScriptItem.class);
+    }
 //    public void add(JPanel pnl) {
 //        getContentPane().add(pnl, BorderLayout.SOUTH);
 //    }

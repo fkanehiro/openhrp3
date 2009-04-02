@@ -40,8 +40,8 @@ import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
-import com.generalrobotix.ui.GrxTimeSeriesItem;
 import com.generalrobotix.ui.grxui.Activator;
+import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 
 @SuppressWarnings("serial")
@@ -51,7 +51,7 @@ import com.generalrobotix.ui.util.GrxDebugUtil;
 public class GrxLoggerView extends GrxBaseView {
     public static final String TITLE = "Logger";
 
-	private GrxTimeSeriesItem currentItem_;
+	private GrxWorldStateItem currentItem_;
 
 	private int current_ = 0;    // current position
 	private double playRate_ = 1.0; // playback rate
@@ -265,6 +265,12 @@ public class GrxLoggerView extends GrxBaseView {
 
 		
 		setScrollMinSize();
+		
+		currentItem_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+		if(currentItem_!=null)
+			_setTimeSeriesItem(currentItem_);
+		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+		
 	}
 
 	private double stepTime_ = -1.0;
@@ -323,7 +329,7 @@ public class GrxLoggerView extends GrxBaseView {
 		GrxDebugUtil.println("LoggerView: timeFormat = \""+timeFormat+"\"\n");
 	}
 	
-	private void _setTimeSeriesItem(GrxTimeSeriesItem item){
+	private void _setTimeSeriesItem(GrxWorldStateItem item){
 		currentItem_ = item;
 		current_ = 0;
 		sliderTime_.setSelection(0);
@@ -337,20 +343,38 @@ public class GrxLoggerView extends GrxBaseView {
 		}
 	}
 	
+	/*
 	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
 		if (!itemList.contains(currentItem_)) {
 			Iterator<GrxBaseItem> it = itemList.iterator();
 			while (it.hasNext()) {
 				GrxBaseItem i = it.next();
-				if (i instanceof GrxTimeSeriesItem) {
-					_setTimeSeriesItem((GrxTimeSeriesItem)i);
+				if (i instanceof GrxWorldStateItem) {
+					_setTimeSeriesItem((GrxWorldStateItem)i);
 					return;
 				}
 			}
 			_setTimeSeriesItem(null);
 		}
 	}
-
+	*/
+	public void registerItemChange(GrxBaseItem item, int event){
+		if(item instanceof GrxWorldStateItem){
+			GrxWorldStateItem timeSeriesItem = (GrxWorldStateItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		_setTimeSeriesItem(timeSeriesItem);
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		_setTimeSeriesItem(null);
+	    		break;
+	    	default:
+	    		break;
+	    	}
+		}
+	}
+	
 	public void control(List<GrxBaseItem> itemList) {
 	    
 		if (currentItem_ == null) {
@@ -462,4 +486,8 @@ public class GrxLoggerView extends GrxBaseView {
     public void enableControl() {
         isControlDisabled_ = false;
     }
+    
+    public void shutdown() {
+        manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+	}
 }

@@ -120,7 +120,18 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
         canvas_.addPaintListener(this);
         canvas_.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-
+        modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        manager_.registerItemChangeListener(this, GrxModelItem.class);
+        if(!modelList_.isEmpty()){
+	        Iterator<GrxModelItem> it = modelList_.iterator();
+	    	while(it.hasNext())
+	    		comboModelName_.add(it.next().getName());
+        }
+        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+        if(currentWorld_!=null){
+          	//TODO
+        }
+        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
    }
 
     /**
@@ -184,6 +195,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
      * @brief This method is called when contents of selected items are changed
      * @param itemList list of selected items
      */
+    /*
     public void itemSelectionChanged(List<GrxBaseItem> itemList) {
         Iterator<GrxBaseItem> it = itemList.iterator();
         comboModelName_.removeAll();
@@ -204,4 +216,50 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
         }
         canvas_.redraw();
     }
+    */
+    public void registerItemChange(GrxBaseItem item, int event){
+    	if(item instanceof GrxModelItem){
+    		currentModel_ = null;
+            sensorList_.clear();
+            currentSensor_ = null;
+    		GrxModelItem modelItem = (GrxModelItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		if(!modelList_.contains(modelItem)){
+	    			modelList_.add(modelItem);
+	    			comboModelName_.add(modelItem.getName());
+	    		}
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(modelList_.contains(modelItem)){
+	    			modelList_.remove(modelItem);
+	    			comboModelName_.remove(modelItem.getName());
+	    		}
+	    		break;
+	    	default:
+	    		break;
+	    	}
+	    	canvas_.redraw();
+    	}else if(item instanceof GrxWorldStateItem){
+    		GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
+    		switch(event){
+    		case GrxPluginManager.SELECTED_ITEM:
+    			currentWorld_ = worldStateItem;
+    			break;
+    		case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		currentWorld_ = null;
+	    		break;
+	    	default:
+	    		break;
+    		}
+    		canvas_.redraw();
+    	}
+    }
+    
+    public void shutdown() {
+        manager_.removeItemChangeListener(this, GrxModelItem.class);
+        manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+	}
 }
