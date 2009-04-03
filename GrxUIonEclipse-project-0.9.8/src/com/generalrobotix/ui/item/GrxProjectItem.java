@@ -578,8 +578,6 @@ public class GrxProjectItem extends GrxBaseItem {
 				plugin = manager_.loadItem(icls, iname, url);
 			else
 				plugin = manager_.createItem(icls, iname);
-			manager_.itemChange((GrxBaseItem)plugin, GrxPluginManager.ADD_ITEM);
-	        manager_.setSelectedItem((GrxBaseItem)plugin, true);
 			plugin = manager_.getItem(icls, iname);
 		} else {
 			plugin = manager_.getView((Class<? extends GrxBaseView>) cls);
@@ -588,6 +586,10 @@ public class GrxProjectItem extends GrxBaseItem {
         if (plugin != null) {
             plugin.setElement(e);
 			plugin.restoreProperties();
+			if (GrxBaseItem.class.isAssignableFrom(cls)) {
+				manager_.itemChange((GrxBaseItem)plugin, GrxPluginManager.ADD_ITEM);
+		        manager_.setSelectedItem((GrxBaseItem)plugin, true);
+			}
         }
 
         return plugin;
