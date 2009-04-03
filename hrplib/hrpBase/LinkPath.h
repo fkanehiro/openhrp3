@@ -94,9 +94,9 @@ namespace hrp {
 		}
 		
 		virtual bool calcInverseKinematics
-		(const vector3& from_p, const matrix33& from_R, const vector3& to_p, const matrix33& to_R);
+		(const vector3& base_p, const matrix33& base_R, const vector3& end_p, const matrix33& end_R);
 		
-		virtual bool calcInverseKinematics(const vector3& to_p, const matrix33& to_R);
+		virtual bool calcInverseKinematics(const vector3& end_p, const matrix33& end_R);
 
 		virtual bool hasAnalyticalIK();
 		
