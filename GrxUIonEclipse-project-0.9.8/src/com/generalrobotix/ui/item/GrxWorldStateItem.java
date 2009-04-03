@@ -322,6 +322,14 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			super.addValue(newStat_.time, null);
 		}
 	}
+	
+	public void init(){
+		double val = getDbl("logTimeStep",0.001);
+		setDbl("logTimeStep",val);
+		val = getDbl("totalTime", DEFAULT_TOTAL_TIME);
+		setDbl("totalTime", val);
+	}
+	
 	private void _initLog() {
 		if (!initFlag_){
 			return;
@@ -335,11 +343,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		
 		double val = getDbl("logTimeStep",0.001);
 		stime.setTimeStep(val);
-		setDbl("logTimeStep",val);
 			
 		val = getDbl("totalTime", DEFAULT_TOTAL_TIME);
 		stime.setTotalTime(val);
-		setDbl("totalTime", val);
 
 		File f = new File(tempDir_);
 		File pf = f.getParentFile();

@@ -477,7 +477,7 @@ public class GrxLoggerView extends GrxBaseView {
         return playRate_;
     }
 	
-	public void setEnabled(boolean b) {
+	private void setEnabled(boolean b) {
         if (isControlDisabled_) return;
 		sliderTime_.setEnabled(b);
 		tFldTime_.setEnabled(b);
