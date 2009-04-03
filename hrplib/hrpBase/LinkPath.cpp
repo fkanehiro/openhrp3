@@ -265,17 +265,17 @@ void JointPath::calcJacobian(dmatrix& out_J) const
 
 
 bool JointPath::calcInverseKinematics
-(const vector3& from_p, const matrix33& from_R, const vector3& to_p, const matrix33& to_R)
+(const vector3& base_p, const matrix33& base_R, const vector3& end_p, const matrix33& end_R)
 {
 	Link* baseLink = LinkPath::rootLink();
-	baseLink->p = from_p;
-	baseLink->R = from_R;
+	baseLink->p = base_p;
+	baseLink->R = base_R;
 	calcForwardKinematics();
-	return calcInverseKinematics(to_p, to_R);
+	return calcInverseKinematics(end_p, end_R);
 }
 
 
-bool JointPath::calcInverseKinematics(const vector3& to_p, const matrix33& to_R0)
+bool JointPath::calcInverseKinematics(const vector3& end_p, const matrix33& end_R0)
 {
     static const int MAX_IK_ITERATION = 50;
 	static const double LAMBDA = 0.9;
@@ -291,7 +291,7 @@ bool JointPath::calcInverseKinematics(const vector3& to_p, const matrix33& to_R0
 	}
 
     Link* target = LinkPath::endLink();
-	matrix33 to_R(to_R0 * trans(target->Rs));
+	matrix33 end_R(end_R0 * trans(target->Rs));
 
     std::vector<double> qorg(n);
     for(int i=0; i < n; ++i){
@@ -308,8 +308,8 @@ bool JointPath::calcInverseKinematics(const vector3& to_p, const matrix33& to_R0
 	
 		calcJacobian(J);
 	
-		vector3 dp(to_p - target->p);
-        vector3 omega(target->R * omegaFromRot(matrix33(trans(target->R) * to_R)));
+		vector3 dp(end_p - target->p);
+        vector3 omega(target->R * omegaFromRot(matrix33(trans(target->R) * end_R)));
 
         double errsqr = dot(dp, dp) + dot(omega, omega);
         if(errsqr < maxIkErrorSqr){
