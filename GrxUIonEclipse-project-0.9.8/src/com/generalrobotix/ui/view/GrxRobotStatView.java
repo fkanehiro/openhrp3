@@ -49,6 +49,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableColumn;
 
 import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -139,6 +140,7 @@ public class GrxRobotStatView extends GrxBaseView {
                 currentModel_ = item;
                 setJointList();
                 _resizeTables();
+                updateTableViewer();
             }
             
         });
@@ -195,10 +197,8 @@ public class GrxRobotStatView extends GrxBaseView {
         comboVisible();
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
-        	WorldStateEx state = currentWorld_.getValue();
-        	if (state!=null){
-            	//TODO
-            }
+        	updateTableViewer();
+        	currentWorld_.addObserver(this); 
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
     }
@@ -321,6 +321,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    				comboModelName_.select(comboModelName_.indexOf(modelItem.getName()));
 	    				forceName_ = null;
 	    				setJointList();
+	    				updateTableViewer();
 	    			}
 	    		}
 	    		break;
@@ -337,6 +338,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    					comboModelName_.select(comboModelName_.indexOf(currentModel_.getName()));
 	    					forceName_ = null;
 	    					setJointList();
+	    					updateTableViewer();
 	    				}else{
 	    					index--;
 	    					if(index >= 0 ){
@@ -344,6 +346,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    						comboModelName_.select(comboModelName_.indexOf(currentModel_.getName()));
 	    						forceName_ = null;
 	    						setJointList();
+	    						updateTableViewer();
 	    					}else{
 	    						currentModel_ = null;
 	    						jointList_.clear();
@@ -360,18 +363,25 @@ public class GrxRobotStatView extends GrxBaseView {
     		GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
     		switch(event){
     		case GrxPluginManager.SELECTED_ITEM:
-    			currentWorld_ = worldStateItem;
+    			if(currentWorld_ != worldStateItem){
+	    			currentWorld_ = worldStateItem;
+	    			updateTableViewer();
+	    	        currentWorld_.addObserver(this);
+    			}
     			break;
     		case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		currentWorld_ = null;
+	    		if(currentWorld_ == worldStateItem){
+	    			currentWorld_.deleteObserver(this);
+		    		currentWorld_ = null;
+	    		}
 	    		break;
 	    	default:
 	    		break;
     		}
     	}
     }
-    
+    /*
     public void control(List<GrxBaseItem> itemList) {
         if (currentModel_ == null)
             return;
@@ -397,7 +407,35 @@ public class GrxRobotStatView extends GrxBaseView {
         forceTV_.setInput(_createForceTVInput());
         sensorTV_.setInput(_createSensorTVInput());
     }
-
+ 	*/
+    public void update(GrxBasePlugin plugin, Object... arg){
+    	if(currentWorld_ != plugin || (String)arg[0] != "PositionChange" ) 
+    		return;
+        updateTableViewer();
+    }
+    
+    private void updateTableViewer(){
+    	if (currentModel_ == null || currentWorld_ == null)
+            return;
+    	WorldStateEx state = currentWorld_.getValue();
+    	if (state != null) {
+            CharacterStateEx charStat = state.get(currentModel_.getName());
+            if (charStat != null) {
+                currentSensor_ = charStat.sensorState;
+                currentRefAng_ = charStat.targetState;
+                currentSvStat_ = charStat.servoState;
+            }
+            
+            if (forceName_ == null) {
+                forceName_ = currentModel_.getSensorNames("Force");
+                _resizeTables();
+            }
+        }
+	    jointTV_.setInput(_createJointTVInput());
+	    forceTV_.setInput(_createForceTVInput());
+	    sensorTV_.setInput(_createSensorTVInput());	
+    }
+    
     private void _resizeTables() {
 //        for(int i=0;i<viewers_.length;i++){
 //            viewers_[i].getTable().pack();
@@ -716,5 +754,7 @@ public class GrxRobotStatView extends GrxBaseView {
     public void shutdown() {
         manager_.removeItemChangeListener(this, GrxModelItem.class);
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+        if(currentWorld_ != null)
+			currentWorld_.deleteObserver(this);
 	}
 }

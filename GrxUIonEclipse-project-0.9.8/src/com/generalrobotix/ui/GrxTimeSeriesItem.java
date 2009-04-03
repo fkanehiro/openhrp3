@@ -19,7 +19,6 @@ package com.generalrobotix.ui;
 
 import java.util.Vector;
 
-import com.generalrobotix.ui.view.GrxLoggerView;
 
 /**
  * series of timed objects
@@ -54,10 +53,7 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 	public void setPosition(Integer pos) {
 		if (0 <= pos && pos < log_.size()){
 			currentPos_ = pos;
-			GrxLoggerView loggerView = (GrxLoggerView)manager_.getView(GrxLoggerView.class);
-			if(loggerView != null){
-				loggerView.setCurrentPos(pos);
-			}
+			notifyObservers("PositionChange",pos);
 		}
 	}
 

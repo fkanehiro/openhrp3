@@ -187,4 +187,8 @@ public class GrxBaseView extends GrxBasePlugin {
     
 	public void registerItemChange(GrxBaseItem item, int event){
 	}
+
+	public void update(GrxBasePlugin plugin, Object... arg) {
+	}
+	
 }

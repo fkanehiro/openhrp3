@@ -151,7 +151,9 @@ public class GrxPropertyView extends GrxBaseView {
         GrxBaseItem item = manager_.focusedItem();
         manager_.registerItemChangeListener(this, GrxBaseItem.class);
         viewer_.setInput(item);
-
+        currentPlugin_ = item;
+        if(currentPlugin_ != null)
+        	currentPlugin_.addObserver(this);
     }
 
     /**
@@ -167,23 +169,37 @@ public class GrxPropertyView extends GrxBaseView {
     public void registerItemChange(GrxBaseItem item, int event){
     	switch(event){
     	case GrxPluginManager.FOCUSED_ITEM:
-    		_setInput(item);
+    		if(currentPlugin_ != item){
+    			if(currentPlugin_ != null)
+    				currentPlugin_.deleteObserver(this);
+    			_setInput(item);
+    			currentPlugin_ = item;
+    			currentPlugin_.addObserver(this);
+    		}
     		break;
     	case GrxPluginManager.REMOVE_ITEM:
     		if(currentPlugin_ == item){
+   				currentPlugin_.deleteObserver(this);
     			_setInput(null);
+    			currentPlugin_ = null;
     		}
     		break;
     	default:
     		break;
     	}
     }
-    
+    /*
     public void propertyChanged(){
     	//System.out.println("GrxPropertyView.propertyChanged()");
     	_refresh();
 	}
-
+	*/
+    public void update(GrxBasePlugin plugin, Object... arg) {
+    	if((String)arg[0]!="PropertyChange")
+    		return;
+    	_refresh();
+    }
+    
     private class PropertyTableContentProvider implements
         IStructuredContentProvider {
 
@@ -275,13 +291,11 @@ public class GrxPropertyView extends GrxBaseView {
     private void _setInput(GrxBasePlugin p){
     	if(p == null){
     		table_.setVisible(false);
-            currentPlugin_ = p;
             nameText_.setText("");
     	}else if (p != currentPlugin_) {
             table_.setVisible(false);
-            currentPlugin_ = p;
             nameText_.setText(p.getName());
-            viewer_.setInput(currentPlugin_);
+            viewer_.setInput(p);
             table_.setVisible(true);
         }    	
     }
@@ -366,6 +380,8 @@ public class GrxPropertyView extends GrxBaseView {
     
     public void shutdown(){
     	manager_.removeItemChangeListener(this, GrxBaseItem.class);
+    	if(currentPlugin_ != null)
+			currentPlugin_.deleteObserver(this);
     }
 
 }

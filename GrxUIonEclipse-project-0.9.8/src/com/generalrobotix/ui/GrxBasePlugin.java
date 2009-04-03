@@ -18,7 +18,9 @@
 package com.generalrobotix.ui;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.ListIterator;
 import java.util.Vector;
 
 import org.eclipse.jface.action.Action;
@@ -62,6 +64,8 @@ public class GrxBasePlugin extends GrxConfigBundle {
     protected final static String VIEW_TAG = "view";
     protected final static String PROPERTY_TAG = "property";
     protected final static String INDENT4 = "    ";
+    
+    private ArrayList<GrxBaseView> observers_ = new ArrayList<GrxBaseView>();
 
     /**
      * @brief constructor
@@ -425,6 +429,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		//System.out.println("GrxBasePlugin.setProperty("+key+","+value+")");
 		Object o = super.setProperty(key, value);
 		manager_.itemPropertyChanged();
+		notifyObservers("PropertyChange");
 		return o;
 	}
 	
@@ -433,6 +438,22 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	 * @param b true to focus, false to unfocus
 	 */
 	public void setFocused(boolean b){
-		
 	}
+	
+	public void addObserver(GrxBaseView v){
+		observers_.add(v);
+	}
+	
+	public void deleteObserver(GrxBaseView v){
+		observers_.remove(v);
+	}
+	
+	public void notifyObservers(Object... arg) { 
+        ListIterator<GrxBaseView> it = observers_.listIterator();
+        while (it.hasNext()) {
+            GrxBaseView observer = it.next();
+            observer.update(this, arg);
+        }
+    }
+
 }
