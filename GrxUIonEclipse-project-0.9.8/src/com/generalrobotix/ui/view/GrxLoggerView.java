@@ -20,7 +20,6 @@
 package com.generalrobotix.ui.view;
 
 import java.text.DecimalFormat;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -37,6 +36,7 @@ import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
 
 import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -267,8 +267,10 @@ public class GrxLoggerView extends GrxBaseView {
 		setScrollMinSize();
 		
 		currentItem_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
-		if(currentItem_!=null)
+		if(currentItem_!=null){
 			_setTimeSeriesItem(currentItem_);
+			currentItem_.addObserver(this);
+		}
 		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
 		
 	}
@@ -330,7 +332,6 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 	
 	private void _setTimeSeriesItem(GrxWorldStateItem item){
-		currentItem_ = item;
 		current_ = 0;
 		sliderTime_.setSelection(0);
 		if (currentItem_ != null){
@@ -360,14 +361,22 @@ public class GrxLoggerView extends GrxBaseView {
 	*/
 	public void registerItemChange(GrxBaseItem item, int event){
 		if(item instanceof GrxWorldStateItem){
-			GrxWorldStateItem timeSeriesItem = (GrxWorldStateItem) item;
+			GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
 	    	switch(event){
 	    	case GrxPluginManager.SELECTED_ITEM:
-	    		_setTimeSeriesItem(timeSeriesItem);
+	    		if(currentItem_!=worldStateItem){
+	    			_setTimeSeriesItem(worldStateItem);
+	    			currentItem_ = worldStateItem;
+	    			currentItem_.addObserver(this);
+	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		_setTimeSeriesItem(null);
+	    		if(currentItem_==worldStateItem){
+    				currentItem_.deleteObserver(this);
+	    			_setTimeSeriesItem(null);
+	    			currentItem_ = null;
+	    		}
 	    		break;
 	    	default:
 	    		break;
@@ -448,11 +457,10 @@ public class GrxLoggerView extends GrxBaseView {
 		return current_;
 	}
 
-	/**
-	 * set current position of playback
-	 * @param pos position
-	 */
-	public void setCurrentPos(int pos){
+	public void update(GrxBasePlugin plugin, Object... arg) {
+		if(currentItem_!=plugin || (String)arg[0]!="PositionChange")
+			return;
+		int pos = ((Integer)arg[1]).intValue();
 		if (current_ == pos || pos < 0 || getMaximum() < pos){
 			return;
 		}
@@ -489,5 +497,7 @@ public class GrxLoggerView extends GrxBaseView {
     
     public void shutdown() {
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+        if(currentItem_!=null)
+        	currentItem_.deleteObserver(this);
 	}
 }
