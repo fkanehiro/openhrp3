@@ -265,6 +265,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 
 			simTime_ = 0.0;
 			simulateTime_ = 0;
+			currentWorld_.init();
 			simThread_.start();
 			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
 			return true;
