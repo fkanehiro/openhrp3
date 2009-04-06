@@ -152,10 +152,17 @@ void Body::setRootLink(Link* link)
 }
 
 
-void Body::setDefaultRootPosition(const vector3& pos, const matrix33& att)
+void Body::setDefaultRootPosition(const vector3& p, const matrix33& R)
 {
-    defaultRootPosition = pos;
-    defaultRootAttitude = att;
+    defaultRootPosition = p;
+    defaultRootAttitude = R;
+}
+
+
+void Body::getDefaultRootPosition(vector3& out_p, matrix33& out_R)
+{
+	out_p = defaultRootPosition;
+	out_R = defaultRootAttitude;
 }
 
 

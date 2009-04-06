@@ -189,7 +189,9 @@ namespace hrp {
 
 		void calcTotalMomentum(vector3& out_P, vector3& out_L);
 
-        void setDefaultRootPosition(const vector3& pos, const matrix33& att);
+        void setDefaultRootPosition(const vector3& p, const matrix33& R);
+
+		void getDefaultRootPosition(vector3& out_p, matrix33& out_R);
 
 		void initializeConfiguration();
 
