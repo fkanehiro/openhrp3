@@ -306,6 +306,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 								}
 							}
 						}
+						isExecuting_ = false;
 						simulateTime_ += (System.currentTimeMillis() - startT - suspendT)/1000.0;
 						
 			    		for (ControllerAttribute i: controllers_) {
