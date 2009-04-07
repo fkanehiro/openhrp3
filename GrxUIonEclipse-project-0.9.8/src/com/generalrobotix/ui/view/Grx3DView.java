@@ -1320,6 +1320,7 @@ public class Grx3DView
             }
             double t = statex.time;
             currentWorld_.addValue(t, statex);
+           	currentWorld_.setPosition(currentWorld_.getLogSize());
             if (t > 0 && prevTime > 0)
               currentWorld_.setDbl("logTimeStep", t - prevTime);
             prevTime = t;

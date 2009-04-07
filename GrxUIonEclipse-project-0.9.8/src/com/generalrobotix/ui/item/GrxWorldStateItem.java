@@ -641,6 +641,14 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		logger_.initCollisionLog(stime);
 	}
 	
+	public void startSimulation(){
+		notifyObservers("StartSimulation");
+	}
+	
+	public void stopSimulation(){
+		notifyObservers("StopSimulation");
+	}
+	
 	public static class WorldStateEx {
 		public double time;
 		public Collision[] collisions;
