@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
@@ -278,8 +279,7 @@ public class GrxLoggerView extends GrxBaseView {
 	private double stepTime_ = -1.0;
 	
 	private boolean _isAtTheEndAfterPlayback(){
-		int pos = getCurrentPos();
-		if (pos == sliderTime_.getMaximum() && playRate_ > 0){
+		if (current_ == sliderTime_.getMaximum() && playRate_ > 0){
 			return true;
 		}else{
 			return false;
@@ -288,15 +288,64 @@ public class GrxLoggerView extends GrxBaseView {
 	/**
 	 * @brief
 	 */
-	public void play() {
+	private int newpos_;
+	private int frameRate_;
+	private int sliderMax_;
+	private void play() {
+		if(currentItem_ == null) return;
 		if (!isPlaying_) {
 			if (_isAtTheEndAfterPlayback()) currentItem_.setPosition(0);
 			stepTime_ = currentItem_.getDbl("logTimeStep", -1.0)*1000;
-			if (stepTime_ > 0)
-				interval_ = Math.ceil((double)(manager_.getDelay())/stepTime_);//*1.1);
-			else 
+			if (stepTime_ > 0){
+				frameRate_ = sliderFrameRate_.getSelection();
+				interval_ =  Math.ceil(1000.0d/frameRate_/stepTime_);
+			}else 
 				interval_ = 1;
+			sliderMax_ = getMaximum();
+			Thread playThread_ = new Thread() {
+				public void run() {
+					try {
+						boolean _continue = true;
+						Display display = composite_.getDisplay();
+						while(_continue){
+							if(!isPlaying_) break;
+							newpos_ = current_+(int)(interval_*playRate_);
+							if ( sliderMax_ < newpos_) {
+								newpos_ = sliderMax_;
+								_continue = false;
+							} else if (newpos_ < 0) {
+								newpos_ = 0;
+								_continue = false;
+							}
+							if ( display!=null && !display.isDisposed())
+				                display.syncExec(
+				                        new Runnable(){
+				                            public void run() {
+				                            	currentItem_.setPosition(newpos_);
+				                            }
+				                        }
+				                );
+							int sleepTime = (1000/frameRate_);	
+							sleep(sleepTime);
+						}
+						if ( display!=null && !display.isDisposed())
+			                display.syncExec(
+			                        new Runnable(){
+			                            public void run() {
+			                            	pause();
+			                            }
+			                        }
+			                );
+					} catch (Exception e) {
+						isPlaying_ = false;
+						GrxDebugUtil.printErr("Playing Interrupted by Exception:",e);
+					}
+				}
+			};
+			
 			isPlaying_ = true;
+			playThread_.start();
+			
 		}
 
 		if (Math.abs(playRate_)<1.0)
@@ -385,7 +434,7 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 	
 	public void control(List<GrxBaseItem> itemList) {
-	    
+		/*  
 		if (currentItem_ == null) {
 			return;
 		}
@@ -393,14 +442,13 @@ public class GrxLoggerView extends GrxBaseView {
 		if (!isControlDisabled_ && currentItem_.getTime() != null && !sliderTime_.isEnabled()){
 			setEnabled(true);
 		}
-		
+		/*
 		int loggerMax = Math.max(currentItem_.getLogSize()-1, 0);
-		
 		if (getMaximum() != loggerMax) { // slider is extended
 			int oldMax = getMaximum();
-			sliderTime_.setMaximum(loggerMax);
+			//sliderTime_.setMaximum(loggerMax);
 			if (getCurrentPos() == 0 || getCurrentPos() == oldMax) {
-				currentItem_.setPosition(loggerMax);
+				//currentItem_.setPosition(loggerMax);
 				lblPlayRate_.setText("Live");
 			}else{
 				if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
@@ -408,7 +456,8 @@ public class GrxLoggerView extends GrxBaseView {
 		}else{
 			if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
 		}
-			
+	*/
+		/*
 		// playback with specified position rate
 		if (isPlaying_) {
 			int newpos = getCurrentPos()+(int)(interval_*playRate_);
@@ -425,6 +474,7 @@ public class GrxLoggerView extends GrxBaseView {
 				currentItem_.setPosition(newpos);
 			}
 		}
+		*/
 	}
 
 	/**
@@ -458,15 +508,22 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
-		if(currentItem_!=plugin || (String)arg[0]!="PositionChange")
-			return;
-		int pos = ((Integer)arg[1]).intValue();
-		if (current_ == pos || pos < 0 || getMaximum() < pos){
-			return;
+		if(currentItem_!=plugin) return;
+		if((String)arg[0]=="PositionChange"){
+			int pos = ((Integer)arg[1]).intValue();
+			int logSize = currentItem_.getLogSize();
+			if (current_ == pos || pos < 0 || logSize < pos){
+				return;
+			}
+			current_ = pos;
+			sliderTime_.setMaximum(logSize-1);
+			sliderTime_.setSelection(pos);
+			_updateTimeField();
+		}else if((String)arg[0]=="StartSimulation"){
+			lblPlayRate_.setText("Live");
+		}else if((String)arg[0]=="StopSimulation"){
+			lblPlayRate_.setText("Pause");
 		}
-		current_ = pos;
-		sliderTime_.setSelection(pos);
-		_updateTimeField();
 	}
 
 	/**
@@ -490,8 +547,9 @@ public class GrxLoggerView extends GrxBaseView {
         setEnabled(false);
         isControlDisabled_ = true;
     }
-
+    
     public void enableControl() {
+    	setEnabled(true);
         isControlDisabled_ = false;
     }
     
