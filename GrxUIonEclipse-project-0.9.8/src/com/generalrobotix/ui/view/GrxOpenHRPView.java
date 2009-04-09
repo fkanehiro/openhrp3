@@ -48,12 +48,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.part.ViewPart;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 
@@ -251,7 +248,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 					return false;
 				}
 				tdview_.disableUpdateModel();
-				tdview_.showViewSimulator();
+				tdview_.showViewSimulator(true);
 				lgview_.disableControl();
 			}
 			currentWorld_.startSimulation();
@@ -371,7 +368,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 					GrxDebugUtil.printErr("stopSimulation:", e);
 				}
 				*/
-				if (isSimulatingView_) {
+				if (isSimulatingView_ && tdview_!=null) {
 					tdview_.enableUpdateModel();
 				}
 				updateTimeMsg();
@@ -392,7 +389,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 				syncExec(new Runnable(){
 					public void run() {
 						currentWorld_.setPosition(0);
-						if (isSimulatingView_) {
+						if (isSimulatingView_ && lgview_!=null) {
 							lgview_.enableControl();
 						}
 						currentWorld_.stopSimulation();
@@ -459,7 +456,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			} else {
 				currentDynamics_.calcWorldForwardKinematics();
 			}
-			
+	
 			// log
 			if ((simTime_ % logStepTime_) < stepTime_) {
 				currentDynamics_.getWorldState(stateH_);
@@ -473,20 +470,23 @@ public class GrxOpenHRPView extends GrxBaseView {
 	                wsx.time = simTime_;
 	            currentWorld_.addValue(simTime_, wsx);
 
-	           if((simTime_*1000) % manager_.getDelay() < stepTime_*1000){ 
-	        	   syncExec(new Runnable(){
-	        		   public void run() {
-	        			   currentWorld_.setPosition(currentWorld_.getLogSize()-1);
-	                   }
-	               } );
-	            }
+	          
 
-				if (isSimulatingView_){
+				if (isSimulatingView_ && tdview_!=null){
 					tdview_.updateModels(wsx);
 					tdview_.updateViewSimulator(simTime_);
 				}
 			}
-
+			
+			// display
+			if((simTime_*1000) % manager_.getDelay() < stepTime_*1000){ 
+				asyncExec(new Runnable(){
+					public void run() {
+						currentWorld_.setPosition(currentWorld_.getLogSize()-1);
+	                }
+				} );
+	        }
+			 
 			// output
 			for (int i = 0; i < controllers_.size(); i++) {
 				ControllerAttribute attr = controllers_.get(i);
@@ -1071,6 +1071,15 @@ public class GrxOpenHRPView extends GrxBaseView {
 		Display display = composite_.getDisplay();
         if ( display!=null && !display.isDisposed()){
             display.syncExec( r );
+            return true;
+        }else
+        	return false;
+	}
+	
+	private boolean asyncExec(Runnable r){
+		Display display = composite_.getDisplay();
+        if ( display!=null && !display.isDisposed()){
+            display.asyncExec( r );
             return true;
         }else
         	return false;

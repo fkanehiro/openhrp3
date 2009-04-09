@@ -88,7 +88,7 @@ public class Grx3DView
     // items
     private GrxWorldStateItem  currentWorld_ = null;
     private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
-    private double prevTime_ = -1;
+    //private double prevTime_ = -1;
     private double dAngle_ = Math.toRadians(0.1);
     private boolean updateModels_=true;
     private int position_ = 0;
@@ -122,7 +122,6 @@ public class Grx3DView
     // for recording movie
     private RecordingManager recordingMgr_;
     private String lastMovieFileName;
-    private boolean isRecording_ = false;
 	private int recordingStep_;
     
     // UI objects
@@ -256,13 +255,18 @@ public class Grx3DView
         while(it.hasNext())	{
         	bgRoot_.addChild(it.next().bgRoot_);
         }
+        if(updateModels_) updateViewSimulator(0);
         manager_.registerItemChangeListener(this, GrxModelItem.class);
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
         	WorldStateEx state = currentWorld_.getValue();
         	if (state!=null){
-            	updateModels(state);
-            }
+        		if(updateModels_){
+	            	updateModels(state);
+	            	updateViewSimulator(state.time);
+        		}
+            }           
+        	currentWorld_.addObserver(this);
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
     }
@@ -670,6 +674,7 @@ public class Grx3DView
         */
    // }
        
+    
     public void registerItemChange(GrxBaseItem item, int event){
     	if(item instanceof GrxModelItem){
     		GrxModelItem modelItem = (GrxModelItem) item;
@@ -679,6 +684,7 @@ public class Grx3DView
 	    			modelItem.setWireFrame(viewToolBar_.isWireFrameSelected());
 	                bgRoot_.addChild(modelItem.bgRoot_);
 	        		currentModels_.add(modelItem);
+	        		updateViewSimulator(0);
 	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
@@ -695,11 +701,17 @@ public class Grx3DView
     		GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
     		switch(event){
     		case GrxPluginManager.SELECTED_ITEM:
-    			currentWorld_ = worldStateItem;
+    			if(currentWorld_!=worldStateItem){
+    				currentWorld_ = worldStateItem;
+    				currentWorld_.addObserver(this);
+    			}
     			break;
     		case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		currentWorld_ = null;
+	    		if(currentWorld_==worldStateItem){
+	    			currentWorld_.deleteObserver(this);
+	    			currentWorld_ = null;
+	    		}
 	    		break;
 	    	default:
 	    		break;
@@ -720,8 +732,22 @@ public class Grx3DView
            return registerCORBA();
     }
    
+    public void update(GrxBasePlugin plugin, Object... arg) {
+    	if(currentWorld_!=plugin) return;
+		if((String)arg[0]=="PositionChange"){
+			int pos = ((Integer)arg[1]).intValue();
+			WorldStateEx state = currentWorld_.getValue(pos);
+			if(state!=null){
+	        	_showCollision(state.collisions);
+		        if (updateModels_){
+		        	updateModels(state);
+		            updateViewSimulator(state.time);
+		        }
+			}
+		}
+    }
+    
     public void control(List<GrxBaseItem> items) {
-    	if(isRecording_) return;
     	
         if (currentModels_.size() == 0)
             return;
@@ -736,10 +762,10 @@ public class Grx3DView
         	if (btnIntersection_.isSelected()){
         		_showIntersection(behaviorManager_.getIntersection(currentModels_));
         	}
-            if (updateModels_) updateViewSimulator(0);
+            //if (updateModels_) updateViewSimulator(0);
             return;
         }
-
+/*
          if (currentWorld_ == null){
         	 if (updateModels_) updateViewSimulator(0);
         	 return;
@@ -750,29 +776,32 @@ public class Grx3DView
             if (updateModels_) updateViewSimulator(0);
             return;
         }
-               
+        */
+        /*      
         if (state.time == prevTime_)
             return;
+
         _showCollision(state.collisions);
 
         if (updateModels_){
         	updateModels(state);
             updateViewSimulator(state.time);
         }
-		
+	
         prevTime_ = state.time;
+        */
     }
 
-	public void showViewSimulator() {
+	public void showViewSimulator(boolean b) {
         for (int i=0; i<currentModels_.size(); i++) {
             List<Camera_impl> l = currentModels_.get(i).getCameraSequence();
             for (int j=0; j<l.size(); j++) {
                 Camera_impl c = l.get(j);
-                c.setVisible(true);
+                c.setVisible(b);
             }
         }
     }
-
+	
     public void updateModels(WorldStateEx state){
         // update models with new WorldState
         for (int i=0; i<currentModels_.size(); i++) {
@@ -798,10 +827,7 @@ public class Grx3DView
     }
 
     private void rec(){
-        if (isRecording_) 
-            return;
-        
-        RecordingDialog dialog = new RecordingDialog(frame_);
+    	RecordingDialog dialog = new RecordingDialog(frame_);
         if (dialog.showModalDialog() != ModalDialog.OK_BUTTON){
         	btnRec_.setSelected(false);		
         	return;		
@@ -909,8 +935,8 @@ public class Grx3DView
 					                            }
 					                        }
 					                );
-							WorldStateEx state = currentWorld_.getValue();
-							updateModels(state);
+							//WorldStateEx state = currentWorld_.getValue();
+							//updateModels(state);
 							_doRecording();
 						}
 					}
@@ -924,13 +950,11 @@ public class Grx3DView
 			}
 		};
 		
-		isRecording_ = true;
 		recThread_.start();
     }
     
     private void stopRecording(){
     	recordingMgr_.endRecord();
-		isRecording_ = false;
 		btnRec_.setSelected(false);
 		tgView_.removeChild(offScreenBg_);
 		JOptionPane.showMessageDialog(frame_,"Recording finished" );
@@ -1329,7 +1353,7 @@ public class Grx3DView
         public void clearData() {}
         public void drawScene(WorldState arg0) {
           update(arg0);
-          prevTime_ = -1;
+         // prevTime_ = -1;
         }
         public void setLineScale(float arg0) {}
         public void setLineWidth(float arg0) {}
@@ -1817,11 +1841,14 @@ public class Grx3DView
     
     // view が閉じられたときの処理
     public void shutdown() {
-    	 Iterator<GrxModelItem> it = currentModels_.iterator();
-         while(it.hasNext())	{
-         	it.next().bgRoot_.detach();
-         }
-         manager_.removeItemChangeListener(this, GrxModelItem.class);
-         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+    	showViewSimulator(false);
+    	Iterator<GrxModelItem> it = currentModels_.iterator();
+    	while(it.hasNext())	{
+    		it.next().bgRoot_.detach();
+    	}
+    	manager_.removeItemChangeListener(this, GrxModelItem.class);
+    	manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+    	if(currentWorld_!=null)
+    		currentWorld_.deleteObserver(this);
 	}
 }
