@@ -1,5 +1,5 @@
 /*! @file
-  @author S.NAKAOKA
+  @author Takafumi.Tawara
 */
 
 #include "UrlUtil.h"
@@ -17,7 +17,7 @@ using namespace boost;
 /*!  
   @if jp
   @brief URLスキーム(file:)文字列を削除  
-  @param[in]    url 検索・置換対象となるURL
+  @param[in]    url 検索・置換対象となるURL  
   @return string URLスキーム文字列を取り除いた文字列  
   @endif
 */
@@ -36,7 +36,7 @@ string hrp::deleteURLScheme(string url)
         }
     }
 
-    // Windows ドライブ文字列の時はディレクトリ区切り文字分をさらに削除
+    // Windows ドライブ文字列の時はディレクトリ区切り文字分をさらに削除//
     if ( url.find(":") == 2 && url.find("/") ==0 )
         url.erase ( 0, 1 );
 
@@ -46,10 +46,10 @@ string hrp::deleteURLScheme(string url)
 
 /*!  
   @if jp
-  @brief URLスキーム文字列を取り除いた文字列を生成する
-  @param[out]   refUrl  URLスキーム文字列を取り除いた文字列を格納
+  @brief URLスキーム文字列を取り除いた文字列を生成する  
+  @param[out]   refUrl  URLスキーム文字列を取り除いた文字列を格納  
   @param[in]    rootDir 親ディレクトリ     
-  @param[in]    srcPath 元となるURL
+  @param[in]    srcPath 元となるURL  
   @return URLスキーム文字列を取り除いた文字列  
   @endif
 */
@@ -73,9 +73,9 @@ void hrp::getPathFromUrl(string& refUrl, const string& rootDir, string srcUrl)
 
 /*!  
   @if jp
-  @brief URLがファイルかどうかの判定
-  @param[in]    ref  判定対象のURL
-  @return boolean true:ローカルファイルである
+  @brief URLがファイルかどうかの判定  
+  @param[in]    ref  判定対象のURL  
+  @return boolean true:ローカルファイルである  
   @endif
 */
 bool hrp::isFileProtocol(const string& ref)

@@ -1,5 +1,5 @@
 /*! @file
-  @author Shin'ichiro Nakaoka
+  @author Takafumi.Tawara
 */
 
 #ifndef OPENHRP_UTIL_URL_UTIL_H_INCLUDED
