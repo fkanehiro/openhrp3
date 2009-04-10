@@ -90,14 +90,13 @@ public class ControllerPanel extends Composite{
     };
     
     public ControllerPanel(Composite parent,int style, GrxPluginManager manager) {
-        super(parent,style);
+        super(parent, style);
         
         manager_ = manager;
         vecRobot_ = new Vector<GrxModelItem>();
-        
         setLayout(new GridLayout(1,false));
        
-        viewer_ = new TableViewer(this,SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
+        viewer_ = new TableViewer(this, SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
         viewer_.setContentProvider(new ArrayContentProvider());
         viewer_.setLabelProvider(new ControllerPanelTableLabelProvider());
         TableLayout tableLayout = new TableLayout();
@@ -123,7 +122,6 @@ public class ControllerPanel extends Composite{
         viewer_.getTable().setLinesVisible(true);
         viewer_.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer_.setInput(vecRobot_);
-        
         Composite pnlBttn = new Composite(this,SWT.NONE);
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.heightHint = BUTTONS_HEIGHT;
@@ -180,7 +178,12 @@ public class ControllerPanel extends Composite{
             names = new String[0];
         }
         
-        editorPanel_ = new ControllerEditorPanel(this,SWT.NONE,names);
+        Composite editorPanelComposite = new Composite(this,SWT.NONE);
+        GridData editorPanelGridData = new GridData(GridData.FILL_HORIZONTAL);
+        editorPanelComposite.setLayoutData(editorPanelGridData);
+        editorPanelComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
+        
+        editorPanel_ = new ControllerEditorPanel(editorPanelComposite,SWT.NONE,names);
     }
     
     

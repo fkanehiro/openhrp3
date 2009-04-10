@@ -70,7 +70,7 @@ public class GrxTextEditorView extends GrxBaseView {
         saveAs_.setToolTipText( "Save As" );
         saveAs_.setImageDescriptor( Activator.getDefault().getDescriptor("saveas_edit.png") );
         toolbar.add( saveAs_ );
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
 		currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
 		setTextItem(currentItem_);

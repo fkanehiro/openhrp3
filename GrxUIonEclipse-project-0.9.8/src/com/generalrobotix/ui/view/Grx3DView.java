@@ -247,7 +247,7 @@ public class Grx3DView
         
         intersectingLinks_ = new Vector<GrxLinkItem>();
         
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
     
         // View が開いたときモデルとWorldStateを取得　変化があればマネジャーに教えてもらう
         currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);

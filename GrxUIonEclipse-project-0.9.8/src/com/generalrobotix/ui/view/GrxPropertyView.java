@@ -146,7 +146,7 @@ public class GrxPropertyView extends GrxBaseView {
         table_.setLinesVisible(true);
         table_.setHeaderVisible(true);
 
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
         GrxBaseItem item = manager_.focusedItem();
         manager_.registerItemChangeListener(this, GrxBaseItem.class);

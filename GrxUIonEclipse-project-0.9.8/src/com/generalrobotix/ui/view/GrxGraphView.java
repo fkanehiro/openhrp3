@@ -99,7 +99,7 @@ public class GrxGraphView extends GrxBaseView {
 		t.getDataItemInfoList();
 		contentPane_.add(gpanel_, BorderLayout.CENTER);
 		graphManager_.setMode(GUIStatus.EXEC_MODE);
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){

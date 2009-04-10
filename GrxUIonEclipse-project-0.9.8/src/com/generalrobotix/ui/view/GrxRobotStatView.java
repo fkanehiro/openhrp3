@@ -181,7 +181,7 @@ public class GrxRobotStatView extends GrxBaseView {
             viewers_[i].getTable().setLinesVisible(true);
             viewers_[i].getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
         modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
         manager_.registerItemChangeListener(this, GrxModelItem.class);

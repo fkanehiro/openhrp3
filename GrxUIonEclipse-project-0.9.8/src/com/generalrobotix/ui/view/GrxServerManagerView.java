@@ -47,6 +47,6 @@ public class GrxServerManagerView extends GrxBaseView {
             GrxBaseViewPart vp, Composite parent) {
         super(name, manager_, vp, parent);
         new GrxServerManager(composite_,SWT.NULL);
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 	}
 }

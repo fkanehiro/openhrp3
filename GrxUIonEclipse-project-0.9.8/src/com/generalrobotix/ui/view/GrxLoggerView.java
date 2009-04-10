@@ -265,7 +265,7 @@ public class GrxLoggerView extends GrxBaseView {
 		sliderFrameRate_.setSelection(10);
 
 		
-		setScrollMinSize();
+		setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 		
 		currentItem_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
 		if(currentItem_!=null){

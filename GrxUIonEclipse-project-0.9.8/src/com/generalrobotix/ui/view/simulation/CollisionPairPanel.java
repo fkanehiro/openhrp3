@@ -112,7 +112,7 @@ public class CollisionPairPanel extends Composite {
     */
     
     public CollisionPairPanel(Composite parent,int style,GrxPluginManager manager) {
-        super(parent,style);
+        super(parent, style);
         manager_ = manager;
         //AttributeProperties props = AttributeProperties.getProperties("CollisionPair");
         defaultStaticFriction_ = "0.5";//props.getProperty(ATTR_NAME_STATIC_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE);
@@ -229,8 +229,11 @@ public class CollisionPairPanel extends Composite {
             
         });
         
-        editorPanel_ = new CollisionPairEditorPanel(this,SWT.NONE);
-        editorPanel_.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite editorPanelComposite = new Composite(this,SWT.NONE);
+        GridData editorPanelGridData = new GridData(GridData.FILL_HORIZONTAL);
+        editorPanelComposite.setLayoutData(editorPanelGridData);
+        editorPanelComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
+        editorPanel_ = new CollisionPairEditorPanel(editorPanelComposite,SWT.NONE);
     }
 
     private boolean _checkDialog(String msg) {
@@ -273,7 +276,7 @@ public class CollisionPairPanel extends Composite {
 
         public CollisionPairEditorPanel(Composite parent,int style) {
             super(parent,style);
-            setLayout(new GridLayout(2,true));
+            setLayout(new GridLayout(2,false));
             
             pnlJoint1_ = new JointSelectPanel(this,SWT.NONE,"1");
             pnlJoint1_.setLayoutData(new GridData(GridData.FILL_BOTH));
