@@ -549,8 +549,8 @@ public class GrxLoggerView extends GrxBaseView {
     }
     
     public void enableControl() {
-    	setEnabled(true);
         isControlDisabled_ = false;
+        setEnabled(true);
     }
     
     public void shutdown() {
