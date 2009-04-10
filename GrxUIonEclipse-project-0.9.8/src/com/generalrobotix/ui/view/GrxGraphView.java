@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Frame;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -59,7 +58,7 @@ public class GrxGraphView extends GrxBaseView {
 	private GrxGraphItem currentGraph_ = null;
 	private TrendGraphManager graphManager_;
 	private GraphPanel gpanel_;
-	private double prevTime_ = 0.0;
+	//private double prevTime_ = 0.0;
     private JPanel contentPane_;
 
 	Composite comp;
@@ -95,7 +94,7 @@ public class GrxGraphView extends GrxBaseView {
 		//combpanel.setBackground(Color.white);
 
 		graphManager_ = new TrendGraphManager(3);
-		gpanel_ = new GraphPanel(manager_, graphManager_, frame);
+		gpanel_ = new GraphPanel(manager_, graphManager_, frame, comp);
 		TrendGraph t = graphManager_.getTrendGraph(0);
 		t.getDataItemInfoList();
 		contentPane_.add(gpanel_, BorderLayout.CENTER);
@@ -103,12 +102,20 @@ public class GrxGraphView extends GrxBaseView {
         setScrollMinSize();
         
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
-        if(currentWorld_!=null)
+        if(currentWorld_!=null){
         	setLogManager(currentWorld_);
+        	currentWorld_.addObserver(this);
+        }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
         currentGraph_ = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
-        if(currentGraph_!=null)
+        if(currentGraph_!=null){
         	_updateGraph(currentGraph_);
+        	if(currentWorld_!=null){
+        		WorldStateEx state = currentWorld_.getValue();
+        		if (state != null)	
+        			updateGraph(state);
+        	}
+        }
         manager_.registerItemChangeListener(this, GrxGraphItem.class);
 	}
 
@@ -155,13 +162,19 @@ public class GrxGraphView extends GrxBaseView {
 			GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
 	    	switch(event){
 	    	case GrxPluginManager.SELECTED_ITEM:
-	    		setLogManager(worldStateItem);
-	    		currentWorld_ = worldStateItem;
+	    		if(currentWorld_!=worldStateItem){
+	    			setLogManager(worldStateItem);
+	    			currentWorld_ = worldStateItem;
+	    			currentWorld_.addObserver(this);
+	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		setLogManager(null);
-	    		currentWorld_ = null;
+	    		if(currentWorld_==worldStateItem){
+	    			currentWorld_.deleteObserver(this);
+	    			setLogManager(null);
+	    			currentWorld_ = null;
+	    		}
 	    		break;
 	    	default:
 	    		break;
@@ -276,7 +289,7 @@ public class GrxGraphView extends GrxBaseView {
 		}
 		gpanel_.repaint();	
 	}
-
+/*
 	private Time time_ = new Time();
 	public void control(List<GrxBaseItem> itemList) {
 	    if (currentWorld_ == null || !contentPane_.isShowing()) 
@@ -297,13 +310,38 @@ public class GrxGraphView extends GrxBaseView {
 	            graphManager_.setTotalTime((long)(ti+5)*1000000);
 		}
 	}
-
+*/
+	public void update(GrxBasePlugin plugin, Object... arg) {
+		if(currentWorld_!=plugin) return;
+		if((String)arg[0]=="PositionChange"){
+			if (!contentPane_.isShowing()) 
+		    	return;
+			int pos = ((Integer)arg[1]).intValue();
+			WorldStateEx state = currentWorld_.getValue(pos);
+			if (state == null)	return;
+			updateGraph(state);
+		}
+	}
+	
+	private void updateGraph(WorldStateEx state){
+		Time time_ = new Time();
+		time_.set(state.time);
+		graphManager_.simulationTimeChanged(time_);
+		graphManager_.worldTimeChanged(time_);
+		
+		double ti = time_.getDouble() + graphManager_.getTimeRange();
+        if (ti > graphManager_.getTotalTime())
+            graphManager_.setTotalTime((long)(ti+5)*1000000);
+	}
+	
 	public boolean setup(List<GrxBaseItem> itemList) {
-		currentWorld_ = null;
+		//currentWorld_ = null;
 		return true;
 	}
 	
 	 public void shutdown() {
-	        manager_.removeItemChangeListener(this, GrxGraphItem.class);
+		 manager_.removeItemChangeListener(this, GrxGraphItem.class);
+		 if(currentWorld_!=null)
+			 currentWorld_.deleteObserver(this);   
 	}
 }

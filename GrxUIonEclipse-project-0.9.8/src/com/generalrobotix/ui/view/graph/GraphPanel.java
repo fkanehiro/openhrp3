@@ -42,6 +42,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+
 import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxGraphItem;
@@ -90,7 +93,8 @@ public class GraphPanel extends JPanel {
 
     private JPanel graphElementBase_;
     private Frame owner_;
-
+    private Composite comp_;
+    
     private JSlider heightSlider_;
     private JButton hRangeButton_;
     private JButton vRangeButton_;
@@ -122,10 +126,11 @@ public class GraphPanel extends JPanel {
      
     //--------------------------------------------------------------------
     //public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr,Composite parent) {
-    public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr, Frame frame) {
+    public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr, Frame frame, Composite comp) {
         manager_ = manager;
 //    	owner_ = SWT_AWT.new_Frame(new Composite(parent,SWT.EMBEDDED));
         owner_ = frame;
+        comp_ = comp;
         trendGraphMgr_ = trendGraphMgr;
         graphElementBase_ = new JPanel();
         graphElementBase_.setLayout(
@@ -228,7 +233,7 @@ public class GraphPanel extends JPanel {
         hRangeButton_.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+                    final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                     if (graphItem == null)
                     	return;
                     	
@@ -247,8 +252,8 @@ public class GraphPanel extends JPanel {
                     int flag = hRangeDialog_.getUpdateFlag();
                     if (flag != 0) {
                         TrendGraph tg = currentGraph_.getTrendGraph();
-                        double hRange = hRangeDialog_.getHRange();
-                        double mpos =   hRangeDialog_.getMarkerPos();
+                        final double hRange = hRangeDialog_.getHRange();
+                        final double mpos =   hRangeDialog_.getMarkerPos();
                         if ((flag & HRangeDialog.RANGE_UPDATED) != 0
                             && (flag & HRangeDialog.POS_UPDATED) != 0) {
                             tg.setTimeRangeAndPos(hRange, mpos);
@@ -257,7 +262,11 @@ public class GraphPanel extends JPanel {
                         } else {
                             tg.setMarkerPos(mpos);
                         }
-                        graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos});
+                        syncExec( new Runnable(){
+							public void run() {
+								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos});
+							}
+                        });
                         graphElementBase_.repaint();
                     }
                 }
@@ -276,13 +285,17 @@ public class GraphPanel extends JPanel {
                     vRangeDialog_.setLocationRelativeTo(GraphPanel.this);
                     vRangeDialog_.setVisible(true);
                     if (vRangeDialog_.isUpdated()) {
-                    	double base = vRangeDialog_.getBase();
-                        double extent = vRangeDialog_.getExtent();
+                    	final double base = vRangeDialog_.getBase();
+                        final double extent = vRangeDialog_.getExtent();
                         tg.setRange(base, extent);
-                        GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+                        final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                         if (graphItem == null)
                         	return;
-                        graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent});
+                        syncExec( new Runnable(){
+							public void run() {
+								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent});
+							}
+                        });
                         currentGraph_.repaint();
                     }
                 }
@@ -294,7 +307,7 @@ public class GraphPanel extends JPanel {
         seriesButton_.addActionListener(
             new ActionListener() {
             	public void actionPerformed(ActionEvent evt) {
-                    GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+                    final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                     if (graphItem == null)
                     	return;
                     TrendGraph tg = currentGraph_.getTrendGraph();
@@ -316,7 +329,7 @@ public class GraphPanel extends JPanel {
                         	tg.addDataItem(addedArray_[i]);
                         }
                         
-                        String graphName = tg.getNodeName();
+                        final String graphName = tg.getNodeName();
                         Enumeration e = graphItem.propertyNames();
                         while (e.hasMoreElements()) {
                         	String key = (String)e.nextElement();
@@ -326,20 +339,28 @@ public class GraphPanel extends JPanel {
                         String dataItems = "";
                         DataItemInfo[] list = tg.getDataItemInfoList();
                         for (int i = 0; i<list.length;i++) {
-                        	DataItem di = list[i].dataItem;
-                        	String header = tg._getDataItemNodeName(di);
+                        	final DataItem di = list[i].dataItem;
+                        	final String header = tg._getDataItemNodeName(di);
                         	if (i > 0)
                         		dataItems += ",";
                         	dataItems += graphName+"_"+di.object+"_"+di.node+"_"+di.attribute;
                         	if (di.index >= 0)
                         		dataItems += "_"+di.index;
-                        	graphItem.setProperty(header+".object",di.object);
-                        	graphItem.setProperty(header+".node",di.node);
-                        	graphItem.setProperty(header+".attr",di.attribute);
-				    		graphItem.setProperty(header+".index", String.valueOf(di.index));
+                        	syncExec( new Runnable(){
+								public void run() {
+									graphItem.setProperty(header+".object",di.object);
+									graphItem.setProperty(header+".node",di.node);
+									graphItem.setProperty(header+".attr",di.attribute);
+									graphItem.setProperty(header+".index", String.valueOf(di.index));
+								}
+                        	});
                         }
-                        graphItem.setProperty(graphName+".dataItems",dataItems);
-                        
+                        final String value = dataItems;
+                        syncExec( new Runnable(){
+							public void run() {
+								graphItem.setProperty(graphName+".dataItems",value);
+							}
+                        });
                         updateButtons();
                         currentGraph_.repaint();
                     }
@@ -571,4 +592,12 @@ public class GraphPanel extends JPanel {
         repaint();
     }
 */
+    private boolean syncExec(Runnable r){
+		Display display = comp_.getDisplay();
+        if ( display!=null && !display.isDisposed()){
+            display.syncExec( r );
+            return true;
+        }else
+        	return false;
+	}
 }

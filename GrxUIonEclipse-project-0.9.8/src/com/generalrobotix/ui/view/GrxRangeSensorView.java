@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
 import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -129,7 +130,8 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
         }
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
-          	//TODO
+        	currentWorld_.addObserver(this);
+        	updateCanvas();
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
    }
@@ -177,8 +179,31 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
      * @brief control() method of GrxPlugin. For more details, see documents of parent class
      * @param itemList list of items
      */
+    /*
     public void control(List<GrxBaseItem> itemList) {
         if (currentWorld_ != null && currentWorld_.getLogSize() > 0) {
+            WorldStateEx state = currentWorld_.getValue();
+            if (state != null  && currentModel_ != null) {
+                CharacterStateEx charStat = state.get(currentModel_.getName());
+                if (charStat != null && state.time != drawnTime_) {
+                    currentSensorState_ = charStat.sensorState;
+                	canvas_.redraw();
+                	drawnTime_ = state.time;
+                }
+            }
+        }
+    }
+    */
+    
+    public void update(GrxBasePlugin plugin, Object... arg) {
+		if(currentWorld_!=plugin) return;
+		if((String)arg[0]=="PositionChange"){
+			updateCanvas();
+		}
+	}
+    
+    private void updateCanvas(){
+    	if (currentWorld_ != null && currentWorld_.getLogSize() > 0) {
             WorldStateEx state = currentWorld_.getValue();
             if (state != null  && currentModel_ != null) {
                 CharacterStateEx charStat = state.get(currentModel_.getName());
@@ -245,11 +270,17 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     		GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
     		switch(event){
     		case GrxPluginManager.SELECTED_ITEM:
-    			currentWorld_ = worldStateItem;
+    			if(currentWorld_!=worldStateItem){
+    				currentWorld_ = worldStateItem;
+    				currentWorld_.addObserver(this);
+    			}
     			break;
     		case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		currentWorld_ = null;
+	    		if(currentWorld_==worldStateItem){
+	    			currentWorld_.deleteObserver(this);
+	    			currentWorld_ = null;
+	    		}
 	    		break;
 	    	default:
 	    		break;
@@ -261,5 +292,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     public void shutdown() {
         manager_.removeItemChangeListener(this, GrxModelItem.class);
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+        if(currentWorld_!=null)
+			 currentWorld_.deleteObserver(this);   
 	}
 }
