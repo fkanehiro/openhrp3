@@ -218,7 +218,7 @@ public class GrxJythonPromptView extends GrxBaseView {
         history_.add("");
         
         setMenuItem(new InitPythonAction());
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
         currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
         btnExec_.setEnabled(currentItem_ != null);

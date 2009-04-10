@@ -31,7 +31,6 @@ import com.generalrobotix.ui.util.ItemPropertyDoubleSpinForSWT;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.graph.SEEnumeration;
 
-
 @SuppressWarnings("serial")
 public class SimulationParameterPanel extends Composite{
   private GrxBaseItem currentItem_;
@@ -50,7 +49,7 @@ public class SimulationParameterPanel extends Composite{
   Combo cmbMethod_;
   
   public SimulationParameterPanel(Composite parent,int style) {
-    super(parent,style);
+    super(parent, style);
     setLayout(new GridLayout(2,true));
 
     Label label = new Label(this,SWT.SHADOW_NONE);

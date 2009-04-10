@@ -101,8 +101,8 @@ public class GrxBaseView extends GrxBasePlugin {
     /**
      * @brief set scroll minimum size
      */
-    public void setScrollMinSize(){
-        scrollComposite_.setMinSize(composite_.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+    public void setScrollMinSize(int width, int height){
+        scrollComposite_.setMinSize(composite_.computeSize(width, height));
     }
 
     /**

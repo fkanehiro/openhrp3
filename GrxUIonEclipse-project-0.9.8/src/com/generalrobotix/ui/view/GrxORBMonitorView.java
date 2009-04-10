@@ -34,6 +34,6 @@ public class GrxORBMonitorView extends GrxBaseView {
         super(name, manager, vp, parent);
 
         new GrxORBMonitor(composite_,SWT.NULL);
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
     }
 }

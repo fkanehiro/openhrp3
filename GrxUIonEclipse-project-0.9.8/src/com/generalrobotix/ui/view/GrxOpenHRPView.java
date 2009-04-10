@@ -604,22 +604,23 @@ public class GrxOpenHRPView extends GrxBaseView {
         
         TabItem tabItem = new TabItem(folder,SWT.NONE);
         tabItem.setText("simulation");
-        simParamPane_ = new SimulationParameterPanel(folder,SWT.NONE);
+        simParamPane_ = new SimulationParameterPanel(folder, SWT.NONE);
         tabItem.setControl(simParamPane_);
         simParamPane_.setEnabled(true);//false
         
         tabItem = new TabItem(folder,SWT.NONE);
         tabItem.setText("controller");
-        controllerPane_ = new ControllerPanel(folder,SWT.NONE,manager_);
+        controllerPane_ = new ControllerPanel(folder, SWT.NONE, manager_);
         tabItem.setControl(controllerPane_);
         controllerPane_.setEnabled(true);//false
+
         
         tabItem = new TabItem(folder,SWT.NONE);
         tabItem.setText("collision");
-        collisionPane_ = new CollisionPairPanel(folder,SWT.NONE,manager_);
+        collisionPane_ = new CollisionPairPanel(folder, SWT.NONE, manager_);
         tabItem.setControl(collisionPane_);
         controllerPane_.setEnabled(true);//false
-        setScrollMinSize();
+        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
         
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
