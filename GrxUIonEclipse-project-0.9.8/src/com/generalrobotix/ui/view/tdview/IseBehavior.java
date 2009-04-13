@@ -25,6 +25,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import com.generalrobotix.ui.util.Grx3DViewClickListener;
+import com.generalrobotix.ui.view.Grx3DView;
 
 /**
  * Behaviorの実装クラス。
@@ -131,6 +132,7 @@ class IseBehavior extends Behavior {
             }
             break;
         }
+        ((Grx3DView)info_.drawable).showOption();
     }
 
 	public void addClickListener( Grx3DViewClickListener listener ){

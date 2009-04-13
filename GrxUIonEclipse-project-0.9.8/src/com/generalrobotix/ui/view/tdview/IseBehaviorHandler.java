@@ -19,6 +19,8 @@ package com.generalrobotix.ui.view.tdview;
 import java.awt.event.*;
 import javax.media.j3d.TransformGroup;
 
+import org.eclipse.swt.widgets.Display;
+
 /**
  * BehaviorHandlerの実装クラス。
  * 実際の処理はViewHandlerクラス、OperationHandlerクラスに委譲される。
@@ -185,9 +187,15 @@ class IseBehaviorHandler implements BehaviorHandler {
         INV_KINEMA_HANDLER.setInvKinemaResolver(resolver);
     }
 
-    public boolean fit(BehaviorInfo info) {
+    private boolean ret_;
+    public boolean fit(final BehaviorInfo info) {
         if (operationHandler_ == OBJECT_FITTING_HANDLER) {
-            return OBJECT_FITTING_HANDLER.fit(info);
+         	syncExec(new Runnable(){
+            	public void run(){
+            		ret_ = OBJECT_FITTING_HANDLER.fit(info);
+            	}
+            });
+        	return ret_;
         } else {
             return false;
         }
@@ -201,10 +209,14 @@ class IseBehaviorHandler implements BehaviorHandler {
 
     //--------------------------------------------------------------------
     // BehaviorHandlerの実装
-    public void processPicking(MouseEvent evt, BehaviorInfo info) {
+    public void processPicking(final MouseEvent evt, final BehaviorInfo info) {
         if (!evt.isAltDown() && !evt.isMetaDown()) {
             if (operationHandler_ != null) {
-                operationHandler_.processPicking(evt, info);
+            	syncExec(new Runnable(){
+                	public void run(){
+                		operationHandler_.processPicking(evt, info);
+                	}
+                });
             }
         }
 
@@ -214,13 +226,17 @@ class IseBehaviorHandler implements BehaviorHandler {
         }
     }
 
-    public void processStartDrag(MouseEvent evt, BehaviorInfo info) {
+    public void processStartDrag(final MouseEvent evt, final BehaviorInfo info) {
         int mode = TIMER_MODE_OFF;
         timerMode_ = TIMER_MODE_OFF;
 
         if (!evt.isAltDown() && !evt.isMetaDown()) {
             if (operationHandler_ != null) {
-                operationHandler_.processStartDrag(evt, info);
+            	syncExec(new Runnable(){
+                	public void run(){
+                		operationHandler_.processStartDrag(evt, info);
+                	}
+                });
                 mode = TIMER_MODE_OPERATION;
             }
         }
@@ -235,10 +251,14 @@ class IseBehaviorHandler implements BehaviorHandler {
         }
     }
 
-    public void processDragOperation(MouseEvent evt, BehaviorInfo info) {
+    public void processDragOperation(final MouseEvent evt, final BehaviorInfo info) {
         if (!evt.isAltDown() && !evt.isMetaDown()) {
             if (operationHandler_ != null) {
-                operationHandler_.processDragOperation(evt, info);
+            	syncExec(new Runnable(){
+                	public void run(){
+                		operationHandler_.processDragOperation(evt, info);
+                	}
+                });
             }
         }
 
@@ -247,10 +267,14 @@ class IseBehaviorHandler implements BehaviorHandler {
         }
     }
 
-    public void processReleased(MouseEvent evt, BehaviorInfo info) {
+    public void processReleased(final MouseEvent evt, final BehaviorInfo info) {
         if (!evt.isAltDown() && !evt.isMetaDown()) {
             if (operationHandler_ != null) {
-                operationHandler_.processReleased(evt, info);
+            	syncExec(new Runnable(){
+                	public void run(){
+                		operationHandler_.processReleased(evt, info);
+                	}
+                });
             }
         }
 
@@ -260,16 +284,29 @@ class IseBehaviorHandler implements BehaviorHandler {
         }
     }
 
-    public void processTimerOperation(BehaviorInfo info) {
+    public void processTimerOperation(final BehaviorInfo info) {
         switch (timerMode_) {
         case TIMER_MODE_OFF:
             break;
         case TIMER_MODE_OPERATION:
-            operationHandler_.processTimerOperation(info);
+        	syncExec(new Runnable(){
+            	public void run(){
+            		operationHandler_.processTimerOperation(info);
+            	}
+            });
             break;
         case TIMER_MODE_VIEW:
             viewHandler_.processTimerOperation(info);
             break;
         }
     }
+    
+    private boolean syncExec(Runnable r){
+		Display display = Display.getDefault();
+        if ( display!=null && !display.isDisposed()){
+            display.syncExec( r );
+            return true;
+        }else
+        	return false;
+	}
 }

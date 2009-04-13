@@ -521,8 +521,11 @@ public class GrxLoggerView extends GrxBaseView {
 			_updateTimeField();
 		}else if((String)arg[0]=="StartSimulation"){
 			lblPlayRate_.setText("Live");
+			if((Boolean)arg[1])
+				disableControl();
 		}else if((String)arg[0]=="StopSimulation"){
 			lblPlayRate_.setText("Pause");
+			enableControl();
 		}
 	}
 
