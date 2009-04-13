@@ -334,11 +334,6 @@ public class GrxGraphView extends GrxBaseView {
             graphManager_.setTotalTime((long)(ti+5)*1000000);
 	}
 	
-	public boolean setup(List<GrxBaseItem> itemList) {
-		//currentWorld_ = null;
-		return true;
-	}
-	
 	 public void shutdown() {
 		 manager_.removeItemChangeListener(this, GrxGraphItem.class);
 		 if(currentWorld_!=null)

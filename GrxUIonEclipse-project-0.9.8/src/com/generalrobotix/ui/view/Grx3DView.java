@@ -92,11 +92,8 @@ public class Grx3DView
     private final static int VIEW=0;
     private final static int EDIT=1;
     private int viewMode_ = VIEW;
-    //private double prevTime_ = -1;
     private double dAngle_ = Math.toRadians(0.1);
-    //private boolean updateModels_=true;
-    private int position_ = 0;
-    
+ 
     // for scene graph
     private static VirtualUniverse universe_;
     private javax.media.j3d.Locale locale_;
@@ -104,7 +101,6 @@ public class Grx3DView
     private BranchGroup  unclickableBgRoot_;
     
     private BranchGroup rulerBg_;
-    //private BranchGroup collisionBg_;
     private float LineWidth_ = 1.0f;
     private float colprop = 10.0f;
     private float coldiff = 0.1f;
@@ -126,7 +122,6 @@ public class Grx3DView
     // for recording movie
     private RecordingManager recordingMgr_;
     private String lastMovieFileName;
-	private int recordingStep_;
     
     // UI objects
     private ObjectToolBar objectToolBar_ = new ObjectToolBar();
@@ -781,14 +776,16 @@ public class Grx3DView
     }
     
     public void showOption(){
-    	if (btnCollision_.isSelected()) {
-    		_showCollision(behaviorManager_.getCollision(currentModels_));
-		}
-    	if (btnDistance_.isSelected()){
-    		_showDistance(behaviorManager_.getDistance(currentModels_));
-    	}
-    	if (btnIntersection_.isSelected()){
-    		_showIntersection(behaviorManager_.getIntersection(currentModels_));
+    	if(viewMode_==EDIT){
+	    	if (btnCollision_.isSelected()) {
+	    		_showCollision(behaviorManager_.getCollision(currentModels_));
+			}
+	    	if (btnDistance_.isSelected()){
+	    		_showDistance(behaviorManager_.getDistance(currentModels_));
+	    	}
+	    	if (btnIntersection_.isSelected()){
+	    		_showIntersection(behaviorManager_.getIntersection(currentModels_));
+	    	}
     	}
     }
 	
@@ -956,25 +953,29 @@ public class Grx3DView
             btnRec_.setSelected(false);	
             return;
         }
+        
+        disableOperation();
+		objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
                
-        recordingStep_ = (int)(1000.0/framerate*playbackRate);
-        recordingStep_ = Math.max((int)(1000.0/framerate*playbackRate), recordingStep_);
+        int step = (int)(1000.0/framerate*playbackRate);
+        final int recordingStep = Math.max((int)(1000.0/framerate*playbackRate), step);
         
         Thread recThread_ = new Thread() {
 			public void run() {
 				try {
 					int startPosition =0;
 					int endPosition = currentWorld_.getLogSize();  
-					double playRateLogTime_ = (double)recordingStep_/1000.0;
-					double prevTime = -recordingStep_;
-					for (position_=startPosition; position_ < endPosition; position_++) {
+					double playRateLogTime_ = (double)recordingStep/1000.0;
+					double prevTime = -recordingStep;
+					for (int position=startPosition; position < endPosition; position++) {
 						if(!btnRec_.isSelected())break;
-						double time = currentWorld_.getTime(position_);
+						double time = currentWorld_.getTime(position);
 						if (time - prevTime >= playRateLogTime_) {
 							prevTime = time;
+							final int _position = position;
 							syncExec(new Runnable(){
 								public void run() {
-									currentWorld_.setPosition(position_);
+									currentWorld_.setPosition(_position);
 								}
 							});	
 							_doRecording();
@@ -998,6 +999,7 @@ public class Grx3DView
 		btnRec_.setSelected(false);
 		tgView_.removeChild(offScreenBg_);
 		JOptionPane.showMessageDialog(frame_,"Recording finished" );
+		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
     }
     
     private boolean fileOverwriteDialog(String fileName){
