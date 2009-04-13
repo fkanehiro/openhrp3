@@ -64,8 +64,10 @@ collision_data* ColdetModelPair::detectCollisionsSub(bool detectAllContacts)
         cdContactsCount = 0;
     }
 
-    if (model0_->getPrimitiveType() == ColdetModel::SP_PLANE &&
-        model1_->getPrimitiveType() == ColdetModel::SP_CYLINDER){
+    if ((model0_->getPrimitiveType() == ColdetModel::SP_PLANE &&
+         model1_->getPrimitiveType() == ColdetModel::SP_CYLINDER)
+        || (model1_->getPrimitiveType() == ColdetModel::SP_PLANE &&
+            model0_->getPrimitiveType() == ColdetModel::SP_CYLINDER)){
         return detectPlaneCylinderCollisions(detectAllContacts);
     }else{
         return detectMeshMeshCollisions(detectAllContacts);
@@ -106,12 +108,27 @@ collision_data* ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts
 
 collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts)
 {
-    IceMaths::Matrix4x4 pTrans = (*(model0_->pTransform)) * (*(model0_->transform));
-    IceMaths::Matrix4x4 cTrans = (*(model1_->pTransform)) * (*(model1_->transform));
+    ColdetModelPtr plane, cylinder;
+    bool reversed=false;
+    if (model0_->getPrimitiveType() == ColdetModel::SP_PLANE){
+        plane = model0_;
+    }else if(model0_->getPrimitiveType() == ColdetModel::SP_CYLINDER){
+        cylinder = model0_;
+    }
+    if (model1_->getPrimitiveType() == ColdetModel::SP_PLANE){
+        plane = model1_;
+        reversed = true;
+    }else if(model1_->getPrimitiveType() == ColdetModel::SP_CYLINDER){
+        cylinder = model1_;
+    }
+    if (!plane || !cylinder) return NULL;
+
+    IceMaths::Matrix4x4 pTrans = (*(plane->pTransform)) * (*(plane->transform));
+    IceMaths::Matrix4x4 cTrans = (*(cylinder->pTransform)) * (*(cylinder->transform));
 
     float radius, height; // height and radius of cylinder
-    model1_->getPrimitiveParam(0, radius);
-    model1_->getPrimitiveParam(1, height);
+    cylinder->getPrimitiveParam(0, radius);
+    cylinder->getPrimitiveParam(1, height);
 
     IceMaths::Point pTopLocal(0, height/2, 0), pBottomLocal(0, -height/2, 0);
     IceMaths::Point pTop, pBottom; // center points of top and bottom discs
@@ -142,9 +159,15 @@ collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllCon
             cdata[i].i_point_new[1]=0; 
             cdata[i].i_point_new[2]=0; 
             cdata[i].i_point_new[3]=0; 
-            cdata[i].n_vector[0] = n.x;
-            cdata[i].n_vector[1] = n.y;
-            cdata[i].n_vector[2] = n.z;
+            if (reversed){
+                cdata[i].n_vector[0] = -n.x;
+                cdata[i].n_vector[1] = -n.y;
+                cdata[i].n_vector[2] = -n.z;
+            }else{
+                cdata[i].n_vector[0] = n.x;
+                cdata[i].n_vector[1] = n.y;
+                cdata[i].n_vector[2] = n.z;
+            }
         }
         IceMaths::Point vBottomTop = pTop - pBottom;
         IceMaths::Point v = vBottomTop^n;
