@@ -97,8 +97,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private double totalTime_ = 20;
 	private double logStepTime_ = 0.05;
 	private boolean isSimulatingView_;
-	private Grx3DView tdview_;
-	private GrxLoggerView lgview_;
+	//private Grx3DView tdview_;
+	//private GrxLoggerView lgview_;
 	private IAction action_ = null;
 
 	private SimulationParameterPanel simParamPane_;
@@ -240,18 +240,18 @@ public class GrxOpenHRPView extends GrxBaseView {
 			logStepTime_ = simParamPane_.getLogStepTime();
 			
 			isSimulatingView_ = simParamPane_.isSimulatingView();
-			lgview_ = (GrxLoggerView)manager_.getView("Logger View");
+			//lgview_ = (GrxLoggerView)manager_.getView("Logger View");
 			if (isSimulatingView_){
-				tdview_ = (Grx3DView)manager_.getView("3DView");
-				if (tdview_ == null || lgview_ == null){
-					GrxDebugUtil.printErr("can't find 3DView or Logger View");
-					return false;
-				}
-				tdview_.disableUpdateModel();
-				tdview_.showViewSimulator(true);
-				lgview_.disableControl();
+				//tdview_ = (Grx3DView)manager_.getView("3DView");
+				//if (tdview_ == null || lgview_ == null){
+				//	GrxDebugUtil.printErr("can't find 3DView or Logger View");
+				//	return false;
+				//}
+				//tdview_.disableUpdateModel();
+				//tdview_.showViewSimulator(true);
+				//lgview_.disableControl();
 			}
-			currentWorld_.startSimulation();
+			currentWorld_.startSimulation(isSimulatingView_);
 			
 			// TODO disable "start simulation" button and menu
 			_resetClockReceivers();
@@ -368,9 +368,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 					GrxDebugUtil.printErr("stopSimulation:", e);
 				}
 				*/
-				if (isSimulatingView_ && tdview_!=null) {
-					tdview_.enableUpdateModel();
-				}
+				//if (isSimulatingView_ && tdview_!=null) {
+				//	tdview_.enableUpdateModel();
+				//}
 				updateTimeMsg();
 				System.out.println(new java.util.Date()+timeMsg_.replace(" ", "").replace("\n", " : "));
 				if (isInteractive_) {
@@ -389,9 +389,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 				syncExec(new Runnable(){
 					public void run() {
 						currentWorld_.setPosition(0);
-						if (isSimulatingView_ && lgview_!=null) {
-							lgview_.enableControl();
-						}
+						//if (isSimulatingView_) {
+						//	lgview_.enableControl();
+						//}
 						currentWorld_.stopSimulation();
 	                }
 	            } );
@@ -469,24 +469,27 @@ public class GrxOpenHRPView extends GrxBaseView {
 	            if (!isIntegrate_)
 	                wsx.time = simTime_;
 	            currentWorld_.addValue(simTime_, wsx);
-
-	          
-
-				if (isSimulatingView_ && tdview_!=null){
-					tdview_.updateModels(wsx);
-					tdview_.updateViewSimulator(simTime_);
+         
+				if (isSimulatingView_){
+					syncExec(new Runnable(){
+						public void run() {
+							currentWorld_.setPosition(currentWorld_.getLogSize()-1);
+		                }
+					} );
 				}
 			}
 			
 			// display
-			if((simTime_*1000) % manager_.getDelay() < stepTime_*1000){ 
-				asyncExec(new Runnable(){
-					public void run() {
-						currentWorld_.setPosition(currentWorld_.getLogSize()-1);
-	                }
-				} );
-	        }
-			 
+			if(!isSimulatingView_){
+				if((simTime_*1000) % manager_.getDelay() < stepTime_*1000){ 
+					asyncExec(new Runnable(){
+						public void run() {
+							currentWorld_.setPosition(currentWorld_.getLogSize()-1);
+		                }
+					} );
+		        }
+			}
+			
 			// output
 			for (int i = 0; i < controllers_.size(); i++) {
 				ControllerAttribute attr = controllers_.get(i);

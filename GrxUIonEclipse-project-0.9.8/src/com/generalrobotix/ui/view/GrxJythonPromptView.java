@@ -65,83 +65,48 @@ import com.generalrobotix.ui.util.GrxCorbaUtil;
 /**
  * @brief
  */
-public class GrxJythonPromptView extends GrxBaseView {
-    
+public class GrxJythonPromptView extends GrxBaseView { 
     private PythonInterpreter interpreter_ = new PythonInterpreter();
-    
     private Thread thread_1_;
-    
     private Thread thread_2_;
-    
     private String prompt_ = ">>> ";
-
     private Display display_;
-    
     private Composite parent_;
-
     private StyledText styledText_;
-    
     private MenuDialog menuDialog;
-    
     private Frame frame_;
-
     private static final int HISTORY_SIZE = 50;
-
     private List<String> history_ = new LinkedList<String>();
-
     private int hpos_ = 0;
-
     private String com_;
-    
     private Button btnExec_;
-
     private Writer writer_;
-    
     private GrxPythonScriptItem currentItem_;
-    
     private String message_;
 
     private static final int KS_SHIFT = SWT.SHIFT;
-
     private static final int KS_CONTROL = SWT.CTRL;
-
     private static final int KS_CTRL_U = 'u' | SWT.CTRL;
-
     private static final int KS_CTRL_A = 'a' | SWT.CTRL;
-
     private static final int KS_CTRL_E = 'e' | SWT.CTRL;
-
     private static final int KS_CTRL_F = 'f' | SWT.CTRL;
-
     private static final int KS_CTRL_B = 'b' | SWT.CTRL;
-
     private static final int KS_CTRL_N = 'n' | SWT.CTRL;
-
     private static final int KS_CTRL_P = 'p' | SWT.CTRL;
-
     private static final int KS_UP = SWT.ARROW_UP;
-
     private static final int KS_DOWN = SWT.ARROW_DOWN;
-
     private static final int KS_LEFT = SWT.ARROW_LEFT;
-
     private static final int KS_RIGHT = SWT.ARROW_RIGHT;
-
     private static final int KS_ENTER = SWT.CR;
-
     private static final int KS_ENTER_ALT = SWT.CR | SWT.ALT;
-
     private static final int KS_ENTER_CTRL = SWT.CR | SWT.CTRL;
-
     private static final int KS_ENTER_SHIFT = SWT.CR | SWT.SHIFT;
-
     private static final int KS_BACK_SPACE = SWT.BS;
-
     private static final int KS_DELETE = SWT.DEL;
-    
+  
     private Image simScriptStartIcon_;
-    
     private Image simScriptStopIcon_;
+    private static final int DEFAULT_INTERVAL = 100; // [msec] 
     
     /**
      * @brief constructor
@@ -223,6 +188,17 @@ public class GrxJythonPromptView extends GrxBaseView {
         currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
         btnExec_.setEnabled(currentItem_ != null);
         manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
+        
+        final Display display = composite_.getDisplay();
+        Runnable runnable = new Runnable() {
+            public void run() {
+            	update();
+                if (!display.isDisposed())
+                    display.timerExec(DEFAULT_INTERVAL, this);
+            }
+        };
+        if (!display.isDisposed())
+            display.timerExec(DEFAULT_INTERVAL, runnable);
     }
         
     private class InitPythonAction extends Action{
@@ -503,7 +479,7 @@ public class GrxJythonPromptView extends GrxBaseView {
     	}
     }
     
-    public void control(List<GrxBaseItem> itemList) {
+    private void update() {
         if (menuDialog != null && menuDialog.isWaiting()){
             try {
                 Thread.sleep(200);

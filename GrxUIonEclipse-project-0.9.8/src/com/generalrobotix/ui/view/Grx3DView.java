@@ -88,9 +88,13 @@ public class Grx3DView
     // items
     private GrxWorldStateItem  currentWorld_ = null;
     private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
+    private WorldStateEx currentState_ = null; 
+    private final static int VIEW=0;
+    private final static int EDIT=1;
+    private int viewMode_ = VIEW;
     //private double prevTime_ = -1;
     private double dAngle_ = Math.toRadians(0.1);
-    private boolean updateModels_=true;
+    //private boolean updateModels_=true;
     private int position_ = 0;
     
     // for scene graph
@@ -183,10 +187,10 @@ public class Grx3DView
         frame_.add(contentPane);
 
         contentPane.setLayout(new BorderLayout());
-        contentPane.setBackground(Color.black);
+        contentPane.setBackground(Color.lightGray);
         //contentPane.setAlignmentX(JPanel.LEFT_ALIGNMENT);
         
-        lblMode_.setForeground(Color.white);
+        lblMode_.setForeground(Color.black);
         lblMode_.setFont(new Font("Monospaced", Font.BOLD, 12));
         lblMode_.setPreferredSize(new Dimension(300, 20));
 
@@ -205,7 +209,7 @@ public class Grx3DView
 
         JPanel mainPane = new JPanel(new BorderLayout());
         mainPane.setBackground(Color.black);
-        mainPane.add(lblMode_, BorderLayout.NORTH);
+        contentPane.add(lblMode_, BorderLayout.SOUTH);
         mainPane.add(canvas_, BorderLayout.CENTER);
         contentPane.add(mainPane, BorderLayout.CENTER);
         
@@ -255,22 +259,32 @@ public class Grx3DView
         while(it.hasNext())	{
         	bgRoot_.addChild(it.next().bgRoot_);
         }
-        if(updateModels_) updateViewSimulator(0);
+        updateViewSimulator(0);
         manager_.registerItemChangeListener(this, GrxModelItem.class);
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
-        	WorldStateEx state = currentWorld_.getValue();
-        	if (state!=null){
-        		if(updateModels_){
-	            	updateModels(state);
-	            	updateViewSimulator(state.time);
-        		}
+        	currentState_ = currentWorld_.getValue();
+        	if (currentState_!=null){
+        		updateModels(currentState_);
+        		updateViewSimulator(currentState_.time);
             }           
         	currentWorld_.addObserver(this);
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+        
+        //setup
+        behaviorManager_.setThreeDViewer(this);
+        behaviorManager_.setViewIndicator(viewToolBar_);
+        behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
+        behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
+        behaviorManager_.setViewHandlerMode("button_mode_rotation");
+        behaviorManager_.replaceWorld(null);
+        viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
+        viewToolBar_.setOperation(ViewToolBar.ROTATE);
+
+        registerCORBA();
     }
-    
+ /*   
     public void disableUpdateModel(){
         updateModels_ = false;
     }
@@ -278,7 +292,7 @@ public class Grx3DView
     public void enableUpdateModel(){
         updateModels_ = true;
     }
-    
+   */ 
     private void _setupSceneGraph() {
         universe_ = new VirtualUniverse();
         locale_ = new javax.media.j3d.Locale(universe_);
@@ -446,9 +460,13 @@ public class Grx3DView
         btnCollision_.setSelected(true);
         btnCollision_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                if (btnCollision_.isSelected())
+                if (btnCollision_.isSelected()){
                     btnCollision_.setToolTipText("hide Collision");
-                else{
+                    if(currentState_!=null)
+                    	_showCollision(currentState_.collisions);
+                    else
+                    	_showCollision(behaviorManager_.getCollision(currentModels_));
+                }else{
                     btnCollision_.setToolTipText("show Collision");
                     _showCollision(null);
                 }
@@ -458,11 +476,13 @@ public class Grx3DView
         btnDistance_.setToolTipText("show Distance");
         btnDistance_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                if (btnDistance_.isSelected())
+                if (btnDistance_.isSelected()){
                     btnDistance_.setToolTipText("hide Distance");
-                else {
+                    if (viewMode_ == EDIT)
+                    	_showDistance(behaviorManager_.getDistance(currentModels_));
+                }else {
                     btnDistance_.setToolTipText("show Distance");
-                    distance_.removeAllGeometries();
+                    _showDistance(null);
                 }
             }
         });
@@ -470,14 +490,13 @@ public class Grx3DView
         btnIntersection_.setToolTipText("check intersection");
         btnIntersection_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                if (btnIntersection_.isSelected())
+                if (btnIntersection_.isSelected()){
                     btnIntersection_.setToolTipText("nocheck intersection");
-                else{
+                    if (viewMode_ == EDIT)
+                    	_showIntersection(behaviorManager_.getIntersection(currentModels_));
+                }else{
                     btnIntersection_.setToolTipText("check intersection");
-                    for (int i=0; i<intersectingLinks_.size(); i++){
-                    	intersectingLinks_.get(i).restoreColor();
-                    }
-                    intersectingLinks_.clear();
+                    _showIntersection(null);
                 }
             }
         });
@@ -555,8 +574,13 @@ public class Grx3DView
         btnRestore_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 for (int i=0; i<currentModels_.size(); i++) {
-                    GrxModelItem item = currentModels_.get(i);
-                    item.restoreProperties();
+                    final GrxModelItem item = currentModels_.get(i);
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		item.restoreProperties();
+                    	}
+                    });
+                    
                 }
             }
         });
@@ -704,6 +728,7 @@ public class Grx3DView
     			if(currentWorld_!=worldStateItem){
     				currentWorld_ = worldStateItem;
     				currentWorld_.addObserver(this);
+    				currentState_ = currentWorld_.getValue();
     			}
     			break;
     		case GrxPluginManager.REMOVE_ITEM:
@@ -711,6 +736,7 @@ public class Grx3DView
 	    		if(currentWorld_==worldStateItem){
 	    			currentWorld_.deleteObserver(this);
 	    			currentWorld_ = null;
+	    			currentState_ = null;
 	    		}
 	    		break;
 	    	default:
@@ -718,7 +744,7 @@ public class Grx3DView
     		}
     	}
     }
-    
+    /*
     public boolean setup(List<GrxBaseItem> itemList) {
         behaviorManager_.setThreeDViewer(this);
         behaviorManager_.setViewIndicator(viewToolBar_);
@@ -731,24 +757,43 @@ public class Grx3DView
 
            return registerCORBA();
     }
-   
+   */
     public void update(GrxBasePlugin plugin, Object... arg) {
     	if(currentWorld_!=plugin) return;
 		if((String)arg[0]=="PositionChange"){
-			int pos = ((Integer)arg[1]).intValue();
-			WorldStateEx state = currentWorld_.getValue(pos);
-			if(state!=null){
-	        	_showCollision(state.collisions);
-		        if (updateModels_){
-		        	updateModels(state);
-		            updateViewSimulator(state.time);
-		        }
+			if(viewMode_ == VIEW){
+				int pos = ((Integer)arg[1]).intValue();
+				currentState_ = currentWorld_.getValue(pos);
+				if(currentState_!=null){
+					_showCollision(currentState_.collisions);
+					updateModels(currentState_);
+					updateViewSimulator(currentState_.time);
+				}
 			}
+		}else if((String)arg[0]=="StartSimulation"){
+			disableOperation();
+			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
+			if((Boolean)arg[1])
+				showViewSimulator(true);
+		}else if((String)arg[0]=="StopSimulation"){
+			objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
 		}
     }
     
+    public void showOption(){
+    	if (btnCollision_.isSelected()) {
+    		_showCollision(behaviorManager_.getCollision(currentModels_));
+		}
+    	if (btnDistance_.isSelected()){
+    		_showDistance(behaviorManager_.getDistance(currentModels_));
+    	}
+    	if (btnIntersection_.isSelected()){
+    		_showIntersection(behaviorManager_.getIntersection(currentModels_));
+    	}
+    }
+	
     public void control(List<GrxBaseItem> items) {
-    	
+    /*	
         if (currentModels_.size() == 0)
             return;
 
@@ -765,6 +810,7 @@ public class Grx3DView
             //if (updateModels_) updateViewSimulator(0);
             return;
         }
+        */
 /*
          if (currentWorld_ == null){
         	 if (updateModels_) updateViewSimulator(0);
@@ -926,17 +972,11 @@ public class Grx3DView
 						double time = currentWorld_.getTime(position_);
 						if (time - prevTime >= playRateLogTime_) {
 							prevTime = time;
-							Display display = comp.getDisplay();
-					        if ( display!=null && !display.isDisposed())
-					                display.syncExec(
-					                        new Runnable(){
-					                            public void run() {
-					                            	currentWorld_.setPosition(position_);
-					                            }
-					                        }
-					                );
-							//WorldStateEx state = currentWorld_.getValue();
-							//updateModels(state);
+							syncExec(new Runnable(){
+								public void run() {
+									currentWorld_.setPosition(position_);
+								}
+							});	
 							_doRecording();
 						}
 					}
@@ -1083,37 +1123,43 @@ public class Grx3DView
     }
     
     private void _showIntersection(LinkPair[] pairs){
-    	if (pairs == null) return;
-    	
-    	Map<String, GrxModelItem> modelMap = (Map<String, GrxModelItem>)manager_.getItemMap(GrxModelItem.class);
-    	Vector<GrxLinkItem> links = new Vector<GrxLinkItem>();
-    	for (int i=0; i<pairs.length; i++){
-    		GrxModelItem m1 = modelMap.get(pairs[i].charName1);
-    		if (m1 != null){
-    			GrxLinkItem l = m1.getLink(pairs[i].linkName1);
-    			if (l != null){
-    				links.add(l);
-    				if (!intersectingLinks_.contains(l)){
-    					l.setColor(java.awt.Color.RED);
-    				}
-    			}
-    		}
-    		GrxModelItem m2 = modelMap.get(pairs[i].charName2);
-    		if (m2 != null){
-    			GrxLinkItem l = m2.getLink(pairs[i].linkName2);
-    			if (l != null) links.add(l);
-				if (!intersectingLinks_.contains(l)){
-					l.setColor(java.awt.Color.RED);
-				}
-    		}
+    	if (pairs == null){
+    		for (int i=0; i<intersectingLinks_.size(); i++){
+            	intersectingLinks_.get(i).restoreColor();
+            }
+            intersectingLinks_.clear();
+    		return;
+    	}else{	
+	    	Map<String, GrxModelItem> modelMap = (Map<String, GrxModelItem>)manager_.getItemMap(GrxModelItem.class);
+	    	Vector<GrxLinkItem> links = new Vector<GrxLinkItem>();
+	    	for (int i=0; i<pairs.length; i++){
+	    		GrxModelItem m1 = modelMap.get(pairs[i].charName1);
+	    		if (m1 != null){
+	    			GrxLinkItem l = m1.getLink(pairs[i].linkName1);
+	    			if (l != null){
+	    				links.add(l);
+	    				if (!intersectingLinks_.contains(l)){
+	    					l.setColor(java.awt.Color.RED);
+	    				}
+	    			}
+	    		}
+	    		GrxModelItem m2 = modelMap.get(pairs[i].charName2);
+	    		if (m2 != null){
+	    			GrxLinkItem l = m2.getLink(pairs[i].linkName2);
+	    			if (l != null) links.add(l);
+					if (!intersectingLinks_.contains(l)){
+						l.setColor(java.awt.Color.RED);
+					}
+	    		}
+	    	}
+	    	for (int i=0; i<intersectingLinks_.size(); i++){
+	    		GrxLinkItem l = intersectingLinks_.get(i);
+	    		if (!links.contains(l)){
+	    			l.restoreColor();
+	    		}
+	    	}
+	    	intersectingLinks_ = links;
     	}
-    	for (int i=0; i<intersectingLinks_.size(); i++){
-    		GrxLinkItem l = intersectingLinks_.get(i);
-    		if (!links.contains(l)){
-    			l.restoreColor();
-    		}
-    	}
-    	intersectingLinks_ = links;
     }
 
     public void updateViewSimulator(double time) {
@@ -1300,8 +1346,10 @@ public class Grx3DView
         private boolean firstTime_ = true;
         
         public void clearLog() {
-            if (currentWorld_ != null)
+            if (currentWorld_ != null){
                 currentWorld_.clearLog();
+                currentState_=null;
+            }
             firstTime_ = true;
         }
 
@@ -1580,10 +1628,12 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
             	if (behaviorManager_.getOperationMode() != BehaviorManager.OBJECT_TRANSLATION_MODE){
                 	behaviorManager_.initDynamicsSimulator();
-                    setModelUpdate(false);
+                    //setModelUpdate(false);
                     behaviorManager_.setOperationMode(BehaviorManager.OBJECT_TRANSLATION_MODE);
+                    viewMode_ = EDIT;
                     objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
                     lblMode_.setText("[ EDIT : Translate Object ]");
+                    showOption();
             	}
             }
         });
@@ -1592,10 +1642,12 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
             	if (behaviorManager_.getOperationMode() != BehaviorManager.OBJECT_ROTATION_MODE){
             		behaviorManager_.initDynamicsSimulator();
-            		setModelUpdate(false);
+            		//setModelUpdate(false);
             		behaviorManager_.setOperationMode(BehaviorManager.OBJECT_ROTATION_MODE);
+            		viewMode_ = EDIT;
             		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
             		lblMode_.setText("[ EDIT : Rotate Object ]");
+            		showOption();
             	}
             }
         });
@@ -1603,10 +1655,12 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
             	if (behaviorManager_.getOperationMode() != BehaviorManager.JOINT_ROTATION_MODE){
             		behaviorManager_.initDynamicsSimulator();
-            		setModelUpdate(false);
+            		//setModelUpdate(false);
             		behaviorManager_.setOperationMode(BehaviorManager.JOINT_ROTATION_MODE);
+            		viewMode_ = EDIT;
             		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
             		lblMode_.setText("[ EDIT : Move Joint ]");
+            		showOption();
             	}
             }
         });
@@ -1616,7 +1670,9 @@ public class Grx3DView
                 objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
                 viewToolBar_.setEnabled(true);
                 behaviorManager_.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
+                viewMode_ = EDIT;
                 lblMode_.setText("[ EDIT : Object Placement Select ]");
+                showOption();
             }
         });
 
@@ -1625,19 +1681,22 @@ public class Grx3DView
                 objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
                 viewToolBar_.setEnabled(true);
                 behaviorManager_.setOperationMode(BehaviorManager.FITTING_TO_MODE);
+                viewMode_ = EDIT;
                 lblMode_.setText("[ EDIT : Object Placement Destination ]");
+                showOption();
             }
         });
 
         GUIAction.DO_FIT.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setModelUpdate(false);
+                //setModelUpdate(false);
                 behaviorManager_.fit();
-                objectToolBar_.selectNone();
-                objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
+                objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
                 viewToolBar_.setEnabled(true);
-                behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
-                lblMode_.setText("[ VIEW ]");
+                behaviorManager_.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
+                viewMode_ = EDIT;
+                lblMode_.setText("[ EDIT : Object Placement Select ]");
+                showOption();
             }
         });
 
@@ -1646,26 +1705,32 @@ public class Grx3DView
                 if (behaviorManager_.updateDynamicsSimulator(false)) {
                     objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
                     behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_FROM_MODE);
+                    viewMode_ = EDIT;
                     lblMode_.setText("[ EDIT : Inverse Kinematics Base Link ]");
+                    showOption();
                 }
             }
         });
 
         GUIAction.INV_KINEMA_TRANS.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setModelUpdate(false);
+                //setModelUpdate(false);
                 objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
                 behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_TRANSLATION_MODE);
+                viewMode_ = EDIT;
                 lblMode_.setText("[ EDIT : Inverse Kinematics Translate ]");
+                showOption();
             }
         });
 
         GUIAction.INV_KINEMA_ROT.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setModelUpdate(false);
+                //setModelUpdate(false);
                 objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
                 behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_ROTATION_MODE);
+                viewMode_ = EDIT;
                 lblMode_.setText("[ EDIT : Inverse Kinematics Rotate ]");
+                showOption();
             }
         });
 
@@ -1677,19 +1742,30 @@ public class Grx3DView
     }
     
     public void disableOperation(){
-        setModelUpdate(true);
+        //setModelUpdate(true);
+    	
         behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
+        viewMode_ = VIEW;
         objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
         objectToolBar_.selectNone();
         viewToolBar_.setEnabled(true);
         lblMode_.setText("[ VIEW ]");
+        
+        if(currentState_!=null){
+        	_showCollision(currentState_.collisions);
+			updateModels(currentState_);
+			updateViewSimulator(currentState_.time);
+        }
+        _showIntersection(null);
+        _showDistance(null);
     }
 
+    /*
     private void setModelUpdate(boolean b) {
         for (int i=0; i<currentModels_.size(); i++)
             currentModels_.get(i).update_ = b;
     }
-
+	*/
 
     public void addClickListener( Grx3DViewClickListener listener ){
         behaviorManager_.addClickListener( listener );
@@ -1850,5 +1926,14 @@ public class Grx3DView
     	manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
     	if(currentWorld_!=null)
     		currentWorld_.deleteObserver(this);
+	}
+    
+    private boolean syncExec(Runnable r){
+		Display display = comp.getDisplay();
+        if ( display!=null && !display.isDisposed()){
+            display.syncExec( r );
+            return true;
+        }else
+        	return false;
 	}
 }
