@@ -201,6 +201,8 @@ public class GrxRobotStatView extends GrxBaseView {
         	currentWorld_.addObserver(this); 
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+        
+        _resizeTables();
     }
     
     
@@ -443,14 +445,16 @@ public class GrxRobotStatView extends GrxBaseView {
         
 
     }
-
+    
+    /*
     public boolean setup(List<GrxBaseItem> itemList) {
         //currentWorld_ = null;
         //currentModel_ = null;
         _resizeTables();
         return true;
     }
-
+	*/
+    
 //    class MyCellRenderer extends JLabel implements TableCellRenderer {
 //        private int[] columnAlignment_ = null;
 //

@@ -635,11 +635,25 @@ public class GrxOpenHRPView extends GrxBaseView {
 		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
 		manager_.registerItemChangeListener(this, GrxModelItem.class);
 		manager_.registerItemChangeListener(this, GrxCollisionPairItem.class);
+		
+		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+	       
+		ClockGenerator cg = clockGenerator_._this(manager_.orb_);
+		NameComponent[] path = {new NameComponent("ClockGenerator", "")};
+	       
+		try {
+			rootnc.rebind(path, cg);
+		} catch (Exception ex) {
+			GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
+		}
+		GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
+
 	}
 	
 	/**
 	 * @brief see doc for parent class
 	 */
+	/*
 	public boolean setup(List<GrxBaseItem> itemList) {
 		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
 	       
@@ -655,6 +669,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 		GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
 		return true;
 	}
+	*/
 	
 	void execSWT( Runnable r, boolean execInCurrentThread ){
 		if( execInCurrentThread ) {
