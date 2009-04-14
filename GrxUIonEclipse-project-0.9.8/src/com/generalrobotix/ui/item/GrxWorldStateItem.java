@@ -550,7 +550,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             for (int i=0; i<datLen; i++) 
             	super.addValue(null, null);
             
-			Thread.sleep(manager_.getDelay()*2);
+			//Thread.sleep(manager_.getDelay()*2);
             setPosition(0);
 		} catch (FileOpenFailException e) {
 			e.printStackTrace();
@@ -558,9 +558,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		} //catch (InterruptedException e) {
+		//	e.printStackTrace();
+		//}
 	}
 	
 	private void saveLog() {
