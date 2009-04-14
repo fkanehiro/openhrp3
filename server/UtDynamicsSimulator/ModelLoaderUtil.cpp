@@ -241,6 +241,10 @@ static Joint* createLink(::World* world, const char* charname, int index, LinkIn
 		if(loc_axis(0) > 0.95) axis = AXIS_X;
 		else if(loc_axis(1) > 0.95) axis = AXIS_Y;
 		else if(loc_axis(2) > 0.95) axis = AXIS_Z;
+        else{ 
+            std::cerr << "unsupported joint axis for " << myname
+                      << ", only X, Y and Z axes are supported" << std::endl;
+        }
 		assert(axis != AXIS_NULL);
 		if(jnt->j_type == JROTATE)
 			jnt->SetRotateJointType(rel_pos, rel_att, axis);
