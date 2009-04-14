@@ -32,6 +32,10 @@ set(target hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION})
 
 add_library(${target} STATIC ${idl_cpp_files})
 
+if(UNIX)
+  set_target_properties(${target} PROPERTIES COMPILE_FLAGS -fPIC)
+endif()
+
 if(WIN32)
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d)
 endif() 
