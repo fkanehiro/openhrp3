@@ -58,7 +58,6 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxPythonScriptItem;
-import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 
 @SuppressWarnings("serial")
@@ -454,12 +453,7 @@ public class GrxJythonPromptView extends GrxBaseView {
             execFile();
         }
     }
-    /*
-    public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-        currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
-        btnExec_.setEnabled(currentItem_ != null);
-    }
-    */
+   
     public void registerItemChange(GrxBaseItem item, int event){
     	if(item instanceof GrxPythonScriptItem){
     		GrxPythonScriptItem pythonScriptItem = (GrxPythonScriptItem)item;

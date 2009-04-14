@@ -30,7 +30,6 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxPythonScriptItem;
-import com.generalrobotix.ui.item.GrxTextItem;
 
 @SuppressWarnings("serial")
 public class GrxTextEditorView extends GrxBaseView {
@@ -98,37 +97,6 @@ public class GrxTextEditorView extends GrxBaseView {
 		}
 	}
 
-	/*
-	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-		_syncCurrentItem();
-		
-		currentItem_ = null;
-		GrxTextItem item = manager_.<GrxTextItem>getSelectedItem(GrxTextItem.class, null);
-		if (item != null) {
-			area_.setText( (String)item.getValue() );
-			// keep currentItem_ null until setValue not to set undo
-			currentItem_ = item;
-//			area_.setCaretPosition(currentItem_.getCaretPositoin());
-			area_.setEnabled(true);
-	//		area_.setBackground(Color.white);
-			//save_.setEnabled(currentItem_.isEdited());
-			save_.setEnabled(true);
-			saveAs_.setEnabled(true);
-	//		undoAction_.updateUndoState();
-		//	redoAction_.updateRedoState();
-		} else {
-			area_.setText("");
-			area_.setEnabled(false);
-	//		area_.setBackground(Color.lightGray);
-			save_.setEnabled(false);
-			saveAs_.setEnabled(false);
-		}
-		
-//		_updateCaretLabel();
-	//	_updateTitle();
-	}
-	*/
-	
 	public void registerItemChange(GrxBaseItem item, int event){
 		GrxPythonScriptItem textItem = (GrxPythonScriptItem)item;
 		switch(event){

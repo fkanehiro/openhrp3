@@ -174,26 +174,6 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     		}
     	}
     }
-
-    /**
-     * @brief control() method of GrxPlugin. For more details, see documents of parent class
-     * @param itemList list of items
-     */
-    /*
-    public void control(List<GrxBaseItem> itemList) {
-        if (currentWorld_ != null && currentWorld_.getLogSize() > 0) {
-            WorldStateEx state = currentWorld_.getValue();
-            if (state != null  && currentModel_ != null) {
-                CharacterStateEx charStat = state.get(currentModel_.getName());
-                if (charStat != null && state.time != drawnTime_) {
-                    currentSensorState_ = charStat.sensorState;
-                	canvas_.redraw();
-                	drawnTime_ = state.time;
-                }
-            }
-        }
-    }
-    */
     
     public void update(GrxBasePlugin plugin, Object... arg) {
 		if(currentWorld_!=plugin) return;
@@ -216,32 +196,6 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
         }
     }
     
-    /**
-     * @brief This method is called when contents of selected items are changed
-     * @param itemList list of selected items
-     */
-    /*
-    public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-        Iterator<GrxBaseItem> it = itemList.iterator();
-        comboModelName_.removeAll();
-        modelList_.clear();
-        currentModel_ = null;
-        comboSensorName_.removeAll();
-        sensorList_.clear();
-        currentSensor_ = null;
-        
-        while (it.hasNext()) {
-        	GrxBaseItem item = it.next();
-        	if (item instanceof GrxWorldStateItem){
-        		currentWorld_ = (GrxWorldStateItem) item;
-        	}else if (item instanceof GrxModelItem && ((GrxModelItem)item).isRobot()) {
-        		comboModelName_.add(item.getName());
-        		modelList_.add((GrxModelItem)item);
-        	}
-        }
-        canvas_.redraw();
-    }
-    */
     public void registerItemChange(GrxBaseItem item, int event){
     	if(item instanceof GrxModelItem){
     		currentModel_ = null;

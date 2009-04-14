@@ -293,35 +293,6 @@ public class GrxItemView extends GrxBaseView {
 		tv.refresh();
 		tv.expandToLevel(3);
 	}
-
-	/**
-	 * @brief This method is called when new item is selected
-	 *//*
-	public void focusedItemChanged( GrxBaseItem item ){
-    	//System.out.println("GrxItemView.currentItemChanged()");
-		List<GrxBasePlugin> l = new ArrayList<GrxBasePlugin>();
-		l.add(item);
-		tv.setSelection(new StructuredSelection(l), true);
-	}
-	*/
-	/**
-	 * @brief This method is called by PluginManager when list of items is changed
-	 */
-	/*
-	public void itemListChanged(){
-		//System.out.println("GrxItemView.itemListChanged()");
-		updateTree();
-	}
-	*/
-	/**
-	 * @brief This method is called by PluginManager when list of selected items is changed
-	 */
-	/*
-	public void itemSelectionChanged(List<GrxBaseItem> itemList){
-		//System.out.println("GrxItemView.itemSelectionChanged()");
-		updateTree();
-	}
-	*/
 	
 	public void registerItemChange(GrxBaseItem item, int event){
 		updateTree();

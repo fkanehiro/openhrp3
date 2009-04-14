@@ -393,21 +393,6 @@ public class GrxLoggerView extends GrxBaseView {
 		}
 	}
 	
-	/*
-	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-		if (!itemList.contains(currentItem_)) {
-			Iterator<GrxBaseItem> it = itemList.iterator();
-			while (it.hasNext()) {
-				GrxBaseItem i = it.next();
-				if (i instanceof GrxWorldStateItem) {
-					_setTimeSeriesItem((GrxWorldStateItem)i);
-					return;
-				}
-			}
-			_setTimeSeriesItem(null);
-		}
-	}
-	*/
 	public void registerItemChange(GrxBaseItem item, int event){
 		if(item instanceof GrxWorldStateItem){
 			GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
@@ -433,50 +418,6 @@ public class GrxLoggerView extends GrxBaseView {
 		}
 	}
 	
-	public void control(List<GrxBaseItem> itemList) {
-		/*  
-		if (currentItem_ == null) {
-			return;
-		}
-		
-		if (!isControlDisabled_ && currentItem_.getTime() != null && !sliderTime_.isEnabled()){
-			setEnabled(true);
-		}
-		/*
-		int loggerMax = Math.max(currentItem_.getLogSize()-1, 0);
-		if (getMaximum() != loggerMax) { // slider is extended
-			int oldMax = getMaximum();
-			//sliderTime_.setMaximum(loggerMax);
-			if (getCurrentPos() == 0 || getCurrentPos() == oldMax) {
-				//currentItem_.setPosition(loggerMax);
-				lblPlayRate_.setText("Live");
-			}else{
-				if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
-			}
-		}else{
-			if (lblPlayRate_.getText().equals("Live")) lblPlayRate_.setText("Pause");
-		}
-	*/
-		/*
-		// playback with specified position rate
-		if (isPlaying_) {
-			int newpos = getCurrentPos()+(int)(interval_*playRate_);
-			
-			if (getMaximum() < newpos) {
-				newpos = getMaximum();
-				currentItem_.setPosition(newpos);
-				pause();
-			} else if (newpos < 0) {
-				newpos = 0;
-				currentItem_.setPosition(newpos);
-				pause();
-			}else{
-				currentItem_.setPosition(newpos);
-			}
-		}
-		*/
-	}
-
 	/**
 	 * update time field
 	 */

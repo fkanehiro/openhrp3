@@ -7,6 +7,5 @@ import com.generalrobotix.ui.grxui.Activator;
 public class GrxRobotStatViewPart extends GrxBaseViewPart {
         public void createPartControl(Composite parent) {
             v = new GrxRobotStatView("Robot State",Activator.getDefault().manager_,this,parent);
-            v.start();
         }
 }

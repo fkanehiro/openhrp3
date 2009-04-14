@@ -240,17 +240,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			logStepTime_ = simParamPane_.getLogStepTime();
 			
 			isSimulatingView_ = simParamPane_.isSimulatingView();
-			//lgview_ = (GrxLoggerView)manager_.getView("Logger View");
-			if (isSimulatingView_){
-				//tdview_ = (Grx3DView)manager_.getView("3DView");
-				//if (tdview_ == null || lgview_ == null){
-				//	GrxDebugUtil.printErr("can't find 3DView or Logger View");
-				//	return false;
-				//}
-				//tdview_.disableUpdateModel();
-				//tdview_.showViewSimulator(true);
-				//lgview_.disableControl();
-			}
+			
 			currentWorld_.startSimulation(isSimulatingView_);
 			
 			// TODO disable "start simulation" button and menu
@@ -359,18 +349,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 		
 		public void endOfSimulation(){
 				
-			/*	try {
-					if (Thread.currentThread() != simThread_) {
-						//simThread_.interrupt();
-						simThread_.join();
-					}
-				} catch (Exception e) {
-					GrxDebugUtil.printErr("stopSimulation:", e);
-				}
-				*/
-				//if (isSimulatingView_ && tdview_!=null) {
-				//	tdview_.enableUpdateModel();
-				//}
 				updateTimeMsg();
 				System.out.println(new java.util.Date()+timeMsg_.replace(" ", "").replace("\n", " : "));
 				if (isInteractive_) {
@@ -389,9 +367,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 				syncExec(new Runnable(){
 					public void run() {
 						currentWorld_.setPosition(0);
-						//if (isSimulatingView_) {
-						//	lgview_.enableControl();
-						//}
 						currentWorld_.stopSimulation();
 	                }
 	            } );
@@ -499,19 +474,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 		
 	}
-	
-    public void control(List<GrxBaseItem> items) {
-    	/*
-    	if (isExecuting_ && simThread_.getState() == Thread.State.TERMINATED){
-    		if (extendTime()){
-    			clockGenerator_.continueSimulation();
-    		}else{
-    			stopSimulation();
-    		}
-    	}
-    	*/
-    }
-    
+	   
 	/**
 	 * @brief start simulation
 	 * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation
@@ -649,28 +612,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 		GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
 
 	}
-	
-	/**
-	 * @brief see doc for parent class
-	 */
-	/*
-	public boolean setup(List<GrxBaseItem> itemList) {
-		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
-	       
-		ClockGenerator cg = clockGenerator_._this(manager_.orb_);
-		NameComponent[] path = {new NameComponent("ClockGenerator", "")};
-	       
-		try {
-			rootnc.rebind(path, cg);
-		} catch (Exception ex) {
-			GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
-			return false;
-		}
-		GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
-		return true;
-	}
-	*/
-	
+		
 	void execSWT( Runnable r, boolean execInCurrentThread ){
 		if( execInCurrentThread ) {
 			r.run();
@@ -681,18 +623,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 	}
 
-	/*
-	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-		if (!isExecuting_) {
-			currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
-			simParamPane_.updateItem(currentWorld_);
-			controllerPane_.updateRobots(itemList);
-			collisionPane_.updateCollisionPairs(itemList);
-			return;
-		}
-	}
-	*/
-	
 	public void registerItemChange(GrxBaseItem item, int event){
 		if(item instanceof GrxWorldStateItem){
 			GrxWorldStateItem witem = (GrxWorldStateItem) item;
