@@ -20,7 +20,6 @@
 package com.generalrobotix.ui.view;
 
 import java.text.DecimalFormat;
-import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;

@@ -91,9 +91,7 @@ public class GrxPluginManager {
     public static final int FOCUSED_ITEM=5;
     public static final int NOTFOCUSED_ITEM=6;
     
-    // for cyclic execution
     private int delay_ = DEFAULT_INTERVAL;// [msec]
-    public double min, max, now; // [msec]
     private static final int DEFAULT_INTERVAL = 100; // [msec]
 
     // for CORBA
@@ -384,11 +382,6 @@ public class GrxPluginManager {
         setSelectedItem(mode, true);
         currentMode_ = mode;
         currentMode_.restoreProperties();
-
-        now = max = min = 0.0;
-
-        // timer_.start();
-
         currentProject_.restoreProject();
     }
 
@@ -402,7 +395,6 @@ public class GrxPluginManager {
 
     public void setDelay(int msec) {
         delay_ = msec;
-        // timer_.setDelay(msec);
     }
 
     public int getDelay() {

@@ -909,6 +909,7 @@ public class GrxLinkItem extends GrxTransformItem{
         Map<String, Object> userData = new Hashtable<String, Object>();
         userData.put("linkInfo", this);
         userData.put("object", model_);
+        userData.put("boundingBoxSwitch", switchBb_);
         tg_.setUserData(userData);
         tg_.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
 	}

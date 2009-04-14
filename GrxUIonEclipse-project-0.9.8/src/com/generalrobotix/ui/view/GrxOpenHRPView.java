@@ -97,8 +97,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private double totalTime_ = 20;
 	private double logStepTime_ = 0.05;
 	private boolean isSimulatingView_;
-	//private Grx3DView tdview_;
-	//private GrxLoggerView lgview_;
 	private IAction action_ = null;
 
 	private SimulationParameterPanel simParamPane_;
