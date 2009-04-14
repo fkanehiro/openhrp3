@@ -17,64 +17,27 @@
 
 package com.generalrobotix.ui.item;
 
-import java.awt.Frame;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferUShort;
-import java.util.List;
-
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
-import javax.media.j3d.GeometryArray;
-import javax.media.j3d.ImageComponent;
-import javax.media.j3d.ImageComponent2D;
-import javax.media.j3d.LineArray;
-import javax.media.j3d.Material;
-import javax.media.j3d.Node;
-import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
-import javax.media.j3d.Switch;
-import javax.media.j3d.Texture;
-import javax.media.j3d.Texture2D;
-import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
-import javax.media.j3d.TransparencyAttributes;
-import javax.vecmath.Color3f;
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Matrix4d;
-import javax.vecmath.Point2f;
 import javax.vecmath.Point3f;
-import javax.vecmath.Vector3d;
-import javax.vecmath.Vector3f;
 
 import jp.go.aist.hrp.simulator.AppearanceInfo;
 import jp.go.aist.hrp.simulator.MaterialInfo;
 import jp.go.aist.hrp.simulator.ShapeInfo;
 import jp.go.aist.hrp.simulator.ShapePrimitiveType;
 import jp.go.aist.hrp.simulator.TextureInfo;
-import jp.go.aist.hrp.simulator.TransformedShapeIndex;
-
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.generalrobotix.ui.GrxPluginManager;
-import com.generalrobotix.ui.util.AxisAngle4d;
-import com.generalrobotix.ui.util.ErrorDialog;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
-import com.sun.j3d.utils.geometry.GeometryInfo;
-import com.sun.j3d.utils.geometry.NormalGenerator;
 import com.sun.j3d.utils.geometry.Primitive;
 import com.sun.j3d.utils.geometry.Sphere;
-import com.sun.j3d.utils.image.TextureLoader;
-import com.sun.j3d.utils.picking.PickTool;
 
 @SuppressWarnings("serial")
 

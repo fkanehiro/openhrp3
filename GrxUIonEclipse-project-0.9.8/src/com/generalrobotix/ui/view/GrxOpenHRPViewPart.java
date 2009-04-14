@@ -9,7 +9,6 @@ public class GrxOpenHRPViewPart extends GrxBaseViewPart {
 
     public void createPartControl(Composite parent) {
         v = new GrxOpenHRPView("OpenHRP",Activator.getDefault().manager_,this,parent);
-        v.start();
     }
 
 }

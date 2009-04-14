@@ -77,14 +77,10 @@ public class GrxPluginManager {
     // for managing items
     public GrxPluginLoader pluginLoader_;
     public HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap> pluginMap_ = new HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap>(); // プラグインとその生成したアイテムのマップ
-    private List<GrxBaseItem> selectedItemList_ = new ArrayList<GrxBaseItem>();// ダブルクリックによるトグルステータス
     private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
-    private boolean bItemSelectionChanged_ = false;
-    private boolean bItemListChanged_ = false;
-    private boolean bfocusedItemChanged_ = false;
-    private boolean bItemPropertyChanged_ = false;
     private String homePath_;
     private Map<Class<? extends GrxBasePlugin>, PluginInfo> pinfoMap_ = new HashMap<Class<? extends GrxBasePlugin>, PluginInfo>();
+    
     private Map<Class<? extends GrxBaseItem>, List<GrxBaseView>> itemChangeListener_ = 
     	new HashMap<Class<? extends GrxBaseItem>, List<GrxBaseView>>(); 
     public static final int ADD_ITEM=0;
@@ -97,7 +93,6 @@ public class GrxPluginManager {
     
     // for cyclic execution
     private int delay_ = DEFAULT_INTERVAL;// [msec]
-    private long prevTime_ = 0; // [msec]
     public double min, max, now; // [msec]
     private static final int DEFAULT_INTERVAL = 100; // [msec]
 
@@ -242,29 +237,6 @@ public class GrxPluginManager {
             currentProject_.create();
         // root_.setUserObject(currentProject_);
 
-        display = Display.getCurrent();
-        Runnable runnable = new Runnable() {
-            public void run() {
-	           	if ( bItemSelectionChanged_ )
-	            {
-	                _updateItemSelection();
-	            }
-                updateViewList();
-                if (bItemListChanged_)
-                    _notifyItemListChanged();
-                if (bfocusedItemChanged_)
-                    _notifyFocusedItemChanged();
-                if (bItemPropertyChanged_)
-                    _notifyItemPropertyChanged();
-                if (isPerspectiveVisible())
-                    _control();
-                if (!display.isDisposed())
-                    display.timerExec(delay_, this);
-            }
-        };
-        if (!display.isDisposed())
-            display.timerExec(delay_, runnable);
-
         // TODO: 「grxuirc.xmlが見つからないとexit()」の代替だが、もっとスマートな方法を考えよう
         initSucceed = true;
     }
@@ -282,7 +254,6 @@ public class GrxPluginManager {
             }
             focusedItem_ = item;
             focusedItem_.setFocused(true);
-            bfocusedItemChanged_ = true;
             itemChange(item, FOCUSED_ITEM);
         }
     }
@@ -314,74 +285,6 @@ public class GrxPluginManager {
     }
 
     /**
-     * @brief update list of selected items and notify all views
-     */
-    private void _updateItemSelection() {
-        // GrxDebugUtil.println("[PM THREAD] update Item Selections");
-        bItemSelectionChanged_ = false;
-        selectedItemList_.clear();
-        Collection<OrderedHashMap> oMaps = pluginMap_.values();
-        for (OrderedHashMap om : oMaps) {
-            for (Object o : om.values()) {
-                if (o instanceof GrxBaseItem && ((GrxBaseItem) o).isSelected())
-                    selectedItemList_.add((GrxBaseItem) o);
-            }
-        }
-
-        GrxDebugUtil.println("[PM THREAD] selectedItems = " + selectedItemList_.toString());
-
-        updateViewList();
-        for (int i = 0; i < selectedViewList_.size(); i++) {
-            GrxBaseView view = selectedViewList_.get(i);
-            try {
-            view.itemSelectionChanged(selectedItemList_);
-            	            	
-            } catch (Exception e1) {
-                GrxDebugUtil.printErr("Control thread (itemSelectionChanged):" + view.getName() + " got exception.", e1);
-            }
-        }
-    }
-
-    /**
-     * @brief notify all views that list of items is changed
-     */
-    private void _notifyItemListChanged() {
-        for (int i = 0; i < selectedViewList_.size(); i++) {
-            GrxBaseView v = (GrxBaseView) selectedViewList_.get(i);
-            v.itemListChanged();
-        }
-        bItemListChanged_ = false;
-    }
-
-    /**
-     * @brief notify all views that property of current item is changed
-     */
-    private void _notifyItemPropertyChanged() {
-        // System.out.println("GrxPluginManager.propertyChanged()");
-        for (int i = 0; i < selectedViewList_.size(); i++) {
-            GrxBaseView v = (GrxBaseView) selectedViewList_.get(i);
-            v.propertyChanged();
-        }
-        bItemPropertyChanged_ = false;
-    }
-
-    /**
-     * @brief notify this manager that property of current item is changed
-     */
-    public void itemPropertyChanged() {
-        bItemPropertyChanged_ = true;
-    }
-
-    private void _notifyFocusedItemChanged() {
-        // System.out.println("GrxPluginManager._notifyFocusedItemChanged()");
-        for (int i = 0; i < selectedViewList_.size(); i++) {
-            GrxBaseView v = (GrxBaseView) selectedViewList_.get(i);
-            v.focusedItemChanged(focusedItem_);
-        }
-        bfocusedItemChanged_ = false;
-    }
-
-    /**
      * @brief update list of views
      */
     private void updateViewList() {
@@ -407,51 +310,6 @@ public class GrxPluginManager {
             if (v != null && GrxBaseViewPart.class.isAssignableFrom(v.getClass())) {
                 GrxBaseView view = ((GrxBaseViewPart) v).getGrxBaseView();
                 selectedViewList_.add(view);
-            }
-        }
-    }
-
-    /**
-     * @brief call control of all views
-     */
-    private void _control() {
-        long t = System.currentTimeMillis();
-        now = t - prevTime_;
-        prevTime_ = t;
-        max = Math.max(max, now);
-        min = Math.min(min, now);
-
-        updateViewList();
-        for (int i = 0; i < selectedViewList_.size(); i++) {
-            GrxBaseView view = selectedViewList_.get(i);
-            try {
-                switch (view.view_state_) {
-                case GrxBaseView.GRX_VIEW_SETUP:
-                    if (view.setup(selectedItemList_))
-                        view.view_state_ = GrxBaseView.GRX_VIEW_ACTIVE;
-                    break;
-
-                case GrxBaseView.GRX_VIEW_ACTIVE:
-                    long prev = System.currentTimeMillis();
-                    view.control(selectedItemList_);
-                    t = System.currentTimeMillis();
-                    view.now = t - prev;
-                    if (view.max < view.now)
-                        view.max = view.now;
-                    if (view.min > view.now)
-                        view.min = view.now;
-                    break;
-
-                case GrxBaseView.GRX_VIEW_CLEANUP:
-                    if (view.cleanup(selectedItemList_))
-                        view.view_state_ = GrxBaseView.GRX_VIEW_SLEEP;
-                    break;
-
-                case GrxBaseView.GRX_VIEW_SLEEP:
-                    break;
-                }
-            } catch (final Exception e) {
-                GrxDebugUtil.printErr("Control thread :" + view.getName() + " got exception.", e);
             }
         }
     }
@@ -519,18 +377,6 @@ public class GrxPluginManager {
         if (currentMode_ == mode)
             return;
 
-        // prepare change mode
-        for (int i = 0; i < selectedViewList_.size(); i++) {
-            GrxBaseView view = selectedViewList_.get(i);
-            view.stop();
-            while (!view.isSleeping()) {
-                try {
-                    Thread.sleep(getDelay());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
         // timer_.stop();
         clearItemSelection();
 
@@ -563,7 +409,8 @@ public class GrxPluginManager {
         return delay_;
     }
 
-    public Class<? extends GrxBasePlugin> registerPlugin(String className) {
+    @SuppressWarnings("unchecked")
+	public Class<? extends GrxBasePlugin> registerPlugin(String className) {
         Class<?> cls = pluginLoader_.loadClass(className);
         return registerPlugin((Class<? extends GrxBasePlugin>) cls);
     }
@@ -574,7 +421,8 @@ public class GrxPluginManager {
      * @param el
      * @return
      */
-    public Class<?> registerPlugin(Element el) {
+    @SuppressWarnings("unchecked")
+	public Class<?> registerPlugin(Element el) {
         Class<?> cls = pluginLoader_.loadClass(el.getAttribute("class"));
         Class<? extends GrxBasePlugin> ret = registerPlugin((Class<? extends GrxBasePlugin>) cls);
         if (ret != null) {
@@ -635,7 +483,6 @@ public class GrxPluginManager {
         //GrxDebugUtil.println("[PM]@createItem createPlugin return " + item);
         if (item != null) {
             item.create();
-            _addItemNode(item);
         }
         return item;
     }
@@ -681,7 +528,6 @@ public class GrxPluginManager {
         if (item != null) {
             if (item.load(f)) {
                 item.setURL(url);
-                _addItemNode(item);
             } else {
                 removeItem(item);
             }
@@ -751,7 +597,8 @@ public class GrxPluginManager {
      *            instance of plugin
      * @return true if registered successfully, false otherwise
      */
-    public boolean registerPluginInstance(GrxBasePlugin instance) {
+    @SuppressWarnings("unchecked")
+	public boolean registerPluginInstance(GrxBasePlugin instance) {
         HashMap<String, GrxBasePlugin> map = pluginMap_.get(instance.getClass());
         GrxBasePlugin plugin = map.get(instance.getName());
         if ( plugin != null) {
@@ -795,20 +642,7 @@ public class GrxPluginManager {
                 msg += trace[i].getFileName() + ":" + trace[i].getLineNumber() + ")\n";
             }
         }
-
-        // JOptionPane.showMessageDialog(getFrame(), msg, "Exception Occered",
-        // JOptionPane.WARNING_MESSAGE, ROBOT_ICON);
         MessageDialog.openWarning(null, "Exception Occered", msg);
-    }
-
-    /**
-     * @brief
-     * @param item
-     */
-    private void _addItemNode(GrxBaseItem item) {
-        if (item.isSelected())
-        	reselectItems();
-        bItemListChanged_ = true;
     }
 
     /**
@@ -820,7 +654,6 @@ public class GrxPluginManager {
         if (m != null) {
             setSelectedItem(item, false);
             m.remove(item.getName());
-            reselectItems();
             itemChange(item, REMOVE_ITEM);
         }
     }
@@ -866,26 +699,12 @@ public class GrxPluginManager {
                 m.remove(item.getName());
                 m.put(newName, item);
                 item.setName(newName);
-                bItemListChanged_ = true;
             }
             return true;
         } else {
             System.out.println("GrxPluginManager.renamePlugin() : " + newName + " is already used");
         }
         return false;
-    }
-
-    /**
-     * @brief
-     */
-    public void setVisibleItem() {
-        ArrayList<Class<? extends GrxBaseItem>> cList = currentMode_.activeItemClassList_;
-        for (int i = 0; i < cList.size(); i++) {
-            Iterator it = pluginMap_.get(cList.get(i)).values().iterator();
-            while (it.hasNext())
-                _addItemNode((GrxBaseItem) it.next());
-        }
-        bItemListChanged_ = true;
     }
 
     /**
@@ -1030,17 +849,12 @@ public class GrxPluginManager {
      * @param select
      *            true to select, false to unselect
      */
-    public void setSelectedItem(GrxBaseItem item, boolean select) {
+    @SuppressWarnings("unchecked")
+	public void setSelectedItem(GrxBaseItem item, boolean select) {
         if (item == null)
             return;
 
-        // GrxDebugUtil.println("[PM]@setSelectedItem "+item.getName()+" selection to "+select
-        // );
-
-        if (select ^ item.isSelected())
-            reselectItems();
-
-        if (select && item.isExclusive()) {
+         if (select && item.isExclusive()) {
             for (GrxBaseItem i : (Collection<GrxBaseItem>) getItemMap(item.getClass()).values()) {
                 if (i != item) {
                     i.setSelected(false);
@@ -1057,12 +871,6 @@ public class GrxPluginManager {
         else		itemChange(item, NOTSELECTED_ITEM);
     }
 
-    /**
-     * @brief set flag to update item selection list
-     */
-    public void reselectItems() {
-        bItemSelectionChanged_ = true;
-    }
 
     /**
      * @brief unselect all items

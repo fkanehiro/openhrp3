@@ -428,7 +428,6 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public Object setProperty(String key, String value){
 		//System.out.println("GrxBasePlugin.setProperty("+key+","+value+")");
 		Object o = super.setProperty(key, value);
-		manager_.itemPropertyChanged();
 		notifyObservers("PropertyChange");
 		return o;
 	}

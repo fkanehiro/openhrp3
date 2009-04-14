@@ -54,7 +54,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
    	private static final String envIcon = "environment.png";
    	
     private boolean isRobot_ = true;
-    //public boolean update_ = true;
 
     private BodyInfo bInfo_;
     private boolean bModified_ = false; //< true if this model is modified, false otherwise
@@ -360,7 +359,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             setVisibleCoM(false);
             setVisibleCoMonFloor(false);
         }
-        manager_.reselectItems();
     }
 
     /**

@@ -28,7 +28,6 @@ public class GrxBaseViewPart extends ViewPart {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		v.start();
 	}
 	
 	@Override

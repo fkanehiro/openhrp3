@@ -136,8 +136,7 @@ public class Grx3DView
     private JToggleButton btnRec_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/record.png")));
     private JButton btnPlayer_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/movie_player.png")));
     private JButton btnRestore_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/undo.png")));
-    //private JFileChooser imageChooser_;
-    
+     
     private JLabel lblMode_ = new JLabel("[VIEW]");
     private JLabel lblTarget_ = new JLabel("");
     private JLabel lblValue_  = new JLabel("");
@@ -279,15 +278,7 @@ public class Grx3DView
 
         registerCORBA();
     }
- /*   
-    public void disableUpdateModel(){
-        updateModels_ = false;
-    }
-    
-    public void enableUpdateModel(){
-        updateModels_ = true;
-    }
-   */ 
+
     private void _setupSceneGraph() {
         universe_ = new VirtualUniverse();
         locale_ = new javax.media.j3d.Locale(universe_);
@@ -644,56 +635,6 @@ public class Grx3DView
         tgView_.setTransform(t3dViewHome_);
     }
     
-  //  public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-    	/*
-        boolean selectionChanged = false;
-        for (int i = currentModels_.size()-1 ; i>-1; i--) {
-            GrxModelItem item = currentModels_.get(i);
-            if (item.isSelected())
-                continue;
-            currentModels_.remove(item);
-            item.bgRoot_.detach();
-            selectionChanged = true;
-        }
-
-        Iterator<GrxBaseItem> it = itemList.iterator();
-        while (it.hasNext()) {
-            GrxBaseItem item = (GrxBaseItem) it.next();
-            if (item instanceof GrxModelItem) {
-                GrxModelItem modelItem = (GrxModelItem) item;
-                if (currentModels_.contains(modelItem)){
-                	if (!modelItem.bgRoot_.isLive()){
-                		// !isLive() means this item is reloaded
-                		modelItem.setWireFrame(viewToolBar_.isWireFrameSelected());
-                		bgRoot_.addChild(modelItem.bgRoot_);
-                	}else{
-                    	//System.out.println(modelItem.getName() + " is skipped");
-                	}
-                }else{
-            		modelItem.setWireFrame(viewToolBar_.isWireFrameSelected());
-                    bgRoot_.addChild(modelItem.bgRoot_);
-                    currentModels_.add(modelItem);
-                    //System.out.println(modelItem.getName() + " is added");
-                    selectionChanged = true;
-                }
-            }
-        }
-     
-        if (selectionChanged && isRunning()){
-            behaviorManager_.replaceWorld(itemList);
-            disableOperation();
-        }
-        */
-       // prevTime_ = -1;
-        /*
-        if (collisionBg_ != null) {
-            collisionBg_.detach();
-            collisionBg_ = null;
-        }    
-        */
-   // }
-       
-    
     public void registerItemChange(GrxBaseItem item, int event){
     	if(item instanceof GrxModelItem){
     		GrxModelItem modelItem = (GrxModelItem) item;
@@ -739,20 +680,7 @@ public class Grx3DView
     		}
     	}
     }
-    /*
-    public boolean setup(List<GrxBaseItem> itemList) {
-        behaviorManager_.setThreeDViewer(this);
-        behaviorManager_.setViewIndicator(viewToolBar_);
-        behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
-        behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
-        behaviorManager_.setViewHandlerMode("button_mode_rotation");
-        behaviorManager_.replaceWorld(itemList);
-        viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
-        viewToolBar_.setOperation(ViewToolBar.ROTATE);
-
-           return registerCORBA();
-    }
-   */
+    
     public void update(GrxBasePlugin plugin, Object... arg) {
     	if(currentWorld_!=plugin) return;
 		if((String)arg[0]=="PositionChange"){
@@ -789,52 +717,6 @@ public class Grx3DView
     	}
     }
 	
-    public void control(List<GrxBaseItem> items) {
-    /*	
-        if (currentModels_.size() == 0)
-            return;
-
-        if (behaviorManager_.getOperationMode() != BehaviorManager.OPERATION_MODE_NONE){
-        	if (btnCollision_.isSelected()) {
-                _showCollision(behaviorManager_.getCollision(currentModels_));
-        	}
-        	if (btnDistance_.isSelected()){
-        		_showDistance(behaviorManager_.getDistance(currentModels_));
-        	}
-        	if (btnIntersection_.isSelected()){
-        		_showIntersection(behaviorManager_.getIntersection(currentModels_));
-        	}
-            //if (updateModels_) updateViewSimulator(0);
-            return;
-        }
-        */
-/*
-         if (currentWorld_ == null){
-        	 if (updateModels_) updateViewSimulator(0);
-        	 return;
-         }
-
-        WorldStateEx state = currentWorld_.getValue();
-        if (state == null){
-            if (updateModels_) updateViewSimulator(0);
-            return;
-        }
-        */
-        /*      
-        if (state.time == prevTime_)
-            return;
-
-        _showCollision(state.collisions);
-
-        if (updateModels_){
-        	updateModels(state);
-            updateViewSimulator(state.time);
-        }
-	
-        prevTime_ = state.time;
-        */
-    }
-
 	public void showViewSimulator(boolean b) {
         for (int i=0; i<currentModels_.size(); i++) {
             List<Camera_impl> l = currentModels_.get(i).getCameraSequence();
@@ -949,7 +831,11 @@ public class Grx3DView
             }
         } catch (Exception e) {
             GrxDebugUtil.printErr("Grx3DView.rec():",e);
-            JOptionPane.showMessageDialog(frame_, "Failed to Record Movie");
+            syncExec(new Runnable(){
+				public void run(){
+					MessageDialog.openError( comp.getShell(), "Error", "Failed to Record Movie");
+				}
+			});
             btnRec_.setSelected(false);	
             return;
         }
@@ -983,8 +869,11 @@ public class Grx3DView
 					}
 					stopRecording();
 				} catch (Exception e) {
-					JOptionPane.showMessageDialog(frame_,
-						"Recording Interrupted by Exception.");
+					syncExec(new Runnable(){
+						public void run(){
+							MessageDialog.openError( comp.getShell(), "Error", "Recording Interrupted by Exception.");
+						}
+					});
 					stopRecording();
 					GrxDebugUtil.printErr("Recording Interrupted by Exception:",e);
 				}
@@ -998,21 +887,29 @@ public class Grx3DView
     	recordingMgr_.endRecord();
 		btnRec_.setSelected(false);
 		tgView_.removeChild(offScreenBg_);
-		JOptionPane.showMessageDialog(frame_,"Recording finished" );
+		syncExec(new Runnable(){
+			public void run(){
+				MessageDialog.openInformation( comp.getShell(), "Infomation", "Recording finished");
+			}
+		});
 		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
     }
     
-    private boolean fileOverwriteDialog(String fileName){
+    private boolean ret_;
+    private boolean fileOverwriteDialog(final String fileName){
         if  (new File(fileName).isDirectory())
             return false;
-        
-        int ans = JOptionPane.showConfirmDialog(frame_,
-            fileName + " " + "is already exist. Are you over write?",
-            "File is already exist.",JOptionPane.YES_NO_OPTION);
-        if (ans == JOptionPane.YES_OPTION)
+
+        syncExec(new Runnable(){
+			public void run(){
+				ret_ = MessageDialog.openConfirm( comp.getShell(), "File is already exist.",
+						fileName + " " + "is already exist. Are you over write?");
+			}
+		});
+        if(ret_)
             return true;
-        
-        return false;
+        else
+        	return false;
     }
     
     private String pathToURL(String path) {
@@ -1124,7 +1021,8 @@ public class Grx3DView
         }
     }
     
-    private void _showIntersection(LinkPair[] pairs){
+    @SuppressWarnings("unchecked")
+	private void _showIntersection(LinkPair[] pairs){
     	if (pairs == null){
     		for (int i=0; i<intersectingLinks_.size(); i++){
             	intersectingLinks_.get(i).restoreColor();
@@ -1403,8 +1301,7 @@ public class Grx3DView
         public void clearData() {}
         public void drawScene(WorldState arg0) {
           update(arg0);
-         // prevTime_ = -1;
-        }
+         }
         public void setLineScale(float arg0) {}
         public void setLineWidth(float arg0) {}
     }
@@ -1761,13 +1658,6 @@ public class Grx3DView
         _showIntersection(null);
         _showDistance(null);
     }
-
-    /*
-    private void setModelUpdate(boolean b) {
-        for (int i=0; i<currentModels_.size(); i++)
-            currentModels_.get(i).update_ = b;
-    }
-	*/
 
     public void addClickListener( Grx3DViewClickListener listener ){
         behaviorManager_.addClickListener( listener );

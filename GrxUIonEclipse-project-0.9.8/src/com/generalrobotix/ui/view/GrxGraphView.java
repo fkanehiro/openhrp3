@@ -119,31 +119,6 @@ public class GrxGraphView extends GrxBaseView {
         manager_.registerItemChangeListener(this, GrxGraphItem.class);
 	}
 
-		
-	/*
-	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-		if (!itemList.contains(currentWorld_)) {
-			currentWorld_ = (GrxWorldStateItem)manager_.getSelectedItem(GrxWorldStateItem.class, null);
-			if (currentWorld_ == null)
-				return;
-
-			graphManager_.setLogManager(currentWorld_.logger_);
-			try {
-				double step = currentWorld_.getDbl("logTimeStep", null);
-				graphManager_.trendGraphModel_.setStepTime((long)(1000000*step));
-			} catch (Exception e) {
-				GrxDebugUtil.printErr("Couldn't parse log step time.", e);
-				currentWorld_ = null;
-			}
-		}
-	
-		if (!itemList.contains(currentGraph_)) {
-			currentGraph_ = (GrxGraphItem)manager_.getSelectedItem(GrxGraphItem.class, null);
-			_updateGraph(currentGraph_);
-		}
-	}
-	*/
-	
 	private void setLogManager(GrxWorldStateItem worldStateItem){
 		if(worldStateItem != null){
 			graphManager_.setLogManager(worldStateItem.logger_);
@@ -289,28 +264,7 @@ public class GrxGraphView extends GrxBaseView {
 		}
 		gpanel_.repaint();	
 	}
-/*
-	private Time time_ = new Time();
-	public void control(List<GrxBaseItem> itemList) {
-	    if (currentWorld_ == null || !contentPane_.isShowing()) 
-	    	return;
-	    
-		WorldStateEx state = currentWorld_.getValue();
-		if (state == null)
-			return;
-		
-		if (state.time - prevTime_ != 0) {
-			prevTime_ = state.time;
-			time_.set(state.time);
-			graphManager_.simulationTimeChanged(time_);
-			graphManager_.worldTimeChanged(time_);
-			
-			double ti = time_.getDouble() + graphManager_.getTimeRange();
-	        if (ti > graphManager_.getTotalTime())
-	            graphManager_.setTotalTime((long)(ti+5)*1000000);
-		}
-	}
-*/
+
 	public void update(GrxBasePlugin plugin, Object... arg) {
 		if(currentWorld_!=plugin) return;
 		if((String)arg[0]=="PositionChange"){

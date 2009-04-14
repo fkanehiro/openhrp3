@@ -156,16 +156,6 @@ public class GrxPropertyView extends GrxBaseView {
         	currentPlugin_.addObserver(this);
     }
 
-    /**
-     * @brief This method is called by PluginManager when "focused item" is changed
-     * @param item focused item
-     */
-    /*
-    public void focusedItemChanged(GrxBaseItem item) {
-    	//System.out.println("GrxPropertyView.focusedItemChanged()");
-    	_setInput(item);
-    }
-	*/
     public void registerItemChange(GrxBaseItem item, int event){
     	switch(event){
     	case GrxPluginManager.FOCUSED_ITEM:
@@ -188,12 +178,7 @@ public class GrxPropertyView extends GrxBaseView {
     		break;
     	}
     }
-    /*
-    public void propertyChanged(){
-    	//System.out.println("GrxPropertyView.propertyChanged()");
-    	_refresh();
-	}
-	*/
+   
     public void update(GrxBasePlugin plugin, Object... arg) {
     	if((String)arg[0]!="PropertyChange")
     		return;

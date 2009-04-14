@@ -35,12 +35,7 @@ public class GrxBaseView extends GrxBasePlugin {
 	public boolean isScrollable_ = true;
 	
 	public double min, max, now;
-	int view_state_ = GRX_VIEW_SLEEP;
-	static final int GRX_VIEW_SETUP   = 0;
-	static final int GRX_VIEW_ACTIVE  = 1;
-	static final int GRX_VIEW_CLEANUP = 2;
-	static final int GRX_VIEW_SLEEP   = 3;
-    
+	    
 	private GrxBaseViewPart vp_;
 	private Composite parent_;
     private ScrolledComposite scrollComposite_;
@@ -114,61 +109,10 @@ public class GrxBaseView extends GrxBasePlugin {
 	}
 
 	/**
-	 * @brief start this 
-	 */
-	public void start() {
-		if (view_state_ == GRX_VIEW_SLEEP)
-			view_state_ = GRX_VIEW_SETUP;
-	}
-
-	/**
-	 * @brief stop this
-	 */
-	public void stop() {
-		if (view_state_ == GRX_VIEW_ACTIVE)
-			view_state_ = GRX_VIEW_CLEANUP;
-	}
-	
-	/**
-	 * 
-	 * @param itemList
-	 */
-	public void itemSelectionChanged(List<GrxBaseItem> itemList){}
-
-	/**
-	 * @brief setup
-	 * @param itemList
-	 * @return true if setup finished, false otherwise
-	 */
-	public boolean setup(List<GrxBaseItem> itemList){return true;}
-
-	/**
-	 * @brief control
-	 * @param itemList
-	 */
-	public void control(List<GrxBaseItem> itemList){}
-
-	/**
 	 * @brief cleanup
 	 * @param itemList
 	 * @return true if cleanup finished, false otherwise
 	 */public boolean cleanup(List<GrxBaseItem> itemList){return true;}
-
-	/**
-	 * @brief check if this is running 
-	 * @return true if running, false otherwise
-	 */
-	public boolean isRunning() {
-		return (view_state_ == GRX_VIEW_ACTIVE);
-	}
-
-	/**
-	 * @brief check if this is sleeping
-	 * @return true if sleeping, false otherwise
-	 */
-	public boolean isSleeping() {
-		return (view_state_ == GRX_VIEW_SLEEP);
-	}
 
 	/**
 	 * @brief this method is called by PluginManager when list of items is changed

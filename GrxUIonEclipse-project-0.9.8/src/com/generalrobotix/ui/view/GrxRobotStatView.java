@@ -269,46 +269,7 @@ public class GrxRobotStatView extends GrxBaseView {
         else//(comboModelName_.getItemCount() == 1)
             comboModelName_.setVisible(false);	
     }
-    /*
-    public void itemSelectionChanged(List<GrxBaseItem> itemList) {
-        Iterator<GrxBaseItem> it = itemList.iterator();
-        //comboModelName_.removeAll();
-        modelList_.clear();
-        jointList_.clear();
-        while (it.hasNext()) {
-            GrxBaseItem item = it.next();
-            if (item instanceof GrxWorldStateItem)
-                currentWorld_ = (GrxWorldStateItem) item;
-            else if (item instanceof GrxModelItem && ((GrxModelItem)item).isRobot()) {
-                //comboModelName_.add(item.getName());
-                //modelList_.add((GrxModelItem)item);
-            }
-        }
-        
-        if (comboModelName_.getItemCount() > 0) {
-            forceName_ = null;
-            comboModelName_.select(0);
-            GrxModelItem item = modelList_.get(0);
-            if (item == null || item == currentModel_)
-                return;
-            currentModel_ = item;
-            Vector<GrxLinkItem> lInfo = currentModel_.links_;
-            for (int i = 0; i < lInfo.size(); i++) {
-                for (int j = 0; j < lInfo.size(); j++) {
-                    if (i == lInfo.get(j).jointId()) {
-                        jointList_.add(lInfo.get(j));
-                        break;
-                    }
-                }
-            }
-            //if(comboModelName_.getItemCount() > 1)
-           //     comboModelName_.setVisible(true);
-           // else//(comboModelName_.getItemCount() == 1)
-            //    comboModelName_.setVisible(false);
-        }
-        _resizeTables();
-    }
-    */
+    
     public void registerItemChange(GrxBaseItem item, int event){
     	if(item instanceof GrxModelItem){
     		GrxModelItem modelItem = (GrxModelItem) item;
@@ -383,33 +344,7 @@ public class GrxRobotStatView extends GrxBaseView {
     		}
     	}
     }
-    /*
-    public void control(List<GrxBaseItem> itemList) {
-        if (currentModel_ == null)
-            return;
-
-        if (currentWorld_ != null && currentWorld_.getLogSize() > 0) {
-            WorldStateEx state = currentWorld_.getValue();
-            if (state != null) {
-                CharacterStateEx charStat = state.get(currentModel_.getName());
-                if (charStat != null) {
-                    currentSensor_ = charStat.sensorState;
-                    currentRefAng_ = charStat.targetState;
-                    currentSvStat_ = charStat.servoState;
-                }
-                
-                if (forceName_ == null) {
-                    forceName_ = currentModel_.getSensorNames("Force");
-                    _resizeTables();
-                }
-            }
-        }
-        
-        jointTV_.setInput(_createJointTVInput());
-        forceTV_.setInput(_createForceTVInput());
-        sensorTV_.setInput(_createSensorTVInput());
-    }
- 	*/
+    
     public void update(GrxBasePlugin plugin, Object... arg){
     	if(currentWorld_ != plugin || (String)arg[0] != "PositionChange" ) 
     		return;
@@ -446,14 +381,6 @@ public class GrxRobotStatView extends GrxBaseView {
 
     }
     
-    /*
-    public boolean setup(List<GrxBaseItem> itemList) {
-        //currentWorld_ = null;
-        //currentModel_ = null;
-        _resizeTables();
-        return true;
-    }
-	*/
     
 //    class MyCellRenderer extends JLabel implements TableCellRenderer {
 //        private int[] columnAlignment_ = null;

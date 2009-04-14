@@ -45,6 +45,7 @@ public class GrxModeInfoItem extends GrxBaseItem {
 	}
 
 
+	@SuppressWarnings("unchecked")
 	public void restoreProperties() {
 		super.restoreProperties();
 		// アイテムプラグインの追加
@@ -76,7 +77,6 @@ public class GrxModeInfoItem extends GrxBaseItem {
 				manager_.createView((Class<? extends GrxBaseView>)cls, name);
 			}
 		}
-		manager_.setVisibleItem();
 	}
 
 	public boolean create() {
