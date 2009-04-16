@@ -55,7 +55,7 @@ public class GrxLoggerView extends GrxBaseView {
 
 	private int current_ = 0;    // current position
 	private double playRate_ = 1.0; // playback rate
-	private double interval_ = 100; // position increment/decrement step
+	private int frameRate_ = 10;
 	private boolean isPlaying_ = false;
     private boolean isControlDisabled_ = false; 
 		
@@ -252,16 +252,16 @@ public class GrxLoggerView extends GrxBaseView {
 		sliderFrameRate_ = new Scale( composite_, SWT.HORIZONTAL );
 		sliderFrameRate_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
-				int value = sliderFrameRate_.getSelection();
-				lblFrameRate_.setText( "FPS:"+String.valueOf(value) );
-				manager_.setDelay(1000/value);
+            	frameRate_ = sliderFrameRate_.getSelection();
+				lblFrameRate_.setText( "FPS:"+String.valueOf(frameRate_) );
+				manager_.setDelay(1000/frameRate_);
             }
 		} );
 		//sliderFrameRate_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		sliderFrameRate_.setSize(80, 27);
 		sliderFrameRate_.setMaximum(50);
 		sliderFrameRate_.setMinimum(1);
-		sliderFrameRate_.setSelection(10);
+		sliderFrameRate_.setSelection(frameRate_);
 
 		
 		setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
@@ -275,8 +275,6 @@ public class GrxLoggerView extends GrxBaseView {
 		
 	}
 
-	private double stepTime_ = -1.0;
-	
 	private boolean _isAtTheEndAfterPlayback(){
 		if (current_ == sliderTime_.getMaximum() && playRate_ > 0){
 			return true;
@@ -287,54 +285,42 @@ public class GrxLoggerView extends GrxBaseView {
 	/**
 	 * @brief
 	 */
-	private int newpos_;
-	private int frameRate_;
-	private int sliderMax_;
 	private void play() {
 		if(currentItem_ == null) return;
 		if (!isPlaying_) {
 			if (_isAtTheEndAfterPlayback()) currentItem_.setPosition(0);
-			stepTime_ = currentItem_.getDbl("logTimeStep", -1.0)*1000;
-			if (stepTime_ > 0){
-				frameRate_ = sliderFrameRate_.getSelection();
-				interval_ =  Math.ceil(1000.0d/frameRate_/stepTime_);
-			}else 
-				interval_ = 1;
-			sliderMax_ = getMaximum();
+			final double stepTime = currentItem_.getDbl("logTimeStep", -1.0)*1000;
+			final int sliderMax = getMaximum();
 			Thread playThread_ = new Thread() {
 				public void run() {
 					try {
 						boolean _continue = true;
-						Display display = composite_.getDisplay();
 						while(_continue){
 							if(!isPlaying_) break;
-							newpos_ = current_+(int)(interval_*playRate_);
-							if ( sliderMax_ < newpos_) {
-								newpos_ = sliderMax_;
+							int interval =  (int)Math.ceil(1000.0d/frameRate_/stepTime*playRate_);
+							if(interval==0) interval = (int) Math.signum(playRate_);
+							int newpos = current_ + interval;
+							if ( sliderMax < newpos) {
+								newpos = sliderMax;
 								_continue = false;
-							} else if (newpos_ < 0) {
-								newpos_ = 0;
+							} else if (newpos < 0) {
+								newpos = 0;
 								_continue = false;
 							}
-							if ( display!=null && !display.isDisposed())
-				                display.syncExec(
-				                        new Runnable(){
-				                            public void run() {
-				                            	currentItem_.setPosition(newpos_);
-				                            }
-				                        }
-				                );
-							int sleepTime = (1000/frameRate_);	
+							final int position = newpos;
+							syncExec( new Runnable(){
+								public void run() {
+									currentItem_.setPosition(position);
+								}
+							});
+							int sleepTime = (int)(stepTime*interval/playRate_);	
 							sleep(sleepTime);
 						}
-						if ( display!=null && !display.isDisposed())
-			                display.syncExec(
-			                        new Runnable(){
-			                            public void run() {
-			                            	pause();
-			                            }
-			                        }
-			                );
+						syncExec( new Runnable(){
+							public void run() {
+								pause();
+							}
+						});
 					} catch (Exception e) {
 						isPlaying_ = false;
 						GrxDebugUtil.printErr("Playing Interrupted by Exception:",e);
@@ -500,5 +486,14 @@ public class GrxLoggerView extends GrxBaseView {
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
         if(currentItem_!=null)
         	currentItem_.deleteObserver(this);
+	}
+    
+    private boolean syncExec(Runnable r){
+		Display display = composite_.getDisplay();
+        if ( display!=null && !display.isDisposed()){
+            display.syncExec( r );
+            return true;
+        }else
+        	return false;
 	}
 }
