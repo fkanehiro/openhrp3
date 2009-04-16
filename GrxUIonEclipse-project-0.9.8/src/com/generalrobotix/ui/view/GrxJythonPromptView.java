@@ -303,7 +303,7 @@ public class GrxJythonPromptView extends GrxBaseView {
                 styledText_.replaceTextRange(len - com_.length(), com_.length(),"");
             } else if (ks == KS_CTRL_A) {
                 styledText_.setCaretOffset(len - com_.length());
-            } else if (ks == KS_CTRL_E) {//Eclipseの標準キーバインド�͌��Ǘ��Ȃ��͂�
+            } else if (ks == KS_CTRL_E) {//Eclipseの標準キーバインド
                 styledText_.setCaretOffset(len);
             } else if ((ks == KS_CTRL_F || ks == KS_RIGHT)) {//Eclipseの標準キーバインド
                 if (cp < len)
@@ -337,7 +337,7 @@ public class GrxJythonPromptView extends GrxBaseView {
                         styledText_.replaceTextRange(start, len-start, history_.get(++hpos_));
                     styledText_.setCaretOffset(styledText_.getText().length());
                 }
-            } else if (ks == KS_DOWN || ks == KS_CTRL_N) {//KS_CTRL_N��Eclipse�̃f�t�H���g�V���[�g�J�b�g�L�[�Ȃ̂Ō��Ǘ��Ȃ��͂�
+            } else if (ks == KS_DOWN || ks == KS_CTRL_N) {//KS_CTRL_N
                 styledText_.setCaretOffset(len);
                 if (hpos_ > 0) {
                     int start = styledText_.getText().lastIndexOf('\n') + prompt_.length() + 1;

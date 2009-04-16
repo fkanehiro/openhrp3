@@ -40,10 +40,10 @@ import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxPluginLoader;
+import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.OrderedHashMap;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
-import com.generalrobotix.ui.view.GrxProcessManagerView;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxProjectItem;
 
@@ -157,19 +157,7 @@ public class GrxPluginManager {
                 rcFileDir.mkdir();
             } else {
                 // log のクリア
-                String[] com;
-                com = new String[] { "/bin/sh", "-c", "rm " + homePath_ + ".OpenHRP-3.1/omninames-log/*" };
-                try {
-                    Process pr = Runtime.getRuntime().exec(com);
-                    InputStream is = pr.getInputStream();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        System.out.println(line);
-                    }
-                } catch (Exception e) {
-                    ;
-                }
+               deleteNameServerLog();
             }
         } else {
             // Windows環境の処理
@@ -184,19 +172,7 @@ public class GrxPluginManager {
                 rcFileDir.mkdir();
             } else {
                 // log のクリア
-                String[] com;
-                com = new String[] { "cmd", "/c", "del " + "\"" + rcFileDir.getPath() + File.separator + "omninames-*.*" + "\""};
-                try {
-                    Process pr = Runtime.getRuntime().exec(com);
-                    InputStream is = pr.getInputStream();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        System.out.println(line);
-                    }
-                } catch (Exception e) {
-                    ;
-                }
+               deleteNameServerLog();
             }
         }
         System.out.println("rcFile=" + rcFile);
@@ -236,6 +212,9 @@ public class GrxPluginManager {
         // root_.setUserObject(currentProject_);
 
         // TODO: 「grxuirc.xmlが見つからないとexit()」の代替だが、もっとスマートな方法を考えよう
+        
+        GrxProcessManager.getInstance().setProcessList(rcProject_.getElement());
+        
         initSucceed = true;
     }
 
@@ -332,6 +311,7 @@ public class GrxPluginManager {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                GrxCorbaUtil.clearOrb();
             }
         }.start();
 
@@ -1111,12 +1091,9 @@ public class GrxPluginManager {
      * @brief restore processes in rc project and current project
      */
     public void restoreProcess() {
-        GrxProcessManagerView pmView = (GrxProcessManagerView) getView(GrxProcessManagerView.class);
-        if (pmView == null)
-            return;
-
-        pmView.loadProcessList(rcProject_.getElement());
-        pmView.loadProcessList(currentProject_.getElement());
+        GrxProcessManager localProcessManager = GrxProcessManager.getInstance();
+        localProcessManager.setProcessList(rcProject_.getElement());
+        localProcessManager.setProcessList(currentProject_.getElement());
     }
 
     /**
@@ -1133,6 +1110,32 @@ public class GrxPluginManager {
      */
     public GrxProjectItem getProject() {
         return currentProject_;
+    }
+
+    /**
+     * @brief delete name server log
+     */
+    public void deleteNameServerLog()
+    {
+        // log のクリア
+        String[] com;
+        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) {
+            com = new String[] { "/bin/sh", "-c", "rm " + homePath_ + ".OpenHRP-3.1/omninames-log/*" };
+        } else {
+            com = new String[] { "cmd", "/c", "del " + "\"" + System.getenv("APPDATA") + File.separator + "OpenHRP-3.1" + File.separator + "omninames-log" + File.separator + "omninames-*.*" + "\""};
+        }
+        try {
+            Process pr = Runtime.getRuntime().exec(com);
+            InputStream is = pr.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line;
+            pr.waitFor();
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
