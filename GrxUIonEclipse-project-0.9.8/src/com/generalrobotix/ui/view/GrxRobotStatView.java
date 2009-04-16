@@ -194,7 +194,6 @@ public class GrxRobotStatView extends GrxBaseView {
 	    	forceName_ = null;
 			setJointList();
         }
-        comboVisible();
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
         	updateTableViewer();
@@ -263,13 +262,6 @@ public class GrxRobotStatView extends GrxBaseView {
         }
     }
     
-    private void comboVisible(){
-    	if(comboModelName_.getItemCount() > 1)
-            comboModelName_.setVisible(true);
-        else//(comboModelName_.getItemCount() == 1)
-            comboModelName_.setVisible(false);	
-    }
-    
     public void registerItemChange(GrxBaseItem item, int event){
     	if(item instanceof GrxModelItem){
     		GrxModelItem modelItem = (GrxModelItem) item;
@@ -278,7 +270,6 @@ public class GrxRobotStatView extends GrxBaseView {
 	    		if(!modelList_.contains(modelItem)){
 	    			modelList_.add(modelItem);
 	    			comboModelName_.add(modelItem.getName());
-	    			comboVisible();
 	    			if(currentModel_ == null){
 	    				currentModel_ = modelItem;
 	    				comboModelName_.select(comboModelName_.indexOf(modelItem.getName()));
@@ -294,7 +285,6 @@ public class GrxRobotStatView extends GrxBaseView {
 	    			int index = modelList_.indexOf(modelItem);
 	    			modelList_.remove(modelItem);
 	    			comboModelName_.remove(modelItem.getName());
-	    			comboVisible();
 	    			if(currentModel_ == modelItem){
 	    				if(index < modelList_.size()){
 	    					currentModel_ = modelList_.get(index);
