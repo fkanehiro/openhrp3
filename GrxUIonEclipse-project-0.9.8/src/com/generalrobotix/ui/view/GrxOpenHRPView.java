@@ -68,6 +68,7 @@ import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 import com.generalrobotix.ui.view.simulation.CollisionPairPanel;
@@ -852,10 +853,10 @@ public class GrxOpenHRPView extends GrxBaseView {
 				localStrVec.add(i.controllerName_);
 		}
 		for (String i: localStrVec) {
-            GrxProcessManagerView pManager = (GrxProcessManagerView)manager_.getView(GrxProcessManagerView.class);
-            AProcess proc = pManager.processManager.get(i);
+		    GrxProcessManager  pManager = GrxProcessManager.getInstance();
+            AProcess proc = pManager.get(i);
             if( proc != null && proc.stop() ){
-            	pManager.processManager.unregister(proc.pi_.id);
+            	pManager.unregister(proc.pi_.id);
             	_getControllerFromControllerName(i);
             	int index = controllers_.indexOf( _getControllerFromControllerName(i) );
     			if ( index >= 0 )
@@ -875,11 +876,11 @@ public class GrxOpenHRPView extends GrxBaseView {
 			optionAdd = " -nosim";
 		
         GrxDebugUtil.println("model name = " + model.getName() + " : controller = " + controllerName + " : cycle time[s] = " + step);
-        GrxProcessManagerView pManager = (GrxProcessManagerView)manager_.getView(GrxProcessManagerView.class);
+        GrxProcessManager  pManager = GrxProcessManager.getInstance();
 
         boolean doRestart = false;
         org.omg.CORBA.Object cobj = GrxCorbaUtil.getReference(controllerName);
-        AProcess proc = pManager.processManager.get(controllerName);
+        AProcess proc = pManager.get(controllerName);
         String dir = model.getStr("setupDirectory", "");
         String com = model.getStr("setupCommand", "");
         if (cobj != null) {
@@ -923,9 +924,9 @@ public class GrxOpenHRPView extends GrxBaseView {
                 pi.autoStart = false;
                 pi.autoStop = true;
                 if (proc != null)
-                    pManager.processManager.unregister(proc.pi_.id);
-                pManager.processManager.register(pi);
-                proc = pManager.processManager.get(controllerName);
+                    pManager.unregister(proc.pi_.id);
+                pManager.register(pi);
+                proc = pManager.get(controllerName);
             }
 
             if (proc != null) {

@@ -4,114 +4,331 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.jar.*;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IWindowListener;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchListener;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PerspectiveAdapter;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.SynchronousBundleListener;
 
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxServerManager;
+import com.generalrobotix.ui.view.GrxORBMonitorView;
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class Activator extends AbstractUIPlugin{
+    public static final String PLUGIN_ID = "com.generalrobotix.ui.grxui";
+    private static Activator   plugin;
 
-	public static final String PLUGIN_ID = "com.generalrobotix.ui.grxui";
-	private static Activator plugin;
-	public GrxPluginManager manager_;
+    public GrxPluginManager    manager_;
+    private ImageRegistry      ireg_     = new ImageRegistry();
 
- 	private ImageRegistry ireg_ = new ImageRegistry();
+    // パースペクティブのイベント初期化、振る舞いを定義するクラス
+    class EventInnerClass extends PerspectiveAdapter
+            implements IWindowListener, IWorkbenchListener, SynchronousBundleListener, FrameworkListener {
 
-	public Activator() {
-		System.out.println("[ACTIVATOR] CONSTRUCT");
-	}
+        private IWorkbench    workbench_                  = null;
+        private BundleContext context_                    = null;
+        private boolean       bNotSetPerspectiveListener_ = true;
 
-	/**
-	 * �ŏ��̃��プラグイン起動処理. プラグインマネージャを作り、処理を開始する。
-	 */
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
+        public EventInnerClass(IWorkbench workbench, BundleContext context) {
+            super();
+            workbench_ = workbench;
+            context_ = context;
+        }
 
-		// デバッグ表示モード
-		GrxDebugUtil.setDebugFlag(true);
+        // Listenerをセット
+        public void setEventListner() {
+            workbench_.addWindowListener(this);
+            workbench_.addWorkbenchListener(this);
+            context_.addBundleListener(this);
+        }
 
-		File cur = new File(".");
-		URL cur_url = cur.toURI().toURL();
-		GrxDebugUtil.println("[ACTIVATOR] START in " + cur_url );
-
-		// TODO: Jarファイル化した場合の取得方法などについて調査
-		File imgDir = new File( getPath()+"/resources/images" );
-		File[] fs = imgDir.listFiles( new FileFilter(){
-			public boolean accept(File f){
-				return f.getName().endsWith( ".png" );
+        /*		
+		public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective){
+			if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())){
 			}
-		} );
-		for( File f: fs  ){
-			ireg_.put( f.getName(), ImageDescriptor.createFromURL(f.toURI().toURL()) );
-			//GrxDebugUtil.println("[ACTIVATOR] load image "+f.getName() );
 		}
-
-		manager_ = new GrxPluginManager();
-		if( ! manager_.initSucceed ) {
-			return;
+		public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId){
+			if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())){
+			}
 		}
-		manager_.start();
-	}
+		
+        public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective){
+            if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())){
+            }
+        }
+         */
 
-	/**
-	 * プラグインのディレクトリ取得. プラグイン内の画像や設定ファイルを取得するとき使えるかも
-	 * @return プラグインのトップディレクトリ
-	 */
-	public static String getPath(){
-		URL entry = getDefault().getBundle().getEntry("/");
-		String pluginDirectory="";
-		try {
-			pluginDirectory = FileLocator.resolve(entry).getPath();
-		} catch (IOException e) {
-			e.printStackTrace();
+        public void perspectiveOpened(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
+            if (GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
+                startGrxUI();
+            }
+        }
+
+        public void perspectiveClosed(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
+            if (GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
+                stopGrxUI();
+            }
+        }
+
+        @Override
+        public void windowActivated(IWorkbenchWindow window) {}
+
+        @Override
+        public void windowClosed(IWorkbenchWindow window) {
+            try {
+                stop(context_);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        @Override
+        public void windowDeactivated(IWorkbenchWindow window) {}
+
+        @Override
+        public void windowOpened(IWorkbenchWindow window) {}
+
+        @Override
+        public void postShutdown(IWorkbench workbench) {}
+
+        @Override
+        public boolean preShutdown(IWorkbench workbench, boolean forced) {
+            return true;
+        }
+
+        @Override
+        public void bundleChanged(BundleEvent event) {
+            if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
+                doBundleEvnt(event);
+            }
+        }
+
+        @Override
+        public void frameworkEvent(FrameworkEvent event) {
+            if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
+                //doFrameworkEvnt(event);
+            }
+        }
+
+        private void doBundleEvnt(BundleEvent event) {
+            switch (event.getType()) {
+            case BundleEvent.INSTALLED:
+                break;
+            case BundleEvent.LAZY_ACTIVATION:
+                break;
+            case BundleEvent.RESOLVED:
+                break;
+            case BundleEvent.STARTED:
+                if (event.getBundle().getSymbolicName().equals(PLUGIN_ID) && bNotSetPerspectiveListener_) {
+                    // GrxUIパースペクティブが既に開いている場合の処理
+                    startGrxUI();
+                    IWorkbench localWorkbench = PlatformUI.getWorkbench();
+                    if (localWorkbench != null) {
+                        IWorkbenchWindow localWindow = localWorkbench.getActiveWorkbenchWindow();
+                        if (localWindow != null) {
+                            localWindow.addPerspectiveListener(this);
+                            bNotSetPerspectiveListener_ = false;
+                        }
+                    }
+                }
+                break;
+            case BundleEvent.STARTING:
+                break;
+            case BundleEvent.STOPPED:
+                break;
+            case BundleEvent.STOPPING:
+                break;
+            case BundleEvent.UNINSTALLED:
+                break;
+            case BundleEvent.UNRESOLVED:
+                break;
+            case BundleEvent.UPDATED:
+                break;
+            }
+        }
+
+        /*
+		private void doFrameworkEvnt(FrameworkEvent event)
+		{
+			switch( event.getType() )
+			{
+			case FrameworkEvent.ERROR:
+			    GrxDebugUtil.println("[ACTIVATOR.EventInnerClass] FrameworkEvent.ERROR in doFrameworkEvnt:" + event.getThrowable().getMessage());
+				break;
+			case FrameworkEvent.INFO:
+				break;
+			case FrameworkEvent.PACKAGES_REFRESHED:
+				break;
+			case FrameworkEvent.STARTED:
+				break;
+			case FrameworkEvent.STARTLEVEL_CHANGED:
+				break;
+			case FrameworkEvent.WARNING:
+				break;
+			}
 		}
-		return pluginDirectory;
-	}
-
-	// アイコンの取得
-	public Image getImage( String iconName ){
-		return ireg_.get( iconName );
-	}
-
-	// アイコンデスクリプタの取得
-	public ImageDescriptor getDescriptor( String iconName ){
-		return ireg_.getDescriptor( iconName );
-	}
+		*/
+	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-	 */
-	public void stop(BundleContext context) throws Exception {
+	private EventInnerClass eventInnerClass = null;
 
-		manager_.shutdown();
-        try{
-            GrxServerManager.ShutdownServerInfo();
-        } catch(Exception    e) {
+    public Activator() {
+        System.out.println("[ACTIVATOR] CONSTRUCT");
+    }
+
+    /**
+     * プラグイン起動処理. プラグインマネージャを作り、処理を開始する。
+     */
+    public void start(BundleContext context)
+            throws Exception {
+        super.start(context);
+        plugin = this;
+
+        // イベントリスナークラスの登録
+        eventInnerClass = new EventInnerClass(PlatformUI.getWorkbench(), context);
+
+        // デバッグ表示モード
+        GrxDebugUtil.setDebugFlag(true);
+
+        File cur = new File(".");
+        URL cur_url = cur.toURI().toURL();
+        GrxDebugUtil.println("[ACTIVATOR] START in " + cur_url);
+
+        if (getPath().matches(".*\\.jar!.+$")) {
+            // Jarファイル化した場合の ireg_ セット
+            URL localUrl = new URL(getPath().substring(0, getPath().length() - 2));
+            JarInputStream in = new JarInputStream(localUrl.openStream());
+            for (JarEntry i = in.getNextJarEntry(); i != null; i = in.getNextJarEntry()) {
+                if (i.getName().matches("resources/images/.*\\.[Pp][Nn][Gg]")) {
+                    URL resourceUrl = getClass().getClassLoader().getResources(i.getName()).nextElement();
+                    ireg_.put(resourceUrl.getFile(), ImageDescriptor.createFromURL(resourceUrl));
+                }
+            }
+        } else {
+            File imgDir = new File(getPath() + "/resources/images");
+            GrxDebugUtil.println("[ACTIVATOR] imgDir " + imgDir.getPath());
+            File[] fs = imgDir.listFiles(new FileFilter() {
+                public boolean accept(File f) {
+                    return f.getName().endsWith(".png");
+                }
+            });
+            for (File f : fs) {
+                ireg_.put(f.getName(), ImageDescriptor.createFromURL(f.toURI().toURL()));
+            }
+        }
+
+        eventInnerClass.setEventListner();
+    }
+
+    /**
+     * プラグインのディレクトリ取得. プラグイン内の画像や設定ファイルを取得するとき使えるかも
+     * 
+     * @return プラグインのトップディレクトリ
+     */
+    public static String getPath() {
+        URL entry = getDefault().getBundle().getEntry("/");
+        String pluginDirectory = "";
+        try {
+            pluginDirectory = FileLocator.resolve(entry).getPath();
+        } catch (IOException e) {
             e.printStackTrace();
         }
-		
-		plugin = null;
-		super.stop(context);
-	}
+        return pluginDirectory;
+    }
 
-	/**
-	 * Returns the shared instance
-	 * @return the shared instance
-	 */
-	public static Activator getDefault() {
-		return plugin;
-	}
+    /**
+     * Returns the shared instance
+     * 
+     * @return the shared instance
+     */
+    public static Activator getDefault() {
+        return plugin;
+    }
 
+    /**
+     * nsHsotとnsPortの参照渡し
+     * 
+     */
+    public static void refNSHostPort(StringBuffer nsHost, StringBuffer nsPort) {
+        /*
+        if (plugin != null) {
+            if (plugin.manager_ != null) {
+                GrxORBMonitorView omView = (GrxORBMonitorView) plugin.manager_.getView("GrxORBMonitorView");
+                if (omView != null) {
+                    nsHost.append(omView.getNSHost());
+                    nsPort.append(omView.getNSPort());
+                }
+            }
+        }
+        */
+        if (nsHost.length() == 0){
+            nsHost.append(GrxCorbaUtil.nsHost());
+        }
+        if (nsPort.length() == 0){
+            nsPort.append(Integer.toString(GrxCorbaUtil.nsPort()));
+        }
+    }
+
+    // アイコンの取得
+    public Image getImage(String iconName) {
+        return ireg_.get(iconName);
+    }
+
+    // アイコンデスクリプタの取得
+    public ImageDescriptor getDescriptor(String iconName) {
+        return ireg_.getDescriptor(iconName);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
+     * )
+     */
+    public void stop(BundleContext context)
+            throws Exception {
+        plugin = null;
+        super.stop(context);
+    }
+
+    // GrxUIパースペクティブが有効になったときの動作
+    private void startGrxUI() {
+        manager_ = new GrxPluginManager();
+        manager_.start();
+    }
+
+    // GrxUIパースペクティブが無効になったときの動作
+    private void stopGrxUI() {
+        try {
+            GrxServerManager.ShutdownServerInfo();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        GrxProcessManager.shutDown();
+        manager_.shutdown();
+        manager_ = null;
+    }
 }

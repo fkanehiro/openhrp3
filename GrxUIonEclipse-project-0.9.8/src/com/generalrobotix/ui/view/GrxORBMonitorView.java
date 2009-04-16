@@ -29,11 +29,20 @@ import com.generalrobotix.ui.util.GrxORBMonitor;
 @SuppressWarnings("serial")
 public class GrxORBMonitorView extends GrxBaseView {
     public static final String TITLE = "NameService Monitor";
-
+    private GrxORBMonitor      monitor_ = null;
+    
     public GrxORBMonitorView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
         super(name, manager, vp, parent);
 
-        new GrxORBMonitor(composite_,SWT.NULL);
-        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
+        monitor_ = new GrxORBMonitor(composite_, SWT.NULL);
+        setScrollMinSize(SWT.DEFAULT, SWT.DEFAULT);
+    }
+
+    public String getNSHost() {
+        return monitor_.getNSHost();
+    }
+
+    public String getNSPort() {
+        return monitor_.getNSPort();
     }
 }

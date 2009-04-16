@@ -8,5 +8,4 @@ public class GrxProcessManagerViewPart extends GrxBaseViewPart {
     public void createPartControl(Composite parent) {
         createView( GrxProcessManagerView.class, "Process Manager", this, parent );
     }
-
 }
