@@ -34,5 +34,6 @@ public class GrxBaseViewPart extends ViewPart {
 	public void setFocus() {}
 	
 	public void dispose(){
+		v.shutdown();
 	}
 } 
