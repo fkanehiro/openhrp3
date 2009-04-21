@@ -491,7 +491,8 @@ public class GrxProcessManager {
     public void stopThread() {
         isEnd_ = true;
         try {
-            thread_.join();
+        	if(thread_!=null)
+        		thread_.join();
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }

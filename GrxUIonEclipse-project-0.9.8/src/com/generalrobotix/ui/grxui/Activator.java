@@ -110,7 +110,14 @@ public class Activator extends AbstractUIPlugin{
         public void windowOpened(IWorkbenchWindow window) {}
 
         @Override
-        public void postShutdown(IWorkbench workbench) {}
+        public void postShutdown(IWorkbench workbench) {
+        	GrxProcessManager.shutDown();
+        	try {
+        		GrxCorbaUtil.getORB().shutdown(false);
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        	}
+        }
 
         @Override
         public boolean preShutdown(IWorkbench workbench, boolean forced) {
@@ -324,7 +331,6 @@ public class Activator extends AbstractUIPlugin{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        GrxProcessManager.shutDown();
         manager_.shutdown();
         manager_ = null;
     }
