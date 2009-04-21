@@ -1033,12 +1033,7 @@ public class GrxPluginManager {
          * updateViewList(); for( GrxBaseView v : selectedViewList_ )
          * v.shutdown();
          */
-
-        try {
-            GrxCorbaUtil.getORB().shutdown(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        
     }
 
     /**
