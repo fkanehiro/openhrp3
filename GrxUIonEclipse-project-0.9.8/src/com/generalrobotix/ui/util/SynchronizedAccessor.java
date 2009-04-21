@@ -34,14 +34,12 @@ public class SynchronizedAccessor < T extends java.lang.Object >
     public synchronized T get(){ return value_; }
     public synchronized void set(T val){ value_ = val; }
 
-    @Override
     public void lock()
     {
         // TODO 自動生成されたメソッド・スタブ
         reentrantLock_.lock();
     }
 
-    @Override
     public void lockInterruptibly()
             throws InterruptedException
     {
@@ -49,21 +47,18 @@ public class SynchronizedAccessor < T extends java.lang.Object >
         reentrantLock_.lockInterruptibly();
     }
 
-    @Override
     public Condition newCondition()
     {
         // TODO 自動生成されたメソッド・スタブ
         return reentrantLock_.newCondition();
     }
 
-    @Override
     public boolean tryLock()
     {
         // TODO 自動生成されたメソッド・スタブ
         return reentrantLock_.tryLock();
     }
 
-    @Override
     public boolean tryLock(long time, TimeUnit unit)
             throws InterruptedException
     {
@@ -71,7 +66,6 @@ public class SynchronizedAccessor < T extends java.lang.Object >
         return reentrantLock_.tryLock(time, unit);
     }
 
-    @Override
     public void unlock()
     {
         // TODO 自動生成されたメソッド・スタブ

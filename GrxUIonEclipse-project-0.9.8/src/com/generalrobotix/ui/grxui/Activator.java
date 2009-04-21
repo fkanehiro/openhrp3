@@ -91,10 +91,8 @@ public class Activator extends AbstractUIPlugin{
             }
         }
 
-        @Override
         public void windowActivated(IWorkbenchWindow window) {}
 
-        @Override
         public void windowClosed(IWorkbenchWindow window) {
             try {
                 stop(context_);
@@ -103,13 +101,10 @@ public class Activator extends AbstractUIPlugin{
             }
         }
 
-        @Override
         public void windowDeactivated(IWorkbenchWindow window) {}
 
-        @Override
         public void windowOpened(IWorkbenchWindow window) {}
 
-        @Override
         public void postShutdown(IWorkbench workbench) {
         	GrxProcessManager.shutDown();
         	try {
@@ -119,19 +114,16 @@ public class Activator extends AbstractUIPlugin{
         	}
         }
 
-        @Override
         public boolean preShutdown(IWorkbench workbench, boolean forced) {
             return true;
         }
 
-        @Override
         public void bundleChanged(BundleEvent event) {
             if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
                 doBundleEvnt(event);
             }
         }
 
-        @Override
         public void frameworkEvent(FrameworkEvent event) {
             if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
                 //doFrameworkEvnt(event);
