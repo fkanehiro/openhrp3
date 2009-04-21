@@ -30,7 +30,6 @@ import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxServerManager;
-import com.generalrobotix.ui.view.GrxORBMonitorView;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 
 /**
@@ -135,8 +134,6 @@ public class Activator extends AbstractUIPlugin{
         private void doBundleEvnt(BundleEvent event) {
             switch (event.getType()) {
             case BundleEvent.INSTALLED:
-                break;
-            case BundleEvent.LAZY_ACTIVATION:
                 break;
             case BundleEvent.RESOLVED:
                 break;
