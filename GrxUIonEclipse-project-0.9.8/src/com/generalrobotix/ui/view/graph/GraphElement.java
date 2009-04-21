@@ -128,6 +128,7 @@ public class GraphElement
     // -----------------------------------------------------------------
     // ActionListenerの実装
     public void actionPerformed(ActionEvent evt) {
+    	/*
         int result = tg_.addDataItem(
             (AttributeInfo)(((DroppableXYGraph)graph_).getDroppedObject())
         );
@@ -150,6 +151,7 @@ public class GraphElement
                 MessageBundle.get("dialog.graph.unsupported.message")
             ).showModalDialog();
         }
+        */
     }
 
     /**

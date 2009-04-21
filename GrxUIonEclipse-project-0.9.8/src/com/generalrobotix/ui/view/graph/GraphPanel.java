@@ -28,6 +28,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -48,6 +49,7 @@ import org.eclipse.swt.widgets.Display;
 import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxGraphItem;
+import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.MessageDialog;
 
@@ -78,6 +80,7 @@ public class GraphPanel extends JPanel {
     private GraphElement[] graphElement_;
     public GraphElement currentGraph_;
     private TrendGraphManager trendGraphMgr_;
+    private List<GrxModelItem> currentModels_ = null;
 
     private static final LineBorder normalBorder_ = new LineBorder(new Color(204, 204, 204), 2);
 //    private static final LineBorder focusedBorder_ = new LineBorder(Color.red, 2);
@@ -121,8 +124,7 @@ public class GraphPanel extends JPanel {
 //    private int mode_;
     private GrxPluginManager manager_;
     
-//    private ArrayList<AttributeInfo> addedList_;
-    private AttributeInfo[] addedArray_;
+    private DataItemInfo[] addedArray_;
      
     //--------------------------------------------------------------------
     //public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr,Composite parent) {
@@ -303,7 +305,7 @@ public class GraphPanel extends JPanel {
         );
         seriesButton_ = new JButton(MessageBundle.get("graph.series"));
         //seriesDialog_ = new SeriesDialog(manager_, currentGraph_, parent);
-        seriesDialog_ = new SeriesDialog(manager_, currentGraph_, owner_);
+        seriesDialog_ = new SeriesDialog(currentGraph_, owner_);
         seriesButton_.addActionListener(
             new ActionListener() {
             	public void actionPerformed(ActionEvent evt) {
@@ -311,6 +313,7 @@ public class GraphPanel extends JPanel {
                     if (graphItem == null)
                     	return;
                     TrendGraph tg = currentGraph_.getTrendGraph();
+                    seriesDialog_.setModelList(currentModels_);
                     seriesDialog_.setDataItemInfoList(tg.getDataItemInfoList());
                     seriesDialog_.setLocationRelativeTo(GraphPanel.this);
                     seriesDialog_.setVisible(true);
@@ -600,4 +603,8 @@ public class GraphPanel extends JPanel {
         }else
         	return false;
 	}
+    
+    public void setModelList(List<GrxModelItem> list){
+    	currentModels_ = list;
+    }
 }

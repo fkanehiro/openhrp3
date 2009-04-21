@@ -16,9 +16,9 @@ import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 
-import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.MessageBundle;
@@ -44,8 +44,8 @@ public class SeriesDialog extends JDialog {
     private DataItemInfo[] dataItemInfoArray_;
     private DataItemInfo[] removedArray_;
     
-    private ArrayList<AttributeInfo> addedList_;
-    private AttributeInfo[] addedArray_;
+    private ArrayList<DataItemInfo> addedList_;
+    private DataItemInfo[] addedArray_;
     
     private JTable seriesTable_;
     private static final String ROBOT_MODEL = "ROBOT MODEL";
@@ -65,17 +65,16 @@ public class SeriesDialog extends JDialog {
     private GraphElement currentGraph_;
     
     private MyModel tableModel_;
-    private GrxPluginManager manager_;
 	private final Map<String, ArrayList<String>> nodeMap =  new HashMap<String, ArrayList<String>>();
 	private boolean isComboChanging_ = true;
 	private int graphIndex = 0;
+    private List<GrxModelItem> currentModels_ = null;
     // -----------------------------------------------------------------
 
     //public SeriesDialog(GrxPluginManager manager,GraphElement initialGraph,Composite parent) {
-    public SeriesDialog(GrxPluginManager manager,GraphElement initialGraph, Frame frame) {
+    public SeriesDialog(GraphElement initialGraph, Frame frame) {
         //super(SWT_AWT.new_Frame(new Composite(parent,SWT.EMBEDDED)), MessageBundle.get("dialog.graph.series.title"), true);
     	super( frame, MessageBundle.get("dialog.graph.series.title"), true);
-        manager_ = manager;
         currentGraph_ = initialGraph;
         
         JPanel line1 = new JPanel();
@@ -134,7 +133,7 @@ public class SeriesDialog extends JDialog {
                 colAttribute,
                 colIndex,
                 colColor,
-                colLegend
+                colLegend,
             }
         );
         seriesTable_ = new JTable(tableModel_);
@@ -162,12 +161,7 @@ public class SeriesDialog extends JDialog {
         line2.add(Box.createHorizontalStrut(BORDER_GAP));
         line2.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-		comboType_.setBackground(Color.WHITE);
-		comboModel_.setBackground(Color.WHITE);
-		comboLink_.setBackground(Color.WHITE);
-		comboAttr_.setBackground(Color.WHITE);
-
-        removeButton_.addActionListener(
+		removeButton_.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     int ind = seriesTable_.getSelectedRow();
@@ -178,26 +172,7 @@ public class SeriesDialog extends JDialog {
                     if (ce != null) 
                         ce.stopCellEditing();
                     
-                    String str = (String)tableModel_.getValueAt(ind, 4);
-                    for (int i=0; i<dataItemInfoList_.size() ;i++) {
-                    	if (str.equals(dataItemInfoList_.get(i).legend)) {
-                    		removedList_.add(dataItemInfoList_.remove(i));
-                    		tableModel_.removeRow(i);
-                    		break;
-                    	}
-                    }
-                    for (int i=0; i<addedList_.size() ; i++) {
-                    	String addListLegend = 
-                    		addedList_.get(i).objectName + "." +
-                    		addedList_.get(i).nodeName + "." +
-                    		addedList_.get(i).attribute + "." +
-                    		"0";
-                    	if (str.equals(addListLegend)) {
-                    		addedList_.remove(i);
-                    		tableModel_.removeRow(i);
-                    		break;
-                    	}
-                    }
+                    tableModel_.removeRow(ind);
                     int cnt = tableModel_.getRowCount();
                     if (cnt < 1) {
                     	_resetSelection();
@@ -249,38 +224,31 @@ public class SeriesDialog extends JDialog {
 				isComboChanging_ = true;
 				
 				comboType_.removeAllItems();
-				comboType_.addItem(DATA_TYPE);
 				comboLink_.removeAllItems();
-				comboLink_.addItem(LINK_NAME);
 				comboAttr_.removeAllItems();
-				comboAttr_.addItem(DATA_TYPE);
 				
-				if (comboModel_.getSelectedIndex() > 0) {
-					Iterator<String> it = nodeMap.keySet().iterator();
-					if (seriesTable_.getRowCount() > 0) {
-						String curAttr = currentGraph_.getTrendGraph().getDataItemInfoList()[0].dataItem.attribute;
-						while (it.hasNext()) {
-							String key = it.next();
-							if (nodeMap.get(key).contains(curAttr))
-								comboType_.addItem(key);
-						}
-					} else {
-                   		while (it.hasNext()) {
-                  			comboType_.addItem(it.next());
-                  		}
+				Iterator<String> it = nodeMap.keySet().iterator();
+				if (seriesTable_.getRowCount() > 0) {
+					String curAttr = currentGraph_.getTrendGraph().getDataItemInfoList()[0].dataItem.attribute;
+					while (it.hasNext()) {
+						String key = it.next();
+						if (nodeMap.get(key).contains(curAttr))
+							comboType_.addItem(key);
 					}
-					comboType_.setEnabled(true);
-				} else 
-					comboType_.setEnabled(false);
-				
+				} else {
+					while (it.hasNext()) {
+						comboType_.addItem(it.next());
+                  	}
+				}
+				comboType_.setEnabled(true);
 				comboLink_.setEnabled(false);
 				comboAttr_.setEnabled(false);
 				setButton_.setEnabled(false);
 				
 				isComboChanging_ = false;
 				
-				if (comboType_.getItemCount() == 2)
-					comboType_.setSelectedIndex(1);
+				if(comboType_.getItemCount()>0)
+					comboType_.setSelectedIndex(0);
 			}
 		});
 		
@@ -291,45 +259,39 @@ public class SeriesDialog extends JDialog {
 				
 				isComboChanging_ = true;
 				comboLink_.removeAllItems();
-				comboLink_.addItem(LINK_NAME);
 				comboAttr_.removeAllItems();
-				comboAttr_.addItem(LINK_NAME);
 				
-				if (comboType_.getSelectedIndex() > 0) {
-					Object type = comboType_.getSelectedItem();
-					GrxModelItem model = (GrxModelItem)comboModel_.getSelectedItem();
-					if (type.equals("Joint")) {
-						Vector<GrxLinkItem> li = model.links_;
-						for (int i = 0; i < li.size(); i++) 
+				Object type = comboType_.getSelectedItem();
+				GrxModelItem model = (GrxModelItem)comboModel_.getSelectedItem();
+				if (type.equals("Joint")) {
+					Vector<GrxLinkItem> li = model.links_;
+					for (int i = 0; i < li.size(); i++) 
+						if(li.get(i).jointType().equals("rotate"))
 							comboLink_.addItem(li.get(i).getName());
-					} else {
-						//SensorType t = null;
-						//if (type.equals("ForceSensor"))
-						//	t = SensorType.FORCE_SENSOR;
-						//else if (type.equals("Gyro"))
-						//	t = SensorType.RATE_GYRO;
-						//else if (type.equals("AccelerationSensor"))
-						//	t = SensorType.ACCELERATION_SENSOR;
-						//String[] snames = model.getSensorNames(t);
-						String[] snames = model.getSensorNames((String)type);
+				} else {
+					String t = null;
+					if (type.equals("ForceSensor"))
+						t = "Force";
+					else if (type.equals("Gyro"))
+						t = "RateGyro";
+					else if (type.equals("AccelerationSensor"))
+						t = "Acceleration";
+					String[] snames = model.getSensorNames(t);
 
-						if (snames != null) {
-							for (int i=0; i<snames.length; i++) {
-								comboLink_.addItem(snames[i]);
-							}
+					if (snames != null) {
+						for (int i=0; i<snames.length; i++) {
+							comboLink_.addItem(snames[i]);
 						}
 					}
-					comboLink_.setEnabled(true);
-				} else
-					comboLink_.setEnabled(false);
-
+				}
+				comboLink_.setEnabled(true);
 				comboAttr_.setEnabled(false);
 				setButton_.setEnabled(false);
 				
 				isComboChanging_ = false;
 				
-				if (comboLink_.getItemCount() == 2)
-					comboLink_.setSelectedIndex(1);
+				if(comboLink_.getItemCount()>0)
+					comboLink_.setSelectedIndex(0);
 			}
 		});
 		
@@ -341,35 +303,31 @@ public class SeriesDialog extends JDialog {
 				isComboChanging_ = true;
 				
    				comboAttr_.removeAllItems();
-				comboAttr_.addItem(ATTRIBUTE);
    				
-				if (comboLink_.getSelectedIndex() > 0) {
-					List<String> l = nodeMap.get(comboType_.getSelectedItem());
+				List<String> l = nodeMap.get(comboType_.getSelectedItem());
 					/*if (currentGraph_.getTrendGraph().getDataItemInfoList().length > 0) {
 						String curAttr = currentGraph_.getTrendGraph().getDataItemInfoList()[0].dataItem.attribute;
 						if (l.contains(curAttr))
 							comboAttr_.addItem(curAttr);
 					} else */
-					if (seriesTable_.getRowCount() > 0) {
-						String curAttr = (String)seriesTable_.getValueAt(0, 1);
-						if (l.contains(curAttr))
-							comboAttr_.addItem(curAttr);
-					} else {
-						Iterator<String> it = l.iterator();
-                   		while (it.hasNext()) {
-                  			comboAttr_.addItem(it.next());
-                  		}
-					}
-					comboAttr_.setEnabled(true);
-				} else 
-					comboAttr_.setEnabled(false);
+				if (seriesTable_.getRowCount() > 0) {
+					String curAttr = (String)seriesTable_.getValueAt(0, 1);
+					if (l.contains(curAttr))
+						comboAttr_.addItem(curAttr);
+				} else {
+					Iterator<String> it = l.iterator();
+					while (it.hasNext()) {
+						comboAttr_.addItem(it.next());
+                 	}
+				}
+				comboAttr_.setEnabled(true);
 				
-				setButton_.setEnabled(comboAttr_.getItemCount() > 1);
+				setButton_.setEnabled(comboAttr_.getItemCount() > 0);
 				
 				isComboChanging_ = false;
 				
-				if (comboAttr_.getItemCount() == 2)
-					comboAttr_.setSelectedIndex(1);
+				if(comboAttr_.getItemCount()>0)
+					comboAttr_.setSelectedIndex(0);
 			} 
 		});
 		
@@ -385,36 +343,34 @@ public class SeriesDialog extends JDialog {
 				}
 				
 				for (int i=0; i<length; i++) {
-					graphIndex++;
 					Object[] rowData = new Object[5];
-					rowData[0] = comboModel_.getSelectedItem().toString() + "." 
-					           + (String)comboLink_.getSelectedItem();
-	                rowData[1] = (String)comboAttr_.getSelectedItem();
-	                rowData[2] = new Integer(i);
-	                rowData[3] = currentGraph_.getTrendGraph().getGraphColor(graphIndex);
 	                rowData[4] = comboModel_.getSelectedItem().toString() + "." 
 			                   + (String)comboLink_.getSelectedItem() + "."
-			                   + (String)comboAttr_.getSelectedItem() + "."
-			                   + i;
-	                
-	                tableModel_.addRow(rowData);
+			                   + (String)comboAttr_.getSelectedItem() + (length > 1 ? "." + i : "");
+	                if(tableModel_.getRow((String)rowData[4])==-1){
+	                   	rowData[0] = comboModel_.getSelectedItem().toString() + "." 
+				           + (String)comboLink_.getSelectedItem();
+	                	rowData[1] = (String)comboAttr_.getSelectedItem();
+	                	if(length>1)
+	                		rowData[2] = new Integer(i);
+	                	else
+	                		rowData[2] = null;
+	                	rowData[3] = currentGraph_.getTrendGraph().getGraphColor(graphIndex);
+	                	tableModel_.addRow(rowData,(String)rowData[4]);
+	                	graphIndex++;
+	                }
 				}
-				
-                addedList_.add(new AttributeInfo(
-			    	(String)comboType_.getSelectedItem(),
-			    	comboModel_.getSelectedItem().toString(), 
-			    	(String)comboLink_.getSelectedItem(),
-			    	(String)comboAttr_.getSelectedItem(),
-			    	length == 1 ? 0 : length
-			    ));
 				removeButton_.setEnabled(true);
 			}
 		});
 				
+		comboModel_.setBorder(new TitledBorder(ROBOT_MODEL));
+		comboType_.setBorder(new TitledBorder(DATA_TYPE));
+		comboLink_.setBorder(new TitledBorder(LINK_NAME));
+		comboAttr_.setBorder(new TitledBorder(ATTRIBUTE));
         JPanel line3 = new JPanel();
         line3.setLayout(new BoxLayout(line3, BoxLayout.X_AXIS));
         line3.add(Box.createHorizontalGlue());
-        
         line3.add(comboModel_);
         line3.add(Box.createHorizontalStrut(BUTTON_GAP));
         line3.add(comboType_);
@@ -439,15 +395,51 @@ public class SeriesDialog extends JDialog {
                     if (ce != null) {
                         ce.stopCellEditing();
                     }
-                    dataItemInfoArray_ =
-                        dataItemInfoList_.toArray(new DataItemInfo[0]);
-                    for (int i = 0; i < dataItemInfoArray_.length; i++) {
-                        dataItemInfoArray_[i].color = (Color)tableModel_.getValueAt(i, 3);
-                        dataItemInfoArray_[i].legend = (String)tableModel_.getValueAt(i, 4);
+                    ArrayList<DataItemInfo> newDataItemInfoList = new ArrayList<DataItemInfo>();
+                    for(int i=0; i<tableModel_.getRowCount(); i++){
+                    	String fullName = tableModel_.getString(i);
+                    	Iterator<DataItemInfo> it = dataItemInfoList_.iterator();
+                    	boolean contain = false;
+                        while(it.hasNext()){
+                        	DataItemInfo info = it.next();
+                        	if(fullName.equals(info.dataItem.toString())){
+                        		info.color = (Color)tableModel_.getValueAt(i, 3);
+                    			info.legend = (String)tableModel_.getValueAt(i, 4);
+                    			newDataItemInfoList.add(info);
+                    			dataItemInfoList_.remove(info);
+                    			contain = true;
+                    			break;
+                        	}
+                        }
+                        if(!contain){
+                        	String str = (String)tableModel_.getValueAt(i, 0);
+                        	String[] model = str.split("\\.",0);
+                        	Integer indexI = ((Integer)tableModel_.getValueAt(i, 2));
+                        	int index;
+                        	if(indexI==null)
+                        		index=-1;
+                        	else
+                        		index=indexI.intValue();
+                        	addedList_.add(new DataItemInfo(new DataItem(
+        					    	model[0],model[1],
+        					    	(String)tableModel_.getValueAt(i, 1),
+        					    	index,
+        					    	(String)comboType_.getSelectedItem()),
+        					    	(Color)tableModel_.getValueAt(i, 3),
+        					    	(String)tableModel_.getValueAt(i, 4)
+        					    
+                        	));
+                        }
                     }
+                    Iterator<DataItemInfo> it = dataItemInfoList_.iterator();
+                    while(it.hasNext()){
+                    	removedList_.add(it.next());
+                    }
+                    dataItemInfoArray_ =
+                    	newDataItemInfoList.toArray(new DataItemInfo[0]);
                 	removedArray_ = removedList_.toArray(new DataItemInfo[0]);
                 	removeAllRows();
-                    addedArray_ = addedList_.toArray(new AttributeInfo[0]);
+                    addedArray_ = addedList_.toArray(new DataItemInfo[0]);
                 	updated_ = true;
                     SeriesDialog.this.setVisible(false);
                 }
@@ -502,7 +494,7 @@ public class SeriesDialog extends JDialog {
         pane.add(bLine);
         pane.add(Box.createVerticalStrut(BORDER_GAP));
 
-        setResizable(false);
+        setResizable(true);
     }
     
     private void _resetSelection() {
@@ -510,19 +502,15 @@ public class SeriesDialog extends JDialog {
 		isComboChanging_ = true;
 		
 		comboModel_.removeAllItems();
-		comboModel_.addItem(ROBOT_MODEL);
-		Iterator it = manager_.getItemMap(GrxModelItem.class).values().iterator();
+		Iterator<GrxModelItem> it = currentModels_.iterator();
 		while (it.hasNext()) {
-			GrxModelItem model = (GrxModelItem)it.next();
+			GrxModelItem model = it.next();
 			if (model.isRobot())
 				comboModel_.addItem(model);
 		}
 		comboType_.removeAllItems();
-		comboType_.addItem(DATA_TYPE);
 		comboLink_.removeAllItems();
-		comboLink_.addItem(LINK_NAME);
 		comboAttr_.removeAllItems();
-		comboAttr_.addItem(ATTRIBUTE);
 		
 		comboModel_.setEnabled(true);
 		comboType_.setEnabled(false);
@@ -532,8 +520,8 @@ public class SeriesDialog extends JDialog {
 		
 		isComboChanging_ = false;
 		
-		if (comboModel_.getItemCount() == 2)
-			comboModel_.setSelectedIndex(1);
+		if(comboModel_.getItemCount()>0)
+			comboModel_.setSelectedIndex(0);
     }
 
     public void setCurrentGraph(GraphElement currentGraph) {
@@ -549,7 +537,7 @@ public class SeriesDialog extends JDialog {
             if(seriesTable_.getRowCount() > 0)
             	seriesTable_.setRowSelectionInterval(0, 0); 
             removedList_ = new ArrayList<DataItemInfo>(); 
-            addedList_ = new ArrayList<AttributeInfo>();
+            addedList_ = new ArrayList<DataItemInfo>();
             removeButton_.setEnabled(true); 
             updated_ = false;               
             pack(); 
@@ -579,7 +567,7 @@ public class SeriesDialog extends JDialog {
             rowData[2] = new Integer(di.index);
             rowData[3] = dii[i].color;
             rowData[4] = dii[i].legend;
-            tableModel_.addRow(rowData);
+            tableModel_.addRow(rowData,di.toString());
         }
     }
 
@@ -596,7 +584,7 @@ public class SeriesDialog extends JDialog {
     public DataItemInfo[] getRemovedList() {
         return removedArray_;
     }
-    public AttributeInfo[] getAddedList() {
+    public DataItemInfo[] getAddedList() {
         return addedArray_;
     }
     /**
@@ -674,23 +662,38 @@ public class SeriesDialog extends JDialog {
      * @version 1.0 (2001/8/20)
      */
     private class MyModel extends DefaultTableModel {
-
-        // -----------------------------------------------------------------
-        /**
-         *
-         */
+    	private ArrayList<String> tableList = new ArrayList<String>();
         public MyModel(
             Object[] columnNames
         ) {
             super(columnNames, 0);
         }
 
-        // -----------------------------------------------------------------
-        /**
-         *
-         */
         public boolean isCellEditable(int row, int col) {
             return (col == 3 || col == 4);
         }
+        
+        public int getRow(String str){
+        	return tableList.indexOf(str);
+        }
+        
+        public String getString(int i){
+        	return tableList.get(i);
+        }
+        
+        public void removeRow(int i){
+        	super.removeRow(i);
+        	tableList.remove(i);
+        }
+        
+        public void addRow(Object[] rowData, String str){
+        	super.addRow(rowData);
+        	tableList.add(str);
+        }
     }
+    
+    public void setModelList(List<GrxModelItem> list){
+    	currentModels_ = list;
+    }
+    
 }
