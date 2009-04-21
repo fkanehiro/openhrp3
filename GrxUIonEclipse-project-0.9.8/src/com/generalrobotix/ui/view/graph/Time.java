@@ -79,13 +79,13 @@ public class Time {
      * @param  time  時間（秒）
      */
     public void set(double time) {
-        long utime = (int)Math.round(time * 1000000.0);
+        long utime = (long)Math.round(time * 1000000.0);
         usec_ = (int)(utime % 1000);
         msec_ = (int)(utime / 1000);
     }
 
     public void set(float time) {
-        long utime = (int)Math.round(time * 1000000.0f);
+        long utime = (long)Math.round((double)time * 1000000.0);
         usec_ = (int)(utime % 1000);
         msec_ = (int)(utime / 1000);
     }
@@ -154,7 +154,7 @@ public class Time {
     }
 
     public long getUtime() {
-        return msec_ * 1000 + usec_;
+        return (long)msec_ * 1000L + (long)usec_;
     }
 
     public void setUtime(long utime) {
