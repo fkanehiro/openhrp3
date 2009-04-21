@@ -38,10 +38,6 @@ import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
-// TAWARA INSERT START
-import com.generalrobotix.ui.util.GrxDebugUtil;
-// TAWARA INSERT END
-
 @SuppressWarnings("serial")
 public class GrxProcessManagerView extends GrxBaseView
     implements DisposeListener {
@@ -150,15 +146,12 @@ public class GrxProcessManagerView extends GrxBaseView
     }
 
     public void shutdown() {
-     // TAWARA INSERT START
-        GrxDebugUtil.println("GrxProcessManagerView::Grxshutdown");
-     // TAWARA INSERT END
+        
     }
 
-    @Override
     public void widgetDisposed(DisposeEvent e)
     {
         // TODO 自動生成されたメソッド・スタブ
-        processManager.startType();
+        processManager.stopType();
     }
 }
