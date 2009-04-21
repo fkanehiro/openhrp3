@@ -181,11 +181,11 @@ public class TrendGraph {
      * @param   ai 
      */
     public int addDataItem(
-        AttributeInfo ai
+    		DataItemInfo di
     ) {
         //projectRead_ = false;
 
-        DataKind dataKind = GraphProperties.getDataKindFromAttr(ai.fullAttributeName);
+        DataKind dataKind = GraphProperties.getDataKindFromAttr(di.dataItem.getFullAttributeName());
         if (dataKind == null) { 
             return NOT_SUPPORTED;
         }
@@ -214,29 +214,14 @@ public class TrendGraph {
 //            SEDoubleArray vr = new SEDoubleArray(new double[]{dataKind_.base, dataKind_.base + dataKind_.extent});
 //            world_.updateAttribute(nodeName_ + "." + GraphNode.V_RANGE + "=" + vr.toString());
         }
-        int count = (ai.length > 0 ? ai.length : 1); 
-        for (int i = 0; i < count; i++) {
-            int index = ((ai.length < 1) ? -1 : i);
-            DataItem di = new DataItem(
-                ai.objectName,
-                ai.nodeName,
-                ai.attribute,
-                index
-            );
-            Color color = colorTable_[colorCounter_];
-            String legend = di.toString();
-            DataItemInfo dii = new DataItemInfo(di, color, legend);
-            if (_addDataItem(dii)) {
-                if (++colorCounter_ >= numColors_) {
-                    colorCounter_ = 0;
-                }
-//                for (int j = 0; j < dataItemListenerList_.size(); j++) {
-//                    DataItemListener listener = dataItemListenerList_.getListener(j);
-//                    listener.dataItemAdded(dii);
-//                }
-            }
-        }
-
+        if(di.color==null)
+        	di.color = colorTable_[colorCounter_];
+        if(di.legend==null)
+            di.legend = di.toString();
+        if(_addDataItem(di))
+        	if (++colorCounter_ >= numColors_)
+            colorCounter_ = 0;
+ 
         return SUCCEEDED;
     }
 
@@ -252,6 +237,7 @@ public class TrendGraph {
         DataSeries ds = (DataSeries)dataSeriesMap_.get(key);
         graph_.removeDataSeries(ds);
         dataSeriesMap_.remove(key);
+        dataItemInfoMap_.remove(key);
         int ind = dataItemList_.indexOf(dataItem);
         dataItemList_.remove(ind);
         if (dataItemList_.size() < 1) {

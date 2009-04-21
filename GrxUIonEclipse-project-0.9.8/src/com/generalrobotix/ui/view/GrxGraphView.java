@@ -38,10 +38,10 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxGraphItem;
+import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.util.GrxDebugUtil;
-import com.generalrobotix.ui.view.graph.AttributeInfo;
 import com.generalrobotix.ui.view.graph.DataItem;
 import com.generalrobotix.ui.view.graph.DataItemInfo;
 import com.generalrobotix.ui.view.graph.GUIStatus;
@@ -56,6 +56,7 @@ public class GrxGraphView extends GrxBaseView {
 
 	private GrxWorldStateItem currentWorld_ = null;
 	private GrxGraphItem currentGraph_ = null;
+	private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
 	private TrendGraphManager graphManager_;
 	private GraphPanel gpanel_;
 	//private double prevTime_ = 0.0;
@@ -117,6 +118,9 @@ public class GrxGraphView extends GrxBaseView {
         	}
         }
         manager_.registerItemChangeListener(this, GrxGraphItem.class);
+        currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        gpanel_.setModelList(currentModels_);
+        manager_.registerItemChangeListener(this, GrxModelItem.class);
 	}
 
 	private void setLogManager(GrxWorldStateItem worldStateItem){
@@ -169,6 +173,25 @@ public class GrxGraphView extends GrxBaseView {
 	    	default:
 	    		break;
 	    	}
+		}else if(item instanceof GrxModelItem){
+    		GrxModelItem modelItem = (GrxModelItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.SELECTED_ITEM:
+	    		if(!currentModels_.contains(modelItem)){
+	    			currentModels_.add(modelItem);
+	    			gpanel_.setModelList(currentModels_);
+	    		}
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(currentModels_.contains(modelItem)){
+	    			currentModels_.remove(modelItem);
+	    			gpanel_.setModelList(currentModels_);
+	    		}
+	    		break;
+	    	default:
+	    		break;
+	    	}
 		}
 	}
 	
@@ -208,7 +231,7 @@ public class GrxGraphView extends GrxBaseView {
 				String node  = p.getStr(header + str[j] + ".node");
 				String attr  = p.getStr(header + str[j] + ".attr");
 				int index    = p.getInt(header + str[j] + ".index", 0);
-				DataItem ditem = new DataItem(object, node, attr, index);
+				DataItem ditem = new DataItem(object, node, attr, index, null);
 				if (!addedList.contains(ditem.toString()))
 					addedList.add(ditem.toString());
 
@@ -226,7 +249,7 @@ public class GrxGraphView extends GrxBaseView {
 					continue;
 
 				String type = "Joint";
-				int length = 0;
+				int length = 1;
 				if (attr.equals("force")) {
 					type = "ForceSensor";
 					length = 3;
@@ -241,7 +264,9 @@ public class GrxGraphView extends GrxBaseView {
 					length = 3;
 				}
 
-				tgraph.addDataItem(new AttributeInfo(type, object, node, attr, length));
+				for(int k=0; k<length; k++)	
+					tgraph.addDataItem(new DataItemInfo(new DataItem(object, node, attr, k, type),
+							null, null));
 			}
 
 			DataItemInfo[] info = tgraph.getDataItemInfoList();
@@ -290,6 +315,8 @@ public class GrxGraphView extends GrxBaseView {
 	
 	 public void shutdown() {
 		 manager_.removeItemChangeListener(this, GrxGraphItem.class);
+		 manager_.removeItemChangeListener(this, GrxModelItem.class);
+		 manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
 		 if(currentWorld_!=null)
 			 currentWorld_.deleteObserver(this);   
 	}

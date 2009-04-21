@@ -24,6 +24,7 @@ public class DataItem {
 
     final String fullName_;         // 完全名
     final String attributePath_;    // アトリビュートパス(添字なし)
+    final String fullAttributeName_;
 
     // -----------------------------------------------------------------
     // コンストラクタ
@@ -39,7 +40,8 @@ public class DataItem {
         String object,
         String node,
         String attribute,
-        int index
+        int index,
+        String nodeType
     ) {
         this.object = object;
         this.node = node;
@@ -62,6 +64,7 @@ public class DataItem {
             sb.append(index);   // 添字
         }
         fullName_ = sb.toString();
+        fullAttributeName_ = nodeType + "." + attribute;
     }
 
     /**
@@ -86,6 +89,10 @@ public class DataItem {
         return attributePath_;
     }
 
+    public String getFullAttributeName(){
+    	return fullAttributeName_;
+    }
+    
     /**
      * 配列か否か
      *
