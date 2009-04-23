@@ -110,16 +110,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
    	 * @brief
    	 */
 	class MenuChangeType extends Action {
-        String s1 = "change into environment model";
-        String s2 = "change into robot model";
-		String s=s1;
-        public String getText(){ return s; }
-        public void toggleMode(){
-        	if( s.equals(s1) )
-        		s=s2;
-        	else
-        		s=s1;
-        }
+		public MenuChangeType() {
+			if (isRobot_) {
+	            setText( "change into environmental model" );
+	        } else {
+	        	setText( "change into robot model" );
+	        }
+		}
 		public void run(){
 			_setModelType(!isRobot_);
 		}
@@ -349,16 +346,16 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     private void _setModelType(boolean isRobot) {
         isRobot_ = isRobot;
-        setProperty("isRobot", String.valueOf(isRobot_));
         if (isRobot_) {
             setIcon(robotIcon);
             menuChangeType_.setText("change into environmental model");
         } else {
+        	menuChangeType_.setText( "change into robot model" );
             setIcon(envIcon);
-            menuChangeType_.setText("change into robot model");
             setVisibleCoM(false);
             setVisibleCoMonFloor(false);
         }
+        setProperty("isRobot", String.valueOf(isRobot_));
     }
 
     /**
