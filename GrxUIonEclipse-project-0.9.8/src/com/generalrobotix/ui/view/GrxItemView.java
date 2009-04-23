@@ -20,6 +20,7 @@ package com.generalrobotix.ui.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Iterator;
 
@@ -75,6 +76,7 @@ public class GrxItemView extends GrxBaseView {
 	 * @param vp
 	 * @param parent
 	 */
+	@SuppressWarnings("unchecked")
 	public GrxItemView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
 		super(name, manager, vp, parent);
 
@@ -159,6 +161,10 @@ public class GrxItemView extends GrxBaseView {
         updateTree();
         
         manager_.registerItemChangeListener(this, GrxBaseItem.class);
+        Map<String, GrxModelItem> map = (Map<String, GrxModelItem>) manager_.getItemMap(GrxModelItem.class);
+        Iterator<GrxModelItem> it = map.values().iterator();
+        while(it.hasNext())
+        	it.next().addObserver(this);
 	}
 
 	/**
@@ -294,7 +300,26 @@ public class GrxItemView extends GrxBaseView {
 		tv.expandToLevel(3);
 	}
 	
+	public void update(GrxBasePlugin plugin, Object... arg) {
+    	if((String)arg[0]!="PropertyChange")
+    		return;
+    	updateTree();
+    }
+	
 	public void registerItemChange(GrxBaseItem item, int event){
+		if(item instanceof GrxModelItem){
+    		GrxModelItem modelItem = (GrxModelItem) item;
+	    	switch(event){
+	    	case GrxPluginManager.ADD_ITEM:
+	    		modelItem.addObserver(this);
+	    		break;
+	    	case GrxPluginManager.REMOVE_ITEM:
+	    		modelItem.deleteObserver(this);
+	    		break;
+	    	default:
+	    		break;
+	    	}
+		}
 		updateTree();
 		if(event==GrxPluginManager.FOCUSED_ITEM){
 			List<GrxBasePlugin> l = new ArrayList<GrxBasePlugin>();
@@ -303,8 +328,13 @@ public class GrxItemView extends GrxBaseView {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void shutdown(){
 		manager_.removeItemChangeListener(this, GrxBaseItem.class);
+		Map<String, GrxModelItem> map = (Map<String, GrxModelItem>) manager_.getItemMap(GrxModelItem.class);
+        Iterator<GrxModelItem> it = map.values().iterator();
+        while(it.hasNext())
+        	it.next().deleteObserver(this);
 	}
 	
 }
