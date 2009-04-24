@@ -85,13 +85,6 @@ PD_HGtest::PD_HGtest(RTC::Manager* manager)
   
   // </rtc-template>
 
-  if (access(WAIST_FILE, 0))
-  {
-    std::cerr << WAIST_FILE << " not found" << std::endl;
-  }else{
-    waist.open(WAIST_FILE);
-  }
-
   m_torque0.data.length(1);
   m_torque1.data.length(1);
   m_root_trans.data.length(12);
