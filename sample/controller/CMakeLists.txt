@@ -1,4 +1,3 @@
-
 set(LIBRARY_OUTPUT_PATH)
 set(EXECUTABLE_OUTPUT_PATH)
 
@@ -21,18 +20,18 @@ macro(create_simple_controller CONTROLLER_NAME)
   install(TARGETS ${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp DESTINATION ${controller_install_path} CONFIGURATIONS Release)
   
   if(WIN32)
-    install(TARGETS ${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp 
-        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR} 
+    install(TARGETS ${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp
+        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}
         CONFIGURATIONS Release )
-  endif()  
+  endif()
 
   install(PROGRAMS ${CONTROLLER_NAME}.${SH_SFX} DESTINATION ${controller_install_path})
   
-  install(FILES rtc.conf DESTINATION ${controller_install_path})
+  install(FILES rtc.conf bridge.conf DESTINATION ${controller_install_path})
 
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/etc)
     install(DIRECTORY etc DESTINATION ${controller_install_path} PATTERN ".svn" EXCLUDE)
-  endif()		     
+  endif()
 
 endmacro()
 
@@ -45,5 +44,3 @@ add_subdirectory(SampleController)
 add_subdirectory(PA10Controller)
 add_subdirectory(SamplePD_HG)
 add_subdirectory(PD_HGtest)
-
-

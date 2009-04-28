@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -121,10 +121,15 @@ public class GrxProcessManagerView extends GrxBaseView
             pi.autoStart = GrxXmlUtil.getBoolean(e, "autostart", true);
             pi.autoStop = GrxXmlUtil.getBoolean(e, "autostop", true);
 
-            if (!processManager.isRegisteredAndShutdown(pi)) {
-                processManager.unregister(pi.id);
+            if ( processManager.isRegistered(pi) ) {
+                if( !processManager.isRunning(pi) ){
+                    processManager.unregister(pi.id);
+                    processManager.register(pi);
+                }
+            } else {
+                processManager.register(pi);
             }
-            processManager.register(pi);
+
         }
         processManager.autoStart();
     }
@@ -149,9 +154,7 @@ public class GrxProcessManagerView extends GrxBaseView
         
     }
 
-    public void widgetDisposed(DisposeEvent e)
-    {
-        // TODO 自動生成されたメソッド・スタブ
+    public void widgetDisposed(DisposeEvent e){
         processManager.stopType();
     }
 }

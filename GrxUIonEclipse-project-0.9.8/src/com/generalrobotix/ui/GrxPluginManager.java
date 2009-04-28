@@ -1033,7 +1033,6 @@ public class GrxPluginManager {
          * updateViewList(); for( GrxBaseView v : selectedViewList_ )
          * v.shutdown();
          */
-        
     }
 
     /**
@@ -1087,7 +1086,6 @@ public class GrxPluginManager {
      */
     public void restoreProcess() {
         GrxProcessManager localProcessManager = GrxProcessManager.getInstance();
-        localProcessManager.setProcessList(rcProject_.getElement());
         localProcessManager.setProcessList(currentProject_.getElement());
     }
 

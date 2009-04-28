@@ -29,7 +29,6 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxProcessManager;
-import com.generalrobotix.ui.util.GrxServerManager;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 
 /**
@@ -41,15 +40,15 @@ public class Activator extends AbstractUIPlugin{
 
     public GrxPluginManager    manager_;
     private ImageRegistry      ireg_     = new ImageRegistry();
+    private boolean           bStartedGrxUI_ = false; 
 
     // パースペクティブのイベント初期化、振る舞いを定義するクラス
     class EventInnerClass extends PerspectiveAdapter
             implements IWindowListener, IWorkbenchListener, SynchronousBundleListener, FrameworkListener {
 
-        private IWorkbench    workbench_                  = null;
-        private BundleContext context_                    = null;
-        private boolean       bNotSetPerspectiveListener_ = true;
-
+        private IWorkbench      workbench_                  = null;
+        private BundleContext   context_                    = null;
+        private boolean        bNotSetPerspectiveListener_ = true;
         public EventInnerClass(IWorkbench workbench, BundleContext context) {
             super();
             workbench_ = workbench;
@@ -312,18 +311,22 @@ public class Activator extends AbstractUIPlugin{
 
     // GrxUIパースペクティブが有効になったときの動作
     private void startGrxUI() {
-        manager_ = new GrxPluginManager();
-        manager_.start();
+        if( !bStartedGrxUI_ ) {
+            
+            //暫定処置 Grx3DViewがGUIのみの機能に分離できたらstopGrxUIか
+            //manager_.shutdownで処理できるように変更
+            GrxProcessManager.shutDown();
+            
+            bStartedGrxUI_ = true;
+            manager_ = new GrxPluginManager();
+            manager_.start();
+        }
     }
 
     // GrxUIパースペクティブが無効になったときの動作
     private void stopGrxUI() {
-        try {
-            GrxServerManager.ShutdownServerInfo();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         manager_.shutdown();
         manager_ = null;
+        bStartedGrxUI_ = false;
     }
 }
