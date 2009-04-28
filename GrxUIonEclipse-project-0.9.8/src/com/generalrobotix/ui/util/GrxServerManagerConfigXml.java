@@ -56,7 +56,15 @@ public class GrxServerManagerConfigXml {
     private File xmlFile = null;
     private static Document document = null;         
     private static Element elementRoot = null;
+    private static String  serverInfoDefaultDir_  = "";
+    private static int     serverInfoDefaultWaitCount_ = 0;
     
+    public static String getDefaultDir(){
+        return serverInfoDefaultDir_;
+    }
+    public static int getDefaultWaitCount_(){
+        return serverInfoDefaultWaitCount_;
+    }
     public GrxServerManagerConfigXml( File refFile){
         xmlFile = refFile;
         try {
@@ -110,13 +118,18 @@ public class GrxServerManagerConfigXml {
         	return ret ;
 		Node node = localList.item(index);
         ret = new ProcessInfo();
-        ret.id = GrxXmlUtil.getStringNoexpand((Element)node, "id", "");
-        if( ret.id.equals(""))
+        ret.id = GrxXmlUtil.getStringNoexpand((Element)node, "id", "").trim();
+        if( ret.id.equals("")){
+            serverInfoDefaultDir_ = GrxXmlUtil.getStringNoexpand((Element)node ,"dir" , "").trim();
+            serverInfoDefaultWaitCount_ = GrxXmlUtil.getInteger((Element)node, "waitcount", 0);
         	return ret;
-        ret.com.add( GrxXmlUtil.getStringNoexpand((Element)node , "com" , ""));
-        ret.args =  GrxXmlUtil.getStringNoexpand((Element)node ,"args" , "");
+        }
+        ret.com.add( GrxXmlUtil.getStringNoexpand((Element)node , "com" , "").trim());
+        ret.args =  GrxXmlUtil.getStringNoexpand((Element)node ,"args" , "").trim();
         ret.autoStart = GrxXmlUtil.getBoolean((Element)node , "autostart", false);
         ret.useORB = GrxXmlUtil.getBoolean((Element)node , "useORB", false);
+        ret.waitCount = GrxXmlUtil.getInteger((Element)node, "waitcount", serverInfoDefaultWaitCount_);
+        ret.dir = GrxXmlUtil.getStringNoexpand((Element)node , "dir" , serverInfoDefaultDir_).trim();
         return ret;
     }
 

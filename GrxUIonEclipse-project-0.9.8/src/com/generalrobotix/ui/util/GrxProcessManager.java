@@ -49,7 +49,7 @@ import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
 
 public class GrxProcessManager {
-    private static GrxProcessManager      this_            = null;
+    private static GrxProcessManager      GrxProcessManagerThis_            = null;
     
     private java.util.List<AProcess>      process_         = null;
     private boolean                       isEnd_           = false;
@@ -69,17 +69,19 @@ public class GrxProcessManager {
     }
 
     public static synchronized GrxProcessManager getInstance() {
-        if (this_ == null) {
-            this_ = new GrxProcessManager();
+        if (GrxProcessManagerThis_ == null) {
+            GrxProcessManagerThis_ = new GrxProcessManager();
         }
-        return this_;
+        return GrxProcessManagerThis_;
     }
 
     public static synchronized void shutDown() {
-        if (this_ != null) {
-            this_.autoStop();
-            this_.stopThread();
-            this_ = null;
+        if (GrxProcessManagerThis_ != null) {
+            GrxProcessManagerThis_.autoStop();
+            GrxProcessManagerThis_.stopThread();
+            GrxProcessManagerThis_.process_.clear();
+            GrxProcessManagerThis_.lineQueue.clear();
+            GrxProcessManagerThis_ = null;
         }
     }
 
@@ -105,7 +107,7 @@ public class GrxProcessManager {
         StringBuffer nsHost = new StringBuffer("");
         StringBuffer nsPort = new StringBuffer("");
         Activator.refNSHostPort(nsHost, nsPort);
-        String nsOpt = " -ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService";
+        String nsOpt = "-ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService";
 
         NodeList processList = root.getElementsByTagName("processmanagerconfig");
         if (processList == null || processList.getLength() == 0) {
@@ -160,22 +162,34 @@ public class GrxProcessManager {
             pi.autoStart = GrxXmlUtil.getBoolean(e, "autostart", true);
             pi.autoStop = GrxXmlUtil.getBoolean(e, "autostop", true);
 
-            if (!isRegisteredAndShutdown(pi)) {
-                unregister(pi.id);
+            if ( isRegistered(pi) ) {
+                if( !isRunning(pi) ){
+                    unregister(pi.id);
+                    register(pi);
+                }
+            } else {
+                register(pi);
             }
-            register(pi);
         }
         autoStart();
     }
 
-    public boolean isRegisteredAndShutdown(ProcessInfo pi) {
+    public boolean isRunning(ProcessInfo pi) {
         AProcess localProcess = get(pi.id);
         if (localProcess != null) {
-            return !localProcess.isRunning();
+            return localProcess.isRunning();
         }
         return false;
     }
 
+    public boolean isRegistered(ProcessInfo pi) {
+        if ( get(pi.id) != null) {
+            return true;
+        }
+        return false;
+    }
+
+    
     public boolean register(ProcessInfo pi) {
         if (get(pi.id) != null) {
             return false;
@@ -343,7 +357,7 @@ public class GrxProcessManager {
             thread_ = new Thread() {
                 public void run() {
                     while (!isEnd_) {
-                        if (this_ != null) {
+                        if (GrxProcessManagerThis_ != null) {
                             updateIO();
                         }
                     }
@@ -518,13 +532,7 @@ public class GrxProcessManager {
 
         public AProcess(ProcessInfo pi) {
             pi_ = pi;
-
-            if (pi_.com.size() > 0) {
-                com_ = new StringBuffer();
-                for (int i = 0; i < pi_.com.size(); i++)
-                    com_.append(pi_.com.get(i) + " ");
-            }
-
+            updateCom();
             if (pi_.env.size() > 0) {
                 env_ = new String[pi_.env.size()];
                 for (int i = 0; i < pi_.env.size(); i++)
@@ -532,7 +540,7 @@ public class GrxProcessManager {
             }
 
             try {
-                dir_ = new File(pi_.dir);
+                dir_ = new File( pi_.dir );
             } catch (Exception e) {
                 dir_ = null;
             }
@@ -540,6 +548,18 @@ public class GrxProcessManager {
             buf_ = new StringBuffer();
         }
 
+        public void setCom(String com){
+            com_ = new StringBuffer(com);
+        }
+        
+        public void updateCom(){
+            if (pi_.com.size() > 0) {
+                com_ = new StringBuffer();
+                for (int i = 0; i < pi_.com.size(); i++)
+                    com_.append(pi_.com.get(i) + " ");
+            }
+        }
+        
         public boolean start(String opt) {
             // StatusOut.append("\nStarting "+pi_.id+" ... ");
             if (isRunning()) {

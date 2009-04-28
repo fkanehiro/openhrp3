@@ -19,6 +19,7 @@
 
 package com.generalrobotix.ui.view;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -78,7 +79,7 @@ import com.generalrobotix.ui.view.simulation.SimulationParameterPanel;
 @SuppressWarnings("serial")
 public class GrxOpenHRPView extends GrxBaseView {
     public static final String TITLE = "OpenHRP";
-
+    private static final int WAIT_COUNT_ = 4;
 	private GrxWorldStateItem currentWorld_;
 	private List<GrxModelItem> currentModels_;
 	private List<GrxCollisionPairItem> currentCollisionPairs_;
@@ -883,6 +884,7 @@ public class GrxOpenHRPView extends GrxBaseView {
         AProcess proc = pManager.get(controllerName);
         String dir = model.getStr("setupDirectory", "");
         String com = model.getStr("setupCommand", "");
+        
         if (cobj != null) {
             try {
                 cobj._non_existent();
@@ -913,6 +915,10 @@ public class GrxOpenHRPView extends GrxBaseView {
 
             if (!com.equals("")) {
                 com = dir+java.io.File.separator+com;
+                String osname = System.getProperty("os.name");
+                if(osname.indexOf("Windows") >= 0){
+                    com = "\"" + com + "\"";
+                }
                 ProcessInfo pi = new ProcessInfo();
                 pi.id = controllerName;
                 pi.dir = dir;
@@ -938,7 +944,6 @@ public class GrxOpenHRPView extends GrxBaseView {
         }
 		
         Date before = new Date();
-        int WAIT_COUNT = 4;
         for (int j=0; ; j++) {
             cobj = GrxCorbaUtil.getReference(controllerName);
             if (cobj != null) {
@@ -968,7 +973,7 @@ public class GrxOpenHRPView extends GrxBaseView {
                 }
             }
 
-            if (j > WAIT_COUNT || (new Date().getTime() - before.getTime() > WAIT_COUNT*1000)) {
+            if (j > WAIT_COUNT_ || (new Date().getTime() - before.getTime() > WAIT_COUNT_*1000)) {
                 GrxDebugUtil.println(" failed to setup controller:"+controllerName);
                 //タイトル画像をなしにするにはどうすればいいのか？とりあえずnullにしてみた
                 MessageDialog dialog = new MessageDialog(getParent().getShell(),"Setup Controller",null,"Can't connect the Controller("+controllerName+").\n" +"Wait more seconds ?",MessageDialog.QUESTION,new String[]{"YES","NO","CANCEL"}, 2);
