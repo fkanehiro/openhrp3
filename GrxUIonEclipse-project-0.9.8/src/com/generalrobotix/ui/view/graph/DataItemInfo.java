@@ -9,7 +9,8 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import java.awt.Color;
+import org.eclipse.swt.graphics.Color;
+
 
 /**
  * データアイテム情報

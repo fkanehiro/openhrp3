@@ -9,6 +9,7 @@
  */
 package com.generalrobotix.ui.view.graph;
 
+import org.eclipse.swt.widgets.Composite;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
@@ -41,18 +42,22 @@ public class DroppableXYGraph
      * @param   bottomMargin    int 下マージン
      */
     public DroppableXYGraph(
+    	Composite parent,
         int leftMargin,     // 左マージン
         int rightMargin,    // 右マージン
         int topMargin,      // 上マージン
         int bottomMargin    // 下マージン
     ) {
-        super(leftMargin, rightMargin, topMargin, bottomMargin);
+        super(parent, leftMargin, rightMargin, topMargin, bottomMargin);
+        //TODO hattori
+        /*
         dropTarget_ = new DropTarget(
             this,
             DnDConstants.ACTION_COPY_OR_MOVE,
             this,
             true
         );
+        */
         droppedObject_ = null;
         dropSucceeded_ = true;
     }

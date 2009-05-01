@@ -15,51 +15,35 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Scale;
 
-import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxGraphItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.MessageBundle;
-import com.generalrobotix.ui.util.MessageDialog;
 
 @SuppressWarnings("serial")
-public class GraphPanel extends JPanel {
+public class GraphPanel extends Composite {
     //--------------------------------------------------------------------
-    private static final int BORDER_GAP = 12;
-//    private static final int LABEL_GAP = 12;
-    private static final int BUTTON_GAP = 5;
-
     private static final int INITIAL_GRAPH_HEIGHT = 200;
     private static final int INITIAL_GRAPH_WIDTH = 100;
 
@@ -67,49 +51,30 @@ public class GraphPanel extends JPanel {
     private static final int MIN_GRAPH_HEIGHT = 150;
 //    private static final int GRAPH_HEIGHT_STEP = 50;
 
-    private static final int GRAPH_LEFT_MARGIN = 50;
-    private static final int GRAPH_RIGHT_MARGIN = 50;
-    private static final int GRAPH_TOP_MARGIN = 20;
-    private static final int GRAPH_BOTTOM_MARGIN = 30;
-
-    //private static final Color GRAPH_BORDER_COLOR = new Color(0, 0, 100);
-    private static final Font GRAPH_LEGEND_FONT = new Font("dialog", Font.PLAIN, 12);
-
     //--------------------------------------------------------------------
-    private DroppableXYGraph[] graph_;
     private GraphElement[] graphElement_;
     public GraphElement currentGraph_;
     private TrendGraphManager trendGraphMgr_;
     private List<GrxModelItem> currentModels_ = null;
 
-    private static final LineBorder normalBorder_ = new LineBorder(new Color(204, 204, 204), 2);
-//    private static final LineBorder focusedBorder_ = new LineBorder(Color.red, 2);
+    private static final Color normalColor_ = new Color(Display.getDefault(),0, 0, 0);
+    private static final Color focusedColor_ = new Color(Display.getDefault(),0, 0, 100);
 
-    //private static final Color normalColor_ = new Color(0, 0, 100);
-    //private static final Color focusedColor_ = new Color(0, 40, 0);
-    private static final Color normalColor_ = Color.black;
-    private static final Color focusedColor_ = new Color(0, 0, 100);
-
-
-    //private static Color primary2_;
-    //private static Color secondary3_;
-
-    private JPanel graphElementBase_;
-    private Frame owner_;
+    private Composite graphElementBase_;
     private Composite comp_;
     
-    private JSlider heightSlider_;
-    private JButton hRangeButton_;
-    private JButton vRangeButton_;
-    private JButton seriesButton_;
-    private JButton epsButton_;
+    private Scale heightSlider_;
+    private Button hRangeButton_;
+    private Button vRangeButton_;
+    private Button seriesButton_;
+    private Button epsButton_;
     
     public void setEnabled(boolean b) {
     	heightSlider_.setEnabled(b);
     	hRangeButton_.setEnabled(b);
     	vRangeButton_.setEnabled(b);
     	seriesButton_.setEnabled(b);
-    	epsButton_.setEnabled(b);
+    	//epsButton_.setEnabled(b);
     }
     
     private HRangeDialog hRangeDialog_;
@@ -117,141 +82,93 @@ public class GraphPanel extends JPanel {
     public SeriesDialog seriesDialog_;
     private EPSDialog epsDialog_;
 
-    private JScrollPane graphScrollPane_;
+    private ScrolledComposite graphScrollPane_;
 
     private int numGraph_;
-
-//    private int mode_;
     private GrxPluginManager manager_;
-    
     private DataItemInfo[] addedArray_;
      
-    //--------------------------------------------------------------------
-    //public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr,Composite parent) {
-    public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr, Frame frame, Composite comp) {
+     public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr, Composite comp) {
+        super(comp, SWT.NONE);
+        //this.setBackground(new Color(Display.getDefault(), 0,0,0));
         manager_ = manager;
-//    	owner_ = SWT_AWT.new_Frame(new Composite(parent,SWT.EMBEDDED));
-        owner_ = frame;
         comp_ = comp;
         trendGraphMgr_ = trendGraphMgr;
-        graphElementBase_ = new JPanel();
-        graphElementBase_.setLayout(
-            new BoxLayout(graphElementBase_, BoxLayout.Y_AXIS)
-        );
-
-        ActionListener focusListener_ = new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                DroppableXYGraph graph = (DroppableXYGraph)currentGraph_.getGraph();
-                graph.setBorderColor(normalColor_);
-                graph.setLegendBackColor(normalColor_);
-                currentGraph_.repaint();
-                //currentGraph_.setBorder(normalBorder_);
-                currentGraph_ = (GraphElement)evt.getSource();
-                seriesDialog_.setCurrentGraph(currentGraph_);
-                graph = (DroppableXYGraph)currentGraph_.getGraph();
-                graph.setBorderColor(focusedColor_);
-                graph.setLegendBackColor(focusedColor_);
-                currentGraph_.repaint();
-                //currentGraph_.setBorder(focusedBorder_);
-                heightSlider_.setValue(currentGraph_.getPreferredSize().height);
-                updateButtons();
-            }
-        };
-
-//        DroppableXYGraph lg;
-        TrendGraph tg;
-//        DataItem di;
-//        DataItemInfo dii;
-        Dimension dim;
+      
+        setLayout(new GridLayout(1,true));
+        graphScrollPane_ = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL);
+        graphScrollPane_.setExpandHorizontal(true);
+        graphScrollPane_.setExpandVertical(true);
+        GridData gridData = new GridData();
+ 		gridData.horizontalAlignment = GridData.FILL;
+ 		gridData.grabExcessHorizontalSpace = true;
+ 		gridData.verticalAlignment = GridData.FILL;
+ 		gridData.grabExcessVerticalSpace = true;
+ 		graphScrollPane_.setLayoutData(gridData);
+        Composite graphControlPanel = new Composite(this, SWT.NONE); 
+        gridData = new GridData();
+ 		gridData.horizontalAlignment = GridData.FILL;
+ 		gridData.grabExcessHorizontalSpace = true;
+        graphControlPanel.setLayoutData(gridData);
+        graphControlPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        graphControlPanel.setLayout(new RowLayout());
+        graphElementBase_ = new Composite(graphScrollPane_, SWT.NONE);
+        graphElementBase_.setLayout(new FillLayout(SWT.VERTICAL));
+        graphScrollPane_.setContent(graphElementBase_);
 
         numGraph_ = trendGraphMgr_.getNumGraph();
-        graph_ = new DroppableXYGraph[numGraph_];
         graphElement_ = new GraphElement[numGraph_];
         for (int i = 0; i < numGraph_; i ++) {
-            graph_[i] = new DroppableXYGraph(
-                GRAPH_LEFT_MARGIN,
-                GRAPH_RIGHT_MARGIN,
-                GRAPH_TOP_MARGIN,
-                GRAPH_BOTTOM_MARGIN
-            );
-            graph_[i].setBorderColor(normalColor_);
-            graph_[i].setLegendBackColor(normalColor_);
-            graph_[i].setLegendFont(GRAPH_LEGEND_FONT);
-
-            tg = trendGraphMgr_.getTrendGraph(i);
-            tg.setGraph(graph_[i]);
-
             graphElement_[i] =
                 new GraphElement(
-                    trendGraphMgr_.getTrendGraph(i),
-                    graph_[i],
-                    graph_[i].getLegendPanel()
+                	this,
+                	graphElementBase_,
+                    trendGraphMgr_.getTrendGraph(i)
                 );
 
-            graphElement_[i].setBorder(normalBorder_);
-            graphElement_[i].addActionListener(focusListener_);
-            dim = new Dimension(INITIAL_GRAPH_WIDTH, INITIAL_GRAPH_HEIGHT);
-            graphElement_[i].setPreferredSize(dim);
-            graphElementBase_.add(graphElement_[i]);
+            //graphElement_[i].setBorder(normalBorder_);
+            //graphElement_[i].addMouseListener(mouseListener_);
+            Dimension dim = new Dimension(INITIAL_GRAPH_WIDTH, INITIAL_GRAPH_HEIGHT);
+            //graphElement_[i].setPreferredSize(dim);
+            //graphElementBase_.add(graphElement_[i]);
         }
 
         currentGraph_ = graphElement_[0];
-        graph_[0].setBorderColor(focusedColor_);
-        graph_[0].setLegendBackColor(focusedColor_);
+        graphElement_[0].setBorderColor(focusedColor_);
 
-        graphScrollPane_ = new JScrollPane(
-            graphElementBase_,
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,//.VERTICAL_SCROLLBAR_AS_NEEDED,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-        );
-        graphScrollPane_.getVerticalScrollBar().setUnitIncrement(10);
 
-        heightSlider_ = new JSlider(
-            MIN_GRAPH_HEIGHT,
-            MAX_GRAPH_HEIGHT,
-            currentGraph_.getPreferredSize().height
-        );
-        heightSlider_.setMinimumSize(new Dimension(100, 22));
-        heightSlider_.setMaximumSize(new Dimension(100, 22));
-        heightSlider_.setPreferredSize(new Dimension(100, 22));
-        //heightSlider_.setPaintTicks(true);
-        //heightSlider_.setMajorTickSpacing(GRAPH_HEIGHT_STEP);
-        //heightSlider_.setSnapToTicks(false);
-        heightSlider_.addChangeListener(
-            new ChangeListener() {
-                public void stateChanged(ChangeEvent evt) {
-                    JSlider s = (JSlider)evt.getSource();
-                    graphElementBase_.setVisible(false);
-                    Dimension d = currentGraph_.getPreferredSize();//.height = s.getValue();
-                    d.height = s.getValue();
-                    currentGraph_.setPreferredSize(d);
-                    graphElementBase_.setVisible(true);
-                }
+        Label lb = new Label( graphControlPanel, SWT.NONE);
+		lb.setText("Height:");
+        heightSlider_ = new Scale(graphControlPanel, SWT.HORIZONTAL);
+        heightSlider_.setMinimum(MIN_GRAPH_HEIGHT);
+        heightSlider_.setMaximum(MAX_GRAPH_HEIGHT);
+        heightSlider_.setSelection(currentGraph_.getSize().y);
+        heightSlider_.addSelectionListener(new SelectionAdapter(){
+            public void widgetSelected(SelectionEvent e){
+            	graphElementBase_.setVisible(false);
+            	Point size = currentGraph_.getSize();
+            	size.y = heightSlider_.getSelection();
+                currentGraph_.setSize(size);
+                graphElementBase_.setVisible(true);
             }
-        );
+		} );
 
-        hRangeButton_ = new JButton(MessageBundle.get("graph.hrange"));
-        hRangeDialog_ = new HRangeDialog(owner_);
-        hRangeButton_.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
-                    if (graphItem == null)
-                    	return;
-                    	
-                    hRangeDialog_.setMaxHRange(
-                        trendGraphMgr_.getTotalTime()
-                    );
-                    hRangeDialog_.setMinHRange(
-                        trendGraphMgr_.getStepTime() * 10
-                    );
-                    double range = trendGraphMgr_.getTimeRange();
-                    double pos = trendGraphMgr_.getMarkerPos();
-                    hRangeDialog_.setHRange(range);
-                    hRangeDialog_.setMarkerPos(pos);
-                    hRangeDialog_.setLocationRelativeTo(GraphPanel.this);
-                    hRangeDialog_.setVisible(true);
-                    int flag = hRangeDialog_.getUpdateFlag();
+        hRangeButton_ = new Button(graphControlPanel,  SWT.PUSH);
+        hRangeButton_.setText(MessageBundle.get("graph.hrange"));
+        hRangeDialog_ = new HRangeDialog(graphControlPanel.getShell());
+        hRangeButton_.addSelectionListener(new SelectionAdapter(){
+        	public void widgetSelected(SelectionEvent e) {
+        		final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+        		if (graphItem == null)
+        			return;
+        		hRangeDialog_.setMaxHRange(trendGraphMgr_.getTotalTime());
+        		hRangeDialog_.setMinHRange(trendGraphMgr_.getStepTime() * 10);
+        		double range = trendGraphMgr_.getTimeRange();
+        		double pos = trendGraphMgr_.getMarkerPos();
+        		hRangeDialog_.setHRange(range);
+        		hRangeDialog_.setMarkerPos(pos);
+        		if(hRangeDialog_.open() == IDialogConstants.OK_ID){
+        			int flag = hRangeDialog_.getUpdateFlag();
                     if (flag != 0) {
                         TrendGraph tg = currentGraph_.getTrendGraph();
                         final double hRange = hRangeDialog_.getHRange();
@@ -269,24 +186,24 @@ public class GraphPanel extends JPanel {
 								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos});
 							}
                         });
-                        graphElementBase_.repaint();
+                        for (int i = 0; i < numGraph_; i ++) {
+                            graphElement_[i].redraw();
+                        }
                     }
                 }
-            }
-        );
+        	}
+        });
 
-        vRangeButton_ = new JButton(MessageBundle.get("graph.vrange"));
-        vRangeDialog_ = new VRangeDialog(owner_);
-        vRangeButton_.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
+        vRangeButton_ = new Button(graphControlPanel,  SWT.PUSH);
+        vRangeButton_.setText(MessageBundle.get("graph.vrange"));
+        vRangeDialog_ = new VRangeDialog(graphControlPanel.getShell());
+        vRangeButton_.addSelectionListener(new SelectionAdapter(){
+        	public void widgetSelected(SelectionEvent e) {
                     TrendGraph tg = currentGraph_.getTrendGraph();
                     vRangeDialog_.setUnit(tg.getUnitLabel());
                     vRangeDialog_.setBase(tg.getBase());
                     vRangeDialog_.setExtent(tg.getExtent());
-                    vRangeDialog_.setLocationRelativeTo(GraphPanel.this);
-                    vRangeDialog_.setVisible(true);
-                    if (vRangeDialog_.isUpdated()) {
+                    if(vRangeDialog_.open() == IDialogConstants.OK_ID){
                     	final double base = vRangeDialog_.getBase();
                         final double extent = vRangeDialog_.getExtent();
                         tg.setRange(base, extent);
@@ -298,26 +215,25 @@ public class GraphPanel extends JPanel {
 								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent});
 							}
                         });
-                        currentGraph_.repaint();
+                        currentGraph_.redraw();
                     }
                 }
             }
         );
-        seriesButton_ = new JButton(MessageBundle.get("graph.series"));
-        //seriesDialog_ = new SeriesDialog(manager_, currentGraph_, parent);
-        seriesDialog_ = new SeriesDialog(currentGraph_, owner_);
-        seriesButton_.addActionListener(
-            new ActionListener() {
-            	public void actionPerformed(ActionEvent evt) {
+
+        seriesButton_ = new Button(graphControlPanel,  SWT.TOGGLE);
+        seriesButton_.setText(MessageBundle.get("graph.series"));
+        
+        seriesDialog_ = new SeriesDialog(currentGraph_, graphControlPanel.getShell());
+        seriesButton_.addSelectionListener(new SelectionAdapter(){
+            	public void widgetSelected(SelectionEvent e) {
                     final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                     if (graphItem == null)
                     	return;
                     TrendGraph tg = currentGraph_.getTrendGraph();
                     seriesDialog_.setModelList(currentModels_);
                     seriesDialog_.setDataItemInfoList(tg.getDataItemInfoList());
-                    seriesDialog_.setLocationRelativeTo(GraphPanel.this);
-                    seriesDialog_.setVisible(true);
-                    if (seriesDialog_.isUpdated()) {
+                    if(seriesDialog_.open() == IDialogConstants.OK_ID){
                         DataItemInfo[] dii = seriesDialog_.getDataItemInfoList();
                         for (int i = 0; i < dii.length; i++) {
                             tg.setDataItemInfo(dii[i]);
@@ -333,9 +249,9 @@ public class GraphPanel extends JPanel {
                         }
                         
                         final String graphName = tg.getNodeName();
-                        Enumeration e = graphItem.propertyNames();
-                        while (e.hasMoreElements()) {
-                        	String key = (String)e.nextElement();
+                        Enumeration enume = graphItem.propertyNames();
+                        while (enume.hasMoreElements()) {
+                        	String key = (String)enume.nextElement();
                         	if (key.startsWith(graphName))
                         		graphItem.remove(key);
                         }
@@ -365,13 +281,15 @@ public class GraphPanel extends JPanel {
 							}
                         });
                         updateButtons();
-                        currentGraph_.repaint();
+                        currentGraph_.redraw();
                     }
                 }
             }
         );
+        /*
+        epsButton_ = new Button(graphControlPanel,  SWT.PUSH);
+        epsButton_.setText(MessageBundle.get("graph.eps"));
 
-        epsButton_ = new JButton(MessageBundle.get("graph.eps"));
         epsDialog_ = new EPSDialog(owner_);
         epsButton_.addActionListener(
             new ActionListener() {
@@ -453,58 +371,47 @@ public class GraphPanel extends JPanel {
                 }
             }
         );
+	*/
+        setEnabled(false);
 
-        updateButtons();
-
-        JPanel sliderBase = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        sliderBase.add(new JLabel(MessageBundle.get("graph.height")));
-        sliderBase.add(heightSlider_);
-        Box graphControlPanel = Box.createHorizontalBox();
-        graphControlPanel.add(Box.createHorizontalStrut(BORDER_GAP));
-        graphControlPanel.add(sliderBase);
-        graphControlPanel.add(Box.createHorizontalGlue());
-        graphControlPanel.add(hRangeButton_);
-        graphControlPanel.add(Box.createHorizontalStrut(BUTTON_GAP));
-        graphControlPanel.add(vRangeButton_);
-        graphControlPanel.add(Box.createHorizontalStrut(BUTTON_GAP));
-        graphControlPanel.add(seriesButton_);
-        graphControlPanel.add(Box.createHorizontalGlue());
-        graphControlPanel.add(epsButton_);
-        graphControlPanel.add(Box.createHorizontalStrut(BORDER_GAP));
-
-        this.setLayout(new BorderLayout());
-        this.add(graphScrollPane_, BorderLayout.CENTER);
-        this.add(graphControlPanel, BorderLayout.SOUTH);
-
-        //mode_ = GUIStatus.EDIT_MODE;
-
-        //PlaybackScheduler.getInstance().addPlaybackStatusListener(this);
     }
 
+    public void setFocuse(GraphElement ge){
+    	currentGraph_.setBorderColor(normalColor_);
+		currentGraph_.redraw();
+		currentGraph_ = ge;
+		currentGraph_.setBorderColor(focusedColor_);
+		currentGraph_.redraw();
+        seriesDialog_.setCurrentGraph(currentGraph_);
+        heightSlider_.setSelection(currentGraph_.getSize().y); 
+        updateButtons();
+    }
     //--------------------------------------------------------------------
     /**
      *
      */
     public void resetFocus() {
+    	/*
         SwingUtilities.invokeLater(
             new Runnable() {
                 public void run() {
                     currentGraph_ = graphElement_[0];
                     for (int i = 0; i < numGraph_; i++) {
-                        graph_[i].setBorderColor(normalColor_);
-                        graph_[i].setLegendBackColor(normalColor_);
-                        graphElement_[i].getPreferredSize().height = INITIAL_GRAPH_HEIGHT;
+                    	graphElement_[i].setBorderColor(normalColor_);
+                    	graphElement_[i].setLegendBackColor(normalColor_);
+                        //graphElement_[i].getPreferredSize().height = INITIAL_GRAPH_HEIGHT;
                     }
-                    graph_[0].setBorderColor(focusedColor_);
-                    graph_[0].setLegendBackColor(focusedColor_);
-                    graphScrollPane_.getViewport().setViewPosition(new Point(0, 0));
-                    heightSlider_.setValue(INITIAL_GRAPH_HEIGHT);
+                    graphElement_[0].setBorderColor(focusedColor_);
+                    graphElement_[0].setLegendBackColor(focusedColor_);
+                    //graphScrollPane_.getViewport().setViewPosition(new Point(0, 0));
+                    //heightSlider_.setValue(INITIAL_GRAPH_HEIGHT);
                     graphElementBase_.setVisible(false);
                     graphElementBase_.setVisible(true);
                     updateButtons();
                 }
             }
         );
+        */
     }
 
     //--------------------------------------------------------------------
@@ -515,7 +422,7 @@ public class GraphPanel extends JPanel {
         boolean enabled = (currentGraph_.getTrendGraph().getNumDataItems() > 0);
         vRangeButton_.setEnabled(enabled);
         seriesButton_.setEnabled(true);
-        epsButton_.setEnabled(enabled);
+        //epsButton_.setEnabled(enabled);
         
         GrxGraphItem p = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
         setEnabled(p != null);

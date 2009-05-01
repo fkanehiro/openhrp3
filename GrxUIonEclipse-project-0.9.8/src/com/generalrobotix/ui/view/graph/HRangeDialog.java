@@ -9,14 +9,22 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Scale;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
-import com.generalrobotix.ui.util.ErrorDialog;
 import com.generalrobotix.ui.util.MessageBundle;
 
-import java.text.DecimalFormat;
 
 /**
  * グラフ水平レンジ設定ダイアログ
@@ -24,22 +32,15 @@ import java.text.DecimalFormat;
  * @author Kernel Inc.
  * @version 1.0 (2001/8/20)
  */
-public class HRangeDialog extends JDialog {
+public class HRangeDialog extends Dialog {
 
     // -----------------------------------------------------------------
     // 定数
     // 更新フラグ
     public static final int RANGE_UPDATED = 1;  // レンジ変更
     public static final int POS_UPDATED = 2;    // マーカ位置変更
-    // 配置
-    private static final int BORDER_GAP = 12;   // 周辺部間隔
-    private static final int LABEL_GAP = 12;    // ラベルと内容の最低間隔
-    private static final int BUTTON_GAP = 5;    // ボタン間の間隔
-    private static final int ITEM_GAP = 11;     // 行の間隔
-    private static final int CONTENTS_GAP = 17; // 内容とボタンの間隔
-    // その他
-    private static final String FORMAT_STRING = "0.000";    // レンジ数値フォーマット文字列
-    private static final int MARKER_POS_STEPS = 10;         // マーカ位置段階数
+       
+    private static final int MARKER_POS_STEPS = 100;         // マーカ位置段階数
 
     // -----------------------------------------------------------------
     // インスタンス変数
@@ -48,11 +49,10 @@ public class HRangeDialog extends JDialog {
     double maxHRange_;  // 最大レンジ
     double minHRange_;  // 最小レンジ
     double markerPos_;  // マーカ位置
-    //boolean updated_; // 更新フラグ
-    JTextField hRangeField_;    // レンジ入力フィールド
-    JSlider markerSlider_;      // マーカ位置設定スライダ
-    DecimalFormat rangeFormat_; // レンジ値のフォーマット
-
+    Text hRangeField_;    // レンジ入力フィールド
+    Scale markerSlider_;      // マーカ位置設定スライダ
+    private boolean first_;
+    private Shell shell_;
     // -----------------------------------------------------------------
     // コンストラクタ
     /**
@@ -60,180 +60,99 @@ public class HRangeDialog extends JDialog {
      *
      * @param   owner   親フレーム
      */
-    public HRangeDialog(Frame owner) {
-        super(owner, MessageBundle.get("dialog.graph.hrange.title"), true);
-
-        // ラベル最大長決定
-        JLabel label1 = new JLabel(MessageBundle.get("dialog.graph.hrange.hrange"));
-        JLabel label2 = new JLabel(MessageBundle.get("dialog.graph.hrange.markerpos"));
-        int lwid1 = label1.getMinimumSize().width;
-        int lwid2 = label2.getMinimumSize().width;
-        int lwidmax = (lwid1 > lwid2 ? lwid1 : lwid2);
-        int lgap1 = lwidmax - lwid1 + LABEL_GAP;
-        int lgap2 = lwidmax - lwid2 + LABEL_GAP;
-
-        // 1行目(水平レンジ)
-        hRangeField_ = new JTextField("", 8);
-        hRangeField_.setHorizontalAlignment(JTextField.RIGHT);
-        hRangeField_.setPreferredSize(new Dimension(100, 26));
-        hRangeField_.setMaximumSize(new Dimension(100, 26));
-        hRangeField_.addFocusListener(
-            new FocusAdapter() {
-                public void focusGained(FocusEvent evt) {
-                    hRangeField_.setSelectionStart(0);
-                    hRangeField_.setSelectionEnd(
-                        hRangeField_.getText().length()
-                    );
-                }
-            }
-        );
-        JPanel line1 = new JPanel();
-        line1.setLayout(new BoxLayout(line1, BoxLayout.X_AXIS));
-        line1.add(Box.createHorizontalStrut(BORDER_GAP));
-        line1.add(label1);
-        line1.add(Box.createHorizontalStrut(lgap1));
-        line1.add(hRangeField_);
-        line1.add(Box.createHorizontalStrut(5));
-        line1.add(new JLabel(MessageBundle.get("dialog.graph.hrange.unit")));
-        line1.add(Box.createHorizontalGlue());
-        line1.add(Box.createHorizontalStrut(BORDER_GAP));
-        line1.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // 2行目(マーカ位置)
-        markerSlider_ = new JSlider(0, MARKER_POS_STEPS, 0);
-        markerSlider_.setPreferredSize(new Dimension(200, 30));
-        markerSlider_.setPaintTicks(true);
-        markerSlider_.setMajorTickSpacing(1);
-        markerSlider_.setSnapToTicks(true);
-        JPanel line2 = new JPanel();
-        line2.setLayout(new BoxLayout(line2, BoxLayout.X_AXIS));
-        line2.add(Box.createHorizontalStrut(BORDER_GAP));
-        line2.add(label2);
-        line2.add(Box.createHorizontalStrut(lgap2));
-        line2.add(markerSlider_);
-        line2.add(Box.createHorizontalGlue());
-        line2.add(Box.createHorizontalStrut(BORDER_GAP));
-        line2.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // ボタン行
-        // OKボタン
-        JButton okButton = new JButton(MessageBundle.get("dialog.okButton"));
-        okButton.setDefaultCapable(true);
-        this.getRootPane().setDefaultButton(okButton);
-        okButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    // 不正入力チェック
-                    double range;
-                    try {
-                        range = Double.parseDouble(hRangeField_.getText());
-                    } catch (NumberFormatException ex) {
-                        // エラー表示
-                        new ErrorDialog(
-                            HRangeDialog.this,
-                            MessageBundle.get("dialog.graph.hrange.invalidinput.title"),
-                            MessageBundle.get("dialog.graph.hrange.invalidinput.message")
-                        ).showModalDialog();
-                        hRangeField_.requestFocus();    // フォーカス設定
-                        return;
-                    }
-                    // 入力値チェック
-                    if (range < minHRange_ || range > maxHRange_) {
-                        // エラー表示
-                        new ErrorDialog(
-                            HRangeDialog.this,
-                            MessageBundle.get("dialog.graph.hrange.invalidrange.title"),
-                            MessageBundle.get("dialog.graph.hrange.invalidrange.message")
-                                + "\n(" + minHRange_ + "  -  " + maxHRange_ + ")"
-                        ).showModalDialog();
-                        hRangeField_.requestFocus();    // フォーカス設定
-                        return;
-                    }
-                    double pos = markerSlider_.getValue() / (double)MARKER_POS_STEPS;
-                    // 更新チェック
-                    updateFlag_ = 0;
-                    if (range != hRange_) { // レンジ更新?
-                        hRange_ = range;
-                        updateFlag_ += RANGE_UPDATED;
-                    }
-                    if (pos != markerPos_) {    // マーカ更新?
-                        markerPos_ = pos;
-                        updateFlag_ += POS_UPDATED;
-                    }
-                    //hRange_ = range;
-                    //markerPos_ = markerSlider_.getValue() / (double)MARKER_POS_STEPS;
-                    //updated_ = true;
-                    HRangeDialog.this.setVisible(false);    // ダイアログ消去
-                }
-            }
-        );
-        // キャンセルボタン
-        JButton cancelButton = new JButton(MessageBundle.get("dialog.cancelButton"));
-        cancelButton.addActionListener(
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    HRangeDialog.this.setVisible(false);    // ダイアログ消去
-                }
-            }
-        );
-        this.addKeyListener(
-            new KeyAdapter() {
-                public void keyPressed(KeyEvent evt) {
-                    if (evt.getID() == KeyEvent.KEY_PRESSED
-                        && evt.getKeyCode() == KeyEvent.VK_ESCAPE) {    // エスケープ押下?
-                        HRangeDialog.this.setVisible(false);    // ダイアログ消去
-                    }
-                }
-            }
-        );
-        JPanel bLine = new JPanel();
-        bLine.setLayout(new BoxLayout(bLine, BoxLayout.X_AXIS));
-        bLine.add(Box.createHorizontalGlue());
-        bLine.add(okButton);
-        bLine.add(Box.createHorizontalStrut(BUTTON_GAP));
-        bLine.add(cancelButton);
-        bLine.add(Box.createHorizontalStrut(BORDER_GAP));
-        bLine.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // パネル構築
-        Container pane = getContentPane();
-        pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
-        pane.add(Box.createVerticalStrut(BORDER_GAP));
-        pane.add(line1);
-        pane.add(Box.createVerticalStrut(ITEM_GAP));
-        pane.add(line2);
-        pane.add(Box.createVerticalStrut(CONTENTS_GAP));
-        pane.add(bLine);
-        pane.add(Box.createVerticalStrut(BORDER_GAP));
-
-        // その他
-        rangeFormat_ = new DecimalFormat(FORMAT_STRING);    // 数値フォーマット生成
-        setResizable(false);  // リサイズ不可
+    public HRangeDialog(Shell shell) {
+    	super(shell);
+    	shell_ = shell;
+        //super(owner, MessageBundle.get("dialog.graph.hrange.title"), true);
     }
-
+    
+    protected Control createDialogArea(Composite parent) {
+    	Composite composite = (Composite)super.createDialogArea(parent);
+    	composite.setLayout(new RowLayout(SWT.VERTICAL));
+    	Composite comp0 = new Composite(composite, SWT.NONE);
+    	comp0.setLayout(new RowLayout());
+    	
+    	Label label1 = new Label(comp0, SWT.NONE);
+    	label1.setText(MessageBundle.get("dialog.graph.hrange.hrange"));
+    	
+    	hRangeField_ = new Text(comp0, SWT.BORDER);
+    	hRangeField_.setText(String.format("%10.3f", hRange_));
+    	first_ = true;
+    	hRangeField_.addKeyListener(new KeyListener(){
+			public void keyPressed(KeyEvent e) {
+				if(first_){
+					hRangeField_.setText("");
+					first_ = false;
+				}
+			}
+			public void keyReleased(KeyEvent e) {
+			}
+    	});
+    	hRangeField_.setFocus();
+    	
+    	Label label2 = new Label(comp0, SWT.NONE);
+    	label2.setText(MessageBundle.get("dialog.graph.hrange.unit"));
+    	
+    	Composite comp1 = new Composite(composite, SWT.NONE);
+    	comp1.setLayout(new RowLayout());
+    	
+    	Label label3 = new Label(comp1, SWT.NONE);
+    	label3.setText(MessageBundle.get("dialog.graph.hrange.markerpos"));
+    	
+    	markerSlider_ = new Scale(comp1, SWT.HORIZONTAL);
+    	markerSlider_.setMinimum(0);
+    	markerSlider_.setMaximum(MARKER_POS_STEPS);
+    	markerSlider_.setIncrement(10);
+    	markerSlider_.setSelection((int)(markerPos_ * MARKER_POS_STEPS));
+    	
+        updateFlag_ = 0;
+        return composite;
+    }
+        
+    protected void buttonPressed(int buttonId) {
+    	if (buttonId == IDialogConstants.OK_ID) {
+    		 double range;
+             try {
+                 range = Double.parseDouble(hRangeField_.getText());
+             } catch (NumberFormatException ex) {
+                 // エラー表示
+            	 MessageDialog.openError(shell_, 
+            			 MessageBundle.get("dialog.graph.hrange.invalidinput.title"),
+                         MessageBundle.get("dialog.graph.hrange.invalidinput.message"));
+                
+                 hRangeField_.setFocus();    // フォーカス設定
+                 return;
+             }
+             // 入力値チェック
+             if (range < minHRange_ || range > maxHRange_) {
+                 // エラー表示
+            	 MessageDialog.openError(shell_, 
+                     MessageBundle.get("dialog.graph.hrange.invalidrange.title"),
+                     MessageBundle.get("dialog.graph.hrange.invalidrange.message")
+                         + "\n(" + minHRange_ + "  -  " + maxHRange_ + ")"    );
+                 hRangeField_.setFocus();    // フォーカス設定
+                 return;
+             }
+             double pos = markerSlider_.getSelection() / (double)MARKER_POS_STEPS;
+             // 更新チェック
+             updateFlag_ = 0;
+             if (range != hRange_) { // レンジ更新?
+                 hRange_ = range;
+                 updateFlag_ += RANGE_UPDATED;
+             }
+             if (pos != markerPos_) {    // マーカ更新?
+                 markerPos_ = pos;
+                 updateFlag_ += POS_UPDATED;
+             }
+    	}
+    	setReturnCode(buttonId);
+    	close();
+        super.buttonPressed(buttonId);
+    }
+     
     // -----------------------------------------------------------------
     // メソッド
-    /**
-     * 表示非表示設定
-     *
-     * @param   visible 表示非表示フラグ
-     */
-    public void setVisible(
-        boolean visible
-    ) {
-        if (visible) {  // 表示する?
-            hRangeField_.setText(rangeFormat_.format(hRange_)); // レンジ設定
-            markerSlider_.setValue( // スライダ位置設定
-                (int)(markerPos_ * MARKER_POS_STEPS)
-            );
-            hRangeField_.requestFocus();    // 初期フォーカス設定
-            //updated_ = false;
-            updateFlag_ = 0;    // 更新フラグクリア
-            pack(); // ウィンドウサイズ決定
-        }
-        super.setVisible(visible);  // 表示設定
-    }
-
+   
     /**
      * 水平レンジ設定
      *
@@ -305,9 +224,4 @@ public class HRangeDialog extends JDialog {
         return updateFlag_;
     }
 
-    /*
-    public boolean isUpdated() {
-        return updated_;
-    }
-    */
 }
