@@ -10,7 +10,12 @@
 package com.generalrobotix.ui.view.graph;
 
 import java.util.*;
-import java.awt.*;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Display;
+
 
 /**
  *
@@ -26,16 +31,21 @@ public class TrendGraph {
     public static final int SUCCEEDED = 0; 
     public static final int NOT_MATCHED = 1;
     public static final int NOT_SUPPORTED = 2;
+    
+    public static final Color GREEN = Display.getDefault().getSystemColor(SWT.COLOR_GREEN);
+    public static final Color YELLOW = Display.getDefault().getSystemColor(SWT.COLOR_YELLOW);
+    public static final Color CYAN = Display.getDefault().getSystemColor(SWT.COLOR_CYAN);
+    public static final Color MAGENTA = Display.getDefault().getSystemColor(SWT.COLOR_MAGENTA);
+    public static final Color RED = Display.getDefault().getSystemColor(SWT.COLOR_RED);
+    public static final Color BLUE = Display.getDefault().getSystemColor(SWT.COLOR_BLUE);
 
     private static final Color[] colorTable_ = {
-        Color.green,
-        Color.yellow,
-        Color.pink,
-        Color.cyan,
-        Color.magenta,
-        Color.red,
-        Color.orange,
-        Color.blue
+        GREEN,
+        YELLOW,
+        CYAN,
+        MAGENTA,
+        RED,
+        BLUE
     };
     private static final int numColors_;
     static {
@@ -53,23 +63,19 @@ public class TrendGraph {
     private static final HashMap<String, Color> colorMap_ = new HashMap<String, Color>();
     static final HashMap<Color, String> revColorMap_ = new HashMap<Color, String>();
     static {
-        colorMap_.put("green",   Color.green);
-        colorMap_.put("yellow",  Color.yellow);
-        colorMap_.put("pink",    Color.pink);
-        colorMap_.put("cyan",    Color.cyan);
-        colorMap_.put("magenta", Color.magenta);
-        colorMap_.put("red",     Color.red);
-        colorMap_.put("orange",  Color.orange);
-        colorMap_.put("blue",    Color.blue);
+        colorMap_.put("green",   GREEN);
+        colorMap_.put("yellow",  YELLOW);
+        colorMap_.put("cyan",    CYAN);
+        colorMap_.put("magenta", MAGENTA);
+        colorMap_.put("red",     RED);
+        colorMap_.put("blue",    BLUE);
 
-        revColorMap_.put(Color.green,   "green");
-        revColorMap_.put(Color.yellow,  "yellow");
-        revColorMap_.put(Color.pink,    "pink");
-        revColorMap_.put(Color.cyan,    "cyan");
-        revColorMap_.put(Color.magenta, "magenta");
-        revColorMap_.put(Color.red,     "red");
-        revColorMap_.put(Color.orange,  "orange");
-        revColorMap_.put(Color.blue,    "blue");
+        revColorMap_.put(GREEN,   "green");
+        revColorMap_.put(YELLOW,  "yellow");
+        revColorMap_.put(CYAN,    "cyan");
+        revColorMap_.put(MAGENTA, "magenta");
+        revColorMap_.put(RED,     "red");
+        revColorMap_.put(BLUE,    "blue");
     }
 
     // -----------------------------------------------------------------
@@ -106,9 +112,9 @@ public class TrendGraph {
 
         xAxisInfo_ = model_.getTimeAxisInfo();
         yAxisInfo_ = new AxisInfo(0, 1);
-        yAxisInfo_.unitFont = new Font("dialog", Font.PLAIN, 12);
+        yAxisInfo_.unitFont = new Font(Display.getDefault(),"dialog", 12, SWT.NORMAL);
         yAxisInfo_.unitXOfs = 5;
-        yAxisInfo_.unitYOfs = 7;
+        yAxisInfo_.unitYOfs = 15;
 
         dataKind_ = null;
 
@@ -128,13 +134,14 @@ public class TrendGraph {
 
     // -----------------------------------------------------------------
 
-    public void setGraph(XYLineGraph graph) {
+    public void setGraph(XYLineGraph graph, LegendPanel legend) {
         graph_ = graph;
         graph_.setAxisInfo(
             XYLineGraph.AXIS_BOTTOM,
             xAxisInfo_
         );
 
+        graph_.setLegend(legend);
         /*
         graph_.setAxisInfo( 
             XYLineGraph.AXIS_LEFT,
@@ -148,7 +155,7 @@ public class TrendGraph {
     }
 
     public void repaint() {
-        graph_.repaint();
+        graph_.redraw();
     }
 
     /**

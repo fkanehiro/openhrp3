@@ -9,12 +9,24 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+//import java.awt.*;
+//import java.awt.event.*;
 
-import com.generalrobotix.ui.util.ErrorDialog;
-import com.generalrobotix.ui.util.MessageBundle;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+
+import com.generalrobotix.ui.view.graph.LegendPanel;
 
 /**
  * グラフエレメント
@@ -23,18 +35,26 @@ import com.generalrobotix.ui.util.MessageBundle;
  * @author Kernel Inc.
  * @version 1.0 (2001/8/20)
  */
-public class GraphElement
-    extends JPanel
-    implements MouseListener, ActionListener
+public class GraphElement extends Composite implements MouseListener,PaintListener
+ //   implements MouseListener, ActionListener
 {
-    JSplitPane graphPane_;  // 分割ペイン
-    JComponent graph_;      // グラフ
-    JComponent legend_;     // 凡例
+	SashForm graphPane_;  // 分割ペイン
+	DroppableXYGraph graph_;      // グラフ
+	LegendPanel legend_;     // 凡例
     TrendGraph tg_;         // トレンドグラフ
+    GraphPanel gp_;
 
-    ActionListener actionListener_; // アクションリスナ列
+    SelectionListener actionListener_; // アクションリスナ列
     private static final String CMD_CLICKED = "clicked";    // アクションコマンド名
 
+    private static final int GRAPH_LEFT_MARGIN = 50;
+    private static final int GRAPH_RIGHT_MARGIN = 50;
+    private static final int GRAPH_TOP_MARGIN = 20;
+    private static final int GRAPH_BOTTOM_MARGIN = 30;
+
+    private static final Color normalColor_ = new Color(Display.getDefault(),0, 0, 0);
+    private static final Color focusedColor_ = new Color(Display.getDefault(),0, 0, 100);
+    private static final Font GRAPH_LEGEND_FONT = new Font(Display.getDefault(),"dialog", SWT.NORMAL, 12);
     // -----------------------------------------------------------------
     // コンストラクタ
     /**
@@ -45,35 +65,56 @@ public class GraphElement
      * @param   legend  凡例パネル
      */
     public GraphElement(
-        TrendGraph tg,
-        JComponent graph,
-        JComponent legend
+    	GraphPanel gp,
+    	Composite parent,
+        TrendGraph tg
     ) {
-        super();
+        super(parent, SWT.NONE);
 
         // 参照保存
         tg_ = tg;   // トレンドグラフ
-        graph_ = graph; // グラフ
-        legend_ = legend;   // 凡例
-
+        gp_ = gp;
+        
+        setLayout(new GridLayout(1,true));
+        
         // スプリットペイン
-        graphPane_ = new JSplitPane(
-            JSplitPane.HORIZONTAL_SPLIT,
-            true,
-            graph,
-            legend
-        );
-        graphPane_.setResizeWeight(0.8);
-        graphPane_.setDividerSize(6);
-        setLayout(new BorderLayout());
-        add(graphPane_, BorderLayout.CENTER);
+        graphPane_ = new SashForm( this, SWT.HORIZONTAL  );
+        GridData gridData = new GridData();
+ 		gridData.horizontalAlignment = GridData.FILL;
+ 		gridData.grabExcessHorizontalSpace = true;
+ 		gridData.verticalAlignment = GridData.FILL;
+ 		gridData.grabExcessVerticalSpace = true;
+ 		graphPane_.setLayoutData(gridData);
+ 		
+        graph_ = new DroppableXYGraph(
+        		graphPane_, 
+                GRAPH_LEFT_MARGIN,
+                GRAPH_RIGHT_MARGIN,
+                GRAPH_TOP_MARGIN,
+                GRAPH_BOTTOM_MARGIN
+            );
+        legend_ = new LegendPanel(
+        		graphPane_,
+                new Font(parent.getDisplay(),"dialog",10,SWT.NORMAL),
+                parent.getDisplay().getSystemColor(SWT.COLOR_BLACK),
+            	parent.getDisplay().getSystemColor(SWT.COLOR_WHITE)
+            );
+        graphPane_.setWeights(new int[] { 4,1});
+        graphPane_.SASH_WIDTH = 6;
+        
+        ((XYLineGraph)graph_).setBorderColor(normalColor_);
+        legend_.setBackColor(normalColor_);
+        legend_.setFont(GRAPH_LEGEND_FONT);
 
+        tg.setGraph((XYLineGraph) graph_, legend_);
+
+        addPaintListener(this);
         // リスナ設定
-        ((DroppableXYGraph)graph_).addActionListener(this); // ドロップアクションリスナ
-        graph.addMouseListener(this);
-        legend.addMouseListener(this);
-        graphPane_.addMouseListener(this);
-        addMouseListener(this);
+       // ((DroppableXYGraph)graph_).addActionListener(this); // ドロップアクションリスナ
+        graph_.addMouseListener(this);
+        legend_.addMouseListener(this);
+       // graphPane_.addMouseListener(this);
+       // addMouseListener(this);
     }
 
     // -----------------------------------------------------------------
@@ -92,7 +133,7 @@ public class GraphElement
      *
      * @return  グラフパネル
      */
-    public JComponent getGraph() {
+    public DroppableXYGraph getGraph() {
         return graph_;
     }
 
@@ -101,10 +142,10 @@ public class GraphElement
      *
      * @return  凡例パネル
      */
-    public JComponent getLegend() {
+    public LegendPanel getLegend() {
         return legend_;
     }
-
+/*
     // -----------------------------------------------------------------
     // ActionListener登録および削除
     public void addActionListener(ActionListener listener) {
@@ -151,14 +192,15 @@ public class GraphElement
                 MessageBundle.get("dialog.graph.unsupported.message")
             ).showModalDialog();
         }
-        */
+        
     }
-
+*/
     /**
      * アクションイベント発生(クリック時)
      *
      * @return  凡例パネル
      */
+    /*
     private void raiseActionEvent() {
         if(actionListener_ != null) {
             actionListener_.actionPerformed(
@@ -170,4 +212,30 @@ public class GraphElement
             );
         }
     }
+*/
+	public void setBorderColor(Color color) {
+		graph_.setBorderColor(color);
+		legend_.setBackColor(color);
+		
+	}
+
+	public void mouseDoubleClick(MouseEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+		
+	}
+	
+	public void mouseDown(MouseEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+		
+	}
+	
+	public void mouseUp(MouseEvent e) {
+		gp_.setFocuse(this);
+	}
+
+	public void paintControl(PaintEvent e) {
+		graph_.redraw();
+		legend_.redraw();
+	}
+	
 }

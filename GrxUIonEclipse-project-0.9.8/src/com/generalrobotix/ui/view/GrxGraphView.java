@@ -18,18 +18,10 @@
 
 package com.generalrobotix.ui.view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JPanel;
-
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
 
 import com.generalrobotix.ui.GrxBaseItem;
@@ -59,46 +51,15 @@ public class GrxGraphView extends GrxBaseView {
 	private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
 	private TrendGraphManager graphManager_;
 	private GraphPanel gpanel_;
-	//private double prevTime_ = 0.0;
-    private JPanel contentPane_;
-
-	Composite comp;
-    Frame frame;
-    
+	
 	public GrxGraphView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent)  {
 		super(name, manager, vp, parent);
 		isScrollable_ = false;
-		
-		comp = new Composite(composite_,SWT.EMBEDDED);
-	    frame = SWT_AWT.new_Frame( comp );
-        contentPane_ = new JPanel();
-        frame.add(contentPane_);
-
-        //----
-        // Linuxでリサイズイベントが発行されない問題対策
-        // https://bugs.eclipse.org/bugs/show_bug.cgi?id=168330
-
-        comp.addControlListener( new ControlListener() {
-			public void controlMoved(ControlEvent e) {}
-			public void controlResized(ControlEvent e) {
-                frame.setBounds(0, 0, comp.getSize().x, comp.getSize().y );
-			}
-        });
-        
-        //----
-        
-        contentPane_.setLayout(new BorderLayout());
-		contentPane_.setBackground(Color.blue);
-
-        //JPanel combpanel = new JPanel();
-		//combpanel.setLayout(new FlowLayout());
-		//combpanel.setBackground(Color.white);
-
 		graphManager_ = new TrendGraphManager(3);
-		gpanel_ = new GraphPanel(manager_, graphManager_, frame, comp);
+		
+		gpanel_ = new GraphPanel(manager_, graphManager_, composite_ );
 		TrendGraph t = graphManager_.getTrendGraph(0);
 		t.getDataItemInfoList();
-		contentPane_.add(gpanel_, BorderLayout.CENTER);
 		graphManager_.setMode(GUIStatus.EXEC_MODE);
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
@@ -206,7 +167,7 @@ public class GrxGraphView extends GrxBaseView {
 		
 		if (p == null) {
 			gpanel_.setEnabled(false);
-			gpanel_.repaint();	
+			gpanel_.redraw();	
 			return;
 		}
 		
@@ -287,14 +248,12 @@ public class GrxGraphView extends GrxBaseView {
 				tgraph.setRange(vRange[0], vRange[1]);
 			}
 		}
-		gpanel_.repaint();	
+		gpanel_.redraw();	
 	}
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
 		if(currentWorld_!=plugin) return;
 		if((String)arg[0]=="PositionChange"){
-			if (!contentPane_.isShowing()) 
-		    	return;
 			int pos = ((Integer)arg[1]).intValue();
 			WorldStateEx state = currentWorld_.getValue(pos);
 			if (state == null)	return;

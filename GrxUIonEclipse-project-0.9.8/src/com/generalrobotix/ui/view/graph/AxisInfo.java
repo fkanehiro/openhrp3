@@ -9,7 +9,10 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import java.awt.*;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * 軸情報クラス
@@ -64,23 +67,23 @@ public class AxisInfo {
         min = 0.0;
         maxLimitEnabled = false;
         minLimitEnabled = false;
-        color = Color.white;
+        color = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
         factor = 1.0;
         tickEvery = 0.0;
         tickLength = 3;
         labelEvery = 0.0;
         labelFormat = "0";
-        labelFont = new Font("monospaced", Font.PLAIN, 10);
-        labelColor = Color.white;
-        unitFont = new Font("dialog", Font.PLAIN, 10);
+        labelFont = new Font(Display.getDefault(),"monospaced", 10, SWT.NORMAL);
+        labelColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
+        unitFont = new Font(Display.getDefault(),"dialog", 10, SWT.NORMAL);
         unitLabel = "";
-        unitColor = Color.white;
+        unitColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
         unitXOfs = 0;
         unitYOfs = 0;
         gridEvery = 0.0;
-        gridColor = Color.darkGray;
+        gridColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
         markerVisible = false;
         markerPos = 0.0;
-        markerColor = Color.lightGray;
+        markerColor = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
     }
 }

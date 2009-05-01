@@ -10,7 +10,11 @@
 package com.generalrobotix.ui.view.graph;
 
 import java.util.*;
-import java.awt.*;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * トレンドグラフモデルクラス
@@ -96,12 +100,12 @@ public class TrendGraphModel
         timeAxisInfo_.max = totalTime_;
         timeAxisInfo_.minLimitEnabled = true;
         timeAxisInfo_.maxLimitEnabled = true;
-        timeAxisInfo_.unitFont = new Font("dialog", Font.PLAIN, 12);
+        //timeAxisInfo_.unitFont = new Font(Display.getDefault(), "dialog", SWT.NORMAL, 12);
         timeAxisInfo_.unitXOfs = 12;
         timeAxisInfo_.unitYOfs = 0;
         timeAxisInfo_.unitLabel = "(sec)";
         timeAxisInfo_.markerPos = markerPos_;
-        timeAxisInfo_.markerColor = Color.cyan;  //new Color(255, 128, 128);
+        timeAxisInfo_.markerColor = new Color(Display.getDefault(), 255, 128, 128);
         timeAxisInfo_.markerVisible = true;
 
         //dataSeriesMap_ = new HashMap();

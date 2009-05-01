@@ -9,13 +9,16 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import javax.swing.*;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.FontMetrics;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+
 import java.util.*;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.text.*;
 
 /**
@@ -24,8 +27,7 @@ import java.text.*;
  * @author Kernel Inc.
  * @version 1.0 (2001/8/20)
  */
-@SuppressWarnings("serial")
-public class XYLineGraph extends JPanel {
+public class XYLineGraph extends Canvas implements PaintListener {
 
     // -----------------------------------------------------------------
     // 定数
@@ -72,7 +74,7 @@ public class XYLineGraph extends JPanel {
 //    private Color nullAxisColor_;   // 軸が無い場合の色
 
     private boolean epsMode_;
-
+        
     // -----------------------------------------------------------------
     // コンストラクタ
     /**
@@ -84,11 +86,13 @@ public class XYLineGraph extends JPanel {
      * @param   bottomMargin    int 下マージン
      */
     public XYLineGraph(
+    	Composite parent,
         int leftMargin,     // 左マージン
         int rightMargin,    // 右マージン
         int topMargin,      // 上マージン
         int bottomMargin    // 下マージン
     ) {
+    	super(parent,SWT.NONE);
         // マージン設定
         leftMargin_   = leftMargin;
         rightMargin_  = rightMargin;
@@ -96,15 +100,11 @@ public class XYLineGraph extends JPanel {
         bottomMargin_ = bottomMargin;
 
         // 凡例パネル生成
-        legendPanel_ = new LegendPanel(
-            new Font("dialog", Font.PLAIN, 10),
-            Color.black,
-            Color.white
-        );
+        
 
         // デフォルト色設定
-        backColor_ = Color.black;
-        borderColor_ = Color.black;
+        backColor_ = parent.getDisplay().getSystemColor(SWT.COLOR_BLACK);
+        borderColor_ = parent.getDisplay().getSystemColor(SWT.COLOR_BLACK);
 //        nullAxisColor_ = Color.darkGray;
 
         // 軸情報クリア
@@ -120,6 +120,8 @@ public class XYLineGraph extends JPanel {
 
         // EPSモード
         epsMode_ = false;
+        
+        addPaintListener(this);
     }
 
     // -----------------------------------------------------------------
@@ -235,39 +237,6 @@ public class XYLineGraph extends JPanel {
     }
 
     /**
-     * 凡例フォントの設定
-     *
-     * @param   font    Font    フォント
-     */
-    public void setLegendFont(
-        Font font
-    ) {
-        legendPanel_.setFont(font);
-    }
-
-    /**
-     * 凡例ラベル色の設定
-     *
-     * @param   color   Color   色
-     */
-    public void setLegendLabelColor(
-        Color color
-    ) {
-        legendPanel_.setLabelColor(color);
-    }
-
-    /**
-     * 凡例背景色の設定
-     *
-     * @param   color   Color   色
-     */
-    public void setLegendBackColor(
-        Color color
-    ) {
-        legendPanel_.setBackColor(color);
-    }
-
-    /**
      * データ系列の色の設定
      *
      * @param   ds      DataSeries  データ系列
@@ -317,8 +286,8 @@ public class XYLineGraph extends JPanel {
      *
      * @return  JPanel  凡例パネル
      */
-    public JPanel getLegendPanel() {
-        return legendPanel_;
+    public Canvas getLegendPanel() {
+        return null;//legendPanel_;
     }
 
     /**
@@ -326,16 +295,13 @@ public class XYLineGraph extends JPanel {
      *
      * @param   g   Graphics    グラフィックス
      */
-    public void paint(
-        Graphics g
-    ) {
-        //super.paint(g);
-
+    public void paintControl(PaintEvent e) {
+           	
         // サイズの決定
-        int width = getSize().width;
-        int height = getSize().height;
-        g.setColor(backColor_);
-        g.fillRect(0, 0, width, height);
+        int width = getSize().x;
+        int height = getSize().y;
+        e.gc.setBackground(backColor_);
+        e.gc.fillRectangle(0, 0, width, height);
         int minWidth = leftMargin_ + MIN_WIDTH + rightMargin_;
         int minHeight = topMargin_ + MIN_HEIGHT + bottomMargin_;
         if (width < minWidth) {
@@ -352,6 +318,8 @@ public class XYLineGraph extends JPanel {
         int yb = height - bottomMargin_ - 1;
 
         // スケールを変更する
+        //TODO  hattori
+        /*
         if (epsMode_) {
             EPSGraphics eg = (EPSGraphics)g;
             eg.setScale(EPS_SCALE);
@@ -363,17 +331,17 @@ public class XYLineGraph extends JPanel {
             yt *= EPS_SCALE;
             yb *= EPS_SCALE;
         }
-
+	*/
         // グリッドの描画
         int flag = DRAW_GRID;
-        drawAxis(g, xl, yt, xr, yb, /*width, height,*/ AXIS_LEFT,   flag);
-        drawAxis(g, xl, yt, xr, yb, /*width, height,*/ AXIS_RIGHT,  flag);
-        drawAxis(g, xl, yt, xr, yb, /*width, height,*/ AXIS_TOP,    flag);
-        drawAxis(g, xl, yt, xr, yb, /*width, height,*/ AXIS_BOTTOM, flag);
+        drawAxis(e.gc, xl, yt, xr, yb, /*width, height,*/ AXIS_LEFT,   flag);
+        drawAxis(e.gc, xl, yt, xr, yb, /*width, height,*/ AXIS_RIGHT,  flag);
+        drawAxis(e.gc, xl, yt, xr, yb, /*width, height,*/ AXIS_TOP,    flag);
+        drawAxis(e.gc, xl, yt, xr, yb, /*width, height,*/ AXIS_BOTTOM, flag);
 
         // クリッピング(EPS時のみ)
         if (epsMode_) {
-            g.setClip(xl, yt, xr - xl, yb - yt);
+        	e.gc.setClipping(xl, yt, xr - xl, yb - yt);
         }
 
 
@@ -399,7 +367,7 @@ public class XYLineGraph extends JPanel {
             int ox = 0, oy = 0;
             int nx = 0, ny = 0;
             boolean connect = false;
-            g.setColor(dsi.color);
+            e.gc.setForeground(dsi.color);
             int iofs = - headPos;
             //System.out.println("headPos=" + headPos);
             //System.out.println("headPos=" + headPos + " length=" + length);
@@ -410,7 +378,7 @@ public class XYLineGraph extends JPanel {
                     //}
                     if (connect) {
                         //System.out.println("1 ox=" + ox + " oy=" + oy);
-                        g.drawLine(ox, oy, ox, oy);
+                        e.gc.drawLine(ox, oy, ox, oy);
                         connect = false;
                     }
                 } else {    // データあり?
@@ -424,7 +392,7 @@ public class XYLineGraph extends JPanel {
                     ny = yb - (int)((data[i] * factor - ybase) * yscale);
                     if (connect) {
                         //System.out.println("2 ox=" + ox + " oy=" + oy + " nx=" + nx + " ny=" + ny);
-                        g.drawLine(ox, oy, nx, ny);
+                        e.gc.drawLine(ox, oy, nx, ny);
                         ox = nx;
                         oy = ny;
                     } else {
@@ -439,7 +407,7 @@ public class XYLineGraph extends JPanel {
                 if (Double.isNaN(data[i])) {    // データなし?
                     if (connect) {
                         //System.out.println("3 ox=" + ox + " oy=" + oy);
-                        g.drawLine(ox, oy, ox, oy);
+                        e.gc.drawLine(ox, oy, ox, oy);
                         connect = false;
                     }
                 } else {    // データあり?
@@ -447,7 +415,7 @@ public class XYLineGraph extends JPanel {
                     ny = yb - (int)((data[i] * factor - ybase) * yscale);
                     if (connect) {
                         //System.out.println("4 ox=" + ox + " oy=" + oy + " nx=" + nx + " ny=" + ny);
-                        g.drawLine(ox, oy, nx, ny);
+                        e.gc.drawLine(ox, oy, nx, ny);
                         ox = nx;
                         oy = ny;
                     } else {
@@ -464,22 +432,23 @@ public class XYLineGraph extends JPanel {
 
         if (epsMode_) {
             // クリッピング解除
-            g.setClip(null);
+        	//TODO hattori
+            //e.gc.setClipping(null);
         } else {
             // マスク処理
-            g.setColor(borderColor_);
-            g.fillRect(0,      0,      xl,     height);
-            g.fillRect(xr + 1, 0,      width,  height);
-            g.fillRect(0,      0,      width,  yt);
-            g.fillRect(0,      yb + 1, width,  height);
+            e.gc.setBackground(borderColor_);
+            e.gc.fillRectangle(0,      0,      xl,     height);
+            e.gc.fillRectangle(xr + 1, 0,      width,  height);
+            e.gc.fillRectangle(0,      0,      width,  yt);
+            e.gc.fillRectangle(0,      yb + 1, width,  height);
         }
 
         // 各軸の描画
         flag = DRAW_AXIS + DRAW_TICK + DRAW_LABEL + DRAW_MARKER;
-        drawAxis(g, xl, yt, xr, yb, /*width, height,*/ AXIS_LEFT,   flag);
-        drawAxis(g, xl, yt, xr, yb, /*width, height,*/ AXIS_RIGHT,  flag);
-        drawAxis(g, xl, yt, xr, yb, /*width, height,*/ AXIS_TOP,    flag);
-        drawAxis(g, xl, yt, xr, yb, /*width, height,*/ AXIS_BOTTOM, flag);
+        drawAxis(e.gc, xl, yt, xr, yb, /*width, height,*/ AXIS_LEFT,   flag);
+        drawAxis(e.gc, xl, yt, xr, yb, /*width, height,*/ AXIS_RIGHT,  flag);
+        drawAxis(e.gc, xl, yt, xr, yb, /*width, height,*/ AXIS_TOP,    flag);
+        drawAxis(e.gc, xl, yt, xr, yb, /*width, height,*/ AXIS_BOTTOM, flag);
 
         /* ★実験 (半透明のテスト)
         width = getSize().width;
@@ -492,8 +461,9 @@ public class XYLineGraph extends JPanel {
 
         // スケールをリセットする
         if (epsMode_) {
-            EPSGraphics eg = (EPSGraphics)g;
-            eg.setScale(1);
+            //TODO hattori
+        	//EPSGraphics eg = (EPSGraphics)g;
+            //eg.setScale(1);
         }
 
 
@@ -509,7 +479,7 @@ public class XYLineGraph extends JPanel {
      * @param   flag    int         描画フラグ
      */
     private void drawAxis(
-        Graphics g,
+        GC gc,
         //int width,
         //int height,
         int xl,
@@ -540,19 +510,19 @@ public class XYLineGraph extends JPanel {
             }
             // 軸
             if ((flag & DRAW_AXIS) != 0) {
-                g.setColor(ai.color);
+                gc.setForeground(ai.color);
                 switch (axis) {
                     case AXIS_LEFT:
-                        g.drawLine(xl, yt, xl, yb);
+                        gc.drawLine(xl, yt, xl, yb);
                         break;
                     case AXIS_RIGHT:
-                        g.drawLine(xr, yt, xr, yb);
+                        gc.drawLine(xr, yt, xr, yb);
                         break;
                     case AXIS_TOP:
-                        g.drawLine(xl, yt, xr, yt);
+                        gc.drawLine(xl, yt, xr, yt);
                         break;
                     case AXIS_BOTTOM:
-                        g.drawLine(xl, yb, xr, yb);
+                        gc.drawLine(xl, yb, xr, yb);
                         break;
                 }
             }
@@ -580,7 +550,7 @@ public class XYLineGraph extends JPanel {
             // ティック
             double every = ai.tickEvery;
             if (every > 0.0 && ((flag & DRAW_TICK) != 0)) {
-                g.setColor(ai.color);
+                gc.setForeground(ai.color);
                 int cfrom = (int)(Math.ceil(min / every));
                 int cto = (int)(Math.floor(max / every));
                 int pos;
@@ -588,25 +558,25 @@ public class XYLineGraph extends JPanel {
                     case AXIS_LEFT:
                         for (int i = cfrom; i <= cto; i ++) {
                             pos = yb - (int)((every * i - base) * scale);
-                            g.drawLine(xl, pos, xl - tickLength, pos);
+                            gc.drawLine(xl, pos, xl - tickLength, pos);
                         }
                         break;
                     case AXIS_RIGHT:
                         for (int i = cfrom; i <= cto; i ++) {
                             pos = yb - (int)((every * i - base) * scale);
-                            g.drawLine(xr, pos, xr + tickLength, pos);
+                            gc.drawLine(xr, pos, xr + tickLength, pos);
                         }
                         break;
                     case AXIS_TOP:
                         for (int i = cfrom; i <= cto; i ++) {
                             pos = xl + (int)((every * i - base) * scale);
-                            g.drawLine(pos, yt, pos, yt - tickLength);
+                            gc.drawLine(pos, yt, pos, yt - tickLength);
                         }
                         break;
                     case AXIS_BOTTOM:
                         for (int i = cfrom; i <= cto; i ++) {
                             pos = xl + (int)((every * i - base) * scale);
-                            g.drawLine(pos, yb, pos, yb + tickLength);
+                            gc.drawLine(pos, yb, pos, yb + tickLength);
                         }
                         break;
                 }
@@ -614,7 +584,7 @@ public class XYLineGraph extends JPanel {
             // グリッド
             every = ai.gridEvery;
             if (every > 0.0 && ((flag & DRAW_GRID) != 0)) {
-                g.setColor(ai.gridColor);
+                gc.setForeground(ai.gridColor);
                 int cfrom = (int)(Math.ceil(min / every));
                 int cto = (int)(Math.floor(max / every));
                 int pos;
@@ -623,14 +593,14 @@ public class XYLineGraph extends JPanel {
                     case AXIS_RIGHT:
                         for (int i = cfrom; i <= cto; i ++) {
                             pos = yb - (int)((every * i - base) * scale);
-                            g.drawLine(xl + 1, pos, xr - 1, pos);
+                            gc.drawLine(xl + 1, pos, xr - 1, pos);
                         }
                         break;
                     case AXIS_TOP:
                     case AXIS_BOTTOM:
                         for (int i = cfrom; i <= cto; i ++) {
                             pos = xl + (int)((every * i - base) * scale);
-                            g.drawLine(pos, yt + 1, pos, yb - 1);
+                            gc.drawLine(pos, yt + 1, pos, yb - 1);
                         }
                         break;
                 }
@@ -639,9 +609,9 @@ public class XYLineGraph extends JPanel {
             every = ai.labelEvery;
             if (every > 0.0 && ((flag & DRAW_LABEL) != 0)) {
                 DecimalFormat lformat = new DecimalFormat(ai.labelFormat);
-                FontMetrics lmetrics = getFontMetrics(ai.labelFont);
-                g.setColor(ai.labelColor);
-                g.setFont(ai.labelFont);
+                gc.setForeground(ai.labelColor);
+                gc.setFont(ai.labelFont);
+                FontMetrics lmetrics = gc.getFontMetrics();
                 int cfrom = (int)(Math.ceil(min / every));
                 int cto = (int)(Math.floor(max / every));
                 int xpos, ypos;
@@ -651,10 +621,10 @@ public class XYLineGraph extends JPanel {
                         for (int i = cfrom; i <= cto; i ++) {
                             lstr = lformat.format(every * i);
                             xpos = xl - tickLength - ascale * LABEL_GAP_LEFT
-                                - ascale * lmetrics.stringWidth(lstr);
+                                - ascale * lmetrics.getAverageCharWidth();
                             ypos = yb - (int)((every * i - base) * scale)
                                 + (int)(ascale * lmetrics.getHeight() / 3.5);
-                            g.drawString(lstr, xpos, ypos);
+                            gc.drawString(lstr, xpos, ypos);
                         }
                         break;
                     case AXIS_RIGHT:
@@ -663,7 +633,7 @@ public class XYLineGraph extends JPanel {
                             xpos = xr + tickLength + ascale * LABEL_GAP_RIGHT;
                             ypos = yb - (int)((every * i - base) * scale)
                                 + (int)(ascale * lmetrics.getHeight() / 3.5);
-                            g.drawString(lstr, xpos, ypos);
+                            gc.drawString(lstr, xpos, ypos);
                         }
                         break;
                     case AXIS_TOP:
@@ -671,8 +641,8 @@ public class XYLineGraph extends JPanel {
                         for (int i = cfrom; i <= cto; i ++) {
                             lstr = lformat.format(every * i);
                             xpos = xl + (int)((every * i - base) * scale)
-                                - ascale * lmetrics.stringWidth(lstr) / 2;
-                            g.drawString(lstr, xpos, ypos);
+                                - ascale * lmetrics.getAverageCharWidth() / 2;
+                            gc.drawString(lstr, xpos, ypos);
                         }
                         break;
                     case AXIS_BOTTOM:
@@ -682,36 +652,37 @@ public class XYLineGraph extends JPanel {
                         for (int i = cfrom; i <= cto; i ++) {
                             lstr = lformat.format(every * i);
                             xpos = xl + (int)((every * i - base) * scale)
-                                - ascale * lmetrics.stringWidth(lstr) / 2;
-                            g.drawString(lstr, xpos, ypos);
+                                - ascale * lmetrics.getAverageCharWidth() / 2;
+                            gc.drawString(lstr, xpos, ypos);
                         }
                         break;
                 }
                 // 単位
-                FontMetrics umetrics = getFontMetrics(ai.unitFont);
+                //gc.setFont(ai.unitFont);
+                FontMetrics umetrics = gc.getFontMetrics();
                 int ux, uy;
-                g.setColor(ai.unitColor);
-                g.setFont(ai.unitFont);
+                gc.setForeground(ai.unitColor);
+
                 switch (axis) {
                     case AXIS_LEFT:
-                        ux = xl - unitXOfs - ascale * umetrics.stringWidth(ai.unitLabel);
+                        ux = xl - unitXOfs - ascale * umetrics.getAverageCharWidth();
                         uy = yt - unitYOfs;
-                        g.drawString(ai.unitLabel, ux, uy);
+                        gc.drawString(ai.unitLabel, ux, uy);
                         break;
                     case AXIS_RIGHT:
                         ux = xr + unitXOfs;
                         uy = yt - unitYOfs;
-                        g.drawString(ai.unitLabel, ux, uy);
+                        gc.drawString(ai.unitLabel, ux, uy);
                         break;
                     case AXIS_TOP:
                         ux = xr + unitXOfs;
                         uy = yt - unitYOfs;
-                        g.drawString(ai.unitLabel, ux, uy);
+                        gc.drawString(ai.unitLabel, ux, uy);
                         break;
                     case AXIS_BOTTOM:
                         ux = xr + unitXOfs;
                         uy = yb + unitYOfs + ascale * umetrics.getHeight();
-                        g.drawString(ai.unitLabel, ux, uy);
+                        gc.drawString(ai.unitLabel, ux, uy);
                         break;
                 }
             }
@@ -719,8 +690,8 @@ public class XYLineGraph extends JPanel {
             if (ai.markerVisible
                 //&& ai.markerPos >= min && ai.markerPos <= max
                 && ((flag & DRAW_MARKER) != 0)) {
-                g.setColor(Color.white);
-                g.setXORMode(ai.markerColor);
+                //gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+                gc.setForeground(ai.markerColor);
                 int pos;
                 switch (axis) {
                     case AXIS_LEFT:
@@ -728,21 +699,21 @@ public class XYLineGraph extends JPanel {
                         //pos = yb - (int)((ai.markerPos - base) * scale);
                         //pos = yb - (int)(ai.markerPos * scale);
                         pos = yb - (int)(ai.markerPos * (yb - yt));
-                        g.drawLine(xl + 1, pos - 1, xr - 1, pos - 1);
-                        g.drawLine(xl + 1, pos,     xr - 1, pos);
-                        g.drawLine(xl + 1, pos + 1, xr - 1, pos + 1);
+                        gc.drawLine(xl + 1, pos - 1, xr - 1, pos - 1);
+                        gc.drawLine(xl + 1, pos,     xr - 1, pos);
+                        gc.drawLine(xl + 1, pos + 1, xr - 1, pos + 1);
                         break;
                     case AXIS_TOP:
                     case AXIS_BOTTOM:
                         //pos = xl + (int)((ai.markerPos - base) * scale);
                         //pos = xl + (int)(ai.markerPos * scale);
                         pos = xl + (int)(ai.markerPos * (xr - xl));
-                        g.drawLine(pos - 1, yt + 1, pos - 1, yb - 1);
-                        g.drawLine(pos,     yt + 1, pos,     yb - 1);
-                        g.drawLine(pos + 1, yt + 1, pos + 1, yb - 1);
+                        gc.drawLine(pos - 1, yt + 1, pos - 1, yb - 1);
+                        gc.drawLine(pos,     yt + 1, pos,     yb - 1);
+                        gc.drawLine(pos + 1, yt + 1, pos + 1, yb - 1);
                         break;
                 }
-                g.setPaintMode();
+                //gc.setPaintMode();
             }
         } /* else {    // 軸情報なし?
             if ((flag & DRAW_AXIS) != 0) {
@@ -803,209 +774,8 @@ public class XYLineGraph extends JPanel {
         }
     }
 
-    /**
-     * 凡例パネルクラス
-     *
-     */
-    @SuppressWarnings("serial")
-	public class LegendPanel extends JPanel {
-
-        // -----------------------------------------------------------------
-        // 定数
-        private static final int MARGIN_X = 15;
-        private static final int MARGIN_Y = 15;
-        private static final int GAP_X = 10;
-        private static final int GAP_Y = 5;
-        private static final int LEN_LINE = 20;
-
-        // -----------------------------------------------------------------
-        // インスタンス変数
-        private ArrayList<LegendInfo> legendList_;  // 凡例系列リスト
-        private Font font_;             // ラベルフォント
-        private Color backColor_;       // 背景色
-        private Color labelColor_;      // ラベル色
-        private Dimension size_;    // パネルサイズ
-
-        // -----------------------------------------------------------------
-        // コンストラクタ
-        /**
-         * コンストラクタ
-         *
-         * @param   font        Font    ラベルフォント
-         * @param   backColor   Color   背景色
-         * @param   labelColor  Color   ラベル色
-         */
-        public LegendPanel(
-            Font font,
-            Color backColor,
-            Color labelColor
-        ) {
-            font_ = font;
-            backColor_ = backColor;
-            labelColor_ = labelColor;
-            size_ = new Dimension(0, 0);
-            //setPreferredSize(size_);
-            legendList_ = new ArrayList<LegendInfo>();
-        }
-
-        /**
-         * 凡例追加
-         *
-         * @param   legend  LegendInfo  凡例情報
-         */
-        public void addLegend(
-            LegendInfo legend
-        ) {
-            legendList_.add(legend);
-            updateSize();
-        }
-
-        /**
-         * 凡例削除
-         *
-         * @param   legend  LegendInfo  凡例情報
-         */
-        public void removeLegend(
-            LegendInfo legend
-        ) {
-            int ind = legendList_.indexOf(legend);
-            legendList_.remove(ind);
-            updateSize();
-        }
-
-        /**
-         * ラベルフォント設定
-         *
-         * @param   font        Font    ラベルフォント
-         */
-        public void setFont(
-            Font font
-        ) {
-            font_ = font;
-        }
-
-        /**
-         * 背景色
-         *
-         * @param   backColor   Color   背景色
-         */
-        public void setBackColor(
-            Color color
-        ) {
-            backColor_ = color;
-        }
-
-        /**
-         * ラベル色設定
-         *
-         * @param   labelColor  Color   ラベル色
-         */
-        public void setLabelColor(
-            Color color
-        ) {
-            labelColor_ = color;
-        }
-
-        /**
-         * 描画
-         *
-         * @param   g   Graphics    グラフィックス
-         */
-        public void paint(
-            Graphics g
-        ) {
-            // 背景
-            int width = getSize().width;
-            int height = getSize().height;
-            g.setColor(backColor_);
-            g.fillRect(0, 0, width, height);
-            // 凡例
-            g.setFont(font_);
-            FontMetrics metrics = getFontMetrics(font_);    // フォントメトリクス
-            int yofs = (int)(metrics.getHeight() / 3.5);    // ラベルYオフセット
-            int ygap = metrics.getHeight() + GAP_Y;         // Y間隔
-            ListIterator li = legendList_.listIterator();
-            int ypos = MARGIN_Y;    // Y位置初期化
-            while (li.hasNext()) {  // 全凡例をループ
-                LegendInfo legend = (LegendInfo)li.next();  // 次の凡例
-                g.setColor(legend.color);   // 凡例線色
-                //g.drawLine(MARGIN_X, ypos - 1, MARGIN_X + LEN_LINE, ypos - 1);
-                g.drawLine(MARGIN_X, ypos, MARGIN_X + LEN_LINE, ypos);  // 線の描画
-                //g.drawLine(MARGIN_X, ypos + 1, MARGIN_X + LEN_LINE, ypos + 1);
-                g.setColor(labelColor_);    // ラベル色
-                g.drawString(   // ラベルの描画
-                    legend.label,
-                    MARGIN_X + LEN_LINE + GAP_X,
-                    ypos + yofs
-                );
-                ypos += ygap;   // Y位置の更新
-            }
-        }
-
-        /**
-         * 必要十分サイズ取得
-         *   凡例を表示するのに必要十分なサイズを取得する
-         *      (現時点では使用していない)
-         *
-         */
-        public Dimension getMinimalSize() {
-            return size_;
-        }
-
-        /**
-         * サイズ更新
-         *   凡例の数や長さに応じてパネルのサイズを決定する
-         *
-         */
-        private void updateSize() {
-            FontMetrics metrics = getFontMetrics(font_);    // フォントメトリクス
-            int ygap = metrics.getHeight() + GAP_Y; // Y間隔
-            ListIterator li = legendList_.listIterator();
-            int ysize = MARGIN_Y;   // 高さ
-            int max = 0;    // ラベル最大長
-            while (li.hasNext()) {  // 全凡例をループ
-                LegendInfo legend = (LegendInfo)li.next();
-                int len = metrics.stringWidth(legend.label);    // ラベルの長さを取得
-                if (len > max) {    // 最大長?
-                    max = len;  // 最大長を更新
-                }
-                if (li.hasNext()) { // 最後の凡例でない?
-                    ysize += ygap;  // 高さを更新
-                }
-            }
-            ysize += MARGIN_Y;  // 下マージン
-            size_.width = MARGIN_X + LEN_LINE + GAP_X + max + MARGIN_X; // 幅更新
-            size_.height = ysize;   // 高さ更新
-            //System.out.println("ygap = " + ygap);
-            //System.out.println("(" + size_.width + ", " + size_.height + ")");
-        }
-    }
-
-    /**
-     * 凡例情報クラス
-     *
-     */
-    private class LegendInfo {
-
-        // -----------------------------------------------------------------
-        // インスタンス変数
-        public Color color;     // 色
-        public String label;    // ラベル
-
-        // -----------------------------------------------------------------
-        // コンストラクタ
-        /**
-         * コンストラクタ
-         *
-         * @param   color   Color   描画色
-         * @param   label   String  ラベル
-         */
-        public LegendInfo(
-            Color color,
-            String label
-        ) {
-            this.color = color;
-            this.label = label;
-        }
-    }
+	public void setLegend(LegendPanel legend) {
+		legendPanel_ = legend;
+	}
+ 
 }
