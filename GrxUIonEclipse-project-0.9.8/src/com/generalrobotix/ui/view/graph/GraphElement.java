@@ -67,7 +67,8 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
     public GraphElement(
     	GraphPanel gp,
     	Composite parent,
-        TrendGraph tg
+        TrendGraph tg,
+        int height
     ) {
         super(parent, SWT.NONE);
 
@@ -75,7 +76,12 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
         tg_ = tg;   // トレンドグラフ
         gp_ = gp;
         
-        setLayout(new GridLayout(1,true));
+        GridData gridData0 = new GridData(0,height);
+ 		gridData0.horizontalAlignment = GridData.FILL;
+ 		gridData0.grabExcessHorizontalSpace = true;
+ 		setLayoutData(gridData0);
+        
+ 		setLayout(new GridLayout(1,true));
         
         // スプリットペイン
         graphPane_ = new SashForm( this, SWT.HORIZONTAL  );

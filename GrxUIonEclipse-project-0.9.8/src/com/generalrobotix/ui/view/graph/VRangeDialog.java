@@ -57,9 +57,13 @@ public class VRangeDialog extends Dialog {
     public VRangeDialog(Shell shell) {
     	super(shell);
     	shell_ = shell;
-        //super(owner, MessageBundle.get("dialog.graph.vrange.title"), true);
     }
-
+    
+    protected void configureShell(Shell newShell) {   
+        super.configureShell(newShell);
+        newShell.setText(MessageBundle.get("dialog.graph.vrange.title"));
+    }
+    
     protected Control createDialogArea(Composite parent) {
     	Composite composite = (Composite)super.createDialogArea(parent);
     	composite.setLayout(new RowLayout(SWT.VERTICAL));
