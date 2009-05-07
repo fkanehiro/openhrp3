@@ -101,7 +101,6 @@ public class SeriesDialog extends Dialog {
     private List<GrxModelItem> currentModels_ = null;
     // -----------------------------------------------------------------
     public SeriesDialog(GraphElement initialGraph, Shell shell) {
-        //super( frame, MessageBundle.get("dialog.graph.series.title"), true);
     	super(shell);
         currentGraph_ = initialGraph;
         
@@ -138,6 +137,11 @@ public class SeriesDialog extends Dialog {
         		nodeMap.get(property[0]).add(property[1]);
         	}
         }      
+    }
+    
+    protected void configureShell(Shell newShell) {   
+        super.configureShell(newShell);
+        newShell.setText(MessageBundle.get("dialog.graph.series.title"));
     }
     
     protected Control createDialogArea(Composite parent) {

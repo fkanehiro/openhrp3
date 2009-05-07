@@ -15,7 +15,6 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import java.awt.Dimension;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -25,8 +24,6 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -45,11 +42,9 @@ import com.generalrobotix.ui.util.MessageBundle;
 public class GraphPanel extends Composite {
     //--------------------------------------------------------------------
     private static final int INITIAL_GRAPH_HEIGHT = 200;
-    private static final int INITIAL_GRAPH_WIDTH = 100;
 
     private static final int MAX_GRAPH_HEIGHT = 500;
     private static final int MIN_GRAPH_HEIGHT = 150;
-//    private static final int GRAPH_HEIGHT_STEP = 50;
 
     //--------------------------------------------------------------------
     private GraphElement[] graphElement_;
@@ -90,30 +85,28 @@ public class GraphPanel extends Composite {
      
      public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr, Composite comp) {
         super(comp, SWT.NONE);
-        //this.setBackground(new Color(Display.getDefault(), 0,0,0));
         manager_ = manager;
         comp_ = comp;
         trendGraphMgr_ = trendGraphMgr;
       
         setLayout(new GridLayout(1,true));
-        graphScrollPane_ = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL);
+        graphScrollPane_ = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL| SWT.BORDER);
         graphScrollPane_.setExpandHorizontal(true);
         graphScrollPane_.setExpandVertical(true);
-        GridData gridData = new GridData();
- 		gridData.horizontalAlignment = GridData.FILL;
- 		gridData.grabExcessHorizontalSpace = true;
- 		gridData.verticalAlignment = GridData.FILL;
- 		gridData.grabExcessVerticalSpace = true;
- 		graphScrollPane_.setLayoutData(gridData);
+        GridData gridData0 = new GridData();
+ 		gridData0.horizontalAlignment = GridData.FILL;
+ 		gridData0.grabExcessHorizontalSpace = true;
+ 		gridData0.verticalAlignment = GridData.FILL;
+ 		gridData0.grabExcessVerticalSpace = true;
+ 		graphScrollPane_.setLayoutData(gridData0);
         Composite graphControlPanel = new Composite(this, SWT.NONE); 
-        gridData = new GridData();
- 		gridData.horizontalAlignment = GridData.FILL;
- 		gridData.grabExcessHorizontalSpace = true;
-        graphControlPanel.setLayoutData(gridData);
-        graphControlPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        GridData gridData1 = new GridData();
+ 		gridData1.horizontalAlignment = GridData.FILL;
+ 		gridData1.grabExcessHorizontalSpace = true;
+        graphControlPanel.setLayoutData(gridData1);
         graphControlPanel.setLayout(new RowLayout());
         graphElementBase_ = new Composite(graphScrollPane_, SWT.NONE);
-        graphElementBase_.setLayout(new FillLayout(SWT.VERTICAL));
+        graphElementBase_.setLayout(new GridLayout(1,true));
         graphScrollPane_.setContent(graphElementBase_);
 
         numGraph_ = trendGraphMgr_.getNumGraph();
@@ -123,33 +116,26 @@ public class GraphPanel extends Composite {
                 new GraphElement(
                 	this,
                 	graphElementBase_,
-                    trendGraphMgr_.getTrendGraph(i)
+                    trendGraphMgr_.getTrendGraph(i),INITIAL_GRAPH_HEIGHT
                 );
-
-            //graphElement_[i].setBorder(normalBorder_);
-            //graphElement_[i].addMouseListener(mouseListener_);
-            Dimension dim = new Dimension(INITIAL_GRAPH_WIDTH, INITIAL_GRAPH_HEIGHT);
-            //graphElement_[i].setPreferredSize(dim);
-            //graphElementBase_.add(graphElement_[i]);
         }
+        graphScrollPane_.setMinSize(graphElementBase_.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
         currentGraph_ = graphElement_[0];
         graphElement_[0].setBorderColor(focusedColor_);
 
-
         Label lb = new Label( graphControlPanel, SWT.NONE);
 		lb.setText("Height:");
         heightSlider_ = new Scale(graphControlPanel, SWT.HORIZONTAL);
-        heightSlider_.setMinimum(MIN_GRAPH_HEIGHT);
         heightSlider_.setMaximum(MAX_GRAPH_HEIGHT);
-        heightSlider_.setSelection(currentGraph_.getSize().y);
+        heightSlider_.setMinimum(MIN_GRAPH_HEIGHT);
+        heightSlider_.setSelection(INITIAL_GRAPH_HEIGHT);
         heightSlider_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
-            	graphElementBase_.setVisible(false);
-            	Point size = currentGraph_.getSize();
-            	size.y = heightSlider_.getSelection();
-                currentGraph_.setSize(size);
-                graphElementBase_.setVisible(true);
+             	GridData gridData = (GridData)currentGraph_.getLayoutData();
+            	gridData.heightHint = heightSlider_.getSelection();
+            	graphScrollPane_.setMinSize(graphElementBase_.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+            	graphElementBase_.layout(true);
             }
 		} );
 
