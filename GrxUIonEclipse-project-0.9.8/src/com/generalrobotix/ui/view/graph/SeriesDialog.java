@@ -10,24 +10,27 @@
 package com.generalrobotix.ui.view.graph;
 
 //import java.awt.*;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Graphics;
 import java.net.URL;
 import java.util.*;
 
-import javax.swing.*;
-import javax.swing.table.*;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ColorCellEditor;
+import org.eclipse.jface.viewers.ICellModifier;
+import org.eclipse.jface.viewers.ITableColorProvider;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -37,7 +40,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -51,13 +58,7 @@ import com.generalrobotix.ui.util.MessageBundle;
  */
 @SuppressWarnings("serial")
 public class SeriesDialog extends Dialog {
-
-    private static final int BORDER_GAP = 12;
-    //private static final int LABEL_GAP = 12;
-    private static final int BUTTON_GAP = 5;
-    //private static final int ITEM_GAP = 11;
-
-    private boolean updated_;
+	private boolean updated_;
     private ArrayList<DataItemInfo> dataItemInfoList_; 
     private ArrayList<DataItemInfo> removedList_;
     private DataItemInfo[] dataItemInfoArray_;
@@ -66,7 +67,8 @@ public class SeriesDialog extends Dialog {
     private ArrayList<DataItemInfo> addedList_;
     private DataItemInfo[] addedArray_;
     
-    private JTable seriesTable_ = new JTable();
+   // private JTable seriesTable_ = new JTable();
+    private TableViewer tableviewer_;
     private static final String ROBOT_MODEL = "ROBOT MODEL";
     private static final String DATA_TYPE   = "DATA TYPE";
     private static final String LINK_NAME   = "LINK NAME";
@@ -76,12 +78,6 @@ public class SeriesDialog extends Dialog {
     private static final String colIndex = MessageBundle.get("dialog.graph.series.table.index");
     private static final String colColor = MessageBundle.get("dialog.graph.series.table.color");
     private static final String colLegend = MessageBundle.get("dialog.graph.series.table.legend");
-    public static final Color GREEN = Display.getDefault().getSystemColor(SWT.COLOR_GREEN);
-    public static final Color YELLOW = Display.getDefault().getSystemColor(SWT.COLOR_YELLOW);
-    public static final Color CYAN = Display.getDefault().getSystemColor(SWT.COLOR_CYAN);
-    public static final Color MAGENTA = Display.getDefault().getSystemColor(SWT.COLOR_MAGENTA);
-    public static final Color RED = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-    public static final Color BLUE = Display.getDefault().getSystemColor(SWT.COLOR_BLUE);
     private Combo comboModel_ ;
     private Combo comboType_ ;
     private Combo comboLink_ ;
@@ -94,9 +90,8 @@ public class SeriesDialog extends Dialog {
     private Properties prop = new Properties();
     private GraphElement currentGraph_;
     
-    private MyModel tableModel_;
+    private MyTable tableModel_;
 	private final Map<String, ArrayList<String>> nodeMap =  new HashMap<String, ArrayList<String>>();
-	//private boolean isComboChanging_ = true;
 	private int graphIndex = 0;
     private List<GrxModelItem> currentModels_ = null;
     // -----------------------------------------------------------------
@@ -104,15 +99,7 @@ public class SeriesDialog extends Dialog {
     	super(shell);
         currentGraph_ = initialGraph;
         
-        tableModel_ = new MyModel(
-        		new Object[]{
-        			colNode,
-                    colAttribute,
-                    colIndex,
-                    colColor,
-                    colLegend,
-                }
-        );
+        tableModel_ = new MyTable();
         
         try {
         	prop.load(url.openStream());
@@ -147,109 +134,45 @@ public class SeriesDialog extends Dialog {
     protected Control createDialogArea(Composite parent) {
     	Composite composite = (Composite)super.createDialogArea(parent);
     	composite.setLayout(new RowLayout(SWT.VERTICAL));
-    	Composite comp = new Composite(composite, SWT.EMBEDDED);
     	RowData rowdata = new RowData();
-    	rowdata.height = 300;
+    	rowdata.height = 100;
     	rowdata.width = 600;
-    	comp.setLayoutData(rowdata);
-    	//comp.setLayout( new GridLayout(1,true));
-    	Frame frame = SWT_AWT.new_Frame( comp );
     	
-    	JPanel line1 = new JPanel();
-    	line1.setLayout(new BoxLayout(line1, BoxLayout.X_AXIS));
-    	line1.add(Box.createHorizontalStrut(BORDER_GAP));
-    	line1.add(new JLabel(MessageBundle.get("dialog.graph.series.dataseries")));
-    	line1.setAlignmentX(Component.LEFT_ALIGNMENT);
-    	Dimension dimension = line1.getPreferredSize();
-    	line1.setMaximumSize(dimension);
-             
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new java.awt.Color[]{
-          		java.awt.Color.green, java.awt.Color.yellow, java.awt.Color.cyan, 
-          		java.awt.Color.magenta, java.awt.Color.red,  java.awt.Color.blue,
-            });
-        JComboBox colorCombo = new JComboBox(model);
-        colorCombo.setRenderer(new ColorCellRenderer());
-        DefaultTableCellRenderer colorRenderer = new DefaultTableCellRenderer() {
-        	private static final int X_GAP = 10;
-        	private java.awt.Color color_;
-
-        	public void setValue(Object value) {
-        		if (value instanceof Color) {
-        			Color color = (Color)value;
-        			if(color.getRGB().equals(GREEN.getRGB()))
-        				color_ = java.awt.Color.green;
-        			if(color.getRGB().equals(YELLOW.getRGB()))
-        				color_ = java.awt.Color.yellow;
-        			if(color.getRGB().equals(CYAN.getRGB()))
-        				color_ = java.awt.Color.cyan;
-        			if(color.getRGB().equals(MAGENTA.getRGB()))
-        				color_ = java.awt.Color.magenta;
-        			if(color.getRGB().equals(RED.getRGB()))
-        				color_ = java.awt.Color.red;
-        			if(color.getRGB().equals(BLUE.getRGB()))
-        				color_ = java.awt.Color.blue;
-        		} else {
-        			super.setValue(value);
-                }
-        	}
-
-        	public void paint(Graphics g) {
-        		int width = getSize().width;
-        		int height = getSize().height;
-        		g.setColor(java.awt.Color.black);
-        		g.fillRect(0, 0, width, height);
-        		g.setColor(color_);
-        		g.drawLine(X_GAP, height / 2, width - X_GAP, height / 2);
-        	}
-        };
-
-        DefaultTableCellRenderer indexRenderer = new DefaultTableCellRenderer() {
-        	public void setValue(Object value) {
-        		if (value instanceof Integer) {
-        			int ind = ((Integer)value).intValue();
-        			setText(ind < 0 ? "":""+ind);
-        		} else {
-        			super.setValue(value);
-                }
-        	}
-        };
-
+    	Label label = new Label(composite, SWT.LEFT);
+    	label.setText(MessageBundle.get("dialog.graph.series.dataseries"));
+    	tableviewer_ = new TableViewer(composite, SWT.FULL_SELECTION | SWT.BORDER);
+    	tableviewer_.getControl().setLayoutData(rowdata);
+    	Table table = tableviewer_.getTable();
+        table.setLinesVisible(true);
+        table.setHeaderVisible(true);
+        TableColumn column = new TableColumn(table,SWT.NONE);
+        column.setText(colNode);
+        column.setWidth(100);
+        column = new TableColumn(table,SWT.NONE);
+        column.setText(colAttribute);
+        column.setWidth(100);
+        column = new TableColumn(table,SWT.NONE);
+        column.setText(colIndex);
+        column.setWidth(60);
+        column = new TableColumn(table,SWT.NONE);
+        column.setText(colColor);
+        column.setWidth(60);
+        column = new TableColumn(table,SWT.NONE);
+        column.setText(colLegend);
+        column.setWidth(280);
         
-        seriesTable_.setModel(tableModel_);
-        seriesTable_.getTableHeader().setReorderingAllowed(false);
-        //seriesTable_.setColumnSelectionAllowed(false);
-        seriesTable_.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        seriesTable_.setRowHeight(20);
-        seriesTable_.getColumn(colNode).setPreferredWidth(100);
-        seriesTable_.getColumn(colAttribute).setPreferredWidth(80);
-        seriesTable_.getColumn(colLegend).setPreferredWidth(200);
-        TableColumn indexColumn = seriesTable_.getColumn(colIndex);
-        indexRenderer.setHorizontalAlignment(JLabel.RIGHT);
-        indexColumn.setCellRenderer(indexRenderer);
-        indexColumn.setPreferredWidth(10);
-        TableColumn colorColumn = seriesTable_.getColumn(colColor);
-        colorColumn.setCellEditor(new DefaultCellEditor(colorCombo));
-        colorRenderer.setHorizontalAlignment(JLabel.CENTER);
-        colorColumn.setCellRenderer(colorRenderer);
+        String[] properties = new String[]{ null, null, null, "color", "legend"};
+        tableviewer_.setColumnProperties(properties); 
+        CellEditor[] editors = new CellEditor[]{ null, null, null, 
+                new ColorCellEditor(table),
+                new TextCellEditor(table)  };
+        tableviewer_.setCellEditors(editors);
+        tableviewer_.setContentProvider(new ArrayContentProvider());
+        tableviewer_.setLabelProvider(new MyLabelProvider());
+        tableviewer_.setCellModifier(new MyCellModifier(tableviewer_));
         
-        JScrollPane tablePane = new JScrollPane(seriesTable_);
-        tablePane.setPreferredSize(new Dimension(600, 160));
-        JPanel line2 = new JPanel();
-        line2.setLayout(new BoxLayout(line2, BoxLayout.X_AXIS));
-        line2.add(Box.createHorizontalStrut(BORDER_GAP));
-        line2.add(tablePane);
-        line2.add(Box.createHorizontalStrut(BORDER_GAP));
-        line2.setAlignmentX(Component.LEFT_ALIGNMENT);
-         
-        Container pane = new Container();
-        pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
-        pane.add(Box.createVerticalStrut(BORDER_GAP));
-        pane.add(line1);
-        pane.add(Box.createVerticalStrut(BUTTON_GAP));
-        pane.add(line2);
-        pane.add(Box.createVerticalStrut(BUTTON_GAP));
-        frame.add(pane);
-            
+      	tableviewer_.setInput(tableModel_.getList());
+       
         Composite line3 = new Composite(composite, SWT.NONE);
         line3.setLayout(new RowLayout());
         Group group0 = new Group(line3, SWT.NONE);
@@ -257,9 +180,7 @@ public class SeriesDialog extends Dialog {
         group0.setLayout(new FillLayout());
         comboModel_ = new Combo(group0,SWT.READ_ONLY);
         comboModel_.addSelectionListener(new SelectionListener() {
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-				
+			public void widgetDefaultSelected(SelectionEvent e) {				
 			}
 			public void widgetSelected(SelectionEvent e) {
 				comboType_.removeAll();
@@ -267,7 +188,7 @@ public class SeriesDialog extends Dialog {
 				comboAttr_.removeAll();
 				
 				Iterator<String> it = nodeMap.keySet().iterator();
-				if (seriesTable_.getRowCount() > 0) {
+				if (tableModel_.getRowCount() > 0) {
 					String curAttr = currentGraph_.getTrendGraph().getDataItemInfoList()[0].dataItem.attribute;
 					while (it.hasNext()) {
 						String key = it.next();
@@ -298,9 +219,7 @@ public class SeriesDialog extends Dialog {
         group1.setLayout(new FillLayout());
         comboType_ = new Combo(group1,SWT.READ_ONLY);
         comboType_.addSelectionListener(new SelectionListener() {
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-				
+			public void widgetDefaultSelected(SelectionEvent e) {			
 			}
 			public void widgetSelected(SelectionEvent e) {
 				
@@ -354,9 +273,7 @@ public class SeriesDialog extends Dialog {
         comboLink_ = new Combo(group2,SWT.READ_ONLY);
         comboLink_.addSelectionListener(new SelectionListener() {
 
-			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-				
+			public void widgetDefaultSelected(SelectionEvent e) {			
 			}
 
 			public void widgetSelected(SelectionEvent e) {
@@ -369,8 +286,8 @@ public class SeriesDialog extends Dialog {
 						if (l.contains(curAttr))
 							comboAttr_.addItem(curAttr);
 					} else */
-				if (seriesTable_.getRowCount() > 0) {
-					String curAttr = (String)seriesTable_.getValueAt(0, 1);
+				if (tableModel_.getRowCount() > 0) {
+					String curAttr = (String)tableModel_.getValueAt(0, 1);
 					if (l.contains(curAttr))
 						comboAttr_.add(curAttr);
 				} else {
@@ -396,19 +313,15 @@ public class SeriesDialog extends Dialog {
         removeButton_.setText(MessageBundle.get("dialog.graph.series.remove"));
         removeButton_.addSelectionListener(new SelectionListener(){
         	public void widgetDefaultSelected(SelectionEvent e) {
-        		// TODO 自動生成されたメソッド・スタブ
         	}
         	
         	public void widgetSelected(SelectionEvent e) {
-        		int ind = seriesTable_.getSelectedRow();
+        		int ind = tableviewer_.getTable().getSelectionIndex();
         		if (ind < 0) 
         			return;
         		
-        		CellEditor ce = seriesTable_.getCellEditor();
-        		if (ce != null) 
-        			ce.stopCellEditing();
-        		
         		tableModel_.removeRow(ind);
+        		tableviewer_.refresh();
         		int cnt = tableModel_.getRowCount();
         		if (cnt < 1) {
         			_resetSelection();
@@ -417,7 +330,7 @@ public class SeriesDialog extends Dialog {
         		if (ind >= cnt) {
         			ind -= 1;
         		}
-        		seriesTable_.setRowSelectionInterval(ind, ind);
+        		tableviewer_.getTable().select(ind);
         	}
         });
         removeButton_.setEnabled(true); 
@@ -426,8 +339,6 @@ public class SeriesDialog extends Dialog {
         setButton_.addSelectionListener(new SelectionListener(){
 
 			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-				
 			}
 
 			public void widgetSelected(SelectionEvent e) {
@@ -438,54 +349,31 @@ public class SeriesDialog extends Dialog {
 					combo1.equals("Gyro")) 
 					length = 3;
 				for (int i=0; i<length; i++) {
-    					Object[] rowData = new Object[5];
-    	                rowData[4] = comboModel_.getItem(comboModel_.getSelectionIndex()) + "." 
-    			                   + (String)comboLink_.getItem(comboLink_.getSelectionIndex()) + "."
-    			                   + (String)comboAttr_.getItem(comboAttr_.getSelectionIndex()) + (length > 1 ? "." + i : "");
-    	                if(tableModel_.getRow((String)rowData[4])==-1){
-    	                   	rowData[0] = comboModel_.getItem(comboModel_.getSelectionIndex()) + "." 
-    				           + (String)comboLink_.getItem(comboLink_.getSelectionIndex());
-    	                	rowData[1] = (String)comboAttr_.getItem(comboAttr_.getSelectionIndex());
-    	                	if(length>1)
-    	                		rowData[2] = new Integer(i);
-    	                	else
-    	                		rowData[2] = null;
-    	                	rowData[3] = currentGraph_.getTrendGraph().getGraphColor(graphIndex);
-    	                	tableModel_.addRow(rowData,(String)rowData[4]);
-    	                	graphIndex++;
-    	                }
+					String model = comboModel_.getItem(comboModel_.getSelectionIndex());
+					String link = comboLink_.getItem(comboLink_.getSelectionIndex());
+					String attr = comboAttr_.getItem(comboAttr_.getSelectionIndex());
+					String legend = model + "." + link + "." + attr + (length > 1 ? "." + i : "");
+					if(!tableModel_.contains(legend)){
+						DataItemInfo newDataItemInfo = new DataItemInfo(new DataItem(model,link,attr,
+							length > 1 ? i : -1,
+					    	comboType_.getItem(comboType_.getSelectionIndex())),
+					    	currentGraph_.getTrendGraph().getGraphColor(graphIndex),
+					    	legend);
+						tableModel_.addRow(newDataItemInfo, legend);
+						tableviewer_.refresh();
+						graphIndex++;
+					}
 				}
 				removeButton_.setEnabled(true);
+        		comboLink_.notifyListeners(SWT.Selection, null);
 			}
         });
        	_resetSelection();
-       	/*
-       	comp.addKeyListener(new KeyListener(){
-       		public void keyPressed(KeyEvent e) {
-				if(e.keyCode==SWT.ESC){
-					 CellEditor ce = seriesTable_.getCellEditor();
-					 if (ce != null) {
-						 ce.stopCellEditing();
-					 }
-					 removeAllRows();
-				}
-			}
-			public void keyReleased(KeyEvent e) {
-				// TODO 自動生成されたメソッド・スタブ
-				
-			}
-       		
-       	});
-		*/
         return composite;
     }
 
     protected void buttonPressed(int buttonId) {
     	if (buttonId == IDialogConstants.OK_ID) {
-    		CellEditor ce = seriesTable_.getCellEditor();
-            if (ce != null) {
-                ce.stopCellEditing();
-            }
             ArrayList<DataItemInfo> newDataItemInfoList = new ArrayList<DataItemInfo>();
             for(int i=0; i<tableModel_.getRowCount(); i++){
             	String fullName = tableModel_.getString(i);
@@ -503,23 +391,7 @@ public class SeriesDialog extends Dialog {
                 	}
                 }
                 if(!contain){
-                	String str = (String)tableModel_.getValueAt(i, 0);
-                	String[] model = str.split("\\.",0);
-                	Integer indexI = ((Integer)tableModel_.getValueAt(i, 2));
-                	int index;
-                	if(indexI==null)
-                		index=-1;
-                	else
-                		index=indexI.intValue();
-                	addedList_.add(new DataItemInfo(new DataItem(
-					    	model[0],model[1],
-					    	(String)tableModel_.getValueAt(i, 1),
-					    	index,
-					    	(String)comboType_.getText()),
-					    	(Color)tableModel_.getValueAt(i, 3),
-					    	(String)tableModel_.getValueAt(i, 4)
-					    
-                	));
+                	addedList_.add(tableModel_.getItem(i));
                 }
             }
             Iterator<DataItemInfo> it = dataItemInfoList_.iterator();
@@ -533,10 +405,6 @@ public class SeriesDialog extends Dialog {
             addedArray_ = addedList_.toArray(new DataItemInfo[0]);
         	updated_ = true;
     	}else if(buttonId == IDialogConstants.CANCEL_ID){
-    		CellEditor ce = seriesTable_.getCellEditor();
-            if (ce != null) {
-                ce.stopCellEditing();
-            }
             removeAllRows();
     	}
     	setReturnCode(buttonId);
@@ -578,18 +446,16 @@ public class SeriesDialog extends Dialog {
 
     
     /**
-     *
-     * @param   visible 
-     */
-
-    public int open( ) {
-     	if(seriesTable_.getRowCount() > 0)
-    		seriesTable_.setRowSelectionInterval(0, 0); 
-    	removedList_ = new ArrayList<DataItemInfo>(); 
-    	addedList_ = new ArrayList<DataItemInfo>();
-    	updated_ = false;     
-        return super.open(); 
-    }
+	 *
+	 * @param   visible 
+	 */
+	
+	public int open( ) {
+		removedList_ = new ArrayList<DataItemInfo>(); 
+		addedList_ = new ArrayList<DataItemInfo>();
+		updated_ = false;     
+	    return super.open(); 
+	}
 
 
     /**
@@ -597,20 +463,9 @@ public class SeriesDialog extends Dialog {
      */
     public void setDataItemInfoList( DataItemInfo[] dii) {
         dataItemInfoList_ = new ArrayList<DataItemInfo>();
-        Object[] rowData = new Object[5];
         for (int i = 0; i < dii.length; i++) {
             dataItemInfoList_.add(dii[i]);
-            DataItem di = dii[i].dataItem;
-            if (di.object == null) {
-                rowData[0] = di.node;
-            } else {
-                rowData[0] = di.object + "." + di.node;
-            }
-            rowData[1] = di.attribute;
-            rowData[2] = new Integer(di.index);
-            rowData[3] = dii[i].color;
-            rowData[4] = dii[i].legend;
-            tableModel_.addRow(rowData,di.toString());
+            tableModel_.addRow(dii[i],dii[i].dataItem.toString());
         }
     }
 
@@ -647,91 +502,62 @@ public class SeriesDialog extends Dialog {
         }
     }
 
-    // -----------------------------------------------------------------
-    /**
-     * @author Kernel Inc.
-     * @version 1.0 (2001/8/20)
-     */
-    private class ColorCellRenderer extends JPanel implements ListCellRenderer{
-
-        private static final int X_GAP = 10;
-        private final java.awt.Color selectedColor_ = new java.awt.Color(153, 153, 204);
-
-        private boolean selected_;
-        private java.awt.Color color_;
-
-        // -----------------------------------------------------------------
-        /**
-         *
-         */
-        public Component getListCellRendererComponent(
-            JList list,
-            Object value,
-            int index,
-            boolean isSelected,
-            boolean cellHasFocus
-        ) {
-            color_ = (java.awt.Color)value;
-            selected_ = isSelected;
-            setPreferredSize(new Dimension(40, 16));
-
-            return this;
-        }
-
-        // -----------------------------------------------------------------
-        /**
-         *
-         */
-        public void paint(Graphics g) {
-            int width = getSize().width;
-            int height = getSize().height;
-            if (selected_) {
-                g.setColor(selectedColor_);
-                g.fillRect(0, 0, width, height);
-                g.setColor(java.awt.Color.black);
-                g.fillRect(2, 2, width - 4, height - 4);
-            } else {
-                g.setColor(java.awt.Color.black);
-                g.fillRect(0, 0, width, height);
-            }
-            g.setColor(color_);
-            g.drawLine(X_GAP, height / 2, width - X_GAP, height / 2);
-        }
-    }
-
-    /**
-     *
-     * @author Kernel Inc.
-     * @version 1.0 (2001/8/20)
-     */
-    private class MyModel extends DefaultTableModel {
-    	private ArrayList<String> tableList = new ArrayList<String>();
-        public MyModel(
-            Object[] columnNames
-        ) {
-            super(columnNames, 0);
-        }
-
-        public boolean isCellEditable(int row, int col) {
-            return (col == 3 || col == 4);
+    private class MyTable {
+    	private ArrayList<String> nameList = new ArrayList<String>();
+    	private ArrayList<DataItemInfo> itemList = new ArrayList<DataItemInfo>(); 
+    	
+    	public void addRow(DataItemInfo item, String name){
+    		itemList.add(item);
+    		nameList.add(name);
+    	}
+    	
+    	public void removeRow(int i){
+    		itemList.remove(i);
+    		nameList.remove(i);
+    	}
+    	
+    	public DataItemInfo getItem(int i){
+    		return itemList.get(i);
+    	}
+    	
+    	public int getRowCount(){
+    		return itemList.size();
+    	}
+    	
+    	public String getString(int i){
+    		return nameList.get(i);
+    	}
+    	
+    	public ArrayList getList(){
+    		return itemList;
+    	}
+    
+        public boolean contains(String name){
+            return nameList.contains(name);
         }
         
-        public int getRow(String str){
-        	return tableList.indexOf(str);
-        }
-        
-        public String getString(int i){
-        	return tableList.get(i);
-        }
-        
-        public void removeRow(int i){
-        	super.removeRow(i);
-        	tableList.remove(i);
-        }
-        
-        public void addRow(Object[] rowData, String str){
-        	super.addRow(rowData);
-        	tableList.add(str);
+        public Object getValueAt(int i, int j){
+        	DataItemInfo dii = itemList.get(i);
+    		DataItem di = dii.dataItem;
+    		switch (j) {
+    		    case 0:
+    		    	 if (di.object == null) {
+    		    		 return di.node;
+    		    	 }else{
+    		    		 return di.object + "." + di.node;
+    		    	 }
+    		    case 1:
+    		    	return di.attribute;
+    		    case 2:
+    		    	return new Integer(di.index);
+    		    case 3:
+    		    	return dii.color;
+    		    case 4:
+    		    	return dii.legend;
+    		    default:
+    		    	break;
+    		}
+    		return null;
         }
     }
     
@@ -739,4 +565,93 @@ public class SeriesDialog extends Dialog {
     	currentModels_ = list;
     }
     
+    public class MyLabelProvider extends LabelProvider 
+    implements ITableLabelProvider, ITableColorProvider { 
+
+    	public Image getColumnImage(Object element, int columnIndex) {
+    		return null;
+    	}
+
+    	public String getColumnText(Object element, int columnIndex) {
+    		DataItemInfo item = (DataItemInfo) element;
+    		String result = "";
+    		DataItem di = item.dataItem;
+    		switch (columnIndex) {
+    		    case 0:
+    		    	 if (di.object == null) {
+    		    		 result = di.node;
+    		    	 }else{
+    		    		 result = di.object + "." + di.node;
+    		    	 }
+    		    	 break;
+    		    case 1:
+    		    	result = di.attribute;
+    		    	break;
+    		    case 2:
+    		    	if(di.index < 0)
+    		    		result = "";
+    		    	else
+    		    		result = (new Integer(di.index)).toString();
+    		    	break;
+    		    case 3:
+    		    	result = "";
+    		    	break;
+    		    case 4:
+    		    	result = item.legend;
+    		    	break;
+    		    default:
+    		    	break;
+    		}
+    		return result;
+    	}
+
+		public Color getBackground(Object element, int columnIndex) {
+			DataItemInfo item = (DataItemInfo) element;
+    		if(columnIndex == 3)
+    			return item.color;
+    		else
+    			return null;
+		}
+
+		public Color getForeground(Object element, int columnIndex) {
+			return null;
+		}
+    }
+    
+    public class MyCellModifier implements ICellModifier {
+    	  private TableViewer viewer_;
+
+    	  public MyCellModifier(TableViewer viewer) {
+    	    this.viewer_ = viewer;
+    	  }
+
+		public boolean canModify(Object element, String property) {
+			if(property == "color" || property == "legend")
+				return true;
+			else
+				return false;
+		}
+
+		public Object getValue(Object element, String property) {
+			DataItemInfo item = (DataItemInfo) element;
+			if(property == "color")
+				return item.color.getRGB();
+			else if(property == "legend")
+				return item.legend;
+			return null;
+		}
+
+		public void modify(Object element, String property, Object value) {
+			if (element instanceof Item) {
+			      element = ((Item) element).getData();
+			}
+			DataItemInfo item = (DataItemInfo) element;
+			if(property == "color")
+				item.color = new Color(Display.getDefault(),((RGB)value));
+			else if(property == "legend")
+				item.legend = (String)value;
+				
+			 viewer_.update(element, null);
+		}
+    }
 }
