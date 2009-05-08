@@ -44,6 +44,8 @@ namespace hrp {
 
         bool detectIntersection();
 
+        double tolerance() const { return tolerance_; }
+
       private:
         collision_data* detectCollisionsSub(bool detectAllContacts);
         collision_data* detectMeshMeshCollisions(bool detectAllContacts);
