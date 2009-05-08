@@ -644,7 +644,11 @@ public class Grx3DView
 	    			modelItem.setWireFrame(viewToolBar_.isWireFrameSelected());
 	                bgRoot_.addChild(modelItem.bgRoot_);
 	        		currentModels_.add(modelItem);
-	        		updateViewSimulator(0);
+	        		if(currentState_!=null){
+	        			updateModels(currentState_);
+	        			updateViewSimulator(currentState_.time);
+	        		}else
+	        			updateViewSimulator(0);
 	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
@@ -653,6 +657,8 @@ public class Grx3DView
 	    			modelItem.bgRoot_.detach();
 	        		currentModels_.remove(modelItem);
 	    		}
+	    		if(currentModels_.size()==0)
+	    			_showCollision(null);
 	    		break;
 	    	default:
 	    		break;
