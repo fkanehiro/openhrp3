@@ -83,8 +83,6 @@ namespace hrp {
 			return (index >= numUpwardJointConnections);
 		}
 		
-		void setMaxIKError(double e);
-		
 		void calcJacobian(dmatrix& out_J) const;
 		
 		inline dmatrix Jacobian() const {
@@ -92,6 +90,9 @@ namespace hrp {
 			calcJacobian(J);
 			return J;
 		}
+		
+		void setMaxIKError(double e);
+		void setBestEffortIKMode(bool on);
 		
 		virtual bool calcInverseKinematics
 		(const vector3& base_p, const matrix33& base_R, const vector3& end_p, const matrix33& end_R);
@@ -109,7 +110,8 @@ namespace hrp {
 		
 		virtual void onJointPathUpdated();
 		
-		double maxIkErrorSqr;
+		double maxIKErrorSqr;
+		bool isBestEffortIKMode;
 		
     private:
 		

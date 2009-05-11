@@ -716,7 +716,7 @@ bool CustomizedJointPath::calcInverseKinematics(const vector3& to_p, const matri
 {
 	bool solved;
 	
-	if(ikTypeId == 0){
+	if(ikTypeId == 0 || isBestEffortIKMode){
 
 		solved = JointPath::calcInverseKinematics(to_p, to_R0);
 
@@ -746,7 +746,7 @@ bool CustomizedJointPath::calcInverseKinematics(const vector3& to_p, const matri
 			
 			double errsqr = dot(dp, dp) + dot(omega, omega);
 			
-			if(errsqr < maxIkErrorSqr){
+			if(errsqr < maxIKErrorSqr){
 				solved = true;
 			} else {
 				solved = false;
