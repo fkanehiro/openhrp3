@@ -136,7 +136,8 @@ JointPath::JointPath(Link* end) :
 
 void JointPath::initialize()
 {
-	maxIkErrorSqr = 1.0e-6 * 1.0e-6;
+	maxIKErrorSqr = 1.0e-6 * 1.0e-6;
+	isBestEffortIKMode = false;
 }
 	
 
@@ -207,12 +208,6 @@ void JointPath::onJointPathUpdated()
 }
 
 
-void JointPath::setMaxIKError(double e)
-{
-  maxIkErrorSqr = e * e;
-}
-
-
 void JointPath::calcJacobian(dmatrix& out_J) const
 {
 	const int n = joints.size();
@@ -264,6 +259,18 @@ void JointPath::calcJacobian(dmatrix& out_J) const
 }
 
 
+void JointPath::setMaxIKError(double e)
+{
+	maxIKErrorSqr = e * e;
+}
+
+
+void JointPath::setBestEffortIKMode(bool on)
+{
+	isBestEffortIKMode = on;
+}
+
+
 bool JointPath::calcInverseKinematics
 (const vector3& base_p, const matrix33& base_R, const vector3& end_p, const matrix33& end_R)
 {
@@ -286,7 +293,7 @@ bool JointPath::calcInverseKinematics(const vector3& end_p, const matrix33& end_
     
     const int n = numJoints();
 
-	if(n < 6){
+	if(n < 1){
 		return false;
 	}
 
@@ -302,6 +309,7 @@ bool JointPath::calcInverseKinematics(const vector3& end_p, const matrix33& end_
 	dvector dq(n);
     dvector v(6);
 
+	double errsqr = maxIKErrorSqr * 100.0;
 	bool converged = false;
 
     for(int i=0; i < MAX_IK_ITERATION; i++){
@@ -311,11 +319,20 @@ bool JointPath::calcInverseKinematics(const vector3& end_p, const matrix33& end_
 		vector3 dp(end_p - target->p);
         vector3 omega(target->R * omegaFromRot(matrix33(trans(target->R) * end_R)));
 
-        double errsqr = dot(dp, dp) + dot(omega, omega);
-        if(errsqr < maxIkErrorSqr){
-			converged = true;
-            break;
-        }
+		if(isBestEffortIKMode){
+			const double errsqr0 = errsqr;
+			errsqr = dot(dp, dp) + dot(omega, omega);
+			if(fabs(errsqr - errsqr0) < maxIKErrorSqr){
+				converged = true;
+				break;
+			}
+		} else {
+			const double errsqr = dot(dp, dp) + dot(omega, omega);
+			if(errsqr < maxIKErrorSqr){
+				converged = true;
+				break;
+			}
+		}
 
 		setVector3(dp   , v, 0);
 		setVector3(omega, v, 3);
