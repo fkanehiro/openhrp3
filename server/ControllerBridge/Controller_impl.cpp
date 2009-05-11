@@ -264,6 +264,8 @@ void Controller_impl::start()
         } else {
             if(!CORBA::is_nil(viewSimulator)) {
                 viewSimulator->getCameraSequenceOf(modelName.c_str(), cameras);
+            }else{
+                cameras = new CameraSequence(0);
             }
             activeComponents();
         }
@@ -306,8 +308,16 @@ DblSequence* Controller_impl::getSensorDataFromSimulator(const std::string& sens
 
 ImageData* Controller_impl::getCameraImageFromSimulator(int cameraId)
 {
-    ImageData_var imageData = cameras[cameraId]->getImageData();
-    return imageData._retn();
+    if(cameras->length()!=0){
+        ImageData_var imageData = cameras[cameraId]->getImageData();
+        return imageData._retn();
+    }else{
+        ImageData* imageData = new ImageData;
+        imageData->floatData.length(0);
+        imageData->longData.length(0);
+        imageData->octetData.length(0);
+        return imageData;
+    }
 }
     
 
