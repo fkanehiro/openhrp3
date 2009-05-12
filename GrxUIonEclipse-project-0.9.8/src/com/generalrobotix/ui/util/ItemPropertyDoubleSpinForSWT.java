@@ -45,7 +45,7 @@ public class ItemPropertyDoubleSpinForSWT extends Composite{
         text_ = new Text(this,SWT.SINGLE | SWT.BORDER);
         text_.addFocusListener(new FocusListener(){
         	public void focusLost(FocusEvent e){
-        		setValue(text_.getText());
+        		updateProperty(text2value());
         	}
         	public void focusGained(FocusEvent e){
         	}
@@ -63,9 +63,8 @@ public class ItemPropertyDoubleSpinForSWT extends Composite{
             }
 
             public void widgetSelected(SelectionEvent e) {
-                setValue(text_.getText());
-                double v = value_.doubleValue() + step_;
-                setValue(v);
+                double v = text2value() + step_;
+                updateProperty(v);
             }
             
         });
@@ -76,9 +75,8 @@ public class ItemPropertyDoubleSpinForSWT extends Composite{
             }
 
             public void widgetSelected(SelectionEvent e) {
-                setValue(text_.getText());
-                double v = value_.doubleValue() - step_;
-                setValue(v);
+                double v = text2value() - step_;
+                updateProperty(v);
             }
             
         });
@@ -98,40 +96,40 @@ public class ItemPropertyDoubleSpinForSWT extends Composite{
             cmps[i].setEnabled(flag);
         }
     }
-    
-    public void setValue(String s) {
-        double v = 0;
-        try {
+   
+    private double text2value(){
+    	String s = text_.getText();
+    	double v = 0;
+    	try {
             v = new SEDouble(s).doubleValue();
         } catch (Exception e) {
             v = value_.doubleValue();
         }
-        
-        setValue(v);
+        return v;
     }
     
-    public void setValue(double v) {
+    public void updateProperty(double v) {
         if (isOk(v)) {
-            value_.setValue(new Double(v));
             if (item_ != null && key_ != null){
                 item_.setDbl(key_, v);
             }
         }
-        
-        text_.setText(value_.toString());
     }
     
-    public void setItem(GrxBaseItem item, String key) {
-        if (item_ != null && key_ != null)
-            item_.setProperty(key_, value_.toString());
-        item_ = item;
-        key_ = key;
+    public void setItem(GrxBaseItem item) {
+    	item_ = item;
     }
     
-    public double getValue() {
-        setValue(text_.getText());
-        return value_.doubleValue();
+    public void setKey(String key){
+    	key_ = key;
     }
     
+    public void setValue(double v){
+    	value_.setValue(new Double(v));
+    	text_.setText(value_.toString());
+    }
     
+    public double getValue(){
+    	return value_.doubleValue();
+    }
 }
