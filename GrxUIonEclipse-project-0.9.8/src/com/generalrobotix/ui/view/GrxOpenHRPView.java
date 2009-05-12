@@ -641,8 +641,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
 	    		if(currentWorld_==witem){
 	    			simParamPane_.updateItem(null);
-	    			currentWorld_ = null;
 	    			currentWorld_.deleteObserver(this);
+	    			currentWorld_ = null;
 	    		}
 	    		break;
 	    	default:
