@@ -51,6 +51,8 @@ import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxCollisionPairItem;
+import com.generalrobotix.ui.item.GrxGraphItem;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 
 @SuppressWarnings("serial")
@@ -245,6 +247,8 @@ public class GrxPropertyView extends GrxBaseView {
     private class PropertyTableCellModifier implements ICellModifier {
 
         public boolean canModify(Object element, String property) {
+        	if(currentPlugin_ instanceof GrxGraphItem || currentPlugin_ instanceof GrxCollisionPairItem )
+        		return false;
             return property.equals(clmName_[1]);
         }
 

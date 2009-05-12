@@ -66,6 +66,7 @@ public class SimulationParameterPanel extends Composite{
     //label.setBounds(12, 12 + 36, 130, 24);
     
     spinTotalTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,MIN_TIME_STEP, Double.POSITIVE_INFINITY, 0.1);
+    spinTotalTime_.setKey("totalTime");
     //spinTotalTime_.setBounds(12 + 130 + 6, 12 + 36, 100, 24);
 
     label = new Label(this,SWT.SHADOW_NONE);
@@ -76,6 +77,7 @@ public class SimulationParameterPanel extends Composite{
     //label.setBounds(12, 12 + 36 + 36, 130, 24);
     
     spinStepTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,MIN_TIME_STEP, 0.1, 0.001);
+    spinStepTime_.setKey("timeStep");
     //spinStepTime_.setBounds(12 + 130 + 6, 12 + 36 + 36, 100, 24);
     
     label = new Label(this,SWT.SHADOW_NONE);
@@ -86,6 +88,7 @@ public class SimulationParameterPanel extends Composite{
     //label.setBounds(12, 12 + 36 + 36 + 36, 130, 24);
 
     spinLogStepTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,0.00001, 0.1, 0.001);
+    spinLogStepTime_.setKey("logTimeStep");
     //spinLogStepTime_.setBounds(12 + 130 + 6, 12 + 36 + 36 + 36, 100, 24);
     
     label = new Label(this,SWT.SHADOW_NONE);
@@ -129,6 +132,7 @@ public class SimulationParameterPanel extends Composite{
     //label.setBounds(12, 12 + 36 + 36 + 36 + 36 + 36, 130, 24);
 
     spinGravity_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,0, Double.POSITIVE_INFINITY, 0.1);
+    spinGravity_.setKey("gravity");
     spinGravity_.setBounds(12 + 130 + 6, 12 + 36 + 36 + 36 + 36 + 36, 100, 24);
 
     chkIntegrate_ = new Button(this,SWT.CHECK);
@@ -240,10 +244,10 @@ public class SimulationParameterPanel extends Composite{
   public void updateItem(GrxBaseItem item) {
       setEnabled(item != null);
       currentItem_ = item;
-      spinTotalTime_.setItem(item, "totalTime");
-      spinStepTime_.setItem(item, "timeStep");
-  	  spinLogStepTime_.setItem(item, "logTimeStep");
-  	  spinGravity_.setItem(item, "gravity");
+      spinTotalTime_.setItem(item);
+      spinStepTime_.setItem(item);
+  	  spinLogStepTime_.setItem(item);
+  	  spinGravity_.setItem(item);
 	  
 	  if (item != null) { 
 		  setTotalTime(item.getDbl("totalTime", 20.0));

@@ -58,6 +58,7 @@ import org.omg.CosNaming.NamingContext;
 import RTC.ExtTrigExecutionContextService;
 
 import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -591,6 +592,8 @@ public class GrxOpenHRPView extends GrxBaseView {
         
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
 		simParamPane_.updateItem(currentWorld_);
+		if(currentWorld_!=null)
+			currentWorld_.addObserver(this);
 		currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
 		controllerPane_.updateRobots(currentModels_);
 		currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
@@ -628,13 +631,19 @@ public class GrxOpenHRPView extends GrxBaseView {
 			GrxWorldStateItem witem = (GrxWorldStateItem) item;
 	    	switch(event){
 	    	case GrxPluginManager.SELECTED_ITEM:
-	    		simParamPane_.updateItem(witem);
-	    		currentWorld_ = witem;
+	    		if(currentWorld_!=witem){
+	    			simParamPane_.updateItem(witem);
+	    			currentWorld_ = witem;
+	    			currentWorld_.addObserver(this);
+	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		simParamPane_.updateItem(null);
-	    		currentWorld_ = null;
+	    		if(currentWorld_==witem){
+	    			simParamPane_.updateItem(null);
+	    			currentWorld_ = null;
+	    			currentWorld_.deleteObserver(this);
+	    		}
 	    		break;
 	    	default:
 	    		break;
@@ -685,6 +694,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 	}
 	
+	public void update(GrxBasePlugin plugin, Object... arg) {
+		if(currentWorld_!=plugin) return;
+    	if((String)arg[0]=="PropertyChange")
+    		simParamPane_.updateItem(currentWorld_);	
+    	return;
+    }
+	
 	public void shutdown() {
 		if (currentDynamics_ != null) {
 			try {
@@ -694,6 +710,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 			}
 			currentDynamics_ = null;
 		}
+		
+		if(currentWorld_!=null)
+    		currentWorld_.deleteObserver(this);
 		
 		manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
 		manager_.removeItemChangeListener(this, GrxModelItem.class);
