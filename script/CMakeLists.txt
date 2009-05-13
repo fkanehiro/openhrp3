@@ -1,35 +1,15 @@
 
 # @author Shin'ichiro Nakaoka
 
-set(script_list
-  CollisionDetector
-  DynamicsSimulator
-  ModelLoader
-  NameServer
-  )
-
 set(grxui_script_list
   openhrp-jython-prompt
   openhrp-shutdown-servers
   )
 
-if(UNIX)
-  set(subbin unix)
-elseif(WIN32)
-  set(subbin dos)
-endif()
-
 macro(create_bootscripts DESTINATION DO_INSTALL)
   
   # This is needed. CMake's bug ?
   set(DO_INSTALL ${DO_INSTALL})
-
-  foreach(script ${script_list} )
-    configure_file(${script}.${SH_SFX}.in ${DESTINATION}/${subbin}/${script}.${SH_SFX} @ONLY)
-    if(DO_INSTALL)
-	  install(PROGRAMS ${DESTINATION}/${subbin}/${script}.${SH_SFX} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/${subbin})
-    endif()
-  endforeach()
 
   foreach(script ${grxui_script_list} )
     
@@ -51,7 +31,7 @@ set(OPENHRP_CONFDIR_NAME .OpenHRP-${OpenHRP_MAJOR_VERSION}.${OpenHRP_MINOR_VERSI
 set(GRXUI_JAVAVM ${JAVAVM})
 set(GRXUI_JYTHON_HOME ${JYTHON_HOME})
 set(GRXUI_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}")
-set(GRXUI_ADDITIONAL_PATH ${OPENHRPHOME}/bin${CPSEP}${OPENHRPHOME}/bin/${subbin})
+set(GRXUI_ADDITIONAL_PATH ${OPENHRPHOME}/bin)
 set(GRXUI_CLASSPATH ${PROJECT_BINARY_DIR}/java/grxui.jar${CPSEP}${PROJECT_BINARY_DIR}/java/openhrpstubskel.jar${CPSEP}${CLASSPATH})
 
 # TODO: set a full path if the program is not in the PATH
