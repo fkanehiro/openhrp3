@@ -1,8 +1,0 @@
-set NAMESERV="@OMNINAMES@" -start @NS_PORT@ -logdir "%TEMP%"
-
-del "%TEMP%"\omninames-*.*
-
-%NAMESERV% > "%TEMP%\NameService.log"
-
-
-

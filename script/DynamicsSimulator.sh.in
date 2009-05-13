@@ -1,2 +1,0 @@
-#!/bin/sh
-@OPENHRPHOME@/bin/openhrp-aist-dynamics-simulator -ORBInitRef NameService=corbaloc:iiop:@NS_HOST@:@NS_PORT@/NameService
