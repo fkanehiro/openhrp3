@@ -468,6 +468,8 @@ public class LogManager {
      * 書き込みとしてオープンしたファイルをクローズする
      */
     public double closeAsWrite() throws IOException {
+    	if(writeFile_ == null) 
+    		return 0;
         for (
             Enumeration elements = header_.elements();
             elements.hasMoreElements();
@@ -539,6 +541,8 @@ public class LogManager {
     }
 
     public void closeCollisionLogAsWrite() throws IOException {
+    	if(collisionOut_==null)
+    		return;
         collisionOut_.close();
 
         // recordSize_を書き込む
@@ -752,7 +756,7 @@ public class LogManager {
              
                 byte[] buffer = new byte[1024 * 1024];
 
-                ZipEntry zipEntry = new ZipEntry(COLLISION_LOG);
+                ZipEntry zipEntry = new ZipEntry(new File(COLLISION_LOG).getPath());
                 zip.putNextEntry(zipEntry);
              
                 long leftSize = collisionFile.length();
@@ -817,7 +821,7 @@ public class LogManager {
 
                 DataInputStream in;
 
-                if (entry.equals(new File(COLLISION_LOG).getPath())) {
+                if (entry.contains(new File(COLLISION_LOG).getName())) {
                     try {
                         in = new DataInputStream(new FileInputStream(entry));
                         collisionLog_ = new CollisionLogHeader();

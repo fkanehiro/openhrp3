@@ -270,7 +270,8 @@ public class GrxLoggerView extends GrxBaseView {
 		if(currentItem_!=null){
 			_setTimeSeriesItem(currentItem_);
 			currentItem_.addObserver(this);
-		}
+		}else
+			_setTimeSeriesItem(null);
 		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
 		
 	}
@@ -368,10 +369,16 @@ public class GrxLoggerView extends GrxBaseView {
 	private void _setTimeSeriesItem(GrxWorldStateItem item){
 		current_ = 0;
 		sliderTime_.setSelection(0);
-		if (currentItem_ != null){
-			_updateTimeField();
-			sliderTime_.setMaximum(currentItem_.getLogSize());
-			setEnabled(true);
+		if (item != null){
+			_updateTimeField(item);
+			int size = item.getLogSize();
+			if(size > 0){
+				sliderTime_.setMaximum(item.getLogSize());
+				setEnabled(true);
+			}else{
+				sliderTime_.setMaximum(1);
+				setEnabled(false);
+			}
 		}else{
 			sliderTime_.setMaximum(1);
 			setEnabled(false);
@@ -406,12 +413,12 @@ public class GrxLoggerView extends GrxBaseView {
 	/**
 	 * update time field
 	 */
-	private void _updateTimeField() {
-		Double t = currentItem_.getTime();
+	private void _updateTimeField(GrxWorldStateItem item) {
+		Double t = item.getTime();
 		if (t != null) {
 			tFldTime_.setText(String.format(timeFormat, t));
 			setEnabled(true);
-		} else if (currentItem_.getLogSize() == 0){
+		} else if (item.getLogSize() == 0){
 			tFldTime_.setText("NO DATA");
 			setEnabled(false);
 		}
@@ -438,13 +445,13 @@ public class GrxLoggerView extends GrxBaseView {
 		if((String)arg[0]=="PositionChange"){
 			int pos = ((Integer)arg[1]).intValue();
 			int logSize = currentItem_.getLogSize();
-			if (current_ == pos || pos < 0 || logSize < pos){
+			if ( pos < 0 || logSize < pos){
 				return;
 			}
 			current_ = pos;
 			sliderTime_.setMaximum(logSize-1);
 			sliderTime_.setSelection(pos);
-			_updateTimeField();
+			_updateTimeField(currentItem_);
 		}else if((String)arg[0]=="StartSimulation"){
 			lblPlayRate_.setText("Live");
 			if((Boolean)arg[1])
@@ -452,6 +459,8 @@ public class GrxLoggerView extends GrxBaseView {
 		}else if((String)arg[0]=="StopSimulation"){
 			lblPlayRate_.setText("Pause");
 			enableControl();
+		}else if((String)arg[0]=="ClearLog"){
+			_setTimeSeriesItem(currentItem_);
 		}
 	}
 
