@@ -19,13 +19,24 @@
 package com.generalrobotix.ui.item;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.vecmath.Matrix3d;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import jp.go.aist.hrp.simulator.*;
 
@@ -57,19 +68,19 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	private boolean storeAllPos_ = true;
 	
 	private Action save_ = new Action(){
-        public String getText(){ return "save"; }
+        public String getText(){ return "save log"; }
 		public void run(){
 			saveLog();
 		}
 	};
 	private Action saveCSV_ = new Action(){
-        public String getText(){ return "saveAsCSV"; }
+        public String getText(){ return "save log AsCSV"; }
         public void run(){
             saveCSV();
 		}
 	};
 	private Action clear_ = new Action(){
-        public String getText(){ return "clear"; }
+        public String getText(){ return "clear log"; }
 		public void run(){
 			if( MessageDialog.openQuestion( null, "Clear Log", "Are you sure to clear log ?" ) )
 				clearLog();
@@ -91,11 +102,17 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		tempDir_ = tempDirBase_+getName();
     	
     	Action load = new Action(){
-            public String getText(){ return "load"; }
+            public String getText(){ return "load log"; }
     		public void run(){
-    			loadLog(null);
+    			IWorkbench workbench = PlatformUI.getWorkbench();
+    	        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+    	        FileDialog fdlg = new FileDialog(window.getShell(), SWT.OPEN);
+    	        fdlg.setFilterExtensions(new String[]{"*.log"});
+    	        final String fPath = fdlg.open();
+    			loadLog(new File(fPath));
     		}
     	};
+    	
 		setMenuItem(save_);
 		setMenuItem(load);
 		setMenuItem(saveCSV_);
@@ -107,9 +124,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		logger_.init();
 	}
 	
-	public static String[] getStaticMenu() {
-		return new String[]{"create", "load"};
-	}
+	//public static String[] getStaticMenu() {
+//		return new String[]{"create", "load"};
+	//}
 
 	public boolean create() {
         clearLog();
@@ -157,6 +174,12 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		lastCharName_ = null;
 		save_.setEnabled(false);
 		saveCSV_.setEnabled(false);
+		clear_.setEnabled(false);
+		syncExec(new Runnable(){
+        	public void run(){
+        		notifyObservers("ClearLog");
+        	}
+        });
 	}
 	
 	public void registerCharacter(String cname, BodyInfo binfo) {
@@ -337,6 +360,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		initFlag_ = false;
 		save_.setEnabled(true);
 		saveCSV_.setEnabled(true);
+		clear_.setEnabled(true);
 		SimulationTime stime = new SimulationTime();
 		stime.setCurrentTime(newStat_.time);
 		stime.setStartTime(newStat_.time);
@@ -454,23 +478,29 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		return preStat_;
 	}
 	
-	private void loadLog(final File logFile) {
-        save_.setEnabled(false);
-        saveCSV_.setEnabled(false);
-        /*
-		manager_.processingWindow_.setTitle("Load worldstate log");
-		manager_.processingWindow_.setMessage("Loading log as a file:log/"+getName()+".log ...");
-		manager_.processingWindow_.setVisible(true);
-        */
-		Thread t = new Thread() {
-			public void run() {
-				_loadLog(logFile);
-				//manager_.processingWindow_.setVisible(false);
-			}
-		};
-		t.start();
+	private void loadLog(final File logFile) {  
+        try {
+	        IRunnableWithProgress op = new IRunnableWithProgress() {
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+					monitor.beginTask("Loading log as a file:"+logFile.getName(), 10);
+					_loadLog(logFile,monitor);
+					monitor.done();
+				}
+	        };
+	        IWorkbench workbench = PlatformUI.getWorkbench();
+	        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+	        new ProgressMonitorDialog(window.getShell()).run(true, true, op);
+	        save_.setEnabled(true);
+	        saveCSV_.setEnabled(true);
+	        clear_.setEnabled(true);
+        } catch (InvocationTargetException e) {
+        	e.printStackTrace();
+        } catch (InterruptedException e) {
+        	clearLog();
+        }
 	}
-	private void _loadLog(File logFile) {
+	
+	private void _loadLog(File logFile, IProgressMonitor monitor) throws InterruptedException{
 		try {
 			if (logFile == null) 
 				logFile = new File("log"+File.separator+getName()+".log");
@@ -486,12 +516,24 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             clearLog();
 			logger_.setTempDir(tempDir_);
 			logger_.load(fname, "");
+			monitor.worked(1);
+			final SimulationTime sTime = new SimulationTime();
+			logger_.getSimulationTime(sTime);
+			syncExec(new Runnable(){
+	        	public void run(){
+	        		setDbl("totalTime", sTime.getTotalTime());
+	    			setDbl("logTimeStep", sTime.getTimeStep());
+	        	}
+	        });
 			logger_.openAsRead();
 			logger_.openCollisionLogAsRead();
 			
             preStat_ = new WorldStateEx();
             Enumeration<? extends ZipEntry> e = new ZipFile(fname).entries();
             while (e.hasMoreElements()) {
+                monitor.worked(1);
+                if (monitor.isCanceled())
+                    throw new InterruptedException();
             	String entry = ((ZipEntry)e.nextElement()).getName();
             	if (entry.indexOf(".col") > 0)
             		continue;
@@ -544,66 +586,65 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             	}
             	preStat_.charList.add(cpos);
             	preStat_.charMap.put(lastCharName_, cpos);
-            }
-            
+             }
             int datLen = logger_.getRecordNum(lastCharName_);
             for (int i=0; i<datLen; i++) 
             	super.addValue(null, null);
-            
-			//Thread.sleep(manager_.getDelay()*2);
-            setPosition(0);
+            syncExec(new Runnable(){
+            	public void run(){
+            		setPosition(0);
+            	}
+            });
 		} catch (FileOpenFailException e) {
 			e.printStackTrace();
 		} catch (LogFileFormatException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} //catch (InterruptedException e) {
-		//	e.printStackTrace();
-		//}
+		} 
+		
+		
 	}
 	
 	private void saveLog() {
-        saveCSV_.setEnabled(false);
-		/*
-		manager_.processingWindow_.setTitle("Save worldstate log");
-		manager_.processingWindow_.setMessage("Saving log as log/"+getName()+".log ...");
-		manager_.processingWindow_.setVisible(true);
-		*/
-		Thread t = new Thread() {
-			public void run() {
-				try {
-					logger_.closeAsWrite();
-					logger_.closeCollisionLogAsWrite();
-					logger_.save("log"+File.separator+GrxWorldStateItem.this.getName()+".log", getName()+".prj");
-				} catch (Exception e) {
-					e.printStackTrace();
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        FileDialog fdlg = new FileDialog(window.getShell(), SWT.SAVE);
+        fdlg.setFileName(GrxWorldStateItem.this.getName()+".log");
+        fdlg.setFilterExtensions(new String[]{"*.log"});
+        final String fPath = fdlg.open();
+        if (fPath != null) {
+	 		Thread t = new Thread() {
+				public void run() {
+					try {
+						logger_.closeAsWrite();
+						logger_.closeCollisionLogAsWrite();
+						logger_.save(fPath, getName()+".prj");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
-				//manager_.processingWindow_.setVisible(false);
-			}
-		};
-		t.start();
+			};
+			t.start();
+        }
 	}
 	
 	private void saveCSV() {
-		/*
-		manager_.processingWindow_.setTitle("Save log as CSV");
-		manager_.processingWindow_.setMessage("Saving each log as log/"+getName()+"/*.csv ...");
-		manager_.processingWindow_.setVisible(true);
-		*/
+		IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        DirectoryDialog ddlg = new DirectoryDialog(window.getShell());
+        final String dir = ddlg.open();
 		Thread t = new Thread() {
 			public void run() {
 				for (int i=0; i<preStat_.charList.size(); i++) {
 					String name = preStat_.charList.get(i).characterName;
-					String fname = LOG_DIR+File.separator+
-							GrxWorldStateItem.this.getName()+File.separator+name+".csv";
+					String fname = dir+File.separator+name+".csv";
 					try {
 				  		logger_.saveCSV(fname, name);
 					} catch (FileOpenFailException e) {
 						e.printStackTrace();
 					}
 				}
-				//manager_.processingWindow_.setVisible(false);
 			}
 		};
 		t.start();
@@ -790,4 +831,14 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		}
 
 	}
+	
+	private boolean syncExec(Runnable r){
+		Display display = Display.getDefault();
+        if ( display!=null && !display.isDisposed()){
+            display.syncExec( r );
+            return true;
+        }else
+        	return false;
+	}
+	
 } 
