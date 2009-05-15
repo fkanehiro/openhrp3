@@ -161,10 +161,19 @@ public class GrxItemView extends GrxBaseView {
         updateTree();
         
         manager_.registerItemChangeListener(this, GrxBaseItem.class);
-        Map<String, GrxModelItem> map = (Map<String, GrxModelItem>) manager_.getItemMap(GrxModelItem.class);
-        Iterator<GrxModelItem> it = map.values().iterator();
-        while(it.hasNext())
-        	it.next().addObserver(this);
+   
+        GrxModeInfoItem mode = manager_.getMode();
+        Iterator<Class<? extends GrxBaseItem>> it = mode.activeItemClassList_.listIterator();
+        while (it.hasNext()){
+        	Class<? extends GrxBaseItem> local = (Class<? extends GrxBaseItem>)it.next();
+        	if ( manager_.isItemVisible( local ) ){
+        		Map<String, ?> map = (Map<String, ?>) manager_.getItemMap(local);
+        		Iterator itI = map.values().iterator();
+                while(itI.hasNext())
+                	((GrxBaseItem)itI.next()).addObserver(this);
+        	}
+        }
+        
 	}
 
 	/**
@@ -307,19 +316,16 @@ public class GrxItemView extends GrxBaseView {
     }
 	
 	public void registerItemChange(GrxBaseItem item, int event){
-		if(item instanceof GrxModelItem){
-    		GrxModelItem modelItem = (GrxModelItem) item;
-	    	switch(event){
+		switch(event){
 	    	case GrxPluginManager.ADD_ITEM:
-	    		modelItem.addObserver(this);
+	    		item.addObserver(this);
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
-	    		modelItem.deleteObserver(this);
+	    		item.deleteObserver(this);
 	    		break;
 	    	default:
 	    		break;
-	    	}
-		}
+    	}
 		updateTree();
 		if(event==GrxPluginManager.FOCUSED_ITEM){
 			List<GrxBasePlugin> l = new ArrayList<GrxBasePlugin>();
@@ -331,10 +337,18 @@ public class GrxItemView extends GrxBaseView {
 	@SuppressWarnings("unchecked")
 	public void shutdown(){
 		manager_.removeItemChangeListener(this, GrxBaseItem.class);
-		Map<String, GrxModelItem> map = (Map<String, GrxModelItem>) manager_.getItemMap(GrxModelItem.class);
-        Iterator<GrxModelItem> it = map.values().iterator();
-        while(it.hasNext())
-        	it.next().deleteObserver(this);
+		
+        GrxModeInfoItem mode = manager_.getMode();
+        Iterator<Class<? extends GrxBaseItem>> it = mode.activeItemClassList_.listIterator();
+        while (it.hasNext()){
+        	Class<? extends GrxBaseItem> local = (Class<? extends GrxBaseItem>)it.next();
+        	if ( manager_.isItemVisible( local ) ){
+        		Map<String, ?> map = (Map<String, ?>) manager_.getItemMap(local);
+        		Iterator itI = map.values().iterator();
+                while(itI.hasNext())
+                	((GrxBaseItem)itI.next()).deleteObserver(this);
+        	}
+        }
 	}
 	
 }
