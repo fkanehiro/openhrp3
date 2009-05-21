@@ -29,7 +29,7 @@
 		<item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(PROJECT_DIR)/../model/house/box.wrl">
 			<property name="isRobot" value="true"/>
 			<property name="WAIST.rotation" value="0.0 0.0 1.0 1.570796 "/>
-			<property name="WAIST.translation" value="2.18 0.55 0.89 "/>
+			<property name="WAIST.translation" value="2.18 0.55 0.895 "/>
 		</item>  
 		<item class="com.generalrobotix.ui.item.GrxModelItem" name="Robot" select="true" url="$(PROJECT_DIR)/../model/sample1.wrl">
 			<property name="isRobot" value="true"/>
