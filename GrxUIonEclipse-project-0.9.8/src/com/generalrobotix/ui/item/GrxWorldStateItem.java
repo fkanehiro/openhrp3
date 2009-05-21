@@ -489,7 +489,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	        };
 	        IWorkbench workbench = PlatformUI.getWorkbench();
 	        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-	        new ProgressMonitorDialog(window.getShell()).run(true, true, op);
+	        new ProgressMonitorDialog(window.getShell()).run(false, true, op);
 	        save_.setEnabled(true);
 	        saveCSV_.setEnabled(true);
 	        clear_.setEnabled(true);
@@ -633,6 +633,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
         DirectoryDialog ddlg = new DirectoryDialog(window.getShell());
+        ddlg.setFilterPath(java.lang.System.getenv("PROJECT_DIR"));
         final String dir = ddlg.open();
 		Thread t = new Thread() {
 			public void run() {
@@ -640,6 +641,12 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 					String name = preStat_.charList.get(i).characterName;
 					String fname = dir+File.separator+name+".csv";
 					try {
+						try {
+							logger_.closeAsWrite();
+							logger_.closeCollisionLogAsWrite();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 				  		logger_.saveCSV(fname, name);
 					} catch (FileOpenFailException e) {
 						e.printStackTrace();
