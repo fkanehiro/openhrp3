@@ -79,7 +79,7 @@ static const bool ALLOW_SUBTLE_PENETRATION_FOR_STABILITY = true;
 static const double ALLOWED_PENETRATION_DEPTH = 0.0001;
 //static const double PENETRATION_A = 500.0;
 //static const double PENETRATION_B = 80.0;
-static const double NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION = 1000.0;
+static const double NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION = 10.0;
 
 
 // test for mobile robots with wheels
@@ -1514,13 +1514,7 @@ void CFSImpl::setConstantVectorAndMuBlock()
                 if(ALLOW_SUBTLE_PENETRATION_FOR_STABILITY){
                     double extraNegativeVel;
                     double newDepth = ALLOWED_PENETRATION_DEPTH - constraint.depth;
-                    if(newDepth > 0){
-                        //extraNegativeVel = PENETRATION_B * (-exp(- PENETRATION_A * newDepth) + 1.0) / PENETRATION_A;
-                        extraNegativeVel = NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION * newDepth;
-                    } else {
-                        extraNegativeVel = 0.0;
-                    }
-                    
+                    extraNegativeVel = NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION * newDepth;
                     b(globalIndex) = an0(globalIndex) + (constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
                 } else {
                     b(globalIndex) = an0(globalIndex) + constraint.normalProjectionOfRelVelocityOn0 * dtinv;
