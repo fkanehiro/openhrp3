@@ -29,6 +29,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -65,8 +66,6 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     private List<GrxModelItem> modelList_;
     private List<GrxSensorItem> sensorList_;
     
-    private double drawnTime_ = -1;
-
     /**
      * @brief constructor
      * @param name
@@ -89,7 +88,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
         comboModelName_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         modelList_ = new ArrayList<GrxModelItem>();
         
-        comboModelName_.addSelectionListener(new SelectionAdapter(){
+        comboModelName_.addSelectionListener(new SelectionListener(){
             public void widgetSelected(SelectionEvent e) {
                 GrxModelItem item = modelList_.get(comboModelName_.getSelectionIndex());
                 if (item == null || item == currentModel_)
@@ -104,18 +103,30 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
                 		comboSensorName_.add(sensors.get(i).getName());
                 		sensorList_.add(sensors.get(i));
                 	}
-                }
+                	if(sensors.size()>0){
+                		comboSensorName_.select(0);
+                		comboSensorName_.notifyListeners(SWT.Selection, null);
+                	}
+                }else
+                	updateCanvas(null);
+                	
             }
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
         });
 
         comboSensorName_ = new Combo(northPane,SWT.READ_ONLY);
         comboSensorName_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         sensorList_ = new ArrayList<GrxSensorItem>();
         
-        comboSensorName_.addSelectionListener(new SelectionAdapter(){
+        comboSensorName_.addSelectionListener(new SelectionListener(){
         	public void widgetSelected(SelectionEvent e){
         		currentSensor_ = sensorList_.get(comboSensorName_.getSelectionIndex());
+        		if(currentWorld_!=null)
+        			updateCanvas(currentWorld_.getValue());
         	}
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
         });
         canvas_ = new Canvas(composite_,SWT.NONE);
         canvas_.addPaintListener(this);
@@ -127,11 +138,13 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
 	        Iterator<GrxModelItem> it = modelList_.iterator();
 	    	while(it.hasNext())
 	    		comboModelName_.add(it.next().getName());
+	    	comboModelName_.select(0);
+	    	comboModelName_.notifyListeners(SWT.Selection, null);
         }
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
         	currentWorld_.addObserver(this);
-        	updateCanvas();
+        	updateCanvas(currentWorld_.getValue());
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
    }
@@ -178,48 +191,55 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     public void update(GrxBasePlugin plugin, Object... arg) {
 		if(currentWorld_!=plugin) return;
 		if((String)arg[0]=="PositionChange"){
-			updateCanvas();
+			int pos = ((Integer)arg[1]).intValue();
+			WorldStateEx state = currentWorld_.getValue(pos);
+			updateCanvas(state);
 		}
 	}
     
-    private void updateCanvas(){
-    	if (currentWorld_ != null && currentWorld_.getLogSize() > 0) {
-            WorldStateEx state = currentWorld_.getValue();
-            if (state != null  && currentModel_ != null) {
-                CharacterStateEx charStat = state.get(currentModel_.getName());
-                if (charStat != null && state.time != drawnTime_) {
-                    currentSensorState_ = charStat.sensorState;
-                	canvas_.redraw();
-                	drawnTime_ = state.time;
-                }
-            }
-        }
+    private void updateCanvas( WorldStateEx state ){
+    	if (state != null  && currentModel_ != null) {
+    		CharacterStateEx charStat = state.get(currentModel_.getName());
+    		if (charStat != null ) {
+    			currentSensorState_ = charStat.sensorState;
+    			canvas_.redraw();
+    		}
+    	}else{
+    		currentSensorState_ = null;
+    		canvas_.redraw();
+    	}
     }
     
     public void registerItemChange(GrxBaseItem item, int event){
     	if(item instanceof GrxModelItem){
-    		currentModel_ = null;
-            sensorList_.clear();
-            currentSensor_ = null;
     		GrxModelItem modelItem = (GrxModelItem) item;
 	    	switch(event){
-	    	case GrxPluginManager.SELECTED_ITEM:
+	    	case GrxPluginManager.ADD_ITEM:
 	    		if(!modelList_.contains(modelItem)){
 	    			modelList_.add(modelItem);
 	    			comboModelName_.add(modelItem.getName());
+	    			if(currentModel_==null){
+	    				comboModelName_.select(0);
+	    				comboModelName_.notifyListeners(SWT.Selection, null);
+	    			}
 	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
-	    	case GrxPluginManager.NOTSELECTED_ITEM:
 	    		if(modelList_.contains(modelItem)){
 	    			modelList_.remove(modelItem);
 	    			comboModelName_.remove(modelItem.getName());
+	    			if(currentModel_==modelItem){
+	    				if(modelList_.size()>0){
+	    					comboModelName_.select(0);
+	    					comboModelName_.notifyListeners(SWT.Selection, null);
+	    				}else
+	    					currentModel_=null;
+	    			}
 	    		}
 	    		break;
 	    	default:
 	    		break;
 	    	}
-	    	canvas_.redraw();
     	}else if(item instanceof GrxWorldStateItem){
     		GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
     		switch(event){
@@ -227,6 +247,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     			if(currentWorld_!=worldStateItem){
     				currentWorld_ = worldStateItem;
     				currentWorld_.addObserver(this);
+    				updateCanvas(currentWorld_.getValue());
     			}
     			break;
     		case GrxPluginManager.REMOVE_ITEM:
@@ -234,12 +255,12 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
 	    		if(currentWorld_==worldStateItem){
 	    			currentWorld_.deleteObserver(this);
 	    			currentWorld_ = null;
+	    			updateCanvas(null);
 	    		}
 	    		break;
 	    	default:
 	    		break;
     		}
-    		canvas_.redraw();
     	}
     }
     
