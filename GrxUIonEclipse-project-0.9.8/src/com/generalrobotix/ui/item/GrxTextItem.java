@@ -27,6 +27,11 @@ import java.io.IOException;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -103,7 +108,7 @@ public class GrxTextItem extends GrxBaseItem {
 		try {
 			GrxDebugUtil.println("savefile:"+file_.getPath());
 			if (!file_.exists())
-				file_.createNewFile();
+				saveAs();
 			FileWriter fw = new FileWriter(file_);
 			fw.write(getValue());
 			fw.close();
@@ -118,24 +123,32 @@ public class GrxTextItem extends GrxBaseItem {
 	}
 	
 	public boolean saveAs() {
-		File f = chooseSaveFile();
-		if (f == null || 
-			f.isDirectory() ||
-			(f.exists() && !file_.equals(f) && 
-				//JOptionPane.showConfirmDialog( manager_.getFrame(),
-				//"Overwrite the file ?", "Save File",
-				//JOptionPane.OK_CANCEL_OPTION) == JOptionPane.CANCEL_OPTION)
-				MessageDialog.openConfirm( null, "Save File", "Overwrite the file ?") )
-			) {
-			return false;
+		IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        FileDialog fdlg = new FileDialog(window.getShell(), SWT.SAVE);
+        fdlg.setFileName(getName()+"."+getFileExtention());
+        fdlg.setFilterExtensions(new String[]{"*."+getFileExtention()});
+		final String fPath = fdlg.open();
+        if (fPath != null) {
+        	File f = new File(fPath);
+        	if( f.exists() ){
+				if( !MessageDialog.openConfirm( window.getShell(), "Save File", "Overwrite the file ?"))
+					return false;
+        	}else{
+        		try {
+					f.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+        	}
+        	String newName = f.getName().split("[.]")[0];
+    		manager_.renamePlugin(this, newName);
+            if (getName().equals(newName)) {
+    			file_ = f;
+    			setURL(f.getPath());
+    			return save();
+            }
 		}
-        String newName = f.getName().split("[.]")[0];
-		manager_.renamePlugin(this, newName);
-        if (getName().equals(newName)) {
-			file_ = f;
-			setURL(f.getPath());
-			return save();
-        }
         return false;
 	}
 	

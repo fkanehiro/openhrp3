@@ -21,6 +21,8 @@ package com.generalrobotix.ui.view;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
@@ -42,6 +44,13 @@ public class GrxTextEditorView extends GrxBaseView {
 			GrxBaseViewPart vp, Composite parent) {
 		super(name, manager_, vp, parent);
 		area_ = new Text( composite_, SWT.MULTI|SWT.V_SCROLL|SWT.BORDER );
+		
+		area_.addModifyListener(new ModifyListener(){
+			public void modifyText(ModifyEvent e) {
+				if(currentItem_!=null)
+					currentItem_.setValue(area_.getText());
+			}	
+		});
 
 		IToolBarManager toolbar = vp.getViewSite().getActionBars().getToolBarManager();
 
@@ -89,27 +98,19 @@ public class GrxTextEditorView extends GrxBaseView {
 			saveAs_.setEnabled(false);
 		}
 	}
-	
-	private void _syncCurrentItem() {
-		if (currentItem_ != null) {
-			currentItem_.setValue(area_.getText());
-			currentItem_.setCaretPosition(area_.getCaretPosition());
-		}
-	}
 
 	public void registerItemChange(GrxBaseItem item, int event){
 		GrxPythonScriptItem textItem = (GrxPythonScriptItem)item;
 		switch(event){
     	case GrxPluginManager.SELECTED_ITEM:
+    		currentItem_ = textItem;
     		setTextItem(textItem);
-			currentItem_ = textItem;
     		break;
     	case GrxPluginManager.REMOVE_ITEM:
     	case GrxPluginManager.NOTSELECTED_ITEM:
-    		_syncCurrentItem();
     		if(currentItem_ == textItem){
-	    		setTextItem(null);
 				currentItem_ = null;
+	    		setTextItem(null);
     		}
     		break;
     	default:
