@@ -530,11 +530,11 @@ public class GrxProjectItem extends GrxBaseItem {
 
 		monitor.worked(1);
 		
-		try {
-			Thread.sleep(400);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		//try {
+		//	Thread.sleep(400);
+		//} catch (InterruptedException e) {
+	    //		e.printStackTrace();
+		//}
 
 		monitor.worked(1);
 		
