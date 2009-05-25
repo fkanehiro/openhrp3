@@ -69,12 +69,14 @@ public class GrxLoggerView extends GrxBaseView {
 	private Button btnPlay_;
 	private Button btnSFwd_;
 	private Button btnFFwd_;
-	private Button[] btns_ = new Button[6];
+	private Button btnFrameF_;
+	private Button btnFrameR_;
+	private Button[] btns_ = new Button[8];
 	private Text tFldTime_;
 
 	private String[] btnToolTips = new String[] {
 			"fast-rwd x-2...","slow-rwd x -1/8 (1/2...)",
-			"pause", "play", 
+			"one step rewind", "pause", "play", "one step play", 
 			"slow-fwd x 1/8 (1/2...)", "fast-fwd x 2..."
 		};
 	private final static String iconFRwd_ = "fastrwd.png";
@@ -83,7 +85,9 @@ public class GrxLoggerView extends GrxBaseView {
 	private final static String iconPlay_ = "playback.png";
 	private final static String iconSFwd_ = "slowfwd.png";
 	private final static String iconFFwd_ = "fastfwd.png";
-	private final static String[] icons_ = { iconFRwd_, iconSRwd_, iconStop_, iconPlay_, iconSFwd_, iconFFwd_ };
+	private final static String iconFrameF_ = "frame+.png";
+	private final static String iconFrameR_ = "frame-.png";
+	private final static String[] icons_ = { iconFRwd_, iconSRwd_, iconFrameR_, iconStop_, iconPlay_, iconFrameF_, iconSFwd_, iconFFwd_ };
 
 	private Label  lblPlayRate_;
 	
@@ -116,7 +120,7 @@ public class GrxLoggerView extends GrxBaseView {
 
         // playback controller
 		Composite btnComp = new Composite ( composite_, SWT.BORDER);
-		GridLayout buttonLayout = new GridLayout(6,false);
+		GridLayout buttonLayout = new GridLayout(8,false);
 		btnComp.setLayout( buttonLayout );
 
 		btnFRwd_ = new Button( btnComp, SWT.NONE );
@@ -145,6 +149,15 @@ public class GrxLoggerView extends GrxBaseView {
             }
         });
 
+		btnFrameR_ = new Button( btnComp, SWT.NONE );
+		btnFrameR_.addSelectionListener(new SelectionAdapter(){
+            public void widgetSelected(SelectionEvent e){
+            	if (isPlaying_)
+            		pause();
+            	currentItem_.setPosition(sliderTime_.getSelection()-1);
+            }
+		});
+		
 		btnPause_ = new Button( btnComp, SWT.NONE );
 		btnPause_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
@@ -160,6 +173,15 @@ public class GrxLoggerView extends GrxBaseView {
             }
         });
 
+		btnFrameF_ = new Button( btnComp, SWT.NONE );
+		btnFrameF_.addSelectionListener(new SelectionAdapter(){
+            public void widgetSelected(SelectionEvent e){
+            	if (isPlaying_)
+            		pause();
+            	currentItem_.setPosition(sliderTime_.getSelection()+1);
+            }
+		});
+		
 		btnSFwd_ = new Button( btnComp, SWT.NONE );
 		btnSFwd_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
@@ -188,12 +210,14 @@ public class GrxLoggerView extends GrxBaseView {
 
 		btns_[0] = btnFRwd_;
 		btns_[1] = btnSRwd_; 
-		btns_[2] = btnPause_;
-		btns_[3] = btnPlay_;
-		btns_[4] = btnSFwd_;
-		btns_[5] = btnFFwd_;
+		btns_[2] = btnFrameR_;
+		btns_[3] = btnPause_;
+		btns_[4] = btnPlay_;
+		btns_[5] = btnFrameF_;
+		btns_[6] = btnSFwd_;
+		btns_[7] = btnFFwd_;
 
-		for(int i=0; i<6; i++) {
+		for(int i=0; i<8; i++) {
 			btns_[i].setImage( Activator.getDefault().getImage( icons_[i] ) );
 			btns_[i].setToolTipText( btnToolTips[i] );
 		}
@@ -232,13 +256,12 @@ public class GrxLoggerView extends GrxBaseView {
 		sliderTime_.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e) {
 				if (e.keyCode == SWT.ARROW_LEFT){
-					currentItem_.setPosition(sliderTime_.getSelection()-1);
+					currentItem_.setPosition(sliderTime_.getSelection());
 				}else if (e.keyCode == SWT.ARROW_RIGHT){
-					currentItem_.setPosition(sliderTime_.getSelection()+1);
+					currentItem_.setPosition(sliderTime_.getSelection());
 				}
 			}
 			public void keyReleased(KeyEvent e) {
-				System.out.println("keyReleased");
 			}
 		});
 		GridData gd = new GridData(SWT.HORIZONTAL|SWT.FILL);
