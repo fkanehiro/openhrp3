@@ -905,6 +905,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         if (dir != null){
             Thread t = new Thread() {
     			public void run() {
+                    LogManager temp = null;
+                    if( !useDisk_ ){                            
+                        // オンメモリデータをファイルへ
+                        temp = _restoreLogFileFromSuperLog();
+                    }
     				for (int i=0; i<preStat_.charList.size(); i++) {
     					String name = preStat_.charList.get(i).characterName;
                         String fname = dir+File.separator+name+".csv";
@@ -913,18 +918,17 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                                 logger_.saveCSV(fname, name);
                             }else{
                                 // オンメモリデータをファイルへ
-                                LogManager temp = _restoreLogFileFromSuperLog();
                                 if(temp != null){
                                     temp.saveCSV(fname, name);
-                                    if(temp != logger_){
-                                        temp.closeReads();
-                                    }
                                 }
                             }
     					} catch (FileOpenFailException e) {
     						e.printStackTrace();
     					}
     				}
+                    if(temp != null && temp != logger_){
+                        temp.closeReads();
+                    }
     			}
     		};
     		t.start();
