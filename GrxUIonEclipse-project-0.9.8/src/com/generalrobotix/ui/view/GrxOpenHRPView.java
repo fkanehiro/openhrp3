@@ -49,9 +49,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 
@@ -62,7 +59,8 @@ import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
-import com.generalrobotix.ui.grxui.Activator;
+import com.generalrobotix.ui.grxui.*;
+
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -300,6 +298,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			    		for (ControllerAttribute i: controllers_) {
 			    			i.deactive();
 			    		}
+                        currentWorld_.setLogMenus(true);
 			    		endOfSimulation();
 
 					} catch (Exception e) {
@@ -307,9 +306,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 
 						execSWT( new Runnable(){
 							public void run(){
-						        IWorkbench workbench = PlatformUI.getWorkbench();
-						        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-						        MessageDialog.openError( window.getShell(),
+						        MessageDialog.openError( GrxUIPerspectiveFactory.getCurrentShell(),
 										"Simulation Interrupted", "Simulation Interrupted by Exception.");
 							}
 						}, false );
@@ -356,9 +353,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 					isInteractive_ = false;
 					execSWT( new Runnable(){
 							public void run(){
-						        IWorkbench workbench = PlatformUI.getWorkbench();
-						        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-						        MessageDialog.openInformation(window.getShell(), "Simulation Finished", timeMsg_);
+						        MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(),
+                                        "Simulation Finished", timeMsg_);
 							}
 						} ,
 						Thread.currentThread() != simThread_
@@ -1038,15 +1034,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 		return true;
 	}	
-	
-	private boolean syncExec(Runnable r){
-		Display display = composite_.getDisplay();
-        if ( display!=null && !display.isDisposed()){
-            display.syncExec( r );
-            return true;
-        }else
-        	return false;
-	}
 	
 	private boolean asyncExec(Runnable r){
 		Display display = composite_.getDisplay();

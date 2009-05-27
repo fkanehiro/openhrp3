@@ -30,7 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
@@ -520,12 +519,4 @@ public class GrxLoggerView extends GrxBaseView {
         	currentItem_.deleteObserver(this);
 	}
     
-    private boolean syncExec(Runnable r){
-		Display display = composite_.getDisplay();
-        if ( display!=null && !display.isDisposed()){
-            display.syncExec( r );
-            return true;
-        }else
-        	return false;
-	}
 }

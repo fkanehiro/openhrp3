@@ -17,24 +17,33 @@
  */
 package com.generalrobotix.ui;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 
 /**
  * series of timed objects
  */
 public abstract class GrxTimeSeriesItem extends GrxBaseItem {
-	private Vector<TValue> log_ = new Vector<TValue>();
+	private ArrayList<TValue> log_ = new ArrayList<TValue>();
 	private int maxLogSize_ = 1000000;
 	private int currentPos_ = -1;
-	
-	private class TValue {
-		Double time;
-		Object value;
+	private boolean bRemoved = false;
+    protected int overPos_ = 0;
+    protected int changePos_ = -1;
+    
+	public class TValue {
+		private Double time;
+        private Object value;
 		TValue(Double t, Object v) {
 			time = t;
 			value = v;
 		}
+        public Double getTime(){
+            return time;
+        }
+        public Object getValue(){
+            return value;
+        }
 	}
 
 	/**
@@ -120,8 +129,10 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 	public void addValue(Double t, Object val) {
 		TValue tv = new TValue(t,val);
 		log_.add(tv);
-		if (maxLogSize_ > 0 && log_.size() > maxLogSize_)
-			log_.removeElementAt(0);
+		if (maxLogSize_ > 0 && log_.size() > maxLogSize_){
+            log_.remove(0);
+            bRemoved = true;
+        }
 	}
 	
 	/**
@@ -167,7 +178,24 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 	 */
 	public void clearLog() {
 		currentPos_ = -1;
+        overPos_ = 0;
+        changePos_ = -1;
+        bRemoved = false;
 		log_.clear();
 		System.gc();
 	}
+
+    /**
+     * get remoded top value in log_ or not
+     */
+    protected boolean isRemoved() {
+        return  bRemoved;
+    }
+    
+    /**
+     * get TValue
+     */
+    protected TValue getObject(int index) {
+        return  log_.get(index);
+    }
 }

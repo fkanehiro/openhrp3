@@ -34,6 +34,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
 @SuppressWarnings("serial")
@@ -201,9 +202,7 @@ public class GrxServerManagerPanel extends Composite {
         //ファイル名の取得
         String[] filterNames = new String[] { "すべてのファイル(*)" };
         String[] filterExtensions = new String[] { "*" };
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        FileDialog fileDlg = new FileDialog(window.getShell(), SWT.OPEN);
+        FileDialog fileDlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
 
         fileDlg.setText("");
         fileDlg.setFilterNames(filterNames);

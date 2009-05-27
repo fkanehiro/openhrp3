@@ -926,9 +926,7 @@ public class GrxPluginManager {
             }
 
             public void run() {
-                IWorkbench workbench = PlatformUI.getWorkbench();
-                IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-                FileDialog fdlg = new FileDialog(window.getShell(), SWT.OPEN);
+                FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
                 String[] fe = { pi.filter };
                 fdlg.setFilterExtensions(fe);
                 String fPath = fdlg.open();

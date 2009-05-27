@@ -20,6 +20,7 @@ package com.generalrobotix.ui.item;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.Runtime;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -31,20 +32,18 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.widgets.DirectoryDialog;
 
 import jp.go.aist.hrp.simulator.*;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.GrxTimeSeriesItem;
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.view.graph.*;
+import com.generalrobotix.ui.util.GrxCopyUtil;
 
 @SuppressWarnings("serial")
 public class GrxWorldStateItem extends GrxTimeSeriesItem {
@@ -53,30 +52,48 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	public static final String FILE_EXTENSION = "log";
 	
 	public static final double DEFAULT_TOTAL_TIME = 20.0;
-
+    private static final int MAX_RAM_BUFFER_SIZE = -1; // 無制限
+    private static final int LOAD_LOG_MODITOR_DIM = 32; // プログレスモニター用定数
+//    private static final long HEAP_MEMORY_TOLERANCE = 512*1024; //ヒープメモリサイズの許容量 
+    private static final long HEAP_MEMORY_TOLERANCE = 4*1024*1024; //ヒープメモリサイズの許容量
+    private static final String OVER_HEAP_LOG_DIR_NAME = "over"; //ヒープメモリを超えたときにログを退避させるディレクトリ
 	private static String LOG_DIR;
 	
 	private WorldStateEx newStat_ = null;
 	private WorldStateEx preStat_ = null;
 	private int prePos_ = -1;
-	
-    public  final LogManager logger_ = new LogManager();
+    
+    public  final LogManager logger_ = LogManager.getInstance();
 	private float   recDat_[][];
     private String  lastCharName_ = null;
-	private boolean initFlag_ = true;
+	private boolean initLogFlag_ = false;
 	private boolean useDisk_ = true;
 	private boolean storeAllPos_ = true;
 	
 	private Action save_ = new Action(){
         public String getText(){ return "save log"; }
 		public void run(){
-			saveLog();
+            if(isRemoved()){
+                MessageDialog.openWarning(
+                        GrxUIPerspectiveFactory.getCurrentShell(),
+                        "Warning! It is not possible to save log.",
+                        "Log data is removed.\nPlease increase the bufferSize or set useDisk to true in project file.");
+                return;
+            }
+			_saveLog();
 		}
 	};
 	private Action saveCSV_ = new Action(){
         public String getText(){ return "save log AsCSV"; }
         public void run(){
-            saveCSV();
+            if(isRemoved()){
+                MessageDialog.openWarning(
+                        GrxUIPerspectiveFactory.getCurrentShell(),
+                        "Warning! It is not possible to save log.",
+                        "Log data is removed.\nPlease increase the bufferSize or set useDisk to true in project file.");
+                return;
+            }
+            _saveCSV();
 		}
 	};
 	private Action clear_ = new Action(){
@@ -104,15 +121,12 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
     	Action load = new Action(){
             public String getText(){ return "load log"; }
     		public void run(){
-    			IWorkbench workbench = PlatformUI.getWorkbench();
-    	        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-    	        FileDialog fdlg = new FileDialog(window.getShell(), SWT.OPEN);
+    	        FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
     	        fdlg.setFilterExtensions(new String[]{"*.log"});
-    	        final String fPath = fdlg.open();
-    			loadLog(new File(fPath));
+    	        final String fPath = fdlg.open();                
+    			_loadLog(new File(fPath));
     		}
     	};
-    	
 		setMenuItem(save_);
 		setMenuItem(load);
 		setMenuItem(saveCSV_);
@@ -124,9 +138,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		logger_.init();
 	}
 	
-	//public static String[] getStaticMenu() {
+//	public static String[] getStaticMenu() {
 //		return new String[]{"create", "load"};
-	//}
+//	}
 
 	public boolean create() {
         clearLog();
@@ -134,19 +148,27 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
 
 	public boolean load(File f) {
-        loadLog(f);
+        _loadLog(f);
         return true;
     }
-	
+    
+	public void setLogMenus(boolean bAble){
+        save_.setEnabled(bAble);
+        saveCSV_.setEnabled(bAble);
+        clear_.setEnabled(bAble);
+    }
+    
 	public void restoreProperties() {
 		super.restoreProperties();
-		useDisk_ = isTrue("useDisk", true);
+		useDisk_ = isTrue("useDisk", false);
 		storeAllPos_ = isTrue("storeAllPosition", storeAllPos_);
+        int size = getInt("bufferSize", MAX_RAM_BUFFER_SIZE);
 		if (!useDisk_) {
 			GrxDebugUtil.println("GrxWorldStateItem: useDisk = false");
-			super.setMaximumLogSize(5000);
+            
+			super.setMaximumLogSize(size);
 		} else 
-			super.setMaximumLogSize(-1);
+			super.setMaximumLogSize(MAX_RAM_BUFFER_SIZE);
 	}
 	
 	public void rename(String newName) {
@@ -166,15 +188,13 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	public void clearLog() {
 		super.clearLog();
-		initFlag_ = true;
+        initLogFlag_ = false;
 		logger_.init();
 		newStat_ = null;
 		preStat_ = null;
 		prePos_ = -1;
 		lastCharName_ = null;
-		save_.setEnabled(false);
-		saveCSV_.setEnabled(false);
-		clear_.setEnabled(false);
+        setLogMenus(false);
 		syncExec(new Runnable(){
         	public void run(){
         		notifyObservers("ClearLog");
@@ -269,83 +289,122 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
 
 	public void addValue(Double t, Object obj) {
-		if (!useDisk_) {
-			super.addValue(t, obj);
-			return;
-		}
-			
-		if (obj instanceof WorldStateEx) {
-			newStat_ = (WorldStateEx) obj;
-			_initLog();
-			logger_.setTime(new Time((float)newStat_.time));
-			
-			try {
-				Collision[] cols = newStat_.collisions;
-				if (cols != null && cols.length > 0) {
-					List<CollisionPoint> cdList = new ArrayList<CollisionPoint>();
-					for (int i=0; i<cols.length; i++) {
-						for (int j=0; j<cols[i].points.length; j++) 
-							cdList.add(cols[i].points[j]);
-					}
-			        CollisionPoint[] cd = cdList.toArray(new CollisionPoint[0]);
-			        logger_.putCollisionPointData(cd);
-				}
-			} catch (IOException e) {
-				GrxDebugUtil.printErr("",e);
-			}
-			
-			for (int i=0; i < newStat_.charList.size(); i++) {
-				int k = 0;
-				recDat_[i][k++] = (float) newStat_.time;
-				CharacterStateEx cpos = newStat_.charList.get(i);
-				int len = storeAllPos_ ? cpos.position.length : 1;
-				for (int j=0; j<len; j++) {
-					for (int m=0; m<3; m++)
-						recDat_[i][k++] = (float)cpos.position[j].p[m];
-					m3d.set(cpos.position[j].R);
-					//m3d.transpose();
-					a4d.set(m3d);
-					recDat_[i][k++] = (float) a4d.x;
-					recDat_[i][k++] = (float) a4d.y;
-					recDat_[i][k++] = (float) a4d.z;
-					recDat_[i][k++] = (float) a4d.angle;
-				}
-				
-				String cname = cpos.characterName;
-				SensorState sdata = cpos.sensorState;
-				if (sdata != null) {
-					for (int j=0; j<sdata.q.length; j++) {
-						recDat_[i][k++] = (float) sdata.q[j];
-						recDat_[i][k++] = (float) sdata.u[j];
-					}
-					for (int j=0; j<sdata.force.length; j++) {
-						for (int m=0; m<sdata.force[j].length; m++) 
-							recDat_[i][k++] = (float)sdata.force[j][m];
-					}
-					for (int j=0; j<sdata.rateGyro.length; j++) {
-						for (int m=0; m<sdata.rateGyro[j].length; m++) 
-							recDat_[i][k++] = (float)sdata.rateGyro[j][m];
-					}
-					for (int j=0; j<sdata.accel.length; j++) {
-						for (int m=0; m<sdata.accel[j].length; m++) 
-							recDat_[i][k++] = (float)sdata.accel[j][m];
-					}
-					for (int j=0; j<sdata.range.length; j++) {
-						for (int m=0; m<sdata.range[j].length; m++) 
-							recDat_[i][k++] = (float)sdata.range[j][m];
-					}
-				}
-				
-				try {
-					logger_.put(cname, recDat_[i]);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			super.addValue(newStat_.time, null);
-		}
-	}
-	
+		if ( useDisk_ ) {
+            _addValueToLog(t, obj);
+        }else {
+            if(overPos_ > 0){
+                // メモリ＋ファイル記録のログのファイル記録
+                _addValueToLog(t, obj);
+                ++overPos_;
+            } else {
+                if( Runtime.getRuntime().freeMemory() < HEAP_MEMORY_TOLERANCE){
+                    //メモリからファイルへのログ保存に切替
+                    File f = new File(tempDir_);
+                    File pf = f.getParentFile();
+                    if (!pf.isDirectory()){
+                        pf.mkdir();
+                    }
+                    tempDir_ = tempDirBase_ + getName() + File.separator + OVER_HEAP_LOG_DIR_NAME;
+                    changePos_ = super.getLogSize();
+                    _addValueToLog(t, obj);
+                    ++overPos_;
+                } else {
+                    super.addValue(t, obj);
+                }
+            }
+        }
+    }
+
+    private void _addValueToLog(Double t, Object obj){
+        if (obj instanceof WorldStateEx) {
+            newStat_ = (WorldStateEx) obj;
+            _initLog();
+            _toLogFile(logger_);
+            super.addValue(newStat_.time, null);
+        }
+    }
+
+    private void _addValueToLogFromSuperLog(Double t, Object obj, LogManager temp){
+        if (obj instanceof WorldStateEx) {
+            newStat_ = (WorldStateEx) obj;
+            if(temp == logger_){
+                _initLog();
+            }
+            _toLogFile(temp);
+        }
+    }
+
+    private void _toLogFile(LogManager temp){
+        temp.setTime(new Time((float)newStat_.time));
+        
+        try {
+            Collision[] cols = newStat_.collisions;
+            if (cols != null && cols.length > 0) {
+                List<CollisionPoint> cdList = new ArrayList<CollisionPoint>();
+                for (int i=0; i < cols.length; i++) {
+                    if( cols[i].points == null){
+                        continue;
+                    }
+                    for (int j=0; j<cols[i].points.length; j++) 
+                        cdList.add(cols[i].points[j]);
+                }
+                CollisionPoint[] cd = cdList.toArray(new CollisionPoint[0]);
+                temp.putCollisionPointData(cd);
+            }
+        } catch (Exception e) {
+            GrxDebugUtil.printErr("",e);
+        }
+        
+        for (int i=0; i < newStat_.charList.size(); i++) {
+            int k = 0;
+            recDat_[i][k++] = (float) newStat_.time;
+            CharacterStateEx cpos = newStat_.charList.get(i);
+            int len = storeAllPos_ ? cpos.position.length : 1;
+            for (int j=0; j<len; j++) {
+                for (int m=0; m<3; m++)
+                    recDat_[i][k++] = (float)cpos.position[j].p[m];
+                m3d.set(cpos.position[j].R);
+                //m3d.transpose();
+                a4d.set(m3d);
+                recDat_[i][k++] = (float) a4d.x;
+                recDat_[i][k++] = (float) a4d.y;
+                recDat_[i][k++] = (float) a4d.z;
+                recDat_[i][k++] = (float) a4d.angle;
+            }
+            
+            String cname = cpos.characterName;
+            SensorState sdata = cpos.sensorState;
+            if (sdata != null) {
+                for (int j=0; j<sdata.q.length; j++) {
+                    recDat_[i][k++] = (float) sdata.q[j];
+                    recDat_[i][k++] = (float) sdata.u[j];
+                }
+                for (int j=0; j<sdata.force.length; j++) {
+                    for (int m=0; m<sdata.force[j].length; m++) 
+                        recDat_[i][k++] = (float)sdata.force[j][m];
+                }
+                for (int j=0; j<sdata.rateGyro.length; j++) {
+                    for (int m=0; m<sdata.rateGyro[j].length; m++) 
+                        recDat_[i][k++] = (float)sdata.rateGyro[j][m];
+                }
+                for (int j=0; j<sdata.accel.length; j++) {
+                    for (int m=0; m<sdata.accel[j].length; m++) 
+                        recDat_[i][k++] = (float)sdata.accel[j][m];
+                }
+                for (int j=0; j<sdata.range.length; j++) {
+                    for (int m=0; m<sdata.range[j].length; m++) 
+                        recDat_[i][k++] = (float)sdata.range[j][m];
+                }
+            }
+            
+            try {
+                temp.put(cname, recDat_[i]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
 	public void init(){
 		double val = getDbl("logTimeStep",0.001);
 		setDbl("logTimeStep",val);
@@ -354,13 +413,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
 	
 	private void _initLog() {
-		if (!initFlag_){
+		if ( initLogFlag_ ){
 			return;
 		}
-		initFlag_ = false;
-		save_.setEnabled(true);
-		saveCSV_.setEnabled(true);
-		clear_.setEnabled(true);
+        initLogFlag_ = true;
+        setLogMenus(true);
 		SimulationTime stime = new SimulationTime();
 		stime.setCurrentTime(newStat_.time);
 		stime.setStartTime(newStat_.time);
@@ -371,13 +428,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		val = getDbl("totalTime", DEFAULT_TOTAL_TIME);
 		stime.setTotalTime(val);
 
-		File f = new File(tempDir_);
-		File pf = f.getParentFile();
-		if (!pf.isDirectory())
-			pf.mkdir();
-		if (!f.isDirectory())
-			f.mkdir();
-		logger_.setTempDir(f.getPath());
+		logger_.setTempDir(tempDir_);
 		
 		logger_.initCollisionLog(stime);
 		try {
@@ -395,112 +446,138 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
 
 	public WorldStateEx getValue() {
-		if (!useDisk_)
-			return (WorldStateEx)super.getValue();
-		
-		int pos = getPosition();
-		if (pos < 0)
-			return null;
-		if (pos == getLogSize()-1 && newStat_ != null)
-			return newStat_;
-		if (pos != prePos_ && preStat_ != null)
-			getValue(pos);
-		
-		return preStat_;
+        WorldStateEx ret = null;
+        
+        int pos = getPosition();
+        if(useDisk_){
+            if (pos >= 0){
+                if (pos == getLogSize()-1 && newStat_ != null){
+                    ret = newStat_;
+                }
+                if (pos != prePos_ && preStat_ != null)
+                    ret = getValue(pos);
+            }
+        } else {
+            if( pos > changePos_ && changePos_ >= 0){
+                ret = _getValueFromLog( pos - changePos_ );
+            } else {
+                ret = (WorldStateEx)super.getValue(pos);
+            }
+        }
+		return ret;
 	}
 
 	public WorldStateEx getValue(int pos) {
-		if (pos < 0)
-			return null;
-		
-		if (!useDisk_)
-			return (WorldStateEx)super.getValue(pos);
-
-		try {        
-			preStat_.collisions = new Collision[]{new Collision()};
-	        preStat_.collisions[0].points = logger_.getCollisionPointData(pos);
-	        
-			for (int i=0; i<preStat_.charList.size(); i++) {
-				int k=0;
-				CharacterStateEx cpos = preStat_.charList.get(i);
-				float[] f = logger_.get(cpos.characterName, (long)pos);
-				preStat_.time = (double)f[k++];
-				for (int j=0; j<cpos.position.length; j++) {
-					LinkPosition lpos = cpos.position[j];
-					if (storeAllPos_ || j == 0) { 
-						for (int m=0; m<3; m++)
-							lpos.p[m] = (double)f[k++];
-						a4dg.set((double)f[k++], (double)f[k++], (double)f[k++], (double)f[k++]);
-						m3dg.set(a4dg);
-						lpos.R[0] = m3dg.m00;
-						lpos.R[1] = m3dg.m01;
-						lpos.R[2] = m3dg.m02;
-						lpos.R[3] = m3dg.m10;
-						lpos.R[4] = m3dg.m11;
-						lpos.R[5] = m3dg.m12;
-						lpos.R[6] = m3dg.m20;
-						lpos.R[7] = m3dg.m21;
-						lpos.R[8] = m3dg.m22;
-					} else {
-						lpos.p = null;  // to calculate kinema in model
-						lpos.R = null;  // to calculate kinema in model
-					}
-				}
-				
-				SensorState sdata = cpos.sensorState;
-				if (sdata != null) {
-					for (int j=0; j<sdata.q.length; j++) {
-						sdata.q[j] = (double)f[k++]; 
-						sdata.u[j] = (double)f[k++];
-					}
-					for (int j=0; j<sdata.force.length; j++) {
-						for (int m=0; m<sdata.force[j].length; m++) 
-							sdata.force[j][m] = (double)f[k++];
-					}
-					for (int j=0; j<sdata.rateGyro.length; j++) {
-						for (int m=0; m<sdata.rateGyro[j].length; m++) 
-							sdata.rateGyro[j][m] = (double)f[k++];
-					}
-					for (int j=0; j<sdata.accel.length; j++) {
-						for (int m=0; m<sdata.accel[j].length; m++) 
-							sdata.accel[j][m] = (double)f[k++];
-					}
-					for (int j=0; j<sdata.range.length; j++) {
-						for (int m=0; m<sdata.range[j].length; m++) 
-							sdata.range[j][m] = (double)f[k++];
-					}
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		prePos_ = pos;
-		return preStat_;
+        WorldStateEx ret = null;
+		if (pos >= 0){
+    		if ( useDisk_ ){
+                ret = _getValueFromLog( pos );
+            } else {
+                if( pos > changePos_ && changePos_ >= 0 ){
+                    ret = _getValueFromLog(pos - changePos_);
+                } else {
+                    ret = (WorldStateEx)super.getValue(pos);
+                }
+            }
+        }
+		return ret;
 	}
 	
-	private void loadLog(final File logFile) {  
+    private WorldStateEx _getValueFromLog(int pos){
+        try {        
+            preStat_.collisions = new Collision[]{new Collision()};
+            preStat_.collisions[0].points = logger_.getCollisionPointData(pos);
+            
+            for (int i=0; i<preStat_.charList.size(); i++) {
+                int k=0;
+                CharacterStateEx cpos = preStat_.charList.get(i);
+                float[] f = logger_.get(cpos.characterName, (long)pos);
+                preStat_.time = (double)f[k++];
+                for (int j=0; j<cpos.position.length; j++) {
+                    LinkPosition lpos = cpos.position[j];
+                    if (storeAllPos_ || j == 0) { 
+                        for (int m=0; m<3; m++)
+                            lpos.p[m] = (double)f[k++];
+                        a4dg.set((double)f[k++], (double)f[k++], (double)f[k++], (double)f[k++]);
+                        m3dg.set(a4dg);
+                        lpos.R[0] = m3dg.m00;
+                        lpos.R[1] = m3dg.m01;
+                        lpos.R[2] = m3dg.m02;
+                        lpos.R[3] = m3dg.m10;
+                        lpos.R[4] = m3dg.m11;
+                        lpos.R[5] = m3dg.m12;
+                        lpos.R[6] = m3dg.m20;
+                        lpos.R[7] = m3dg.m21;
+                        lpos.R[8] = m3dg.m22;
+                    } else {
+                        lpos.p = null;  // to calculate kinema in model
+                        lpos.R = null;  // to calculate kinema in model
+                    }
+                }
+                
+                SensorState sdata = cpos.sensorState;
+                if (sdata != null) {
+                    for (int j=0; j<sdata.q.length; j++) {
+                        sdata.q[j] = (double)f[k++]; 
+                        sdata.u[j] = (double)f[k++];
+                    }
+                    for (int j=0; j<sdata.force.length; j++) {
+                        for (int m=0; m<sdata.force[j].length; m++) 
+                            sdata.force[j][m] = (double)f[k++];
+                    }
+                    for (int j=0; j<sdata.rateGyro.length; j++) {
+                        for (int m=0; m<sdata.rateGyro[j].length; m++) 
+                            sdata.rateGyro[j][m] = (double)f[k++];
+                    }
+                    for (int j=0; j<sdata.accel.length; j++) {
+                        for (int m=0; m<sdata.accel[j].length; m++) 
+                            sdata.accel[j][m] = (double)f[k++];
+                    }
+                    for (int j=0; j<sdata.range.length; j++) {
+                        for (int m=0; m<sdata.range[j].length; m++) 
+                            sdata.range[j][m] = (double)f[k++];
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        prePos_ = pos;
+        return preStat_;
+    }
+    
+	private void _loadLog(final File logFile) {
         try {
 	        IRunnableWithProgress op = new IRunnableWithProgress() {
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					monitor.beginTask("Loading log as a file:"+logFile.getName(), 10);
+                    int size = 0;
+                    try{
+                        ZipFile local = new ZipFile(logFile);
+                        size = local.size();
+                        local.close();
+                    } catch ( IOException ex ){
+                        ex.printStackTrace();
+                        return;
+                    } catch ( Exception ex){
+                        ex.printStackTrace();
+                        return;
+                    }
+                    
+					monitor.beginTask("Loading log as a file:"+logFile.getName(), size + LOAD_LOG_MODITOR_DIM + 2);
 					_loadLog(logFile,monitor);
 					monitor.done();
 				}
 	        };
-	        IWorkbench workbench = PlatformUI.getWorkbench();
-	        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-	        new ProgressMonitorDialog(window.getShell()).run(false, true, op);
-	        save_.setEnabled(true);
-	        saveCSV_.setEnabled(true);
-	        clear_.setEnabled(true);
+	        new ProgressMonitorDialog(GrxUIPerspectiveFactory.getCurrentShell()).run(false, true, op);
+            setLogMenus(true);
         } catch (InvocationTargetException e) {
         	e.printStackTrace();
         } catch (InterruptedException e) {
         	clearLog();
         }
 	}
-	
-	private void _loadLog(File logFile, IProgressMonitor monitor) throws InterruptedException{
+    
+	private void _loadLog(File logFile, IProgressMonitor monitor ) throws InterruptedException{
 		try {
 			if (logFile == null) 
 				logFile = new File("log"+File.separator+getName()+".log");
@@ -510,12 +587,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 
             String fname = logFile.getAbsolutePath();
 
-			File dir = new File(tempDir_);
-			if (!dir.isDirectory())
-				dir.mkdir();
             clearLog();
+            tempDir_ = tempDirBase_ + getName();
 			logger_.setTempDir(tempDir_);
 			logger_.load(fname, "");
+            
 			monitor.worked(1);
 			final SimulationTime sTime = new SimulationTime();
 			logger_.getSimulationTime(sTime);
@@ -525,6 +601,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	    			setDbl("logTimeStep", sTime.getTimeStep());
 	        	}
 	        });
+            
 			logger_.openAsRead();
 			logger_.openCollisionLogAsRead();
 			
@@ -535,9 +612,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                 if (monitor.isCanceled())
                     throw new InterruptedException();
             	String entry = ((ZipEntry)e.nextElement()).getName();
-            	if (entry.indexOf(".col") > 0)
-            		continue;
-            	
+            	if (entry.indexOf(LogManager.COLLISION_LOG_NAME) > 0 ||
+            	    entry.indexOf(LogManager.COLLISION_LOG_DAT_NAME) > 0) {
+            	    continue;
+                }
+                
             	lastCharName_ = new File(entry).getName().split(".tmp")[0];
             	String[] format = logger_.getDataFormat(lastCharName_);
             	List<LinkPosition> lposList = new ArrayList<LinkPosition>();
@@ -586,30 +665,79 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             	}
             	preStat_.charList.add(cpos);
             	preStat_.charMap.put(lastCharName_, cpos);
-             }
+            }
+            
             int datLen = logger_.getRecordNum(lastCharName_);
-            for (int i=0; i<datLen; i++) 
-            	super.addValue(null, null);
+            
+            // プログレス用変数の初期化
+            int workdim[] = new int[LOAD_LOG_MODITOR_DIM];
+            int workdimCounter = 0;
+            int localLength = workdim.length;
+            
+            for( int i = 0; i < localLength; ++i){
+                workdim[i] = datLen * (i + 1) / localLength; 
+            }
+            
+            monitor.worked(1);
+
+            if( !useDisk_ ){
+                recDat_ = new float[logger_.getLogObjectNum()][];
+                for (int i=0; i<recDat_.length; i++)
+                    recDat_[i] = new float[logger_.getDataLength(preStat_.charList.get(i).characterName)];
+            }
+            
+            for (int i=0; i < datLen; i++){
+                if ( useDisk_ ) {
+                    try{
+                        super.addValue( null , null);
+                    } catch (Exception ex){
+                        ex.printStackTrace();
+                        break;
+                    }
+                } else {
+                    //メモリーに展開する場合
+                    WorldStateEx worldState = _getValueFromLog(i);
+                    
+                    if( Runtime.getRuntime().freeMemory() < HEAP_MEMORY_TOLERANCE){
+                        //ヒープメモリが足りない場合の処理
+                        _createOverLog( worldState.time,
+                                        i  == 0 ? worldState.time : getTime(0),
+                                        i, datLen - i);
+                        break;
+                    }
+                    
+                    try{
+                        super.addValue( worldState.time , worldState.clone());
+                    } catch (Exception ex){
+                        ex.printStackTrace();
+                        break;
+                    }
+                }
+                
+                //プログレスチェックと処理
+                if ( workdim[workdimCounter] < i){
+                    workdimCounter ++;
+                    monitor.worked(1);
+                }
+            }
+            
             syncExec(new Runnable(){
             	public void run(){
             		setPosition(0);
             	}
             });
-		} catch (FileOpenFailException e) {
-			e.printStackTrace();
-		} catch (LogFileFormatException e) {
-			e.printStackTrace();
+            monitor.worked(1);
+        } catch (FileOpenFailException e) {
+            e.printStackTrace();
+        } catch (LogFileFormatException e) {
+            e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-		
-		
+            e.printStackTrace();
+        }
 	}
-	
-	private void saveLog() {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        FileDialog fdlg = new FileDialog(window.getShell(), SWT.SAVE);
+
+	private void _saveLog() {
+        FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
         fdlg.setFileName(GrxWorldStateItem.this.getName()+".log");
         fdlg.setFilterExtensions(new String[]{"*.log"});
         final String fPath = fdlg.open();
@@ -617,44 +745,190 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	 		Thread t = new Thread() {
 				public void run() {
 					try {
-						logger_.closeAsWrite();
-						logger_.closeCollisionLogAsWrite();
-						logger_.save(fPath, getName()+".prj");
-					} catch (Exception e) {
-						e.printStackTrace();
+                        if( useDisk_ ){
+                            // 従来の処理
+                            logger_.closeAsWrite();
+                            logger_.closeCollisionLogAsWrite();
+                            logger_.save(fPath, getName()+".prj");
+                        } else {
+                            // オンメモリデータをファイルへ
+                            LogManager temp = _restoreLogFileFromSuperLog();
+                            if(temp != null){
+                                temp.save(fPath, getName()+".prj");
+                                if(temp != logger_){
+                                    temp.closeReads();
+                                }
+                            }
+                        }
+					} catch (IOException ex){
+                        ex.printStackTrace();
+                    } catch (Exception ex) {
+						ex.printStackTrace();
 					}
 				}
 			};
 			t.start();
         }
 	}
+    
+    private void _createOverLog(double currentTime, double startTime, int changePos, int overPos ){
+        changePos_ = changePos;
+        overPos_ = overPos;
+
+        // サブディレクトリOVER_HEAP_LOG_DIR_NAMEにuseDiskがfalseの時と同様のログを生成
+        LogManager temp = LogManager.getTempInstance();
+        if( temp == null){
+            return;
+        }
+        String overDir = tempDirBase_ + getName() + File.separator + OVER_HEAP_LOG_DIR_NAME;
+        temp.setTempDir( overDir );
+        SimulationTime stime = new SimulationTime();
+        logger_.getSimulationTime(stime);
+        stime.setStartTime(currentTime);
+        temp.initCollisionLog(stime);
+        try {
+            temp.openAsWrite(stime, 1);
+            temp.openCollisionLogAsWrite();
+            temp.separateLogs(changePos);
+            temp.closeAsWrite();
+            temp.closeCollisionLogAsWrite();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+        // loggerをOVER_HEAP_LOG_DIR_NAMEディレクトリ以下のファイルを参照するように変更
+        logger_.closeReads();
+        logger_.setTempDir(overDir);
+        try {
+            logger_.openAsRead();
+            logger_.openCollisionLogAsRead();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+        //overPos部分の時間を登録
+        for(int i = 0; i < overPos; ++i){
+            try{
+                super.addValue( (double)logger_.get(lastCharName_, i)[0], null);
+            } catch (Exception ex){
+                ex.printStackTrace();
+                break;
+            }
+        }
+    }
+    
+    private LogManager _restoreLogFileFromSuperLog() {
+        LogManager ret = null;
+        if( changePos_ < 0 ){
+            // 全てのログがメモリにある場合
+            for(int index = 0; index < getLogSize(); ++index){
+                TValue localTValue = getObject(index);
+                _addValueToLogFromSuperLog(localTValue.getTime(), localTValue.getValue(), logger_);
+            }
+            try{
+                logger_.closeAsWrite();
+                logger_.closeCollisionLogAsWrite();
+                ret = logger_;
+            } catch (IOException ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } else {
+            //全てのログがメモリにない場合
+            // 書き込みファイルストリームを全て閉じる
+            try{
+                logger_.closeAsWrite();
+                logger_.closeCollisionLogAsWrite();
+            } catch (IOException ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            
+            // サブディレクトリOVER_HEAP_LOG_DIR_NAMEの親ディレクトリにuseDiskがtrueの時と同様のログを生成
+            LogManager temp = LogManager.getTempInstance();
+            if( temp == null){
+                return ret;
+            }
+            temp.setTempDir( tempDirBase_ + getName() );
+            SimulationTime stime = new SimulationTime();
+            stime.setCurrentTime(preStat_.time);
+            stime.setStartTime( super.getTime(0) );
+            
+            double localTime = getDbl("logTimeStep",0.001);
+            stime.setTimeStep(localTime);
+                
+            localTime = getDbl("totalTime", DEFAULT_TOTAL_TIME);
+            stime.setTotalTime(localTime);
+            temp.initCollisionLog(stime);
+            try {
+                temp.openAsWrite(stime, 1);
+                temp.openAsRead();
+                temp.openCollisionLogAsWrite();
+                temp.openCollisionLogAsRead();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+            //メモリ上のログをファイルへ展開
+            for(int index = 0; index < getLogSize(); ++index){
+                TValue localTValue = getObject(index);
+                Object val = localTValue.getValue();
+                if( val != null){
+                    _addValueToLogFromSuperLog(localTValue.getTime(), val, temp);
+                    continue;
+                }
+                break;
+            }
+            
+            try{
+                // 残りのサブディレクトリOVER_HEAP_LOG_DIR_NAMEのログを結合
+                temp.jointLogs();
+                temp.setTime( new Time( stime.getCurrentTime() ) );
+                temp.closeAsWrite();
+                temp.closeCollisionLogAsWrite();
+                ret = temp;
+            } catch (IOException ex){
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        return ret;
+    }
 	
-	private void saveCSV() {
-		IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        DirectoryDialog ddlg = new DirectoryDialog(window.getShell());
+	private void _saveCSV() {
+        DirectoryDialog ddlg = new DirectoryDialog(GrxUIPerspectiveFactory.getCurrentShell());
         ddlg.setFilterPath(java.lang.System.getenv("PROJECT_DIR"));
         final String dir = ddlg.open();
-		Thread t = new Thread() {
-			public void run() {
-				for (int i=0; i<preStat_.charList.size(); i++) {
-					String name = preStat_.charList.get(i).characterName;
-					String fname = dir+File.separator+name+".csv";
-					try {
-						try {
-							logger_.closeAsWrite();
-							logger_.closeCollisionLogAsWrite();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-				  		logger_.saveCSV(fname, name);
-					} catch (FileOpenFailException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		};
-		t.start();
+        if (dir != null){
+            Thread t = new Thread() {
+    			public void run() {
+    				for (int i=0; i<preStat_.charList.size(); i++) {
+    					String name = preStat_.charList.get(i).characterName;
+                        String fname = dir+File.separator+name+".csv";
+    					try {
+                            if( useDisk_ ){                            
+                                logger_.saveCSV(fname, name);
+                            }else{
+                                // オンメモリデータをファイルへ
+                                LogManager temp = _restoreLogFileFromSuperLog();
+                                if(temp != null){
+                                    temp.saveCSV(fname, name);
+                                    if(temp != logger_){
+                                        temp.closeReads();
+                                    }
+                                }
+                            }
+    					} catch (FileOpenFailException e) {
+    						e.printStackTrace();
+    					}
+    				}
+    			}
+    		};
+    		t.start();
+        }
 	}
 	
 	public Double getTime(int pos) {
@@ -662,13 +936,13 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			return null;
 		Double t = super.getTime(pos);
 		if (t == null && lastCharName_ != null) {
-			try {
-				float[] f = logger_.get(lastCharName_, pos);
-				t = (double)f[0];
-				setTimeAt(pos, t);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+            try {
+                float[] f = logger_.get(lastCharName_, pos);
+                t = (double)f[0];
+                setTimeAt(pos, t);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 		}
 	    return t;
 	}
@@ -696,7 +970,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	public void stopSimulation(){
 		notifyObservers("StopSimulation");
 	}
-	
+    
+
 	public static class WorldStateEx {
 		public double time;
 		public Collision[] collisions;
@@ -763,6 +1038,22 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		public void setCalibState(String charName, long[] calibStat) {
 			_get(charName).calibState = calibStat;
 		}
+        
+        protected Object clone() throws CloneNotSupportedException{
+            WorldStateEx ret = new WorldStateEx();
+            ret.time = time;
+            if(collisions != null){
+                ret.collisions = new Collision[]{new Collision()};
+                ret.collisions[0].points = collisions[0].points;
+            }
+            for(CharacterStateEx    i:charList){
+                ret.charList.add((CharacterStateEx)i.clone()); 
+            }
+            for (String i:charMap.keySet()){
+                ret.charMap.put(new String(i), (CharacterStateEx)charMap.get(i).clone());
+            }
+            return ret;
+        }
 	}
 	
 	public static class CharacterStateEx {
@@ -772,6 +1063,65 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		public double[]    targetState;
 		public long[]       servoState;
 		public long[]       calibState;
+        
+        protected Object clone() throws CloneNotSupportedException{
+            CharacterStateEx ret = new CharacterStateEx();
+            ret.characterName = new String( characterName );
+            if(position != null){
+                ret.position = new LinkPosition[ position.length ];
+                for(int i = 0; i < position.length; ++i){
+                    ret.position[i] = new LinkPosition();
+                    if(position[i].p != null){
+                        ret.position[i].p = new double[position[i].p.length];
+                        GrxCopyUtil.copyDim(position[i].p, ret.position[i].p, position[i].p.length);
+                    }
+                    if(position[i].R != null){
+                        ret.position[i].R = new double[position[i].R.length];
+                        GrxCopyUtil.copyDim(position[i].R, ret.position[i].R, position[i].R.length);
+                    }
+                }
+            }
+            if(sensorState != null){
+                ret.sensorState = new SensorState();
+                if( sensorState.accel != null){
+                    ret.sensorState.accel = GrxCopyUtil.copyDoubleWDim(sensorState.accel);
+                }
+                if(sensorState.force != null){
+                    ret.sensorState.force = GrxCopyUtil.copyDoubleWDim(sensorState.force);
+                }
+                if(sensorState.range != null){
+                    ret.sensorState.range = GrxCopyUtil.copyDoubleWDim(sensorState.range);
+                }
+                if(sensorState.rateGyro != null){
+                    ret.sensorState.rateGyro = GrxCopyUtil.copyDoubleWDim(sensorState.rateGyro);
+                }
+                if(sensorState.dq != null){
+                    ret.sensorState.dq = new double[sensorState.dq.length];
+                    GrxCopyUtil.copyDim(sensorState.dq, ret.sensorState.dq, sensorState.dq.length);
+                }
+                if(sensorState.q != null){
+                    ret.sensorState.q = new double[sensorState.q.length];
+                    GrxCopyUtil.copyDim(sensorState.q, ret.sensorState.q, sensorState.q.length);
+                }
+                if(sensorState.u != null){
+                    ret.sensorState.u = new double[sensorState.u.length];
+                    GrxCopyUtil.copyDim(sensorState.u, ret.sensorState.u, sensorState.u.length);
+                }
+            }
+            if(targetState != null){
+                ret.targetState = new double[targetState.length];
+                GrxCopyUtil.copyDim(targetState, ret.targetState, targetState.length);
+            }
+            if(servoState != null){
+                ret.servoState = new long[servoState.length];
+                GrxCopyUtil.copyDim(servoState, ret.servoState, servoState.length);
+            }
+            if(calibState != null){
+                ret.calibState = new long[calibState.length];
+                GrxCopyUtil.copyDim(calibState, ret.calibState, calibState.length);
+            }
+            return ret;
+        }
 	}
 	
 	private static class SensorInfoLocal implements Comparable {
@@ -838,14 +1188,4 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		}
 
 	}
-	
-	private boolean syncExec(Runnable r){
-		Display display = Display.getDefault();
-        if ( display!=null && !display.isDisposed()){
-            display.syncExec( r );
-            return true;
-        }else
-        	return false;
-	}
-	
 } 
