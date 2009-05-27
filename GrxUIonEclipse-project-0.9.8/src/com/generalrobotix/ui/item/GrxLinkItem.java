@@ -47,6 +47,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.generalrobotix.ui.util.AxisAngle4d;
@@ -749,9 +750,7 @@ public class GrxLinkItem extends GrxTransformItem{
 				return "add shape from VRML97";
 			}
 			public void run(){
-				IWorkbench workbench = PlatformUI.getWorkbench();
-				IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-				FileDialog fdlg = new FileDialog( window.getShell(), SWT.OPEN);
+				FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
 				String fPath = fdlg.open();
 				System.out.println("fPath = "+fPath);
 				if( fPath != null ) {

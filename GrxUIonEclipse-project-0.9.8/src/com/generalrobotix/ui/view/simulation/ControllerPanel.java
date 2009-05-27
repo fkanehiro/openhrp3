@@ -47,6 +47,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -295,9 +296,7 @@ public class ControllerPanel extends Composite{
 				}
 
 				public void widgetSelected(SelectionEvent e) {
-					IWorkbench workbench = PlatformUI.getWorkbench();
-			        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-					DirectoryDialog ddlg = new DirectoryDialog( window.getShell() );
+					DirectoryDialog ddlg = new DirectoryDialog( GrxUIPerspectiveFactory.getCurrentShell() );
 					String fPath = ddlg.open();
 					if( fPath != null ) {
 						tfSetupDirectory_.setText(fPath);
@@ -320,9 +319,7 @@ public class ControllerPanel extends Composite{
 				}
 
 				public void widgetSelected(SelectionEvent e) {
-					IWorkbench workbench = PlatformUI.getWorkbench();
-			        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-					FileDialog fdlg = new FileDialog( window.getShell(), SWT.OPEN );
+					FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN );
 					fdlg.setFilterPath(tfSetupDirectory_.getText());
 					String fPath = fdlg.open();
 					if( fPath != null ) {

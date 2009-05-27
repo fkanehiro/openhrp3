@@ -3,6 +3,11 @@ package com.generalrobotix.ui.grxui;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.widgets.Shell;
 
 public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
 
@@ -22,6 +27,23 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
             "com.generalrobotix.ui.view.GrxOpenHRPViewPart",
             "com.generalrobotix.ui.view.GrxTextEditorViewPart" };
 
+    
+    public static Shell getCurrentShell(){
+        Shell   ret = null;
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        if( workbench != null){
+            for( IWorkbenchWindow window : workbench.getWorkbenchWindows() ){
+                for(IWorkbenchPage page:window.getPages()){
+                    if ( page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID) ){
+                        ret = window.getShell();
+                        break;
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+    
     public GrxUIPerspectiveFactory() {
         System.out.println("INIT GrxUIPerspectiveFactory");
     }

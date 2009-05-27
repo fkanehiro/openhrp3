@@ -42,6 +42,7 @@ import jp.go.aist.hrp.simulator.SensorInfo;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraParameter;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraType;
 
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
@@ -143,9 +144,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 				return "add shape from VRML97";
 			}
 			public void run(){
-				IWorkbench workbench = PlatformUI.getWorkbench();
-				IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-				FileDialog fdlg = new FileDialog( window.getShell(), SWT.OPEN);
+				FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
 				String fPath = fdlg.open();
 				System.out.println("fPath = "+fPath);
 				addShape(fPath);

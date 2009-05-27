@@ -48,6 +48,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.view.GrxOpenHRPView;
 import com.generalrobotix.ui.util.GrxConfigBundle;
@@ -337,9 +338,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		File initialFile = new File(path);
 
-		IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		FileDialog fdlg = new FileDialog( window.getShell(), SWT.SAVE);
+		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
 		String[] exts = { "*.xml" }, extNames={"GrxUI Project"};
 		fdlg.setFilterExtensions( exts );
 		fdlg.setFilterNames( extNames );
@@ -388,9 +387,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 		
 		
-		IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		FileDialog fdlg = new FileDialog( window.getShell(), SWT.OPEN);
+		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
 		String[] fe = { "*.xml" };
 		fdlg.setFilterExtensions( fe );
 		if( filterPath != null )

@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.util.AxisAngle4d;
@@ -233,9 +234,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	 * @brief save this model as a VRML file
 	 */
 	private void _saveAs(){
-		IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		FileDialog fdlg = new FileDialog( window.getShell(), SWT.SAVE);
+		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
 		String fPath = fdlg.open();
 		if( fPath != null ) {
 			fPath = fPath.replace('\\','/');

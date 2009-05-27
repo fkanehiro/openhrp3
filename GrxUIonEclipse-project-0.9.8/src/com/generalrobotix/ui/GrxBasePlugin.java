@@ -29,6 +29,7 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -306,6 +307,20 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		menuPath_ = path;
 	}
 
+    /**
+     * @brief Transfer SWT UI thread
+     * @param r Runnable instance
+     * @return boolean Syncable current display
+     */
+    protected boolean syncExec(Runnable r) {
+        Display display = Display.getDefault();
+        if (display != null && !display.isDisposed()) {
+            display.syncExec(r);
+            return true;
+        } else
+        return false;
+    }
+    
 	/**
 	 * @brief get menu path
 	 * @return menu path

@@ -1825,13 +1825,5 @@ public class Grx3DView
     	if(currentWorld_!=null)
     		currentWorld_.deleteObserver(this);
 	}
-    
-    private boolean syncExec(Runnable r){
-		Display display = comp.getDisplay();
-        if ( display!=null && !display.isDisposed()){
-            display.syncExec( r );
-            return true;
-        }else
-        	return false;
-	}
+
 }
