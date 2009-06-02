@@ -277,7 +277,11 @@ bool JointPath::calcInverseKinematics
 	Link* baseLink = LinkPath::rootLink();
 	baseLink->p = base_p;
 	baseLink->R = base_R;
-	calcForwardKinematics();
+
+	if(!hasAnalyticalIK()){
+		calcForwardKinematics();
+	}
+	
 	return calcInverseKinematics(end_p, end_R);
 }
 
