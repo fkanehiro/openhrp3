@@ -78,6 +78,10 @@ namespace hrp {
 		inline Link* joint(int index) const {
 			return joints[index];
 		}
+
+		inline Link* endJoint() const {
+			return joints.back();
+		}
 		
 		inline bool isJointDownward(int index) const {
 			return (index >= numUpwardJointConnections);
