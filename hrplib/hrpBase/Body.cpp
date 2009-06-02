@@ -1,4 +1,3 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -8,9 +7,10 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  * General Robotix Inc. 
  */
+
 /** \file
 	\brief The implementation of the body class 
-	\author S.NAKAOKA
+	\author Shin'ichiro Nakaoka
 */
 
 #include "Body.h"
@@ -22,7 +22,6 @@
 
 #include <map>
 #include <cstdlib>
-
 
 using namespace hrp;
 using namespace tvmet;
@@ -42,17 +41,11 @@ namespace hrp {
 	{
 		Body* body;
 		int ikTypeId;
-		
 		virtual void onJointPathUpdated();
-		
 	public:
-		
 		CustomizedJointPath(Body* body, Link* baseLink, Link* targetLink);
 		virtual ~CustomizedJointPath();
-		//virtual bool moveLinkTo(const vector3& p, const matrix33& R);
-		virtual bool calcInverseKinematics(const vector3& from_p, const matrix33& from_R, const vector3& to_p, const matrix33& to_R);
-		virtual bool calcInverseKinematics(const vector3& to_p, const matrix33& to_R);
-
+		virtual bool calcInverseKinematics(const vector3& end_p, const matrix33& end_R);
 		virtual bool hasAnalyticalIK();
 	};
 }
@@ -678,7 +671,6 @@ static BodyInterface bodyInterfaceEntity = {
 BodyInterface* Body::bodyInterface = &bodyInterfaceEntity;
 
 
-
 CustomizedJointPath::CustomizedJointPath(Body* body, Link* baseLink, Link* targetLink) :
 	JointPath(baseLink, targetLink),
 	body(body)
@@ -699,26 +691,14 @@ void CustomizedJointPath::onJointPathUpdated()
 		(body->customizerHandle, LinkPath::rootLink()->index, LinkPath::endLink()->index);
 }
 
-bool CustomizedJointPath::calcInverseKinematics
-(const vector3& from_p, const matrix33& from_R, const vector3& to_p, const matrix33& to_R)
-{
-	Link* baseLink = LinkPath::rootLink();
-	baseLink->p = from_p;
-	baseLink->R = from_R;
-	if(ikTypeId == 0){
-		calcForwardKinematics();
-	}
-	return calcInverseKinematics(to_p, to_R);
-}
 
-//bool CustomizedJointPath::moveLinkTo(const vector3& p, const matrix33& R0)
-bool CustomizedJointPath::calcInverseKinematics(const vector3& to_p, const matrix33& to_R0)
+bool CustomizedJointPath::calcInverseKinematics(const vector3& end_p, const matrix33& end_R0)
 {
 	bool solved;
 	
 	if(ikTypeId == 0 || isBestEffortIKMode){
 
-		solved = JointPath::calcInverseKinematics(to_p, to_R0);
+		solved = JointPath::calcInverseKinematics(end_p, end_R0);
 
 	} else {
 
@@ -730,9 +710,9 @@ bool CustomizedJointPath::calcInverseKinematics(const vector3& to_p, const matri
 
 		Link* targetLink = LinkPath::endLink();
 		Link* baseLink   = LinkPath::rootLink();
-		matrix33 to_R(to_R0 * trans(targetLink->Rs));
-		vector3 p_relative(trans(baseLink->R) * vector3(to_p - baseLink->p));
-		matrix33 R_relative(trans(baseLink->R) * to_R);
+		matrix33 end_R(end_R0 * trans(targetLink->Rs));
+		vector3 p_relative(trans(baseLink->R) * vector3(end_p - baseLink->p));
+		matrix33 R_relative(trans(baseLink->R) * end_R);
 
 		solved = body->customizerInterface->
 			calcAnalyticIk(body->customizerHandle, ikTypeId, p_relative, R_relative);
@@ -741,8 +721,8 @@ bool CustomizedJointPath::calcInverseKinematics(const vector3& to_p, const matri
 
 			calcForwardKinematics();
 
-			vector3 dp(to_p - targetLink->p);
-			vector3 omega(omegaFromRot(matrix33(trans(targetLink->R) * to_R)));
+			vector3 dp(end_p - targetLink->p);
+			vector3 omega(omegaFromRot(matrix33(trans(targetLink->R) * end_R)));
 			
 			double errsqr = dot(dp, dp) + dot(omega, omega);
 			

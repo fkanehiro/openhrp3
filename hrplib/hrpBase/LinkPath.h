@@ -94,16 +94,15 @@ namespace hrp {
 			calcJacobian(J);
 			return J;
 		}
-		
-		void setMaxIKError(double e);
-		void setBestEffortIKMode(bool on);
-		
-		virtual bool calcInverseKinematics
-		(const vector3& base_p, const matrix33& base_R, const vector3& end_p, const matrix33& end_R);
-		
-		virtual bool calcInverseKinematics(const vector3& end_p, const matrix33& end_R);
 
+		// InverseKinematics Interface
+		virtual void setMaxIKError(double e);
+		virtual void setBestEffortIKMode(bool on);
+		virtual bool calcInverseKinematics(const vector3& end_p, const matrix33& end_R);
 		virtual bool hasAnalyticalIK();
+
+		bool calcInverseKinematics(
+			const vector3& base_p, const matrix33& base_R, const vector3& end_p, const matrix33& end_R);
 		
 		/**
 		   @deprecated use operator<<
