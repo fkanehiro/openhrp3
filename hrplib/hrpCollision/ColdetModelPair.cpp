@@ -148,8 +148,8 @@ collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllCon
     double theta = asin((dTop - dBottom)/height);
     double rcosth = radius*cos(theta);
 
-    if (rcosth >= dTop) cdContactsCount++;
-    if (rcosth >= dBottom) cdContactsCount++;
+    if (rcosth >= dTop) cdContactsCount+=2;
+    if (rcosth >= dBottom) cdContactsCount+=2;
 
     if (cdContactsCount){
         collision_data *cdata = new collision_data[cdContactsCount];
@@ -171,6 +171,7 @@ collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllCon
         }
         IceMaths::Point vBottomTop = pTop - pBottom;
         IceMaths::Point v = vBottomTop^n;
+        v.Normalize();
         IceMaths::Point w = v^n;
         w.Normalize();
 
@@ -178,18 +179,32 @@ collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllCon
         if (rcosth >= dBottom){ // bottom disc collides
             double depth = rcosth - dBottom;
             IceMaths::Point iPoint = pBottom - dBottom*n - dBottom*tan(theta)*w;
-            cdata[index].i_points[0][0] = iPoint.x;
-            cdata[index].i_points[0][1] = iPoint.y;
-            cdata[index].i_points[0][2] = iPoint.z;
+            double x = dBottom/cos(theta);
+            IceMaths::Point dv = sqrt(radius*radius - x*x)*v;
+            cdata[index].i_points[0][0] = iPoint.x + dv.x;
+            cdata[index].i_points[0][1] = iPoint.y + dv.y;
+            cdata[index].i_points[0][2] = iPoint.z + dv.z;
+            cdata[index].depth = depth;
+            index++;
+            cdata[index].i_points[0][0] = iPoint.x - dv.x;
+            cdata[index].i_points[0][1] = iPoint.y - dv.y;
+            cdata[index].i_points[0][2] = iPoint.z - dv.z;
             cdata[index].depth = depth;
             index++;
         }
         if (rcosth >= dTop){ // top disc collides
             double depth = rcosth - dTop;
             IceMaths::Point iPoint = pTop - dTop*n - dTop*tan(theta)*w;
-            cdata[index].i_points[0][0] = iPoint.x;
-            cdata[index].i_points[0][1] = iPoint.y;
-            cdata[index].i_points[0][2] = iPoint.z;
+            double x = dTop/cos(theta);
+            IceMaths::Point dv = sqrt(radius*radius - x*x)*v;
+            cdata[index].i_points[0][0] = iPoint.x + dv.x;
+            cdata[index].i_points[0][1] = iPoint.y + dv.y;
+            cdata[index].i_points[0][2] = iPoint.z + dv.z;
+            cdata[index].depth = depth;
+            index++;
+            cdata[index].i_points[0][0] = iPoint.x - dv.x;
+            cdata[index].i_points[0][1] = iPoint.y - dv.y;
+            cdata[index].i_points[0][2] = iPoint.z - dv.z;
             cdata[index].depth = depth;
             index++;
         }
