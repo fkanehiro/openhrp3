@@ -301,15 +301,24 @@ CORBA::Double CollisionDetector_impl::queryDistanceWithRay
  const DblArray3 dir
  )
 {
-    CORBA::Double D, minD=-1;
+    CORBA::Double D, minD=0;
     StringToColdetBodyMap::iterator it = nameToColdetBodyMap.begin();
     for (; it!=nameToColdetBodyMap.end(); it++){
+#if 0
+        std::cout << it->first << std::endl;
+#endif
         ColdetBodyPtr body = it->second;
         for (unsigned int i=0; i<body->numLinks(); i++){
             D = body->linkColdetModel(i)->computeDistanceWithRay(point, dir);
-            if (minD < 0 || (D != 0 && D < minD)) minD = D;
+            if ((minD==0&&D>0)||(minD>0&&D>0&&minD>D)) minD = D;
+#if 0
+	    std::cout << "D = " << D << std::endl;
+#endif
         }
     }
+#if 0
+	    std::cout << "minD = " << minD << std::endl;
+#endif
     return minD;
 }
 
@@ -328,6 +337,10 @@ DblSequence* CollisionDetector_impl::scanDistanceWithRay(const DblArray3 p, cons
         dir[1] = R[3]*local[0]+R[4]*local[1]+R[5]*local[2]; 
         dir[2] = R[6]*local[0]+R[7]*local[1]+R[8]*local[2]; 
         (*distances)[i+scan_half] = queryDistanceWithRay(p, dir); 
+#if 0
+	printf("angle = %8.3f, distance = %8.3f\n", a, (*distances)[i+scan_half]);
+	fflush(stdout);
+#endif
     }
     return distances;
 }
