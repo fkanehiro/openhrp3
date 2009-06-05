@@ -48,7 +48,6 @@ public class Activator extends AbstractUIPlugin{
 
         private IWorkbench      workbench_                  = null;
         private BundleContext   context_                    = null;
-        private boolean        bNotSetPerspectiveListener_ = true;
         public EventInnerClass(IWorkbench workbench, BundleContext context) {
             super();
             workbench_ = workbench;
@@ -61,23 +60,7 @@ public class Activator extends AbstractUIPlugin{
             workbench_.addWorkbenchListener(this);
             context_.addBundleListener(this);
         }
-
-        /*		
-		public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective){
-			if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())){
-			}
-		}
-		public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId){
-			if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())){
-			}
-		}
-		
-        public void perspectiveDeactivated(IWorkbenchPage page, IPerspectiveDescriptor perspective){
-            if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())){
-            }
-        }
-         */
-
+        
         public void perspectiveOpened(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
             if (GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
                 startGrxUI();
@@ -93,27 +76,30 @@ public class Activator extends AbstractUIPlugin{
         public void windowActivated(IWorkbenchWindow window) {}
 
         public void windowClosed(IWorkbenchWindow window) {
+            window.removePerspectiveListener(this);
+        }
+
+        public void windowDeactivated(IWorkbenchWindow window) {}
+
+        public void windowOpened(IWorkbenchWindow window) {
+            window.addPerspectiveListener(this);
+        }
+
+        public void postShutdown(IWorkbench workbench) {
+            GrxProcessManager.shutDown();
+            try {
+                GrxCorbaUtil.getORB().shutdown(false);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        public boolean preShutdown(IWorkbench workbench, boolean forced) {
             try {
                 stop(context_);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        }
-
-        public void windowDeactivated(IWorkbenchWindow window) {}
-
-        public void windowOpened(IWorkbenchWindow window) {}
-
-        public void postShutdown(IWorkbench workbench) {
-        	GrxProcessManager.shutDown();
-        	try {
-        		GrxCorbaUtil.getORB().shutdown(false);
-        	} catch (Exception e) {
-        		e.printStackTrace();
-        	}
-        }
-
-        public boolean preShutdown(IWorkbench workbench, boolean forced) {
             return true;
         }
 
@@ -136,7 +122,7 @@ public class Activator extends AbstractUIPlugin{
             case BundleEvent.RESOLVED:
                 break;
             case BundleEvent.STARTED:
-                if (event.getBundle().getSymbolicName().equals(PLUGIN_ID) && bNotSetPerspectiveListener_) {
+                if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
                     // GrxUIパースペクティブが既に開いている場合の処理
                     startGrxUI();
                     IWorkbench localWorkbench = PlatformUI.getWorkbench();
@@ -144,7 +130,6 @@ public class Activator extends AbstractUIPlugin{
                         IWorkbenchWindow localWindow = localWorkbench.getActiveWorkbenchWindow();
                         if (localWindow != null) {
                             localWindow.addPerspectiveListener(this);
-                            bNotSetPerspectiveListener_ = false;
                         }
                     }
                 }
@@ -165,29 +150,29 @@ public class Activator extends AbstractUIPlugin{
         }
 
         /*
-		private void doFrameworkEvnt(FrameworkEvent event)
-		{
-			switch( event.getType() )
-			{
-			case FrameworkEvent.ERROR:
-			    GrxDebugUtil.println("[ACTIVATOR.EventInnerClass] FrameworkEvent.ERROR in doFrameworkEvnt:" + event.getThrowable().getMessage());
-				break;
-			case FrameworkEvent.INFO:
-				break;
-			case FrameworkEvent.PACKAGES_REFRESHED:
-				break;
-			case FrameworkEvent.STARTED:
-				break;
-			case FrameworkEvent.STARTLEVEL_CHANGED:
-				break;
-			case FrameworkEvent.WARNING:
-				break;
-			}
-		}
-		*/
-	};
-	
-	private EventInnerClass eventInnerClass = null;
+        private void doFrameworkEvnt(FrameworkEvent event)
+        {
+            switch( event.getType() )
+            {
+            case FrameworkEvent.ERROR:
+                GrxDebugUtil.println("[ACTIVATOR.EventInnerClass] FrameworkEvent.ERROR in doFrameworkEvnt:" + event.getThrowable().getMessage());
+                break;
+            case FrameworkEvent.INFO:
+                break;
+            case FrameworkEvent.PACKAGES_REFRESHED:
+                break;
+            case FrameworkEvent.STARTED:
+                break;
+            case FrameworkEvent.STARTLEVEL_CHANGED:
+                break;
+            case FrameworkEvent.WARNING:
+                break;
+            }
+        }
+        */
+    };
+
+    private EventInnerClass eventInnerClass = null;
 
     public Activator() {
         System.out.println("[ACTIVATOR] CONSTRUCT");
