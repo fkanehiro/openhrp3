@@ -1,6 +1,87 @@
 OpenHRP3 Updates History (Release Notes)
 
 
+Ver.3.1.0(BETA 2) (09-06-2009)
+============================
+
+ * Added documentation for PD_HGtest.
+
+ * Abolished using bin/unix, bin/dos directories.
+
+ * LoggerView is now supported frame-by-frame playback.
+
+ * LoggerView is fixed to support forward/reverse playback at "1/64" speed.
+
+ * Simulating model could not be displayed when simulation was started, 
+   while LoggerView slider was at a middle possition of the track. 
+   This problem has now been resolved.
+
+ * Fixed the problem with GraphView, that not updating graph according to 
+   the elapsed time.
+
+ * Fixed the problem with GraphView, that graphs could not be added/deleted.
+
+ * Free joints that are not viewed on GraphView, can now be selected
+   and excluded using view-selecting combo box.
+
+ * When launching GrxUI, a list box that allows to select robot name, 
+   appeares at the top of RobotStateView, and disappeared when project 
+   loading is completed. This problem has now been resolved.
+
+ * Fixed the problem of not displaying joint values, when model was set to 
+   hidden on RobotStateView.
+
+ * Robot could not be selected from list, when multiple models are loaded in 
+   RobotStateView. This issue has now been resolved.
+
+ * Handled the exception that occured when ServerManagerView was closed 
+   and restarted.
+
+ * 3DView display did not advance, when focus was moved from GrxUI perspective 
+   to another. This problem has now been fixed.
+
+ * Fixed the problem that GrxUI perspective could not be loaded in newly 
+   opened Eclipse Windows.
+
+ * When multiple Eclipse windows were opened and if GrxUI perspective loaded 
+   window was not closed using "X" button, eclipse could not be launched next 
+   time. This problem has now been fixed.
+
+ * Fixed the issue that objects could not be rebinded from NameServer, when 
+   GrxUI perspective was closed and reloaded.
+
+ * NameServer went shutdown if ProcessManagerView was closed when NameServer 
+   life cycle is synchronous with GrxUI. This issue has now been fixed.
+
+ * The problem with starting PD_HGtest is fixed.
+
+ * Increasing list fields in controllerTabView and collisionTabView of 
+   OpenHRPView, caused difficulties to operate the interface at the bottom.
+   This issue has now been fixed.
+
+ * Even the WorldState's item properties were updated in PropertyView, the 
+   change was not reflected in OpenHRPView. This issue has now been resolved.
+
+ * Fixed the problem with WorldStateItem becoming "not selected" when it 
+   was delete. 
+
+ * Fixed the malfunction of inverse kinematics related 3DView button.
+
+ * Item's name change was not reflected until the focus moved to another item.
+   This issue has now been fixed.
+
+ * When AIST dynamics server engine is used to simulate a collision check 
+   between cylinder model and plane model, cylinder model was sinked in 
+   plane model. This issue has now been fixed.
+
+ * The problem with saving logs is resolved.
+
+ * The problem with saving Python script is resolved.
+
+ * Logs is set to be stored in heap memory, until we complete testing heap 
+   resources of JavaVM. This step was taken for improving processing speed.
+
+
 Ver.3.1.0(BETA) (03-03-2009)
 ============================
 
