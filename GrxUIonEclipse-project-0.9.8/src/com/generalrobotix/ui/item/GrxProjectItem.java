@@ -727,6 +727,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				newItem.setProperty("jointName2",  prop.getStr(header + "jointName2"));
 				newItem.setProperty("slidingFriction", prop.getStr(header + "slidingFriction", "0.5"));
 				newItem.setProperty("staticFriction",  prop.getStr(header + "staticFriction", "0.5"));
+				newItem.setProperty("cullingThresh",  prop.getStr(header + "cullingThresh", "0.01"));
 				newItem.setProperty("sprintDamperModel", prop.getStr(header + "springDamplerModel", "false"));
 				newItem.setProperty("springConstant", prop.getStr(header + "springConstant", "0.0 0.0 0.0 0.0 0.0 0.0"));
 				newItem.setProperty("damperConstant", prop.getStr(header + "damperConstant", "0.0 0.0 0.0 0.0 0.0 0.0"));

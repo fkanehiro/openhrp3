@@ -36,7 +36,7 @@ namespace hrp
         ~ContactForceSolver();
 		
         bool addCollisionCheckLinkPair
-		(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double epsilon);
+		(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double epsilon);
 
 		void setGaussSeidelParameters(int maxNumIteration, int numInitialIteration, double maxRelError);
 		bool enableJointRangeStopper(bool isEnabled);

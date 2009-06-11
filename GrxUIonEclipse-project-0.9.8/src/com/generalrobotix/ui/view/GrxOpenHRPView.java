@@ -785,7 +785,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 						item.getDbl("staticFriction", 0.5),
 						item.getDbl("slidingFriction", 0.5),
 						item.getDblAry("springConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}), 
-						item.getDblAry("damperConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0})); 
+						item.getDblAry("damperConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}),
+						item.getDbl("cullingThresh", 0.01)); 
 			}
 			currentDynamics_.initSimulation();
 			
