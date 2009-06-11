@@ -62,8 +62,6 @@ static const bool IGNORE_CURRENT_VELOCITY_IN_STATIC_FRICTION = false;
 static const bool ENABLE_TRUE_FRICTION_CONE =
     (true && ONLY_STATIC_FRICTION_FORMULATION && STATIC_FRICTION_BY_TWO_CONSTRAINTS);
 
-static const bool ENABLE_CONTACT_POINT_THINNING = true;
-static const double	THINNING_DISTANCE_THRESH = 0.01;
 static const bool SKIP_REDUNDANT_ACCEL_CALC = true;
 static const bool ASSUME_SYMMETRIC_MATRIX = false;
 
@@ -123,7 +121,7 @@ namespace hrp
         CFSImpl(WorldBase& world);
 
         bool addCollisionCheckLinkPair
-        (int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double epsilon);
+        (int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double epsilon);
 
         void initialize(void);
         void solve(CollisionSequence& corbaCollisionSequence);
@@ -212,6 +210,7 @@ namespace hrp
 
             double muStatic;
             double muDynamic;
+            double culling_thresh;
             double epsilon;
 
             Body::LinkConnection* connection;
@@ -379,7 +378,7 @@ CFSImpl::CFSImpl(WorldBase& world) :
 
 
 bool CFSImpl::addCollisionCheckLinkPair
-(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double epsilon)
+(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double epsilon)
 {
     int index;
     int isRegistered;
@@ -406,6 +405,7 @@ bool CFSImpl::addCollisionCheckLinkPair
         linkPair.index = index;
         linkPair.muStatic = muStatic;
         linkPair.muDynamic = muDynamic;
+        linkPair.culling_thresh = culling_thresh;
         linkPair.epsilon = epsilon;
         linkPair.connection = 0;
     }
@@ -720,14 +720,12 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
         contact.depth = collision.idepth;
 
         bool isNeighborhood = false;
-
-        if(ENABLE_CONTACT_POINT_THINNING){
-            // dense contact points are eliminated
-            for(int k=0; k < numExtractedPoints; ++k){
-                if(norm2(constraintPoints[k].point - contact.point) < THINNING_DISTANCE_THRESH){
-                    isNeighborhood = true;
-                    break;
-                }
+        
+        // dense contact points are eliminated
+        for(int k=0; k < numExtractedPoints; ++k){
+            if(norm2(constraintPoints[k].point - contact.point) < linkPair.culling_thresh){
+                isNeighborhood = true;
+                break;
             }
         }
 
@@ -2088,9 +2086,9 @@ ContactForceSolver::~ContactForceSolver()
 
 
 bool ContactForceSolver::addCollisionCheckLinkPair
-(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double epsilon)
+(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double epsilon)
 {
-    return impl->addCollisionCheckLinkPair(bodyIndex1, link1, bodyIndex2, link2, muStatic, muDynamic, epsilon);
+    return impl->addCollisionCheckLinkPair(bodyIndex1, link1, bodyIndex2, link2, muStatic, muDynamic, culling_thresh, epsilon);
 }
 
 

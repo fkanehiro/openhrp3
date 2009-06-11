@@ -65,12 +65,14 @@ public class CollisionPairPanel extends Composite {
     
     private String defaultStaticFriction_;
     private String defaultSlidingFriction_;
+    private String defaultCullingThresh_;
     
     private static final String ATTR_NAME_SPRING = "springConstant";
     private static final String ATTR_NAME_DAMPER = "damperConstant";
     private static final String ATTR_NAME_SD = "springDamperModel";
     private static final String ATTR_NAME_STATIC_FRICTION = "staticFriction";
     private static final String ATTR_NAME_SLIDING_FRICTION = "slidingFriction";
+    private static final String ATTR_NAME_CULLING_THRESH = "cullingThresh";
     
     private final String[] clmName_ ={
         MessageBundle.get("panel.collision.table.obj1"),
@@ -117,6 +119,7 @@ public class CollisionPairPanel extends Composite {
         //AttributeProperties props = AttributeProperties.getProperties("CollisionPair");
         defaultStaticFriction_ = "0.5";//props.getProperty(ATTR_NAME_STATIC_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE);
         defaultSlidingFriction_ = "0.5";//props.getProperty(ATTR_NAME_SLIDING_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE);
+        defaultCullingThresh_ = "0.01";
         
         vecCollision_ = new Vector<GrxCollisionPairItem>();
    
@@ -269,8 +272,8 @@ public class CollisionPairPanel extends Composite {
         private Text txtSpring_,txtDamper_;
         private Label lblSpring_,lblDamper_;
         
-        private Text txtStaticFric_,txtSlidingFric_;
-        private Label lblFriction_,lblStaticFric_,lblSlidingFric_;
+        private Text txtStaticFric_,txtSlidingFric_,txtCullingThresh_;
+        private Label lblFriction_,lblStaticFric_,lblSlidingFric_,lblCullingThresh_;
         
         private Button chkDamper_;
 
@@ -345,6 +348,13 @@ public class CollisionPairPanel extends Composite {
             txtSlidingFric_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             //txtSlidingFric_.setBounds(150,60+24+24+ 24 + 24+ 24,80,24);
             
+            lblCullingThresh_ = new Label(this,SWT.SHADOW_NONE);
+            lblCullingThresh_.setText(MessageBundle.get("panel.collision.cullingThresh"));
+            lblCullingThresh_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+            txtCullingThresh_ = new Text(this,SWT.SINGLE | SWT.BORDER);
+            txtCullingThresh_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            
             btnOk_ = new Button(this,SWT.PUSH);
             btnOk_.setText(MessageBundle.get("dialog.okButton"));
             btnOk_.addSelectionListener(new SelectionListener(){
@@ -399,6 +409,10 @@ public class CollisionPairPanel extends Composite {
                             ATTR_NAME_SLIDING_FRICTION,
                             txtSlidingFric_.getText()
                         );
+                        node.setProperty( 
+                        	ATTR_NAME_CULLING_THRESH,
+                            txtCullingThresh_.getText()
+                        );
                     } catch (Exception ex) {
                         MessageDialog.openWarning(getShell(), "", MessageBundle.get("message.attributeerror"));
                         return false;
@@ -439,6 +453,7 @@ public class CollisionPairPanel extends Composite {
                 txtDamper_.setText("0 0 0 0 0 0");
                 txtStaticFric_.setText(defaultStaticFriction_);
                 txtSlidingFric_.setText(defaultSlidingFriction_);
+                txtCullingThresh_.setText(defaultCullingThresh_);
                 node_ = null;
             }else{
                 doCancel();
@@ -457,6 +472,7 @@ public class CollisionPairPanel extends Composite {
             txtDamper_.setText("");
             txtStaticFric_.setText("");
             txtSlidingFric_.setText("");
+            txtCullingThresh_.setText("");
         }
 
         public void setNode(GrxCollisionPairItem node) {
@@ -474,6 +490,7 @@ public class CollisionPairPanel extends Composite {
                 txtDamper_.setText(node.getStr(ATTR_NAME_DAMPER, ""));
                 txtStaticFric_.setText(node.getStr(ATTR_NAME_STATIC_FRICTION, ""));
                 txtSlidingFric_.setText(node.getStr(ATTR_NAME_SLIDING_FRICTION, ""));
+                txtCullingThresh_.setText(node.getStr(ATTR_NAME_CULLING_THRESH, ""));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -501,10 +518,13 @@ public class CollisionPairPanel extends Composite {
             
             lblStaticFric_.setEnabled(flag);
             lblSlidingFric_.setEnabled(flag);
+            lblCullingThresh_.setEnabled(flag);
             txtStaticFric_.setEnabled(true);
             txtStaticFric_.setEditable(flag);
             txtSlidingFric_.setEnabled(true);
             txtSlidingFric_.setEditable(flag);
+            txtCullingThresh_.setEnabled(true);
+            txtCullingThresh_.setEditable(flag);
         }
 
         private class JointSelectPanel extends Composite {

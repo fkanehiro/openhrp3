@@ -176,6 +176,7 @@ module OpenHRP {
 		 * @param   slipFriction  動摩擦係数
 		 * @param	K ばね係数
 		 * @param	C ダンパ係数
+         * @param   culling_thresh  この距離以下の点は同一接触点とみなす
 		 * @else
 		 * Add Collision Pairs
 		 * @param	char1	  Name of character for first link
@@ -198,7 +199,8 @@ module OpenHRP {
 		 in double staticFriction,
 		 in double slipFriction,
 		 in DblSequence6 K,
-		 in DblSequence6 C
+		 in DblSequence6 C,
+         in double culling_thresh
 		 );
   
 

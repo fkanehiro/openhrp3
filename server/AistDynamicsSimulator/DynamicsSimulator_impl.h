@@ -88,7 +88,8 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
             CORBA::Double staticFriction, 
             CORBA::Double slipFriction,
             const DblSequence6& K,
-            const DblSequence6& C);
+            const DblSequence6& C,
+            const double culling_thresh);
 
     virtual void registerIntersectionCheckPair
         (

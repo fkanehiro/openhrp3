@@ -218,7 +218,8 @@ void DynamicsSimulator_impl::registerCollisionCheckPair(
 		const CORBA::Double staticFriction,
 		const CORBA::Double slipFriction,
 		const DblSequence6 & K,
-		const DblSequence6 & C)
+		const DblSequence6 & C,
+        const double culling_thresh)
 {
 	const double epsilon = 0.0;
 //	logfile << "registerCollisionCheckPair" << endl;

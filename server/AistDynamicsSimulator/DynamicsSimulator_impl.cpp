@@ -242,7 +242,8 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
     const CORBA::Double staticFriction,
     const CORBA::Double slipFriction,
     const DblSequence6 & K,
-    const DblSequence6 & C
+    const DblSequence6 & C,
+    const double culling_thresh
     )
 {
     const double epsilon = 0.0;
@@ -311,7 +312,7 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
 
                 if(link1 && link2 && link1 != link2){
                     bool ok = world.contactForceSolver.addCollisionCheckLinkPair
-                        (bodyIndex1, link1, bodyIndex2, link2, staticFriction, slipFriction, epsilon);
+                        (bodyIndex1, link1, bodyIndex2, link2, staticFriction, slipFriction, culling_thresh, epsilon);
 
                     if(ok && !USE_INTERNAL_COLLISION_DETECTOR){
                         LinkPair_var linkPair = new LinkPair();
