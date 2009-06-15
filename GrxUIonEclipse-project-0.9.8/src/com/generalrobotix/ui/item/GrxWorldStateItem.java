@@ -160,15 +160,15 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
     
 	public void restoreProperties() {
 		super.restoreProperties();
-		useDisk_ = isTrue("useDisk", false);
+		useDisk_ = isTrue("useDisk", true);
 		storeAllPos_ = isTrue("storeAllPosition", storeAllPos_);
         int size = getInt("bufferSize", MAX_RAM_BUFFER_SIZE);
-		if (!useDisk_) {
-			GrxDebugUtil.println("GrxWorldStateItem: useDisk = false");
-            
-			super.setMaximumLogSize(size);
-		} else 
+		if ( useDisk_ ) {
 			super.setMaximumLogSize(MAX_RAM_BUFFER_SIZE);
+		} else {
+			GrxDebugUtil.println("GrxWorldStateItem: useDisk = false");
+			super.setMaximumLogSize(size);
+		}
 	}
 	
 	public void rename(String newName) {
