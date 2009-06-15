@@ -454,7 +454,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			// display
 			if(!isSimulatingView_){
 				if((simTime_*1000) % manager_.getDelay() < stepTime_*1000){ 
-					asyncExec(new Runnable(){
+					syncExec(new Runnable(){
 						public void run() {
 							currentWorld_.setPosition(currentWorld_.getLogSize()-1);
 		                }
@@ -1040,6 +1040,15 @@ public class GrxOpenHRPView extends GrxBaseView {
 		Display display = composite_.getDisplay();
         if ( display!=null && !display.isDisposed()){
             display.asyncExec( r );
+            return true;
+        }else
+        	return false;
+	}
+	
+	protected boolean syncExec(Runnable r){
+		Display display = composite_.getDisplay();
+        if ( display!=null && !display.isDisposed()){
+            display.syncExec( r );
             return true;
         }else
         	return false;
