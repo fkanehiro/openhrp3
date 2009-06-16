@@ -74,6 +74,13 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 		return currentPos_;
 	}
 	
+    /**
+     * get position of pointer switched the method of momory to the method of disk 
+     * @return 
+     */
+    public int getChangePosition() {
+        return changePos_;
+    }
 	/**
 	 * get position of timed object which is nearest to the specified time.
 	 * If there is no object in this series -1 is returned. 

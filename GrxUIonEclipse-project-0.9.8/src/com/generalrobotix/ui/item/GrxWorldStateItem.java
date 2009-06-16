@@ -975,6 +975,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		notifyObservers("StopSimulation");
 	}
     
+    public boolean isUseDsik(){ return useDisk_; }
 
 	public static class WorldStateEx {
 		public double time;

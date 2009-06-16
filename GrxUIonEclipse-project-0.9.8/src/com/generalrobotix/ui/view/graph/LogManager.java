@@ -1317,6 +1317,7 @@ public class LogManager {
         }
     }
     
+    
 // added by GRX 20070207
     public float[] get(String objectName, long record) throws IOException {
         if (readFile_ == null) return null;
@@ -1410,8 +1411,22 @@ public class LogManager {
 		collisionLogPath_ = tmpdir+File.separator+COLLISION_LOG_NAME;
         collisionLogDatPath_ = tmpdir+File.separator+COLLISION_LOG_DAT_NAME;
 	}
+
     public String getTempDir() {
         return tmpdir;
+    }
+
+    /**
+     * モデルの関節エレメントの値に相当する
+     * put(String,float[])関数で渡されるfloat[]配列の
+     * インデックスの値を返す
+     * 
+     * @param   obj    モデル名
+     * @param   member 関節名.属性.配列インデックス
+     * @return  配列のインデックス値 
+     */
+    public int getIndex(String obj,String member){
+        return ((Integer) (((Map) indexMapMap_.get(obj)).get(member))).intValue();
     }
     
     private void _initTempInstance(){
