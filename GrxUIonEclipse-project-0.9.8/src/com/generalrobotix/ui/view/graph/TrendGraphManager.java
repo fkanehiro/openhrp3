@@ -16,7 +16,7 @@
  */
 
 package com.generalrobotix.ui.view.graph;
-
+import com.generalrobotix.ui.item.GrxWorldStateItem;
 public class TrendGraphManager {
 
     //--------------------------------------------------------------------
@@ -191,7 +191,7 @@ public class TrendGraphManager {
 */
     }
     
-    public void setLogManager(LogManager logManager) {
-    	trendGraphModel_.setLogManager(logManager);
+    public void setWorldState(GrxWorldStateItem world) {
+    	trendGraphModel_.setWorldState(world);
     }
 }

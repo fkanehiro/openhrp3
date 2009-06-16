@@ -65,7 +65,7 @@ public class GrxGraphView extends GrxBaseView {
         
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
-        	setLogManager(currentWorld_);
+            setWorldState(currentWorld_);
         	currentWorld_.addObserver(this);
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
@@ -84,9 +84,9 @@ public class GrxGraphView extends GrxBaseView {
         manager_.registerItemChangeListener(this, GrxModelItem.class);
 	}
 
-	private void setLogManager(GrxWorldStateItem worldStateItem){
+	private void setWorldState(GrxWorldStateItem worldStateItem){
 		if(worldStateItem != null){
-			graphManager_.setLogManager(worldStateItem.logger_);
+			graphManager_.setWorldState(worldStateItem);
 			try {
 				double step = worldStateItem.getDbl("logTimeStep", 0.001);
 				graphManager_.trendGraphModel_.setStepTime((long)(1000000*step));
@@ -94,7 +94,7 @@ public class GrxGraphView extends GrxBaseView {
 				GrxDebugUtil.printErr("Couldn't parse log step time.", e);
 			}
 		}else
-			graphManager_.setLogManager(null);
+			graphManager_.setWorldState(null);
 	}
 	
 	public void registerItemChange(GrxBaseItem item, int event){
@@ -103,7 +103,7 @@ public class GrxGraphView extends GrxBaseView {
 	    	switch(event){
 	    	case GrxPluginManager.SELECTED_ITEM:
 	    		if(currentWorld_!=worldStateItem){
-	    			setLogManager(worldStateItem);
+                    setWorldState(worldStateItem);
 	    			currentWorld_ = worldStateItem;
 	    			currentWorld_.addObserver(this);
 	    		}
@@ -112,7 +112,7 @@ public class GrxGraphView extends GrxBaseView {
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
 	    		if(currentWorld_==worldStateItem){
 	    			currentWorld_.deleteObserver(this);
-	    			setLogManager(null);
+                    setWorldState(null);
 	    			currentWorld_ = null;
 	    		}
 	    		break;

@@ -15,6 +15,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
+import com.generalrobotix.ui.item.GrxWorldStateItem;
+import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
+import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 
 /**
  * トレンドグラフモデルクラス
@@ -54,15 +57,17 @@ public class TrendGraphModel
 
     private HashMap<String, DataModel> dataModelMap_;   // データモデル一覧
     private DataModel[] dataModelArray_;    // データモデル一覧
-
+    
+    
     //private DummyDataSource dumSource_; // ★ダミーデータソース
-    private LogManager logManager_; // ログマネージャ
+    private GrxWorldStateItem world_ = null;
 
     private boolean markerFixed_;   // 現在時刻マーカ固定フラグ
     private double fixedMarkerPos_; // 固定マーカ位置
 
     private int mode_;  // モード
-
+    
+    
   //  private SimulationWorld world_;
     /**
      * コンストラクタ
@@ -278,7 +283,7 @@ public class TrendGraphModel
         }
         // ★
         //System.out.println("baseCount_=" + baseCount_);
-        logManager_.getData(baseCount_, 0, sampleCount_, dataModelArray_);
+        _getData(baseCount_, 0, sampleCount_, dataModelArray_);
     }
 
     /**
@@ -378,7 +383,7 @@ public class TrendGraphModel
         }
         // ★
         //System.out.println("baseCount_=" + baseCount_);
-        logManager_.getData(baseCount_, 0, sampleCount_, dataModelArray_);
+        _getData(baseCount_, 0, sampleCount_, dataModelArray_);
     }
 
     /**
@@ -436,15 +441,15 @@ public class TrendGraphModel
         }
         if (diff > 0) {
             if (diff >= sampleCount_) {
-                logManager_.getData(baseCount_, 0, sampleCount_, dataModelArray_);
+                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
             } else {
-                logManager_.getData(baseCount_, sampleCount_ - diff, diff, dataModelArray_);
+                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
             }
         } else {
             if (-diff >= sampleCount_) {
-                logManager_.getData(baseCount_, 0, sampleCount_, dataModelArray_);
+                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
             } else {
-                logManager_.getData(baseCount_, 0, -diff, dataModelArray_);
+                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
             }
         }
     }
@@ -522,23 +527,23 @@ public class TrendGraphModel
         if (diff > 0) {
             if (diff >= sampleCount_) {
                 //System.out.println("getData(): patern 1 in");
-                logManager_.getData(baseCount_, 0, sampleCount_, dataModelArray_);
+                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
                 //System.out.println("getData(): patern 1 out");
             } else {
                 //System.out.println("base=" + baseCount_ + ", ofs=" + (sampleCount_ - diff) + ", count=" + diff);
                 //System.out.println("getData(): patern 2 in");
-                logManager_.getData(baseCount_, sampleCount_ - diff, diff, dataModelArray_);
+                _getData(baseCount_, sampleCount_ - diff, diff, dataModelArray_);
                 //System.out.println("getData(): patern 2 out");
             }
         } else {
             if (-diff >= sampleCount_) {
                 //System.out.println("getData(): patern 3 in");
-                logManager_.getData(baseCount_, 0, sampleCount_, dataModelArray_);
+                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
                 //System.out.println("getData(): patern 3 out");
             } else {
                 //System.out.println("base=" + baseCount_ + ", ofs=0, count=" + (-diff));
                 //System.out.println("getData(): patern 4 in");
-                logManager_.getData(baseCount_, 0, -diff, dataModelArray_);
+                _getData(baseCount_, 0, -diff, dataModelArray_);
                 //System.out.println("getData(): patern 4 out");
             }
         }
@@ -553,14 +558,14 @@ public class TrendGraphModel
         if (prevDataTermCount < baseCount_) {
             //System.out.println("case1");
             if (dataTermCount_ < baseCount_ + sampleCount_) {
-                logManager_.getData(
-                    baseCount_,
-                    0,
-                    (int)(dataTermCount_ - baseCount_), 
-                    dataModelArray_
+                _getData(
+                        baseCount_,
+                        0,
+                        (int)(dataTermCount_ - baseCount_), 
+                        dataModelArray_
                 );
             } else {
-                logManager_.getData(
+                _getData(
                     baseCount_,
                     0,
                     sampleCount_,
@@ -571,14 +576,14 @@ public class TrendGraphModel
         } else if (prevDataTermCount < baseCount_ + sampleCount_) {
             //System.out.println("case2");
             if (dataTermCount_ < baseCount_ + sampleCount_) {
-                logManager_.getData(
+                _getData(
                     baseCount_,
                     (int)(prevDataTermCount - baseCount_),
                     (int)(dataTermCount_ - prevDataTermCount),
                     dataModelArray_
                 );
             } else {
-                logManager_.getData(
+                _getData(
                     baseCount_,
                     (int)(prevDataTermCount - baseCount_),
                     (int)(baseCount_ + sampleCount_ - prevDataTermCount),
@@ -945,10 +950,131 @@ public class TrendGraphModel
         if (dataModelArray_ == null) {
             return;
         }
-        logManager_.getData(baseCount_, 0, sampleCount_, dataModelArray_);
+        _getData(baseCount_, 0, sampleCount_, dataModelArray_);
     }
     
-    public void setLogManager(LogManager logManager) {
-    	logManager_ = logManager;
+    public void setWorldState(GrxWorldStateItem world) {
+        world_ = world;
+    }
+    
+    private void _getData(long origin, int offset, int count, DataModel[] dataModelArray){
+        if(world_ == null){
+            return;
+        } else if (world_.isUseDsik()){
+            world_.logger_.getData(origin, offset, count, dataModelArray);
+            return;
+        }
+        int changePos = world_.getChangePosition();
+        int counter = changePos - ((int)origin + offset);
+
+        // ログの記録方式がメモリ方式からファイル方式へスイッチした場合処理
+        if( changePos >= 0 ){
+            if( counter <= 0 ){
+                world_.logger_.getData(-offset-counter, offset, count, dataModelArray);
+                return;
+            }
+            //ログの記録方式がファイル方式とメモリ方式で混在する場合の境界処理
+            if( counter <= count ){
+                count -= counter;  
+                world_.logger_.getData(-offset-counter, offset + counter, count, dataModelArray);
+                count = counter;  
+            }
+        }
+        
+        WorldStateEx refWorld = world_.getValue( (int)origin + offset );
+        if(refWorld == null){
+            for(int h = 0; h < dataModelArray.length; ++h){
+                DataSeries ds = dataModelArray[h].dataSeries;
+                double[] dbArray = ds.getData();
+                int localOffset = (ds.getHeadPos() + offset) % dbArray.length;
+                for (int i = 0; i < count; ++i, ++localOffset){
+                    if(localOffset +i >= dbArray.length){
+                            localOffset = 0;
+                    }
+                    dbArray[localOffset] = Double.NaN;
+                }                
+            }            
+        } else {
+            // メモリーデータから表示したいラインの要素を抽出する処理
+            for(int h = 0; h < dataModelArray.length; ++h){
+                long recNo = origin + offset; // レコード番号
+                DataItem localDataItem = dataModelArray[h].dataItem;
+                CharacterStateEx refCharacter = refWorld.get(localDataItem.object);
+                CharacterStateEx localCharacter = refCharacter;
+                DataSeries ds = dataModelArray[h].dataSeries;
+                double[] dbArray = ds.getData();
+                int localOffset = (ds.getHeadPos() + offset) % dbArray.length;
+                int index = world_.logger_.getIndex(localDataItem.object,
+                        localDataItem.node + "." + localDataItem.attribute + (localDataItem.index >= 0 ? "." + localDataItem.index : "") );
+                ArrayList<Integer> arryLength = new ArrayList<Integer>();
+                arryLength.add(refCharacter.position.length * 7);
+                arryLength.add(arryLength.get(0) + refCharacter.sensorState.q.length);
+                arryLength.add(arryLength.get(1) + refCharacter.sensorState.u.length);
+                if(refCharacter.sensorState.force.length == 0){
+                    arryLength.add( arryLength.get(2));
+                } else {
+                    arryLength.add( arryLength.get(2) +
+                                    refCharacter.sensorState.force.length * refCharacter.sensorState.force[0].length);
+                }
+
+                if(refCharacter.sensorState.rateGyro.length == 0){
+                    arryLength.add( arryLength.get(3));
+                } else {
+                    arryLength.add( arryLength.get(3) +
+                                    refCharacter.sensorState.rateGyro.length * refCharacter.sensorState.rateGyro[0].length);
+                }
+                
+                if(refCharacter.sensorState.accel.length == 0){
+                    arryLength.add( arryLength.get(4));
+                } else {
+                    arryLength.add( arryLength.get(4) +
+                                    refCharacter.sensorState.accel.length * refCharacter.sensorState.accel[0].length);
+                }
+                if(refCharacter.sensorState.range.length == 0){
+                    arryLength.add( arryLength.get(5));
+                } else {
+                    arryLength.add( arryLength.get(5) +
+                                    refCharacter.sensorState.range.length * refCharacter.sensorState.range[0].length);
+                }
+
+                for (int i = 0; i < count; ++i, ++recNo, ++localOffset){
+                    if(localOffset >= dbArray.length){
+                            localOffset = 0;
+                    }
+                    if(recNo < 0 || recNo >= world_.getLogSize() || localCharacter == null){
+                        dbArray[localOffset] = Double.NaN;
+                        continue;
+                    }
+                    if (index <= arryLength.get(0)){
+                        
+                        
+                    } else if  (index <= arryLength.get(2)){
+                        if( (index - 1) % 2 == 0 ){
+                            dbArray[localOffset] = localCharacter.sensorState.q[(index - arryLength.get(0) - 1)/2];
+                        } else {
+                            dbArray[localOffset] = localCharacter.sensorState.u[(index - arryLength.get(0) - 2)/2];
+                        }
+                    } else if  (index <= arryLength.get(3) && localCharacter.sensorState.force.length > 0){
+                        int dim1 = (index - arryLength.get(2) - 1) / localCharacter.sensorState.force[0].length ;
+                        int dim2 = (index - arryLength.get(2) - 1) % localCharacter.sensorState.force[0].length ;
+                        dbArray[localOffset] = localCharacter.sensorState.force[dim1][dim2];  
+            
+                    } else if  (index <= arryLength.get(4) && localCharacter.sensorState.rateGyro.length > 0){
+                        int dim1 = (index - arryLength.get(3) - 1) / localCharacter.sensorState.rateGyro[0].length ;
+                        int dim2 = (index - arryLength.get(3) - 1) % localCharacter.sensorState.rateGyro[0].length ;
+                        dbArray[localOffset] = localCharacter.sensorState.rateGyro[dim1][dim2];     
+                    } else if  (index <= arryLength.get(5) && localCharacter.sensorState.accel.length > 0){
+                        int dim1 = (index - arryLength.get(4) - 1) / localCharacter.sensorState.accel[0].length ;
+                        int dim2 = (index - arryLength.get(4) - 1) % localCharacter.sensorState.accel[0].length ;
+                        dbArray[localOffset] = localCharacter.sensorState.accel[dim1][dim2];     
+                    } else if(localCharacter.sensorState.range.length > 0) {
+                        int dim1 = (index - arryLength.get(5) - 1) / localCharacter.sensorState.range[0].length ;
+                        int dim2 = (index - arryLength.get(5) - 1) % localCharacter.sensorState.range[0].length ;
+                        dbArray[localOffset] = localCharacter.sensorState.range[dim1][dim2];     
+                    }
+                    localCharacter = world_.getValue( (int)recNo ).get(localDataItem.object);
+                }
+            }                    
+        }
     }
 }
