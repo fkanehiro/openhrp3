@@ -11,7 +11,7 @@
 /**
    \file
    \brief Implementations of Link class
-   \author S.Nakaoka
+   \author Shin'ichiro Nakaoka
 */
 
 
@@ -42,7 +42,7 @@
 
 
 #include "Link.h"
-
+#include <hrpCollision/ColdetModel.h>
 
 using namespace std;
 using namespace hrp;
@@ -50,6 +50,7 @@ using namespace hrp;
 
 Link::Link()
 {
+    index = -1;
     jointId = -1;
     parent = 0;
     sibling = 0;
@@ -63,7 +64,47 @@ Link::Link()
 
 Link::Link(const Link& org)
 {
-    copy(org);
+    index = -1; // should be set by a Body object
+    jointId = org.jointId;
+    jointType = org.jointType;
+    a = org.a;
+    b = org.b;
+    d = org.d;
+    Rs = org.Rs;
+    m = org.m;
+    I = org.I;
+    c = org.c;
+
+    Jm2 = org.Jm2;
+
+    ulimit = org.ulimit;
+    llimit = org.llimit;
+    uvlimit = org.uvlimit;
+    lvlimit = org.lvlimit;
+
+    defaultJointValue = org.defaultJointValue;
+    torqueConst = org.torqueConst;
+    encoderPulse = org.encoderPulse;
+    Ir = org.Ir;
+    gearRatio = org.gearRatio;
+    gearEfficiency = org.gearEfficiency;
+    rotorResistor = org.rotorResistor;
+
+    isHighGainMode = org.isHighGainMode;
+
+    coldetModel.reset(new ColdetModel(*org.coldetModel));
+
+    parent = child = sibling = 0;
+
+    if(org.child){
+        for(Link* orgChild = org.child; orgChild; orgChild = orgChild->sibling){
+            Link* newChild = new Link(*orgChild);
+            newChild->parent = this;
+            newChild->sibling = child;
+            child = newChild;
+        }
+    }
+
 }
 
 
@@ -78,21 +119,6 @@ Link::~Link()
 }
 
 
-namespace {
-    void setBodyIter(Link* link, Body* body)
-    {
-        link->body = body;
-	
-        if(link->sibling){
-            setBodyIter(link->sibling, body);
-        }
-        if(link->child){
-            setBodyIter(link->child, body);
-        }
-    }
-}
-
-
 void Link::addChild(Link* link)
 {
     if(link->parent){
@@ -102,45 +128,8 @@ void Link::addChild(Link* link)
     link->sibling = child;
     link->parent = this;
     child = link;
-
-	setBodyIter(link, body);
 }
 
-void Link::copy(const Link& org)
-{
-    jointType = org.jointType;
-    jointId = org.jointId;
-    a = org.a;
-    d = org.d;
-    b = org.b;
-    c = org.c;
-    m = org.m;
-    I = org.I;
-    Ir = org.Ir;
-    torqueConst = org.torqueConst;
-    encoderPulse = org.encoderPulse;
-    gearRatio = org.gearRatio;
-	gearEfficiency = org.gearEfficiency;
-    rotorResistor = org.rotorResistor;
-    Jm2 = org.Jm2;
-    ulimit = org.ulimit;
-    llimit = org.llimit;
-    uvlimit = org.uvlimit;
-    lvlimit = org.lvlimit;
-    defaultJointValue = org.defaultJointValue;
-    isHighGainMode = org.isHighGainMode;
-
-    parent = child = sibling = 0;
-
-    if(org.child){
-        for(Link* orgChild = org.child; orgChild; orgChild = orgChild->sibling){
-            Link* newChild = new Link(*orgChild);
-            newChild->parent = this;
-            newChild->sibling = child;
-            child = newChild;
-        }
-    }
-}
 
 /**
    A child link is detached from the link.
@@ -149,31 +138,30 @@ void Link::copy(const Link& org)
 */
 bool Link::detachChild(Link* childToRemove)
 {
-	bool removed = false;
+    bool removed = false;
 
-	Link* link = child;
-	Link* prevSibling = 0;
-	while(link){
-		if(link == childToRemove){
-			removed = true;
-			if(prevSibling){
-				prevSibling->sibling = link->sibling;
-			} else {
-				child = link->sibling;
-			}
-			break;
-		}
-		prevSibling = link;
-		link = link->sibling;
-	}
+    Link* link = child;
+    Link* prevSibling = 0;
+    while(link){
+        if(link == childToRemove){
+            removed = true;
+            if(prevSibling){
+                prevSibling->sibling = link->sibling;
+            } else {
+                child = link->sibling;
+            }
+            break;
+        }
+        prevSibling = link;
+        link = link->sibling;
+    }
 
-	if(removed){
-		childToRemove->parent = 0;
-		childToRemove->sibling = 0;
-		setBodyIter(childToRemove, 0);
-	}
+    if(removed){
+        childToRemove->parent = 0;
+        childToRemove->sibling = 0;
+    }
 
-	return removed;
+    return removed;
 }
 
 
@@ -183,11 +171,6 @@ std::ostream& operator<<(std::ostream &out, Link& link)
     return out;
 }
 
-Link& Link::operator=(const Link& link)
-{
-	copy(link);
-	return *this;
-}
 
 void Link::putInformation(std::ostream& os)
 {
@@ -214,20 +197,20 @@ void Link::putInformation(std::ostream& os)
 
     os << "parent = " << (parent ? parent->name : "null") << "\n";
 
-	os << "child = ";
-	if(child){
-		Link* link = child;
-		while(true){
-			os << link->name;
-			link = link->sibling;
-			if(!link){
-				break;
-			}
-        	os << ", ";
-		}
-	} else {
-		os << "null";
-	}
+    os << "child = ";
+    if(child){
+        Link* link = child;
+        while(true){
+            os << link->name;
+            link = link->sibling;
+            if(!link){
+                break;
+            }
+            os << ", ";
+        }
+    } else {
+        os << "null";
+    }
     os << "\n";
 
     os << "b = "  << b << "\n";
@@ -239,16 +222,16 @@ void Link::putInformation(std::ostream& os)
     os << "torqueConst = " << torqueConst << "\n";
     os << "encoderPulse = " << encoderPulse << "\n";
     os << "gearRatio = " << gearRatio << "\n";
-	os << "gearEfficiency = " << gearEfficiency << "\n";
+    os << "gearEfficiency = " << gearEfficiency << "\n";
     os << "Jm2 = " << Jm2 << "\n";
     os << "ulimit = " << ulimit << "\n";
     os << "llimit = " << llimit << "\n";
     os << "uvlimit = " << uvlimit << "\n";
     os << "lvlimit = " << lvlimit << "\n";
 
-	if(false){
-		os << "R = " << R << "\n";
-		os << "p = " << p << ", wc = " << wc << "\n";
+    if(false){
+        os << "R = " << R << "\n";
+        os << "p = " << p << ", wc = " << wc << "\n";
     	os << "v = " << v << ", vo = " << vo << ", dvo = " << dvo << "\n";
     	os << "w = " << w << ", dw = " << dw << "\n";
 
@@ -266,5 +249,5 @@ void Link::putInformation(std::ostream& os)
     	os << "uu = " << uu << ", dd = " << dd << "\n";
 
     	os << std::endl;
-	}
+    }
 }
