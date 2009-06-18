@@ -63,10 +63,24 @@ Link::Link()
 
 
 Link::Link(const Link& org)
+    : name(org.name)
 {
     index = -1; // should be set by a Body object
     jointId = org.jointId;
     jointType = org.jointType;
+
+    p = org.p;
+    R = org.R;
+    v = org.v;
+    w = org.w;
+    dv = org.dv;
+    dw = org.dw;
+
+    q = org.q;
+    dq = org.dq;
+    ddq = org.ddq;
+    u = org.u;
+
     a = org.a;
     b = org.b;
     d = org.d;
@@ -92,7 +106,9 @@ Link::Link(const Link& org)
 
     isHighGainMode = org.isHighGainMode;
 
-    coldetModel.reset(new ColdetModel(*org.coldetModel));
+    if(org.coldetModel){
+        coldetModel.reset(new ColdetModel(*org.coldetModel));
+    }
 
     parent = child = sibling = 0;
 
