@@ -9,8 +9,8 @@
  */
 
 /** \file
-	\brief The implementation of the body class 
-	\author Shin'ichiro Nakaoka
+    \brief The implementation of the body class 
+    \author Shin'ichiro Nakaoka
 */
 
 #include "Body.h"
@@ -37,62 +37,63 @@ typedef unsigned int uint;
 
 namespace hrp {
 	
-	class CustomizedJointPath : public JointPath
-	{
-		Body* body;
-		int ikTypeId;
-		virtual void onJointPathUpdated();
-	public:
-		CustomizedJointPath(Body* body, Link* baseLink, Link* targetLink);
-		virtual ~CustomizedJointPath();
-		virtual bool calcInverseKinematics(const vector3& end_p, const matrix33& end_R);
-		virtual bool hasAnalyticalIK();
-	};
+    class CustomizedJointPath : public JointPath
+    {
+        Body* body;
+        int ikTypeId;
+        virtual void onJointPathUpdated();
+    public:
+        CustomizedJointPath(Body* body, Link* baseLink, Link* targetLink);
+        virtual ~CustomizedJointPath();
+        virtual bool calcInverseKinematics(const vector3& end_p, const matrix33& end_R);
+        virtual bool hasAnalyticalIK();
+    };
 }
 
 
 Body::~Body()
 {
-	if(customizerHandle){
-		customizerInterface->destroy(customizerHandle);
-	}
+    if(customizerHandle){
+        customizerInterface->destroy(customizerHandle);
+    }
 	
     delete rootLink_;
     if(invalidLink){
         delete invalidLink;
     }
 
-	// delete sensors
-	for(int sensorType =0; sensorType < numSensorTypes(); ++sensorType){
-		int n = numSensors(sensorType);
-		for(int i=0; i < n; ++i){
-			Sensor* s = sensor(sensorType, i);
-			if(s){
-				Sensor::destroy(s);
-			}
-		}
-	}
+    // delete sensors
+    for(int sensorType =0; sensorType < numSensorTypes(); ++sensorType){
+        int n = numSensors(sensorType);
+        for(int i=0; i < n; ++i){
+            Sensor* s = sensor(sensorType, i);
+            if(s){
+                Sensor::destroy(s);
+            }
+        }
+    }
 }
 
 
 void Body::initialize()
 {
-	refCounter = 0;
+    refCounter = 0;
 
-	rootLink_ = 0;
+    rootLink_ = 0;
 
-	customizerHandle = 0;
-	customizerInterface = 0;
-	bodyHandleEntity.body = this;
-	bodyHandle = &bodyHandleEntity;
+    customizerHandle = 0;
+    customizerInterface = 0;
+    bodyHandleEntity.body = this;
+    bodyHandle = &bodyHandleEntity;
 	
     invalidLink = 0;
 }
 	
 
-Body::Body() : allSensors(Sensor::NUM_SENSOR_TYPES)
+Body::Body()
+  : allSensors(Sensor::NUM_SENSOR_TYPES)
 {
-	initialize();
+    initialize();
 	
     rootLink_ = new Link;
 
@@ -101,43 +102,56 @@ Body::Body() : allSensors(Sensor::NUM_SENSOR_TYPES)
 }
 
 
-Body::Body(const Body& org) : allSensors(Sensor::NUM_SENSOR_TYPES)
+Body::Body(const Body& org)
+    : modelName(org.modelName),
+      name(org.name),
+      allSensors(Sensor::NUM_SENSOR_TYPES)
 {
-	initialize();
+    initialize();
 	
-	modelName = org.modelName;
-
     setRootLink(new Link(*org.rootLink()));
 
-	defaultRootPosition = org.defaultRootPosition;
-	defaultRootAttitude = org.defaultRootAttitude;
+    defaultRootPosition = org.defaultRootPosition;
+    defaultRootAttitude = org.defaultRootAttitude;
 	
-	// copy sensors
+    // copy sensors
+    std::map<Link*, int> linkToIndexMap;
 
-	std::map<Link*, int> linkToIndexMap;
+    for(int i=0; i < org.linkTraverse_.numLinks(); ++i){
+        Link* lnk = org.linkTraverse_[i];
+        linkToIndexMap[lnk] = i;
+    }
 
-	for(int i=0; i < org.linkTraverse_.numLinks(); ++i){
-		Link* lnk = org.linkTraverse_[i];
-		linkToIndexMap[lnk] = i;
-	}
+    int n = org.numSensorTypes();
+    for(int sensorType = 0; sensorType < n; ++sensorType){
+        for(int i=0; i < org.numSensors(sensorType); ++i){
+            Sensor* orgSensor = org.sensor(sensorType, i);
+            int linkIndex = linkToIndexMap[orgSensor->link];
+            Link* newLink = linkTraverse_[linkIndex];
+            Sensor* cloneSensor = createSensor(newLink, sensorType, orgSensor->id, orgSensor->name);
+            *cloneSensor = *orgSensor;
+        }
+    }
 
-	int n = org.numSensorTypes();
-	for(int sensorType = 0; sensorType < n; ++sensorType){
-		for(int i=0; i < org.numSensors(sensorType); ++i){
-			Sensor* orgSensor = org.sensor(sensorType, i);
-			int linkIndex = linkToIndexMap[orgSensor->link];
-			Link* newLink = linkTraverse_[linkIndex];
-			Sensor* cloneSensor = createSensor(newLink, sensorType, orgSensor->id, orgSensor->name);
-			*cloneSensor = *orgSensor;
-		}
-	}
+    // do deep copy of linkConnections
+    for(size_t i=0; i < org.linkConnections.size(); ++i){
+        const LinkConnection& orgConnection = org.linkConnections[i];
+        LinkConnection connection(orgConnection);
+        for(int j=0; j < 2; ++j){
+            connection.link[j] = link(orgConnection.link[j]->index);
+        }
+    }
+
+    if(org.customizerInterface){
+        installCustomizer(org.customizerInterface);
+    }
 }
 
 
 void Body::setRootLink(Link* link)
 {
     if(rootLink_){
-		delete rootLink_;
+        delete rootLink_;
     }
     rootLink_ = link;
 
@@ -154,8 +168,8 @@ void Body::setDefaultRootPosition(const vector3& p, const matrix33& R)
 
 void Body::getDefaultRootPosition(vector3& out_p, matrix33& out_R)
 {
-	out_p = defaultRootPosition;
-	out_R = defaultRootAttitude;
+    out_p = defaultRootPosition;
+    out_R = defaultRootAttitude;
 }
 
 
@@ -165,14 +179,14 @@ void Body::updateLinkTree()
     linkTraverse_.find(rootLink());
 
     int n = linkTraverse_.numLinks();
-	jointIdToLinkArray.clear();
+    jointIdToLinkArray.clear();
     jointIdToLinkArray.resize(n, 0);
     int maxJointID = -1;
     
     for(int i=0; i < n; ++i){
         Link* link = linkTraverse_[i];
-		link->body = this;
-		link->index = i;
+        link->body = this;
+        link->index = i;
         nameToLinkMap[link->name] = link;
 
         int id = link->jointId;
@@ -182,9 +196,9 @@ void Body::updateLinkTree()
                 jointIdToLinkArray.resize(id + 1, 0);
             }
             jointIdToLinkArray[id] = link;
-			if(id > maxJointID){
-				maxJointID = id;
-			}
+            if(id > maxJointID){
+                maxJointID = id;
+            }
         }
     }
 
@@ -241,7 +255,7 @@ void Body::initializeConfiguration()
  
     calcForwardKinematics(true, true);
 
-	clearExternalForces();
+    clearExternalForces();
 }
  
 
@@ -268,7 +282,7 @@ vector3 Body::calcCM()
     int n = linkTraverse_.numLinks();
     for(int i=0; i < n; i++){
         Link* link = linkTraverse_[i];
-		link->wc = link->p + link->R * link->c;
+        link->wc = link->p + link->R * link->c;
         mc += link->m * link->wc;
         totalMass_ += link->m;
     }
@@ -282,105 +296,105 @@ vector3 Body::calcCM()
    a more efficient method that only requires O(n) computation time
 
    The motion equation (dv != dvo)
- 		  |       |   | dv   |   |    |   | fext      |
-		  | out_M | * | dw   | + | b1 | = | tauext    |
-		  |       |   |ddq   |   |    |   | u         |
+   |       |   | dv   |   |    |   | fext      |
+   | out_M | * | dw   | + | b1 | = | tauext    |
+   |       |   |ddq   |   |    |   | u         |
 */
 void Body::calcMassMatrix(dmatrix& out_M)
 {
-	// buffers for the unit vector method
-	dmatrix b1;
-	dvector ddqorg;
-	dvector uorg;
-	vector3 dvoorg;
-	vector3 dworg;
-	vector3 root_w_x_v;
-	vector3 g(0, 0, 9.8);
+    // buffers for the unit vector method
+    dmatrix b1;
+    dvector ddqorg;
+    dvector uorg;
+    vector3 dvoorg;
+    vector3 dworg;
+    vector3 root_w_x_v;
+    vector3 g(0, 0, 9.8);
 
-	uint nJ = numJoints();
-	int totaldof = nJ;
-	if( !isStatic_ ) totaldof += 6;
+    uint nJ = numJoints();
+    int totaldof = nJ;
+    if( !isStatic_ ) totaldof += 6;
 
-	out_M.resize(totaldof,totaldof);
-	b1.resize(totaldof, 1);
+    out_M.resize(totaldof,totaldof);
+    b1.resize(totaldof, 1);
 
-	// preserve and clear the joint accelerations
-	ddqorg.resize(nJ);
-	uorg.resize(nJ);
-	for(uint i = 0; i < nJ; ++i){
-		Link* ptr = joint(i);
-		ddqorg[i] = ptr->ddq;
-		uorg  [i] = ptr->u;
-		ptr->ddq = 0.0;
-	}
-
-	// preserve and clear the root link acceleration
-	dvoorg = rootLink_->dvo;
-	dworg  = rootLink_->dw;
-	root_w_x_v = cross(rootLink_->w, vector3(rootLink_->vo + cross(rootLink_->w, rootLink_->p)));
-	rootLink_->dvo = g - root_w_x_v;   // dv = g, dw = 0
-	rootLink_->dw  = 0.0;
-	
-	setColumnOfMassMatrix(b1, 0);
-
-	if( !isStatic_ ){
-		for(int i=0; i < 3; ++i){
-			rootLink_->dvo[i] += 1.0;
-			setColumnOfMassMatrix(out_M, i);
-			rootLink_->dvo[i] -= 1.0;
-		}
-		for(int i=0; i < 3; ++i){
-			rootLink_->dw[i] = 1.0;
-			vector3 dw_x_p = cross(rootLink_->dw, rootLink_->p);	//  spatial acceleration caused by ang. acc.
-			rootLink_->dvo -= dw_x_p;
-			setColumnOfMassMatrix(out_M, i + 3);
-			rootLink_->dvo += dw_x_p;
-			rootLink_->dw[i] = 0.0;
-		}
-	}
-
-	for(uint i = 0; i < nJ; ++i){
-		Link* ptr = joint(i);
-		ptr->ddq = 1.0;
-		int j = i + 6;
-		setColumnOfMassMatrix(out_M, j);
-		out_M(j, j) += ptr->Jm2; // motor inertia
-		ptr->ddq = 0.0;
+    // preserve and clear the joint accelerations
+    ddqorg.resize(nJ);
+    uorg.resize(nJ);
+    for(uint i = 0; i < nJ; ++i){
+        Link* ptr = joint(i);
+        ddqorg[i] = ptr->ddq;
+        uorg  [i] = ptr->u;
+        ptr->ddq = 0.0;
     }
 
-	// subtract the constant term
-	ublas::matrix_column<dmatrix> vb1(b1, 0);
-	for(size_t i = 0; i < out_M.size2(); ++i){
-		ublas::matrix_column<dmatrix>(out_M, i) -= vb1;
-	}
+    // preserve and clear the root link acceleration
+    dvoorg = rootLink_->dvo;
+    dworg  = rootLink_->dw;
+    root_w_x_v = cross(rootLink_->w, vector3(rootLink_->vo + cross(rootLink_->w, rootLink_->p)));
+    rootLink_->dvo = g - root_w_x_v;   // dv = g, dw = 0
+    rootLink_->dw  = 0.0;
+	
+    setColumnOfMassMatrix(b1, 0);
 
-	// recover state
-	for(uint i = 0; i < nJ; ++i){
-		Link* ptr = joint(i);
-		ptr->ddq  = ddqorg[i];
-		ptr->u    = uorg  [i];
-	}
-	rootLink_->dvo = dvoorg;
-	rootLink_->dw  = dworg;
+    if( !isStatic_ ){
+        for(int i=0; i < 3; ++i){
+            rootLink_->dvo[i] += 1.0;
+            setColumnOfMassMatrix(out_M, i);
+            rootLink_->dvo[i] -= 1.0;
+        }
+        for(int i=0; i < 3; ++i){
+            rootLink_->dw[i] = 1.0;
+            vector3 dw_x_p = cross(rootLink_->dw, rootLink_->p);	//  spatial acceleration caused by ang. acc.
+            rootLink_->dvo -= dw_x_p;
+            setColumnOfMassMatrix(out_M, i + 3);
+            rootLink_->dvo += dw_x_p;
+            rootLink_->dw[i] = 0.0;
+        }
+    }
+
+    for(uint i = 0; i < nJ; ++i){
+        Link* ptr = joint(i);
+        ptr->ddq = 1.0;
+        int j = i + 6;
+        setColumnOfMassMatrix(out_M, j);
+        out_M(j, j) += ptr->Jm2; // motor inertia
+        ptr->ddq = 0.0;
+    }
+
+    // subtract the constant term
+    ublas::matrix_column<dmatrix> vb1(b1, 0);
+    for(size_t i = 0; i < out_M.size2(); ++i){
+        ublas::matrix_column<dmatrix>(out_M, i) -= vb1;
+    }
+
+    // recover state
+    for(uint i = 0; i < nJ; ++i){
+        Link* ptr = joint(i);
+        ptr->ddq  = ddqorg[i];
+        ptr->u    = uorg  [i];
+    }
+    rootLink_->dvo = dvoorg;
+    rootLink_->dw  = dworg;
 }
 
 void Body::setColumnOfMassMatrix(dmatrix& out_M, int column)
 {
     vector3 f;
-	vector3 tau;
+    vector3 tau;
 
     calcInverseDynamics(rootLink_, f, tau);
 
-	if( !isStatic_ ){
-		tau -= cross(rootLink_->p, f);
-		setVector3(f,   out_M, 0, column);
-		setVector3(tau, out_M, 3, column);
-	}
+    if( !isStatic_ ){
+        tau -= cross(rootLink_->p, f);
+        setVector3(f,   out_M, 0, column);
+        setVector3(tau, out_M, 3, column);
+    }
 
-	int n = numJoints();
-	for(int i = 0; i < n; ++i){
-		Link* ptr = joint(i);
-		out_M(i + 6, column) = ptr->u;
+    int n = numJoints();
+    for(int i = 0; i < n; ++i){
+        Link* ptr = joint(i);
+        out_M(i + 6, column) = ptr->u;
     }
 }
 
@@ -391,54 +405,54 @@ void Body::calcInverseDynamics(Link* ptr, vector3& out_f, vector3& out_tau)
 {	
     Link* parent = ptr->parent;
     if(parent){
-		vector3 dsv,dsw,sv,sw;
+        vector3 dsv,dsw,sv,sw;
 
         if(ptr->jointType != Link::FIXED_JOINT){
-    		sw  = parent->R * ptr->a;
-	    	sv  = cross(ptr->p, sw);
+            sw  = parent->R * ptr->a;
+            sv  = cross(ptr->p, sw);
         }else{
             sw = 0.0;
             sv = 0.0;
         }
-		dsv = cross(parent->w, sv) + cross(parent->vo, sw);
-		dsw = cross(parent->w, sw);
+        dsv = cross(parent->w, sv) + cross(parent->vo, sw);
+        dsw = cross(parent->w, sw);
 
-		ptr->dw  = parent->dw  + dsw * ptr->dq + sw * ptr->ddq;
-		ptr->dvo = parent->dvo + dsv * ptr->dq + sv * ptr->ddq;
+        ptr->dw  = parent->dw  + dsw * ptr->dq + sw * ptr->ddq;
+        ptr->dvo = parent->dvo + dsv * ptr->dq + sv * ptr->ddq;
 
-		ptr->sw = sw;
-		ptr->sv = sv;
+        ptr->sw = sw;
+        ptr->sv = sv;
     }
 	
-	vector3  c,P,L;
-	matrix33 I,c_hat;
+    vector3  c,P,L;
+    matrix33 I,c_hat;
 
-	c = ptr->R * ptr->c + ptr->p;
-	I = ptr->R * ptr->I * trans(ptr->R);
-	c_hat = hat(c);
-	I += ptr->m * c_hat * trans(c_hat);
-	P = ptr->m * (ptr->vo + cross(ptr->w, c));
-	L = ptr->m * cross(c, ptr->vo) + I * ptr->w;
+    c = ptr->R * ptr->c + ptr->p;
+    I = ptr->R * ptr->I * trans(ptr->R);
+    c_hat = hat(c);
+    I += ptr->m * c_hat * trans(c_hat);
+    P = ptr->m * (ptr->vo + cross(ptr->w, c));
+    L = ptr->m * cross(c, ptr->vo) + I * ptr->w;
 
     out_f   = ptr->m * (ptr->dvo + cross(ptr->dw, c)) + cross(ptr->w, P);
     out_tau = ptr->m * cross(c, ptr->dvo) + I * ptr->dw + cross(ptr->vo,P) + cross(ptr->w,L);
 
     if(ptr->child){
-		vector3 f_c;
-		vector3 tau_c;
-		calcInverseDynamics(ptr->child, f_c, tau_c);
-		out_f   += f_c;
-		out_tau += tau_c;
+        vector3 f_c;
+        vector3 tau_c;
+        calcInverseDynamics(ptr->child, f_c, tau_c);
+        out_f   += f_c;
+        out_tau += tau_c;
     }
 
     ptr->u = dot(ptr->sv, out_f) + dot(ptr->sw, out_tau);
 
     if(ptr->sibling){
-		vector3 f_s;
-		vector3 tau_s;
-		calcInverseDynamics(ptr->sibling, f_s, tau_s);
-		out_f   += f_s;
-		out_tau += tau_s;
+        vector3 f_s;
+        vector3 tau_s;
+        calcInverseDynamics(ptr->sibling, f_s, tau_s);
+        out_f   += f_s;
+        out_tau += tau_s;
     }
 }
 
@@ -449,28 +463,28 @@ void Body::calcInverseDynamics(Link* ptr, vector3& out_f, vector3& out_tau)
 */
 void Body::calcTotalMomentum(vector3& out_P, vector3& out_L)
 {
-	out_P = 0.0;
-	out_L = 0.0;
+    out_P = 0.0;
+    out_L = 0.0;
 
-	vector3 dwc;	// Center of mass speed in world frame
-	vector3 P;		// Linear momentum of the link
-	vector3 L;		// Angular momentum with respect to the world frame origin 
-	vector3 Llocal; // Angular momentum with respect to the center of mass of the link
+    vector3 dwc;	// Center of mass speed in world frame
+    vector3 P;		// Linear momentum of the link
+    vector3 L;		// Angular momentum with respect to the world frame origin 
+    vector3 Llocal; // Angular momentum with respect to the center of mass of the link
 
-	int n = linkTraverse_.numLinks();
+    int n = linkTraverse_.numLinks();
     for(int i=0; i < n; i++){
         Link* link = linkTraverse_[i];
 
-		dwc = link->v + cross(link->w, vector3(link->R * link->c));
+        dwc = link->v + cross(link->w, vector3(link->R * link->c));
 
-		P   = link->m * dwc;
+        P   = link->m * dwc;
 
-		//L   = cross(link->wc, P) + link->R * link->I * trans(link->R) * link->w; 
-		Llocal = link->I * Mtx_prod(link->R, link->w);
-		L      = cross(link->wc, P) + link->R * Llocal; 
+        //L   = cross(link->wc, P) + link->R * link->I * trans(link->R) * link->w; 
+        Llocal = link->I * Mtx_prod(link->R, link->w);
+        L      = cross(link->wc, P) + link->R * Llocal; 
 
-		out_P += P;
-		out_L += L;
+        out_P += P;
+        out_L += L;
     }
 }
 
@@ -482,31 +496,31 @@ void Body::calcForwardKinematics(bool calcVelocity, bool calcAcceleration)
 
 Sensor* Body::createSensor(Link* link, int sensorType, int id, const std::string& name)
 {
-	Sensor* sensor = 0;
+    Sensor* sensor = 0;
 
-	if(sensorType < Sensor::NUM_SENSOR_TYPES && id >= 0){
+    if(sensorType < Sensor::NUM_SENSOR_TYPES && id >= 0){
 
-		SensorArray& sensors = allSensors[sensorType];
-		int n = sensors.size();
-		if(id >= n){
-			sensors.resize(id + 1, 0);
-		}
-		sensor = sensors[id];
-		if(sensor){
-			nameToSensorMap.erase(sensor->name);
-		} else {
-			sensor = Sensor::create(sensorType);
-		}
-		if(sensor){
-			sensor->id = id;
-			sensors[id] = sensor;
-			sensor->link = link;
-			sensor->name = name;
-			nameToSensorMap[name] = sensor;
-		}
-	}
+        SensorArray& sensors = allSensors[sensorType];
+        int n = sensors.size();
+        if(id >= n){
+            sensors.resize(id + 1, 0);
+        }
+        sensor = sensors[id];
+        if(sensor){
+            nameToSensorMap.erase(sensor->name);
+        } else {
+            sensor = Sensor::create(sensorType);
+        }
+        if(sensor){
+            sensor->id = id;
+            sensors[id] = sensor;
+            sensor->link = link;
+            sensor->name = name;
+            nameToSensorMap[name] = sensor;
+        }
+    }
 		
-	return sensor;
+    return sensor;
 }
 
 
@@ -522,19 +536,19 @@ void Body::clearSensorValues()
 
 JointPathPtr Body::getJointPath(Link* baseLink, Link* targetLink)
 {
-	if(customizerInterface && customizerInterface->initializeAnalyticIk){
-		return JointPathPtr(new CustomizedJointPath(this, baseLink, targetLink));
-	} else {
-		return JointPathPtr(new JointPath(baseLink, targetLink));
-	}
+    if(customizerInterface && customizerInterface->initializeAnalyticIk){
+        return JointPathPtr(new CustomizedJointPath(this, baseLink, targetLink));
+    } else {
+        return JointPathPtr(new JointPath(baseLink, targetLink));
+    }
 }
 
 
 void Body::setVirtualJointForcesSub()
 {
-	if(customizerInterface->setVirtualJointForces){
-		customizerInterface->setVirtualJointForces(customizerHandle);
-	}
+    if(customizerInterface->setVirtualJointForces){
+        customizerInterface->setVirtualJointForces(customizerHandle);
+    }
 }
 
 
@@ -552,13 +566,13 @@ void Body::clearExternalForces()
 
 void Body::updateLinkColdetModelPositions()
 {
-	const int n = linkTraverse_.numLinks();
-	for(int i=0; i < n; ++i){
-		Link* link = linkTraverse_[i];
-		if(link->coldetModel){
-			link->coldetModel->setPosition(link->segmentAttitude(), link->p);
-		}
-	}
+    const int n = linkTraverse_.numLinks();
+    for(int i=0; i < n; ++i){
+        Link* link = linkTraverse_[i];
+        if(link->coldetModel){
+            link->coldetModel->setPosition(link->segmentAttitude(), link->p);
+        }
+    }
 }
 
 
@@ -566,7 +580,7 @@ void Body::updateLinkColdetModelPositions()
 void Body::putInformation(std::ostream &out)
 {
     out << "Body: model name = " << modelName
-		<< " name = " << name << "\n\n";
+        << " name = " << name << "\n\n";
 
     int n = numLinks();
     for(int i=0; i < n; ++i){
@@ -581,35 +595,35 @@ void Body::putInformation(std::ostream &out)
 */
 bool Body::installCustomizer()
 {
-	if(!pluginsInDefaultDirectoriesLoaded){
-		loadBodyCustomizersInDefaultDirectories(bodyInterface);
-		pluginsInDefaultDirectoriesLoaded = true;
-	}
+    if(!pluginsInDefaultDirectoriesLoaded){
+        loadBodyCustomizersInDefaultDirectories(bodyInterface);
+        pluginsInDefaultDirectoriesLoaded = true;
+    }
 		
-	BodyCustomizerInterface* interface = findBodyCustomizer(modelName);
+    BodyCustomizerInterface* interface = findBodyCustomizer(modelName);
 
-	return interface ? installCustomizer(interface) : false;
+    return interface ? installCustomizer(interface) : false;
 }
 
 
 bool Body::installCustomizer(BodyCustomizerInterface * customizerInterface)
 {
-	if(this->customizerInterface){
-		if(customizerHandle){
-			this->customizerInterface->destroy(customizerHandle);
-			customizerHandle = 0;
-		}
-		this->customizerInterface = 0;
-	}
+    if(this->customizerInterface){
+        if(customizerHandle){
+            this->customizerInterface->destroy(customizerHandle);
+            customizerHandle = 0;
+        }
+        this->customizerInterface = 0;
+    }
 	
-	if(customizerInterface){
-		customizerHandle = customizerInterface->create(bodyHandle, modelName.c_str());
-		if(customizerHandle){
-			this->customizerInterface = customizerInterface;
-		}
-	}
+    if(customizerInterface){
+        customizerHandle = customizerInterface->create(bodyHandle, modelName.c_str());
+        if(customizerHandle){
+            this->customizerInterface = customizerInterface;
+        }
+    }
 
-	return (customizerHandle != 0);
+    return (customizerHandle != 0);
 }
 
 
@@ -622,49 +636,49 @@ std::ostream& operator<< (std::ostream& out, Body& body)
 
 static inline Link* extractLink(BodyHandle bodyHandle, int linkIndex)
 {
-	return static_cast<BodyHandleEntity*>(bodyHandle)->body->link(linkIndex);
+    return static_cast<BodyHandleEntity*>(bodyHandle)->body->link(linkIndex);
 }
 
 
 static int getLinkIndexFromName(BodyHandle bodyHandle, const char* linkName)
 {
-	Body* body = static_cast<BodyHandleEntity*>(bodyHandle)->body;
-	Link* link = body->link(linkName);
-	return (link ? link->index : -1);
+    Body* body = static_cast<BodyHandleEntity*>(bodyHandle)->body;
+    Link* link = body->link(linkName);
+    return (link ? link->index : -1);
 }
 
 
 static const char* getLinkName(BodyHandle bodyHandle, int linkIndex)
 {
-	return extractLink(bodyHandle, linkIndex)->name.c_str();
+    return extractLink(bodyHandle, linkIndex)->name.c_str();
 }
 
 
 static double* getJointValuePtr(BodyHandle bodyHandle, int linkIndex)
 {
-	return &(extractLink(bodyHandle,linkIndex)->q);
+    return &(extractLink(bodyHandle,linkIndex)->q);
 }
 
 
 static double* getJointVelocityPtr(BodyHandle bodyHandle, int linkIndex)
 {
-	return &(extractLink(bodyHandle, linkIndex)->dq);
+    return &(extractLink(bodyHandle, linkIndex)->dq);
 }
 
 
 static double* getJointTorqueForcePtr(BodyHandle bodyHandle, int linkIndex)
 {
-	return &(extractLink(bodyHandle, linkIndex)->u);
+    return &(extractLink(bodyHandle, linkIndex)->u);
 }
 
 
 static BodyInterface bodyInterfaceEntity = {
-	hrp::BODY_INTERFACE_VERSION,
-	getLinkIndexFromName,
-	getLinkName,
-	getJointValuePtr,
-	getJointVelocityPtr,
-	getJointTorqueForcePtr,
+    hrp::BODY_INTERFACE_VERSION,
+    getLinkIndexFromName,
+    getLinkName,
+    getJointValuePtr,
+    getJointVelocityPtr,
+    getJointTorqueForcePtr,
 };
 
 
@@ -672,10 +686,10 @@ BodyInterface* Body::bodyInterface = &bodyInterfaceEntity;
 
 
 CustomizedJointPath::CustomizedJointPath(Body* body, Link* baseLink, Link* targetLink) :
-	JointPath(baseLink, targetLink),
-	body(body)
+    JointPath(baseLink, targetLink),
+    body(body)
 {
-	onJointPathUpdated();
+    onJointPathUpdated();
 }
 
 
@@ -687,62 +701,62 @@ CustomizedJointPath::~CustomizedJointPath()
 
 void CustomizedJointPath::onJointPathUpdated()
 {
-	ikTypeId = body->customizerInterface->initializeAnalyticIk
-		(body->customizerHandle, LinkPath::rootLink()->index, LinkPath::endLink()->index);
+    ikTypeId = body->customizerInterface->initializeAnalyticIk
+        (body->customizerHandle, LinkPath::rootLink()->index, LinkPath::endLink()->index);
 }
 
 
 bool CustomizedJointPath::calcInverseKinematics(const vector3& end_p, const matrix33& end_R0)
 {
-	bool solved;
+    bool solved;
 	
-	if(ikTypeId == 0 || isBestEffortIKMode){
+    if(ikTypeId == 0 || isBestEffortIKMode){
 
-		solved = JointPath::calcInverseKinematics(end_p, end_R0);
+        solved = JointPath::calcInverseKinematics(end_p, end_R0);
 
-	} else {
+    } else {
 
-		std::vector<double> qorg(numJoints());
+        std::vector<double> qorg(numJoints());
 		
-		for(int i=0; i < numJoints(); ++i){
-			qorg[i] = joint(i)->q;
-		}
+        for(int i=0; i < numJoints(); ++i){
+            qorg[i] = joint(i)->q;
+        }
 
-		Link* targetLink = LinkPath::endLink();
-		Link* baseLink   = LinkPath::rootLink();
-		matrix33 end_R(end_R0 * trans(targetLink->Rs));
-		vector3 p_relative(trans(baseLink->R) * vector3(end_p - baseLink->p));
-		matrix33 R_relative(trans(baseLink->R) * end_R);
+        Link* targetLink = LinkPath::endLink();
+        Link* baseLink   = LinkPath::rootLink();
+        matrix33 end_R(end_R0 * trans(targetLink->Rs));
+        vector3 p_relative(trans(baseLink->R) * vector3(end_p - baseLink->p));
+        matrix33 R_relative(trans(baseLink->R) * end_R);
 
-		solved = body->customizerInterface->
-			calcAnalyticIk(body->customizerHandle, ikTypeId, p_relative, R_relative);
+        solved = body->customizerInterface->
+            calcAnalyticIk(body->customizerHandle, ikTypeId, p_relative, R_relative);
 
-		if(solved){
+        if(solved){
 
-			calcForwardKinematics();
+            calcForwardKinematics();
 
-			vector3 dp(end_p - targetLink->p);
-			vector3 omega(omegaFromRot(matrix33(trans(targetLink->R) * end_R)));
+            vector3 dp(end_p - targetLink->p);
+            vector3 omega(omegaFromRot(matrix33(trans(targetLink->R) * end_R)));
 			
-			double errsqr = dot(dp, dp) + dot(omega, omega);
+            double errsqr = dot(dp, dp) + dot(omega, omega);
 			
-			if(errsqr < maxIKErrorSqr){
-				solved = true;
-			} else {
-				solved = false;
-				for(int i=0; i < numJoints(); ++i){
-					joint(i)->q = qorg[i];
-				}
-				calcForwardKinematics();
-			}
-		}
-	}
+            if(errsqr < maxIKErrorSqr){
+                solved = true;
+            } else {
+                solved = false;
+                for(int i=0; i < numJoints(); ++i){
+                    joint(i)->q = qorg[i];
+                }
+                calcForwardKinematics();
+            }
+        }
+    }
 
-	return solved;
+    return solved;
 }
 
 
 bool CustomizedJointPath::hasAnalyticalIK()
 {
-	return (ikTypeId != 0);
+    return (ikTypeId != 0);
 }

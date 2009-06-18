@@ -1,4 +1,3 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -9,7 +8,7 @@
  * General Robotix Inc. 
  */
 /** \file
-	\author Shin'ichiro Nakaoka
+    \author Shin'ichiro Nakaoka
 */
 
 #ifndef OPENHRP_BODY_H_INCLUDED
@@ -29,268 +28,266 @@
 
 namespace hrp {
     class Sensor;
-	class Body;
-	class JointPath;
-	typedef boost::shared_ptr<JointPath> JointPathPtr;
+    class Body;
+    class JointPath;
+    typedef boost::shared_ptr<JointPath> JointPathPtr;
 }
 
 namespace boost {
-	void intrusive_ptr_add_ref(hrp::Body* body);
-	void intrusive_ptr_release(hrp::Body* body);
+    void intrusive_ptr_add_ref(hrp::Body* body);
+    void intrusive_ptr_release(hrp::Body* body);
 }
 
 namespace hrp {
 
-	struct BodyHandleEntity {
-		Body* body;
-	};
+    struct BodyHandleEntity {
+        Body* body;
+    };
 
-	struct BodyInterface;
-	struct BodyCustomizerInterface;
+    struct BodyInterface;
+    struct BodyCustomizerInterface;
     typedef void* BodyHandle;
     typedef void* BodyCustomizerHandle;
 
 	
     class HRPBASE_EXPORT  Body {
 
-    public:
+      public:
 
-		static BodyInterface* bodyInterface;
+        static BodyInterface* bodyInterface;
 
-		std::string modelName;
-		std::string name;
+        std::string modelName;
+        std::string name;
 
-		Body();
-		Body(const Body& org);
+        Body();
+        Body(const Body& org);
 
-		virtual ~Body();
+        virtual ~Body();
 
-		void setRootLink(Link* link);
+        void setRootLink(Link* link);
 
-		/**
-		   This function must be called when the structure of the link tree is changed.
-		*/
-		void updateLinkTree();
+        /**
+           This function must be called when the structure of the link tree is changed.
+        */
+        void updateLinkTree();
 
-		/**
-		   The number of the links that work as a joint.
-		   Note that the acutal value is the maximum joint ID plus one.
-		   Thus there may be a case where the value does not correspond
-		   to the actual number of the joint-links.
-		   In other words, the value represents the size of the link sequence
-		   obtained by joint() function.
-		*/
-		inline int numJoints() const {
-			return jointIdToLinkArray.size();
-		}
+        /**
+           The number of the links that work as a joint.
+           Note that the acutal value is the maximum joint ID plus one.
+           Thus there may be a case where the value does not correspond
+           to the actual number of the joint-links.
+           In other words, the value represents the size of the link sequence
+           obtained by joint() function.
+        */
+        inline int numJoints() const {
+            return jointIdToLinkArray.size();
+        }
 
-		/**
-		   This function returns a link that has a given joint ID.
-		   If there is no link that has a given joint ID,
-		   the function returns a dummy link object whose ID is minus one.
-		   The maximum id can be obtained by numJoints().
-		*/
-		inline Link* joint(int id) const {
-			return jointIdToLinkArray[id];
-		}
+        /**
+           This function returns a link that has a given joint ID.
+           If there is no link that has a given joint ID,
+           the function returns a dummy link object whose ID is minus one.
+           The maximum id can be obtained by numJoints().
+        */
+        inline Link* joint(int id) const {
+            return jointIdToLinkArray[id];
+        }
 
-		/**
-		   The number of all the links the body has.
-		   The value corresponds to the size of the sequence obtained by link() function.
-		*/
-		inline int numLinks() const {
-			return linkTraverse_.numLinks();
-		}
+        /**
+           The number of all the links the body has.
+           The value corresponds to the size of the sequence obtained by link() function.
+        */
+        inline int numLinks() const {
+            return linkTraverse_.numLinks();
+        }
 
-		/**
-		   This function returns the link of a given index in the whole link sequence.
-		   The order of the sequence corresponds to a link-tree traverse from the root link.
-		   The size of the sequence can be obtained by numLinks().
-		*/
-		inline Link* link(int index) const {
-			return linkTraverse_.link(index);
-		}
+        /**
+           This function returns the link of a given index in the whole link sequence.
+           The order of the sequence corresponds to a link-tree traverse from the root link.
+           The size of the sequence can be obtained by numLinks().
+        */
+        inline Link* link(int index) const {
+            return linkTraverse_.link(index);
+        }
 
-		/**
-		   LinkTraverse object that traverses all the links from the root link
-		*/
-		inline const LinkTraverse& linkTraverse() const {
-			return linkTraverse_;
-		}
+        /**
+           LinkTraverse object that traverses all the links from the root link
+        */
+        inline const LinkTraverse& linkTraverse() const {
+            return linkTraverse_;
+        }
 
-		/**
-		   This function returns a link that has a given name.
-		*/
-		Link* link(const std::string& name) const;
+        /**
+           This function returns a link that has a given name.
+        */
+        Link* link(const std::string& name) const;
 
-		/**
-		   The root link of the body
-		*/
-		inline Link* rootLink() const {
-			return rootLink_;
-		}
+        /**
+           The root link of the body
+        */
+        inline Link* rootLink() const {
+            return rootLink_;
+        }
 
-		// sensor access methods
-		Sensor* createSensor(Link* link, int sensorType, int id, const std::string& name);
+        // sensor access methods
+        Sensor* createSensor(Link* link, int sensorType, int id, const std::string& name);
 
-		inline Sensor* sensor(int sensorType, int sensorId) const {
-			return allSensors[sensorType][sensorId];
-		}
+        inline Sensor* sensor(int sensorType, int sensorId) const {
+            return allSensors[sensorType][sensorId];
+        }
 
-		inline int numSensors(int sensorType) const {
-			return allSensors[sensorType].size();
-		}
+        inline int numSensors(int sensorType) const {
+            return allSensors[sensorType].size();
+        }
 
-		inline int numSensorTypes() const {
-			return allSensors.size();
-		}
+        inline int numSensorTypes() const {
+            return allSensors.size();
+        }
 
         void clearSensorValues();
 
-		template <class TSensor> inline TSensor* sensor(int id) const {
-			return static_cast<TSensor*>(allSensors[TSensor::TYPE][id]);
-		}
+        template <class TSensor> inline TSensor* sensor(int id) const {
+            return static_cast<TSensor*>(allSensors[TSensor::TYPE][id]);
+        }
 
-		template <class TSensor> inline TSensor* sensor(const std::string& name) const {
-			TSensor* sensor = 0;
-			NameToSensorMap::const_iterator p = nameToSensorMap.find(name);
-			if(p != nameToSensorMap.end()){
-				sensor = dynamic_cast<TSensor*>(p->second);
-			}
-			return sensor;
-		}
+        template <class TSensor> inline TSensor* sensor(const std::string& name) const {
+            TSensor* sensor = 0;
+            NameToSensorMap::const_iterator p = nameToSensorMap.find(name);
+            if(p != nameToSensorMap.end()){
+                sensor = dynamic_cast<TSensor*>(p->second);
+            }
+            return sensor;
+        }
 
-		/**
-		   This function returns true when the whole body is a static, fixed object like a floor.
-		*/
-		inline bool isStatic() {
-			return isStatic_;
-		}
+        /**
+           This function returns true when the whole body is a static, fixed object like a floor.
+        */
+        inline bool isStatic() {
+            return isStatic_;
+        }
 
-		double calcTotalMass();
+        double calcTotalMass();
 
-		inline double totalMass() {
-			return totalMass_;
-		}
+        inline double totalMass() {
+            return totalMass_;
+        }
 
-		vector3 calcCM();
+        vector3 calcCM();
 
-		/*
-		   The motion equation for calcMassMatrix()
-		  |       |   | dv   |   |    |   | fext      |
-		  | out_M | * | dw   | + | b1 | = | tauext    |
-		  |       |   |ddq   |   |    |   | u         |
-		*/
-		void calcMassMatrix(dmatrix& out_M);
+        /*
+          The motion equation for calcMassMatrix()
+          |       |   | dv   |   |    |   | fext      |
+          | out_M | * | dw   | + | b1 | = | tauext    |
+          |       |   |ddq   |   |    |   | u         |
+        */
+        void calcMassMatrix(dmatrix& out_M);
 
-		void setColumnOfMassMatrix(dmatrix& M, int column);
+        void setColumnOfMassMatrix(dmatrix& M, int column);
 
-		void calcInverseDynamics(Link* link, vector3& out_f, vector3& out_tau);
+        void calcInverseDynamics(Link* link, vector3& out_f, vector3& out_tau);
 
-		void calcTotalMomentum(vector3& out_P, vector3& out_L);
+        void calcTotalMomentum(vector3& out_P, vector3& out_L);
 
         void setDefaultRootPosition(const vector3& p, const matrix33& R);
 
-		void getDefaultRootPosition(vector3& out_p, matrix33& out_R);
+        void getDefaultRootPosition(vector3& out_p, matrix33& out_R);
 
-		void initializeConfiguration();
+        void initializeConfiguration();
 
-		void calcForwardKinematics(bool calcVelocity = false, bool calcAcceleration = false);
+        void calcForwardKinematics(bool calcVelocity = false, bool calcAcceleration = false);
 
-		void clearExternalForces();
+        void clearExternalForces();
 
-		JointPathPtr getJointPath(Link* baseLink, Link* targetLink);
+        JointPathPtr getJointPath(Link* baseLink, Link* targetLink);
 
-		inline void setVirtualJointForces(){
-			if(customizerInterface){
-				setVirtualJointForcesSub();
-			}
-		}
+        inline void setVirtualJointForces(){
+            if(customizerInterface){
+                setVirtualJointForcesSub();
+            }
+        }
 
-		/**
-		   This function must be called before the collision detection.
-		   It updates the positions and orientations of the models
-		   for detecting collisions between links.
-		*/
-		void updateLinkColdetModelPositions();
+        /**
+           This function must be called before the collision detection.
+           It updates the positions and orientations of the models
+           for detecting collisions between links.
+        */
+        void updateLinkColdetModelPositions();
 
-		void putInformation(std::ostream &out);
+        void putInformation(std::ostream &out);
 
-		bool installCustomizer();
-		bool installCustomizer(BodyCustomizerInterface* customizerInterface);
+        bool installCustomizer();
+        bool installCustomizer(BodyCustomizerInterface* customizerInterface);
 
-		struct LinkConnection {
-			Link* link[2];
-			vector3 point[2];
-			int numConstraintAxes;
-			vector3 constraintAxes[3];
-		};
-		typedef std::vector<LinkConnection> LinkConnectionArray;
+        struct LinkConnection {
+            Link* link[2];
+            vector3 point[2];
+            int numConstraintAxes;
+            vector3 constraintAxes[3];
+        };
+        typedef std::vector<LinkConnection> LinkConnectionArray;
 
-		LinkConnectionArray linkConnections;
+        LinkConnectionArray linkConnections;
 
 		
-	private:
+      private:
 
-		int jointMode;
+        bool isStatic_;
+        Link* rootLink_;
+        Link* invalidLink;
 
-		bool isStatic_;
-		Link* rootLink_;
-		Link* invalidLink;
+        typedef std::vector<Link*> LinkArray;
 
-		typedef std::vector<Link*> LinkArray;
+        LinkArray jointIdToLinkArray;
 
-		LinkArray jointIdToLinkArray;
+        LinkTraverse linkTraverse_;
 
-		LinkTraverse linkTraverse_;
+        typedef std::map<std::string, Link*> NameToLinkMap;
+        NameToLinkMap nameToLinkMap;
 
-		typedef std::map<std::string, Link*> NameToLinkMap;
-		NameToLinkMap nameToLinkMap;
-
-		// sensor = sensors[type][sensorId]
-		typedef std::vector<Sensor*> SensorArray;
+        // sensor = sensors[type][sensorId]
+        typedef std::vector<Sensor*> SensorArray;
         std::vector<SensorArray> allSensors;
 
-		typedef std::map<std::string, Sensor*> NameToSensorMap;
-		NameToSensorMap nameToSensorMap;
+        typedef std::map<std::string, Sensor*> NameToSensorMap;
+        NameToSensorMap nameToSensorMap;
 
-		double totalMass_;
+        double totalMass_;
 
         vector3 defaultRootPosition;
         matrix33 defaultRootAttitude;
 
-		// Members for customizer
-		BodyCustomizerHandle customizerHandle;
-		BodyCustomizerInterface* customizerInterface;
-		BodyHandleEntity bodyHandleEntity;
-		BodyHandle bodyHandle;
+        // Members for customizer
+        BodyCustomizerHandle customizerHandle;
+        BodyCustomizerInterface* customizerInterface;
+        BodyHandleEntity bodyHandleEntity;
+        BodyHandle bodyHandle;
 
-		// for boost::intrusive_ptr
-		friend void ::boost::intrusive_ptr_add_ref(hrp::Body* body);
-		friend void ::boost::intrusive_ptr_release(hrp::Body* body);
-		int refCounter;
+        // for boost::intrusive_ptr
+        friend void ::boost::intrusive_ptr_add_ref(hrp::Body* body);
+        friend void ::boost::intrusive_ptr_release(hrp::Body* body);
+        int refCounter;
 
-		void initialize();
-		void setVirtualJointForcesSub();
+        void initialize();
+        void setVirtualJointForcesSub();
 
-		friend class CustomizedJointPath;
+        friend class CustomizedJointPath;
     };
 
-	typedef boost::intrusive_ptr<Body> BodyPtr;
+    typedef boost::intrusive_ptr<Body> BodyPtr;
 
 };
 
 
 namespace boost
 {
-  inline void intrusive_ptr_add_ref(hrp::Body* body){
-	  body->refCounter++;
-  }
-  inline void intrusive_ptr_release(hrp::Body* body){
-	  if(--body->refCounter == 0){
-		  delete body;
-	  }
-  }
+    inline void intrusive_ptr_add_ref(hrp::Body* body){
+        body->refCounter++;
+    }
+    inline void intrusive_ptr_release(hrp::Body* body){
+        if(--body->refCounter == 0){
+            delete body;
+        }
+    }
 };
 
 
