@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
@@ -57,6 +58,7 @@ public class GrxLoggerView extends GrxBaseView {
 	private int frameRate_ = 10;
 	private boolean isPlaying_ = false;
     private boolean isControlDisabled_ = false; 
+    private boolean inSimulation_ = false;
 		
     // widgets
 	private Scale sliderFrameRate_;
@@ -276,7 +278,6 @@ public class GrxLoggerView extends GrxBaseView {
             public void widgetSelected(SelectionEvent e){
             	frameRate_ = sliderFrameRate_.getSelection();
 				lblFrameRate_.setText( "FPS:"+String.valueOf(frameRate_) );
-				manager_.setDelay(1000/frameRate_);
             }
 		} );
 		//sliderFrameRate_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -305,57 +306,43 @@ public class GrxLoggerView extends GrxBaseView {
 			return false;
 		}
 	}
-	/**
-	 * @brief
-	 */
+	
 	private void play() {
 		if(currentItem_ == null) return;
 		if (!isPlaying_) {
 			if (_isAtTheEndAfterPlayback()) currentItem_.setPosition(0);
 			final double stepTime = currentItem_.getDbl("logTimeStep", -1.0)*1000;
-			final int sliderMax = getMaximum();
-			Thread playThread_ = new Thread() {
+			Runnable playRun_ = new Runnable() {
 				public void run() {
-					try {
-						boolean _continue = true;
-						while(_continue){
-							if(!isPlaying_) break;
-							int interval =  (int)Math.ceil(1000.0d/frameRate_/stepTime*playRate_);
-							if(interval==0) interval = (int) Math.signum(playRate_);
-							int newpos = current_ + interval;
-							if ( sliderMax < newpos) {
-								newpos = sliderMax;
-								_continue = false;
-							} else if (newpos < 0) {
-								newpos = 0;
-								_continue = false;
-							}
-							final int position = newpos;
-							syncExec( new Runnable(){
-								public void run() {
-									currentItem_.setPosition(position);
-								}
-							});
-							int sleepTime = (int)(stepTime*interval/playRate_);	
-							sleep(sleepTime);
-						}
-						syncExec( new Runnable(){
-							public void run() {
-								pause();
-							}
-						});
-					} catch (Exception e) {
-						isPlaying_ = false;
-						GrxDebugUtil.printErr("Playing Interrupted by Exception:",e);
-					}
+					if(!isPlaying_) return;
+					int sliderMax = currentItem_.getLogSize()-1;
+					int interval =  (int)Math.ceil(1000.0d/frameRate_/stepTime*playRate_);
+					if(interval==0) interval = (int) Math.signum(playRate_);
+					int newpos = current_ + interval;
+					boolean _continue = true;
+					if ( sliderMax < newpos) {
+						newpos = sliderMax;
+						if(!inSimulation_)
+							_continue = false;
+					} else if (newpos < 0) {
+						newpos = 0;
+						_continue = false;
+					} 
+					currentItem_.setPosition(newpos);
+					if(_continue){
+						int sleepTime = (int)(stepTime*interval/playRate_);	
+						Display display = composite_.getDisplay();
+						if (!display.isDisposed())
+							display.timerExec(sleepTime, this);
+					}else
+						pause();
 				}
 			};
-			
 			isPlaying_ = true;
-			playThread_.start();
-			
+			Display display = composite_.getDisplay();
+			if (!display.isDisposed())
+				display.timerExec(1, playRun_);
 		}
-
 		if (Math.abs(playRate_)<1.0)
 			lblPlayRate_.setText(FORMAT_SLOW.format(1/playRate_));
 		else
@@ -475,12 +462,17 @@ public class GrxLoggerView extends GrxBaseView {
 			sliderTime_.setSelection(pos);
 			_updateTimeField(currentItem_);
 		}else if((String)arg[0]=="StartSimulation"){
+			inSimulation_ = true; 
 			lblPlayRate_.setText("Live");
 			if((Boolean)arg[1])
 				disableControl();
+			else
+				play();
 		}else if((String)arg[0]=="StopSimulation"){
+			inSimulation_ = false;
 			lblPlayRate_.setText("Pause");
 			enableControl();
+			pause();
 		}else if((String)arg[0]=="ClearLog"){
 			_setTimeSeriesItem(currentItem_);
 		}

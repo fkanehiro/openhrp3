@@ -461,6 +461,10 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public void deleteObserver(GrxBaseView v){
 		observers_.remove(v);
 	}
+
+	public ArrayList<GrxBaseView> getObserver(){
+		return observers_;
+	}
 	
 	public void notifyObservers(Object... arg) { 
         ListIterator<GrxBaseView> it = observers_.listIterator();
