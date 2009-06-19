@@ -19,7 +19,6 @@
 
 package com.generalrobotix.ui.view;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -105,7 +104,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private CollisionPairPanel collisionPane_;
 
 	private Thread simThread_;
-
+	private static final int interval_ = 100; //[ms]
+	
 	private static final String FORMAT1 = "%8.3f";
 	
 	/**
@@ -190,6 +190,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 			}
 		}
 		
+		private static final int EXEC = -1;
+		private static final int TIMEOVER = 0;
+		private static final int STOP = 1;
+		private static final int INTERRUPT = 2;
+		private int simThreadState_ =  EXEC;
+		private Object lock_ = new Object();
+		
 		public boolean startSimulation(boolean isInteractive) {
 			
 			if (isExecuting_){
@@ -248,7 +255,44 @@ public class GrxOpenHRPView extends GrxBaseView {
 			simTime_ = 0.0;
 			simulateTime_ = 0;
 			currentWorld_.init();
+			simThreadState_ =  EXEC;
 			simThread_.start();
+			
+			Runnable run = new Runnable(){
+				public void run() {
+					switch(simThreadState_){
+						case TIMEOVER:
+							if(extendTime())
+								simThreadState_=EXEC;
+							else
+								simThreadState_=STOP;
+							synchronized(lock_){ 
+								lock_.notifyAll();
+							}
+						case EXEC:
+							Display display = composite_.getDisplay();
+					        if ( display!=null && !display.isDisposed()){
+					        	display.timerExec(interval_, this);
+					        }
+					        break;
+						case STOP:
+							endOfSimulation();
+							break;
+						case INTERRUPT:
+							MessageDialog.openError( GrxUIPerspectiveFactory.getCurrentShell(),
+											"Simulation Interrupted", "Simulation Interrupted by Exception.");
+							endOfSimulation();
+							break;
+						default :
+							break;
+					}	
+				}
+			};
+			Display display = composite_.getDisplay();
+	        if ( display!=null && !display.isDisposed()){
+	        	display.timerExec(interval_, run);
+	        }
+	        
 			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
 			return true;
 		}
@@ -262,7 +306,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			return timeMsg_;
 		}
 
-		private boolean extendFlag_;
+
 		private Thread _createSimulationThread(){
 			Thread thread = new Thread(){
 				public void run() {
@@ -278,17 +322,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 							} else {
 								if (!simulateOneStep()){
 									long s = System.currentTimeMillis();
-									syncExec( new Runnable(){
-										public void run() {
-											extendFlag_ = extendTime();
-						                }
-									} );
-									if (extendFlag_)
-										suspendT += System.currentTimeMillis() - s;
-									else{
-										suspendT += System.currentTimeMillis() - s;
-										break;
+									simThreadState_ = TIMEOVER;
+									synchronized(lock_){
+											lock_.wait();
 									}
+									suspendT += System.currentTimeMillis() - s;
+									if(simThreadState_==STOP)
+										break;
 								}
 							}
 						}
@@ -299,19 +339,12 @@ public class GrxOpenHRPView extends GrxBaseView {
 			    			i.deactive();
 			    		}
                         currentWorld_.setLogMenus(true);
-			    		endOfSimulation();
+			    		simThreadState_ = STOP;
 
 					} catch (Exception e) {
 						GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
-
-						execSWT( new Runnable(){
-							public void run(){
-						        MessageDialog.openError( GrxUIPerspectiveFactory.getCurrentShell(),
-										"Simulation Interrupted", "Simulation Interrupted by Exception.");
-							}
-						}, false );
 						isExecuting_ = false;
-						endOfSimulation();
+						simThreadState_ = INTERRUPT;
 					}
 				}
 			};
@@ -449,17 +482,6 @@ public class GrxOpenHRPView extends GrxBaseView {
 		                }
 					} );
 				}
-			}
-			
-			// display
-			if(!isSimulatingView_){
-				if((simTime_*1000) % manager_.getDelay() < stepTime_*1000){ 
-					syncExec(new Runnable(){
-						public void run() {
-							currentWorld_.setPosition(currentWorld_.getLogSize()-1);
-		                }
-					} );
-		        }
 			}
 			
 			// output

@@ -90,9 +90,6 @@ public class GrxPluginManager {
     public static final int SETNAME_ITEM=4;
     public static final int FOCUSED_ITEM=5;
     public static final int NOTFOCUSED_ITEM=6;
-    
-    private int delay_ = DEFAULT_INTERVAL;// [msec]
-    private static final int DEFAULT_INTERVAL = 100; // [msec]
 
     // for CORBA
     public POA poa_;
@@ -371,14 +368,6 @@ public class GrxPluginManager {
      */
     public GrxModeInfoItem getMode() {
         return currentMode_;
-    }
-
-    public void setDelay(int msec) {
-        delay_ = msec;
-    }
-
-    public int getDelay() {
-        return delay_;
     }
 
     @SuppressWarnings("unchecked")

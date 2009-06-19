@@ -34,9 +34,15 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
 import jp.go.aist.hrp.simulator.*;
 
+import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.GrxTimeSeriesItem;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
@@ -44,6 +50,7 @@ import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.view.graph.*;
 import com.generalrobotix.ui.util.GrxCopyUtil;
+import com.generalrobotix.ui.view.GrxLoggerView;
 
 @SuppressWarnings("serial")
 public class GrxWorldStateItem extends GrxTimeSeriesItem {
@@ -968,6 +975,27 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
 	
 	public void startSimulation(boolean isSimulatingView){
+		if(!isSimulatingView){
+			boolean contain = false;
+			ListIterator<GrxBaseView> it = getObserver().listIterator();
+	        while (it.hasNext()) {
+	            GrxBaseView observer = it.next();
+	            if(observer instanceof GrxLoggerView){
+	            	contain = true;
+	            	break;
+	            }            	
+	        }
+	        if(!contain){
+	        	IWorkbench workbench = PlatformUI.getWorkbench();
+	    		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+	    		IWorkbenchPage page = window.getActivePage();
+	    		try {
+	    			page.showView("com.generalrobotix.ui.view.GrxLoggerViewPart", null, IWorkbenchPage.VIEW_CREATE);  
+	    		} catch (PartInitException e1) {
+	    			e1.printStackTrace();
+	    		}
+	        }
+		}
 		notifyObservers("StartSimulation", isSimulatingView);
 	}
 	
