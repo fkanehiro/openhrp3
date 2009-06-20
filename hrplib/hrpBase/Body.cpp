@@ -185,7 +185,6 @@ void Body::updateLinkTree()
     
     for(int i=0; i < n; ++i){
         Link* link = linkTraverse_[i];
-        //link->body = this; // hogeika
         link->index = i;
         nameToLinkMap[link->name] = link;
 

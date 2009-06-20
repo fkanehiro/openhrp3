@@ -42,6 +42,7 @@
 
 
 #include "Link.h"
+#include <stack>
 #include <hrpCollision/ColdetModel.h>
 
 using namespace std;
@@ -113,11 +114,13 @@ Link::Link(const Link& org)
     parent = child = sibling = 0;
 
     if(org.child){
+        stack<Link*> children;
         for(Link* orgChild = org.child; orgChild; orgChild = orgChild->sibling){
-            Link* newChild = new Link(*orgChild);
-            newChild->parent = this;
-            newChild->sibling = child;
-            child = newChild;
+            children.push(orgChild);
+        }
+        while(!children.empty()){
+            addChild(new Link(*children.top()));
+            children.pop();
         }
     }
 
