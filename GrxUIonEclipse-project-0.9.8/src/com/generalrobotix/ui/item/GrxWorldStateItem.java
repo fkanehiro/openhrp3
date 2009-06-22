@@ -51,6 +51,7 @@ import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.view.graph.*;
 import com.generalrobotix.ui.util.GrxCopyUtil;
 import com.generalrobotix.ui.view.GrxLoggerView;
+import com.generalrobotix.ui.view.GrxOpenHRPView;
 
 @SuppressWarnings("serial")
 public class GrxWorldStateItem extends GrxTimeSeriesItem {
@@ -976,16 +977,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	public void startSimulation(boolean isSimulatingView){
 		if(!isSimulatingView){
-			boolean contain = false;
-			ListIterator<GrxBaseView> it = getObserver().listIterator();
-	        while (it.hasNext()) {
-	            GrxBaseView observer = it.next();
-	            if(observer instanceof GrxLoggerView){
-	            	contain = true;
-	            	break;
-	            }            	
-	        }
-	        if(!contain){
+			GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class );
+			if( view == null){
 	        	IWorkbench workbench = PlatformUI.getWorkbench();
 	    		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 	    		IWorkbenchPage page = window.getActivePage();

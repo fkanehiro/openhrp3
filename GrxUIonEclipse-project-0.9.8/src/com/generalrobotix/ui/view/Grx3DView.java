@@ -943,7 +943,7 @@ public class Grx3DView
 		recordingMgr_.pushImage( offscreen_.getOffScreenBuffer().getImage() );
     }
     
-    private void _showCollision(Collision[] collisions) {
+    public void _showCollision(Collision[] collisions) {
         collision_.removeAllGeometries();
         if (collisions == null || collisions.length <= 0 || !btnCollision_.isSelected()) 
             return;
