@@ -79,7 +79,7 @@ void WorldBase::setCurrentTime(double time)
 }
 
 
-void WorldBase::setGravityAcceleration(const vector3& g)
+void WorldBase::setGravityAcceleration(const Vector3& g)
 {
     this->g = g;
 }

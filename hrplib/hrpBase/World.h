@@ -66,8 +66,8 @@ namespace hrp {
 		void setCurrentTime(double);
 		double currentTime(void) const { return currentTime_; }
 	
-		void setGravityAcceleration(const vector3& g);
-		const vector3& getGravityAcceleration() { return g; }
+		void setGravityAcceleration(const Vector3& g);
+		const Vector3& getGravityAcceleration() { return g; }
 
 		void enableSensors(bool on);
 		
@@ -106,7 +106,7 @@ namespace hrp {
 
 		int numRegisteredLinkPairs;
 		
-        vector3 g;
+        Vector3 g;
 
         bool isEulerMethod; // Euler or Runge Kutta ?
 
