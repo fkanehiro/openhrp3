@@ -48,6 +48,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 
@@ -105,6 +110,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 
 	private Thread simThread_;
 	private static final int interval_ = 100; //[ms]
+	private Grx3DView view3D;
 	
 	private static final String FORMAT1 = "%8.3f";
 	
@@ -246,6 +252,20 @@ public class GrxOpenHRPView extends GrxBaseView {
 			logStepTime_ = simParamPane_.getLogStepTime();
 			
 			isSimulatingView_ = simParamPane_.isSimulatingView();
+			if(isSimulatingView_){
+				view3D =  (Grx3DView)manager_.getView( Grx3DView.class );
+				if(view3D==null){
+					IWorkbench workbench = PlatformUI.getWorkbench();
+					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+					IWorkbenchPage page = window.getActivePage();
+					try {
+						page.showView("com.generalrobotix.ui.view.Grx3DViewPart", null, IWorkbenchPage.VIEW_CREATE);  
+					} catch (PartInitException e1) {
+						e1.printStackTrace();
+					}
+					view3D =  (Grx3DView)manager_.getView( Grx3DView.class );
+				}
+			}
 			
 			currentWorld_.startSimulation(isSimulatingView_);
 			
@@ -270,6 +290,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 								lock_.notifyAll();
 							}
 						case EXEC:
+							if(isSimulatingView_){
+								currentWorld_.setPosition(currentWorld_.getLogSize()-1,view3D);
+							}
 							Display display = composite_.getDisplay();
 					        if ( display!=null && !display.isDisposed()){
 					        	display.timerExec(interval_, this);
@@ -476,11 +499,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 	            currentWorld_.addValue(simTime_, wsx);
          
 				if (isSimulatingView_){
-					syncExec(new Runnable(){
-						public void run() {
-							currentWorld_.setPosition(currentWorld_.getLogSize()-1);
-		                }
-					} );
+					view3D._showCollision(wsx.collisions);
+					view3D.updateModels(wsx);
+					view3D.updateViewSimulator(wsx.time);
 				}
 			}
 			

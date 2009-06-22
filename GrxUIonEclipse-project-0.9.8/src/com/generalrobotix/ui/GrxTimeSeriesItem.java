@@ -18,6 +18,7 @@
 package com.generalrobotix.ui;
 
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 
 /**
@@ -63,6 +64,19 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 		if (0 <= pos && pos < log_.size()){
 			currentPos_ = pos;
 			notifyObservers("PositionChange",pos);
+		}
+	}
+	
+	// viewで指定された以外に通知  //
+	public void setPosition(Integer pos, GrxBaseView view) {
+		if (0 <= pos && pos < log_.size()){
+			currentPos_ = pos;
+			ListIterator<GrxBaseView> it = getObserver().listIterator();
+	        while (it.hasNext()) {
+	            GrxBaseView observer = it.next();
+	            if(observer != view)
+	            	observer.update(this, "PositionChange",pos);
+	        }
 		}
 	}
 
