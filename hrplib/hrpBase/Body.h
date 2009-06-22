@@ -93,6 +93,10 @@ namespace hrp {
             return jointIdToLinkArray[id];
         }
 
+        inline const std::vector<Link*>& joints() const {
+            return jointIdToLinkArray;
+        }
+
         /**
            The number of all the links the body has.
            The value corresponds to the size of the sequence obtained by link() function.
@@ -108,6 +112,10 @@ namespace hrp {
         */
         inline Link* link(int index) const {
             return linkTraverse_.link(index);
+        }
+
+        inline const LinkTraverse& links() const {
+            return linkTraverse_;
         }
 
         /**
