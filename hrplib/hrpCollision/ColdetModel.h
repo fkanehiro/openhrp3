@@ -79,6 +79,8 @@ namespace hrp {
          */
         void setNumTriangles(int n);
 
+        int getNumTriangles() const;
+
         /**
          * @brief add a vertex
          * @param index index of the vertex
@@ -87,6 +89,11 @@ namespace hrp {
          * @param z z position of the vertex
          */
         void setVertex(int index, float x, float y, float z);
+
+        /**
+           add a vertex to the end of the vector
+        */
+        void addVertex(float x, float y, float z);
 
         /**
          * @brief get a vertex
@@ -105,6 +112,11 @@ namespace hrp {
          * @param v3 index of the third vertex
          */
         void setTriangle(int index, int v1, int v2, int v3);
+
+        /**
+           add a triangle to the end of the vector
+        */
+        void addTriangle(int v1, int v2, int v3);
 
         /**
          * @brief build tree of bounding boxes to accelerate collision check
