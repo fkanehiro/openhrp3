@@ -54,7 +54,7 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
 
     private static final Color normalColor_ = new Color(Display.getDefault(),0, 0, 0);
     private static final Color focusedColor_ = new Color(Display.getDefault(),0, 0, 100);
-    private static final Font GRAPH_LEGEND_FONT = new Font(Display.getDefault(),"dialog", SWT.NORMAL, 12);
+    private static final Font GRAPH_LEGEND_FONT = new Font(Display.getDefault(),"dialog", 12, SWT.NORMAL );
     // -----------------------------------------------------------------
     // コンストラクタ
     /**
