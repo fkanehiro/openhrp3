@@ -83,12 +83,15 @@ Link::Link(const Link& org)
     u = org.u;
 
     a = org.a;
-    b = org.b;
     d = org.d;
+    b = org.b;
     Rs = org.Rs;
     m = org.m;
     I = org.I;
     c = org.c;
+
+    fext = org.fext;
+    tauext = org.tauext;
 
     Jm2 = org.Jm2;
 
