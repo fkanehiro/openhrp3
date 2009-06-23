@@ -50,8 +50,6 @@ static const bool usePivotingLCP = false;
 
 // settings
 
-static const bool USE_INTERNAL_COLLISION_DETECTOR = false;
-
 static const double VEL_THRESH_OF_DYNAMIC_FRICTION = 1.0e-4;
 
 static const bool ENABLE_STATIC_FRICTION = true;
@@ -140,6 +138,8 @@ namespace hrp
 #endif
 
         WorldBase& world;
+
+        bool useBuiltinCollisionDetector;
 
         struct ConstraintPoint {
             int globalIndex;
@@ -374,6 +374,7 @@ CFSImpl::CFSImpl(WorldBase& world) :
     maxNumGaussSeidelIteration = DEFAULT_MAX_NUM_GAUSS_SEIDEL_ITERATION;
     numGaussSeidelInitialIteration = DEFAULT_NUM_GAUSS_SEIDEL_INITIAL_ITERATION;
     gaussSeidelMaxRelError = DEFAULT_GAUSS_SEIDEL_MAX_REL_ERROR;
+    useBuiltinCollisionDetector = false;
 }
 
 
@@ -526,7 +527,7 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
 
     for(size_t i=0; i < bodiesData.size(); ++i){
         bodiesData[i].hasConstrainedLinks = false;
-        if(USE_INTERNAL_COLLISION_DETECTOR){
+        if(useBuiltinCollisionDetector){
             bodiesData[i].body->updateLinkColdetModelPositions();
         }
     }
@@ -620,7 +621,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
     CollisionPointSequence collisionPoints;
     CollisionPointSequence* pCollisionPoints = 0;
 
-    if(USE_INTERNAL_COLLISION_DETECTOR && enableNormalVisualization){
+    if(useBuiltinCollisionDetector && enableNormalVisualization){
         collisions.length(collisionCheckLinkPairs.size());
     }
 	
@@ -628,7 +629,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
         pCollisionPoints = 0;
         LinkPair& linkPair = collisionCheckLinkPairs[colIndex];
 
-        if( ! USE_INTERNAL_COLLISION_DETECTOR){
+        if( ! useBuiltinCollisionDetector){
             CollisionPointSequence& points = collisions[colIndex].points;
             if(points.length() > 0){
                 pCollisionPoints = &points;
@@ -2092,11 +2093,24 @@ bool ContactForceSolver::addCollisionCheckLinkPair
 }
 
 
+void ContactForceSolver::clearCollisionCheckLinkPairs()
+{
+    impl->world.clearCollisionPairs();
+    impl->collisionCheckLinkPairs.clear();
+}
+
+
 void ContactForceSolver::setGaussSeidelParameters(int maxNumIteration, int numInitialIteration, double maxRelError)
 {
     impl->maxNumGaussSeidelIteration = maxNumIteration;
     impl->numGaussSeidelInitialIteration = numInitialIteration;
     impl->gaussSeidelMaxRelError = maxRelError;
+}
+
+
+void ContactForceSolver::useBuiltinCollisionDetector(bool on)
+{
+    impl->useBuiltinCollisionDetector = on;
 }
 
 

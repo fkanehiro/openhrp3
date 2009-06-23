@@ -30,9 +30,10 @@ ColdetModel::ColdetModel()
 
 
 ColdetModel::ColdetModel(const ColdetModel& org)
+    : name_(org.name_),
+      isValid_(org.isValid_)
 {
     dataSet = org.dataSet;
-    isValid_ = org.isValid_;
     initialize();
 }
 

@@ -1,4 +1,3 @@
-// -*- mode: c++;
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -37,8 +36,8 @@ WorldBase::WorldBase()
     g = 0.0, 0.0, DEFAULT_GRAVITY_ACCELERATION;
 
     isEulerMethod =false;
-	sensorsAreEnabled = false;
-	numRegisteredLinkPairs = 0;
+    sensorsAreEnabled = false;
+    numRegisteredLinkPairs = 0;
 }
 
 
@@ -57,7 +56,7 @@ int WorldBase::bodyIndex(const std::string& name)
 
 BodyPtr WorldBase::body(int index)
 {
-	return bodyInfoArray[index].body; 
+    return bodyInfoArray[index].body; 
 }
 
 
@@ -87,51 +86,51 @@ void WorldBase::setGravityAcceleration(const Vector3& g)
 
 void WorldBase::enableSensors(bool on)
 {
-	sensorsAreEnabled = on;
+    sensorsAreEnabled = on;
 }
 
 
 void WorldBase::initialize()
 {
-   const int n = bodyInfoArray.size();
+    const int n = bodyInfoArray.size();
 
     for(int i=0; i < n; ++i){
 
-		BodyInfo& info = bodyInfoArray[i];
-		BodyPtr body = info.body;
+        BodyInfo& info = bodyInfoArray[i];
+        BodyPtr body = info.body;
 
-		bool hasHighGainModeJoints = false;
-		int nL = body->numLinks();
-		for(int j=0; j < nL; ++j){
-			if(body->link(j)->isHighGainMode){
-				hasHighGainModeJoints = true;
-				break;
-			}
-		}
+        bool hasHighGainModeJoints = false;
+        int nL = body->numLinks();
+        for(int j=0; j < nL; ++j){
+            if(body->link(j)->isHighGainMode){
+                hasHighGainModeJoints = true;
+                break;
+            }
+        }
 
-		if(hasHighGainModeJoints){
-			info.forwardDynamics.reset(new ForwardDynamicsMM(body));
-		} else {
-			info.forwardDynamics.reset(new ForwardDynamicsABM(body));
-		}
-		if(isEulerMethod){
-			info.forwardDynamics->setEulerMethod();
-		} else {
-			info.forwardDynamics->setRungeKuttaMethod();
-		}
-	    info.forwardDynamics->setGravityAcceleration(g);
+        if(hasHighGainModeJoints){
+            info.forwardDynamics.reset(new ForwardDynamicsMM(body));
+        } else {
+            info.forwardDynamics.reset(new ForwardDynamicsABM(body));
+        }
+        if(isEulerMethod){
+            info.forwardDynamics->setEulerMethod();
+        } else {
+            info.forwardDynamics->setRungeKuttaMethod();
+        }
+        info.forwardDynamics->setGravityAcceleration(g);
     	info.forwardDynamics->setTimeStep(timeStep_);
-		info.forwardDynamics->enableSensors(sensorsAreEnabled);
-		info.forwardDynamics->initialize();
+        info.forwardDynamics->enableSensors(sensorsAreEnabled);
+        info.forwardDynamics->initialize();
     }
 }
 
 
 void WorldBase::calcNextState()
 {
-	if(debugMode){
-		cout << "World current time = " << currentTime_ << endl;
-	}
+    if(debugMode){
+        cout << "World current time = " << currentTime_ << endl;
+    }
     const int n = bodyInfoArray.size();
 
 //#pragma omp parallel for num_threads(3) schedule(static)
@@ -169,6 +168,13 @@ void WorldBase::clearBodies()
 }
 
 
+void WorldBase::clearCollisionPairs()
+{
+    linkPairKeyToIndexMap.clear();
+    numRegisteredLinkPairs = 0;
+}
+
+
 void WorldBase::setEulerMethod()
 {
     isEulerMethod = true;
@@ -183,42 +189,42 @@ void WorldBase::setRungeKuttaMethod()
 
 std::pair<int,bool> WorldBase::getIndexOfLinkPairs(Link* link1, Link* link2)
 {
-	int index = -1;
-	int isRegistered = false;
+    int index = -1;
+    int isRegistered = false;
 
     if(link1 != link2){
 
-		LinkPairKey linkPair;
-		if(link1 < link2){
-			linkPair.link1 = link1;
-			linkPair.link2 = link2;
-		} else {
-			linkPair.link1 = link2;
-			linkPair.link2 = link1;
-		}
+        LinkPairKey linkPair;
+        if(link1 < link2){
+            linkPair.link1 = link1;
+            linkPair.link2 = link2;
+        } else {
+            linkPair.link1 = link2;
+            linkPair.link2 = link1;
+        }
 
-		LinkPairKeyToIndexMap::iterator p = linkPairKeyToIndexMap.find(linkPair);
+        LinkPairKeyToIndexMap::iterator p = linkPairKeyToIndexMap.find(linkPair);
 
-		if(p != linkPairKeyToIndexMap.end()){
-			index = p->second;
-			isRegistered = true;
-		} else {
-			index = numRegisteredLinkPairs++;
-			linkPairKeyToIndexMap[linkPair] = index;
-		}
-	}
+        if(p != linkPairKeyToIndexMap.end()){
+            index = p->second;
+            isRegistered = true;
+        } else {
+            index = numRegisteredLinkPairs++;
+            linkPairKeyToIndexMap[linkPair] = index;
+        }
+    }
 
-	return std::make_pair(index, isRegistered);
+    return std::make_pair(index, isRegistered);
 }
 
 
 bool WorldBase::LinkPairKey::operator<(const LinkPairKey& pair2) const
 {
-	if(link1 < pair2.link1){
-		return true;
-	} else if(link1 == pair2.link1){
-		return (link2 < pair2.link2);
-	} else {
-		return false;
-	}
+    if(link1 < pair2.link1){
+        return true;
+    } else if(link1 == pair2.link1){
+        return (link2 < pair2.link2);
+    } else {
+        return false;
+    }
 }
