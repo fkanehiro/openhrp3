@@ -43,7 +43,7 @@ public class XYLineGraph extends Canvas implements PaintListener {
     private static final int LABEL_GAP_LEFT = 5;
     private static final int LABEL_GAP_RIGHT = 4;
     private static final int LABEL_GAP_TOP = 3;
-    private static final int LABEL_GAP_BOTTOM = 0;
+    private static final int LABEL_GAP_BOTTOM = -5;
     // 描画フラグ
     private static final int DRAW_AXIS = 1;     // 軸描画
     private static final int DRAW_TICK = 2;     // ティック描画
