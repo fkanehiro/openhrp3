@@ -649,7 +649,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
             collision_data* cdata = linkPair.detectCollisions();
             
             if(!cdata){
-                pCollisionPoints->length(0);
+                pCollisionPoints = 0;
             } else {
                 int npoints = 0;
                 for(int i = 0; i < cdContactsCount; i++) {
@@ -657,27 +657,31 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
                         if(cdata[i].i_point_new[j]) npoints ++;
                     }
                 }
-                pCollisionPoints->length(npoints);
-                                
-                int idx = 0;
-                for (int i = 0; i < cdContactsCount; i++) {
-                    collision_data& cd = cdata[i];
-                    for(int j=0; j < cd.num_of_i_points; j++){
-                        if (cd.i_point_new[j]){
-                            CollisionPoint& point = (*pCollisionPoints)[idx];
-                            for(int k=0; k < 3; k++){
-                                point.position[k] = cd.i_points[j][k];
+                if(npoints == 0){
+                    pCollisionPoints = 0;
+                } else {
+                    pCollisionPoints->length(npoints);
+                    int idx = 0;
+                    for (int i = 0; i < cdContactsCount; i++) {
+                        collision_data& cd = cdata[i];
+                        for(int j=0; j < cd.num_of_i_points; j++){
+                            if (cd.i_point_new[j]){
+                                CollisionPoint& point = (*pCollisionPoints)[idx];
+                                for(int k=0; k < 3; k++){
+                                    point.position[k] = cd.i_points[j][k];
+                                }
+                                for(int k=0; k < 3; k++){
+                                    point.normal[k] = cd.n_vector[k];
+                                }
+                                point.idepth = cd.depth;
+                                idx++;
                             }
-                            for(int k=0; k < 3; k++){
-                                point.normal[k] = cd.n_vector[k];
-                            }
-                            point.idepth = cd.depth;
-                            idx++;
                         }
                     }
                 }
             }
         }
+
         if(pCollisionPoints){
             constrainedLinkPairs.push_back(&linkPair);
             setContactConstraintPoints(linkPair, *pCollisionPoints);
