@@ -100,9 +100,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	String url = getURL(true);
     	if (bModified_ || url == null || url.equals("")){
         	MessageDialog.openInformation(null, "", "Please save model("+getName()+") before starting simulation");
-        	_saveAs();
+        	if(!_saveAs())
+        		return null;
         	File f = new File(getURL(true));
         	load(f);
+        	restoreProperties();
     	}
     	return bInfo_;
     }
@@ -233,7 +235,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	/**
 	 * @brief save this model as a VRML file
 	 */
-	private void _saveAs(){
+	private boolean _saveAs(){
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
 		String fPath = fdlg.open();
 		if( fPath != null ) {
@@ -241,7 +243,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			if (GrxVrmlExporter.export(GrxModelItem.this, fPath)){
 				setURL(fPath);
 			}
-		}
+			return true;
+		}else
+			return false;
 	}
 	/**
 	 * @brief create a new model
@@ -536,8 +540,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             	List index = new ArrayList();
             	index.add(list.get(0));
             	if(inlinedSTMIndex == -1){ 
-            		link.addShape(new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this,
-                			linkInfo.shapeIndices, null, index));
+            		GrxShapeItem shapeItem = new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this );
+            		shapeItem.loadShape(linkInfo.shapeIndices[(Integer) index.get(0)]);
+            		link.addShape(shapeItem);
             		l++;
             	}else{  
             		for(int i=1; i<list.size(); i++){
@@ -546,8 +551,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	            			index.add(j);       			
 	            		}
 	            	}
-            		link.addShape(new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this,
-            			linkInfo.shapeIndices, linkInfo.inlinedShapeTransformMatrices[inlinedSTMIndex], index));
+            		GrxShapeItem shapeItem = new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this);
+            		shapeItem.loadInlineShape(linkInfo.shapeIndices, linkInfo.inlinedShapeTransformMatrices[inlinedSTMIndex], index);
+            		link.addShape(shapeItem);
             		l++;
             	}
             	for(int i=0; i<index.size(); i++)
@@ -575,8 +581,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     	List index = new ArrayList();
                     	index.add(list.get(0));
                     	if(inlinedSTMIndex == -1){ 
-                    		sensor.addChild(new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this,
-                        			sensor.info_.shapeIndices, null, index));
+                    		GrxShapeItem shapeItem = new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this);
+                    		shapeItem.loadShape(sensor.info_.shapeIndices[(Integer) index.get(0)]);
+                    		sensor.addChild(shapeItem);
                     		l++;
                     	}else{  
                     		for(int j=1; j<list.size(); j++){
@@ -585,8 +592,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         	            			index.add(k);       			
         	            		}
         	            	}
-                    		sensor.addChild(new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this,
-                    			sensor.info_.shapeIndices, sensor.info_.inlinedShapeTransformMatrices[inlinedSTMIndex], index));
+                    		GrxShapeItem shapeItem = new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this);
+                    		shapeItem.loadInlineShape(sensor.info_.shapeIndices, sensor.info_.inlinedShapeTransformMatrices[inlinedSTMIndex], index);
+                    		sensor.addChild(shapeItem);
                     		l++;
                     	}
                     	for(int j=0; j<index.size(); j++)
@@ -603,8 +611,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     	List index = new ArrayList();
                     	index.add(list.get(0));
                     	if(inlinedSTMIndex == -1){ 
-                    		hwc.addChild(new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this,
-                        			hwc.info_.shapeIndices, null, index));
+                    		GrxShapeItem shapeItem = new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this);
+                    		shapeItem.loadShape(hwc.info_.shapeIndices[(Integer) index.get(0)]);
+                    		hwc.addChild(shapeItem);
                     		l++;
                     	}else{  
                     		for(int j=1; j<list.size(); j++){
@@ -613,8 +622,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         	            			index.add(k);       			
         	            		}
         	            	}
-                    		hwc.addChild(new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this,
-                    			hwc.info_.shapeIndices, hwc.info_.inlinedShapeTransformMatrices[inlinedSTMIndex], index));
+                    		GrxShapeItem shapeItem = new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this);
+                    		shapeItem.loadInlineShape(hwc.info_.shapeIndices, hwc.info_.inlinedShapeTransformMatrices[inlinedSTMIndex], index);
+                    		hwc.addChild(shapeItem);
                     		l++;
                     	}
                     	for(int j=0; j<index.size(); j++)

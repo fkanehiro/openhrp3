@@ -199,22 +199,14 @@ public class GrxTransformItem extends GrxBaseItem {
                         GrxCorbaUtil.getReference("ModelLoader"));
                     
                 SceneInfo sInfo = mloader.loadSceneInfo(fPath);
-                model_.shapes = sInfo.shapes();
-                model_.appearances = sInfo.appearances();
-                model_.materials = sInfo.materials();
-                model_.textures = sInfo.textures();
-                TransformedShapeIndex[] tsiDim = sInfo.shapeIndices();
-                double[] inlinedSTM = {1,0,0,0,
-                						0,1,0,0,
-                						0,0,1,0};
-                
                 int n=children_.size();
-                GrxShapeItem shape = new GrxShapeItem(getName()+"_shape_"+n, manager_, model_, tsiDim, inlinedSTM, null);
-                shape.setURL(fPath);
-                addChild(shape);
+                GrxShapeItem shapeItem = new GrxShapeItem(getName()+"_shape_"+n, manager_, model_);
+                shapeItem.loadnewInlineShape(sInfo);
+                shapeItem.setURL(fPath);
+                addChild(shapeItem);
                 
             	//manager_.reselectItems();
-                manager_.itemChange(shape, GrxPluginManager.ADD_ITEM);
+                manager_.itemChange(shapeItem, GrxPluginManager.ADD_ITEM);
             } catch(Exception ex){
                 System.out.println("Failed to load scene info:" + fPath);
                 ex.printStackTrace();
@@ -236,10 +228,11 @@ public class GrxTransformItem extends GrxBaseItem {
     		type = ShapePrimitiveType._SP_SPHERE;
     	else
     		type = -1;
-    	GrxPrimitiveShapeItem pShap = new GrxPrimitiveShapeItem(type, getName()+"_"+name+"_"+n, manager_, model_);
-    	addChild(pShap);
+        GrxShapeItem shapeItem = new GrxShapeItem(getName()+"_"+name+"_"+n, manager_, model_);
+        shapeItem.createnewPrimitiveShape(type);
+    	addChild(shapeItem);
     	//manager_.reselectItems();
-        manager_.itemChange(pShap, GrxPluginManager.ADD_ITEM);
+        manager_.itemChange(shapeItem, GrxPluginManager.ADD_ITEM);
     }
 
     /**
