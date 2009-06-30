@@ -24,12 +24,15 @@ import java.awt.image.DataBufferUShort;
 import java.util.List;
 
 import javax.media.j3d.Appearance;
+import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.ImageComponent;
 import javax.media.j3d.ImageComponent2D;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
+import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Texture;
@@ -40,7 +43,6 @@ import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3d;
-import javax.vecmath.Matrix4d;
 import javax.vecmath.Point2f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
@@ -48,6 +50,7 @@ import javax.vecmath.Vector3f;
 
 import jp.go.aist.hrp.simulator.AppearanceInfo;
 import jp.go.aist.hrp.simulator.MaterialInfo;
+import jp.go.aist.hrp.simulator.SceneInfo;
 import jp.go.aist.hrp.simulator.ShapeInfo;
 import jp.go.aist.hrp.simulator.ShapePrimitiveType;
 import jp.go.aist.hrp.simulator.TextureInfo;
@@ -80,6 +83,9 @@ public class GrxShapeItem extends GrxTransformItem{
     public MaterialInfo[] materials_;
     public TextureInfo[] textures_;
     //public double transform_;
+	private int primitiveFlag = Primitive.GEOMETRY_NOT_SHARED | Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS;
+	private Appearance appearance_=null;
+	private BranchGroup bg_;
     
     protected Switch switchBb_;
 
@@ -95,86 +101,219 @@ public class GrxShapeItem extends GrxTransformItem{
      */
    	public GrxShapeItem(String name, GrxPluginManager manager, GrxModelItem model){
    		super(name, manager, model);
+   		bg_ = new BranchGroup();
+    	bg_.setCapability(BranchGroup.ALLOW_DETACH);
+    	bg_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+        bg_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+        
    	}
    	
-   	public GrxShapeItem(String name, GrxPluginManager manager, GrxModelItem model, TransformedShapeIndex[] tsi,
-       		double[] inlinedSTM, List index) {
-    	super(name, manager, model);
-
-    	Transform3D t3d = new Transform3D();
-    	if(inlinedSTM!=null){
-    		Vector3d v3d = new Vector3d(inlinedSTM[3], inlinedSTM[7], inlinedSTM[11]);
-    		Matrix3d m3d = new Matrix3d(inlinedSTM[0], inlinedSTM[1], inlinedSTM[2],
-    			inlinedSTM[4], inlinedSTM[5], inlinedSTM[6],
-    			inlinedSTM[8], inlinedSTM[9], inlinedSTM[10]);  
-            t3d.setTranslation(v3d);
-            t3d.setRotation(m3d);
-            Transform3D inverset3d = new Transform3D();
-            inverset3d.invert(t3d);
-            
-            int n = tsi.length;
-            if(index!=null)
-            	n = index.size();
-            shapes_ = new ShapeInfo[n];
-            appearances_ = new AppearanceInfo[n];
-            materials_ = new MaterialInfo[n];
-            textures_ = new TextureInfo[n];
-            for(int k=0; k<n; k++){
-            	int i=k;
-            	if(index!=null)
-            		i = (Integer)index.get(k);
-            	TransformGroup tfg = new TransformGroup();
-        		double[] transform = tsi[i].transformMatrix;
-        		v3d = new Vector3d(transform[3], transform[7], transform[11]);
-                m3d = new Matrix3d(transform[0], transform[1], transform[2],
-                	transform[4], transform[5], transform[6],
-                    transform[8], transform[9], transform[10]);
-                Transform3D transform3d = new Transform3D();
-                transform3d.setTranslation(v3d);
-                transform3d.setRotation(m3d);
-                transform3d.mul(inverset3d, transform3d);
-                tfg.setTransform(transform3d);
-                addShape( tsi[i].shapeIndex, tfg, model, k);
-                tg_.addChild(tfg);
-            } 
-    	}else{
-    		shapes_ = new ShapeInfo[1];
-            appearances_ = new AppearanceInfo[1];
-            materials_ = new MaterialInfo[1];
-            textures_ = new TextureInfo[1];
-    		double[] transform = tsi[(Integer)index.get(0)].transformMatrix;
-    		Vector3d v3d = new Vector3d(transform[3], transform[7], transform[11]);
-            Matrix3d m3d = new Matrix3d(transform[0], transform[1], transform[2],
-            	transform[4], transform[5], transform[6],
+   	public void loadShape(TransformedShapeIndex tsi) {
+   		GrxModelItem model = model();
+     	Transform3D t3d = new Transform3D();
+    	
+    	shapes_ = new ShapeInfo[1];
+        appearances_ = new AppearanceInfo[1];
+        materials_ = new MaterialInfo[1];
+        textures_ = new TextureInfo[1];
+        double[] transform = tsi.transformMatrix;
+        Vector3d v3d = new Vector3d(transform[3], transform[7], transform[11]);
+        Matrix3d m3d = new Matrix3d(transform[0], transform[1], transform[2],
+        		transform[4], transform[5], transform[6],
                 transform[8], transform[9], transform[10]);
-            t3d.setTranslation(v3d);
-            t3d.setRotation(m3d);
-            addShape( tsi[(Integer)index.get(0)].shapeIndex, tg_, model, 0);
-    	}
-
+        t3d.setTranslation(v3d);
+        t3d.setRotation(m3d);
+        setShapeInfofromModel(tsi.shapeIndex, 0);
+        Shape3D shape3d = createShape3D(shapes_[0], appearances_[0], materials_[0], textures_[0]);
+    	bg_.addChild(shape3d);
+    	tg_.addChild(bg_);
+        setPrimitiveProperty(model.shapes[tsi.shapeIndex]);
+    	
        	tg_.setTransform(t3d);
-       	/*
-       	Vector3d trans = new Vector3d();
-        Matrix3d rotat = new Matrix3d();
-        t3d.get(rotat, trans);
-
-        double [] pos = new double[3];
-        trans.get(pos);
-        translation(pos);
-        AxisAngle4d a4d = new AxisAngle4d();
-        rotat.normalize();
-        a4d.setMatrix(rotat);
-        double [] rot = new double[4];
-        a4d.get(rot);
-        rotation(rot);
-        */
-        if(index!=null)
-			setURL(model.shapes[tsi[(Integer)index.get(0)].shapeIndex].url);
-		else
-			setURL(model.shapes[tsi[0].shapeIndex].url);
-        
+        setURL(model.shapes[tsi.shapeIndex].url);
+		
         initialize(t3d);
 
+   	}
+   	
+   	public void createnewPrimitiveShape(int type){
+   		shapes_ = new ShapeInfo[1];
+    	shapes_[0] = new ShapeInfo();
+    	appearances_ = new AppearanceInfo[1];
+    	appearances_[0] = new AppearanceInfo();
+        materials_ = new MaterialInfo[1];
+        materials_[0] = new MaterialInfo();
+        textures_ = new TextureInfo[1];
+        textures_[0] = null;
+        
+        Appearance appearance = createAppearance(); 
+        materials_[0].diffuseColor = new float[3];
+        materials_[0].diffuseColor[0] = materials_[0].diffuseColor[1] = materials_[0].diffuseColor[2] =0.8f;
+        materials_[0].emissiveColor = new float[3];
+        materials_[0].emissiveColor[0] = materials_[0].emissiveColor[1] = materials_[0].emissiveColor[2] =0.0f;
+        materials_[0].specularColor = new float[3];
+        materials_[0].specularColor[0] = materials_[0].specularColor[1] = materials_[0].specularColor[2] =0.0f;
+        materials_[0].ambientIntensity = 0.2f;
+        materials_[0].shininess = 0.2f;
+        materials_[0].transparency = 0.0f;
+        setMaterial(appearance, materials_[0]);
+        appearance_ = appearance;
+   	
+        Primitive primitive=null;
+    	switch(type){
+    	case ShapePrimitiveType._SP_BOX :
+	    	float[] size=new float[3];
+	    	size[0] = size[1] = size[2] = 1.0f;
+	    	primitive = new Box(size[0]/2, size[1]/2, size[2]/2, primitiveFlag, appearance);
+	    	shapes_[0].primitiveType = ShapePrimitiveType.SP_BOX;
+			shapes_[0].primitiveParameters = size;
+			setFltAry("size", size);
+			break;
+    	case ShapePrimitiveType._SP_CONE :
+    		float bottomRadius = 1.0f;
+    		float height = 2.0f;
+    		primitive = new Cone(bottomRadius, height, primitiveFlag, appearance);
+    		shapes_[0].primitiveType = ShapePrimitiveType.SP_CONE;
+    		float[] param = new float[4];
+    		param[0] = bottomRadius;
+    		param[1] = height;
+    		param[2] = 1;   
+    		param[3] = 1;	
+			shapes_[0].primitiveParameters = param;
+			setFlt("bottomRadius", bottomRadius);
+			setFlt("height", height);
+			setProperty("side","true");
+			setProperty("bottom","true");
+    		break;
+    	case ShapePrimitiveType._SP_CYLINDER :
+    		float radius = 1.0f;
+    		height = 2.0f;
+    		primitive = new Cylinder(radius, height, primitiveFlag, appearance);
+    		shapes_[0].primitiveType = ShapePrimitiveType.SP_CYLINDER;
+    		param = new float[5];
+    		param[0] = radius;
+    		param[1] = height;
+    		param[2] = 1;   
+    		param[3] = 1;	
+    		param[4] = 1;
+			shapes_[0].primitiveParameters = param;
+			setFlt("radius", radius);
+			setFlt("height", height);
+			setProperty("side","true");
+			setProperty("bottom","true");
+			setProperty("top","true");
+    		break;
+    	case ShapePrimitiveType._SP_SPHERE :
+    		radius = 1.0f;
+    		primitive = new Sphere(radius, primitiveFlag, appearance);
+    		shapes_[0].primitiveType = ShapePrimitiveType.SP_SPHERE;
+    		param = new float[1];
+    		param[0] = radius;
+    		shapes_[0].primitiveParameters = param;
+			setFlt("radius", radius);
+			break;
+    	default :
+    		break;	
+    	}
+    	bg_.addChild(primitive);
+    	Transform3D t3d = new Transform3D();
+    	tg_.setTransform(t3d);
+    	tg_.addChild(bg_);
+
+    	initialize(t3d);
+    	setFltAry("diffuseColor", materials_[0].diffuseColor);
+   	}
+   	
+   	public void loadInlineShape(TransformedShapeIndex[] tsi,	double[] inlinedSTM, List index) {
+   		int n = index.size();
+    	shapes_ = new ShapeInfo[n];
+    	appearances_ = new AppearanceInfo[n];
+    	materials_ = new MaterialInfo[n];
+    	textures_ = new TextureInfo[n];
+    	for(int k=0; k<n; k++){
+    		int i = (Integer)index.get(k);
+    		setShapeInfofromModel(tsi[i].shapeIndex, k);
+    	} 
+    	
+    	setShape(tsi, inlinedSTM, index);
+    	setURL(model().shapes[tsi[(Integer)index.get(0)].shapeIndex].url);
+   	}
+   	
+   	private void setShape(TransformedShapeIndex[] tsi, double[] inlinedSTM, List index){
+     	Transform3D t3d = new Transform3D();
+    	Vector3d v3d = new Vector3d(inlinedSTM[3], inlinedSTM[7], inlinedSTM[11]);
+    	Matrix3d m3d = new Matrix3d(inlinedSTM[0], inlinedSTM[1], inlinedSTM[2],
+    			inlinedSTM[4], inlinedSTM[5], inlinedSTM[6],
+    			inlinedSTM[8], inlinedSTM[9], inlinedSTM[10]);  
+    	t3d.setTranslation(v3d);
+    	t3d.setRotation(m3d);
+    	Transform3D inverset3d = new Transform3D();
+    	inverset3d.invert(t3d);
+    		
+    	int n = tsi.length;
+    	if(index!=null)
+    		n = index.size();
+    	for(int k=0; k<n; k++){
+    		int i=k;
+    		if(index!=null)
+    			i = (Integer)index.get(k);
+    		TransformGroup tfg = new TransformGroup();
+    		double[] transform = tsi[i].transformMatrix;
+    		v3d = new Vector3d(transform[3], transform[7], transform[11]);
+    		m3d = new Matrix3d(transform[0], transform[1], transform[2],
+    				transform[4], transform[5], transform[6],
+                    transform[8], transform[9], transform[10]);
+    		Transform3D transform3d = new Transform3D();
+    		transform3d.setTranslation(v3d);
+    		transform3d.setRotation(m3d);
+    		transform3d.mul(inverset3d, transform3d);
+    		tfg.setTransform(transform3d);
+    		
+     		Shape3D linkShape3D = createShape3D(shapes_[k], appearances_[k], materials_[k], textures_[k]);
+        	tfg.addChild(linkShape3D);
+    		tg_.addChild(tfg);
+    	} 
+       	tg_.setTransform(t3d);
+		
+        initialize(t3d);
+   	}
+   	
+   	public void loadnewInlineShape(SceneInfo sInfo){  		
+   		ShapeInfo[] shapes = sInfo.shapes();
+        AppearanceInfo[] appearances = sInfo.appearances();
+        MaterialInfo[] materials = sInfo.materials();
+        TextureInfo[] textures = sInfo.textures();
+   		
+        TransformedShapeIndex[] tsi = sInfo.shapeIndices();
+    	int n = tsi.length;
+    	shapes_ = new ShapeInfo[n];
+    	appearances_ = new AppearanceInfo[n];
+    	materials_ = new MaterialInfo[n];
+    	textures_ = new TextureInfo[n];
+    	for(int k=0; k<n; k++){
+    		ShapeInfo shapeInfo = shapes[tsi[k].shapeIndex];
+   	        AppearanceInfo appearanceInfo = null;
+   	        MaterialInfo materialInfo = null;
+   	        TextureInfo textureInfo = null;
+   	        if (shapeInfo.appearanceIndex >= 0){
+   	            appearanceInfo = appearances[shapeInfo.appearanceIndex];
+   	             if (appearanceInfo.materialIndex >= 0){
+   	                materialInfo = materials[appearanceInfo.materialIndex];
+   	            }
+   	            if (appearanceInfo.textureIndex >= 0){
+   	            	textureInfo = textures[appearanceInfo.textureIndex];
+   	            }
+   	        }
+   	        shapes_[k] = shapeInfo;
+   	        appearances_[k] = appearanceInfo;
+   	        materials_[k] = materialInfo;
+   	        textures_[k] = textureInfo;
+    	} 
+   		        
+        double[] inlinedSTM = {1,0,0,0,
+        						0,1,0,0,
+        						0,0,1,0};
+        setShape(tsi, inlinedSTM, null);
    	}
    	
    	protected void initialize(Transform3D t3d){
@@ -285,27 +424,30 @@ public class GrxShapeItem extends GrxTransformItem{
         return appearance;
     }
     
-    private void addShape
-    (short shapeIndex, TransformGroup tg, GrxModelItem model, int id){
-    	ShapeInfo shapeInfo = model.shapes[shapeIndex];
+    private void setShapeInfofromModel(short shapeIndex, int id){
+    	ShapeInfo shapeInfo = model().shapes[shapeIndex];
         AppearanceInfo appearanceInfo = null;
         MaterialInfo materialInfo = null;
         TextureInfo textureInfo = null;
         if (shapeInfo.appearanceIndex >= 0){
-            appearanceInfo = model.appearances[shapeInfo.appearanceIndex];
+            appearanceInfo = model().appearances[shapeInfo.appearanceIndex];
              if (appearanceInfo.materialIndex >= 0){
-                materialInfo = model.materials[appearanceInfo.materialIndex];
+                materialInfo = model().materials[appearanceInfo.materialIndex];
             }
             if (appearanceInfo.textureIndex >= 0){
-            	textureInfo = model.textures[appearanceInfo.textureIndex];
+            	textureInfo = model().textures[appearanceInfo.textureIndex];
             }
         }
         shapes_[id] = shapeInfo;
         appearances_[id] = appearanceInfo;
         materials_[id] = materialInfo;
         textures_[id] = textureInfo;
-    	Shape3D linkShape3D = createShape3D(shapeInfo, appearanceInfo, materialInfo, textureInfo);
+    }
+ /*       
+    private void addShape(TransformGroup tg,  int id){
+    	Shape3D linkShape3D = createShape3D(shapes_[id], appearances_[id], materials_[id], textures_[id]);
     	tg.addChild(linkShape3D);
+
     	/*
         if(model.shapes[shapeIndex].primitiveType == ShapePrimitiveType.SP_MESH ){
         	Shape3D linkShape3D = createShape3D(shapeInfo, appearanceInfo, materialInfo, textureInfo);
@@ -320,9 +462,9 @@ public class GrxShapeItem extends GrxTransformItem{
         	}
         	tg.addChild(primitive);
         }
-        */
+        
     }
-    
+    */
 	/**
      * @brief create Shape3D object from shapeInfo, appearanceInfo, MaterialInfo and TextureInfo
      * @param shapeInfo shape information
@@ -374,11 +516,12 @@ public class GrxShapeItem extends GrxTransformItem{
         shape3D.setCapability(GeometryArray.ALLOW_COORDINATE_READ);
         shape3D.setCapability(GeometryArray.ALLOW_COUNT_READ);
         PickTool.setCapabilities(shape3D, PickTool.INTERSECT_FULL);
+        appearance_ = appearance;
         shape3D.setAppearance(appearance);
-
+ 
         return shape3D;
     }
-
+/*
     private Primitive createPrimitive
     (ShapeInfo shapeInfo, AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo){
     	
@@ -431,7 +574,7 @@ public class GrxShapeItem extends GrxTransformItem{
 
         return null; 
     }
-
+*/
     protected void setMaterial(Appearance appearance, MaterialInfo materialInfo){
         if(materialInfo.transparency > 0.0f){
             TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, materialInfo.transparency);
@@ -446,7 +589,7 @@ public class GrxShapeItem extends GrxTransformItem{
         }        
     }
 
-    private void setTexture( Appearance appearance, TextureInfo textureInfo ){
+    protected void setTexture( Appearance appearance, TextureInfo textureInfo ){
         TextureInfoLocal texInfo = new TextureInfoLocal(textureInfo);
         if((texInfo.width != 0) && (texInfo.height != 0)){
             ImageComponent2D icomp2d = texInfo.readImage;
@@ -622,13 +765,208 @@ public class GrxShapeItem extends GrxTransformItem{
     		translation(value);
     	}else if(property.equals("rotation")){
     		rotation(value);
-    	}else{
-    		//System.out.println("GrxShapeItem.propertyChanged() : unknown property : "+property);
+    	}else if(property.equals("size")){
+    			size(value);
+    	}else if(property.equals("bottomRadius") || property.equals("height") || property.equals("radius") ||
+    			property.equals("side") || property.equals("bottom") || property.equals("top")){
+    		if(shapes_[0].primitiveType==ShapePrimitiveType.SP_CONE){
+    			coneSize(property, value);
+    		}else if(shapes_[0].primitiveType==ShapePrimitiveType.SP_CYLINDER){
+    			cylinderSize(property, value);
+    		}else{
+    			sphereSize(value);
+    		}
+    	}else if(property.equals("diffuseColor")){
+    			diffuseColor(value);
+    	}else
     		return false;
-    	}
     	return true;
     }
 
+    private void size(float[] newSize){
+   		if (newSize != null && newSize.length == 3){
+	    	setFltAry("size", newSize);
+	    	tg_.removeChild(bg_);
+	    	bg_ = new BranchGroup();
+	       	bg_.setCapability(BranchGroup.ALLOW_DETACH);
+	       	bg_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+	        bg_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+	       	Primitive primitive = new Box(newSize[0]/2, newSize[1]/2, newSize[2]/2, primitiveFlag, appearance_);
+	       	bg_.addChild(primitive);
+	       	tg_.addChild(bg_);
+	    	resizeBoundingBox();
+	    	if (model_ != null) model_.notifyModified();
+	    	shapes_[0].primitiveParameters = newSize;
+	    }  	
+    }
+
+    public void size(String size){
+    	float[] newSize = getFltAry(size);
+    	size(newSize);
+    }
+    
+    public void coneSize(String property, String size){
+    	float bottomRadius = getFlt("bottomRadius", 0.0f);
+    	float height = getFlt("height", 0.0f);
+    	boolean side = isTrue("side");
+    	boolean bottom = isTrue("bottom");
+    	if(property.equals("bottomRadius")){
+    		float newsize = getFlt(size);
+    		setFlt(property, newsize );
+    		bottomRadius = newsize;
+    	}else if(property.equals("height")){
+    		float newsize = getFlt(size);
+    		setFlt(property, newsize );
+    		height = newsize;
+    	}else if(property.equals("side")){
+    		boolean flg = size.equals("true");
+    		setBool(property, flg);
+    		side = flg;
+    	}else if(property.equals("bottom")){
+    		boolean flg = size.equals("true");
+    		setBool(property, flg);
+    		bottom = flg;
+    	}
+	    tg_.removeChild(bg_);
+	    bg_ = new BranchGroup();
+	    bg_.setCapability(BranchGroup.ALLOW_DETACH);
+	    bg_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+	    bg_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+	    Primitive primitive = new Cone( bottomRadius, height, primitiveFlag, appearance_);   
+	    if(!bottom)
+	    	primitive.removeChild(primitive.getShape(Cone.CAP));
+	    if(!side)
+	    	primitive.removeChild(primitive.getShape(Cone.BODY));
+	    bg_.addChild(primitive);
+	    tg_.addChild(bg_);
+	    resizeBoundingBox();
+	    if (model_ != null) model_.notifyModified();
+	    float[] param = new float[4];
+	    param[0] = bottomRadius;
+		param[1] = height;
+		param[2] = bottom ? 1: 0;   
+		param[3] = side? 1 : 0;	
+		shapes_[0].primitiveParameters = param;
+    }
+    
+    public void cylinderSize(String property, String size){
+    	float radius = getFlt("radius", 0.0f);
+    	float height = getFlt("height", 0.0f);
+    	boolean side = isTrue("side");
+    	boolean bottom = isTrue("bottom");
+    	boolean top = isTrue("top");
+    	if(property.equals("radius")){
+    		float newsize = getFlt(size);
+    		setFlt(property, newsize );
+    		radius = newsize;
+    	}else if(property.equals("height")){
+    		float newsize = getFlt(size);
+    		setFlt(property, newsize );
+    		height = newsize;
+    	}else if(property.equals("side")){
+    		boolean flg = size.equals("true");
+    		setBool(property, flg);
+    		side = flg;
+    	}else if(property.equals("bottom")){
+    		boolean flg = size.equals("true");
+    		setBool(property, flg);
+    		bottom = flg;
+    	}else if(property.equals("top")){
+    		boolean flg = size.equals("true");
+    		setBool(property, flg);
+    		top = flg;
+    	}
+    	
+	    tg_.removeChild(bg_);
+	    bg_ = new BranchGroup();
+	    bg_.setCapability(BranchGroup.ALLOW_DETACH);
+	    bg_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+	    bg_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+	    Primitive primitive = new Cylinder( radius, height, primitiveFlag, appearance_);
+	    bg_.addChild(primitive);
+	    if(!bottom)
+	    	primitive.removeChild(primitive.getShape(Cylinder.BOTTOM));
+	    if(!top)
+	    	primitive.removeChild(primitive.getShape(Cylinder.TOP));
+	    if(!side)
+	    	primitive.removeChild(primitive.getShape(Cylinder.BODY));
+	    tg_.addChild(bg_);
+	    resizeBoundingBox();
+	    if (model_ != null) model_.notifyModified();
+	    float[] param = new float[5];
+	    param[0] = radius;
+		param[1] = height;
+		param[2] = top ? 1 : 0;   
+		param[3] = bottom? 1 : 0;	
+		param[4] = side? 1 : 0;
+		shapes_[0].primitiveParameters = param;
+    }
+    
+    private void sphereSize(float[] newSize){
+   		if (newSize != null && newSize.length == 1){
+	    	setFlt("radius", newSize[0]);
+	    	tg_.removeChild(bg_);
+	    	bg_ = new BranchGroup();
+	       	bg_.setCapability(BranchGroup.ALLOW_DETACH);
+	       	bg_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+	        bg_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+	       	Primitive primitive = new Sphere(newSize[0], primitiveFlag, appearance_);
+	       	bg_.addChild(primitive);
+	       	tg_.addChild(bg_);
+	    	resizeBoundingBox();
+	    	if (model_ != null) model_.notifyModified();
+	    	shapes_[0].primitiveParameters = newSize;
+	    }  	
+    }
+
+    public void sphereSize(String size){
+    	float[] newSize = getFltAry(size);
+    	sphereSize(newSize);
+    }
+    
+    void diffuseColor(float[] newValue){
+    	if (newValue != null && newValue.length == 3){
+    	    setFltAry("diffuseColor", newValue);
+    		materials_[0].diffuseColor = newValue;
+    		setMaterial(appearance_, materials_[0]);
+    		if (model_ != null) model_.notifyModified();
+    	}
+    }
+    
+    void diffuseColor(String value){
+    	float[] newValue = getFltAry(value);
+    	diffuseColor(newValue);
+    }
+    
+    private void resizeBoundingBox(){
+    	Transform3D trorg = new Transform3D();
+		tg_.getTransform(trorg);
+        try{
+			Transform3D tr = new Transform3D(); 
+			tg_.setTransform(tr);
+			
+	        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+	 
+	        modifier.init_ = true;
+	        modifier.mode_ = SceneGraphModifier.RESIZE_BOUNDS;
+	        modifier._calcUpperLower(tg_, tr);
+	        
+	    	Shape3D shapeNode = (Shape3D)switchBb_.getChild(0);
+	    	Geometry gm = (Geometry)shapeNode.getGeometry(0);
+	
+	    	Point3f[] p3fW = modifier._makePoints();
+	    	if (gm instanceof QuadArray) {
+	    		QuadArray qa = (QuadArray) gm;
+	    		qa.setCoordinates(0, p3fW);
+			}
+	
+	    }catch(Exception ex){
+	        	ex.printStackTrace();
+
+	    }
+	    tg_.setTransform(trorg);
+    }
+    
     public class TextureInfoLocal
     {
         public	short		numComponents;
@@ -858,4 +1196,33 @@ public class GrxShapeItem extends GrxTransformItem{
 		}
 	}
 
+	private void setPrimitiveProperty(ShapeInfo shapeInfo){
+		switch(shapeInfo.primitiveType.value()){
+		case ShapePrimitiveType._SP_BOX :
+			setFltAry("size", shapeInfo.primitiveParameters);
+			setFltAry("diffuseColor", materials_[0].diffuseColor);
+			break;
+    	case ShapePrimitiveType._SP_CONE :
+			setFlt("bottomRadius", shapeInfo.primitiveParameters[0]);
+			setFlt("height", shapeInfo.primitiveParameters[1]);
+			setProperty("bottom",shapeInfo.primitiveParameters[2]==0?"false":"true");
+			setProperty("side",shapeInfo.primitiveParameters[3]==0?"false":"true");
+			setFltAry("diffuseColor", materials_[0].diffuseColor);
+    		break;
+    	case ShapePrimitiveType._SP_CYLINDER :
+			setFlt("radius", shapeInfo.primitiveParameters[0]);
+			setFlt("height", shapeInfo.primitiveParameters[1]);
+			setProperty("top",shapeInfo.primitiveParameters[2]==0?"false":"true");
+			setProperty("bottom",shapeInfo.primitiveParameters[3]==0?"false":"true");
+			setProperty("side",shapeInfo.primitiveParameters[4]==0?"false":"true");
+			setFltAry("diffuseColor", materials_[0].diffuseColor);
+    		break;
+    	case ShapePrimitiveType._SP_SPHERE :
+			setFlt("radius", shapeInfo.primitiveParameters[0]);
+			setFltAry("diffuseColor", materials_[0].diffuseColor);
+			break;
+    	default :
+    		break;	 
+		}
+	}
 }

@@ -488,7 +488,7 @@ public class GrxPluginManager {
         GrxBaseItem item = (GrxBaseItem) createPlugin(cls, name);
         if (item != null) {
             if (item.load(f)) {
-                item.setURL(url);
+                item.setURL(_url);
             } else {
                 removeItem(item);
             }

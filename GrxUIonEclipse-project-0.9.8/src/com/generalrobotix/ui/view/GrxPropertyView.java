@@ -264,9 +264,11 @@ public class GrxPropertyView extends GrxBaseView {
             try{
             if (element instanceof TableItem && value instanceof String) {
                 TableItem item = (TableItem) element;
-                if (!currentPlugin_.propertyChanged(item.getText(), (String)value)){
-                	// if validity of value is not checked by currentPlugin_, it is set
-                	currentPlugin_.setProperty(item.getText(), (String)value);
+                if(!currentPlugin_.getProperty(item.getText()).equals(value)){
+	                if (!currentPlugin_.propertyChanged(item.getText(), (String)value)){
+	                	// if validity of value is not checked by currentPlugin_, it is set
+	                	currentPlugin_.setProperty(item.getText(), (String)value);
+	                }
                 }
                 _refresh();
             }
