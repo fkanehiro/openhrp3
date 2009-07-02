@@ -51,38 +51,38 @@ public class GrxTextEditorView extends GrxBaseView {
 					currentItem_.setValue(area_.getText());
 			}	
 		});
-
+	
 		IToolBarManager toolbar = vp.getViewSite().getActionBars().getToolBarManager();
-
+	
 		save_ = new Action() {
-            public void run() {
+	        public void run() {
 				if (currentItem_ != null) {
 					currentItem_.setValue(area_.getText());
 					currentItem_.save();
 					//save_.setEnabled(false);
 				}
-            }
-        };
-        save_.setToolTipText( "Save" );
-        save_.setImageDescriptor( Activator.getDefault().getDescriptor("save_edit.png") );
-        toolbar.add( save_ );
-
+	        }
+	    };
+	    save_.setToolTipText( "Save" );
+	    save_.setImageDescriptor( Activator.getDefault().getDescriptor("save_edit.png") );
+	    toolbar.add( save_ );
+	
 		saveAs_ = new Action() {
-            public void run() {
+	        public void run() {
 				if (currentItem_ != null) {
 					currentItem_.setValue(area_.getText());
 					currentItem_.saveAs();
 				}
-            }
-        };
-        saveAs_.setToolTipText( "Save As" );
-        saveAs_.setImageDescriptor( Activator.getDefault().getDescriptor("saveas_edit.png") );
-        toolbar.add( saveAs_ );
-        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
-        
+	        }
+	    };
+	    saveAs_.setToolTipText( "Save As" );
+	    saveAs_.setImageDescriptor( Activator.getDefault().getDescriptor("saveas_edit.png") );
+	    toolbar.add( saveAs_ );
+	    setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
+	    
 		currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
 		setTextItem(currentItem_);
-        manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
+	    manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
 	}
 
 	private void setTextItem(GrxPythonScriptItem item){
