@@ -82,6 +82,7 @@ public class GrxJythonPromptView extends GrxBaseView {
     private Writer writer_;
     private GrxPythonScriptItem currentItem_;
     private String message_;
+    private Object result_;
 
     private static final int KS_SHIFT = SWT.SHIFT;
     private static final int KS_CONTROL = SWT.CTRL;
@@ -118,12 +119,14 @@ public class GrxJythonPromptView extends GrxBaseView {
         super(name, manager, vp, parent);
 
         display_ = parent.getDisplay();
+        parent_ = parent;
         composite_.setLayout(new GridLayout(1,false));
         simScriptStartIcon_ = ImageDescriptor.createFromURL(GrxJythonPromptView.class.getResource( "/resources/images/sim_script_start.png")).createImage();
         simScriptStopIcon_ = ImageDescriptor.createFromURL(GrxJythonPromptView.class.getResource( "/resources/images/sim_script_stop.png")).createImage();
         frame_ = SWT_AWT.new_Frame(new Composite(parent.getShell(),SWT.EMBEDDED));
         
         btnExec_ = new Button(composite_,SWT.TOGGLE);
+        btnExec_.setImage(simScriptStartIcon_);
         btnExec_.setText("execute script file");
         //btnExec_.setPreferredSize(GrxBaseView.getDefaultButtonSize());
         //btnExec_.setMaximumSize(GrxBaseView.getDefaultButtonSize());
@@ -231,71 +234,54 @@ public class GrxJythonPromptView extends GrxBaseView {
             } else if (ks == KS_ENTER      || ks == KS_ENTER_ALT
                     || ks == KS_ENTER_CTRL || ks == KS_ENTER_SHIFT) {
                 try {
-                    thread_1_ = new Thread() {
-                        public void run() {
-                            if (com_.trim().length() <= 0)
-                                display_.asyncExec(new Thread(){
-                                    public void run(){
-                                        styledText_.append("\n"+prompt_);
-                                    }
-                                });
-                            else {
-                                display_.asyncExec(new Thread(){
-                                    public void run(){
-                                        styledText_.append("\n");
-                                        btnExec_.setSelection(true);
-                                        btnExec_.setImage(simScriptStopIcon_);
-                                    }
-                                });
-                                try {
-                                    if (com_.startsWith("dir(")) {
-                                        interpreter_.exec("__tmp__ = " +
-                                        com_);
-                                        Object obj =
-                                        interpreter_.eval("__tmp__");
-                                        if (obj != null)
-                                        styledText_.append(obj.toString()+"\n");
-                                    } else if (com_.contains("=")||com_.contains("-")||com_.contains("+")
-                                    		||com_.contains("*")||com_.contains("/")||com_.contains("%")){
-                                    	interpreter_.exec(com_);
-                                    }else{
-                                    	System.out.println("com_ = \""+com_+"\"");
-                                        display_.asyncExec(new Thread(){
-                                            public void run(){
-                                                Object obj = interpreter_.eval(com_);
-                                                if (obj != null){
-                                                	styledText_.append(obj.toString()+"\n");
-                                                }
-                                            }
-                                        });
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                history_.add(1, com_);
+                	if (com_.trim().length() <= 0){
+                		styledText_.append("\n"+prompt_);
+                		styledText_.setCaretOffset(styledText_.getText().length());
+                        styledText_.setTopIndex(styledText_.getLineCount());
+                	}else{
+                		styledText_.append("\n");
+                        btnExec_.setSelection(true);
+                        btnExec_.setImage(simScriptStopIcon_);
+                        final String com = com_.trim();
+                        thread_1_ = new Thread() {
+                        	public void run() {
+                         		result_=null;
+                         		try{
+	                        		if (com.startsWith("dir(")) {
+	                        			interpreter_.exec("__tmp__ = " +com);
+	                        			result_ = interpreter_.eval("__tmp__");
+	                        		} else {
+	                        			result_ = interpreter_.eval(com);
+	                        		}
+                         		}catch (org.python.core.PyException e) {
+                         			try{
+                         				interpreter_.exec(com);
+                         			}catch( org.python.core.PyException exception ){
+                         				result_ = exception.toString();
+                         			}
+                         		}
+                        		history_.add(1, com);
                                 if (history_.size() > HISTORY_SIZE)
                                     history_.remove(HISTORY_SIZE-1);
-                                display_.asyncExec(new Thread(){
+                        		display_.syncExec(new Thread(){
                                     public void run(){
-                                        btnExec_.setSelection(false);
+		                        		if (result_ != null){
+		                        			styledText_.append(result_.toString()+"\n");
+		                        		}
+		                        		btnExec_.setSelection(false);
                                         btnExec_.setImage(simScriptStartIcon_);
                                         styledText_.setFocus();
                                         styledText_.append(prompt_);
+                                        styledText_.setCaretOffset(styledText_.getText().length());
+                                        styledText_.setTopIndex(styledText_.getLineCount());
                                     }
-                                });
-
-                            }
-                            display_.asyncExec(new Thread(){
-                                public void run(){
-                                    styledText_.setCaretOffset(styledText_.getText().length());
-                                    styledText_.setTopIndex(styledText_.getLineCount());
-                                }
-                            });
-                            hpos_ = 0;
-                            thread_1_ = null;
-                        }
-                    };
-                    thread_1_.start();
+                        		});
+                        		hpos_ = 0;
+                                thread_1_ = null;
+                        	};
+                        };
+                        thread_1_.start();
+                	}
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -393,7 +379,10 @@ public class GrxJythonPromptView extends GrxBaseView {
                         btnExec_.setSelection(false);
                         btnExec_.setImage(simScriptStartIcon_);
                         btnExec_.setToolTipText("execute script file");
+                        styledText_.setFocus();
+                        styledText_.append(prompt_);
                         styledText_.setCaretOffset(styledText_.getText().length());
+                        styledText_.setTopIndex(styledText_.getLineCount());
                     }
                 });
                 hpos_ = 0;

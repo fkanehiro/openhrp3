@@ -34,14 +34,15 @@ import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import org.eclipse.swt.widgets.Text;
 
 @SuppressWarnings("serial")
 public class GrxTextItem extends GrxBaseItem {
 	public static final String TITLE = "Text Item";
 	public static final String FILE_EXTENSION = "txt";
 
-	private boolean isEdited_ = false;
 	private long lastModified_ = 0;
+	private String old = "";
 	private int caretPosition_ = 0;
 	
 	public GrxTextItem(String name, GrxPluginManager manager) {
@@ -64,7 +65,7 @@ public class GrxTextItem extends GrxBaseItem {
 		file_ = new File(getDefaultDir()+File.separator+getName()+"."+getFileExtention());
 		setURL(file_.getPath());
 		
-		isEdited_ = false;
+		old="";
 		lastModified_ = file_.lastModified();
 //		undo_.discardAllEdits();
 		caretPosition_ = 0;
@@ -73,11 +74,12 @@ public class GrxTextItem extends GrxBaseItem {
 	}
 
 	public boolean load(File f) {
+		String delimiter = Text.DELIMITER;
 		try {
 			BufferedReader b = new BufferedReader(new FileReader(f));
 			StringBuffer buf = new StringBuffer();
 			while (b.ready()) {
-				buf.append(b.readLine() + "\n");
+				buf.append(b.readLine() + delimiter);
 			}
 			setValue(buf.toString());
 		} catch (FileNotFoundException e) {
@@ -88,7 +90,7 @@ public class GrxTextItem extends GrxBaseItem {
 		}
 		file_ = f;
 		
-		isEdited_ = false;
+		old = getValue();
 		lastModified_ = file_.lastModified();
 //		undo_.discardAllEdits();
 		caretPosition_ = 0;
@@ -110,7 +112,7 @@ public class GrxTextItem extends GrxBaseItem {
 			FileWriter fw = new FileWriter(file_);
 			fw.write(getValue());
 			fw.close();
-			isEdited_ = false;
+			old = getValue();
 //			undo_.discardAllEdits();
 			lastModified_ = file_.lastModified();
 		} catch (IOException e) {
@@ -153,11 +155,7 @@ public class GrxTextItem extends GrxBaseItem {
 	}
 	
 	public boolean isEdited() {
-		return isEdited_;
-	}
-	
-	public void setEdited() {
-		isEdited_ = true;
+		return !old.equals(getValue());
 	}
 
 	public boolean isModifiedExternally() {
