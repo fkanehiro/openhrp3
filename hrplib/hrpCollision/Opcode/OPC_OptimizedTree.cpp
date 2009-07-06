@@ -122,11 +122,7 @@ static void _BuildCollisionTree(AABBCollisionNode* linear, const udword box_id, 
 		udword PosID = current_id++;	// Get a new id for positive child
 		udword NegID = current_id++;	// Get a new id for negative child
 		// Setup box data as the forthcoming new P pointer
-#ifdef __x86_64
-		linear[box_id].mData = (uqword)&linear[PosID];
-#else
-		linear[box_id].mData = (udword)&linear[PosID];
-#endif
+		linear[box_id].mData = (EXWORD)&linear[PosID];
 		// Make sure it's not marked as leaf
 		ASSERT(!(linear[box_id].mData&1));
 		
@@ -184,11 +180,7 @@ static void _BuildNoLeafTree(AABBNoLeafNode* linear, const udword box_id, udword
 		// Get a new id for positive child
 		udword PosID = current_id++;
 		// Setup box data
-#ifdef __x86_64
-		linear[box_id].mPosData = (uqword)&linear[PosID];
-#else
-		linear[box_id].mPosData = (udword)&linear[PosID];
-#endif
+		linear[box_id].mPosData = (EXWORD)&linear[PosID];
 		// Make sure it's not marked as leaf
 		ASSERT(!(linear[box_id].mPosData&1));
 		// Recurse
@@ -209,11 +201,7 @@ static void _BuildNoLeafTree(AABBNoLeafNode* linear, const udword box_id, udword
 		// Get a new id for negative child
 		udword NegID = current_id++;
 		// Setup box data
-#ifdef __x86_64
-		linear[box_id].mNegData = (uqword)&linear[NegID];
-#else
-		linear[box_id].mNegData = (udword)&linear[NegID];
-#endif
+		linear[box_id].mNegData = (EXWORD)&linear[NegID];
 		// Make sure it's not marked as leaf
 		ASSERT(!(linear[box_id].mNegData&1));
 		// Recurse
@@ -652,7 +640,7 @@ bool AABBQuantizedTree::Build(AABBTree* tree)
 		INIT_QUANTIZATION
 
 		// Quantize
-		udword Data;
+		EXWORD Data;
 		for(udword i=0;i<mNbNodes;i++)
 		{
 			PERFORM_QUANTIZATION
@@ -767,7 +755,7 @@ bool AABBQuantizedNoLeafTree::Build(AABBTree* tree)
 		INIT_QUANTIZATION
 
 		// Quantize
-		udword Data;
+		EXWORD Data;
 		for(udword i=0;i<mNbNodes;i++)
 		{
 			PERFORM_QUANTIZATION

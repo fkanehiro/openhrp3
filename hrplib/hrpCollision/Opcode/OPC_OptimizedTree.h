@@ -20,6 +20,12 @@
 #ifndef __OPC_OPTIMIZEDTREE_H__
 #define __OPC_OPTIMIZEDTREE_H__
 
+#ifdef __x86_64
+#define EXWORD uqword
+#else
+#define EXWORD udword
+#endif
+
 	//! Common interface for a node of an implicit tree
 	#define IMPLEMENT_IMPLICIT_NODE(base_class, volume)														\
 		public:																								\
@@ -38,7 +44,7 @@
 		inline_			udword				GetNodeSize()	const	{ return SIZEOFOBJECT;				}	\
 																											\
 						volume				mAABB;															\
-						udword				mData;															\
+						EXWORD				mData;															\
 		/* Modified by S-cubed, Inc. */																		\
 						base_class*			mB;																
 
@@ -62,8 +68,8 @@
 		inline_			udword				GetNodeSize()		const	{ return SIZEOFOBJECT;			}	\
 																											\
 						volume				mAABB;															\
-						udword				mPosData;														\
-						udword				mNegData;														\
+						EXWORD				mPosData;														\
+						EXWORD				mNegData;														\
 		/* Modified by S-cubed, Inc. */																		\
 						base_class*			mB;																
 

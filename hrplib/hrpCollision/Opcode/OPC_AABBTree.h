@@ -20,6 +20,12 @@
 #ifndef __OPC_AABBTREE_H__
 #define __OPC_AABBTREE_H__
 
+#ifdef __x86_64
+#define EXWORD uqword
+#else
+#define EXWORD udword
+#endif
+
 #ifdef OPC_NO_NEG_VANILLA_TREE
 	//! TO BE DOCUMENTED
 	#define IMPLEMENT_TREE(base_class, volume)																			\
@@ -43,7 +49,7 @@
 		/* Following data always belong to the BV-tree, regardless of what the tree actually contains.*/				\
 		/* Whatever happens we need the two children and the enclosing volume.*/										\
 				volume				mBV;		/* Global bounding-volume enclosing all the node-related primitives */	\
-				udword				mPos;		/* "Positive" & "Negative" children */
+				EXWORD				mPos;		/* "Positive" & "Negative" children */
 #else
 	//! TO BE DOCUMENTED
 	#define IMPLEMENT_TREE(base_class, volume)																			\
@@ -68,8 +74,8 @@
 		/* Following data always belong to the BV-tree, regardless of what the tree actually contains.*/				\
 		/* Whatever happens we need the two children and the enclosing volume.*/										\
 				volume				mBV;		/* Global bounding-volume enclosing all the node-related primitives */	\
-				udword				mPos;		/* "Positive" child */													\
-				udword				mNeg;		/* "Negative" child */
+				EXWORD				mPos;		/* "Positive" child */													\
+				EXOWRD				mNeg;		/* "Negative" child */
 #endif
 
 	typedef		void				(*CullingCallback)		(udword nb_primitives, udword* node_primitives, BOOL need_clipping, void* user_data);
