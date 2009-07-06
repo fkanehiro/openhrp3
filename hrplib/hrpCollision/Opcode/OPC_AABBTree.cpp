@@ -292,29 +292,21 @@ bool AABBTreeNode::Subdivide(AABBTreeBuilder* builder)
 		// Set last bit to tell it shouldn't be freed ### pretty ugly, find a better way. Maybe one bit in mNbPrimitives
 		ASSERT(!(udword(&Pool[Count+0])&1));
 		ASSERT(!(udword(&Pool[Count+1])&1));
-#ifdef __x86_64
-		mPos = uqword(&Pool[Count+0])|1;
-#else
-		mPos = udword(&Pool[Count+0])|1;
-#endif
+		mPos = EXWORD(&Pool[Count+0])|1;
 #ifndef OPC_NO_NEG_VANILLA_TREE
-		mNeg = udword(&Pool[Count+1])|1;
+		mNeg = EXWORD(&Pool[Count+1])|1;
 #endif
 	}
 	else
 	{
 		// Non-complete trees and/or Opcode 1.2 allocate nodes on-the-fly
 #ifndef OPC_NO_NEG_VANILLA_TREE
-		mPos = (udword)new AABBTreeNode;	CHECKALLOC(mPos);
-		mNeg = (udword)new AABBTreeNode;	CHECKALLOC(mNeg);
+		mPos = (EXWORD)new AABBTreeNode;	CHECKALLOC(mPos);
+		mNeg = (EXWORD)new AABBTreeNode;	CHECKALLOC(mNeg);
 #else
 		AABBTreeNode* PosNeg = new AABBTreeNode[2];
 		CHECKALLOC(PosNeg);
-#ifdef __x86_64
-		mPos = (uqword)PosNeg;
-#else
-		mPos = (udword)PosNeg;
-#endif
+		mPos = (EXWORD)PosNeg;
 #endif
 	}
 
