@@ -534,13 +534,14 @@ public class GrxOpenHRPView extends GrxBaseView {
 		}
 	}
 
-	public void waitStopSimulation() {
+	public void waitStopSimulation() throws InterruptedException {
 		try {
 			synchronized(lock2_){ 
 				lock2_.wait();
 			}
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			clockGenerator_.stopSimulation();
+			throw e;
 		}
 	}
 	
