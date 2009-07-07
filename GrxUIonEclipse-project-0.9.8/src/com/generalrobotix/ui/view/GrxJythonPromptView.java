@@ -106,7 +106,6 @@ public class GrxJythonPromptView extends GrxBaseView {
   
     private Image simScriptStartIcon_;
     private Image simScriptStopIcon_;
-    private static final int DEFAULT_INTERVAL = 100; // [msec] 
     
     /**
      * @brief constructor
@@ -165,6 +164,7 @@ public class GrxJythonPromptView extends GrxBaseView {
         interpreter_.set("uimanager", manager_);
         interpreter_.exec("import sys");
         interpreter_.exec("sys.path.append('" + Activator.getPath() + "/script')");
+        interpreter_.exec("sys.path.append('" + Activator.getPath() + "/jythonLib')");
         URL[] urls = manager_.pluginLoader_.getURLs();
         for (int i=0; i<urls.length; i++) {
             interpreter_.exec("sys.path.append('"+urls[i].getPath()+"')");
@@ -190,17 +190,6 @@ public class GrxJythonPromptView extends GrxBaseView {
         currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
         btnExec_.setEnabled(currentItem_ != null);
         manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
-        
-        final Display display = composite_.getDisplay();
-        Runnable runnable = new Runnable() {
-            public void run() {
-            	update();
-                if (!display.isDisposed())
-                    display.timerExec(DEFAULT_INTERVAL, this);
-            }
-        };
-        if (!display.isDisposed())
-            display.timerExec(DEFAULT_INTERVAL, runnable);
     }
         
     private class InitPythonAction extends Action{
@@ -461,27 +450,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 	    	}
     	}
     }
-    
-    private void update() {
-        if (menuDialog != null && menuDialog.isWaiting()){
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e1) {}
-        
-            if (!menuDialog.isIdle()){
-                try{
-                    interpreter_.exec(menuDialog.getCommand());
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(frame_, e.toString());
-                }
-                
-                if (menuDialog.isWaiting())
-                    menuDialog.setReadyToNext();
-                menuDialog.setMessage(message_);
-            }
-        }
-    }
-    
+ 
     public void waitInput(final String msg) {
         JOptionPane.showMessageDialog(frame_, msg);
 //        MessageDialog.openInformation(parent_.getShell(), "", msg);
@@ -525,11 +494,13 @@ public class GrxJythonPromptView extends GrxBaseView {
 //        return new InputDialog(parent_.getShell(),"waitInputMessage",msg,null,null).open();
     }
     public void waitInputMenu(String[][] menuList) {
-        menuDialog = new MenuDialog(menuList);
+        menuDialog = new MenuDialog(menuList, interpreter_, message_);
         menuDialog.showDialog(frame_, currentItem_.getName(), false);
     }
     public void waitInputSetMessage(String msg) {
         message_ = msg;
+        if(MenuDialog.getCurrentMenuDialog()!=null)
+        	menuDialog.setMessage(msg);
     }
 
     public class StyledTextWriter extends Writer {

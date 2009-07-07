@@ -44,6 +44,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 
+import org.python.util.PythonInterpreter;
+
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxGuiUtil;
 /**
@@ -76,9 +78,13 @@ public class MenuDialog extends JPanel {
     private static final SimpleDateFormat dateFormat_ = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private static final String QUITBUTTON_TITLE  = "Quit";
     private HashMap<String, String> exceptMap = new HashMap<String, String>();
+    private String message_;
+    private PythonInterpreter interpreter_;
     
-    public MenuDialog(String[][] src){
+    public MenuDialog(String[][] src, PythonInterpreter interpreter, String message){
         menu_ = src;
+        interpreter_ = interpreter;
+        message_ = message;
         initialize();
     }
     private void initialize() {
@@ -346,6 +352,9 @@ public class MenuDialog extends JPanel {
                         GrxGuiUtil.setEnableRecursive(false,getLocalMenuPanel(),null);
                         GrxGuiUtil.setEnableRecursive(false,getGlobalMenuPanel(),exceptMap);
                         //clearTextComponent((Container)(getJTabbedPane().getSelectedComponent()));
+                        interpreter_.exec(command_);
+                        setReadyToNext();
+                        showMessage(message_);                        
                     } catch (NumberFormatException e1){
                         GrxDebugUtil.printErr("MenuDialog: parse error");
                     }
@@ -355,6 +364,7 @@ public class MenuDialog extends JPanel {
         pnl.add(jpanel);
         return button;
     }
+        
     private String[] parseCommand(String com){
         StringBuffer sb = new StringBuffer();
         int idx = -1;
@@ -448,7 +458,7 @@ public class MenuDialog extends JPanel {
             return true;
         return false;
     }
-    public void setMessage(String msg){
+    public void showMessage(String msg){
         int idx = -1;
         if (currentFields_ != null && msg != null){
             //DebugUtil.print("setMessage:"+msg);
@@ -470,6 +480,10 @@ public class MenuDialog extends JPanel {
             }
         }
     }
+    public void setMessage(String message){
+    	message_ = message;
+    }
+    
     public void setContinuous(boolean b){
         getJCheckBoxContinuous().setSelected(b);
     }

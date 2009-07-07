@@ -260,32 +260,39 @@ public class GrxPluginManager {
 
     /**
      * @brief update list of views
+     * python script から呼ばれた場合、UIスレッド外からの呼び出しとなって、NGなのでsyncexecを使用する。
      */
     private void updateViewList() {
         selectedViewList_.clear();
+        
+        Display display = Display.getDefault();
+        display.syncExec(new Runnable(){
+        	public void run(){
+        		IWorkbench workbench = PlatformUI.getWorkbench();
+                IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+                if (window == null)
+                    return;
+                IWorkbenchPage page = window.getActivePage();
+                if (page == null) {
+                    return;
+                }
+                IPerspectiveDescriptor pers = page.getPerspective();
+                // GrxUIパースペクティブが表示されているか？
+                if (!pers.getId().equals(GrxUIPerspectiveFactory.ID)) {
+                    return;
+                }
 
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        if (window == null)
-            return;
-        IWorkbenchPage page = window.getActivePage();
-        if (page == null) {
-            return;
-        }
-        IPerspectiveDescriptor pers = page.getPerspective();
-        // GrxUIパースペクティブが表示されているか？
-        if (!pers.getId().equals(GrxUIPerspectiveFactory.ID)) {
-            return;
-        }
-
-        for (IViewReference i : page.getViewReferences()) {
-            // 未初期化のビューは初期化する
-            IViewPart v = i.getView(true);
-            if (v != null && GrxBaseViewPart.class.isAssignableFrom(v.getClass())) {
-                GrxBaseView view = ((GrxBaseViewPart) v).getGrxBaseView();
-                selectedViewList_.add(view);
-            }
-        }
+                for (IViewReference i : page.getViewReferences()) {
+                    // 未初期化のビューは初期化する
+                    IViewPart v = i.getView(true);
+                    if (v != null && GrxBaseViewPart.class.isAssignableFrom(v.getClass())) {
+                        GrxBaseView view = ((GrxBaseViewPart) v).getGrxBaseView();
+                        selectedViewList_.add(view);
+                    }
+                }
+        	}
+        });
+       
     }
 
     /**
