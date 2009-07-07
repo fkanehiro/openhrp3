@@ -113,6 +113,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private Grx3DView view3D;
 	
 	private static final String FORMAT1 = "%8.3f";
+	private Object lock2_ = new Object();
 	
 	/**
 	 * @brief implementation of ClockGenerator interface
@@ -300,6 +301,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 					        break;
 						case STOP:
 							endOfSimulation();
+							synchronized(lock2_){ 
+								lock2_.notifyAll();
+							}
 							break;
 						case INTERRUPT:
 							MessageDialog.openError( GrxUIPerspectiveFactory.getCurrentShell(),
@@ -527,6 +531,16 @@ public class GrxOpenHRPView extends GrxBaseView {
 				action_.setText("Stop Simulation");
 				action_.setImageDescriptor(Activator.getDefault().getDescriptor("sim_stop.png"));
 			}
+		}
+	}
+
+	public void waitStopSimulation() {
+		try {
+			synchronized(lock2_){ 
+				lock2_.wait();
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 	
