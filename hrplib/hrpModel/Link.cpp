@@ -110,7 +110,7 @@ Link::Link(const Link& org)
     isHighGainMode = org.isHighGainMode;
 
     if(org.coldetModel){
-        coldetModel.reset(new ColdetModel(*org.coldetModel));
+        coldetModel = new ColdetModel(*org.coldetModel);
     }
 
     parent = child = sibling = 0;

@@ -15,8 +15,8 @@
 
 #include "config.h"
 #include <string>
-#include <boost/shared_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Referenced.h>
 
 
 namespace IceMaths {
@@ -27,7 +27,7 @@ namespace hrp {
 
     class ColdetModelSharedDataSet;
 
-    class HRP_COLLISION_EXPORT ColdetModel
+    class HRP_COLLISION_EXPORT ColdetModel : public Referenced
     {
       public:
         enum PrimitiveType { SP_MESH, SP_BOX, SP_CYLINDER, SP_CONE, SP_SPHERE, SP_PLANE };
@@ -208,7 +208,7 @@ namespace hrp {
         friend class ColdetModelPair;
     };
 
-    typedef boost::shared_ptr<ColdetModel> ColdetModelPtr;
+    typedef boost::intrusive_ptr<ColdetModel> ColdetModelPtr;
 }
 
 
