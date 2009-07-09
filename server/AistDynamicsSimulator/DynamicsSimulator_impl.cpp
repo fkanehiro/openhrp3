@@ -12,12 +12,12 @@
 #include "DynamicsSimulator_impl.h"
 
 #include <hrpUtil/Tvmet3d.h>
-#include <hrpBase/Body.h>
-#include <hrpBase/Link.h>
-#include <hrpBase/LinkTraverse.h>
-#include <hrpBase/LinkPath.h>
-#include <hrpBase/Sensor.h>
-#include <hrpBase/ModelLoaderUtil.h>
+#include <hrpModel/Body.h>
+#include <hrpModel/Link.h>
+#include <hrpModel/LinkTraverse.h>
+#include <hrpModel/LinkPath.h>
+#include <hrpModel/Sensor.h>
+#include <hrpModel/ModelLoaderUtil.h>
 
 #include <vector>
 #include <map>
@@ -311,7 +311,7 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
                 Link* link2 = links2[j];
 
                 if(link1 && link2 && link1 != link2){
-                    bool ok = world.contactForceSolver.addCollisionCheckLinkPair
+                    bool ok = world.constraintForceSolver.addCollisionCheckLinkPair
                         (bodyIndex1, link1, bodyIndex2, link2, staticFriction, slipFriction, culling_thresh, epsilon);
 
                     if(ok && !USE_INTERNAL_COLLISION_DETECTOR){
@@ -576,7 +576,7 @@ void DynamicsSimulator_impl::stepSimulation()
         cout << "DynamicsSimulator_impl::stepSimulation()" << endl;
     }
 
-    world.contactForceSolver.clearExternalForces();
+    world.constraintForceSolver.clearExternalForces();
 
     if(enableTimeMeasure) timeMeasure2.begin();
     world.calcNextState(collisions);
@@ -592,7 +592,7 @@ void DynamicsSimulator_impl::stepSimulation()
     }
     if(enableTimeMeasure) timeMeasure3.end();
 
-    //world.contactForceSolver.clearExternalForces();
+    //world.constraintForceSolver.clearExternalForces();
 
     if(enableTimeMeasure){
         if(world.currentTime() > 10.0 && !timeMeasureFinished){
@@ -1289,8 +1289,8 @@ void DynamicsSimulator_impl::_updateSensorStates()
         for (int id=0; id < n; ++id){
             RangeSensor *rangeSensor = body->sensor<RangeSensor>(id);
             if (world.currentTime() >= rangeSensor->nextUpdateTime){
-                vector3 gp(rangeSensor->link->p + (rangeSensor->link->R)*rangeSensor->localPos);
-                matrix33 gR(rangeSensor->link->R*rangeSensor->localR);
+                Vector3 gp(rangeSensor->link->p + (rangeSensor->link->R)*rangeSensor->localPos);
+                Matrix33 gR(rangeSensor->link->R*rangeSensor->localR);
                 DblArray3 p;
                 DblArray9 R;
                 setVector3(gp, p);

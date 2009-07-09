@@ -21,8 +21,8 @@
 #include <boost/bind.hpp>
 
 #include <hrpCorba/ViewSimulator.hh>
-#include <hrpParser/VrmlNodes.h>
-#include <hrpParser/ImageConverter.h>
+#include <hrpUtil/VrmlNodes.h>
+#include <hrpUtil/ImageConverter.h>
 
 #include "VrmlUtil.h"
 

@@ -16,8 +16,8 @@
 #include <hrpCorba/CollisionDetector.hh>
 #include <hrpCorba/DynamicsSimulator.hh>
 
-#include <hrpBase/World.h>
-#include <hrpBase/ConstraintForceSolver.h>
+#include <hrpModel/World.h>
+#include <hrpModel/ConstraintForceSolver.h>
 #include <hrpUtil/TimeMeasure.h>
 
 #include <boost/scoped_ptr.hpp>
@@ -35,7 +35,7 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
      */
     CORBA::ORB_var orb_;
 
-    hrp::World<hrp::ContactForceSolver> world;
+    hrp::World<hrp::ConstraintForceSolver> world;
 
     CollisionDetector_var collisionDetector;
 

@@ -7,7 +7,7 @@
 
 #include <string>
 #include <hrpCorba/ModelLoader.hh>
-#include <hrpParser/VrmlNodes.h>
+#include <hrpUtil/VrmlNodes.h>
 #include <hrpUtil/UrlUtil.h>
 
 using namespace hrp;

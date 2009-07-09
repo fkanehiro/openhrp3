@@ -10,8 +10,8 @@
    @author Shin'ichiro Nakaoka
 */
 
-#ifndef HRP_COLLISION_COLDET_MODEL_PAIR_H_INCLUDED
-#define HRP_COLLISION_COLDET_MODEL_PAIR_H_INCLUDED
+#ifndef OPENHRP_COLDET_MODEL_PAIR_H_INCLUDED
+#define OPENHRP_COLDET_MODEL_PAIR_H_INCLUDED
 
 #include "config.h"
 #include "CollisionData.h"

@@ -5,12 +5,11 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
  */
 
 
-#ifndef HRP_COLLISION_COLLISION_DATA_H_INCLUDED
-#define HRP_COLLISION_COLLISION_DATA_H_INCLUDED
+#ifndef OPENHRP_COLLISION_DATA_H_INCLUDED
+#define OPENHRP_COLLISION_DATA_H_INCLUDED
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>

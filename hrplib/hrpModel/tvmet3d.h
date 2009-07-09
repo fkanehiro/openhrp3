@@ -7,18 +7,16 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 
-#ifndef OPENHRP_UTIL_TVMET4D_H_INCLUDED
-#define OPENHRP_UTIL_TVMET4D_H_INCLUDED
+#ifndef OPENHRP_COMPAT_TVMET3D_H_INCLUDED
+#define OPENHRP_COMPAT_TVMET3D_H_INCLUDED
 
-#include "config.h"
-#include "Tvmet3d.h"
+#include <hrpUtil/Tvmet3d.h>
 
-namespace hrp
-{
-	typedef tvmet::Matrix<double, 4, 4> Matrix44;
-	typedef tvmet::Vector<double, 4> Vector4;
+namespace hrp {
+	// defined for backward compatibility
+	typedef Matrix33 matrix33;
+	typedef Vector3 vector3;
+}
 
-	HRP_UTIL_EXPORT void calcRodrigues(Matrix44& out_R, const Vector3& axis, double q);
-};
 
 #endif
