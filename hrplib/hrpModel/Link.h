@@ -26,7 +26,7 @@
 namespace hrp {
 
     class ColdetModel;
-    typedef boost::shared_ptr<ColdetModel> ColdetModelPtr;
+    typedef boost::intrusive_ptr<ColdetModel> ColdetModelPtr;
 
     struct ConstraintForce{
         Vector3 point;
