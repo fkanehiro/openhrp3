@@ -92,7 +92,7 @@ public class XYLineGraph extends Canvas implements PaintListener {
         int topMargin,      // 上マージン
         int bottomMargin    // 下マージン
     ) {
-    	super(parent,SWT.NONE);
+    	super(parent,SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
         // マージン設定
         leftMargin_   = leftMargin;
         rightMargin_  = rightMargin;
