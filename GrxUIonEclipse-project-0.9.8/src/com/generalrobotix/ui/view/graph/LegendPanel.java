@@ -52,7 +52,7 @@ import com.generalrobotix.ui.view.graph.LegendInfo;
         Color backColor,
         Color labelColor
     ) {
-    	super(parent, SWT.NONE);
+    	super(parent, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
         font_ = font;
         backColor_ = backColor;
         labelColor_ = labelColor;
