@@ -1153,10 +1153,15 @@ public class GrxShapeItem extends GrxTransformItem{
 			for (int j=0; j<prim.numChildren(); j++){
 				setColor(color, (Shape3D)prim.getChild(j));
 			}
-		}else if(node instanceof TransformGroup){
+		}else if(node instanceof TransformGroup ){
 			TransformGroup tfg = (TransformGroup)node;
 			for(int j=0; j<tfg.numChildren(); j++){
 				setColor(color, tfg.getChild(j));
+			}
+		}else if(node instanceof BranchGroup ){
+			BranchGroup bg = (BranchGroup)node;
+			for(int j=0; j<bg.numChildren(); j++){
+				setColor(color, bg.getChild(j));
 			}
 		}
 	}
@@ -1175,10 +1180,15 @@ public class GrxShapeItem extends GrxTransformItem{
 			for (int j=0; j<prim.numChildren(); j++){
 				restoreColor((Shape3D)prim.getChild(j), id);
 			}
-		}else if(node instanceof TransformGroup){
+		}else if(node instanceof TransformGroup ){
 			TransformGroup tfg = (TransformGroup)node;
 			for(int j=0; j<tfg.numChildren(); j++){
 				restoreColor(tfg.getChild(j), id);
+			}
+		}else if(node instanceof BranchGroup ){
+			BranchGroup bg = (BranchGroup)node;
+			for(int j=0; j<bg.numChildren(); j++){
+				restoreColor(bg.getChild(j), id);
 			}
 		}
 	}
