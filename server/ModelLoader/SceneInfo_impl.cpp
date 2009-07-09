@@ -21,8 +21,8 @@
 
 #include <hrpCorba/ViewSimulator.hh>
 #include <hrpUtil/EasyScanner.h>
-#include <hrpParser/VrmlNodes.h>
-#include <hrpParser/VrmlParser.h>
+#include <hrpUtil/VrmlNodes.h>
+#include <hrpUtil/VrmlParser.h>
 
 #include "VrmlUtil.h"
 

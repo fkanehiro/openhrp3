@@ -10,6 +10,9 @@
    @author Shin'ichiro Nakaoka
 */
 
+#ifndef OPENHRP_COLDET_MODEL_SHARED_DATA_SET_H_INCLUDED
+#define OPENHRP_COLDET_MODEL_SHARED_DATA_SET_H_INCLUDED
+
 
 #include "ColdetModel.h"
 #include "Opcode/Opcode.h"
@@ -44,3 +47,5 @@ namespace hrp {
         friend class ColdetModel;
     };
 }
+
+#endif

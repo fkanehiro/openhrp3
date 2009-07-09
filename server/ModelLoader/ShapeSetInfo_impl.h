@@ -18,8 +18,8 @@
 #include <string>
 #include <hrpCorba/ORBwrap.h>
 #include <hrpCorba/ModelLoader.hh>
-#include <hrpParser/TriangleMeshShaper.h>
-#include <hrpParser/VrmlNodes.h>
+#include <hrpUtil/TriangleMeshShaper.h>
+#include <hrpUtil/VrmlNodes.h>
 #include <hrpUtil/Tvmet4d.h>
 
 using namespace OpenHRP;

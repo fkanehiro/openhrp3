@@ -15,7 +15,7 @@ add_executable(${program} ${sources})
 if(UNIX)
   target_link_libraries(${program}
     hrpUtil-${OPENHRP_LIBRARY_VERSION}
-    hrpParser-${OPENHRP_LIBRARY_VERSION}
+    hrpModel-${OPENHRP_LIBRARY_VERSION}
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     ${OMNIORB_LIBRARIES})
 
@@ -23,10 +23,10 @@ elseif(WIN32)
   set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d)
   target_link_libraries(${program}
     optimized hrpUtil-${OPENHRP_LIBRARY_VERSION} 
-    optimized hrpParser-${OPENHRP_LIBRARY_VERSION}
+    optimized hrpModel-${OPENHRP_LIBRARY_VERSION}
     optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION} 
     debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
-    debug hrpParser-${OPENHRP_LIBRARY_VERSION}d
+    debug hrpModel-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
     ${OMNIORB_LIBRARIES})  
 endif()

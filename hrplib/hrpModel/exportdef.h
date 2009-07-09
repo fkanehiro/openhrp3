@@ -1,3 +1,4 @@
+// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -5,20 +6,21 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
+ * General Robotix Inc. 
  */
-
-#ifndef OPENHRP_UTIL_CONFIG_H_INCLUDED
-#define OPENHRP_UTIL_CONFIG_H_INCLUDED
+#ifndef OPENHRP_MODEL_EXPORT_DEF_H_INCLUDED
+#define OPENHRP_MODEL_EXPORT_DEF_H_INCLUDED
 
 // for Windows DLL export 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-# ifdef HRP_UTIL_MAKE_DLL
-#   define HRP_UTIL_EXPORT __declspec(dllexport)
+# ifdef HRPMODEL_MAKE_DLL
+#   define HRPMODEL_API __declspec(dllexport)
 # else 
-#   define HRP_UTIL_EXPORT __declspec(dllimport)
+#   define HRPMODEL_API __declspec(dllimport)
 # endif
 #else 
-# define HRP_UTIL_EXPORT
+# define HRPMODEL_API
 #endif /* Windows */
+
 
 #endif

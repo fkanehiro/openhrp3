@@ -1,6 +1,6 @@
 /*! @file
   @brief Implementation of text scanner class
-  @author S.NAKAOKA
+  @author Shin'ichiro Nakaoka
 */
 
 #include <iostream>
@@ -25,63 +25,63 @@ using namespace hrp;
 #ifdef _MSC_VER
 static double mystrtod(const char* nptr, char** endptr)
 {
-  const char* org = nptr;
-  bool valid = false;
-  double value = 0.0;
-  double sign = +1.0;
+    const char* org = nptr;
+    bool valid = false;
+    double value = 0.0;
+    double sign = +1.0;
 
-  if(*nptr == '+'){
-    nptr++;
-  } else if(*nptr == '-'){
-    sign = -1.0;
-    nptr++;
-  }
-  if(isdigit((unsigned char)*nptr)){
-    valid = true;
-    do {
-      value = value * 10.0 + (*nptr - '0');
-      nptr++;
-    } while(isdigit((unsigned char)*nptr));
-  }
-  if(*nptr == '.'){
-    valid = false;
-    nptr++;
-    if(isdigit((unsigned char)*nptr)){
-      double small = 0.1;
-      valid = true;
-      do {
-        value += small * (*nptr - '0');
-        small *= 0.1;
-        nptr++;
-      } while(isdigit((unsigned char)*nptr));
-    }
-  }
-  if(valid && (*nptr == 'e' || *nptr == 'E')){
-    nptr++;
-    valid = false;
-    double psign = +1.0;
     if(*nptr == '+'){
-      nptr++;
+        nptr++;
     } else if(*nptr == '-'){
-      psign = -1.0;
-      nptr++;
+        sign = -1.0;
+        nptr++;
     }
     if(isdigit((unsigned char)*nptr)){
-      valid = true;
-      double p = 0.0;
-      do {
-        p = p * 10.0 + (*nptr - '0');
-        nptr++;
-      } while(isdigit((unsigned char)*nptr));
-      value *= pow(10.0, psign * p);
+        valid = true;
+        do {
+            value = value * 10.0 + (*nptr - '0');
+            nptr++;
+        } while(isdigit((unsigned char)*nptr));
     }
-  }
-  if(valid){
-    *endptr = (char*)nptr;
-  } else {
-    *endptr = (char*)org;
-  }
-  return sign * value;
+    if(*nptr == '.'){
+        valid = false;
+        nptr++;
+        if(isdigit((unsigned char)*nptr)){
+            double small = 0.1;
+            valid = true;
+            do {
+                value += small * (*nptr - '0');
+                small *= 0.1;
+                nptr++;
+            } while(isdigit((unsigned char)*nptr));
+        }
+    }
+    if(valid && (*nptr == 'e' || *nptr == 'E')){
+        nptr++;
+        valid = false;
+        double psign = +1.0;
+        if(*nptr == '+'){
+            nptr++;
+        } else if(*nptr == '-'){
+            psign = -1.0;
+            nptr++;
+        }
+        if(isdigit((unsigned char)*nptr)){
+            valid = true;
+            double p = 0.0;
+            do {
+                p = p * 10.0 + (*nptr - '0');
+                nptr++;
+            } while(isdigit((unsigned char)*nptr));
+            value *= pow(10.0, psign * p);
+        }
+    }
+    if(valid){
+        *endptr = (char*)nptr;
+    } else {
+        *endptr = (char*)org;
+    }
+    return sign * value;
 }
 #else
 static inline double mystrtod(const char* nptr, char** endptr) {
@@ -108,7 +108,7 @@ std::string EasyScanner::Exception::getFullMessage()
 
 EasyScanner::EasyScanner()
 {
-  init();
+    init();
 }
 
 
@@ -117,8 +117,8 @@ EasyScanner::EasyScanner()
 */
 EasyScanner::EasyScanner(string filename)
 {
-  init();
-  loadFile(filename);
+    init();
+    loadFile(filename);
 }
 
 
@@ -149,55 +149,55 @@ void EasyScanner::init()
 EasyScanner::EasyScanner(const EasyScanner& org, bool copyText) :
     whiteSpaceChars(org.whiteSpaceChars)
 {
-  commentChar = org.commentChar;
-  quoteChar = org.quoteChar;
-  isLineOriented = org.isLineOriented;
-  filename = org.filename;
-  defaultErrorMessage = org.defaultErrorMessage;
-  lineNumber = org.lineNumber;
-  lineNumberOffset = org.lineNumberOffset;
+    commentChar = org.commentChar;
+    quoteChar = org.quoteChar;
+    isLineOriented = org.isLineOriented;
+    filename = org.filename;
+    defaultErrorMessage = org.defaultErrorMessage;
+    lineNumber = org.lineNumber;
+    lineNumberOffset = org.lineNumberOffset;
 
-  symbols = org.symbols;
+    symbols = org.symbols;
 
-  if(copyText && org.textBuf){
-    size = org.size;
-    textBuf = new char[size+1];
-    memcpy(textBuf, org.textBuf, size+1);
-    text = textBuf;
-    textBufEnd = textBuf + size;
-  } else {
-    textBuf = 0;
-    size = 0;
-    textBufEnd = 0;
-  }
+    if(copyText && org.textBuf){
+        size = org.size;
+        textBuf = new char[size+1];
+        memcpy(textBuf, org.textBuf, size+1);
+        text = textBuf;
+        textBufEnd = textBuf + size;
+    } else {
+        textBuf = 0;
+        size = 0;
+        textBufEnd = 0;
+    }
 }
 
 
 /*! This function directly sets a text in the main memory */
 void EasyScanner::setText(const char* text, int len)
 {
-  if(textBuf) delete[] textBuf;
+    if(textBuf) delete[] textBuf;
 
-  size = len;
-  textBuf = new char[size+1];
-  memcpy(textBuf, text, len);
-  textBuf[size] = 0;
-  this->text = textBuf;
-  textBufEnd = textBuf + size;
-  lineNumber = lineNumberOffset;
-  filename = "";
+    size = len;
+    textBuf = new char[size+1];
+    memcpy(textBuf, text, len);
+    textBuf[size] = 0;
+    this->text = textBuf;
+    textBufEnd = textBuf + size;
+    lineNumber = lineNumberOffset;
+    filename = "";
 }
 
 
 EasyScanner::~EasyScanner()
 {
-  if(textBuf) delete[] textBuf;
+    if(textBuf) delete[] textBuf;
 }
 
 
 void EasyScanner::setLineNumberOffset(int offset)
 {
-  lineNumberOffset = offset;
+    lineNumberOffset = offset;
 }
 
 
@@ -357,19 +357,19 @@ void EasyScanner::skipSpace()
 */
 bool EasyScanner::readLF0()
 {
-  if(*text == '\n'){
-      text++;
-      lineNumber++;
-      return true;
-  } else if(*text == '\r'){
-      text++;
-      if(*text == '\n'){
-	  text++;
-      }
-      lineNumber++;
-      return true;
-  }
-  return false;
+    if(*text == '\n'){
+        text++;
+        lineNumber++;
+        return true;
+    } else if(*text == '\r'){
+        text++;
+        if(*text == '\n'){
+            text++;
+        }
+        lineNumber++;
+        return true;
+    }
+    return false;
 }
 
 
@@ -386,52 +386,52 @@ bool EasyScanner::checkLF()
 
 int EasyScanner::readToken()
 {
-  skipSpace();
+    skipSpace();
 
-  if(isdigit((unsigned char)*text) || *text == '+' || *text == '-'){
-    char* tail;
-    intValue = strtol(text, &tail, 0);
-    if(tail != text){
-      text = tail;
-      return T_INTEGER;
+    if(isdigit((unsigned char)*text) || *text == '+' || *text == '-'){
+        char* tail;
+        intValue = strtol(text, &tail, 0);
+        if(tail != text){
+            text = tail;
+            return T_INTEGER;
+        }
+        doubleValue = mystrtod(text, &tail);
+        if(tail != text){
+            text = tail;
+            return T_DOUBLE;
+        }
+        charValue = *text;
+        text++;
+        return T_SIGLUM;
+
+    } else if(isalpha((unsigned char)*text)){
+        char* org = text;
+        text++;
+        while(isalnum((unsigned char)*text) || *text == '_') text++;
+        stringValue.assign(org, text - org);
+        if(stringValue.size() == 1){
+            charValue = *org;
+            return T_ALPHABET;
+        } else {
+            return T_WORD;
+        }
+
+    } else if(*text == quoteChar) {
+        return extractQuotedString() ? T_STRING : T_SIGLUM;
+
+    } else if(ispunct((unsigned char)*text)){
+        charValue = *text;
+        text++;
+        return T_SIGLUM;
+
+    } else if(readLF0()){
+        return T_LF;
+
+    } else if(*text == '\0'){
+        return T_EOF;
     }
-    doubleValue = mystrtod(text, &tail);
-    if(tail != text){
-      text = tail;
-      return T_DOUBLE;
-    }
-    charValue = *text;
-    text++;
-    return T_SIGLUM;
 
-  } else if(isalpha((unsigned char)*text)){
-    char* org = text;
-    text++;
-    while(isalnum((unsigned char)*text) || *text == '_') text++;
-    stringValue.assign(org, text - org);
-    if(stringValue.size() == 1){
-      charValue = *org;
-      return T_ALPHABET;
-    } else {
-      return T_WORD;
-    }
-
-  } else if(*text == quoteChar) {
-      return extractQuotedString() ? T_STRING : T_SIGLUM;
-
-  } else if(ispunct((unsigned char)*text)){
-    charValue = *text;
-    text++;
-    return T_SIGLUM;
-
-  } else if(readLF0()){
-      return T_LF;
-
-  } else if(*text == '\0'){
-      return T_EOF;
-  }
-
-  return T_NONE;
+    return T_NONE;
 }
 
 
@@ -451,92 +451,92 @@ void EasyScanner::toLower()
 
 int EasyScanner::extractQuotedString()
 {
-  text++;
-  char* org = text;
+    text++;
+    char* org = text;
 
-  if(isLineOriented){
-      while(true){
-	  if(*text == '\r' || *text == '\n' || *text == '\0'){
-	      text = org;
-	      return false;
-	  }
-	  if(*text == quoteChar) break;
-	  text++;
-      }
-  } else {
-      while(true){
-	  if(*text == '\0'){
-	      text = org;
-	      return false;
-	  }
-	  readLF0();
-	  if(*text == quoteChar) break;
-	  text++;
-      }
-  }
+    if(isLineOriented){
+        while(true){
+            if(*text == '\r' || *text == '\n' || *text == '\0'){
+                text = org;
+                return false;
+            }
+            if(*text == quoteChar) break;
+            text++;
+        }
+    } else {
+        while(true){
+            if(*text == '\0'){
+                text = org;
+                return false;
+            }
+            readLF0();
+            if(*text == quoteChar) break;
+            text++;
+        }
+    }
 
-  stringValue.assign(org, text - org);
-  text++;
-  return true;
+    stringValue.assign(org, text - org);
+    text++;
+    return true;
 }
 
 
 bool EasyScanner::readDouble()
 {
-  char* tail;
+    char* tail;
 
-  if(checkLF()) return false;
+    if(checkLF()) return false;
 
-  doubleValue = mystrtod(text, &tail);
+    doubleValue = mystrtod(text, &tail);
 
-  if(tail != text){
-    text = tail;
-    return true;
-  }
+    if(tail != text){
+        text = tail;
+        return true;
+    }
 
-  return false;
+    return false;
 }
 
 bool EasyScanner::readInt()
 {
-  char* tail;
+    char* tail;
 
-  if(checkLF()) return false;
+    if(checkLF()) return false;
 
-  intValue = strtol(text, &tail, 0);
-  if(tail != text){
-    text = tail;
-    return true;
-  }
+    intValue = strtol(text, &tail, 0);
+    if(tail != text){
+        text = tail;
+        return true;
+    }
 
-  return false;
+    return false;
 }
 
 
 bool EasyScanner::readChar()
 {
-  skipSpace();
+    skipSpace();
 
-  if(isgraph((unsigned char)*text)){
-    charValue = *text;
-    text++;
-    return true;
-  }
+    if(isgraph((unsigned char)*text)){
+        charValue = *text;
+        text++;
+        return true;
+    }
 
-  return false;
+    return false;
 }
 
 
 bool EasyScanner::readChar(int chara)
 {
-  skipSpace();
+    skipSpace();
 
-  if(*text == chara){
-    text++;
-    return true;
-  }
+    if(*text == chara){
+        text++;
+        return true;
+    }
 
-  return false;
+    return false;
 }
 
 int EasyScanner::peekChar()
@@ -549,59 +549,59 @@ int EasyScanner::peekChar()
 
 bool EasyScanner::readWord0()
 {
-  char* org = text;
+    char* org = text;
 
-  while(true){
-    int c = (unsigned char)*text;
-    if(!isalnum(c) && isascii(c) && c != '_'){
-      break;
+    while(true){
+        int c = (unsigned char)*text;
+        if(!isalnum(c) && isascii(c) && c != '_'){
+            break;
+        }
+        text++;
     }
-    text++;
-  }
 
-  if(text - org > 0){
-    stringValue.assign(org, text - org);
-    return true;
-  }
+    if(text - org > 0){
+        stringValue.assign(org, text - org);
+        return true;
+    }
 
-  return false;
+    return false;
 }
 
 
 bool EasyScanner::readString0(const int delimiterChar)
 {
-  char* org = text;
+    char* org = text;
 
-  while(true){
-    int c = (unsigned char)*text;
-    if(isspace(c) || iscntrl(c) || c == delimiterChar){
-      break;
+    while(true){
+        int c = (unsigned char)*text;
+        if(isspace(c) || iscntrl(c) || c == delimiterChar){
+            break;
+        }
+        text++;
     }
-    text++;
-  }
 
-  if(text - org > 0){
-    stringValue.assign(org, text - org);
-    return true;
-  }
+    if(text - org > 0){
+        stringValue.assign(org, text - org);
+        return true;
+    }
 
-  return false;
+    return false;
 }
 
 
 bool EasyScanner::readString(const char* str)
 {
-  skipSpace();
+    skipSpace();
 
-  char* org = text;
-  while(*str != '\0'){
-    if(*str++ != *text++){
-      text = org;
-      return false;
+    char* org = text;
+    while(*str != '\0'){
+        if(*str++ != *text++){
+            text = org;
+            return false;
+        }
     }
-  }
 
-  return true;
+    return true;
 }
 
 
@@ -611,16 +611,16 @@ bool EasyScanner::readString(const char* str)
 */
 bool EasyScanner::readQuotedString(bool allowNoQuotedWord)
 {
-  skipSpace();
+    skipSpace();
 
-  if(*text == quoteChar){
-      return extractQuotedString();
+    if(*text == quoteChar){
+        return extractQuotedString();
 
-  } else if(allowNoQuotedWord){
-      return readString0(' ');
-  }
+    } else if(allowNoQuotedWord){
+        return readString0(' ');
+    }
 
-  return false;
+    return false;
 }
 
 
@@ -660,70 +660,70 @@ bool EasyScanner::readSymbol()
 
 bool EasyScanner::readSymbol(int id)
 {
-  char* org = text;
-  int orglineNumber = lineNumber;
+    char* org = text;
+    int orglineNumber = lineNumber;
 
-  if(readWord()){
-      symbolValue = getSymbolID(stringValue);
-      if(symbolValue == id){
-	  return true;
-      } else {
-	  text = org;
-      lineNumber = orglineNumber;
-      }
-  }
+    if(readWord()){
+        symbolValue = getSymbolID(stringValue);
+        if(symbolValue == id){
+            return true;
+        } else {
+            text = org;
+            lineNumber = orglineNumber;
+        }
+    }
 
-  return false;
+    return false;
 }
 
 
 
 bool EasyScanner::skipLine()
 {
-  while(true){
-      if(readLF0()){
-	  return true;
-      }
-      if(*text == '\0'){
-	  return false;
-      }
-      text++;
-  }
+    while(true){
+        if(readLF0()){
+            return true;
+        }
+        if(*text == '\0'){
+            return false;
+        }
+        text++;
+    }
 }
 
 
 bool EasyScanner::readLine()
 {
-  char* org = text;
+    char* org = text;
 
-  if(skipLine()){
-    // eliminate newline code
-    char* end = text - 1;
-    if(*end == '\n'){
-      end--;
-      if(*end == '\r'){
-	end--;
-      }
+    if(skipLine()){
+        // eliminate newline code
+        char* end = text - 1;
+        if(*end == '\n'){
+            end--;
+            if(*end == '\r'){
+                end--;
+            }
+        }
+        end++;
+
+        stringValue.assign(org, end - org);
+        return true;
     }
-    end++;
 
-    stringValue.assign(org, end - org);
-    return true;
-  }
-
-  return false;
+    return false;
 }
 
 
 bool EasyScanner::skipBlankLines()
 {
-	do {
-		if(*text == '\0'){
-			return false;
-		}
-	} while(readLF());
+    do {
+        if(*text == '\0'){
+            return false;
+        }
+    } while(readLF());
 
-	return true;
+    return true;
 }
 
 
