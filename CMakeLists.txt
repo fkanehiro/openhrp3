@@ -107,7 +107,7 @@ endif()
 
 # jpeg
 if(PNG_JPEG_BUILD)
-  set(JPEG_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/hrplib/hrpParser/Jpeg-6b" ) 
+  set(JPEG_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/hrplib/hrpUtil/Jpeg-6b" ) 
   if(UNIX)
     set(JPEG_LIBRARY jpeg)
   elseif(WIN32)
@@ -130,7 +130,7 @@ include_directories(${JPEG_INCLUDE_DIR})
 
 # png
 if(PNG_JPEG_BUILD)
-  set(PNG_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/hrplib/hrpParser/lpng1232" ) 
+  set(PNG_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/hrplib/hrpUtil/lpng1232" ) 
   if(UNIX)
     set(PNG_LIBRARY png)
   elseif(WIN32)
@@ -153,7 +153,7 @@ include_directories(${PNG_INCLUDE_DIR})
 
 #zlib
 if(PNG_JPEG_BUILD)
-  set(ZLIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/hrplib/hrpParser/zlib123" )
+  set(ZLIB_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/hrplib/hrpUtil/zlib123" )
   include_directories(${ZLIB_INCLUDE_DIR})
   set(ZLIB_LIBRARY zlib)
 else()
