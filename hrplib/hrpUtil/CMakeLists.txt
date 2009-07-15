@@ -62,7 +62,7 @@ elseif(WIN32)
   set_target_properties(${target} PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d )
 
-  target_link_libraries(${target}
+    target_link_libraries(${target}
     optimized ${ZLIB_LIBRARY} debug ${ZLIB_LIBRARY}d
     optimized ${PNG_LIBRARY} debug ${PNG_LIBRARY}d
     optimized ${JPEG_LIBRARY} debug ${JPEG_LIBRARY}d)

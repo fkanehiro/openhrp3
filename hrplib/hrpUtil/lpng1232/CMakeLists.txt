@@ -7,8 +7,6 @@
 # National Institute of Advanced Industrial Science and Technology (AIST)
 # General Robotix Inc. 
 
-# @author Shin'ichiro Nakaoka
-
 set(sources
   png.c
   pngerror.c
@@ -38,24 +36,6 @@ include_directories("../zlib123")
 add_definitions(-DPNG_NO_MMX_CODE -D_CRT_SECURE_NO_WARNINGS)
 
 if(WIN32)
-set_target_properties(${PNG_LIBRARY} PROPERTIES COMPILE_FLAGS -Ob1)
-set_target_properties(${PNG_LIBRARY} PROPERTIES DEBUG_POSTFIX d )
+  set_target_properties(${PNG_LIBRARY} PROPERTIES COMPILE_FLAGS -Ob1)
+  set_target_properties(${PNG_LIBRARY} PROPERTIES DEBUG_POSTFIX d )
 endif() 
-
-if(WIN32)
-  install(
-    TARGETS ${PNG_LIBRARY}
-    RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release
-    LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release
-    ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release
-)
-endif()
-
-install(
-  TARGETS ${PNG_LIBRARY}
-  RUNTIME DESTINATION bin CONFIGURATIONS Release
-  LIBRARY DESTINATION lib CONFIGURATIONS Release
-  ARCHIVE DESTINATION lib CONFIGURATIONS Release
-)
-
-install(FILES ${headers} DESTINATION include/hrpParser/${PNG_LIBRARY})

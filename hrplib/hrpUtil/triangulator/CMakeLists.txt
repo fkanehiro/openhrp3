@@ -7,8 +7,6 @@
 # National Institute of Advanced Industrial Science and Technology (AIST)
 # General Robotix Inc. 
 
-# @author Shin'ichiro Nakaoka
-
 set(headers
   ear.h
   geometry.h
@@ -21,5 +19,3 @@ set(headers
   triangle.h
   vector.h
 )
-
-install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpUtil/triangulator)

@@ -9,11 +9,6 @@
 
 #include "config.h"
 
-extern "C" {
-#define XMD_H
-#include "jpeglib.h"
-}
-#include "png.h"
 #include "VrmlNodes.h"
 
 using namespace std;
