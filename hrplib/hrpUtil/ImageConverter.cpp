@@ -4,8 +4,16 @@
   @author K.FUKUDA
 */
 
-#include <iostream>
 #include "ImageConverter.h"
+
+#include <iostream>
+
+extern "C" {
+#define XMD_H
+#include <jpeglib.h>
+}
+#include <png.h>
+
 
 using namespace std;
 using namespace hrp;

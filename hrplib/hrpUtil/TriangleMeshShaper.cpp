@@ -13,7 +13,8 @@
 */
 
 #include "TriangleMeshShaper.h"
-
+#include "triangulator/geometry.h"
+#include "triangulator/triangulator.h"
 #include <iostream>
 #include <cmath>
 #include <vector>
