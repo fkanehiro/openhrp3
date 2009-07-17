@@ -466,6 +466,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             long etime = System.currentTimeMillis();
             System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms");
             setURL(url);
+            bModified_ = false;
             manager_.setSelectedItem(this, true);
 
             setProperty("isRobot", Boolean.toString(isRobot_));
@@ -477,7 +478,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
         long load_etime = System.currentTimeMillis();
         System.out.println("load time = " + (load_etime-load_stime) + "ms");
-        bModified_ = false;
         return true;
     }
 

@@ -38,14 +38,15 @@ public class ObjectToolBar extends JToolBar {
     public static final int FITTING_MODE    = 2;
     public static final int FROM_JOINT_MODE = 3;
     public static final int INV_KINEMA_MODE = 4;
+    public static final int FITTING_START_MODE    = 5;
 
     public int mode_;
 
     ActionListener listener_;
 
-    JButton addRobot_;
-    JButton addEnv_;
-    JButton remove_;
+    //JButton addRobot_;
+    //JButton addEnv_;
+    //JButton remove_;
     JToggleButton objTrans_;
     JToggleButton objRot_;
     JToggleButton joint_;
@@ -71,33 +72,33 @@ public class ObjectToolBar extends JToolBar {
             new Dimension(IconProperties.WIDTH, IconProperties.HEIGHT);
 
         group_ = new PopButtonGroup();
-        group_.addActionListener(GUIAction.OPERATION_DISABLE);
+        group_.addActionListener(GUIAction.OPERATION_DISABLE = new GUIAction("operationDisable"));
 
         // ロボット追加
-        addRobot_ = new JButton(GUIAction.ADD_ROBOT);
-        addRobot_.setPreferredSize(size);
-        addRobot_.setMaximumSize(size);
-        addRobot_.setMinimumSize(size);
+        //addRobot_ = new JButton(GUIAction.ADD_ROBOT);
+        //addRobot_.setPreferredSize(size);
+        //addRobot_.setMaximumSize(size);
+        //addRobot_.setMinimumSize(size);
 //        add(addRobot_);
 
         // 環境追加
-        addEnv_ = new JButton(GUIAction.ADD_ENV);
-        addEnv_.setPreferredSize(size);
-        addEnv_.setMaximumSize(size);
-        addEnv_.setMinimumSize(size);
+        //addEnv_ = new JButton(GUIAction.ADD_ENV);
+        //addEnv_.setPreferredSize(size);
+        //addEnv_.setMaximumSize(size);
+        //addEnv_.setMinimumSize(size);
 //        add(addEnv_);
 
         // オブジェクト削除
-        remove_ = new JButton(GUIAction.REMOVE_OBJECT);
-        remove_.setPreferredSize(size);
-        remove_.setMaximumSize(size);
-        remove_.setMinimumSize(size);
+        //remove_ = new JButton(GUIAction.REMOVE_OBJECT);
+        //remove_.setPreferredSize(size);
+        //remove_.setMaximumSize(size);
+        //remove_.setMinimumSize(size);
 //        add(remove_);
 
-        addSeparator();
+        //addSeparator();
 
         // オブジェクト並進移動
-        objTrans_ = new JToggleButton(GUIAction.OBJECT_TRANSLATION);
+        objTrans_ = new JToggleButton(GUIAction.OBJECT_TRANSLATION = new GUIAction("objectTranslation"));
         objTrans_.setActionCommand(GUIAction.OBJECT_TRANSLATION.getActionCommand());
         objTrans_.setPreferredSize(size);
         objTrans_.setMaximumSize(size);
@@ -106,7 +107,7 @@ public class ObjectToolBar extends JToolBar {
         group_.add(objTrans_);
 
         // オブジェクト回転移動
-        objRot_ = new JToggleButton(GUIAction.OBJECT_ROTATION);
+        objRot_ = new JToggleButton(GUIAction.OBJECT_ROTATION = new GUIAction("objectRotation"));
         objRot_.setPreferredSize(size);
         objRot_.setMaximumSize(size);
         objRot_.setMinimumSize(size);
@@ -114,7 +115,7 @@ public class ObjectToolBar extends JToolBar {
         group_.add(objRot_);
 
         // 関節角設定
-        joint_ = new JToggleButton(GUIAction.JOINT_ROTATION);
+        joint_ = new JToggleButton(GUIAction.JOINT_ROTATION = new GUIAction("jointRotation"));
         joint_.setPreferredSize(size);
         joint_.setMaximumSize(size);
         joint_.setMinimumSize(size);
@@ -124,7 +125,7 @@ public class ObjectToolBar extends JToolBar {
         addSeparator();
 
         // フィット元設定
-        fitSrc_ = new JToggleButton(GUIAction.FITTING_SRC);
+        fitSrc_ = new JToggleButton(GUIAction.FITTING_SRC = new GUIAction("fittingSrc"));
         fitSrc_.setPreferredSize(size);
         fitSrc_.setMaximumSize(size);
         fitSrc_.setMinimumSize(size);
@@ -132,7 +133,7 @@ public class ObjectToolBar extends JToolBar {
         group_.add(fitSrc_);
 
         // フィット先設定
-        fitDist_ = new JToggleButton(GUIAction.FITTING_DEST);
+        fitDist_ = new JToggleButton(GUIAction.FITTING_DEST = new GUIAction("fittingDest"));
         fitDist_.setPreferredSize(size);
         fitDist_.setMaximumSize(size);
         fitDist_.setMinimumSize(size);
@@ -140,7 +141,7 @@ public class ObjectToolBar extends JToolBar {
         group_.add(fitDist_);
 
         // フィット
-        fit_ = new JButton(GUIAction.DO_FIT);
+        fit_ = new JButton(GUIAction.DO_FIT = new GUIAction("doFit"));
         fit_.setPreferredSize(size);
         fit_.setMaximumSize(size);
         fit_.setMinimumSize(size);
@@ -149,7 +150,7 @@ public class ObjectToolBar extends JToolBar {
         addSeparator();
 
         // 根元ジョイント設定
-        fromJoint_ = new JToggleButton(GUIAction.INV_KINEMA_FROM);
+        fromJoint_ = new JToggleButton(GUIAction.INV_KINEMA_FROM = new GUIAction("invKinemaFrom"));
         fromJoint_.setPreferredSize(size);
         fromJoint_.setMaximumSize(size);
         fromJoint_.setMinimumSize(size);
@@ -157,7 +158,7 @@ public class ObjectToolBar extends JToolBar {
         group_.add(fromJoint_);
 
         // リンク回転移動
-        invKinRot_ = new JToggleButton(GUIAction.INV_KINEMA_ROT);
+        invKinRot_ = new JToggleButton(GUIAction.INV_KINEMA_ROT = new GUIAction("invKinemaRot"));
         invKinRot_.setPreferredSize(size);
         invKinRot_.setMaximumSize(size);
         invKinRot_.setMinimumSize(size);
@@ -165,7 +166,7 @@ public class ObjectToolBar extends JToolBar {
         group_.add(invKinRot_);
 
         // リンク並進移動
-        invKinTrans_ = new JToggleButton(GUIAction.INV_KINEMA_TRANS);
+        invKinTrans_ = new JToggleButton(GUIAction.INV_KINEMA_TRANS = new GUIAction("invKinemaTrans"));
         invKinTrans_.setPreferredSize(size);
         invKinTrans_.setMaximumSize(size);
         invKinTrans_.setMinimumSize(size);
@@ -185,9 +186,9 @@ public class ObjectToolBar extends JToolBar {
         mode_ = mode;
         switch (mode_) {
         case DISABLE_MODE:
-            addRobot_.setEnabled(false);
-            addEnv_.setEnabled(false);
-            remove_.setEnabled(false);
+            //addRobot_.setEnabled(false);
+            //addEnv_.setEnabled(false);
+            //remove_.setEnabled(false);
             objTrans_.setEnabled(false);
             objRot_.setEnabled(false);
             joint_.setEnabled(false);
@@ -199,9 +200,9 @@ public class ObjectToolBar extends JToolBar {
             invKinRot_.setEnabled(false);
             break;
         case OBJECT_MODE:
-            addRobot_.setEnabled(true);
-            addEnv_.setEnabled(true);
-            remove_.setEnabled(true);
+            //addRobot_.setEnabled(true);
+            //addEnv_.setEnabled(true);
+            //remove_.setEnabled(true);
             objTrans_.setEnabled(true);
             objRot_.setEnabled(true);
             joint_.setEnabled(true);
@@ -212,10 +213,12 @@ public class ObjectToolBar extends JToolBar {
             invKinTrans_.setEnabled(false);
             invKinRot_.setEnabled(false);
             break;
+        case FITTING_START_MODE:
+        	fitSrc_.doClick();
         case FITTING_MODE:
-            addRobot_.setEnabled(false);
-            addEnv_.setEnabled(false);
-            remove_.setEnabled(false);
+            //addRobot_.setEnabled(false);
+            //addEnv_.setEnabled(false);
+            //remove_.setEnabled(false);
             objTrans_.setEnabled(false);
             objRot_.setEnabled(false);
             joint_.setEnabled(false);
@@ -227,9 +230,9 @@ public class ObjectToolBar extends JToolBar {
             invKinRot_.setEnabled(false);
             break;
         case FROM_JOINT_MODE:
-            addRobot_.setEnabled(false);
-            addEnv_.setEnabled(false);
-            remove_.setEnabled(false);
+            //addRobot_.setEnabled(false);
+            //addEnv_.setEnabled(false);
+            //remove_.setEnabled(false);
             objTrans_.setEnabled(false);
             objRot_.setEnabled(false);
             joint_.setEnabled(false);
@@ -241,9 +244,9 @@ public class ObjectToolBar extends JToolBar {
             invKinRot_.setEnabled(false);
             break;
         case INV_KINEMA_MODE:
-            addRobot_.setEnabled(false);
-            addEnv_.setEnabled(false);
-            remove_.setEnabled(false);
+            //addRobot_.setEnabled(false);
+            //addEnv_.setEnabled(false);
+            //remove_.setEnabled(false);
             objTrans_.setEnabled(false);
             objRot_.setEnabled(false);
             joint_.setEnabled(false);

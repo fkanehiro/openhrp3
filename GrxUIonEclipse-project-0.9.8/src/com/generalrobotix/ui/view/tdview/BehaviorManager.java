@@ -79,10 +79,13 @@ public class BehaviorManager implements WorldReplaceListener {
     private BehaviorHandler indicator_;
     private GrxPluginManager manager_;
     private Grx3DView viewer_;
+    private InvKinemaResolver resolver_;
+    private boolean itemChangeFlag_ = false;
     //--------------------------------------------------------------------
     // コンストラクタ
     public BehaviorManager(GrxPluginManager manager) {
     	manager_ = manager;
+    	resolver_ = new InvKinemaResolver(manager_);
         //Simulator.getInstance().addWorldReplaceListener(this);
     }
 
@@ -189,6 +192,7 @@ public class BehaviorManager implements WorldReplaceListener {
      * @param force if true is given, dynamics server is initialized even if it exists already
      * @return true if updated successfully, false otherwise
      */
+    /*
     public boolean updateDynamicsSimulator(boolean force) {
     	if (currentDynamics_ == null || force) {
     		try {
@@ -206,13 +210,13 @@ public class BehaviorManager implements WorldReplaceListener {
     	}
     	return true;
     }
-    
+    */
     /**
      * @brief create dynamics server
      * @param update if true is given, existing dynamics server is destroyed and re-created
      * @return dynamics server
      */
-	DynamicsSimulator getDynamicsSimulator(boolean update) {
+	public DynamicsSimulator getDynamicsSimulator(boolean update) {
 		//currentDynamics_ = dynamicsMap_.get(currentWorld_);
 		if (update && currentDynamics_ != null) {
             try {
@@ -251,12 +255,12 @@ public class BehaviorManager implements WorldReplaceListener {
 	 * And then, collision check pairs between items are registered.
 	 * @return true initialized successfully, false otherwise
 	 */
-	public boolean initDynamicsSimulator() {
+	public boolean initDynamicsSimulator(List<GrxModelItem> modelList, List<GrxCollisionPairItem> collisionPair) {	
+		if(!itemChangeFlag_) return true;
 		getDynamicsSimulator(true);
 
 		try {
 			// register characters
-			List<GrxModelItem> modelList = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
 			for (int i=0; i<modelList.size(); i++) {
 				GrxModelItem model = modelList.get(i);
 				if (model.getBodyInfo() != null)
@@ -284,7 +288,6 @@ public class BehaviorManager implements WorldReplaceListener {
 			}
 			
             // set collision check pairs 
-			List<GrxBaseItem> collisionPair = manager_.getSelectedItemList(GrxCollisionPairItem.class);
 			Map<String, GrxModelItem> modelmap = (Map<String, GrxModelItem>)manager_.getItemMap(GrxModelItem.class);
 			for (int i=0; i<collisionPair.size(); i++) {
 				GrxCollisionPairItem item = (GrxCollisionPairItem) collisionPair.get(i);
@@ -322,9 +325,51 @@ public class BehaviorManager implements WorldReplaceListener {
 			GrxDebugUtil.printErr("initDynamicsSimulator:", e);
 			return false;
 		}
+		resolver_.setDynamicsSimulator(currentDynamics_);
+		handler_.setInvKinemaResolver(resolver_);
+		itemChangeFlag_ = false;
 		return true;
 	}
-
+/*
+	public void registerCharacter(GrxModelItem model){
+		if(currentDynamics_ != null){
+			currentDynamics_.registerCharacter(model.getName(), model.getBodyInfo());
+			currentDynamics_.init(0.005, IntegrateMethod.EULER, SensorOption.ENABLE_SENSOR);
+		}
+	}
+	
+	public void registerCollisionPair(GrxCollisionPairItem item){
+		Map<String, GrxModelItem> modelmap = (Map<String, GrxModelItem>)manager_.getItemMap(GrxModelItem.class);
+		GrxModelItem m1 = modelmap.get(item.getStr("objectName1", ""));
+		GrxModelItem m2 = modelmap.get(item.getStr("objectName2", ""));
+		if (m1 == null || m2 == null) return;
+		Vector<GrxLinkItem> links1, links2;
+		String lname1 = item.getStr("jointName1","");
+		if (lname1.equals("")){
+			links1 = m1.links_;
+		}else{
+			links1 = new Vector<GrxLinkItem>();
+			GrxLinkItem l = m1.getLink(lname1);
+			if (l != null) links1.add(l);
+		}
+		String lname2 = item.getStr("jointName2","");
+		if (lname2.equals("")){
+			links2 = m2.links_;
+		}else{
+			links2 = new Vector<GrxLinkItem>();
+			GrxLinkItem l = m2.getLink(lname2);
+			if (l != null) links2.add(l);
+		}
+		for (int j=0; j<links1.size(); j++){
+			for (int k=0; k<links2.size(); k++){
+				currentDynamics_.registerIntersectionCheckPair(
+						m1.getName(), links1.get(j).getName(),
+						m2.getName(), links2.get(k).getName(),
+						links1.get(j).getDbl("tolerance",0.0)+links2.get(k).getDbl("tolerance",0.0));
+			}
+		}
+	}
+	*/
 	public void addClickListener( Grx3DViewClickListener listener ){
 		behavior_.addClickListener( listener );
 	}
@@ -339,7 +384,10 @@ public class BehaviorManager implements WorldReplaceListener {
 	 * @param modelList list of model items. Positions of these items are updated
 	 * @return collision information
 	 */
-	public Collision[] getCollision(List<GrxModelItem> modelList) {
+	public Collision[] getCollision(List<GrxModelItem> modelList, List<GrxCollisionPairItem> colPairList) {
+		if(colPairList.isEmpty() || modelList.isEmpty()) return null;
+		if(itemChangeFlag_)
+			initDynamicsSimulator(modelList, colPairList);
 		if (currentDynamics_ == null) return null;
 		for (int i=0; i<modelList.size(); i++)  {
 			GrxModelItem model = modelList.get(i);
@@ -366,7 +414,10 @@ public class BehaviorManager implements WorldReplaceListener {
 	 * @param modelList list of model items. Positions of these items are updated
 	 * @return distance information
 	 */
-	public Distance[] getDistance(List<GrxModelItem> modelList) {
+	public Distance[] getDistance(List<GrxModelItem> modelList, List<GrxCollisionPairItem> colPairList) {
+		if(colPairList.isEmpty() || modelList.isEmpty()) return null;
+		if(itemChangeFlag_)
+			initDynamicsSimulator(modelList, colPairList);
 		if (currentDynamics_ == null) return null;
 		for (int i=0; i<modelList.size(); i++)  {
 			GrxModelItem model = modelList.get(i);
@@ -387,7 +438,10 @@ public class BehaviorManager implements WorldReplaceListener {
 	 * @param modelList list of model items. Positions of these items are updated
 	 * @return intersecting pairs
 	 */
-	public LinkPair[] getIntersection(List<GrxModelItem> modelList) {
+	public LinkPair[] getIntersection(List<GrxModelItem> modelList, List<GrxCollisionPairItem> colPairList) {
+		if(colPairList.isEmpty() || modelList.isEmpty()) return null;
+		if(itemChangeFlag_)
+			initDynamicsSimulator(modelList, colPairList);
 		if (currentDynamics_ == null) return null;
 		for (int i=0; i<modelList.size(); i++)  {
 			GrxModelItem model = modelList.get(i);
@@ -399,5 +453,18 @@ public class BehaviorManager implements WorldReplaceListener {
 			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
 		}
 		return currentDynamics_.checkIntersection(true);
+	}
+	
+	public void setItemChangeFlag(boolean flag){
+		itemChangeFlag_ = flag;
+	}
+	
+	public void destroyDynamicsSimulator(){
+		try {
+			currentDynamics_.destroy();
+		} catch (Exception e) {
+			GrxDebugUtil.printErr("getDynamicsSimulator: destroy failed.");
+		}
+		currentDynamics_ = null;
 	}
 }

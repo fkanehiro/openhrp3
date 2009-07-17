@@ -64,10 +64,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 import jp.go.aist.hrp.simulator.*;
+import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.IntegrateMethod;
+import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.SensorOption;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.util.AxisAngle4d;
+import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
@@ -88,9 +91,11 @@ public class Grx3DView
     // items
     private GrxWorldStateItem  currentWorld_ = null;
     private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
+    private List<GrxCollisionPairItem> currentCollisionPairs_ = new ArrayList<GrxCollisionPairItem>();
     private WorldStateEx currentState_ = null; 
     private final static int VIEW=0;
     private final static int EDIT=1;
+    private final static int SIMULATION = 2;
     private int viewMode_ = VIEW;
     private double dAngle_ = Math.toRadians(0.1);
  
@@ -265,10 +270,14 @@ public class Grx3DView
         	currentWorld_.addObserver(this);
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+        currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
+        manager_.registerItemChangeListener(this, GrxCollisionPairItem.class);
         
         //setup
         behaviorManager_.setThreeDViewer(this);
         behaviorManager_.setViewIndicator(viewToolBar_);
+        behaviorManager_.setItemChangeFlag(true);
+        behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_);
         behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
         behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
         behaviorManager_.setViewHandlerMode("button_mode_rotation");
@@ -277,6 +286,23 @@ public class Grx3DView
         viewToolBar_.setOperation(ViewToolBar.ROTATE);
 
         registerCORBA();
+        
+        GrxOpenHRPView hrp =  (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
+		if(hrp!=null)
+			if(hrp.isSimulating())
+				viewMode_ = SIMULATION;
+        if(viewMode_!=SIMULATION)
+        	showOption();
+        else{
+        	disableOperation();
+			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
+			if (btnDistance_.isSelected())
+				btnDistance_.doClick();
+			if (btnIntersection_.isSelected())
+				btnIntersection_.doClick();
+			btnDistance_.setEnabled(false);
+			btnIntersection_.setEnabled(false);
+        }
     }
 
     private void _setupSceneGraph() {
@@ -448,10 +474,10 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnCollision_.isSelected()){
                     btnCollision_.setToolTipText("hide Collision");
-                    if(currentState_!=null)
+                    if (viewMode_ == SIMULATION)
                     	_showCollision(currentState_.collisions);
                     else
-                    	_showCollision(behaviorManager_.getCollision(currentModels_));
+                    	_showCollision(behaviorManager_.getCollision(currentModels_, currentCollisionPairs_));
                 }else{
                     btnCollision_.setToolTipText("show Collision");
                     _showCollision(null);
@@ -464,8 +490,8 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnDistance_.isSelected()){
                     btnDistance_.setToolTipText("hide Distance");
-                    if (viewMode_ == EDIT)
-                    	_showDistance(behaviorManager_.getDistance(currentModels_));
+                    if (viewMode_ != SIMULATION)
+                    	_showDistance(behaviorManager_.getDistance(currentModels_, currentCollisionPairs_));
                 }else {
                     btnDistance_.setToolTipText("show Distance");
                     _showDistance(null);
@@ -478,8 +504,8 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnIntersection_.isSelected()){
                     btnIntersection_.setToolTipText("nocheck intersection");
-                    if (viewMode_ == EDIT)
-                    	_showIntersection(behaviorManager_.getIntersection(currentModels_));
+                    if (viewMode_ != SIMULATION)
+                    	_showIntersection(behaviorManager_.getIntersection(currentModels_, currentCollisionPairs_));
                 }else{
                     btnIntersection_.setToolTipText("check intersection");
                     _showIntersection(null);
@@ -644,11 +670,13 @@ public class Grx3DView
 	    			modelItem.setWireFrame(viewToolBar_.isWireFrameSelected());
 	                bgRoot_.addChild(modelItem.bgRoot_);
 	        		currentModels_.add(modelItem);
-	        		if(currentState_!=null){
+	        		behaviorManager_.setItemChangeFlag(true);
+	        		if(viewMode_ == VIEW && currentState_!=null){
 	        			updateModels(currentState_);
 	        			updateViewSimulator(currentState_.time);
 	        		}else
 	        			updateViewSimulator(0);
+	        		showOption();
 	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
@@ -656,9 +684,11 @@ public class Grx3DView
 	    		if(modelItem.bgRoot_.isLive()){
 	    			modelItem.bgRoot_.detach();
 	        		currentModels_.remove(modelItem);
+	        		behaviorManager_.setItemChangeFlag(true);
+	        		showOption();
 	    		}
-	    		if(currentModels_.size()==0)
-	    			_showCollision(null);
+	    		//if(currentModels_.size()==0)
+	    		//	_showCollision(null);
 	    		break;
 	    	default:
 	    		break;
@@ -684,13 +714,32 @@ public class Grx3DView
 	    	default:
 	    		break;
     		}
+    	}else if(item instanceof GrxCollisionPairItem){
+    		GrxCollisionPairItem collisionPairItem = (GrxCollisionPairItem) item;
+    		switch(event){
+    		case GrxPluginManager.SELECTED_ITEM:
+    			if(!currentCollisionPairs_.contains(collisionPairItem)){
+    				currentCollisionPairs_.add(collisionPairItem);
+    				behaviorManager_.setItemChangeFlag(true);
+    	    		showOption();
+    			}
+    			break;
+    		case GrxPluginManager.REMOVE_ITEM:
+    		case GrxPluginManager.NOTSELECTED_ITEM:
+    			if(currentCollisionPairs_.contains(collisionPairItem)){
+    				currentCollisionPairs_.remove(collisionPairItem);
+    				behaviorManager_.setItemChangeFlag(true);
+    	    		showOption();
+    			}
+    			break;
+    		}
     	}
     }
     
     public void update(GrxBasePlugin plugin, Object... arg) {
     	if(currentWorld_!=plugin) return;
 		if((String)arg[0]=="PositionChange"){
-			if(viewMode_ == VIEW){
+			if(viewMode_ == VIEW || viewMode_ == SIMULATION){
 				int pos = ((Integer)arg[1]).intValue();
 				currentState_ = currentWorld_.getValue(pos);
 				if(currentState_!=null){
@@ -698,28 +747,41 @@ public class Grx3DView
 					updateModels(currentState_);
 					updateViewSimulator(currentState_.time);
 				}
+				if(viewMode_ == VIEW)
+					showOption();
 			}
 		}else if((String)arg[0]=="StartSimulation"){
 			disableOperation();
 			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
 			if((Boolean)arg[1])
 				showViewSimulator(true);
+			if (btnDistance_.isSelected())
+				btnDistance_.doClick();
+			if (btnIntersection_.isSelected())
+				btnIntersection_.doClick();
+			btnDistance_.setEnabled(false);
+			btnIntersection_.setEnabled(false);
+			viewMode_ = SIMULATION;
 		}else if((String)arg[0]=="StopSimulation"){
 			objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
+			btnDistance_.setEnabled(true);
+			btnIntersection_.setEnabled(true);
+			viewMode_ = VIEW;
+		}if((String)arg[0]=="ClearLog"){
+			currentState_ = null;
 		}
     }
     
     public void showOption(){
-    	if(viewMode_==EDIT){
-	    	if (btnCollision_.isSelected()) {
-	    		_showCollision(behaviorManager_.getCollision(currentModels_));
-			}
-	    	if (btnDistance_.isSelected()){
-	    		_showDistance(behaviorManager_.getDistance(currentModels_));
-	    	}
-	    	if (btnIntersection_.isSelected()){
-	    		_showIntersection(behaviorManager_.getIntersection(currentModels_));
-	    	}
+    	if(viewMode_==SIMULATION) return;
+    	if (btnCollision_.isSelected()) {
+    		_showCollision(behaviorManager_.getCollision(currentModels_, currentCollisionPairs_));
+    	}
+    	if (btnDistance_.isSelected()){
+    		_showDistance(behaviorManager_.getDistance(currentModels_, currentCollisionPairs_));
+    	}
+    	if (btnIntersection_.isSelected()){
+    		_showIntersection(behaviorManager_.getIntersection(currentModels_, currentCollisionPairs_));
     	}
     }
 	
@@ -847,6 +909,7 @@ public class Grx3DView
         }
         
         disableOperation();
+        viewMode_ = VIEW;
 		objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
                
         int step = (int)(1000.0/framerate*playbackRate);
@@ -1532,8 +1595,6 @@ public class Grx3DView
         GUIAction.OBJECT_TRANSLATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	if (behaviorManager_.getOperationMode() != BehaviorManager.OBJECT_TRANSLATION_MODE){
-                	behaviorManager_.initDynamicsSimulator();
-                    //setModelUpdate(false);
                     behaviorManager_.setOperationMode(BehaviorManager.OBJECT_TRANSLATION_MODE);
                     viewMode_ = EDIT;
                     objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
@@ -1546,8 +1607,6 @@ public class Grx3DView
         GUIAction.OBJECT_ROTATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	if (behaviorManager_.getOperationMode() != BehaviorManager.OBJECT_ROTATION_MODE){
-            		behaviorManager_.initDynamicsSimulator();
-            		//setModelUpdate(false);
             		behaviorManager_.setOperationMode(BehaviorManager.OBJECT_ROTATION_MODE);
             		viewMode_ = EDIT;
             		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
@@ -1559,8 +1618,6 @@ public class Grx3DView
         GUIAction.JOINT_ROTATION.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	if (behaviorManager_.getOperationMode() != BehaviorManager.JOINT_ROTATION_MODE){
-            		behaviorManager_.initDynamicsSimulator();
-            		//setModelUpdate(false);
             		behaviorManager_.setOperationMode(BehaviorManager.JOINT_ROTATION_MODE);
             		viewMode_ = EDIT;
             		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
@@ -1596,7 +1653,7 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
                 //setModelUpdate(false);
                 behaviorManager_.fit();
-                objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
+                objectToolBar_.setMode(ObjectToolBar.FITTING_START_MODE);
                 viewToolBar_.setEnabled(true);
                 behaviorManager_.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
                 viewMode_ = EDIT;
@@ -1606,22 +1663,21 @@ public class Grx3DView
         });
 
         GUIAction.INV_KINEMA_FROM.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (behaviorManager_.updateDynamicsSimulator(false)) {
-                    objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
-                    behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_FROM_MODE);
-                    viewMode_ = EDIT;
-                    lblMode_.setText("[ EDIT : Inverse Kinematics Base Link ]");
-                    showOption();
-                }
+            public void actionPerformed(ActionEvent e) {  	
+            	objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
+            	behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_FROM_MODE);
+            	behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_);
+            	viewMode_ = EDIT;
+            	lblMode_.setText("[ EDIT : Inverse Kinematics Base Link ]");
+            	showOption();
             }
         });
 
         GUIAction.INV_KINEMA_TRANS.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //setModelUpdate(false);
                 objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
                 behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_TRANSLATION_MODE);
+                behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_);
                 viewMode_ = EDIT;
                 lblMode_.setText("[ EDIT : Inverse Kinematics Translate ]");
                 showOption();
@@ -1630,9 +1686,9 @@ public class Grx3DView
 
         GUIAction.INV_KINEMA_ROT.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //setModelUpdate(false);
                 objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
                 behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_ROTATION_MODE);
+                behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_);
                 viewMode_ = EDIT;
                 lblMode_.setText("[ EDIT : Inverse Kinematics Rotate ]");
                 showOption();
@@ -1642,6 +1698,7 @@ public class Grx3DView
         GUIAction.OPERATION_DISABLE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
             	disableOperation();
+            	viewMode_ = VIEW;
             }
         });
     }
@@ -1649,20 +1706,17 @@ public class Grx3DView
     public void disableOperation(){
         //setModelUpdate(true);
     	
-        behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
-        viewMode_ = VIEW;
+        behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);       
         objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
         objectToolBar_.selectNone();
         viewToolBar_.setEnabled(true);
         lblMode_.setText("[ VIEW ]");
         
         if(currentState_!=null){
-        	_showCollision(currentState_.collisions);
 			updateModels(currentState_);
 			updateViewSimulator(currentState_.time);
+			showOption();
         }
-        _showIntersection(null);
-        _showDistance(null);
     }
 
     public void addClickListener( Grx3DViewClickListener listener ){
@@ -1816,6 +1870,7 @@ public class Grx3DView
     // view が閉じられたときの処理
     public void shutdown() {
     	showViewSimulator(false);
+    	behaviorManager_.destroyDynamicsSimulator();
     	Iterator<GrxModelItem> it = currentModels_.iterator();
     	while(it.hasNext())	{
     		it.next().bgRoot_.detach();
@@ -1824,6 +1879,12 @@ public class Grx3DView
     	manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
     	if(currentWorld_!=null)
     		currentWorld_.deleteObserver(this);
+    	manager_.removeItemChangeListener(this, GrxCollisionPairItem.class);
 	}
 
+    public void repaint(){
+    	view_.repaint();
+    	objectToolBar_.repaint();
+    	viewToolBar_.repaint();
+    }
 }

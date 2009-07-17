@@ -44,21 +44,25 @@ class ObjectTranslationHandler extends OperationHandler {
         try {
             info.pickCanvas.setShapeLocation(prevPoint_.x, prevPoint_.y);
             PickResult pickResult = info.pickCanvas.pickClosest();
-            if (pickResult == null) {
-                //_disableBoundingBox();
+            if (pickResult == null)
                 return;
-            }
-
             TransformGroup tg =
                 (TransformGroup)pickResult.getNode(PickResult.TRANSFORM_GROUP);
-            if (tg == null) {
-                //_disableBoundingBox();
-                return;
-            }
-            
+            GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
+            if (model == null) 
+            	return;
+            else
+            	tg = model.getTransformGroupRoot();
+            if (tg == null)
+            	return;
+         
             if (tg != tgTarget_) {
                 if (_enableBoundingBox(tg, info)) {
                     isPicked_ = true;
+                    Point3d startPoint = info.pickCanvas.getStartPosition();
+                    PickIntersection intersection =
+                        pickResult.getClosestIntersection(startPoint);
+                    norm_ = new Vector3f(intersection.getPointNormal());
                     //evt.consume();
                 } 
             } else {

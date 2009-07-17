@@ -423,8 +423,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 				
 				syncExec(new Runnable(){
 					public void run() {
-						currentWorld_.setPosition(0);
 						currentWorld_.stopSimulation();
+						currentWorld_.setPosition(0);
 	                }
 	            } );
 	        	
