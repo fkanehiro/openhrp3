@@ -60,13 +60,25 @@ class JointRotationHandler extends OperationHandler {
 
         try {
             info.pickCanvas.setShapeLocation(prevPoint_.x, prevPoint_.y);
-            PickResult pickResult = info.pickCanvas.pickClosest();
+            PickResult pickResult[] = info.pickCanvas.pickAllSorted();
             if (pickResult == null) {
                 return;
             }
-            TransformGroup tg = (TransformGroup)pickResult.getNode(
+            TransformGroup tg = (TransformGroup)pickResult[0].getNode(
                 PickResult.TRANSFORM_GROUP
             );
+            GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
+            if (model == null) 
+            	return;
+            else{
+            	if(info.manager_.focusedItem()==model){
+            		if( pickResult.length > 1)
+	            		tg = (TransformGroup)pickResult[1].getNode(
+	                            PickResult.TRANSFORM_GROUP );
+            		else
+            			return;
+            	}
+            }
             setPickTarget(tg, info);
         } catch (CapabilityNotSetException ex) {
             ex.printStackTrace();

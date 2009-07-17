@@ -62,7 +62,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
     protected JToggleButton zoom_;
     protected JToggleButton rotate_;
     protected JToggleButton wireFrame_;
-    protected JToggleButton gamen_;
+    //protected JToggleButton gamen_;
     protected JButton bgColor_;
     protected JButton capture_;
     protected JToggleButton selectedButton_;
@@ -80,14 +80,14 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
         cmb_ = new JComboBox();
         cmb_.setToolTipText(MessageBundle.get("toolTipText.type"));
         cmb_.setLightWeightPopupEnabled(false);
-        cmb_.addItem(GUIAction.ROOM_VIEW);
-        cmb_.addItem(GUIAction.WALK_VIEW);
-        cmb_.addItem(GUIAction.FRONT_VIEW);
-        cmb_.addItem(GUIAction.BACK_VIEW);
-        cmb_.addItem(GUIAction.LEFT_VIEW);
-        cmb_.addItem(GUIAction.RIGHT_VIEW);
-        cmb_.addItem(GUIAction.TOP_VIEW);
-        cmb_.addItem(GUIAction.BOTTOM_VIEW);
+        cmb_.addItem(GUIAction.ROOM_VIEW = new GUIAction("roomView"));
+        cmb_.addItem(GUIAction.WALK_VIEW = new GUIAction("walkView"));
+        cmb_.addItem(GUIAction.FRONT_VIEW = new GUIAction("frontView"));
+        cmb_.addItem(GUIAction.BACK_VIEW = new GUIAction("backView"));
+        cmb_.addItem(GUIAction.LEFT_VIEW = new GUIAction("leftView"));
+        cmb_.addItem(GUIAction.RIGHT_VIEW = new GUIAction("rightView"));
+        cmb_.addItem(GUIAction.TOP_VIEW = new GUIAction("topView"));
+        cmb_.addItem(GUIAction.BOTTOM_VIEW = new GUIAction("bottomView"));
 
         cmb_.setMinimumSize(cmb_.getPreferredSize());
         cmb_.setMaximumSize(cmb_.getPreferredSize());
@@ -97,7 +97,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
         
         addSeparator();
 
-        rotate_ = new JToggleButton(GUIAction.VIEW_ROTATION_MODE);
+        rotate_ = new JToggleButton(GUIAction.VIEW_ROTATION_MODE = new GUIAction("rotationMode"));
         rotate_.setPreferredSize(size);
         rotate_.setMaximumSize(size);
         rotate_.setMinimumSize(size);
@@ -106,7 +106,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
         add(rotate_);
         group_.add(rotate_);
 
-        zoom_ = new JToggleButton(GUIAction.VIEW_ZOOM_MODE);
+        zoom_ = new JToggleButton(GUIAction.VIEW_ZOOM_MODE = new GUIAction("zoomMode"));
         zoom_.setPreferredSize(size);
         zoom_.setMaximumSize(size);
         zoom_.setMinimumSize(size);
@@ -114,7 +114,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
         add(zoom_);
         group_.add(zoom_);
 
-        pan_ = new JToggleButton(GUIAction.VIEW_PAN_MODE);
+        pan_ = new JToggleButton(GUIAction.VIEW_PAN_MODE = new GUIAction("panMode"));
         pan_.setPreferredSize(size);
         pan_.setMaximumSize(size);
         pan_.setMinimumSize(size);
@@ -124,20 +124,20 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
 
         addSeparator();
 
-        wireFrame_ = new JToggleButton(GUIAction.WIRE_FRAME);
+        wireFrame_ = new JToggleButton(GUIAction.WIRE_FRAME = new GUIAction("wireFrame"));
         wireFrame_.setPreferredSize(size);
         wireFrame_.setMaximumSize(size);
         wireFrame_.setMinimumSize(size);
         add(wireFrame_);
 
-        gamen_ = new JToggleButton(GUIAction.SPLIT_MODE);
-        gamen_.setPreferredSize(size);
-        gamen_.setMaximumSize(size);
-        gamen_.setMinimumSize(size);
+        //gamen_ = new JToggleButton(GUIAction.SPLIT_MODE);
+        //gamen_.setPreferredSize(size);
+        //gamen_.setMaximumSize(size);
+        //gamen_.setMinimumSize(size);
        // add(gamen_);
 
 
-        bgColor_ = new JButton(GUIAction.BG_COLOR);
+        bgColor_ = new JButton(GUIAction.BG_COLOR = new GUIAction("bgColor"));
         bgColor_.setPreferredSize(size);
         bgColor_.setMaximumSize(size);
         bgColor_.setMinimumSize(size);
@@ -145,7 +145,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
         
         addSeparator();
         
-        capture_ = new JButton(GUIAction.CAPTURE);
+        capture_ = new JButton(GUIAction.CAPTURE = new GUIAction("capture"));
         capture_.setPreferredSize(size);
         capture_.setMaximumSize(size);
         capture_.setMinimumSize(size);
@@ -168,7 +168,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
         zoom_.setEnabled(enabled);
         rotate_.setEnabled(enabled);
         wireFrame_.setEnabled(enabled);
-        gamen_.setEnabled(enabled);
+        //gamen_.setEnabled(enabled);
     }
 
     public void setMode(int mode) {
@@ -179,7 +179,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
             zoom_.setEnabled(false);
             rotate_.setEnabled(false);
             wireFrame_.setEnabled(false);
-            gamen_.setEnabled(false);
+            //gamen_.setEnabled(false);
             break;
         case ROOM_MODE:
             cmb_.setEnabled(true);
@@ -190,7 +190,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
         		rotate_.doClick();
         	}
             wireFrame_.setEnabled(true);
-            gamen_.setEnabled(true);
+            //gamen_.setEnabled(true);
             break;
         case WALK_MODE:
             cmb_.setEnabled(true);
@@ -198,7 +198,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
             zoom_.setEnabled(true);    
             rotate_.setEnabled(true);    
             wireFrame_.setEnabled(true);
-            gamen_.setEnabled(true);
+            //gamen_.setEnabled(true);
             break;
         case PARALLEL_MODE:
             if (rotate_.isSelected()) {
@@ -209,7 +209,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
             zoom_.setEnabled(true);    
             rotate_.setEnabled(false);    
             wireFrame_.setEnabled(true);
-            gamen_.setEnabled(true);
+            //gamen_.setEnabled(true);
             break;
         default:
             return;
@@ -252,7 +252,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
     public boolean isWireFrameSelected() {
         return wireFrame_.isSelected();
     }
-
+/*
     public boolean isGamenSelected() {
         return gamen_.isSelected();
     }
@@ -260,6 +260,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
     public void setGamen(boolean flag){
         gamen_.setSelected(flag);
     }
+*/
     //--------------------------------------------------------------------
     // Implementation of BehaviorHandler
     public void processPicking(MouseEvent evt, BehaviorInfo info) {

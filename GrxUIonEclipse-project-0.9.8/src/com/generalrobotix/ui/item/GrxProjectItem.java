@@ -50,6 +50,7 @@ import org.w3c.dom.NodeList;
 
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.*;
+import com.generalrobotix.ui.view.Grx3DView;
 import com.generalrobotix.ui.view.GrxOpenHRPView;
 import com.generalrobotix.ui.util.GrxConfigBundle;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
@@ -485,6 +486,11 @@ public class GrxProjectItem extends GrxBaseItem {
 		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(null);
 		try {
 			progressMonitorDlg.run(false,false, runnableProgress);
+			//ダイアログの影が残ってしまう問題の対策 //
+			Grx3DView view3d =  (Grx3DView)manager_.getView( Grx3DView.class );
+			if(view3d!=null){
+				view3d.repaint();
+			}
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
