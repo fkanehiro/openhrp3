@@ -118,16 +118,27 @@ class InvKinemaHandler extends OperationHandler {
         isPicked_ = false;
 
         info.pickCanvas.setShapeLocation(startPoint_.x, startPoint_.y);
-        PickResult pickResult = info.pickCanvas.pickClosest();
-        if (pickResult == null) 
+        PickResult pickResult[] = info.pickCanvas.pickAllSorted();
+        if (pickResult == null) {
             return;
-
-        TransformGroup tg = (TransformGroup)pickResult.getNode(PickResult.TRANSFORM_GROUP);
-        if (tg == null) 
-            return;
-
+        }
+        TransformGroup tg = (TransformGroup)pickResult[0].getNode(PickResult.TRANSFORM_GROUP);
         Point3d startPoint = info.pickCanvas.getStartPosition();
-        PickIntersection intersection = pickResult.getClosestIntersection(startPoint);
+        PickIntersection intersection = pickResult[0].getClosestIntersection(startPoint);
+        GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
+        if (model == null) 
+        	return;
+        else{
+        	if(info.manager_.focusedItem()==model){
+        		if( pickResult.length > 1){
+            		tg = (TransformGroup)pickResult[1].getNode(PickResult.TRANSFORM_GROUP );
+            		intersection = pickResult[1].getClosestIntersection(startPoint);
+                	info.manager_.focusedItem(null);
+        		}else
+        			return;
+        	}
+        }
+
         intersect_ = new Point3f(intersection.getPointCoordinates());
         normal_ = new Vector3f(intersection.getPointNormal());
         if (_setInvKinema(tg, info)) {

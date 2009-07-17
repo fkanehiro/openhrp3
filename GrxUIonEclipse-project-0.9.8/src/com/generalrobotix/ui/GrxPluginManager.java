@@ -224,11 +224,14 @@ public class GrxPluginManager {
         if (focusedItem_ != item) {
             if (focusedItem_ != null){
                 focusedItem_.setFocused(false);
-                itemChange(item, NOTFOCUSED_ITEM);
+                itemChange(focusedItem_, NOTFOCUSED_ITEM);
             }
-            focusedItem_ = item;
-            focusedItem_.setFocused(true);
-            itemChange(item, FOCUSED_ITEM);
+            if(item != null){
+            	focusedItem_ = item;
+            	focusedItem_.setFocused(true);
+            	itemChange(focusedItem_, FOCUSED_ITEM);
+            }else
+            	focusedItem_ = null;
         }
     }
 
