@@ -55,6 +55,7 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
@@ -75,9 +76,12 @@ public class GrxRobotStatView extends GrxBaseView {
     private SensorState  currentSensor_;
     private double[]     currentRefAng_;
     private long[]       currentSvStat_;
-
+    private WorldStateEx	currentState_ = null;
+    
     private List<GrxLinkItem> jointList_ = new ArrayList<GrxLinkItem>();
     private String[] forceName_;
+    private String[] gyroName_;
+    private String[] accName_;
     
     private Combo comboModelName_;
     private List<GrxModelItem> modelList_;
@@ -132,7 +136,6 @@ public class GrxRobotStatView extends GrxBaseView {
         comboModelName_.addSelectionListener(new SelectionAdapter(){
             //選択が変更されたとき呼び出される
             public void widgetSelected(SelectionEvent e) {
-                forceName_ = null;
                 GrxModelItem item = modelList_.get(comboModelName_.getSelectionIndex());
                 if (item == null || item == currentModel_)
                     return;
@@ -191,11 +194,11 @@ public class GrxRobotStatView extends GrxBaseView {
 	    		comboModelName_.add(it.next().getName());
 	    	comboModelName_.select(0);
 	    	currentModel_ = modelList_.get(0);
-	    	forceName_ = null;
 			setJointList();
         }
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
+        	currentState_ = currentWorld_.getValue();
         	updateTableViewer();
         	currentWorld_.addObserver(this); 
         }
@@ -220,10 +223,9 @@ public class GrxRobotStatView extends GrxBaseView {
     }
     
     private Integer[] _createForceTVInput(){
-        int length = 0;
-        if (currentSensor_ != null && currentSensor_.force != null)
-            length = currentSensor_.force.length;
-        
+    	int length = 0;
+    	if(forceName_ != null) 
+    		length = forceName_.length;
         Integer[] input = new Integer[length];
         for(int i=0;i<input.length;i++){
             input[i] = i;
@@ -233,10 +235,10 @@ public class GrxRobotStatView extends GrxBaseView {
     
     private Integer[] _createSensorTVInput(){
         int length = 0;
-        if (currentSensor_ != null && currentSensor_.accel != null
-                && currentSensor_.rateGyro != null)
-            length = currentSensor_.accel.length + currentSensor_.rateGyro.length;
-        
+        if(gyroName_ != null)
+        	length += gyroName_.length;
+        if(accName_ != null)
+        	length += accName_.length;
         Integer[] input = new Integer[length];
         for(int i=0;i<input.length;i++){
             input[i] = i;
@@ -260,6 +262,9 @@ public class GrxRobotStatView extends GrxBaseView {
                 }
             }
         }
+        forceName_ = currentModel_.getSensorNames("Force");
+        gyroName_ =  currentModel_.getSensorNames("RateGyro");
+        accName_ = currentModel_.getSensorNames("Acceleration");      
     }
     
     public void registerItemChange(GrxBaseItem item, int event){
@@ -273,7 +278,6 @@ public class GrxRobotStatView extends GrxBaseView {
 	    			if(currentModel_ == null){
 	    				currentModel_ = modelItem;
 	    				comboModelName_.select(comboModelName_.indexOf(modelItem.getName()));
-	    				forceName_ = null;
 	    				setJointList();
 	    				updateTableViewer();
 	    			}
@@ -289,7 +293,6 @@ public class GrxRobotStatView extends GrxBaseView {
 	    				if(index < modelList_.size()){
 	    					currentModel_ = modelList_.get(index);
 	    					comboModelName_.select(comboModelName_.indexOf(currentModel_.getName()));
-	    					forceName_ = null;
 	    					setJointList();
 	    					updateTableViewer();
 	    				}else{
@@ -297,7 +300,6 @@ public class GrxRobotStatView extends GrxBaseView {
 	    					if(index >= 0 ){
 	    						currentModel_ = modelList_.get(index);
 	    						comboModelName_.select(comboModelName_.indexOf(currentModel_.getName()));
-	    						forceName_ = null;
 	    						setJointList();
 	    						updateTableViewer();
 	    					}else{
@@ -318,6 +320,7 @@ public class GrxRobotStatView extends GrxBaseView {
     		case GrxPluginManager.SELECTED_ITEM:
     			if(currentWorld_ != worldStateItem){
 	    			currentWorld_ = worldStateItem;
+	    			currentState_ = currentWorld_.getValue();
 	    			updateTableViewer();
 	    	        currentWorld_.addObserver(this);
     			}
@@ -327,6 +330,8 @@ public class GrxRobotStatView extends GrxBaseView {
 	    		if(currentWorld_ == worldStateItem){
 	    			currentWorld_.deleteObserver(this);
 		    		currentWorld_ = null;
+		    		currentState_ = null;
+		    		updateTableViewer();
 	    		}
 	    		break;
 	    	default:
@@ -336,31 +341,51 @@ public class GrxRobotStatView extends GrxBaseView {
     }
     
     public void update(GrxBasePlugin plugin, Object... arg){
-    	if(currentWorld_ != plugin || (String)arg[0] != "PositionChange" ) 
-    		return;
-        updateTableViewer();
+    	if(currentWorld_ == plugin ){
+	    	if( (String)arg[0] == "PositionChange" ) {
+	    		int pos = ((Integer)arg[1]).intValue();
+	    		currentState_ = currentWorld_.getValue(pos);
+	    		_refresh();
+	    	}else if((String)arg[0]=="ClearLog"){
+				currentState_ = null;
+			}
+    	}
     }
     
     private void updateTableViewer(){
-    	if (currentModel_ == null || currentWorld_ == null)
-            return;
-    	WorldStateEx state = currentWorld_.getValue();
-    	if (state != null) {
-            CharacterStateEx charStat = state.get(currentModel_.getName());
+    	if (currentModel_ == null ) return;
+    	currentSensor_ = null;
+        currentRefAng_ = null;
+        currentSvStat_ = null;
+    	if (currentState_ != null) {
+            CharacterStateEx charStat = currentState_.get(currentModel_.getName());
             if (charStat != null) {
                 currentSensor_ = charStat.sensorState;
                 currentRefAng_ = charStat.targetState;
                 currentSvStat_ = charStat.servoState;
             }
-            
-            if (forceName_ == null) {
-                forceName_ = currentModel_.getSensorNames("Force");
-                _resizeTables();
-            }
         }
 	    jointTV_.setInput(_createJointTVInput());
 	    forceTV_.setInput(_createForceTVInput());
 	    sensorTV_.setInput(_createSensorTVInput());	
+    }
+    
+    private void _refresh(){
+    	if (currentModel_ == null ) return;
+    	currentSensor_ = null;
+        currentRefAng_ = null;
+        currentSvStat_ = null;
+    	if (currentState_ != null) {
+            CharacterStateEx charStat = currentState_.get(currentModel_.getName());
+            if (charStat != null) {
+                currentSensor_ = charStat.sensorState;
+                currentRefAng_ = charStat.targetState;
+                currentSvStat_ = charStat.servoState;
+            }
+        }
+	    jointTV_.refresh();
+	    forceTV_.refresh();
+	    sensorTV_.refresh();	
     }
     
     private void _resizeTables() {
@@ -460,9 +485,9 @@ public class GrxRobotStatView extends GrxBaseView {
                         break;
                     return jointList_.get(rowIndex).getName();
                 case 2:
-                    if (jointList_.size() <= 0)
+                    if (currentSensor_ == null)
                         break;
-                    return FORMAT1.format(Math.toDegrees(jointList_.get(rowIndex).jointValue()));
+                    return FORMAT1.format(Math.toDegrees(currentSensor_.q[rowIndex]));
                 case 3:
                     if (currentRefAng_ == null)
                         break;
@@ -514,11 +539,11 @@ public class GrxRobotStatView extends GrxBaseView {
                     }
                 case 1:
                 case 2:
-                    if (jointList_.size() <= 0)
+                    if (jointList_.size() <= 0 || currentSensor_ == null)
                         break;
                     GrxLinkItem info = jointList_.get(rowIndex);
                     if (info.llimit() != null && info.ulimit() != null && info.llimit()[0] < info.ulimit()[0]
-                        && (info.jointValue() <= info.llimit()[0] || info.ulimit()[0] <= info.jointValue())) {
+                        && (currentSensor_.q[rowIndex] <= info.llimit()[0] || info.ulimit()[0] <= currentSensor_.q[rowIndex])) {
                         return red_;
                     }
                 case 6:
@@ -585,9 +610,12 @@ public class GrxRobotStatView extends GrxBaseView {
             if (columnIndex == 0) {
                 if (forceName_ != null)
                     return forceName_[rowIndex];
-            } else if (columnIndex < forceTV_.getTable().getColumnCount())
-                return FORMAT2.format(currentSensor_.force[rowIndex][columnIndex - 1]);
-
+            } else{
+            	if(currentSensor_ == null || currentSensor_.force == null)
+            		return "---";
+            	if (columnIndex < forceTV_.getTable().getColumnCount())
+            		return FORMAT2.format(currentSensor_.force[rowIndex][columnIndex - 1]);
+            }
             return null;
         }
 
@@ -605,6 +633,13 @@ public class GrxRobotStatView extends GrxBaseView {
         }
 
         public Color getBackground(Object element, int columnIndex) {
+            int rowIndex = ((Integer)element).intValue();;
+            GrxBaseItem bitem = manager_.focusedItem();
+            if (bitem instanceof GrxSensorItem) {
+                if (forceName_[rowIndex].equals(((GrxSensorItem)bitem).getName())) {
+                    return yellow_;
+                }
+            }
             return white_;
         }
 
@@ -626,23 +661,24 @@ public class GrxRobotStatView extends GrxBaseView {
         
         public String getColumnText(Object element, int columnIndex) {
             int rowIndex = ((Integer)element).intValue();
-            
-            if (currentSensor_.accel == null || currentSensor_.accel == null
-                    || currentSensor_.rateGyro == null)
-                return null;
-            
-            int numAccel = currentSensor_.accel.length;
+            int numAccel = 0;
+            if(accName_!=null)
+            	numAccel = accName_.length;
             if (columnIndex == 0) {
-                if (rowIndex < numAccel)
-                    return "Acc_" + rowIndex + "[m/s^2]";
-                else
-                    return "Gyro_" + (rowIndex - numAccel) + "[rad/s]";
-            } else {
-                if (rowIndex < numAccel)
-                    return FORMAT2.format(currentSensor_.accel[rowIndex][columnIndex - 1]);
-                else
-                    return FORMAT2.format(currentSensor_.rateGyro[rowIndex - numAccel][columnIndex - 1]);
+            	if (rowIndex < numAccel)
+            		return accName_[rowIndex] + "  [m/s^2]";
+                if (gyroName_ != null)
+                    return gyroName_[rowIndex-numAccel] + "  [rad/s]";
             }
+            
+            if (currentSensor_ == null || currentSensor_.accel == null
+                    || currentSensor_.rateGyro == null)
+                return "---";
+            if (rowIndex < numAccel)
+            	return FORMAT2.format(currentSensor_.accel[rowIndex][columnIndex - 1]);
+            else
+            	return FORMAT2.format(currentSensor_.rateGyro[rowIndex - numAccel][columnIndex - 1]);
+            
         }
 
         public void addListener(ILabelProviderListener listener) {
@@ -659,6 +695,24 @@ public class GrxRobotStatView extends GrxBaseView {
         }
 
         public Color getBackground(Object element, int columnIndex) {
+        	int rowIndex = ((Integer)element).intValue();;
+            GrxBaseItem bitem = manager_.focusedItem();
+            int numAccel = 0;
+            if(accName_!=null)
+            	numAccel = accName_.length;
+            if (rowIndex < numAccel){
+	            if (bitem instanceof GrxSensorItem) {
+	                if (accName_[rowIndex].equals(((GrxSensorItem)bitem).getName())) {
+	                    return yellow_;
+	                }
+	            }
+            }else {
+            	if (bitem instanceof GrxSensorItem) {
+	                if (gyroName_[rowIndex-numAccel].equals(((GrxSensorItem)bitem).getName())) {
+	                    return yellow_;
+	                }
+	            }
+            }
             return white_;
         }
 

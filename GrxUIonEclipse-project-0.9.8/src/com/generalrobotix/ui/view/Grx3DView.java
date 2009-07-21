@@ -294,14 +294,8 @@ public class Grx3DView
         if(viewMode_!=SIMULATION)
         	showOption();
         else{
-        	disableOperation();
+        	disableButton();
 			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
-			if (btnDistance_.isSelected())
-				btnDistance_.doClick();
-			if (btnIntersection_.isSelected())
-				btnIntersection_.doClick();
-			btnDistance_.setEnabled(false);
-			btnIntersection_.setEnabled(false);
         }
     }
 
@@ -594,6 +588,7 @@ public class Grx3DView
                     });
                     
                 }
+                showOption();
             }
         });
         
@@ -751,25 +746,39 @@ public class Grx3DView
 					showOption();
 			}
 		}else if((String)arg[0]=="StartSimulation"){
-			disableOperation();
+			disableButton();
 			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
 			if((Boolean)arg[1])
 				showViewSimulator(true);
-			if (btnDistance_.isSelected())
-				btnDistance_.doClick();
-			if (btnIntersection_.isSelected())
-				btnIntersection_.doClick();
-			btnDistance_.setEnabled(false);
-			btnIntersection_.setEnabled(false);
 			viewMode_ = SIMULATION;
 		}else if((String)arg[0]=="StopSimulation"){
 			objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-			btnDistance_.setEnabled(true);
-			btnIntersection_.setEnabled(true);
+			enableButton();
 			viewMode_ = VIEW;
-		}if((String)arg[0]=="ClearLog"){
+		}else if((String)arg[0]=="ClearLog"){
 			currentState_ = null;
 		}
+    }
+    
+    private void disableButton(){
+    	disableOperation();
+    	if (btnDistance_.isSelected())
+			btnDistance_.doClick();
+		if (btnIntersection_.isSelected())
+			btnIntersection_.doClick();
+		btnDistance_.setEnabled(false);
+		btnIntersection_.setEnabled(false);
+		btnRestore_.setEnabled(false);
+		btnRec_.setEnabled(false);
+		btnPlayer_.setEnabled(false);
+    }
+    
+    private void enableButton(){
+    	btnDistance_.setEnabled(true);
+		btnIntersection_.setEnabled(true);
+		btnRestore_.setEnabled(true);
+		btnRec_.setEnabled(true);
+		btnPlayer_.setEnabled(true);
     }
     
     public void showOption(){
@@ -908,7 +917,7 @@ public class Grx3DView
             return;
         }
         
-        disableOperation();
+        disableButton();
         viewMode_ = VIEW;
 		objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
                
@@ -962,6 +971,7 @@ public class Grx3DView
 			}
 		});
 		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
+		enableButton();
     }
     
     private boolean ret_;
@@ -1713,7 +1723,11 @@ public class Grx3DView
         lblMode_.setText("[ VIEW ]");
         
         if(currentState_!=null){
-			updateModels(currentState_);
+        	syncExec(new Runnable(){
+            	public void run(){
+            		updateModels(currentState_);
+            	}
+            });
 			updateViewSimulator(currentState_.time);
 			showOption();
         }
