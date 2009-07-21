@@ -152,6 +152,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 
 	public boolean create() {
         clearLog();
+        setDbl("totalTime", 20.0);
+		setDbl("timeStep", 0.001);
+		setDbl("logTimeStep", 0.001);
+		setDbl("gravity", 9.8);
+		setProperty("method","RUNGE_KUTTA");
 		return true;
 	}
 
