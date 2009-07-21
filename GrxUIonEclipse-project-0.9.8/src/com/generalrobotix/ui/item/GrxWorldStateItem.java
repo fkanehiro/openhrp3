@@ -977,7 +977,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	    stime.setTotalTime(val);
 	    setDbl("totalTime", val);
 	    
-		logger_.initCollisionLog(stime);
+		//logger_.initCollisionLog(stime);
+	    logger_.extendTime(stime);
 	}
 	
 	public void startSimulation(boolean isSimulatingView){

@@ -190,6 +190,10 @@ public class LogManager {
         collisionLog_ = new CollisionLogHeader(time);
     }
 
+    public void extendTime(SimulationTime time){
+    	collisionLog_.totalTime_ = time.totalTime_.getUtime();
+    }
+    
     /**
      * ログ書き込みのためにファイルをオープン
      * 
