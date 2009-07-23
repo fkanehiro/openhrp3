@@ -48,8 +48,6 @@ namespace hrp {
         ShapeToGeometryMap shapeToOriginalGeometryMap;
 
         // for triangulation
-        std::vector<int> polygon;
-        std::vector<int> trianglesInPolygon;
         std::vector<int> indexPositionMap;
         std::vector<int> faceIndexMap;
 
@@ -290,7 +288,12 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
     indexPositionMap.clear();
     faceIndexMap.clear();
 
+    std::vector<int> polygon;
+    polygon.reserve(9);
+    std::vector<int> triangulatedPolygons(9);
+
     PolygonTriangulator<SFFloat> triangulate(vertices);
+
     for(int i=0; i < numOrgIndices; ++i){
 
         int index = orgIndices[i];
@@ -305,43 +308,45 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
             polygon.push_back(index);
 
         } else {
-            trianglesInPolygon.clear();
-            int numTriangles = 1;
-            if(polygon.size() >3){
-                triangulate(polygon, trianglesInPolygon);
-                numTriangles = trianglesInPolygon.size()/3;
+            int numTriangles;
+            std::vector<int>* pTriangles;
+            
+            if(polygon.size() < 3){
+                putMessage("The number of a face is less than tree.");
+                numTriangles = 0;
+            } else if(polygon.size() > 3){
+                triangulatedPolygons.clear();
+                triangulate(polygon, triangulatedPolygons);
+                numTriangles = triangulatedPolygons.size() / 3;
+                pTriangles = &triangulatedPolygons;
+            } else {
+                numTriangles = 1;
+                pTriangles = &polygon;
             }
+            
             // \todo ここで3頂点に重なりはないか、距離が短すぎないかなどのチェックを行った方がよい //
             for(int j=0; j < numTriangles; ++j){
                 if(faceSet->ccw){
                     for(int k=0; k < 3; ++k){
-                        int indexInPolygon;
-                        if(polygon.size() >3) 
-                            indexInPolygon = trianglesInPolygon[j*3 + k];
-                        else
-                            indexInPolygon = polygon[k];
-                        indices.push_back(indexInPolygon);
-                        int j;
-                        for(j=0; j<polygon.size(); j++){
-                            if(polygon[j]==indexInPolygon)
+                        int index = (*pTriangles)[j * 3 + k];
+                        indices.push_back(index);
+                        int l;
+                        for(l=0; l < polygon.size(); l++){
+                            if(polygon[l] == index)
                                 break;
                         }
-                        indexPositionMap.push_back(polygonTopIndexPosition + j);
+                        indexPositionMap.push_back(polygonTopIndexPosition + l);
                     }
                 } else {
                     for(int k=2; k >= 0; --k){
-                        int indexInPolygon;
-                        if(polygon.size() >3) 
-                            indexInPolygon = trianglesInPolygon[j*3 + k];
-                        else
-                            indexInPolygon = polygon[k];
-                        indices.push_back(indexInPolygon);
-                        int j;
-                        for(j=0; j<polygon.size(); j++){
-                            if(polygon[j]==indexInPolygon) 
+                        int index = (*pTriangles)[j * 3 + k];
+                        indices.push_back(index);
+                        int l;
+                        for(l=0; l < polygon.size(); l++){
+                            if(polygon[l] == index)
                                 break;
                         }
-                        indexPositionMap.push_back(polygonTopIndexPosition + j);
+                        indexPositionMap.push_back(polygonTopIndexPosition + l);
                     }
                 }
                 indices.push_back(-1);
@@ -995,6 +1000,9 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
             addTriangle(indices, j + upper, (j + 1)+ upper, j + 1 + lower);
         }
     }
+
+    std::vector<int> polygon;
+    std::vector<int> triangulatedPolygons;
     
     int j=0;
     if(crossSectionisClosed)
@@ -1002,23 +1010,23 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
     if(extrusion->beginCap && !isClosed){
         PolygonTriangulator<SFFloat> triangulate(vertices);
         polygon.clear();
-        trianglesInPolygon.clear();
+        triangulatedPolygons.clear();
         for(int i=0; i<numcross-j; i++)
             polygon.push_back(i);
-        triangulate(polygon, trianglesInPolygon);
-        for(int i=0; i<trianglesInPolygon.size(); i+=3 )
-            addTriangle(indices, trianglesInPolygon[i], trianglesInPolygon[i+1], trianglesInPolygon[i+2]);
+        triangulate(polygon, triangulatedPolygons);
+        for(int i=0; i<triangulatedPolygons.size(); i+=3 )
+            addTriangle(indices, triangulatedPolygons[i], triangulatedPolygons[i+1], triangulatedPolygons[i+2]);
     }
 
     if(extrusion->endCap && !isClosed){
         PolygonTriangulator<SFFloat> triangulate(vertices);
         polygon.clear();
-        trianglesInPolygon.clear();
+        triangulatedPolygons.clear();
         for(int i=0; i<numcross-j; i++)
             polygon.push_back(numcross*(numSpine-1)+i);
-        triangulate(polygon, trianglesInPolygon);
-        for(int i=0; i<trianglesInPolygon.size(); i+=3 )
-            addTriangle(indices, trianglesInPolygon[i], trianglesInPolygon[i+1], trianglesInPolygon[i+2]);
+        triangulate(polygon, triangulatedPolygons);
+        for(int i=0; i<triangulatedPolygons.size(); i+=3 )
+            addTriangle(indices, triangulatedPolygons[i], triangulatedPolygons[i+1], triangulatedPolygons[i+2]);
     }
 
     triangleMesh->creaseAngle = extrusion->creaseAngle;
