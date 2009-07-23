@@ -372,12 +372,16 @@ include(CPack)
 
 add_subdirectory(idl/OpenHRP)
 add_subdirectory(hrplib)
-add_subdirectory(java)
 
 option(COMPILE_EXECUTABLES "Compile the executable programs, servers and scripts" ON)
 if(COMPILE_EXECUTABLES)
   add_subdirectory(server)
   add_subdirectory(script)
+endif()
+
+option(COMPILE_JAVA_STUFF "Compile java stuff" ON)
+if(COMPILE_JAVA_STUFF)
+  add_subdirectory(java)
 endif()
 
 option(COMPILE_SAMPLES "Compile sample materials" ON)
