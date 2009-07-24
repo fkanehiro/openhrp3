@@ -13,6 +13,7 @@
 */
 
 #include "TriangleMeshShaper.h"
+#include "Triangulator.h"
 #include "triangulator/geometry.h"
 #include "triangulator/triangulator.h"
 #include <iostream>
@@ -48,6 +49,8 @@ namespace hrp {
         ShapeToGeometryMap shapeToOriginalGeometryMap;
 
         // for triangulation
+        Triangulator triangulator;
+        std::vector<int> polygon;
         std::vector<int> indexPositionMap;
         std::vector<int> faceIndexMap;
 
@@ -267,9 +270,6 @@ bool TMSImpl::convertShapeNode(VrmlShape* shapeNode)
 }
 
 
-/**
-   \todo local vector variables should be member variables to increase the performance
-*/
 bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
 {
     MFVec3f& vertices = faceSet->coord->point;
@@ -282,78 +282,38 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
     const int numOrgIndices = orgIndices.size();
 
     int orgFaceIndex = 0;
-    int newFaceIndex = 0;
     int polygonTopIndexPosition = 0;
 
     indexPositionMap.clear();
     faceIndexMap.clear();
+    polygon.clear();
 
-    std::vector<int> polygon;
-    polygon.reserve(9);
-    std::vector<int> triangulatedPolygons(9);
-
-    PolygonTriangulator<SFFloat> triangulate(vertices);
-
+    int triangleOrder[3];
+    if(faceSet->ccw){
+        triangleOrder[0] = 0; triangleOrder[1] = 1; triangleOrder[2] = 2;
+    } else {
+        triangleOrder[0] = 2; triangleOrder[1] = 1; triangleOrder[2] = 0;
+    }
+    
+    triangulator.setVertices(vertices);
+    
     for(int i=0; i < numOrgIndices; ++i){
-
         int index = orgIndices[i];
-
         if(index >= numVertices){
-            putMessage("The coordIndex field has an index over "
-                       "the size of the vertices in the coord field");
-            return false;
-        }
-
-        if(index >= 0){
+            putMessage("The coordIndex field has an index over the size of the vertices in the coord field");
+        } else if(index >= 0){
             polygon.push_back(index);
-
         } else {
-            int numTriangles;
-            std::vector<int>* pTriangles;
-            
-            if(polygon.size() < 3){
-                putMessage("The number of a face is less than tree.");
-                numTriangles = 0;
-            } else if(polygon.size() > 3){
-                triangulatedPolygons.clear();
-                triangulate(polygon, triangulatedPolygons);
-                numTriangles = triangulatedPolygons.size() / 3;
-                pTriangles = &triangulatedPolygons;
-            } else {
-                numTriangles = 1;
-                pTriangles = &polygon;
-            }
-            
-            // \todo ここで3頂点に重なりはないか、距離が短すぎないかなどのチェックを行った方がよい //
+            int numTriangles = triangulator.triangulate(polygon);
+            const vector<int>& triangles = triangulator.triangles();
             for(int j=0; j < numTriangles; ++j){
-                if(faceSet->ccw){
-                    for(int k=0; k < 3; ++k){
-                        int index = (*pTriangles)[j * 3 + k];
-                        indices.push_back(index);
-                        int l;
-                        for(l=0; l < polygon.size(); l++){
-                            if(polygon[l] == index)
-                                break;
-                        }
-                        indexPositionMap.push_back(polygonTopIndexPosition + l);
-                    }
-                } else {
-                    for(int k=2; k >= 0; --k){
-                        int index = (*pTriangles)[j * 3 + k];
-                        indices.push_back(index);
-                        int l;
-                        for(l=0; l < polygon.size(); l++){
-                            if(polygon[l] == index)
-                                break;
-                        }
-                        indexPositionMap.push_back(polygonTopIndexPosition + l);
-                    }
+                for(int k=0; k < 3; ++k){
+                    int localIndex = triangles[j * 3 + triangleOrder[k]];
+                    indices.push_back(polygon[localIndex]);
+                    indexPositionMap.push_back(polygonTopIndexPosition + localIndex);
                 }
                 indices.push_back(-1);
                 indexPositionMap.push_back(-1);
-            }
-                
-            for(int j=0; j < numTriangles; ++j){
                 faceIndexMap.push_back(orgFaceIndex);
             }
             polygonTopIndexPosition = i + 1;
@@ -382,7 +342,6 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
              n[2] = -n[2];
          }
     }
-
     faceSet->ccw = true;
 
     setTexCoordIndex(faceSet);
