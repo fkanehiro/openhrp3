@@ -26,8 +26,8 @@ set(sources
   VrmlParser.cpp
   VrmlWriter.cpp
   TriangleMeshShaper.cpp
+  Triangulator.cpp
   ImageConverter.cpp
-#  ModelNodeSet.cpp
 )
 
 set(headers
@@ -43,7 +43,6 @@ set(headers
   VrmlWriter.h
   TriangleMeshShaper.h
   ImageConverter.h
-#  ModelNodeSet.h
 )
 
 set(target hrpUtil-${OPENHRP_LIBRARY_VERSION})
