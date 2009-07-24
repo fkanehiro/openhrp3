@@ -17,7 +17,7 @@ using namespace std;
 using namespace hrp;
 
 
-int Triangulator::triangulate(const vector<int>& polygon)
+int Triangulator::apply(const vector<int>& polygon)
 {
     triangles_.clear();
 

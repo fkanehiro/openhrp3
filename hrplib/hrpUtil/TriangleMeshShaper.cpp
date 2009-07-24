@@ -14,8 +14,6 @@
 
 #include "TriangleMeshShaper.h"
 #include "Triangulator.h"
-#include "triangulator/geometry.h"
-#include "triangulator/triangulator.h"
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -304,7 +302,7 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
         } else if(index >= 0){
             polygon.push_back(index);
         } else {
-            int numTriangles = triangulator.triangulate(polygon);
+            int numTriangles = triangulator.apply(polygon);
             const vector<int>& triangles = triangulator.triangles();
             for(int j=0; j < numTriangles; ++j){
                 for(int k=0; k < 3; ++k){
@@ -960,32 +958,29 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
         }
     }
 
-    std::vector<int> polygon;
-    std::vector<int> triangulatedPolygons;
-    
     int j=0;
     if(crossSectionisClosed)
         j=1;
     if(extrusion->beginCap && !isClosed){
-        PolygonTriangulator<SFFloat> triangulate(vertices);
+        triangulator.setVertices(vertices);
         polygon.clear();
-        triangulatedPolygons.clear();
         for(int i=0; i<numcross-j; i++)
             polygon.push_back(i);
-        triangulate(polygon, triangulatedPolygons);
-        for(int i=0; i<triangulatedPolygons.size(); i+=3 )
-            addTriangle(indices, triangulatedPolygons[i], triangulatedPolygons[i+1], triangulatedPolygons[i+2]);
+        triangulator.apply(polygon);
+        const vector<int>& triangles = triangulator.triangles();
+        for(int i=0; i<triangles.size(); i+=3 )
+            addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
     }
 
     if(extrusion->endCap && !isClosed){
-        PolygonTriangulator<SFFloat> triangulate(vertices);
+        triangulator.setVertices(vertices);
         polygon.clear();
-        triangulatedPolygons.clear();
         for(int i=0; i<numcross-j; i++)
             polygon.push_back(numcross*(numSpine-1)+i);
-        triangulate(polygon, triangulatedPolygons);
-        for(int i=0; i<triangulatedPolygons.size(); i+=3 )
-            addTriangle(indices, triangulatedPolygons[i], triangulatedPolygons[i+1], triangulatedPolygons[i+2]);
+        triangulator.apply(polygon);
+        const vector<int>& triangles = triangulator.triangles();
+        for(int i=0; i<triangles.size(); i+=3 )
+            addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
     }
 
     triangleMesh->creaseAngle = extrusion->creaseAngle;
