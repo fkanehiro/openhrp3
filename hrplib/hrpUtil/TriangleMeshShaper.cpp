@@ -20,16 +20,13 @@
 #include <map>
 #include <hrpUtil/Tvmet3d.h>
 
-
 using namespace std;
 using namespace boost;
 using namespace hrp;
 
-
 namespace {
     const double PI = 3.14159265358979323846;
 }
-
 
 namespace hrp {
 
@@ -64,9 +61,6 @@ namespace hrp {
         bool traverseShapeNodes(VrmlNode* node, AbstractVrmlGroup* parentNode, int indexInParent);
         bool convertShapeNode(VrmlShape* shapeNode);
         bool convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet);
-
-        int addTrianglesDividedFromPolygon(const std::vector<int>& polygon, const MFVec3f& vertices,
-                                           std::vector<int>& out_trianglesInPolygon);
 
         template <class TArray>
             bool remapDirectMapObjectsPerFaces(TArray& objects, const char* objectName);
@@ -348,84 +342,6 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
 }
 
 
-namespace {
-
-    inline int addVertex(MFVec3f& vertices, const double x, const double y, const double z)
-    {
-        SFVec3f v;
-        v[0] = x;
-        v[1] = y;
-        v[2] = z;
-        vertices.push_back(v);
-        return vertices.size() - 1;
-    }
-
-    inline void addTriangle(MFInt32& indices, int x, int y, int z)
-    {
-        indices.push_back(x);
-        indices.push_back(y);
-        indices.push_back(z);
-        indices.push_back(-1);
-    }
-
-    inline void add3Elements(vector<int>& v, int x, int y, int z)
-    {
-        v.push_back(x);
-        v.push_back(y);
-        v.push_back(z);
-    }
-}
-
-
-/*!
-  @if jp
-  @note 現時点では，分割対象のメッシュは三角形・四角形のメッシュのみに対応.
-  @note 一般的な三角形分割のアルゴリズムについては "triangulation algorithm" や "polygon triangulation" で検索するべし
-  @endif
-*/
-int TMSImpl::addTrianglesDividedFromPolygon
-(const vector<int>& polygon, const MFVec3f& vertices, vector<int>& out_trianglesInPolygon)
-{
-    int numTriangles = -1;
-    int numVertices = polygon.size();
-
-    if(numVertices < 3){
-        /// \todo define a proper exception
-        putMessage("The number of a face is less than tree."); 
-            
-    } else if(numVertices == 3){
-        numTriangles = 1;
-        add3Elements(out_trianglesInPolygon, 0, 1, 2);
-
-    } else if(numVertices == 4){
-        numTriangles = 2;
-
-        const SFVec3f& v = vertices[polygon[0]];
-
-        Vector3 v0(vertices[polygon[0]].begin(), 3);
-        Vector3 v1(vertices[polygon[1]].begin(), 3);
-        Vector3 v2(vertices[polygon[2]].begin(), 3);
-        Vector3 v3(vertices[polygon[3]].begin(), 3);
-        
-        double distance02 = norm2(v0 - v2);
-        double distance13 = norm2(v1 - v3);
-
-        // 対角線の長さが短い方で分割する //
-        if(distance02 < distance13){
-            add3Elements(out_trianglesInPolygon, 0, 1, 2);
-            add3Elements(out_trianglesInPolygon, 0, 2, 3);
-        } else {
-            add3Elements(out_trianglesInPolygon, 0, 1, 3);
-            add3Elements(out_trianglesInPolygon, 1, 2, 3);
-        }
-    } else if(numTriangles >= 5){
-        putMessage( "The number of vertex is 5 or more." );
-    }
-
-    return numTriangles;
-}
-
-
 template <class TArray>
 bool TMSImpl::remapDirectMapObjectsPerFaces(TArray& values, const char* valueName)
 {
@@ -515,6 +431,7 @@ bool TMSImpl::checkAndRemapIndices
     return result;
 }
 
+
 bool TMSImpl::setTexCoordIndex(VrmlIndexedFaceSetPtr faseSet)
 {
     bool result = true;
@@ -555,7 +472,29 @@ void TMSImpl::putError1(const char* valueName)
                " beyond the size of " + valueName + ".");
 }
 
-    
+
+namespace {
+
+    inline int addVertex(MFVec3f& vertices, const double x, const double y, const double z)
+    {
+        SFVec3f v;
+        v[0] = x;
+        v[1] = y;
+        v[2] = z;
+        vertices.push_back(v);
+        return vertices.size() - 1;
+    }
+
+    inline void addTriangle(MFInt32& indices, int x, int y, int z)
+    {
+        indices.push_back(x);
+        indices.push_back(y);
+        indices.push_back(z);
+        indices.push_back(-1);
+    }
+}
+
+
 bool TMSImpl::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh)
 {
     const double x = box->size[0] / 2.0;
@@ -570,49 +509,26 @@ bool TMSImpl::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh)
     MFVec3f& vertices = triangleMesh->coord->point;
     vertices.reserve(8);
 
-
     static const int numTriangles = 12;
     
-#if 1
     static const double xsigns[] = { -1.0, -1.0, -1.0, -1.0,  1.0,  1.0,  1.0,  1.0 };
     static const double ysigns[] = { -1.0, -1.0,  1.0,  1.0, -1.0, -1.0,  1.0,  1.0 };
     static const double zsigns[] = { -1.0,  1.0,  1.0, -1.0, -1.0,  1.0,  1.0, -1.0 };
 
-    static const int triangles[] =
-        {
-            0, 1, 2,
-            2, 3, 0,
-            3, 2, 6,
-            3, 6, 7,
-            6, 2, 1,
-            1, 5, 6,
-            1, 0, 5,
-            5, 0, 4,
-            5, 4, 6,
-            6, 4, 7,
-            7, 4, 0,
-            0, 3, 7
-        };
-#else
-    static const double xsigns[] = { -1.0, -1.0, -1.0, -1.0,  1.0,  1.0,  1.0, 1.0 };
-    static const double ysigns[] = { -1.0, -1.0,  1.0,  1.0, -1.0, -1.0,  1.0, 1.0 };
-    static const double zsigns[] = { -1.0,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0, 1.0 };
-
-    static const int triangles[] =
-        { 5, 7, 3,
-          5, 3, 1,
-          0, 2, 6,
-          0, 6, 4,
-          4, 6, 7,
-          4, 7, 5,
-          1, 3, 2,
-          1, 2, 0,
-          7, 6, 2,
-          7, 2, 3,
-          4, 5, 1,
-          4, 1, 0,
-        };
-#endif
+    static const int triangles[] = {
+        0, 1, 2,
+        2, 3, 0,
+        3, 2, 6,
+        3, 6, 7,
+        6, 2, 1,
+        1, 5, 6,
+        1, 0, 5,
+        5, 0, 4,
+        5, 4, 6,
+        6, 4, 7,
+        7, 4, 0,
+        0, 3, 7
+    };
 
     for(int i=0; i < 8; ++i){
         addVertex(vertices, xsigns[i] * x, ysigns[i] * y, zsigns[i] * z);
@@ -823,6 +739,7 @@ bool TMSImpl::convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPt
 
     return true;
 }
+
 
 bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& triangleMesh)
 {
@@ -1182,7 +1099,9 @@ void TMSImpl::putMessage(const std::string& message)
     }
 }
 
-void TriangleMeshShaper::defaultTextureMapping(VrmlShape* shapeNode){
+
+void TriangleMeshShaper::defaultTextureMapping(VrmlShape* shapeNode)
+{
     VrmlIndexedFaceSet* triangleMesh = dynamic_cast<VrmlIndexedFaceSet*>(shapeNode->geometry.get());
     if(!triangleMesh)
         return;
@@ -1212,6 +1131,7 @@ void TriangleMeshShaper::defaultTextureMapping(VrmlShape* shapeNode){
         defaultTextureMappingFaceSet(triangleMesh);
     }
 }
+
 
 void TriangleMeshShaper::defaultTextureMappingFaceSet(VrmlIndexedFaceSet* triangleMesh)
 {
@@ -1251,6 +1171,7 @@ void TriangleMeshShaper::defaultTextureMappingFaceSet(VrmlIndexedFaceSet* triang
     }   
 }
 
+
 void TriangleMeshShaper::defaultTextureMappingElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSet* triangleMesh)
 {
     float xmax = grid->xSpacing * (grid->xDimension-1);
@@ -1267,7 +1188,9 @@ void TriangleMeshShaper::defaultTextureMappingElevationGrid(VrmlElevationGrid* g
 		triangleMesh->texCoordIndex.begin() );
 }
 
-int TriangleMeshShaper::faceofBox(SFVec3f* point){
+
+int TriangleMeshShaper::faceofBox(SFVec3f* point)
+{
     if(point[0][0] <= 0 && point[1][0] <= 0 && point[2][0] <= 0 ) return LEFT;
     if(point[0][0] > 0 && point[1][0] > 0 && point[2][0] > 0 ) return RIGHT;
     if(point[0][1] <= 0 && point[1][1] <= 0 && point[2][1] <= 0 ) return BOTTOM;
@@ -1277,7 +1200,9 @@ int TriangleMeshShaper::faceofBox(SFVec3f* point){
     return -1;
 }
 
-int TriangleMeshShaper::findPoint(MFVec2f& points, SFVec2f& target){
+
+int TriangleMeshShaper::findPoint(MFVec2f& points, SFVec2f& target)
+{
     for(int i=0; i<points.size(); i++){
         if((points[i][0]-target[0])*(points[i][0]-target[0]) +
             (points[i][1]-target[1])*(points[i][1]-target[1]) < 1.0e-9 )
@@ -1286,7 +1211,9 @@ int TriangleMeshShaper::findPoint(MFVec2f& points, SFVec2f& target){
     return -1;
 }
 
-double TriangleMeshShaper::calcangle(SFVec3f& point){
+
+double TriangleMeshShaper::calcangle(SFVec3f& point)
+{
     double angle = atan2( point[2], point[0] );
     if(angle>=0) angle=1.5*PI-angle;
     else if(-0.5*PI<angle) angle=-angle+1.5*PI;
@@ -1438,7 +1365,9 @@ void TriangleMeshShaper::defaultTextureMappingCone(VrmlIndexedFaceSet* triangleM
     }
 }
 
-void TriangleMeshShaper::defaultTextureMappingCylinder(VrmlIndexedFaceSet* triangleMesh){
+
+void TriangleMeshShaper::defaultTextureMappingCylinder(VrmlIndexedFaceSet* triangleMesh)
+{
     triangleMesh->texCoord = new VrmlTextureCoordinate();
     SFVec2f texPoint ;
     texPoint[0] = 0.5; texPoint[1] = 0.5;     //center of top(bottom) index=0
@@ -1504,7 +1433,9 @@ void TriangleMeshShaper::defaultTextureMappingCylinder(VrmlIndexedFaceSet* trian
     }
 }
 
-void TriangleMeshShaper::defaultTextureMappingSphere(VrmlIndexedFaceSet* triangleMesh, double radius){
+
+void TriangleMeshShaper::defaultTextureMappingSphere(VrmlIndexedFaceSet* triangleMesh, double radius)
+{
     triangleMesh->texCoord = new VrmlTextureCoordinate();
     SFVec2f texPoint ;
     int texIndex = 0;
@@ -1537,8 +1468,9 @@ void TriangleMeshShaper::defaultTextureMappingSphere(VrmlIndexedFaceSet* triangl
     }
 }
 
-void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* triangleMesh, VrmlExtrusion* extrusion ){
-    
+
+void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* triangleMesh, VrmlExtrusion* extrusion )
+{
     int numSpine = extrusion->spine.size();
     int numcross = extrusion->crossSection.size();
         

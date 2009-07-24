@@ -11,9 +11,8 @@
   @author Shin'ichiro Nakaoka
 */
 
-
-#ifndef OPENHRP_UTIL_TRIANGLE_MESH_SHAPER_H_INCLUDED
-#define OPENHRP_UTIL_TRIANGLE_MESH_SHAPER_H_INCLUDED
+#ifndef HRPUTIL_TRIANGLE_MESH_SHAPER_H_INCLUDED
+#define HRPUTIL_TRIANGLE_MESH_SHAPER_H_INCLUDED
 
 #include "config.h"
 #include "VrmlNodes.h"
