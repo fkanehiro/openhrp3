@@ -32,7 +32,7 @@ namespace hrp {
         /**
            @return The number of triangles
         */
-        int triangulate(const std::vector<int>& polygon);
+        int apply(const std::vector<int>& polygon);
 
         /**
            Triangulated indices.

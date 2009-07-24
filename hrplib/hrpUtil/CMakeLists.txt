@@ -15,8 +15,6 @@ if(PNG_JPEG_BUILD)
   ADD_SUBDIRECTORY(zlib123)
 endif()
 
-ADD_SUBDIRECTORY(triangulator)
-
 set(sources
   EasyScanner.cpp
   Tvmet3d.cpp
