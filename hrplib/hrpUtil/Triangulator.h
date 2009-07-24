@@ -15,6 +15,7 @@
 #define HRPUTIL_TRIANGULATOR_H_INCLUDED
 
 #include <vector>
+#include <boost/dynamic_bitset.hpp>
 #include <hrpUtil/Tvmet3d.h>
 #include "VrmlNodes.h"
 
@@ -28,14 +29,6 @@ namespace hrp {
             this->vertices = &vertices;
         }
 
-        Vector3Ref vertex(int localIndex){
-            return getVector3Ref((*vertices)[(*orgPolygon)[localIndex]].data());
-        }
-
-        Vector3Ref workVertex(int workPolygonIndex){
-            return getVector3Ref((*vertices)[(*orgPolygon)[workPolygon[workPolygonIndex]]].data());
-        }
-
         /**
            @return The number of triangles
         */
@@ -46,7 +39,7 @@ namespace hrp {
            This value is available after calling the 'triangulate' method.
            The indices are local ones in the polygon index vector given to the triangulate method.
         */
-        std::vector<int>& triangles() {
+        const std::vector<int>& triangles() {
             return triangles_;
         }
 
@@ -59,6 +52,15 @@ namespace hrp {
         std::vector<int> triangles_;
         std::vector<int> workPolygon;
         Vector3 ccs; // cyclic cross sum
+        boost::dynamic_bitset<> earMask;
+
+        Vector3Ref vertex(int localIndex){
+            return getVector3Ref((*vertices)[(*orgPolygon)[localIndex]].data());
+        }
+
+        Vector3Ref workVertex(int workPolygonIndex){
+            return getVector3Ref((*vertices)[(*orgPolygon)[workPolygon[workPolygonIndex]]].data());
+        }
 
         Convexity calcConvexity(int ear);
         bool checkIfEarContainsOtherVertices(int ear);

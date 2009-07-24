@@ -19,10 +19,25 @@ using namespace hrp;
 
 int Triangulator::triangulate(const vector<int>& polygon)
 {
-    orgPolygon = &polygon;
+    triangles_.clear();
 
     int numOrgVertices = polygon.size();
+
+    if(numOrgVertices > earMask.size()){
+        earMask.resize(numOrgVertices);
+    }
+
+    if(numOrgVertices < 3){
+        return 0;
+    } else if(numOrgVertices == 3){
+        triangles_.push_back(0);
+        triangles_.push_back(1);
+        triangles_.push_back(2);
+        return 1;
+    }
     
+    orgPolygon = &polygon;
+
     workPolygon.resize(numOrgVertices);
     for(int i=0; i < numOrgVertices; ++i){
         workPolygon[i] = i;
@@ -30,7 +45,7 @@ int Triangulator::triangulate(const vector<int>& polygon)
     
     ccs = 0.0;
     const Vector3Ref o(vertex(0));
-    for(int i=1; i < numOrgVertices; ++i){
+    for(int i=1; i < numOrgVertices - 1; ++i){
         ccs += tvmet::cross(Vector3(vertex(i) - o), Vector3(vertex((i+1) % numOrgVertices) - o));
     }
 
@@ -49,9 +64,9 @@ int Triangulator::triangulate(const vector<int>& polygon)
                 break;
             } else if(convexity == CONVEX){
                 if(!checkIfEarContainsOtherVertices(i)){
-                    triangles_.push_back((i - 1) % n);
-                    triangles_.push_back(i);
-                    triangles_.push_back((i + 1) % n);
+                    triangles_.push_back(workPolygon[(i + n - 1) % n]);
+                    triangles_.push_back(workPolygon[i]);
+                    triangles_.push_back(workPolygon[(i + 1) % n]);
                     target = i;
                     numTriangles++;
                     break;
@@ -74,9 +89,10 @@ int Triangulator::triangulate(const vector<int>& polygon)
 Triangulator::Convexity Triangulator::calcConvexity(int ear)
 {
     int n = workPolygon.size();
-    const Vector3Ref p0(workVertex((ear - 1) % n));
+
+    const Vector3Ref p0(workVertex((ear + n - 1) % n));
     Vector3 a(workVertex(ear) - p0);
-    Vector3 b(workVertex((ear+1) % n) - p0);
+    Vector3 b(workVertex((ear + 1) % n) - p0);
     Vector3 ccs(cross(a, b));
 
     Convexity convexity;
@@ -96,26 +112,34 @@ bool Triangulator::checkIfEarContainsOtherVertices(int ear)
     bool contains = false;
 
     const int n = workPolygon.size();
-    const Vector3Ref a(workVertex((ear-1) % n));
-    const Vector3Ref b(workVertex(ear));
-    const Vector3Ref c(workVertex((ear+1) % n));
 
-    for(int i=0; i < workPolygon.size(); ++i){
-        if(i < ear - 1 || i > ear + 1){
-            const Vector3Ref p(workVertex(i));
+    if(n > 3){
+        const int prev = (ear + n -1) % n;
+        const int next = (ear+1) % n;
+        const Vector3Ref a(workVertex(prev));
+        const Vector3Ref b(workVertex(ear));
+        const Vector3Ref c(workVertex(next));
 
-            if(tvmet::dot(tvmet::cross(a - p, b - p), ccs) < 0){
-                continue;
+        earMask[prev] = earMask[ear] = earMask[next] = 1;
+
+        for(int i=0; i < workPolygon.size(); ++i){
+            if(!earMask[i]){
+                const Vector3Ref p(workVertex(i));
+                if(tvmet::dot(tvmet::cross(a - p, b - p), ccs) <= 0){
+                    continue;
+                }
+                if(tvmet::dot(tvmet::cross(b - p, c - p), ccs) <= 0){
+                    continue;
+                }
+                if(tvmet::dot(tvmet::cross(c - p, a - p), ccs) <= 0){
+                    continue;
+                }
+                contains = true;
+                break;
             }
-            if(tvmet::dot(tvmet::cross(b - p, c - p), ccs) < 0){
-                continue;
-            }
-            if(tvmet::dot(tvmet::cross(c - p, a - p), ccs) < 0){
-                continue;
-            }
-            contains = true;
-            break;
         }
+
+        earMask[prev] = earMask[ear] = earMask[next] = 0;
     }
 
     return contains;
