@@ -937,13 +937,10 @@ void TMSImpl::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 
     for(int faceIndex=0; faceIndex < numFaces; ++faceIndex){
 
-        Vector3 v[3];
-        for(int i=0; i < 3; ++i){
-            int vertexIndex = triangles[faceIndex * 4 + i];
-            const SFVec3f& vorg = vertices[vertexIndex];
-            v[i] = vorg[0], vorg[1], vorg[2];
-        }
-        const Vector3 normal(tvmet::normalize(tvmet::cross(v[1] - v[0], v[2] - v[0])));
+        Vector3Ref v0(getVector3Ref(vertices[triangles[faceIndex * 4 + 0]].data()));
+        Vector3Ref v1(getVector3Ref(vertices[triangles[faceIndex * 4 + 1]].data()));
+        Vector3Ref v2(getVector3Ref(vertices[triangles[faceIndex * 4 + 2]].data()));
+        const Vector3 normal(tvmet::normalize(Vector3(tvmet::cross(v1 - v0, v2 - v0))));
         faceNormals.push_back(normal);
 
         if(triangleMesh->normalPerVertex){
