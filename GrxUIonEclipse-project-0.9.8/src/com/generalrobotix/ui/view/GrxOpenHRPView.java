@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
+import jp.go.aist.hrp.simulator.BodyInfo;
 import jp.go.aist.hrp.simulator.ClockGenerator;
 import jp.go.aist.hrp.simulator.Controller;
 import jp.go.aist.hrp.simulator.ControllerHelper;
@@ -784,8 +785,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 				GrxModelItem model = modelList.get(i);
 				if (model.links_ == null)
 					continue;
-
-				currentWorld_.registerCharacter(model.getName(), model.getBodyInfo());
+				BodyInfo bodyInfo = model.getBodyInfo();
+				if(bodyInfo==null)	return false;
+				currentWorld_.registerCharacter(model.getName(), bodyInfo);
 				currentDynamics_.registerCharacter(model.getName(), model.getBodyInfo());
 				if (model.isRobot()) {
 					robotEntry_.add(model.getName());

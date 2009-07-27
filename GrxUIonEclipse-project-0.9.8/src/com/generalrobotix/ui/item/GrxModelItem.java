@@ -394,6 +394,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public boolean load(File f) {
         long load_stime = System.currentTimeMillis();
+        manager_.focusedItem(null);
         manager_.setSelectedItem(this, false);
         bgRoot_.detach();
         bgRoot_ = new BranchGroup();
@@ -692,24 +693,41 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @param q sequence of joint values
      */
     public void setCharacterPos(LinkPosition[] lpos, double[] q) {
-    	if (bModified_) return;
-    	
-       // if (!update_)
-       //     return;
-
-        if (q != null) {
+        boolean isAllPosProvided = true;
+    	if (q != null) {
             for (int i=0; i<jointToLink_.length; i++)
                 links_.get(jointToLink_[i]).jointValue(q[i]);
-        }
-
-        boolean isAllPosProvided = true;
-        for (int i=0; i<links_.size(); i++) {
-            if (lpos[i].p == null || lpos[i].R == null)
-                isAllPosProvided = false;
+            if (lpos[0].p != null && lpos[0].R != null)
+            	_setTransform(0, lpos[0].p, lpos[0].R);
             else
-                _setTransform(i, lpos[i].p, lpos[i].R);
-        }
+            	isAllPosProvided = false;
+        }else{
+	        for (int i=0; i<links_.size(); i++) {
+	            if (lpos[i].p == null || lpos[i].R == null)
+	                isAllPosProvided = false;
+	            else{
+	            	if(i==0){
+	            		links_.get(i).translation(lpos[i].p);
+	            		AxisAngle4d a4d = new AxisAngle4d();
+	            		a4d.setMatrix(new Matrix3d(lpos[i].R));
+	            		double[] newrot = new double[4];
+	            		a4d.get(newrot);
+	            		links_.get(i).rotation(newrot);
+	            	}else{
+		            	Transform3D t3d = new Transform3D();
+		                links_.get(i).tg_.getTransform(t3d);        
+		                t3d.setTranslation(new Vector3d(lpos[i].p));
+		                AxisAngle4d a4d = new AxisAngle4d();
+		        		a4d.setMatrix(new Matrix3d(lpos[i].R));
+		        		double[] newrot = new double[4];
+		        		a4d.get(newrot);
+		                t3d.setRotation(new AxisAngle4d(newrot));
+		                links_.get(i).tg_.setTransform(t3d);
+	            	}
+	            }
 
+	        }    
+        }
         if (isAllPosProvided)
             _updateCoM();
         else
@@ -754,7 +772,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     private void _setTransform(int linkId, Vector3d pos, Matrix3d rot) {
     	GrxLinkItem link = links_.get(linkId);
-    	if (link != null) link.setTransform(pos, rot);
+    	if (link != null )
+    		if(link.parent_ == null ) link.setTransform(pos, rot);
     }
 
     /**
@@ -765,7 +784,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     private void _setTransform(int linkId, double[] p, double[] R) {
     	GrxLinkItem link = links_.get(linkId);
-    	if (link != null) link.setTransform(p, R);
+    	if (link != null)
+    		if(link.parent_ == null ) link.setTransform(p, R);
     }
 
     /**

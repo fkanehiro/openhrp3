@@ -1326,24 +1326,33 @@ public class Grx3DView
         
         public void clearLog() {
             if (currentWorld_ != null){
-                currentWorld_.clearLog();
+            	syncExec(new Runnable(){
+            		public void run(){
+            			currentWorld_.clearLog();
+            		}
+            	});
                 currentState_=null;
             }
             firstTime_ = true;
         }
 
-        public void load(String name, String url) {
+        public void load(final String name, String url) {
             System.out.println(name+":"+url);
             try {
                 URL u = new URL(url);
-                url = u.getFile();
-                GrxBaseItem newItem = manager_.loadItem(GrxModelItem.class, name, url);
-                manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
-                manager_.setSelectedItem(newItem, true);
+                final String url_ = u.getFile();
+                syncExec(new Runnable(){
+                	public void run(){
+                		GrxBaseItem newItem = manager_.loadItem(GrxModelItem.class, name, url_);
+                        manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+                        manager_.setSelectedItem(newItem, true);
+                	}
+                });
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
         }
+        
         public boolean getPosture(String name , DblSequenceHolder posture) {
             Object obj = manager_.getItem(GrxModelItem.class, name);
             if (obj != null) {
@@ -1354,26 +1363,37 @@ public class Grx3DView
             posture.value = new double[0];
             return false;
         }
+        
         public void update(WorldState arg0) {
-            GrxWorldStateItem.WorldStateEx statex = new GrxWorldStateItem.WorldStateEx(arg0);
+            final GrxWorldStateItem.WorldStateEx statex = new GrxWorldStateItem.WorldStateEx(arg0);
             if (currentWorld_ == null) {
-                currentWorld_ = (GrxWorldStateItem)manager_.createItem(GrxWorldStateItem.class, null);
-                manager_.itemChange(currentWorld_, GrxPluginManager.ADD_ITEM);
-    	        manager_.setSelectedItem(currentWorld_, true);
+            	syncExec(new Runnable(){
+            		public void run(){
+            			GrxWorldStateItem item = (GrxWorldStateItem)manager_.createItem(GrxWorldStateItem.class, null);
+            			manager_.itemChange(item, GrxPluginManager.ADD_ITEM);
+            			manager_.setSelectedItem(item, true);
+            		}
+            	});
             }
             if (firstTime_) {
                 firstTime_ = false;
                 String[] chars = statex.characters();
                 for (int i=0; i<chars.length; i++) {
                     GrxModelItem model = (GrxModelItem)manager_.getItem(GrxModelItem.class, chars[i]);
-                    currentWorld_.registerCharacter(chars[i], model.getBodyInfo());
+                    BodyInfo bodyInfo = model.getBodyInfo();
+    				if(bodyInfo==null)	return;
+    				currentWorld_.registerCharacter(chars[i], bodyInfo);
                 }
             }
-            double t = statex.time;
-            currentWorld_.addValue(t, statex);
-           	currentWorld_.setPosition(currentWorld_.getLogSize());
-            if (t > 0 && prevTime > 0)
-              currentWorld_.setDbl("logTimeStep", t - prevTime);
+            final double t = statex.time;
+            syncExec(new Runnable(){
+        		public void run(){
+        			currentWorld_.addValue(t, statex);
+        			currentWorld_.setPosition(currentWorld_.getLogSize()-1);
+        			if (t > 0 && prevTime > 0)
+        				currentWorld_.setDbl("logTimeStep", t - prevTime);
+        		}
+            });
             prevTime = t;
         }
         
@@ -1639,23 +1659,27 @@ public class Grx3DView
 
         GUIAction.FITTING_SRC.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
-                viewToolBar_.setEnabled(true);
-                behaviorManager_.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
-                viewMode_ = EDIT;
-                lblMode_.setText("[ EDIT : Object Placement Select ]");
-                showOption();
+            	if (behaviorManager_.getOperationMode() != BehaviorManager.FITTING_FROM_MODE){
+	                objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
+	                viewToolBar_.setEnabled(true);
+	                behaviorManager_.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
+	                viewMode_ = EDIT;
+	                lblMode_.setText("[ EDIT : Object Placement Select ]");
+	                showOption();
+            	}
             }
         });
 
         GUIAction.FITTING_DEST.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
-                viewToolBar_.setEnabled(true);
-                behaviorManager_.setOperationMode(BehaviorManager.FITTING_TO_MODE);
-                viewMode_ = EDIT;
-                lblMode_.setText("[ EDIT : Object Placement Destination ]");
-                showOption();
+            	if (behaviorManager_.getOperationMode() != BehaviorManager.FITTING_TO_MODE){
+	                objectToolBar_.setMode(ObjectToolBar.FITTING_MODE);
+	                viewToolBar_.setEnabled(true);
+	                behaviorManager_.setOperationMode(BehaviorManager.FITTING_TO_MODE);
+	                viewMode_ = EDIT;
+	                lblMode_.setText("[ EDIT : Object Placement Destination ]");
+	                showOption();
+            	}
             }
         });
 
@@ -1674,34 +1698,52 @@ public class Grx3DView
 
         GUIAction.INV_KINEMA_FROM.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {  	
-            	objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
-            	behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_FROM_MODE);
-            	behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_);
-            	viewMode_ = EDIT;
-            	lblMode_.setText("[ EDIT : Inverse Kinematics Base Link ]");
-            	showOption();
+            	if (behaviorManager_.getOperationMode() != BehaviorManager.INV_KINEMA_FROM_MODE){
+	            	objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
+	            	behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_FROM_MODE);
+	            	if(!behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_)){
+	            		disableOperation();
+	                	viewMode_ = VIEW;
+	                	return;
+	            	}
+	            	viewMode_ = EDIT;
+	            	lblMode_.setText("[ EDIT : Inverse Kinematics Base Link ]");
+	            	showOption();
+            	}
             }
         });
 
         GUIAction.INV_KINEMA_TRANS.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
-                behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_TRANSLATION_MODE);
-                behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_);
-                viewMode_ = EDIT;
-                lblMode_.setText("[ EDIT : Inverse Kinematics Translate ]");
-                showOption();
+            	if (behaviorManager_.getOperationMode() != BehaviorManager.INV_KINEMA_TRANSLATION_MODE){
+	                objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
+	                behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_TRANSLATION_MODE);
+	                if(!behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_)){
+	                	disableOperation();
+	                	viewMode_ = VIEW;
+	                	return;
+	                }
+	                viewMode_ = EDIT;
+	                lblMode_.setText("[ EDIT : Inverse Kinematics Translate ]");
+	                showOption();
+            	}
             }
         });
 
         GUIAction.INV_KINEMA_ROT.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
-                behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_ROTATION_MODE);
-                behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_);
-                viewMode_ = EDIT;
-                lblMode_.setText("[ EDIT : Inverse Kinematics Rotate ]");
-                showOption();
+            	if (behaviorManager_.getOperationMode() != BehaviorManager.INV_KINEMA_ROTATION_MODE){
+	                objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
+	                behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_ROTATION_MODE);
+	                if(!behaviorManager_.initDynamicsSimulator(currentModels_, currentCollisionPairs_)){
+	                	disableOperation();
+	                	viewMode_ = VIEW;
+	                	return;
+	                }
+	                viewMode_ = EDIT;
+	                lblMode_.setText("[ EDIT : Inverse Kinematics Rotate ]");
+	                showOption();
+            	}
             }
         });
 
