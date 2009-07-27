@@ -26,6 +26,7 @@ set(sources
   TriangleMeshShaper.cpp
   Triangulator.cpp
   ImageConverter.cpp
+  OnlineViewerUtil.cpp
 )
 
 set(headers
@@ -41,6 +42,7 @@ set(headers
   VrmlWriter.h
   TriangleMeshShaper.h
   ImageConverter.h
+  OnlineViewerUtil.h
 )
 
 set(target hrpUtil-${OPENHRP_LIBRARY_VERSION})
@@ -52,7 +54,9 @@ set_target_properties(${target} PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
   target_link_libraries(${target}
-    boost_filesystem boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY})
+    boost_filesystem boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
+    ${OMNIORB_LIBRARIES}
+    hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION})
 
 elseif(WIN32)
   add_definitions(-DHRP_UTIL_MAKE_DLL)
@@ -60,6 +64,9 @@ elseif(WIN32)
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d )
 
     target_link_libraries(${target}
+    ${OMNIORB_LIBRARIES}
+    optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
     optimized ${ZLIB_LIBRARY} debug ${ZLIB_LIBRARY}d
     optimized ${PNG_LIBRARY} debug ${PNG_LIBRARY}d
     optimized ${JPEG_LIBRARY} debug ${JPEG_LIBRARY}d)
