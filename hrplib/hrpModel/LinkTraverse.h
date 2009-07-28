@@ -14,8 +14,8 @@
    \author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_LINK_TRAVERSE_H_INCLUDED
-#define OPENHRP_LINK_TRAVERSE_H_INCLUDED
+#ifndef HRPMODEL_LINK_TRAVERSE_H_INCLUDED
+#define HRPMODEL_LINK_TRAVERSE_H_INCLUDED
 
 #include <vector>
 #include <ostream>
@@ -33,17 +33,21 @@ namespace hrp {
         LinkTraverse(Link* root, bool doUpward = false, bool doDownward = true);
 
         virtual ~LinkTraverse();
-	
-        void find(Link* root, bool doUpward = false, bool doDownward = true);
+
+        virtual void find(Link* root, bool doUpward = false, bool doDownward = true);
 
         inline int numLinks() const {
             return links.size();
         }
 
+        inline bool empty() const {
+            return links.empty();
+        }
+
         inline size_t size() const {
             return links.size();
         }
-		
+
         inline Link* rootLink() const {
             return links.front();
         }
@@ -75,24 +79,19 @@ namespace hrp {
 	
         void calcForwardKinematics(bool calcVelocity = false, bool calcAcceleration = false) const;
 
-        /**
-           @deprecated use operator<<
-        */
-        void putInformation(std::ostream& os);
-	
       protected:
+        
         std::vector<Link*> links;
         int numUpwardConnections;
-	
+
       private:
+        
         void traverse(Link* link, bool doUpward, bool doDownward, bool isUpward, Link* prev);
 
     };
 
 };
 
-
 HRPMODEL_API std::ostream& operator<<(std::ostream& os, hrp::LinkTraverse& traverse);
-
 
 #endif

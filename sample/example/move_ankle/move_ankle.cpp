@@ -2,7 +2,7 @@
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpModel/Link.h>
 #include <hrpModel/LinkTraverse.h>
-#include <hrpModel/LinkPath.h>
+#include <hrpModel/JointPath.h>
 #include <hrpModel/ModelLoaderUtil.h>
 
 using namespace std;

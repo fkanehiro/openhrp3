@@ -17,12 +17,10 @@
 
 #include "LinkTraverse.h"
 #include "Link.h"
-#include <algorithm>
 #include <hrpUtil/Tvmet3d.h>
 
 using namespace std;
 using namespace hrp;
-using namespace tvmet;
 
 
 LinkTraverse::LinkTraverse()
@@ -207,20 +205,15 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
 
 std::ostream& operator<<(std::ostream& os, LinkTraverse& traverse)
 {
-    traverse.putInformation(os);
-    return os;
-}
-
-
-void LinkTraverse::putInformation(std::ostream& os)
-{
-    int n = links.size();
+    int n = traverse.numLinks();
     for(int i=0; i < n; ++i){
-        Link* link = links[i];
+        Link* link = traverse[i];
         os << link->name;
         if(i != n){
-            os << (isDownward(i) ? " => " : " <= ");
+            os << (traverse.isDownward(i) ? " => " : " <= ");
         }
     }
     os << std::endl;
+
+    return os;
 }

@@ -14,7 +14,7 @@
 
 #include "Body.h"
 #include "Link.h"
-#include "LinkPath.h"
+#include "JointPath.h"
 #include "Sensor.h"
 #include "BodyCustomizerInterface.h"
 #include <hrpCollision/ColdetModel.h>
@@ -698,7 +698,7 @@ CustomizedJointPath::~CustomizedJointPath()
 void CustomizedJointPath::onJointPathUpdated()
 {
     ikTypeId = body->customizerInterface->initializeAnalyticIk
-        (body->customizerHandle, LinkPath::rootLink()->index, LinkPath::endLink()->index);
+        (body->customizerHandle, baseLink()->index, endLink()->index);
 }
 
 
@@ -718,11 +718,11 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
             qorg[i] = joint(i)->q;
         }
 
-        Link* targetLink = LinkPath::endLink();
-        Link* baseLink   = LinkPath::rootLink();
+        Link* targetLink = endLink();
+        Link* baseLink_   = baseLink();
         Matrix33 end_R(end_R0 * trans(targetLink->Rs));
-        Vector3 p_relative(trans(baseLink->R) * Vector3(end_p - baseLink->p));
-        Matrix33 R_relative(trans(baseLink->R) * end_R);
+        Vector3 p_relative(trans(baseLink_->R) * Vector3(end_p - baseLink_->p));
+        Matrix33 R_relative(trans(baseLink_->R) * end_R);
 
         solved = body->customizerInterface->
             calcAnalyticIk(body->customizerHandle, ikTypeId, p_relative, R_relative);

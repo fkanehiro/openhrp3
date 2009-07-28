@@ -15,7 +15,7 @@
 #include <hrpModel/Body.h>
 #include <hrpModel/Link.h>
 #include <hrpModel/LinkTraverse.h>
-#include <hrpModel/LinkPath.h>
+#include <hrpModel/JointPath.h>
 #include <hrpModel/Sensor.h>
 #include <hrpModel/ModelLoaderUtil.h>
 
@@ -1035,7 +1035,7 @@ CORBA::Boolean DynamicsSimulator_impl::calcCharacterInverseKinematics
 
     JointPath path(body->link(fromLink), body->link(toLink));
 
-    if(path){
+    if(!path.empty()){
         Vector3 p(target.p[0], target.p[1], target.p[2]);
         Matrix33 R;
         for (int i=0; i<3; i++) {
