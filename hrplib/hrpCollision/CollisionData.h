@@ -8,8 +8,8 @@
  */
 
 
-#ifndef OPENHRP_COLLISION_DATA_H_INCLUDED
-#define OPENHRP_COLLISION_DATA_H_INCLUDED
+#ifndef HRPCOLLISION_COLLISION_DATA_H_INCLUDED
+#define HRPCOLLISION_COLLISION_DATA_H_INCLUDED
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
@@ -38,11 +38,5 @@ public:
   int c_type; // c_type=1 for vertex-face contact, c_type=2 for edge-edge contact
 
 };
-
-extern  HRP_COLLISION_EXPORT int cdBoxTestsCount;
-extern  HRP_COLLISION_EXPORT int cdTriTestsCount;
-extern  HRP_COLLISION_EXPORT int cdContactsCount;
-extern  HRP_COLLISION_EXPORT collision_data *cdContact;
-
 
 #endif

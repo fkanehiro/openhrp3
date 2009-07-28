@@ -16,6 +16,8 @@
 #include "config.h"
 #include "CollisionData.h"
 #include "ColdetModel.h"
+#include "CollisionPairInserter.h"
+#include <vector>
 
 namespace hrp {
 
@@ -32,12 +34,12 @@ namespace hrp {
         ColdetModelPtr& model0() { return model0_; }
         ColdetModelPtr& model1() { return model1_; }
         
-        collision_data* detectCollisions() {
+        std::vector<collision_data>& detectCollisions() {
             return detectCollisionsSub(true);
         }
 
         bool checkCollision() {
-            return (detectCollisionsSub(false) != 0);
+            return !detectCollisionsSub(false).empty();
         }
 
         double computeDistance(double *point0, double *point1);
@@ -47,13 +49,18 @@ namespace hrp {
         double tolerance() const { return tolerance_; }
 
       private:
-        collision_data* detectCollisionsSub(bool detectAllContacts);
-        collision_data* detectMeshMeshCollisions(bool detectAllContacts);
-        collision_data* detectPlaneCylinderCollisions(bool detectAllContacts);
+        std::vector<collision_data>& detectCollisionsSub(bool detectAllContacts);
+        bool detectMeshMeshCollisions(bool detectAllContacts);
+        bool detectPlaneCylinderCollisions(bool detectAllContacts);
         
         ColdetModelPtr model0_;
         ColdetModelPtr model1_;
         double tolerance_;
+
+        Opcode::CollisionPairInserter collisionPairInserter;
+
+        int boxTestsCount;
+        int triTestsCount;
     };
 }
 

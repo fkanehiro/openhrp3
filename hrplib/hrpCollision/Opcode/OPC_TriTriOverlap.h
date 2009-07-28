@@ -1,4 +1,3 @@
-#include "../utilities.h"
 
 //! if OPC_TRITRI_EPSILON_TEST is true then we do a check (if |dv|<EPSILON then dv=0.0;) else no check is done (which is less robust, but faster)
 #define LOCAL_EPSILON 0.000001f
@@ -201,7 +200,9 @@ inline_ BOOL AABBTreeCollider::TriTriOverlap(const Point& V0, const Point& V1, c
 	p1[0] = U1.x;	     p1[1] = U1.y;        p1[2] = U1.z;
 	p2[0] = U2.x;	     p2[1] = U2.y;        p2[2] = U2.z;
 	
-	if(tri_tri_overlap(i0, i1, i2, p0, p1, p2, &c_pair)){
+	if(collisionPairInserter &&
+           collisionPairInserter->detectTriTriOverlap(i0, i1, i2, p0, p1, p2, &c_pair)){
+            /*
 		insert_collision_pair(mNowNode0, mNowNode1, mId0, mId1,
 				      c_pair.num_of_i_points,
 				      c_pair.i_points,
@@ -212,7 +213,18 @@ inline_ BOOL AABBTreeCollider::TriTriOverlap(const Point& V0, const Point& V1, c
 				      c_pair.c_type,
 				      (MeshInterface*)mIMesh0,
 				      (MeshInterface*)mIMesh1);
-		return TRUE;
+            */
+            collisionPairInserter->apply(mNowNode0, mNowNode1, mId0, mId1,
+                                         c_pair.num_of_i_points,
+                                         c_pair.i_points,
+                                         c_pair.n_vector,
+                                         c_pair.depth,
+                                         c_pair.n,
+                                         c_pair.m,
+                                         c_pair.c_type,
+                                         (MeshInterface*)mIMesh0,
+                                         (MeshInterface*)mIMesh1);
+            return TRUE;
 	}
 	return FALSE;
 }

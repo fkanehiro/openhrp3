@@ -12,6 +12,7 @@
 
 #include "ColdetModelPair.h"
 #include "ColdetModelSharedDataSet.h"
+#include "CollisionPairInserter.h"
 #include "Opcode/Opcode.h"
 #include "SSVTreeCollider.h"
 
@@ -54,29 +55,32 @@ void ColdetModelPair::set(ColdetModelPtr model0, ColdetModelPtr model1)
 }
 
 
-collision_data* ColdetModelPair::detectCollisionsSub(bool detectAllContacts)
+std::vector<collision_data>& ColdetModelPair::detectCollisionsSub(bool detectAllContacts)
 {
-    if(cdContactsCount){
-        if (cdContact){
-            delete[] cdContact;
-            cdContact = 0;
-        }
-        cdContactsCount = 0;
-    }
+    collisionPairInserter.clear();
 
+    bool detected;
+    
     if ((model0_->getPrimitiveType() == ColdetModel::SP_PLANE &&
          model1_->getPrimitiveType() == ColdetModel::SP_CYLINDER)
         || (model1_->getPrimitiveType() == ColdetModel::SP_PLANE &&
             model0_->getPrimitiveType() == ColdetModel::SP_CYLINDER)){
-        return detectPlaneCylinderCollisions(detectAllContacts);
+        detected = detectPlaneCylinderCollisions(detectAllContacts);
     }else{
-        return detectMeshMeshCollisions(detectAllContacts);
+        detected = detectMeshMeshCollisions(detectAllContacts);
     }
+
+    if(!detected){
+        collisionPairInserter.clear();
+    }
+
+    return collisionPairInserter.collisions();
 }
 
-collision_data* ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
+
+bool ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
 {
-    collision_data* result = 0;
+    bool result = false;
     
     if(model0_->isValid() && model1_->isValid()){
 
@@ -86,27 +90,25 @@ collision_data* ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts
         // this should be fixed.(note that the direction of normal is inversed when the order inversed 
         colCache.Model0 = &model1_->dataSet->model;
         colCache.Model1 = &model0_->dataSet->model;
-        
+
         Opcode::AABBTreeCollider collider;
+        collider.setCollisionPairInserter(&collisionPairInserter);
         
         if(!detectAllContacts){
             collider.SetFirstContact(true);
         }
         
-        bool isOK = collider.Collide(colCache, model1_->transform, model0_->transform);
+        result = collider.Collide(colCache, model1_->transform, model0_->transform);
         
-        cdBoxTestsCount = collider.GetNbBVBVTests();
-        cdTriTestsCount = collider.GetNbPrimPrimTests();
-        
-        if(isOK){
-            result = cdContact;
-        }
+        boxTestsCount = collider.GetNbBVBVTests();
+        triTestsCount = collider.GetNbPrimPrimTests();
     }
 
     return result;
 }
 
-collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts)
+
+bool ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts)
 {
     ColdetModelPtr plane, cylinder;
     bool reversed=false;
@@ -121,7 +123,7 @@ collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllCon
     }else if(model1_->getPrimitiveType() == ColdetModel::SP_CYLINDER){
         cylinder = model1_;
     }
-    if (!plane || !cylinder) return NULL;
+    if (!plane || !cylinder) return false;
 
     IceMaths::Matrix4x4 pTrans = (*(plane->pTransform)) * (*(plane->transform));
     IceMaths::Matrix4x4 cTrans = (*(cylinder->pTransform)) * (*(cylinder->transform));
@@ -143,17 +145,19 @@ collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllCon
     float dTop    = (pTop|n) - d;
     float dBottom = (pBottom|n) - d;
 
-    if (dTop > radius && dBottom > radius) return NULL;
+    if (dTop > radius && dBottom > radius) return false;
 
     double theta = asin((dTop - dBottom)/height);
     double rcosth = radius*cos(theta);
 
-    if (rcosth >= dTop) cdContactsCount+=2;
-    if (rcosth >= dBottom) cdContactsCount+=2;
+    int contactsCount = 0;
+    if (rcosth >= dTop) contactsCount+=2;
+    if (rcosth >= dBottom) contactsCount+=2;
 
-    if (cdContactsCount){
-        collision_data *cdata = new collision_data[cdContactsCount];
-        for (unsigned int i=0; i<cdContactsCount; i++){
+    if (contactsCount){
+        std::vector<collision_data>& cdata = collisionPairInserter.collisions();
+        cdata.resize(contactsCount);
+        for (unsigned int i=0; i<contactsCount; i++){
             cdata[i].num_of_i_points = 1;
             cdata[i].i_point_new[0]=1; 
             cdata[i].i_point_new[1]=0; 
@@ -209,10 +213,11 @@ collision_data* ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllCon
             index++;
         }
 
-        return cdata;
+        return true;
     }
-    return NULL;
+    return false;
 }
+
 
 double ColdetModelPair::computeDistance(double *point0, double *point1)
 {
