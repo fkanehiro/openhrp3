@@ -8,6 +8,7 @@ set(sources
   Link.cpp
   LinkTraverse.cpp
   LinkPath.cpp
+  JointPath.cpp
   ForwardDynamics.cpp
   ForwardDynamicsABM.cpp
   ForwardDynamicsCBM.cpp
@@ -26,8 +27,10 @@ set(headers
   ForwardDynamicsABM.h
   ForwardDynamicsCBM.h
   Link.h
-  LinkPath.h
   LinkTraverse.h
+  LinkPath.h
+  JointPath.h
+  IInverseKinematics.h
   MatrixSolvers.h
   ModelNodeSet.h
   ModelLoaderUtil.h
