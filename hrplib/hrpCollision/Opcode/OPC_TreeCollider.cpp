@@ -27,21 +27,13 @@
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include"../utilities.h"
+#include"../CollisionPairInserter.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Precompiled Header
 #include "Stdafx.h"
 
 #include<iostream>
-
-extern dmatrix33 CD_Rot1;
-extern dvector3 CD_Trans1;
-extern double CD_s1;
-
-extern dmatrix33 CD_Rot2;
-extern dvector3 CD_Trans2;
-extern double CD_s2;
-
 
 using namespace Opcode;
 
@@ -61,9 +53,11 @@ AABBTreeCollider::AABBTreeCollider() :
 	mNbPrimPrimTests	(0),
 	mNbBVPrimTests		(0),
 	mFullBoxBoxTest		(true),
-	mFullPrimBoxTest	(true)
+	mFullPrimBoxTest	(true),
+        collisionPairInserter(0)
 {
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -281,30 +275,35 @@ void AABBTreeCollider::InitQuery(const Matrix4x4* world0, const Matrix4x4* world
 	//Modified by S-cubed, Inc.
 	//行列を Boost の形式にあわせる。
 	//  Prim-Prim テストを TriOverlap.cpp で行うため。
-	for(udword i=0; i<3; i++){
-	  for(udword j=0; j<3; j++){
-		CD_Rot1(i,j) = (double) world0->m[j][i];
-		CD_Rot2(i,j) = (double) world1->m[j][i];
-	  }
-	}
+        if(collisionPairInserter){
+            
+            for(udword i=0; i<3; i++){
+                for(udword j=0; j<3; j++){
+                    collisionPairInserter->CD_Rot1(i,j) = (double) world0->m[j][i];
+                    collisionPairInserter->CD_Rot2(i,j) = (double) world1->m[j][i];
+                }
+            }
  
-	IceMaths::Point t0;
-	IceMaths::Point t1;
-	world0->GetTrans(t0);
-	world1->GetTrans(t1);
-	//	Matrix3x3 w1 = world1;
-	//	mT0to1 = w1 * (t1 - t0)
-	CD_Trans1[0] = (double) t0.x; CD_Trans1[1] = (double) t0.y; CD_Trans1[2] = (double) t0.z;
-
-
-	CD_Trans2[0] = (double) t1.x; CD_Trans2[1] = (double) t1.y; CD_Trans2[2] = (double) t1.z;
-
-
-
-	//s1, s2 は 1.0 のみなので、固定。
-	CD_s1 = 1.0;
-	CD_s2 = 1.0;
+            IceMaths::Point t0;
+            IceMaths::Point t1;
+            world0->GetTrans(t0);
+            world1->GetTrans(t1);
+            //	Matrix3x3 w1 = world1;
+            //	mT0to1 = w1 * (t1 - t0)
+            collisionPairInserter->CD_Trans1[0] = (double) t0.x;
+            collisionPairInserter->CD_Trans1[1] = (double) t0.y;
+            collisionPairInserter->CD_Trans1[2] = (double) t0.z;
+            
+            collisionPairInserter->CD_Trans2[0] = (double) t1.x;
+            collisionPairInserter->CD_Trans2[1] = (double) t1.y;
+            collisionPairInserter->CD_Trans2[2] = (double) t1.z;
+            
+            //s1, s2 は 1.0 のみなので、固定。
+            collisionPairInserter->CD_s1 = 1.0;
+            collisionPairInserter->CD_s2 = 1.0;
+        }
 }
+        
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**

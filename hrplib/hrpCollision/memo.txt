@@ -1,5 +1,16 @@
 
+*** Global変数を取り除く法
 
+- InsertCollisionPair の内容をクラス化する (CollisionPairInserter ?)
+- AABBTreeCollider クラスにCollisionPairInserter のインスタンスを持たせる
+-- ヘッダは OPC_TreeCollider.h
+- AABBTreeCollider::TriTriOverlap 内で呼び出す。（元はinsert_collision_pair 関数)
+-- ソースは OPC_TriTriOverlap.h
+
+
+
+
+--------------------------------------------------------------------------------
 
 CdModelSet リンク一つの頂点データセットを格納する
 　CdModelCache へ "addModel" で名前とともに追加される

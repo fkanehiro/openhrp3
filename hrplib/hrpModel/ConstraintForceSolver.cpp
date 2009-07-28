@@ -645,15 +645,15 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
                 pCollisionPoints = &collisionPoints;
             }
             
-            collision_data* cdata = linkPair.detectCollisions();
+            std::vector<collision_data>& cdata = linkPair.detectCollisions();
             
-            if(!cdata){
+            if(cdata.empty()){
                 pCollisionPoints = 0;
             } else {
                 int npoints = 0;
-                for(int i = 0; i < cdContactsCount; i++) {
+                for(int i = 0; i < cdata.size(); i++) {
                     for(int j = 0; j < cdata[i].num_of_i_points; j++){
-                        if(cdata[i].i_point_new[j]) npoints ++;
+                        if(cdata[i].i_point_new[j]) npoints++;
                     }
                 }
                 if(npoints == 0){
@@ -661,7 +661,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
                 } else {
                     pCollisionPoints->length(npoints);
                     int idx = 0;
-                    for (int i = 0; i < cdContactsCount; i++) {
+                    for (int i = 0; i < cdata.size(); i++) {
                         collision_data& cd = cdata[i];
                         for(int j=0; j < cd.num_of_i_points; j++){
                             if (cd.i_point_new[j]){
