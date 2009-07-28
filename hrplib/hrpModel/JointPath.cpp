@@ -97,18 +97,22 @@ void JointPath::extractJoints()
         int m = n - 1;
         while(i < m){
             Link* link = linkPath[i];
-            if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
-                joints.push_back(link);
-                if(!linkPath.isDownward(i)){
-                    numUpwardJointConnections++;
+            if(link->jointId >= 0){
+                if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
+                    joints.push_back(link);
+                    if(!linkPath.isDownward(i)){
+                        numUpwardJointConnections++;
+                    }
                 }
             }
             ++i;
         }
         if(linkPath.isDownward(m-1)){
             Link* link = linkPath[m];
-            if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
-                joints.push_back(link);
+            if(link->jointId >= 0){
+                if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
+                    joints.push_back(link);
+                }
             }
         }
     }
