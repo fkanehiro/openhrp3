@@ -22,7 +22,6 @@
 #include "IInverseKinematics.h"
 #include "exportdef.h"
 
-
 namespace hrp {
 
     class HRPMODEL_API JointPath : public IInverseKinematics
