@@ -17,34 +17,22 @@ using namespace std;
 using namespace Opcode;
 using namespace hrp;
 
-int tri_tri_overlap(Vector3& P1,
-                    Vector3& P2,
-                    Vector3& P3,
-                    Vector3& Q1,
-                    Vector3& Q2,
-                    Vector3& Q3,
-                    collision_data* col_p,
-                    CollisionPairInserter* collisionPairInserter);
+
+int tri_tri_overlap(
+    const Vector3& P1,
+    const Vector3& P2,
+    const Vector3& P3,
+    const Vector3& Q1,
+    const Vector3& Q2,
+    const Vector3& Q3,
+    collision_data* col_p,
+    CollisionPairInserter* collisionPairInserter);
+    
 
 namespace {
     const bool COLLIDE_DEBUG = false;
     const double MAX_DEPTH = 0.1;
 
-    class tri
-    {
-    public:
-        int id;
-        Vector3 p1, p2, p3;
-    };
-    
-    class col_tri
-    {
-    public:
-        int status; // 0: unvisited, 1: visited, 2: included in the convex neighbor 
-        Vector3 p1, p2, p3;
-        Vector3 n;
-    };
-    
     const int CD_OK = 0;
     const int CD_ALL_CONTACTS = 1;
     const int CD_FIRST_CONTACT = 2;
@@ -57,104 +45,8 @@ namespace {
     };
 }
 
-namespace hrp {
-
-    class CPIImpl
-    {
-    public:
-
-        CPIImpl(CollisionPairInserter* self);
-
-        CollisionPairInserter* self;
-
-        //int cdNbCollisionPairAlloced;
-        //collision_data* cdContact;
-        //int cdContactsCount;
-
-        vector<collision_data> cdContact;
-
-        int insert_collision_pair(const Opcode::AABBCollisionNode *b1,
-                                  const Opcode::AABBCollisionNode *b2,
-                                  int id1, int id2,
-                                  int num_of_i_points,
-                                  Vector3 i_points[4],
-                                  Vector3 &n_vector,
-                                  double depth,
-                                  Vector3 &n1,
-                                  Vector3 &m1,
-                                  int ctype,
-                                  Opcode::MeshInterface *mesh1,
-                                  Opcode::MeshInterface *mesh2);
-
-        int count_num_of_triangles(const Opcode::AABBCollisionNode *root);
-
-        void examine_normal_vector(const Opcode::AABBCollisionNode *b1,
-                                   const Opcode::AABBCollisionNode *b2,
-                                   int ctype,
-                                   Opcode::MeshInterface *mesh1,
-                                   Opcode::MeshInterface *mesh2);
-
-        void check_separability(const Opcode::AABBCollisionNode *b1,
-                                const Opcode::AABBCollisionNode *root1, int num_tri1,
-                                const Opcode::AABBCollisionNode *b2,
-                                const Opcode::AABBCollisionNode *root2, int num_tri2,
-                                int ctype,
-                                Opcode::MeshInterface *mesh1, Opcode::MeshInterface *mesh2);
-
-        void find_signed_distance(Vector3 &signed_distance,
-                                  const Opcode::AABBCollisionNode *b1,
-                                  const Opcode::AABBCollisionNode *root,
-                                  int num_tri,int num_cpair, int ctype, int obj,
-                                  Opcode::MeshInterface *mesh);
-
-        void find_signed_distance(Vector3 &signed_distance,
-                                  col_tri *trp, int nth, int ctype, int obj);
-        
-        void find_signed_distance(Vector3 &signed_distance,
-                                  Vector3 &vert, int nth, int ctype, int obj);
-
-        void get_triangles_in_neighbor(col_tri *neighbor_tris,
-                                       int *n,
-                                       const Opcode::AABBCollisionNode *root,
-                                       Opcode::MeshInterface *mesh);
-
-        void get_neighboring_triangles(col_tri *tri_convex_neighbor, col_tri *tri_neighbor,
-                                       int *start_tri, int *end_tri, int num_tri);
-
-        int get_triangles_in_convex_neighbor(Opcode::AABBCollisionNode *root,
-                                             col_tri *tri_convex_neighbor,
-                                             col_tri *tri_neighbor,
-                                             int num_tri);
-
-        int get_triangles_in_convex_neighbor(tri *root, col_tri *tri_convex_neighbor,
-                                             col_tri *tri_neighbor, int num_tri);
-
-        int get_triangles_in_convex_neighbor(tri *root,
-                                             col_tri *tri_convex_neighbor,
-                                             col_tri *tri_neighbor,
-                                             int num_tri,
-                                             int max_num);
-        
-        int is_neighboring_triangle(col_tri *t1, col_tri *t2);
-        int is_convex_neighbor(col_tri *t1, col_tri *t2);
-        void calc_normal_vector(col_tri *t);
-        int identical_ver(Vector3 &v1, Vector3 &v2);
-        void copy_tri(col_tri *t1, tri *t2);
-        void copy_tri(col_tri *t1, col_tri *t2);
-        int new_point_test(int k);
-        
-    };
-}
-
 
 CollisionPairInserter::CollisionPairInserter()
-{
-    impl = new CPIImpl(this);
-}
-
-
-CPIImpl::CPIImpl(CollisionPairInserter* self)
-    : self(self)
 {
 
 }
@@ -162,107 +54,183 @@ CPIImpl::CPIImpl(CollisionPairInserter* self)
 
 CollisionPairInserter::~CollisionPairInserter()
 {
-    delete impl;
+
 }
 
 
-std::vector<collision_data>& CollisionPairInserter::collisions()
+void CollisionPairInserter::copy_tri(col_tri* t1, tri* t2)
 {
-    return impl->cdContact;
+    t1->p1 = t2->p1;
+    t1->p2 = t2->p2;
+    t1->p3 = t2->p3;
 }
 
 
-void CollisionPairInserter::clear()
+void CollisionPairInserter::copy_tri(col_tri* t1, col_tri* t2)
 {
-    impl->cdContact.clear();
-}
-    
+    t1->p1 = t2->p1;
+    t1->p2 = t2->p2;
+    t1->p3 = t2->p3;
 
-int CollisionPairInserter::detectTriTriOverlap(Vector3& P1,
-                                Vector3& P2,
-                                Vector3& P3,
-                                Vector3& Q1,
-                                Vector3& Q2,
-                                Vector3& Q3,
-                                collision_data* col_p)
-{
-    return tri_tri_overlap(P1, P2, P3, Q1, Q2, Q3, col_p, this);
-}
-    
-
-int CollisionPairInserter::apply(
-    const Opcode::AABBCollisionNode* b1,
-    const Opcode::AABBCollisionNode* b2,
-    int id1, int id2,
-    int num_of_i_points,
-    Vector3 i_points[4],
-    Vector3& n_vector,
-    double depth,
-    Vector3& n1,
-    Vector3& m1,
-    int ctype,
-    Opcode::MeshInterface* mesh1,
-    Opcode::MeshInterface* mesh2)
-{
-    return impl->insert_collision_pair(
-        b1, b2, id1, id2, num_of_i_points, i_points, n_vector,
-        depth, n1, m1, ctype, mesh1, mesh2);
-}
-
-
-//
-// obsolute signatures
-//
-int CPIImpl::insert_collision_pair(
-    const Opcode::AABBCollisionNode* b1,
-    const Opcode::AABBCollisionNode* b2,
-    int id1, int id2,
-    int num_of_i_points,
-    Vector3 i_points[4],
-    Vector3& n_vector,
-    double depth,
-    Vector3& n1,
-    Vector3& m1,
-    int ctype,
-    Opcode::MeshInterface* mesh1,
-    Opcode::MeshInterface* mesh2)
-{
-    cdContact.push_back(collision_data());
-    collision_data& contact = cdContact.back();
-    
-    contact.id1 = id1;
-    contact.id2 = id2;
-    contact.depth = depth;
-    contact.num_of_i_points = num_of_i_points;
-
-    if(COLLIDE_DEBUG) printf("num_of_i_points = %d\n", num_of_i_points);
-
-    for(int i=0; i < num_of_i_points; ++i){
-        contact.i_points[i] = self->CD_s2 * Vector3((self->CD_Rot2 * i_points[i]) + self->CD_Trans2);
+    if(t2->n[0] && t2->n[1] && t2->n[2]){
+        t1->n = t2->n;
     }
+}
 
-    contact.n_vector = self->CD_Rot2 * n_vector;
-    contact.n = self->CD_Rot2 * n1;
-    contact.m = self->CD_Rot2 * m1;
-    examine_normal_vector(b1,b2,ctype, mesh1, mesh2);
 
-    // analyze_neighborhood_of_i_point(b1, b2, cdContactsCount, ctype);
-    // remove the intersecting point if depth is deeper than MAX_DEPTH meter
-    if(fabs(contact.depth) < MAX_DEPTH){
-        for(int i=0; i < num_of_i_points; ++i){
-            contact.i_point_new[i] = new_point_test(i);
-        }
+void CollisionPairInserter::calc_normal_vector(col_tri* t)
+{
+    if(t->status == 0){
+        const Vector3 e1(t->p2 - t->p1);
+        const Vector3 e2(t->p3 - t->p2);
+        t->n = normalize(Vector3(cross(e1, e2)));
+        t->status = 1;
+    }
+}
+
+
+int CollisionPairInserter::is_convex_neighbor(col_tri* t1, col_tri* t2)
+{
+    const double EPS = 1.0e-12; // a small number
+        
+    calc_normal_vector(t2);
+        
+    // printf("normal vector1 = %f %f %f\n", t1->n[0], t1->n[1], t1->n[2]);
+    // printf("normal vector2 = %f %f %f\n", t2->n[0], t2->n[1], t2->n[2]);
+        
+    const Vector3 vec1(t2->p1 - t1->p1);
+    const Vector3 vec2(t2->p2 - t1->p2);
+    const Vector3 vec3(t2->p3 - t1->p3);
+        
+    // printf("is_convex_neighbor = %f %f %f\n",innerProd(t1->n,vec1),innerProd(t1->n,vec2),innerProd(t1->n,vec3));
+        
+    if(dot(t2->n, vec1) < EPS && dot(t2->n, vec2) < EPS && dot(t2->n, vec3) < EPS){
+        return 1;
     } else {
-        for(int i=0; i < num_of_i_points; ++i){
-            contact.i_point_new[i] = 0;
-        }
+        return 0;
     }
-
-    return CD_OK;
 }
 
 
-void CPIImpl::examine_normal_vector(
+int CollisionPairInserter::identical_ver(const Vector3& v1, const Vector3& v2)
+{
+    int num = 0;
+    const double EPS = 1.0e-6; // 1 micro meter
+        
+    if(fabs(v1[0]-v2[0]) < EPS) ++num;
+    if(fabs(v1[1]-v2[1]) < EPS) ++num;
+    if(fabs(v1[2]-v2[2]) < EPS) ++num;
+        
+    return (num==3) ? 1 : 0;
+}
+
+
+int CollisionPairInserter::is_neighboring_triangle(col_tri* t1, col_tri* t2)
+{
+    int num = 
+        identical_ver(t1->p1,t2->p1)+identical_ver(t1->p1,t2->p2)+identical_ver(t1->p1,t2->p3)+
+        identical_ver(t1->p2,t2->p1)+identical_ver(t1->p2,t2->p2)+identical_ver(t1->p2,t2->p3)+
+        identical_ver(t1->p3,t2->p1)+identical_ver(t1->p3,t2->p2)+identical_ver(t1->p3,t2->p3);
+        
+    // printf("is_neighboring_triangle = %d\n", num);
+        
+    return (num==2) ? 1 : 0;
+}
+
+
+void CollisionPairInserter::get_neighboring_triangles(
+    col_tri* tri_convex_neighbor, col_tri* tri_neighbor,
+    int* start_tri, int* end_tri, int num_tri)
+{
+    int i, j, m, m_previous;
+        
+    m = *end_tri;
+    for(i=*start_tri; i<*end_tri; ++i){
+        m_previous = m;
+        for(j=*end_tri; j<num_tri; ++j){
+            if(tri_neighbor[j].status != 2 &&
+               is_neighboring_triangle(&tri_convex_neighbor[i], &tri_neighbor[j]) &&
+               is_convex_neighbor(&tri_convex_neighbor[i], &tri_neighbor[j])){
+                tri_neighbor[j].status = 2;
+                copy_tri(&tri_convex_neighbor[m], &tri_neighbor[j]);
+                ++m;
+            }
+            if(m==m_previous+2) break;
+        }
+    }
+        
+    *start_tri = *end_tri;
+    *end_tri   = m;
+}
+
+
+int CollisionPairInserter::get_triangles_in_convex_neighbor(
+    tri* root, col_tri* tri_convex_neighbor, col_tri* tri_neighbor,
+    int num_tri, int max_num)
+{
+    int i, start_tri, end_tri;
+    copy_tri(&tri_convex_neighbor[0], root);
+    tri_convex_neighbor[0].status = 0;
+    calc_normal_vector(&tri_convex_neighbor[0]);
+        
+    start_tri = 0; end_tri = 1;
+    for(i=0; i<max_num; ++i){
+        if(start_tri < end_tri)
+            get_neighboring_triangles(tri_convex_neighbor, tri_neighbor, &start_tri, &end_tri, num_tri);
+    }
+        
+    return end_tri;
+}
+
+
+int CollisionPairInserter::get_triangles_in_convex_neighbor(
+    tri* root, col_tri* tri_convex_neighbor, col_tri* tri_neighbor, int num_tri)
+{
+    const int MAX_EXPANSION_NUM = 3;
+    return get_triangles_in_convex_neighbor(root, tri_convex_neighbor, tri_neighbor, num_tri, MAX_EXPANSION_NUM);
+}
+
+
+void CollisionPairInserter::get_triangles_in_neighbor(
+    col_tri* neighbor_tris,
+    int* n,
+    const Opcode::AABBCollisionNode* root,
+    Opcode::MeshInterface* mesh)
+{
+    if(root->IsLeaf()){
+        //三角形のデータを変換する。
+        tri t;
+        Opcode::VertexPointers vp;
+        mesh->GetTriangle(vp, (root->GetPrimitive()));
+        t.p1[0] = (double)vp.Vertex[0]->x; t.p1[1] = (double)vp.Vertex[0]->y; t.p1[2] = (double)vp.Vertex[0]->z;
+        t.p2[0] = (double)vp.Vertex[1]->x; t.p2[1] = (double)vp.Vertex[1]->y; t.p2[2] = (double)vp.Vertex[1]->z;
+        t.p3[0] = (double)vp.Vertex[2]->x; t.p3[1] = (double)vp.Vertex[2]->y; t.p3[2] = (double)vp.Vertex[2]->z;
+        copy_tri(&neighbor_tris[*n], &t);
+        *n += 1;
+    } else {
+        if(root->GetPos()) get_triangles_in_neighbor(neighbor_tris, n, root->GetPos(), mesh);
+        if(root->GetNeg()) get_triangles_in_neighbor(neighbor_tris, n, root->GetNeg(), mesh);
+    }
+}
+
+
+int CollisionPairInserter::count_num_of_triangles(const Opcode::AABBCollisionNode* root)
+{
+    int num_p = 0;
+    int num_n = 0;
+
+    if(root->IsLeaf())
+        return 1;
+    else{
+        if(root->GetPos()) num_p = count_num_of_triangles(root->GetPos());
+        if(root->GetNeg()) num_n = count_num_of_triangles(root->GetNeg());
+    }
+
+    return num_p + num_n;
+}
+
+
+void CollisionPairInserter::examine_normal_vector(
     const Opcode::AABBCollisionNode* b1,
     const Opcode::AABBCollisionNode* b2,
     int ctype,
@@ -305,23 +273,7 @@ void CPIImpl::examine_normal_vector(
 }
 
 
-int CPIImpl::count_num_of_triangles(const Opcode::AABBCollisionNode* root)
-{
-    int num_p = 0;
-    int num_n = 0;
-
-    if(root->IsLeaf())
-        return 1;
-    else{
-        if(root->GetPos()) num_p = count_num_of_triangles(root->GetPos());
-        if(root->GetNeg()) num_n = count_num_of_triangles(root->GetNeg());
-    }
-
-    return num_p + num_n;
-}
-
-
-void CPIImpl::check_separability(
+void CollisionPairInserter::check_separability(
     const Opcode::AABBCollisionNode* b1,
     const Opcode::AABBCollisionNode* root1,
     int num_tri1,
@@ -406,53 +358,7 @@ void CPIImpl::check_separability(
 }
 
 
-void CPIImpl::find_signed_distance(
-    Vector3& signed_distance,
-    const Opcode::AABBCollisionNode* b1,
-    const Opcode::AABBCollisionNode* root,
-    int num_tri,
-    int contactIndex,
-    int ctype,
-    int obj,
-    Opcode::MeshInterface* mesh
-    )
-{
-    int num;
-
-    col_tri* tri_neighbor = new col_tri[num_tri];
-    col_tri* tri_convex_neighbor = new col_tri[num_tri];
-
-    for(int i=0; i<num_tri; ++i){
-        tri_neighbor[i].status = 0;
-    }
-
-    // collect triangles in the neighborhood
-    int n = 0;
-    get_triangles_in_neighbor(tri_neighbor, &n, root, mesh);
-    //tri型に変換してから関数を呼ぶ
-    tri t;
-    Opcode::VertexPointers vp;
-    mesh->GetTriangle(vp, (b1->GetPrimitive()));
-    t.p1[0] = vp.Vertex[0]->x; t.p1[1] = vp.Vertex[0]->y; t.p1[2] = vp.Vertex[0]->z;
-    t.p2[0] = vp.Vertex[1]->x; t.p2[1] = vp.Vertex[1]->y; t.p2[2] = vp.Vertex[1]->z;
-    t.p3[0] = vp.Vertex[2]->x; t.p3[1] = vp.Vertex[2]->y; t.p3[2] = vp.Vertex[2]->z;
-  
-    // get the triangles in the convex neighbor of the root triangle and their normal vectors
-    num = get_triangles_in_convex_neighbor(&t, tri_convex_neighbor, tri_neighbor, num_tri);
-
-    // if(COLLIDE_DEBUG) printf("num of triangles in convex neighbor = %d\n", num);
-
-    // note that num = num of convex neighbor + 1
-    for(int i=0; i<num; ++i){
-        find_signed_distance(signed_distance, &tri_convex_neighbor[i], contactIndex, ctype, obj);
-    }
-
-    delete [] tri_neighbor;
-    delete [] tri_convex_neighbor;
-}
-
-
-void CPIImpl::find_signed_distance(
+void CollisionPairInserter::find_signed_distance(
     Vector3& signed_distance, col_tri* trp, int nth, int ctype, int obj)
 {
     find_signed_distance(signed_distance, trp->p1, nth, ctype, obj);
@@ -461,25 +367,25 @@ void CPIImpl::find_signed_distance(
 }
 
 
-void CPIImpl::find_signed_distance(
-    Vector3& signed_distance, Vector3& vert, int nth, int ctype, int obj)
+void CollisionPairInserter::find_signed_distance(
+    Vector3& signed_distance, const Vector3& vert, int nth, int ctype, int obj)
 {
     Vector3 vert_w;
     if(obj==1){
-        vert_w = self->CD_s1 * Vector3(self->CD_Rot1 * vert + self->CD_Trans1);
+        vert_w = CD_s1 * Vector3(CD_Rot1 * vert + CD_Trans1);
     } else {
-        vert_w = self->CD_s2 * Vector3(self->CD_Rot2 * vert + self->CD_Trans2);
+        vert_w = CD_s2 * Vector3(CD_Rot2 * vert + CD_Trans2);
     }
-
+        
     if(COLLIDE_DEBUG) printf("vertex = %f %f %f\n", vert_w[0], vert_w[1], vert_w[2]);
-
+        
     // use the first intersecting point to find the distance
-    Vector3 vec(vert_w - cdContact[nth].i_points[0]);
+    const Vector3 vec(vert_w - cdContact[nth].i_points[0]);
     //vecNormalize(cdContact[nth].n_vector);
     tvmet::alias(cdContact[nth].n_vector) = normalize(cdContact[nth].n_vector);
-
+        
     double dis0 = dot(cdContact[nth].n_vector, vec);
-
+        
 #if 0
     switch(ctype){
     case FV:
@@ -494,12 +400,12 @@ void CPIImpl::find_signed_distance(
             dis0 = - dis0;
     }
 #endif
-
+        
     if(COLLIDE_DEBUG) printf("dis0 = %f\n", dis0);
-
+        
     double dis1 = dis0;
     double dis2 = dis0;
-
+        
     switch(ctype){
     case FV:
         dis1 =   dot(cdContact[nth].m, vec);
@@ -534,169 +440,53 @@ void CPIImpl::find_signed_distance(
 }
 
 
-void CPIImpl::get_triangles_in_neighbor(
-    col_tri* neighbor_tris,
-    int* n,
+void CollisionPairInserter::find_signed_distance(
+    Vector3& signed_distance,
+    const Opcode::AABBCollisionNode* b1,
     const Opcode::AABBCollisionNode* root,
-    Opcode::MeshInterface* mesh)
-{
-    if(root->IsLeaf()){
-	//三角形のデータを変換する。
-	tri t;
-	Opcode::VertexPointers vp;
-	mesh->GetTriangle(vp, (root->GetPrimitive()));
-	t.p1[0] = (double)vp.Vertex[0]->x; t.p1[1] = (double)vp.Vertex[0]->y; t.p1[2] = (double)vp.Vertex[0]->z;
-	t.p2[0] = (double)vp.Vertex[1]->x; t.p2[1] = (double)vp.Vertex[1]->y; t.p2[2] = (double)vp.Vertex[1]->z;
-	t.p3[0] = (double)vp.Vertex[2]->x; t.p3[1] = (double)vp.Vertex[2]->y; t.p3[2] = (double)vp.Vertex[2]->z;
-        copy_tri(&neighbor_tris[*n], &t);
-        *n += 1;
-    }
-    else{
-	if(root->GetPos()) get_triangles_in_neighbor(neighbor_tris, n, root->GetPos(), mesh);
-	if(root->GetNeg()) get_triangles_in_neighbor(neighbor_tris, n, root->GetNeg(), mesh);
-    }
-}
-
-
-int CPIImpl::get_triangles_in_convex_neighbor(
-    tri* root, col_tri* tri_convex_neighbor, col_tri* tri_neighbor, int num_tri)
-{
-    int MAX_EXPANSION_NUM;
-
-    MAX_EXPANSION_NUM = 3;
-
-    return get_triangles_in_convex_neighbor(root, tri_convex_neighbor, tri_neighbor, num_tri, MAX_EXPANSION_NUM);
-}
-
-
-int CPIImpl::get_triangles_in_convex_neighbor(
-    tri* root, col_tri* tri_convex_neighbor, col_tri* tri_neighbor,
-    int num_tri, int max_num)
-{
-    int i, start_tri, end_tri;
-    copy_tri(&tri_convex_neighbor[0], root);
-    tri_convex_neighbor[0].status = 0;
-    calc_normal_vector(&tri_convex_neighbor[0]);
-
-    start_tri = 0; end_tri = 1;
-    for(i=0; i<max_num; ++i){
-        if(start_tri < end_tri)
-            get_neighboring_triangles(tri_convex_neighbor, tri_neighbor, &start_tri, &end_tri, num_tri);
-    }
-
-    return end_tri;
-}
-
-
-void CPIImpl::get_neighboring_triangles(
-    col_tri* tri_convex_neighbor, col_tri* tri_neighbor,
-    int* start_tri, int* end_tri, int num_tri)
-{
-    int i, j, m, m_previous;
-
-    m = *end_tri;
-    for(i=*start_tri; i<*end_tri; ++i){
-        m_previous = m;
-        for(j=*end_tri; j<num_tri; ++j){
-            if(tri_neighbor[j].status != 2 &&
-               is_neighboring_triangle(&tri_convex_neighbor[i], &tri_neighbor[j]) &&
-               is_convex_neighbor(&tri_convex_neighbor[i], &tri_neighbor[j])){
-                tri_neighbor[j].status = 2;
-                copy_tri(&tri_convex_neighbor[m], &tri_neighbor[j]);
-                ++m;
-            }
-            if(m==m_previous+2) break;
-        }
-    }
-  
-    *start_tri = *end_tri;
-    *end_tri   = m;
-} 
-
-
-int CPIImpl::is_neighboring_triangle(col_tri* t1, col_tri* t2)
+    int num_tri,
+    int contactIndex,
+    int ctype,
+    int obj,
+    Opcode::MeshInterface* mesh
+    )
 {
     int num;
+        
+    col_tri* tri_neighbor = new col_tri[num_tri];
+    col_tri* tri_convex_neighbor = new col_tri[num_tri];
 
-    num = 
-        identical_ver(t1->p1,t2->p1)+identical_ver(t1->p1,t2->p2)+identical_ver(t1->p1,t2->p3)+
-        identical_ver(t1->p2,t2->p1)+identical_ver(t1->p2,t2->p2)+identical_ver(t1->p2,t2->p3)+
-        identical_ver(t1->p3,t2->p1)+identical_ver(t1->p3,t2->p2)+identical_ver(t1->p3,t2->p3);
-
-    // printf("is_neighboring_triangle = %d\n", num);
-
-    if(num==2) return 1; else return 0;
-}
-
-
-int CPIImpl::is_convex_neighbor(col_tri* t1, col_tri* t2)
-{
-    const double EPS = 1.0e-12; // a small number
-
-    calc_normal_vector(t2);
-
-    // printf("normal vector1 = %f %f %f\n", t1->n[0], t1->n[1], t1->n[2]);
-    // printf("normal vector2 = %f %f %f\n", t2->n[0], t2->n[1], t2->n[2]);
-
-    Vector3 vec1(t2->p1 - t1->p1);
-    Vector3 vec2(t2->p2 - t1->p2);
-    Vector3 vec3(t2->p3 - t1->p3);
-
-    // printf("is_convex_neighbor = %f %f %f\n",innerProd(t1->n,vec1),innerProd(t1->n,vec2),innerProd(t1->n,vec3));
-
-    if(dot(t2->n, vec1) < EPS && dot(t2->n, vec2) < EPS && dot(t2->n, vec3) < EPS){
-        return 1;
-    } else {
-        return 0;
+    for(int i=0; i<num_tri; ++i){
+        tri_neighbor[i].status = 0;
     }
-}
 
+    // collect triangles in the neighborhood
+    int n = 0;
+    get_triangles_in_neighbor(tri_neighbor, &n, root, mesh);
+    //tri型に変換してから関数を呼ぶ
+    tri t;
+    Opcode::VertexPointers vp;
+    mesh->GetTriangle(vp, (b1->GetPrimitive()));
+    t.p1[0] = vp.Vertex[0]->x; t.p1[1] = vp.Vertex[0]->y; t.p1[2] = vp.Vertex[0]->z;
+    t.p2[0] = vp.Vertex[1]->x; t.p2[1] = vp.Vertex[1]->y; t.p2[2] = vp.Vertex[1]->z;
+    t.p3[0] = vp.Vertex[2]->x; t.p3[1] = vp.Vertex[2]->y; t.p3[2] = vp.Vertex[2]->z;
+  
+    // get the triangles in the convex neighbor of the root triangle and their normal vectors
+    num = get_triangles_in_convex_neighbor(&t, tri_convex_neighbor, tri_neighbor, num_tri);
 
-void CPIImpl::calc_normal_vector(col_tri* t)
-{
-    if(t->status == 0){
-        const Vector3 e1(t->p2 - t->p1);
-        const Vector3 e2(t->p3 - t->p2);
-        t->n = normalize(Vector3(cross(e1, e2)));
-        t->status = 1;
+    // if(COLLIDE_DEBUG) printf("num of triangles in convex neighbor = %d\n", num);
+
+    // note that num = num of convex neighbor + 1
+    for(int i=0; i<num; ++i){
+        find_signed_distance(signed_distance, &tri_convex_neighbor[i], contactIndex, ctype, obj);
     }
+
+    delete [] tri_neighbor;
+    delete [] tri_convex_neighbor;
 }
 
 
-int CPIImpl::identical_ver(Vector3& v1, Vector3& v2)
-{
-    int num = 0;
-    const double EPS = 1.0e-6; // 1 micro meter
-
-    if(fabs(v1[0]-v2[0]) < EPS) ++num;
-    if(fabs(v1[1]-v2[1]) < EPS) ++num;
-    if(fabs(v1[2]-v2[2]) < EPS) ++num;
-
-    return (num==3) ? 1 : 0;
-}
-
-
-void CPIImpl::copy_tri(col_tri* t1, tri* t2)
-{
-    t1->p1 = t2->p1;
-    t1->p2 = t2->p2;
-    t1->p3 = t2->p3;
-}
-
-
-void CPIImpl::copy_tri(col_tri* t1, col_tri* t2)
-{
-    t1->p1 = t2->p1;
-    t1->p2 = t2->p2;
-    t1->p3 = t2->p3;
-
-    if(t2->n[0] && t2->n[1] && t2->n[2]){
-        t1->n = t2->n;
-    }
-}
-
-
-int CPIImpl::new_point_test(int k)
+int CollisionPairInserter::new_point_test(int k)
 {
     const double eps = 1.0e-12; // 1 micro meter to judge two contact points are identical
 
@@ -710,4 +500,69 @@ int CPIImpl::new_point_test(int k)
         }
     }
     return 1;
+}
+
+
+//
+// obsolute signatures
+//
+int CollisionPairInserter::apply(
+    const Opcode::AABBCollisionNode* b1,
+    const Opcode::AABBCollisionNode* b2,
+    int id1, int id2,
+    int num_of_i_points,
+    Vector3 i_points[4],
+    Vector3& n_vector,
+    double depth,
+    Vector3& n1,
+    Vector3& m1,
+    int ctype,
+    Opcode::MeshInterface* mesh1,
+    Opcode::MeshInterface* mesh2)
+{
+    cdContact.push_back(collision_data());
+    collision_data& contact = cdContact.back();
+    
+    contact.id1 = id1;
+    contact.id2 = id2;
+    contact.depth = depth;
+    contact.num_of_i_points = num_of_i_points;
+
+    if(COLLIDE_DEBUG) printf("num_of_i_points = %d\n", num_of_i_points);
+
+    for(int i=0; i < num_of_i_points; ++i){
+        contact.i_points[i] = CD_s2 * Vector3((CD_Rot2 * i_points[i]) + CD_Trans2);
+    }
+
+    contact.n_vector = CD_Rot2 * n_vector;
+    contact.n = CD_Rot2 * n1;
+    contact.m = CD_Rot2 * m1;
+    examine_normal_vector(b1,b2,ctype, mesh1, mesh2);
+
+    // analyze_neighborhood_of_i_point(b1, b2, cdContactsCount, ctype);
+    // remove the intersecting point if depth is deeper than MAX_DEPTH meter
+    if(fabs(contact.depth) < MAX_DEPTH){
+        for(int i=0; i < num_of_i_points; ++i){
+            contact.i_point_new[i] = new_point_test(i);
+        }
+    } else {
+        for(int i=0; i < num_of_i_points; ++i){
+            contact.i_point_new[i] = 0;
+        }
+    }
+
+    return CD_OK;
+}
+
+
+int CollisionPairInserter::detectTriTriOverlap(
+    const Vector3& P1,
+    const Vector3& P2,
+    const Vector3& P3,
+    const Vector3& Q1,
+    const Vector3& Q2,
+    const Vector3& Q3,
+    collision_data* col_p)
+{
+    return tri_tri_overlap(P1, P2, P3, Q1, Q2, Q3, col_p, this);
 }
