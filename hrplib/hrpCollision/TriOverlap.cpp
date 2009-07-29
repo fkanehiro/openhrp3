@@ -12,15 +12,47 @@
 //
 
 #define HIRUKAWA_DEBUG 0
-#include "utilities.h"
-extern dmatrix33 CD_Rot2;
-extern dvector3 CD_Trans2;
-extern double CD_s2;
 
-
+#include "CollisionPairInserter.h"
+#include <boost/numeric/ublas/matrix.hpp>
+#include <math.h>
 #include <stdio.h>
 #include <iostream>
+
 using namespace std;
+using namespace boost;
+
+namespace {
+
+    typedef boost::numeric::ublas::bounded_matrix<double,3,3,boost::numeric::ublas::column_major> dmatrix33;
+    
+    inline dvector3 vecProd(const dmatrix33& mat, const dvector3& vec) {
+        return numeric::ublas::prod(mat, vec);
+    }
+
+    inline void outerProd(dvector3& ret, const dvector3& vec1, const dvector3& vec2) {
+        ret[0] = vec1[1]*vec2[2] - vec1[2]*vec2[1];
+        ret[1] = vec1[2]*vec2[0] - vec1[0]*vec2[2];
+        ret[2] = vec1[0]*vec2[1] - vec1[1]*vec2[0];
+    }
+        
+    inline double innerProd(const dvector3& vec1, const dvector3& vec2){
+        return numeric::ublas::inner_prod(vec1, vec2);
+    }
+
+    inline double vecNorm(dvector3& vec) {
+        return sqrt(numeric::ublas::inner_prod(vec, vec));
+    }
+
+    inline void vecNormalize(dvector3& vec) {
+        double Vnormalize_d = 1.0 / sqrt(numeric::ublas::inner_prod(vec, vec));
+        vec[0] *= Vnormalize_d;
+        vec[1] *= Vnormalize_d;
+        vec[2] *= Vnormalize_d;
+    }
+}
+
+
 /**********************************************************	
   separability test by the supporting plane of a triangle
    return value 
@@ -626,7 +658,8 @@ tri_tri_overlap(dvector3 &P1,
 		dvector3 &Q1,
 		dvector3 &Q2,
 		dvector3 &Q3,
-		collision_data *col_p) 
+		collision_data *col_p,
+                Opcode::CollisionPairInserter* collisionPairInserter) 
 {
   /*
      One triangle is (p1,p2,p3).  Other is (q1,q2,q3).
@@ -979,14 +1012,18 @@ tri_tri_overlap(dvector3 &P1,
 
     col_p->n = n1;
     col_p->m = m1;
+    
   if(HIRUKAWA_DEBUG){
     dvector3 p1w, p2w, p3w, q1w, q2w, q3w;
-    p1w = CD_s2 * (vecProd(CD_Rot2, P1) + CD_Trans2);
-    p2w = CD_s2 * (vecProd(CD_Rot2, P2) + CD_Trans2);
-    p3w = CD_s2 * (vecProd(CD_Rot2, P3) + CD_Trans2);
-    q1w = CD_s2 * (vecProd(CD_Rot2, Q1) + CD_Trans2);
-    q2w = CD_s2 * (vecProd(CD_Rot2, Q2) + CD_Trans2);
-    q3w = CD_s2 * (vecProd(CD_Rot2, Q3) + CD_Trans2);
+
+    Opcode::CollisionPairInserter& c = *collisionPairInserter;
+    
+    p1w = c.CD_s2 * (vecProd(c.CD_Rot2, P1) + c.CD_Trans2);
+    p2w = c.CD_s2 * (vecProd(c.CD_Rot2, P2) + c.CD_Trans2);
+    p3w = c.CD_s2 * (vecProd(c.CD_Rot2, P3) + c.CD_Trans2);
+    q1w = c.CD_s2 * (vecProd(c.CD_Rot2, Q1) + c.CD_Trans2);
+    q2w = c.CD_s2 * (vecProd(c.CD_Rot2, Q2) + c.CD_Trans2);
+    q3w = c.CD_s2 * (vecProd(c.CD_Rot2, Q3) + c.CD_Trans2);
     cout << "P1 = " << p1w[0] << " " << p1w[1] << " " << p1w[2] << endl;
     cout << "P2 = " << p2w[0] << " " << p2w[1] << " " << p2w[2] << endl;
     cout << "P3 = " << p3w[0] << " " << p3w[1] << " " << p3w[2] << endl;
@@ -995,7 +1032,7 @@ tri_tri_overlap(dvector3 &P1,
     cout << "Q3 = " << q3w[0] << " " << q3w[1] << " " << q3w[2] << endl;
 
     for(int i=0; i<col_p->num_of_i_points; i++){
-      i_pts_w[i] = CD_s2 * (vecProd(CD_Rot2, col_p->i_points[i]) + CD_Trans2);
+      i_pts_w[i] = c.CD_s2 * (vecProd(c.CD_Rot2, col_p->i_points[i]) + c.CD_Trans2);
       cout << i << "-th intersecting point = ";
       cout << i_pts_w[i][0] << " " << i_pts_w[i][1] << " " << i_pts_w[i][2] << endl;
     }
