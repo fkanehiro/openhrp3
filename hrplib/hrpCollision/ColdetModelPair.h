@@ -57,7 +57,7 @@ namespace hrp {
         ColdetModelPtr model1_;
         double tolerance_;
 
-        Opcode::CollisionPairInserter collisionPairInserter;
+        CollisionPairInserter collisionPairInserter;
 
         int boxTestsCount;
         int triTestsCount;

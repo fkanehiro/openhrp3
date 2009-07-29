@@ -20,7 +20,6 @@
 #ifndef __OPC_TREECOLLIDER_H__
 #define __OPC_TREECOLLIDER_H__
 
-class CollisionPairInserter;
 
 	//! This structure holds cached information used by the algorithm.
 	//! Two model pointers and two colliding primitives are cached. Model pointers are assigned
@@ -75,7 +74,7 @@ class CollisionPairInserter;
                 AABBTreeCollider();
 		virtual								~AABBTreeCollider();
 
-                inline void setCollisionPairInserter(CollisionPairInserter* collisionPairInserter) {
+                inline void setCollisionPairInserter(hrp::CollisionPairInserter* collisionPairInserter) {
                     this->collisionPairInserter = collisionPairInserter;
                 }
 
@@ -218,7 +217,7 @@ class CollisionPairInserter;
 		// Settings
 							bool			mFullBoxBoxTest;	//!< Perform full BV-BV tests (true) or SAT-lite tests (false)
 							bool			mFullPrimBoxTest;	//!< Perform full Primitive-BV tests (true) or SAT-lite tests (false)
-                                                        CollisionPairInserter* collisionPairInserter;
+                                                        hrp::CollisionPairInserter* collisionPairInserter;
 		// Internal methods
 
 			// Standard AABB trees

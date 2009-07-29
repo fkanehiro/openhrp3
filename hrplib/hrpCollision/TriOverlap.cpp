@@ -14,44 +14,12 @@
 #define HIRUKAWA_DEBUG 0
 
 #include "CollisionPairInserter.h"
-#include <boost/numeric/ublas/matrix.hpp>
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include <iostream>
 
 using namespace std;
-using namespace boost;
-
-namespace {
-
-    typedef boost::numeric::ublas::bounded_matrix<double,3,3,boost::numeric::ublas::column_major> dmatrix33;
-    
-    inline dvector3 vecProd(const dmatrix33& mat, const dvector3& vec) {
-        return numeric::ublas::prod(mat, vec);
-    }
-
-    inline void outerProd(dvector3& ret, const dvector3& vec1, const dvector3& vec2) {
-        ret[0] = vec1[1]*vec2[2] - vec1[2]*vec2[1];
-        ret[1] = vec1[2]*vec2[0] - vec1[0]*vec2[2];
-        ret[2] = vec1[0]*vec2[1] - vec1[1]*vec2[0];
-    }
-        
-    inline double innerProd(const dvector3& vec1, const dvector3& vec2){
-        return numeric::ublas::inner_prod(vec1, vec2);
-    }
-
-    inline double vecNorm(dvector3& vec) {
-        return sqrt(numeric::ublas::inner_prod(vec, vec));
-    }
-
-    inline void vecNormalize(dvector3& vec) {
-        double Vnormalize_d = 1.0 / sqrt(numeric::ublas::inner_prod(vec, vec));
-        vec[0] *= Vnormalize_d;
-        vec[1] *= Vnormalize_d;
-        vec[2] *= Vnormalize_d;
-    }
-}
-
+using namespace hrp;
 
 /**********************************************************	
   separability test by the supporting plane of a triangle
@@ -72,24 +40,23 @@ namespace {
 /* used in cross_test */
 #define INTERSECT  1
 
-int
-separability_test_by_face(dvector3 &nm)
+int separability_test_by_face(Vector3 &nm)
 {
 
-  if(nm[0] < 0 && nm[1]<0 && nm[2]<0 ||
-     nm[0] > 0 && nm[1]>0 && nm[2]>0){
+  if(nm[0] < 0.0 && nm[1] < 0.0 && nm[2] < 0.0 ||
+     nm[0] > 0.0 && nm[1] > 0.0 && nm[2] > 0.0){
     return NOT_INTERSECT;
   }
-  if(nm[0] < 0 && nm[1]<0 && nm[2]>0 ||
-     nm[0] > 0 && nm[1]>0 && nm[2] < 0){
+  if(nm[0] < 0.0 && nm[1] < 0.0 && nm[2] > 0.0 ||
+     nm[0] > 0.0 && nm[1] > 0.0 && nm[2] < 0.0){
     return EDGE1_NOT_INTERSECT;
   }
-  if(nm[0] < 0 && nm[1]>0 && nm[2] > 0 ||
-     nm[0] > 0 && nm[1]<0 && nm[2] < 0){
+  if(nm[0] < 0.0 && nm[1] > 0.0 && nm[2] > 0.0 ||
+     nm[0] > 0.0 && nm[1] < 0.0 && nm[2] < 0.0){
     return EDGE2_NOT_INTERSECT;
   }
-  if(nm[0] > 0 && nm[1]<0 && nm[2]>0 ||
-     nm[0] < 0 && nm[1]>0 && nm[2]<0){
+  if(nm[0] > 0.0 && nm[1] < 0.0 && nm[2] > 0.0 ||
+     nm[0] < 0.0 && nm[1] > 0.0 && nm[2] < 0.0){
     return EDGE3_NOT_INTERSECT;
   }
   return 0;
@@ -100,27 +67,25 @@ separability_test_by_face(dvector3 &nm)
    normal vector is cross product of ei*fj
 ***********************************************************/
 
-int
-triangle_inside_test(dvector3 &ef1,
-		     dvector3 &ef2,
-		     dvector3 &ef3,
-		     dvector3 &P3,
-		     dvector3 &P1,
-		     dvector3 &P2,
-		     dvector3 &Q)
+int triangle_inside_test(Vector3 &ef1,
+                         Vector3 &ef2,
+                         Vector3 &ef3,
+                         Vector3 &P3,
+                         Vector3 &P1,
+                         Vector3 &P2,
+                         Vector3 &Q)
 {	
+  double ef1P1 = dot(ef1, P1);	/*project P1 on ef1*/
+  double ef1P3 = dot(ef1, P3);	/*project P3 on ef1*/
+  double ef1Q = dot(ef1, Q);	/*project Q on ef1*/
 
-  double ef1P1 = innerProd(ef1,P1);	/*project P1 on ef1*/
-  double ef1P3 = innerProd(ef1,P3);	/*project P3 on ef1*/
-  double ef1Q = innerProd(ef1,Q);	/*project Q on ef1*/
+  double ef2P2 = dot(ef2, P2);	/*project P2 on ef2*/
+  double ef2P1 = dot(ef2, P1);	/*project P1 on ef2*/	
+  double ef2Q = dot(ef2,Q);	/*project Q on ef2*/
 
-  double ef2P2 = innerProd(ef2,P2);	/*project P2 on ef2*/
-  double ef2P1 = innerProd(ef2,P1);	/*project P1 on ef2*/	
-  double ef2Q = innerProd(ef2,Q);	/*project Q on ef2*/
-
-  double ef3P3 = innerProd(ef3,P3);	/*project P3 on ef3*/	
-  double ef3P2 = innerProd(ef3,P2);	/*project P2 on ef3*/		
-  double ef3Q = innerProd(ef3,Q);  	/*project Q on ef3*/		
+  double ef3P3 = dot(ef3,P3);	/*project P3 on ef3*/	
+  double ef3P2 = dot(ef3,P2);	/*project P2 on ef3*/		
+  double ef3Q = dot(ef3,Q);  	/*project Q on ef3*/		
 
   if((ef1P3 > ef1P1  && ef1Q > ef1P1 	||
       ef1P3 < ef1P1 &&  ef1Q < ef1P1    ) 
@@ -138,404 +103,411 @@ triangle_inside_test(dvector3 &ef1,
   }
 }
 
-void
-find_intersection_pt(dvector3 &ipt,
-		     dvector3 &x1,
-		     dvector3 &x2,
-		     double mn1, 
-		     double mn2)
+
+void find_intersection_pt(Vector3 &ipt,
+                          Vector3 &x1,
+                          Vector3 &x2,
+                          double mn1, 
+                          double mn2)
 {
-  dvector3 x;
-  
   if(mn1 == mn2) /*exit(0);*/ return;
-  
 
   if(mn1 >0 && mn2 < 0){
-    x = (-(mn2*x1) + mn1*x2)/(mn1-mn2);
-    ipt = x;
+    ipt = (-(mn2*x1) + mn1*x2)/(mn1-mn2);
   }
   else if(mn1 < 0 && mn2 > 0){
-    x = (mn2*x1 - mn1*x2)/(-mn1+mn2);
-    ipt = x;
+    ipt = (mn2*x1 - mn1*x2)/(-mn1+mn2);
   }
 }
 
-void
-find_intersection_pt(dvector3 &ipt,
-		     dvector3 &x1,
-		     dvector3 &x2,
-		     double p)
+
+void find_intersection_pt(Vector3& ipt,
+                          Vector3& x1,
+                          Vector3& x2,
+                          double p)
 {
-  ipt = (1-p) * x1 + p * x2;
+    ipt = (1-p) * x1 + p * x2;
 
 #if 0
-  cout << "v1 = " << x1[0] << ", " << x1[1] << ", " << x1[2] << endl; 
-  cout << "v2 = " << x2[0] << ", " << x2[1] << ", " << x2[2] << endl;
-  cout << "edge = " << x2[0]-x1[0] << ", " << x2[1]-x1[1] << ", "
-       << x2[2]-x1[2] << endl;
+    cout << "v1 = " << x1[0] << ", " << x1[1] << ", " << x1[2] << endl; 
+    cout << "v2 = " << x2[0] << ", " << x2[1] << ", " << x2[2] << endl;
+    cout << "edge = " << x2[0]-x1[0] << ", " << x2[1]-x1[1] << ", "
+         << x2[2]-x1[2] << endl;
 
-  cout << "common pt = " << ipt[0] << " " << ipt[1] << " " << ipt[2] << endl;
+    cout << "common pt = " << ipt[0] << " " << ipt[1] << " " << ipt[2] << endl;
 #endif
 }
 
 //
 // Calculate the depth of the intersection between two triangles
 //
-double calc_depth(dvector3 &ip1,
-		  dvector3 &ip2,
-		  dvector3 &n)
+double calc_depth(Vector3 &ip1,
+		  Vector3 &ip2,
+		  Vector3 &n)
 {
-  dvector3 vec;
-
-  // vecNormalize(n);
-  vec = ip1 - ip2;
-  if(HIRUKAWA_DEBUG) cout << "calc_depth 1 = " << innerProd(vec,n) << endl;
-  return fabs(innerProd(vec, n));
+    // vecNormalize(n);
+    if(HIRUKAWA_DEBUG) cout << "calc_depth 1 = " << dot(ip1 - ip2, n) << endl;
+    return fabs(dot(ip1 - ip2, n));
 }
 
 
-double calc_depth(dvector3 &ip,
-		  dvector3 &pt1,
-		  dvector3 &pt2,
-		  dvector3 &n)
+double calc_depth(Vector3 &ip,
+		  Vector3 &pt1,
+		  Vector3 &pt2,
+		  Vector3 &n)
 {
-  dvector3 vec;
-  double d1, d2, depth;
-
-  vec = ip - pt1; d1 = fabs(innerProd(vec,n));
-  vec = ip - pt2; d2 = fabs(innerProd(vec,n));
-
-  if(d1<d2) depth = d1; else depth = d2;
-  if(HIRUKAWA_DEBUG) cout << "calc_depth 2 = " << depth << endl;
-
-  return depth;
+    double d1 = fabs(dot(ip - pt1, n));
+    double d2 = fabs(dot(ip - pt2, n));
+    double depth = (d1 < d2) ? d1 : d2;
+    if(HIRUKAWA_DEBUG) cout << "calc_depth 2 = " << depth << endl;
+    return depth;
 } 
 
-double calc_depth(dvector3 &ip1,
-		  dvector3 &ip2,
-		  dvector3 &pt1,
-		  dvector3 &pt2,
-		  dvector3 &pt3,
-		  dvector3 &n)
+
+double calc_depth(Vector3 &ip1,
+		  Vector3 &ip2,
+		  Vector3 &pt1,
+		  Vector3 &pt2,
+		  Vector3 &pt3,
+		  Vector3 &n)
 {
-  // when a triangle penetrates another triangle at two intersection points
-  // and the separating plane is the supporting plane of the penetrated triangle
-  dvector3 vec;
-  double depth, d1, d2, d3;
-
-  // vecNormalize(n);
-
-  vec = ip1 - pt1; d1 = fabs(innerProd(vec, n));
-  vec = ip2 - pt2; d2 = fabs(innerProd(vec, n));
-  vec = ip1 - pt3; d3 = fabs(innerProd(vec, n)); // ip1 can be either ip1 or ip2
-
-  if(d1 < d2) depth = d2; else depth = d1;
-  if(d3 < depth) depth = d3;
-
-  if(HIRUKAWA_DEBUG) cout << "calc_depth 3 = " << depth << endl;
-  return depth;
+    // when a triangle penetrates another triangle at two intersection points
+    // and the separating plane is the supporting plane of the penetrated triangle
+    
+    // vecNormalize(n);
+    
+    double d1 = fabs(dot(ip1 - pt1, n));
+    double d2 = fabs(dot(ip2 - pt2, n));
+    double d3 = fabs(dot(ip1 - pt3, n)); // ip1 can be either ip1 or ip2
+    
+    double depth = (d1 < d2) ? d2 : d1;
+    if(d3 < depth){
+        depth = d3;
+    }
+    
+    if(HIRUKAWA_DEBUG) cout << "calc_depth 3 = " << depth << endl;
+    
+    return depth;
 }
 
-void find_foot(dvector3 &ip,
-	       dvector3 &pt1,
-	       dvector3 &pt2,
-	       dvector3 &f)
+
+void find_foot(Vector3 &ip,
+	       Vector3 &pt1,
+	       Vector3 &pt2,
+	       Vector3 &f)
 {
-  double u, v, w, p;
+    double u, v, w, p;
 
-  u = pt2[0] - pt1[0]; v = pt2[1] - pt1[1]; w = pt2[2] - pt1[2];
-
-  p = u * (ip[0] - pt1[0]) + v * (ip[1] - pt1[1]) + w * (ip[2] - pt1[2]);
-  p /= u * u + v * v + w * w;
-
-  f[0] = pt1[0] + u * p; f[1] = pt1[1] + v * p; f[2] = pt1[2] + w * p;
+    u = pt2[0] - pt1[0]; v = pt2[1] - pt1[1]; w = pt2[2] - pt1[2];
+    
+    p = u * (ip[0] - pt1[0]) + v * (ip[1] - pt1[1]) + w * (ip[2] - pt1[2]);
+    p /= u * u + v * v + w * w;
+    
+    f[0] = pt1[0] + u * p; f[1] = pt1[1] + v * p; f[2] = pt1[2] + w * p;
 }
 
-double calc_depth(dvector3 &ip,
-		  dvector3 &pt1,
-		  dvector3 &pt2,
-		  dvector3 &pt3,
-		  dvector3 &n)
-{
-  dvector3 f12, f23, f31, vec;
-  double d1, d2, d3, depth; // dsum
 
-  find_foot(ip,pt1,pt2,f12); find_foot(ip,pt2,pt3,f23); find_foot(ip,pt3,pt1,f31);
+double calc_depth(Vector3 &ip,
+		  Vector3 &pt1,
+		  Vector3 &pt2,
+		  Vector3 &pt3,
+		  Vector3 &n)
+{
+    Vector3 f12, f23, f31;
+    
+    find_foot(ip, pt1, pt2, f12);
+    find_foot(ip, pt2, pt3, f23);
+    find_foot(ip, pt3, pt1, f31);
+    
 #if 0
-  cout << "ip = " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
-  cout << "f12 = " << f12[0] << " " << f12[1] << " " << f12[2] << endl;
-  cout << "f23 = " << f23[0] << " " << f23[1] << " " << f23[2] << endl;
-  cout << "f31 = " << f31[0] << " " << f31[1] << " " << f31[2] << endl;
+    cout << "ip = " << ip[0] << " " << ip[1] << " " << ip[2] << endl;
+    cout << "f12 = " << f12[0] << " " << f12[1] << " " << f12[2] << endl;
+    cout << "f23 = " << f23[0] << " " << f23[1] << " " << f23[2] << endl;
+    cout << "f31 = " << f31[0] << " " << f31[1] << " " << f31[2] << endl;
 #endif
-  // fabs() is taken to cope with numerical error of find_foot()
-  vec = f12 - ip; d1 = fabs(innerProd(vec,n));
-  vec = f23 - ip; d2 = fabs(innerProd(vec,n));
-  vec = f31 - ip; d3 = fabs(innerProd(vec,n));
-
-  // cout << "d1 d2 d3 = " << d1 << " " << d2 << " " << d3 << endl;
-  // dsum = fabs(d1)+fabs(d2)+fabs(d3);
-  // if(d1<0.0) d1=dsum; if(d2<0.0) d2=dsum; if(d3<0.0) d3=dsum;
-  
-  if(d1 < d2) depth = d1; else depth = d2;
-  if(d3 < depth) depth = d3;
-
-  if(HIRUKAWA_DEBUG) cout << "calc_depth 4 = " << depth << endl;
-  return depth;
+    
+    // fabs() is taken to cope with numerical error of find_foot()
+    double d1 = fabs(dot(f12 - ip, n));
+    double d2 = fabs(dot(f23 - ip, n));
+    double d3 = fabs(dot(f31 - ip, n));
+    
+    // cout << "d1 d2 d3 = " << d1 << " " << d2 << " " << d3 << endl;
+    // dsum = fabs(d1)+fabs(d2)+fabs(d3);
+    // if(d1<0.0) d1=dsum; if(d2<0.0) d2=dsum; if(d3<0.0) d3=dsum;
+    
+    double depth = (d1 < d2) ? d1 : d2;
+    if(d3 < depth){
+        depth = d3;
+    }
+    
+    if(HIRUKAWA_DEBUG) cout << "calc_depth 4 = " << depth << endl;
+    
+    return depth;
 }
 
 
-double calc_depth2(dvector3 &ip1,
-		   dvector3 &ip2,
-		   dvector3 &pt1,
-		   dvector3 &pt2,
-		   dvector3 &pt3,
-		   dvector3 &n)
+double calc_depth2(Vector3 &ip1,
+		   Vector3 &ip2,
+		   Vector3 &pt1,
+		   Vector3 &pt2,
+		   Vector3 &pt3,
+		   Vector3 &n)
 {
   // when a triangle penetrates another triangle at two intersecting points
   // and the separating plane is the supporting plane of the penetrating triangle
 
-  double depth, depth1, depth2;
-  dvector3 nn;
+  Vector3 nn(n); // vecNormalize(nn);
 
-  nn = n; // vecNormalize(nn);
-
-  depth1 = calc_depth(ip1,pt1,pt2,pt3,nn);
-  depth2 = calc_depth(ip2,pt1,pt2,pt3,nn);
+  double depth1 = calc_depth(ip1, pt1, pt2, pt3, nn);
+  double depth2 = calc_depth(ip2, pt1, pt2, pt3, nn);
 
   // cout << "depth1 depth2 = " << depth1 << " " << depth2 << endl;
-  if(depth1 < depth2) depth = depth2; else depth = depth1;
+  double depth = (depth1 < depth2) ? depth2 : depth1;
 
   if(HIRUKAWA_DEBUG) cout << "calc_depth 5 = " << depth << endl;
+  
   return depth;
 }
 
-void calcNormal(dvector3 &vec,
-		dvector3 &v1,
-		dvector3 &v2,
-		dvector3 &v3,
+
+void calcNormal(Vector3& vec,
+		Vector3& v1,
+		Vector3& v2,
+		Vector3& v3,
 		double sgn)
 {
   // find the vector from v1 to the mid point of v2 and v3 when 0<sgn
 
+    /*
   vec = v2 + v3;
   vec = vec * 0.5;
   vec = v1 - vec;
   vecNormalize(vec);
-
   if(sgn<0) vec = -vec;
+    */
+
+    if(sgn < 0){
+        vec = -normalize(Vector3(v1 - 0.5 * (v2 + v3)));
+    } else {
+        vec =  normalize(Vector3(v1 - 0.5 * (v2 + v3)));
+    }
 }
 
-int
-find_common_perpendicular(dvector3 &p1,
-			  dvector3 &p2,
-			  dvector3 &q1,
-			  dvector3 &q2,
-			  dvector3 &ip1,
-			  dvector3 &ip2,
-			  dvector3 &n1,
-			  dvector3 &m1,
-			  dvector3 &n_vector,
-			  double *dp)
+
+int find_common_perpendicular(Vector3& p1,
+                              Vector3& p2,
+                              Vector3& q1,
+                              Vector3& q2,
+                              Vector3& ip1,
+                              Vector3& ip2,
+                              Vector3& n1,
+                              Vector3& m1,
+                              Vector3& n_vector,
+                              double* dp)
 {
-  double det, c11, c12, c21, c22, a, b, t1, t2;
-  dvector3 e, f, g; //, v1, v2;
-  double eps, vn;
+    const double eps = 1.0e-3; // threshold to consider two edges are parallel
+    const double vn = 1.0e-2;     // threshold to judge an intersecting point is near a vertex
 
-  eps = 1.0e-3; // threshold to consider two edges are parallel
-  vn = 1.0e-2;     // threshold to judge an intersecting point is near a vertex
+    Vector3 e(p2 - p1);
+    Vector3 f(q2 - q1);
 
-  e = p2 - p1; f = q2 - q1;
+    double c11 = dot(e,e);
+    double c12 = - dot(e,f);
+    double c21 = - c12;
+    double c22 = - dot(f,f);
 
-  c11 = innerProd(e,e); c12 = - innerProd(e,f);
-  c21 = - c12;      c22 = - innerProd(f,f);
+    double det = c11 * c22 - c12 * c21;
+    // cout << "det = " << det << endl;
 
-  det = c11 * c22 - c12 * c21;
-  // cout << "det = " << det << endl;
+    if(fabs(det) < eps){
+        return 0;
+    } else {
+        Vector3 g(q1 - p1);
+        double a = dot(e, g);
+        double b = dot(f, g);
+        double t1 = ( c22 * a - c12 * b) / det;
+        double t2 = (-c21 * a + c11 * b) / det;
 
-  if(fabs(det) < eps){
-    return 0;
-  }
-  else{
-    g = q1 - p1;
-    a = innerProd(e,g);
-    b = innerProd(f,g);
-    t1 = ( c22 * a - c12 * b)/det;
-    t2 = (-c21 * a + c11 * b)/det;
+        // quit if the foot of the common perpendicular is not on an edge
+        if(t1<0 || 1<t1 || t2<0 || 1<t2) return 0;
 
-    // quit if the foot of the common perpendicular is not on an edge
-    if(t1<0 || 1<t1 || t2<0 || 1<t2) return 0;
+        // when two edges are in contact near a vertex of an edge
+        // if(t1<vn || 1.0-vn<t1 || t2<vn || 1.0-vn<t2) return 0;
 
-    // when two edges are in contact near a vertex of an edge
-    // if(t1<vn || 1.0-vn<t1 || t2<vn || 1.0-vn<t2) return 0;
-
-    // find_intersection_pt(v1, p1, p2, t1);
-    // find_intersection_pt(v2, q1, q2, t2);
+        // find_intersection_pt(v1, p1, p2, t1);
+        // find_intersection_pt(v2, q1, q2, t2);
    
-    *dp = calc_depth(ip1, ip2, n_vector); 
+        *dp = calc_depth(ip1, ip2, n_vector); 
 
-    return 1;
-  }
+        return 1;
+    }
 }
     
 
 // for vertex-face contact
-int
-get_normal_vector_test(dvector3 &ip1,
-		       dvector3 &v1,
-		       dvector3 &ip2,
-		       dvector3 &v2,
-		       dvector3 &n1,
-		       dvector3 &m1)
+int get_normal_vector_test(Vector3& ip1,
+                           Vector3& v1,
+                           Vector3& ip2,
+                           Vector3& v2,
+                           Vector3& n1,
+                           Vector3& m1)
 {
-  double eps_applicability;
-
-  // ip1 and ip2 are the intersecting points
-  // v1 and v2 are the vertices of the penetrating triangle
-  // note that (v1-ip1) (v2-ip2) lies on the penetrating triangle
-
-  // eps_applicability = 0.965926; // Cos(15) threshold to consider two triangles face
-  eps_applicability = 0.5; // Cos(60) threshold to consider two triangles face
-
-  // This condition should be checked mildly because the whole sole of a foot
-  // may sink inside the floor and then no collision is detected.
-  if(eps_applicability < innerProd(n1,m1)) return 0; else return 1;
+    // ip1 and ip2 are the intersecting points
+    // v1 and v2 are the vertices of the penetrating triangle
+    // note that (v1-ip1) (v2-ip2) lies on the penetrating triangle
+    
+    // eps_applicability = 0.965926; // Cos(15) threshold to consider two triangles face
+    const double eps_applicability = 0.5; // Cos(60) threshold to consider two triangles face
+    
+    // This condition should be checked mildly because the whole sole of a foot
+    // may sink inside the floor and then no collision is detected.
+    return (eps_applicability < dot(n1, m1)) ? 0 : 1;
 }
 
 
 // for edge-edge contact
-int
-get_normal_vector_test(dvector3 &n_vector,
-		       dvector3 &ef,
-		       dvector3 &ip,
-		       dvector3 &iq,
-		       dvector3 &v1,
-		       dvector3 &v2,
-		       dvector3 &n1,
-		       dvector3 &m1,
-		       dvector3 &va1,
-		       dvector3 &va2,
-		       dvector3 &vb1,
-		       dvector3 &vb2)
+int get_normal_vector_test(Vector3& n_vector,
+                           Vector3& ef,
+                           Vector3& ip,
+                           Vector3& iq,
+                           Vector3& v1,
+                           Vector3& v2,
+                           Vector3& n1,
+                           Vector3& m1,
+                           Vector3& va1,
+                           Vector3& va2,
+                           Vector3& vb1,
+                           Vector3& vb2)
 {
-  double eps_applicability, eps_length, ea_length, eb_length, eps_theta,
-    theta1, theta2, theta3, theta4, theta12, theta34, theta;
-  dvector3 v, sv1, sv2;
-  double sv1_norm, sv2_norm;
+    // ip is the intersecting point on triangle p1p2p3
+    // iq is the intersecting point on triangle q1q2q3
+    // v1 is the vertex of p1p2p3 which is not on the intersecting edge
+    // v2 is the vertex of q1q2q3 which is not on the intersecting edge
+    // note that (v1-ip) lies on triangle p1p2p3 and (v2-iq) on q1q2q3
 
-  // ip is the intersecting point on triangle p1p2p3
-  // iq is the intersecting point on triangle q1q2q3
-  // v1 is the vertex of p1p2p3 which is not on the intersecting edge
-  // v2 is the vertex of q1q2q3 which is not on the intersecting edge
-  // note that (v1-ip) lies on triangle p1p2p3 and (v2-iq) on q1q2q3
+    const double eps_applicability = 0.0; // 1.52e-2; // threshold to consider two triangles face
+    const double eps_length = 1.0e-3; // 1mm: thereshold to consider the intersecting edge is short
+    const double eps_theta = 1.0e-1;   // threshold to consider cos(theta) is too small 
 
-  eps_applicability = 0.0; // 1.52e-2; // threshold to consider two triangles face
-  eps_length = 1.0e-3; // 1mm: thereshold to consider the intersecting edge is short
-  eps_theta = 1.0e-1;   // threshold to consider cos(theta) is too small 
-
-  // quit if two triangles does not satifsy the applicability condition
-  // i.e. two triangles do not face each other
-  if(- eps_applicability < innerProd(n1,m1)) return 0;
-
-  v = va1 - va2; ea_length = sqrt(innerProd(v,v));
-  v = vb1 - vb2; eb_length = sqrt(innerProd(v,v));
-
-  // return the normal vector of a triangle if an intersecting edge is too short
-  if(ea_length < eps_length || eb_length < eps_length){
-    // cout << "edge is too short" << endl;
-    if(ea_length < eb_length)
-      n_vector = m1;
-    else
-      n_vector = -n1;
-    return 1;
-  }
-
-  sv1 = v1 - ip; sv1_norm = vecNorm(sv1);
-  sv2 = v2 - iq; sv2_norm = vecNorm(sv2);
-
-  if(eps_length < sv1_norm && eps_length < sv2_norm){
-    // quit if two triangles do not satisfy the applicability conditions
-    if(- eps_applicability < innerProd(sv1,sv2) / (vecNorm(sv1) * vecNorm(sv2)))
-      return 0;
-  }
-
-  // now neither of two edges is not too short
-  vecNormalize(ef);
-
-  // Triangle p1p2p3
-  theta1 = innerProd(ef,n1) / vecNorm(n1);
-  if(eps_length < sv1_norm)
-    theta2 = innerProd(ef,sv1) / vecNorm(sv1);
-  else
-    theta2 = 0.0;
-
-  // triangle q1q2q3
-  theta3 = innerProd(ef,m1) / vecNorm(m1);
-  if(eps_length < sv2_norm)
-    theta4 = innerProd(ef,sv2) / vecNorm(sv2);
-  else
-    theta4 = 0.0;
-
-  if(sv1_norm < eps_length || sv2_norm < eps_length){
-    // when sv1 or sv2 is too short
-    // cout << "sv is too short" << endl;
-    if(fabs(theta1) < fabs(theta3))
-      n_vector = m1;
-    else
-      n_vector = -n1;
-    return 1;    
-  }
-
-  if(fabs(theta2) < eps_theta && fabs(theta4) < eps_theta){
-    // when two triangles are coplanar
-    // proof.
-    //  ef = (va2-va1)x(vb2-vb1) (1)
-    //  sv1 * ef = 0             (2)
-    //  sv2 * ef = 0             
-    //  substituting (1) to (2),
-    //    sv1 * (va2-va1) x (vb2-vb1) = 0
-    //    (vb2 - vb1) * sv1 x (va2 - va1) = 0
-    //  considering sv1 x (va2 - va1) = n,
-    //    (vb2 - vb1) * n = 0
-    //  in the same way
-    //    (va2 - va1) * m = 0
-    // q.e.d.
-
-    if(fabs(theta1) < fabs(theta3)){
-      n_vector = m1;
-      return 1;
+    // quit if two triangles does not satifsy the applicability condition
+    // i.e. two triangles do not face each other
+    if(- eps_applicability < dot(n1,m1)) return 0;
+    
+    double ea_length = norm2(va1 - va2);
+    double eb_length = norm2(vb1 - vb2);
+    
+    // return the normal vector of a triangle if an intersecting edge is too short
+    if(ea_length < eps_length || eb_length < eps_length){
+        // cout << "edge is too short" << endl;
+        if(ea_length < eb_length) {
+            n_vector = m1;
+        } else {
+            n_vector = -n1;
+        }
+        return 1;
     }
-    else{
-      n_vector = -n1;
-      return 1;
+
+    Vector3 sv1(v1 - ip);
+    double sv1_norm = norm2(sv1);
+    Vector3 sv2(v2 - iq);
+    double sv2_norm = norm2(sv2);
+
+    if(eps_length < sv1_norm && eps_length < sv2_norm){
+        // quit if two triangles do not satisfy the applicability conditions
+        if(- eps_applicability < dot(sv1, sv2) / (sv1_norm * sv2_norm)){
+            return 0;
+        }
     }
-  }
 
-  // return 0 if the plane which passes through ip with normal vector ef
-  // does not separate v1 and v2
-  if(-eps_applicability < theta2 * theta4) return 0;
+    // now neither of two edges is not too short
+    alias(ef) = normalize(ef);
 
-  //
-  // regular case
-  //
-  if(fabs(theta1) < fabs(theta2))
-    theta12 = theta2;
-  else
-    theta12 = -1.0 * theta1;
+    // Triangle p1p2p3
+    double theta1 = dot(ef, n1) / norm2(n1);
+    double theta2;
+    if(eps_length < sv1_norm){
+        theta2 = dot(ef, sv1) / norm2(sv1);
+    } else {
+        theta2 = 0.0;
+    }
+    
+    // triangle q1q2q3
+    double theta3 = dot(ef, m1) / norm2(m1);
+    double theta4;
+    if(eps_length < sv2_norm){
+        theta4 = dot(ef, sv2) / norm2(sv2);
+    } else {
+        theta4 = 0.0;
+    }
 
-  if(fabs(theta3) < fabs(theta4))
-    theta34 = -1.0 * theta4;
-  else
-    theta34 = theta3;
+    if(sv1_norm < eps_length || sv2_norm < eps_length){
+        // when sv1 or sv2 is too short
+        // cout << "sv is too short" << endl;
+        if(fabs(theta1) < fabs(theta3)){
+            n_vector = m1;
+        } else {
+            n_vector = -n1;
+        }
+        return 1;    
+    }
 
-  if(fabs(theta12) < fabs(theta34))
-    theta = theta34;
-  else
-    theta = theta12;
+    if(fabs(theta2) < eps_theta && fabs(theta4) < eps_theta){
+        // when two triangles are coplanar
+        // proof.
+        //  ef = (va2-va1)x(vb2-vb1) (1)
+        //  sv1 * ef = 0             (2)
+        //  sv2 * ef = 0             
+        //  substituting (1) to (2),
+        //    sv1 * (va2-va1) x (vb2-vb1) = 0
+        //    (vb2 - vb1) * sv1 x (va2 - va1) = 0
+        //  considering sv1 x (va2 - va1) = n,
+        //    (vb2 - vb1) * n = 0
+        //  in the same way
+        //    (va2 - va1) * m = 0
+        // q.e.d.
 
-  if(0 < theta)
-    n_vector = ef;
-  else
-    n_vector = -ef;
+        if(fabs(theta1) < fabs(theta3)){
+            n_vector = m1;
+            return 1;
+        } else{
+            n_vector = -n1;
+            return 1;
+        }
+    }
+
+    // return 0 if the plane which passes through ip with normal vector ef
+    // does not separate v1 and v2
+    if(-eps_applicability < theta2 * theta4) return 0;
+
+    //
+    // regular case
+    //
+    double theta12;
+    if(fabs(theta1) < fabs(theta2)){
+        theta12 = theta2;
+    } else {
+        theta12 = -1.0 * theta1;
+    }
+
+    double theta34;
+    if(fabs(theta3) < fabs(theta4)){
+        theta34 = -1.0 * theta4;
+    } else {
+        theta34 = theta3;
+    }
+
+    double theta;
+    if(fabs(theta12) < fabs(theta34)){
+        theta = theta34;
+    } else {
+        theta = theta12;
+    }
+
+    if(0 < theta){
+        n_vector = ef;
+    } else {
+        n_vector = -ef;
+    }
 
 #if 0
     cout << "va1=" << va1[0] << " " << va1[1] << " " << va1[2] << endl;
@@ -552,98 +524,105 @@ get_normal_vector_test(dvector3 &n_vector,
     cout << endl;
 #endif
 
-    if(innerProd(n_vector,sv1) < eps_applicability || - eps_applicability < innerProd(n_vector,sv2)){
-      // when the separating plane separates the outsides of the triangles
-      return 0;
+    if(dot(n_vector, sv1) < eps_applicability || - eps_applicability < dot(n_vector, sv2)){
+        // when the separating plane separates the outsides of the triangles
+        return 0;
+    } else {
+        return 1;
     }
-    else
-      return 1;
 }
 
 //
 // find the collision info when a vertex penetrates a face
 //
-int find_collision_info(dvector3 &p1,
-			dvector3 &p2,
-			dvector3 &p3,
+int find_collision_info(Vector3& p1,
+			Vector3& p2,
+			Vector3& p3,
 			double mp0,
 			double mp1,
 			double mp2,
-			dvector3 &q1,
-			dvector3 &q2,
-			dvector3 &q3,
-			dvector3 &f1,
-			dvector3 &f2,
-			dvector3 &f3,
-			dvector3 &n1,
-			dvector3 &m1,
-			dvector3 &ip3,
-			dvector3 &ip4,
-			dvector3 &ip5,
-			dvector3 &ip6,
-			collision_data *col_p, double pq)
+			Vector3& q1,
+			Vector3& q2,
+			Vector3& q3,
+			Vector3& f1,
+			Vector3& f2,
+			Vector3& f3,
+			Vector3& n1,
+			Vector3& m1,
+			Vector3& ip3,
+			Vector3& ip4,
+			Vector3& ip5,
+			Vector3& ip6,
+			collision_data* col_p, double pq)
 {
-  dvector3 ip, ip1, ip2, vec, nv;
-  double dp;
- 
-  find_intersection_pt(ip,p1,p2,mp0,mp1); ip1 = ip;
-  find_intersection_pt(ip,p3,p1,mp2,mp0); ip2 = ip;
-  if(get_normal_vector_test(ip1,p2,ip2,p3,m1,n1)){
+    Vector3 ip1;
+    find_intersection_pt(ip1, p1, p2, mp0, mp1);
+    Vector3 ip2;
+    find_intersection_pt(ip2, p3, p1, mp2, mp0);
+    
+    if(get_normal_vector_test(ip1, p2, ip2, p3, m1, n1)){
 
-    calcNormal(vec,p1,p2,p3,mp0);
-    col_p->n_vector = m1 * pq;
+        Vector3 vec;
+        calcNormal(vec, p1, p2, p3, mp0);
+        
+        col_p->n_vector = m1 * pq;
 
-    //
-    // The depth is estimated in InsertCollisionPair.cpp
-    // The following depth calculation is done only for debugging purpose
-    //
-    col_p->depth = calc_depth(ip1, ip2, p2, p3, p1, col_p->n_vector);
-    nv = -n1 * pq; dp = calc_depth2(ip1, ip2, q1, q2, q3, nv);
-    if(dp<col_p->depth) col_p->depth = dp;
+        //
+        // The depth is estimated in InsertCollisionPair.cpp
+        // The following depth calculation is done only for debugging purpose
+        //
+        col_p->depth = calc_depth(ip1, ip2, p2, p3, p1, col_p->n_vector);
+        Vector3 nv(-n1 * pq);
+        double dp = calc_depth2(ip1, ip2, q1, q2, q3, nv);
+        if(dp < col_p->depth){
+            col_p->depth = dp;
+        }
 
-    ip3 = ip1; ip4 = ip2;
-    col_p->num_of_i_points = 2;
+        ip3 = ip1; ip4 = ip2;
+        col_p->num_of_i_points = 2;
 
-    return 1;
-  }
-  else
+        return 1;
+    }
+
     return 0;
 }
+
 
 //
 // find the collision info when an edges penetrate a face each other 
 //
-int find_collision_info(dvector3 &p1,
-			dvector3 &p2,
-			dvector3 &p3,
+int find_collision_info(Vector3& p1,
+			Vector3& p2,
+			Vector3& p3,
 			double mp0,
 			double mp1,
-			dvector3 &q1,
-			dvector3 &q2,
-			dvector3 &q3,
+			Vector3& q1,
+			Vector3& q2,
+			Vector3& q3,
 			double nq0,
 			double nq1,
-			dvector3 &ef11,
-			dvector3 &n1,
-			dvector3 &m1,
-			dvector3 &ip3,
-			dvector3 &ip4,
+			Vector3& ef11,
+			Vector3& n1,
+			Vector3& m1,
+			Vector3& ip3,
+			Vector3& ip4,
 			collision_data *col_p)
 {
-  dvector3 ip, ip1, ip2;
-  double dp;
-  find_intersection_pt(ip,q1,q2,nq0,nq1); ip1 = ip;
-  find_intersection_pt(ip,p1,p2,mp0,mp1); ip2 = ip;
+    Vector3 ip1;
+    find_intersection_pt(ip1, q1, q2, nq0, nq1);
+    Vector3 ip2;
+    find_intersection_pt(ip2, p1, p2, mp0, mp1);
 
-  if(get_normal_vector_test(col_p->n_vector,ef11,ip2,ip1,p3,q3,n1,m1,p1,p2,q1,q2) &&
-     find_common_perpendicular(p1,p2,q1,q2,ip1,ip2,n1,m1,col_p->n_vector,&dp)){
+    double dp;
+    if(get_normal_vector_test(col_p->n_vector, ef11, ip2, ip1, p3, q3, n1, m1, p1, p2, q1, q2) &&
+       find_common_perpendicular(p1, p2, q1, q2, ip1, ip2, n1, m1, col_p->n_vector, &dp)){
 
-    ip3 = ip1; ip4 = ip2;
-    col_p->num_of_i_points = 2;
-    col_p->depth = dp;
-    return 1;
-  }
-  else
+        ip3 = ip1; ip4 = ip2;
+        col_p->num_of_i_points = 2;
+        col_p->depth = dp;
+        return 1;
+    }
+
     return 0;
 }
 
@@ -651,410 +630,408 @@ int find_collision_info(dvector3 &p1,
 // uses no divisions
 // works on coplanar triangles
 
-int 
-tri_tri_overlap(dvector3 &P1,
-		dvector3 &P2,
-		dvector3 &P3,
-		dvector3 &Q1,
-		dvector3 &Q2,
-		dvector3 &Q3,
-		collision_data *col_p,
-                Opcode::CollisionPairInserter* collisionPairInserter) 
+int tri_tri_overlap(Vector3& P1,
+                    Vector3& P2,
+                    Vector3& P3,
+                    Vector3& Q1,
+                    Vector3& Q2,
+                    Vector3& Q3,
+                    collision_data* col_p,
+                    CollisionPairInserter* collisionPairInserter) 
 {
-  /*
-     One triangle is (p1,p2,p3).  Other is (q1,q2,q3).
-     Edges are (e1,e2,e3) and (f1,f2,f3).
-     Normals are n1 and m1
-     Outwards are (g1,g2,g3) and (h1,h2,h3).
+    /*
+      One triangle is (p1,p2,p3).  Other is (q1,q2,q3).
+      Edges are (e1,e2,e3) and (f1,f2,f3).
+      Normals are n1 and m1
+      Outwards are (g1,g2,g3) and (h1,h2,h3).
      
-     We assume that the triangle vertices are in the same coordinate system.
+      We assume that the triangle vertices are in the same coordinate system.
 
-     First thing we do is establish a new c.s. so that p1 is at (0,0,0).
+      First thing we do is establish a new c.s. so that p1 is at (0,0,0).
 
-     */
-  dvector3 p1, p2, p3;
-  dvector3 q1, q2, q3;
-  dvector3 e1, e2, e3;
-  dvector3 f1, f2, f3;
-  // dvector3 g1, g2, g3;
-  // dvector3 h1, h2, h3;
-  dvector3 n1, m1;
-  dvector3 z;
-  dvector3 nq, mp;
+    */
+    Vector3 p1, p2, p3;
+    Vector3 q1, q2, q3;
+    Vector3 e1, e2, e3;
+    Vector3 f1, f2, f3;
+    // Vector3 g1, g2, g3;
+    // Vector3 h1, h2, h3;
+    Vector3 n1, m1;
+    Vector3 z;
+    Vector3 nq, mp;
 
-  int triP,triQ;
-  int edf1,edf2,edf3,ede1,ede2,ede3;
-  int FV, VF, EE;
+    int triP,triQ;
+    int edf1, edf2, edf3, ede1, ede2, ede3;
 
-  dvector3 ef11, ef12, ef13;
-  dvector3 ef21, ef22, ef23;
-  dvector3 ef31, ef32, ef33;
+    Vector3 ef11, ef12, ef13;
+    Vector3 ef21, ef22, ef23;
+    Vector3 ef31, ef32, ef33;
 
-  /* intersection point   R is a flag which tri P & Q correspond or not  */
-  dvector3 ip,ip3,ip4,ip5,ip6;
-  dvector3 i_pts_w[4];
+    /* intersection point   R is a flag which tri P & Q correspond or not  */
+    Vector3 ip,ip3,ip4,ip5,ip6;
+    Vector3 i_pts_w[4];
   
-  FV = 1; // face-vertex contact type
-  VF = 2; // vertex-face contact type
-  EE = 3; // edge-edge contact type
+    int FV = 1; // face-vertex contact type
+    int VF = 2; // vertex-face contact type
+    int EE = 3; // edge-edge contact type
 
-  z[0] = 0.0;  z[1] = 0.0;  z[2] = 0.0;
+    z = 0.0;
   
-  p1 = P1 - P1;
-  p2 =  P2 -  P1;
-  p3 =  P3 -  P1;
+    p1 = P1 - P1;
+    p2 =  P2 -  P1;
+    p3 =  P3 -  P1;
   
-  q1 =  Q1 -  P1;
-  q2 =  Q2 -  P1;
-  q3 =  Q3 -  P1;
+    q1 =  Q1 -  P1;
+    q2 =  Q2 -  P1;
+    q3 =  Q3 -  P1;
   
-  e1 =  p2 -  p1;
-  e2 =  p3 -  p2;
-  e3 =  p1 -  p3;
+    e1 =  p2 -  p1;
+    e2 =  p3 -  p2;
+    e3 =  p1 -  p3;
 
-  f1 =  q2 -  q1;
-  f2 =  q3 -  q2;
-  f3 =  q1 -  q3;
+    f1 =  q2 -  q1;
+    f2 =  q3 -  q2;
+    f3 =  q1 -  q3;
 
-  outerProd(n1, e1, e2);
-  outerProd(m1, f1, f2);
+    n1 = cross(e1, e2);
+    m1 = cross(f1, f2);
 
-  // now begin the series of tests
+    // now begin the series of tests
 
- /*************************************
+    /*************************************
         separability test by face
-  ************************************/
+    ************************************/
 
-  nq[0] = innerProd(n1,q1);
-  nq[1] = innerProd(n1,q2);
-  nq[2] = innerProd(n1,q3);
-  triQ = separability_test_by_face(nq);
+    nq[0] = dot(n1, q1);
+    nq[1] = dot(n1, q2);
+    nq[2] = dot(n1, q3);
+    triQ = separability_test_by_face(nq);
 
-  if(triQ == NOT_INTERSECT) return 0;
+    if(triQ == NOT_INTERSECT) return 0;
 
-  double mq = innerProd(m1,q1);
-  mp[0] = innerProd(m1,p1) - mq;
-  mp[1] = innerProd(m1,p2) - mq;
-  mp[2] = innerProd(m1,p3) - mq;
-  triP = separability_test_by_face(mp);
-  if(triP == NOT_INTERSECT) return 0;
+    double mq = dot(m1, q1);
+    mp[0] = dot(m1,p1) - mq;
+    mp[1] = dot(m1,p2) - mq;
+    mp[2] = dot(m1,p3) - mq;
+    triP = separability_test_by_face(mp);
+    if(triP == NOT_INTERSECT) return 0;
 
-  outerProd(ef11, e1, f1);
-  outerProd(ef12, e1, f2);
-  outerProd(ef13, e1, f3);
-  outerProd(ef21, e2, f1);
-  outerProd(ef22, e2, f2);
-  outerProd(ef23, e2, f3);
-  outerProd(ef31, e3, f1);
-  outerProd(ef32, e3, f2);
-  outerProd(ef33, e3, f3);
+    ef11 = cross(e1, f1);
+    ef12 = cross(e1, f2);
+    ef13 = cross(e1, f3);
+    ef21 = cross(e2, f1);
+    ef22 = cross(e2, f2);
+    ef23 = cross(e2, f3);
+    ef31 = cross(e3, f1);
+    ef32 = cross(e3, f2);
+    ef33 = cross(e3, f3);
 
-  edf1 = 0; edf2 = 0; edf3 = 0; ede1 = 0; ede2 = 0; ede3 = 0;
+    edf1 = 0; edf2 = 0; edf3 = 0; ede1 = 0; ede2 = 0; ede3 = 0;
 
-  /********************************
+    /********************************
 	 triangle inside test
-  *********************************/	
-  switch(triQ)
-    {
-    case NOT_INTERSECT:
-      return 0;
+    *********************************/	
+    switch(triQ)
+        {
+        case NOT_INTERSECT:
+            return 0;
 
-    case EDGE1_NOT_INTERSECT:    
-      edf2 = triangle_inside_test(ef12,ef22,ef32,p3,p1,p2,q2);
-      edf3 = triangle_inside_test(ef13,ef23,ef33,p3,p1,p2,q3);
-      break;
+        case EDGE1_NOT_INTERSECT:    
+            edf2 = triangle_inside_test(ef12,ef22,ef32,p3,p1,p2,q2);
+            edf3 = triangle_inside_test(ef13,ef23,ef33,p3,p1,p2,q3);
+            break;
 
-    case EDGE2_NOT_INTERSECT:	  
-      edf1 = triangle_inside_test(ef11,ef21,ef31,p3,p1,p2,q1);	
-      edf3 = triangle_inside_test(ef13,ef23,ef33,p3,p1,p2,q3);
-      break;
+        case EDGE2_NOT_INTERSECT:	  
+            edf1 = triangle_inside_test(ef11,ef21,ef31,p3,p1,p2,q1);	
+            edf3 = triangle_inside_test(ef13,ef23,ef33,p3,p1,p2,q3);
+            break;
 
-    case EDGE3_NOT_INTERSECT:	
-      edf1 = triangle_inside_test(ef11,ef21,ef31,p3,p1,p2,q1);	
-      edf2 = triangle_inside_test(ef12,ef22,ef32,p3,p1,p2,q2);
-      break;
+        case EDGE3_NOT_INTERSECT:	
+            edf1 = triangle_inside_test(ef11,ef21,ef31,p3,p1,p2,q1);	
+            edf2 = triangle_inside_test(ef12,ef22,ef32,p3,p1,p2,q2);
+            break;
+        }
+
+    int num_of_edges = edf1 + edf2 + edf3;
+    if(num_of_edges == 3){
+        //exit(1);
+        return 0;
     }
-
-  int num_of_edges = edf1 + edf2 + edf3;
-  if(num_of_edges == 3){
-    //exit(1);
-    return 0;
-  }
  
-  if(num_of_edges < 2){
-    switch(triP)
-      {
-      case EDGE1_NOT_INTERSECT:
-	ede2 = triangle_inside_test(ef21,ef22,ef23,q3,q1,q2,p2);
-	ede3 = triangle_inside_test(ef31,ef32,ef33,q3,q1,q2,p3);
-	if(ede2+ede3==2){
-	  edf1= NOT_INTERSECT;
-	  edf2= NOT_INTERSECT;
-	  edf3= NOT_INTERSECT;
-	}
-	break;
+    if(num_of_edges < 2){
+        switch(triP)
+            {
+            case EDGE1_NOT_INTERSECT:
+                ede2 = triangle_inside_test(ef21,ef22,ef23,q3,q1,q2,p2);
+                ede3 = triangle_inside_test(ef31,ef32,ef33,q3,q1,q2,p3);
+                if(ede2+ede3==2){
+                    edf1= NOT_INTERSECT;
+                    edf2= NOT_INTERSECT;
+                    edf3= NOT_INTERSECT;
+                }
+                break;
 	
-      case EDGE2_NOT_INTERSECT:
-	ede1 = triangle_inside_test(ef11,ef12,ef13,q3,q1,q2,p1);
-	ede3 = triangle_inside_test(ef31,ef32,ef33,q3,q1,q2,p3);
-	if(ede1+ede3==2){
-	  edf1= NOT_INTERSECT;
-	  edf2= NOT_INTERSECT;
-	  edf3= NOT_INTERSECT;
-	}
-	break;    
+            case EDGE2_NOT_INTERSECT:
+                ede1 = triangle_inside_test(ef11,ef12,ef13,q3,q1,q2,p1);
+                ede3 = triangle_inside_test(ef31,ef32,ef33,q3,q1,q2,p3);
+                if(ede1+ede3==2){
+                    edf1= NOT_INTERSECT;
+                    edf2= NOT_INTERSECT;
+                    edf3= NOT_INTERSECT;
+                }
+                break;    
 	
-      case EDGE3_NOT_INTERSECT:
-	ede1 = triangle_inside_test(ef11,ef12,ef13,q3,q1,q2,p1);
-	ede2 = triangle_inside_test(ef21,ef22,ef23,q3,q1,q2,p2);
-	if(ede1+ede2 == 2){
-	  edf1= NOT_INTERSECT;
-	  edf2= NOT_INTERSECT;
-	  edf3= NOT_INTERSECT;
-	}
-	break;
-      }
-    if(num_of_edges == 0 && ede1+ede2+ede3 == 3){
-      //exit(1);
-      return 0;
+            case EDGE3_NOT_INTERSECT:
+                ede1 = triangle_inside_test(ef11,ef12,ef13,q3,q1,q2,p1);
+                ede2 = triangle_inside_test(ef21,ef22,ef23,q3,q1,q2,p2);
+                if(ede1+ede2 == 2){
+                    edf1= NOT_INTERSECT;
+                    edf2= NOT_INTERSECT;
+                    edf3= NOT_INTERSECT;
+                }
+                break;
+            }
+        if(num_of_edges == 0 && ede1+ede2+ede3 == 3){
+            //exit(1);
+            return 0;
+        }
     }
-  }
   
-  int num = edf1+edf2+edf3+ede1+ede2+ede3;
-  if(num == 0){
-    // cout << "no edge intersect" << endl;
-    return 0;
-  }
-  else if(num > 2){
-    printf("err of edge detection....");
-    //exit(1);
-    return 0;
-  }
+    int num = edf1+edf2+edf3+ede1+ede2+ede3;
+    if(num == 0){
+        // cout << "no edge intersect" << endl;
+        return 0;
+    }
+    else if(num > 2){
+        printf("err of edge detection....");
+        //exit(1);
+        return 0;
+    }
 
-  vecNormalize(n1);
-  vecNormalize(m1);
+    alias(n1) = normalize(n1);
+    alias(m1) = normalize(m1);
 
-  /*********************************
+    /*********************************
     find intersection points
     **********************************/
-  if(num==1){
-    if(edf1==INTERSECT){
-      find_intersection_pt(ip,q1,q2,nq[0],nq[1]);
-      ip3 = ip;
-      col_p->n_vector = -n1;
-      col_p->depth = 0.0;
-      col_p->c_type = FV;
+    if(num==1){
+        if(edf1==INTERSECT){
+            find_intersection_pt(ip,q1,q2,nq[0],nq[1]);
+            ip3 = ip;
+            col_p->n_vector = -n1;
+            col_p->depth = 0.0;
+            col_p->c_type = FV;
+        }
+        else if(edf2==INTERSECT){
+            find_intersection_pt(ip,q2,q3,nq[1],nq[2]);
+            ip3 = ip;
+            col_p->n_vector = -n1;
+            col_p->depth = 0.0;
+            col_p->c_type = FV;
+        }
+        else if(edf3==INTERSECT){
+            find_intersection_pt(ip,q3,q1,nq[2],nq[0]);
+            ip3 = ip;
+            col_p->n_vector = -n1;
+            col_p->depth = 0.0;
+            col_p->c_type = FV;
+        }
+        else if(ede1==INTERSECT){
+            find_intersection_pt(ip,p1,p2,mp[0],mp[1]);
+            ip3 =  ip;
+            col_p->n_vector = m1;
+            col_p->depth = 0.0;
+            col_p->c_type = VF;
+        }
+        else if(ede2==INTERSECT){
+            find_intersection_pt(ip,p2,p3,mp[1],mp[2]);
+            ip3 =  ip;
+            col_p->n_vector = m1;
+            col_p->depth = 0.0;
+            col_p->c_type = VF;
+        }
+        else if(ede3==INTERSECT){
+            find_intersection_pt(ip,p3,p1,mp[2],mp[0]);
+            ip3 =  ip;
+            col_p->n_vector = m1;
+            col_p->depth = 0.0;
+            col_p->c_type = VF;
+        }
+        col_p->num_of_i_points = 1;
     }
-    else if(edf2==INTERSECT){
-      find_intersection_pt(ip,q2,q3,nq[1],nq[2]);
-      ip3 = ip;
-      col_p->n_vector = -n1;
-      col_p->depth = 0.0;
-      col_p->c_type = FV;
-    }
-    else if(edf3==INTERSECT){
-      find_intersection_pt(ip,q3,q1,nq[2],nq[0]);
-      ip3 = ip;
-      col_p->n_vector = -n1;
-      col_p->depth = 0.0;
-      col_p->c_type = FV;
-    }
-    else if(ede1==INTERSECT){
-      find_intersection_pt(ip,p1,p2,mp[0],mp[1]);
-      ip3 =  ip;
-      col_p->n_vector = m1;
-      col_p->depth = 0.0;
-      col_p->c_type = VF;
-    }
-    else if(ede2==INTERSECT){
-      find_intersection_pt(ip,p2,p3,mp[1],mp[2]);
-      ip3 =  ip;
-      col_p->n_vector = m1;
-      col_p->depth = 0.0;
-      col_p->c_type = VF;
-    }
-    else if(ede3==INTERSECT){
-      find_intersection_pt(ip,p3,p1,mp[2],mp[0]);
-      ip3 =  ip;
-      col_p->n_vector = m1;
-      col_p->depth = 0.0;
-      col_p->c_type = VF;
-    }
-    col_p->num_of_i_points = 1;
-  }
-  else if(num==2)
-    {
-      if(edf1==INTERSECT && edf2==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "f1 f2" << endl;
-	col_p->c_type = FV;
-	if(!find_collision_info(q2,q1,q3,nq[1],nq[0],nq[2],p1,p2,p3,e1,e2,e3,
-				m1,n1,ip3,ip4,ip5,ip6,col_p,-1.0))
-	  return 0;
-      }
-      else if(edf1==INTERSECT && edf3==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "f1 f3" << endl;
-	col_p->c_type = FV;
-	if(!find_collision_info(q1,q2,q3,nq[0],nq[1],nq[2],p1,p2,p3,e1,e2,e3,
-				m1,n1,ip3,ip4,ip5,ip6,col_p,-1.0))
-	  return 0;
-      }
-      else if(ede1==INTERSECT && edf1==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e1 f1" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q1,q2,q3,nq[0],nq[1],ef11,
-				n1,m1,ip3,ip4,col_p))
-	  return 0;
-      }
-      else if(ede2==INTERSECT && edf1==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e2 f1" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q1,q2,q3,nq[0],nq[1],ef21,
-                                n1,m1,ip3,ip4,col_p))
-          return 0;
-      }
-      else if(ede3==INTERSECT && edf1==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e3 f1" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q1,q2,q3,nq[0],nq[1],ef31,
-				n1,m1,ip3,ip4,col_p))
-	  return 0;
-      }
-      else if(edf2==INTERSECT && edf3==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "f2 f3" << endl;
-	col_p->c_type = FV;
-        if(!find_collision_info(q3,q2,q1,nq[2],nq[1],nq[0],p1,p2,p3,e1,e2,e3,
-                                m1,n1,ip3,ip4,ip5,ip6,col_p,-1.0))
-          return 0;
-      }
-      else if(ede1==INTERSECT && edf2==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e1 f2" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q2,q3,q1,nq[1],nq[2],ef12,
-				n1,m1,ip3,ip4,col_p))
-	  return 0;
-      }
-      else if(ede2==INTERSECT && edf2==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e2 f2" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q2,q3,q1,nq[1],nq[2],ef22,
-				n1,m1,ip3,ip4,col_p))
-	  return 0;
-      }
-      else if(ede3==INTERSECT && edf2==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e3 f2" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q2,q3,q1,nq[1],nq[2],ef32,
-				n1,m1,ip3,ip4,col_p))
-	  return 0;
-      }
-      else if(ede1==INTERSECT && edf3==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e1 f3" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q3,q1,q2,nq[2],nq[0],ef13,
-				n1,m1,ip3,ip4,col_p))
-	  return 0;
-      }
-      else if(ede2==INTERSECT && edf3==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e2 f3" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q3,q1,q2,nq[2],nq[0],ef23,
-				n1,m1,ip3,ip4,col_p))
-	  return 0;
-      }
-      else if(ede3==INTERSECT && edf3==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e3 f3" << endl;
-	col_p->c_type = EE;
-	if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q3,q1,q2,nq[2],nq[0],ef33,
-				n1,m1,ip3,ip4,col_p))
-	  return 0;
-      }
-      else if(ede1==INTERSECT && ede2==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e1 e2" << endl;
-	col_p->c_type = VF;
-        if(!find_collision_info(p2,p1,p3,mp[1],mp[0],mp[2],q1,q2,q3,f1,f2,f3,
-                                n1,m1,ip3,ip4,ip5,ip6,col_p,1.0))
-          return 0;
-      }
-      else if(ede1==INTERSECT && ede3==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e1 e3" << endl;
-	col_p->c_type = VF;
-	if(!find_collision_info(p1,p2,p3,mp[0],mp[1],mp[2],q1,q2,q3,f1,f2,f3,
-                                n1,m1,ip3,ip4,ip5,ip6,col_p,1.0))
-          return 0;
-      }
-      else if(ede2==INTERSECT && ede3==INTERSECT){
-	if(HIRUKAWA_DEBUG) cout << "e2 e3" << endl;
-	col_p->c_type = VF;
-	if(!find_collision_info(p3,p2,p1,mp[2],mp[1],mp[0],q1,q2,q3,f1,f2,f3,
-                                n1,m1,ip3,ip4,ip5,ip6,col_p,1.0))
-          return 0;
-      }
-    }    
+    else if(num==2)
+        {
+            if(edf1==INTERSECT && edf2==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "f1 f2" << endl;
+                col_p->c_type = FV;
+                if(!find_collision_info(q2,q1,q3,nq[1],nq[0],nq[2],p1,p2,p3,e1,e2,e3,
+                                        m1,n1,ip3,ip4,ip5,ip6,col_p,-1.0))
+                    return 0;
+            }
+            else if(edf1==INTERSECT && edf3==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "f1 f3" << endl;
+                col_p->c_type = FV;
+                if(!find_collision_info(q1,q2,q3,nq[0],nq[1],nq[2],p1,p2,p3,e1,e2,e3,
+                                        m1,n1,ip3,ip4,ip5,ip6,col_p,-1.0))
+                    return 0;
+            }
+            else if(ede1==INTERSECT && edf1==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e1 f1" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q1,q2,q3,nq[0],nq[1],ef11,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(ede2==INTERSECT && edf1==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e2 f1" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q1,q2,q3,nq[0],nq[1],ef21,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(ede3==INTERSECT && edf1==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e3 f1" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q1,q2,q3,nq[0],nq[1],ef31,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(edf2==INTERSECT && edf3==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "f2 f3" << endl;
+                col_p->c_type = FV;
+                if(!find_collision_info(q3,q2,q1,nq[2],nq[1],nq[0],p1,p2,p3,e1,e2,e3,
+                                        m1,n1,ip3,ip4,ip5,ip6,col_p,-1.0))
+                    return 0;
+            }
+            else if(ede1==INTERSECT && edf2==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e1 f2" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q2,q3,q1,nq[1],nq[2],ef12,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(ede2==INTERSECT && edf2==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e2 f2" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q2,q3,q1,nq[1],nq[2],ef22,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(ede3==INTERSECT && edf2==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e3 f2" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q2,q3,q1,nq[1],nq[2],ef32,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(ede1==INTERSECT && edf3==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e1 f3" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q3,q1,q2,nq[2],nq[0],ef13,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(ede2==INTERSECT && edf3==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e2 f3" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q3,q1,q2,nq[2],nq[0],ef23,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(ede3==INTERSECT && edf3==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e3 f3" << endl;
+                col_p->c_type = EE;
+                if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q3,q1,q2,nq[2],nq[0],ef33,
+                                        n1,m1,ip3,ip4,col_p))
+                    return 0;
+            }
+            else if(ede1==INTERSECT && ede2==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e1 e2" << endl;
+                col_p->c_type = VF;
+                if(!find_collision_info(p2,p1,p3,mp[1],mp[0],mp[2],q1,q2,q3,f1,f2,f3,
+                                        n1,m1,ip3,ip4,ip5,ip6,col_p,1.0))
+                    return 0;
+            }
+            else if(ede1==INTERSECT && ede3==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e1 e3" << endl;
+                col_p->c_type = VF;
+                if(!find_collision_info(p1,p2,p3,mp[0],mp[1],mp[2],q1,q2,q3,f1,f2,f3,
+                                        n1,m1,ip3,ip4,ip5,ip6,col_p,1.0))
+                    return 0;
+            }
+            else if(ede2==INTERSECT && ede3==INTERSECT){
+                if(HIRUKAWA_DEBUG) cout << "e2 e3" << endl;
+                col_p->c_type = VF;
+                if(!find_collision_info(p3,p2,p1,mp[2],mp[1],mp[0],q1,q2,q3,f1,f2,f3,
+                                        n1,m1,ip3,ip4,ip5,ip6,col_p,1.0))
+                    return 0;
+            }
+        }    
 
-  if(col_p->num_of_i_points == 1){
-      col_p->i_points[0] = ip3 + P1;
-  }
-  else if(col_p->num_of_i_points == 2){
-      col_p->i_points[0] = ip3 + P1;
-      col_p->i_points[1] = ip4 + P1;
-  }
-  else if(col_p->num_of_i_points == 3){
-      col_p->i_points[0] = ip3 + P1;
-      col_p->i_points[1] = ip4 + P1;
-      col_p->i_points[2] = ip5 + P1;
-  }
-  else if(col_p->num_of_i_points == 4){
-      col_p->i_points[0] = ip3 + P1;
-      col_p->i_points[1] = ip4 + P1;
-      col_p->i_points[2] = ip5 + P1;
-      col_p->i_points[3] = ip5 + P1;
-  }
+    if(col_p->num_of_i_points == 1){
+        col_p->i_points[0] = ip3 + P1;
+    }
+    else if(col_p->num_of_i_points == 2){
+        col_p->i_points[0] = ip3 + P1;
+        col_p->i_points[1] = ip4 + P1;
+    }
+    else if(col_p->num_of_i_points == 3){
+        col_p->i_points[0] = ip3 + P1;
+        col_p->i_points[1] = ip4 + P1;
+        col_p->i_points[2] = ip5 + P1;
+    }
+    else if(col_p->num_of_i_points == 4){
+        col_p->i_points[0] = ip3 + P1;
+        col_p->i_points[1] = ip4 + P1;
+        col_p->i_points[2] = ip5 + P1;
+        col_p->i_points[3] = ip5 + P1;
+    }
 
     col_p->n = n1;
     col_p->m = m1;
     
-  if(HIRUKAWA_DEBUG){
-    dvector3 p1w, p2w, p3w, q1w, q2w, q3w;
+    if(HIRUKAWA_DEBUG){
 
-    Opcode::CollisionPairInserter& c = *collisionPairInserter;
+        CollisionPairInserter& c = *collisionPairInserter;
     
-    p1w = c.CD_s2 * (vecProd(c.CD_Rot2, P1) + c.CD_Trans2);
-    p2w = c.CD_s2 * (vecProd(c.CD_Rot2, P2) + c.CD_Trans2);
-    p3w = c.CD_s2 * (vecProd(c.CD_Rot2, P3) + c.CD_Trans2);
-    q1w = c.CD_s2 * (vecProd(c.CD_Rot2, Q1) + c.CD_Trans2);
-    q2w = c.CD_s2 * (vecProd(c.CD_Rot2, Q2) + c.CD_Trans2);
-    q3w = c.CD_s2 * (vecProd(c.CD_Rot2, Q3) + c.CD_Trans2);
-    cout << "P1 = " << p1w[0] << " " << p1w[1] << " " << p1w[2] << endl;
-    cout << "P2 = " << p2w[0] << " " << p2w[1] << " " << p2w[2] << endl;
-    cout << "P3 = " << p3w[0] << " " << p3w[1] << " " << p3w[2] << endl;
-    cout << "Q1 = " << q1w[0] << " " << q1w[1] << " " << q1w[2] << endl;
-    cout << "Q2 = " << q2w[0] << " " << q2w[1] << " " << q2w[2] << endl;
-    cout << "Q3 = " << q3w[0] << " " << q3w[1] << " " << q3w[2] << endl;
+        Vector3 p1w(c.CD_s2 * (c.CD_Rot2 * P1 + c.CD_Trans2));
+        Vector3 p2w(c.CD_s2 * (c.CD_Rot2 * P2 + c.CD_Trans2));
+        Vector3 p3w(c.CD_s2 * (c.CD_Rot2 * P3 + c.CD_Trans2));
+        Vector3 q1w(c.CD_s2 * (c.CD_Rot2 * Q1 + c.CD_Trans2));
+        Vector3 q2w(c.CD_s2 * (c.CD_Rot2 * Q2 + c.CD_Trans2));
+        Vector3 q3w(c.CD_s2 * (c.CD_Rot2 * Q3 + c.CD_Trans2));
+        cout << "P1 = " << p1w[0] << " " << p1w[1] << " " << p1w[2] << endl;
+        cout << "P2 = " << p2w[0] << " " << p2w[1] << " " << p2w[2] << endl;
+        cout << "P3 = " << p3w[0] << " " << p3w[1] << " " << p3w[2] << endl;
+        cout << "Q1 = " << q1w[0] << " " << q1w[1] << " " << q1w[2] << endl;
+        cout << "Q2 = " << q2w[0] << " " << q2w[1] << " " << q2w[2] << endl;
+        cout << "Q3 = " << q3w[0] << " " << q3w[1] << " " << q3w[2] << endl;
 
-    for(int i=0; i<col_p->num_of_i_points; i++){
-      i_pts_w[i] = c.CD_s2 * (vecProd(c.CD_Rot2, col_p->i_points[i]) + c.CD_Trans2);
-      cout << i << "-th intersecting point = ";
-      cout << i_pts_w[i][0] << " " << i_pts_w[i][1] << " " << i_pts_w[i][2] << endl;
+        for(int i=0; i<col_p->num_of_i_points; i++){
+            i_pts_w[i] = c.CD_s2 * ((c.CD_Rot2 * col_p->i_points[i]) + c.CD_Trans2);
+            cout << i << "-th intersecting point = ";
+            cout << i_pts_w[i][0] << " " << i_pts_w[i][1] << " " << i_pts_w[i][2] << endl;
+        }
+
+        cout << "n1 = " << n1[0] << " " << n1[1] << " " << n1[2] << endl;
+        cout << "m1 = " << m1[0] << " " << m1[1] << " " << m1[2] << endl;
+        cout << "mp[0] mp[1] mp[2] = " << mp[0] << " " << mp[1] << " " << mp[2] << endl;
+        cout << "nq[0] nq[1] nq[2] = " << nq[0] << " " << nq[1] << " " << nq[2] << endl;
+        cout << "n_vector = " << col_p->n_vector[0] << " " << col_p->n_vector[1]
+             << " " << col_p->n_vector[2] << endl;
+        cout << "depth = " << col_p->depth << endl << endl;;
+
     }
 
-    cout << "n1 = " << n1[0] << " " << n1[1] << " " << n1[2] << endl;
-    cout << "m1 = " << m1[0] << " " << m1[1] << " " << m1[2] << endl;
-    cout << "mp[0] mp[1] mp[2] = " << mp[0] << " " << mp[1] << " " << mp[2] << endl;
-    cout << "nq[0] nq[1] nq[2] = " << nq[0] << " " << nq[1] << " " << nq[2] << endl;
-    cout << "n_vector = " << col_p->n_vector[0] << " " << col_p->n_vector[1]
-	 << " " << col_p->n_vector[2] << endl;
-    cout << "depth = " << col_p->depth << endl << endl;;
-
-  }
-
 #if TRACE1
-  printf("intersect point...in tri_contact..\n");
-  printf("    ip1x = %f ip1y = %f ip1z = %f\n    ip2x = %f ip2y = %f ip2z = %f\n", col_p->i_points[0][0],col_p->i_points[0][1],col_p->i_points[0][2], col_p->i_points[1][0],col_p->i_points[1][1],col_p->i_points[1][2]);
+    printf("intersect point...in tri_contact..\n");
+    printf("    ip1x = %f ip1y = %f ip1z = %f\n    ip2x = %f ip2y = %f ip2z = %f\n",
+           col_p->i_points[0][0],col_p->i_points[0][1],col_p->i_points[0][2],
+           col_p->i_points[1][0],col_p->i_points[1][1],col_p->i_points[1][2]);
 
-  printf("normal vector....it tri_conctact..\n");
-  printf("N[0] = %f,N[1] = %f,N[2] = %f\n",col_p->n_vector[0],col_p->n_vector[1],col_p->n_vector[2]);
+    printf("normal vector....it tri_conctact..\n");
+    printf("N[0] = %f,N[1] = %f,N[2] = %f\n",col_p->n_vector[0],col_p->n_vector[1],col_p->n_vector[2]);
 #endif
 
     return 1;
 }
-

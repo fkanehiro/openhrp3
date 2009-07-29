@@ -74,6 +74,10 @@
 	#include "OPC_IceHook.h"
 //#include<iostream>
 
+namespace hrp {
+    class CollisionPairInserter;
+}
+
 	namespace Opcode
 	{
 		// Bulk-of-the-work
