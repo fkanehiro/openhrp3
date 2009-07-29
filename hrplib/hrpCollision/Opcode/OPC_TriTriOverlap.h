@@ -185,12 +185,12 @@ inline_ BOOL AABBTreeCollider::TriTriOverlap(const Point& V0, const Point& V1, c
 	// Modified by S-cubed, Inc.
 	// Detect collisions by using TriOverlap.cpp instead of the collision detection by OPCODE
 
-	collision_data c_pair;
-	dvector3 i0, i1, i2;
-	dvector3 p0, p1, p2;
+        hrp::collision_data c_pair;
+        hrp::Vector3 i0, i1, i2;
+	hrp::Vector3 p0, p1, p2;
 
 	// Convert coordinates to match the interface of tri_tri_overlap()@TriOerlap.cpp
-	// Ice/IcePointer => dvector3
+	// Ice/IcePointer => Vector3
 
 	i0[0] = V0.x;        i0[1] = V0.y;        i0[2] = V0.z;
 	i1[0] = V1.x;        i1[1] = V1.y;        i1[2] = V1.z;

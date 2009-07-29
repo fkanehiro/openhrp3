@@ -13,15 +13,15 @@
 
 #include "CollisionData.h"
 #include <vector>
-#include <boost/numeric/ublas/matrix.hpp>
 
 namespace Opcode {
 
-    typedef boost::numeric::ublas::bounded_matrix
-        <double,3,3,boost::numeric::ublas::column_major> dmatrix33;
-
     class AABBCollisionNode;
     class MeshInterface;
+}
+    
+
+namespace hrp {
 
     class CPIImpl;
 
@@ -33,35 +33,35 @@ namespace Opcode {
 
         void clear();
 
-        int detectTriTriOverlap(dvector3& P1,
-                                dvector3& P2,
-                                dvector3& P3,
-                                dvector3& Q1,
-                                dvector3& Q2,
-                                dvector3& Q3,
+        int detectTriTriOverlap(Vector3& P1,
+                                Vector3& P2,
+                                Vector3& P3,
+                                Vector3& Q1,
+                                Vector3& Q2,
+                                Vector3& Q3,
                                 collision_data* col_p);
 
         int apply(const Opcode::AABBCollisionNode* b1,
                   const Opcode::AABBCollisionNode* b2,
                   int id1, int id2,
                   int num_of_i_points,
-                  dvector3 i_points[4],
-                  dvector3& n_vector,
+                  Vector3 i_points[4],
+                  Vector3& n_vector,
                   double depth,
-                  dvector3& n1,
-                  dvector3& m1,
+                  Vector3& n1,
+                  Vector3& m1,
                   int ctype,
                   Opcode::MeshInterface* mesh1,
                   Opcode::MeshInterface* mesh2);
 
         std::vector<collision_data>& collisions();
 
-        dmatrix33 CD_Rot1;
-        dvector3 CD_Trans1;
+        Matrix33 CD_Rot1;
+        Vector3 CD_Trans1;
         double CD_s1;
 
-        dmatrix33 CD_Rot2;
-        dvector3 CD_Trans2;
+        Matrix33 CD_Rot2;
+        Vector3 CD_Trans2;
         double CD_s2;
 
       private:
