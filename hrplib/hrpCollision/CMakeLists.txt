@@ -12,7 +12,6 @@
 set(sources
   ColdetModel.cpp
   ColdetModelPair.cpp
-  #  InsertCollisionPair.cpp
   CollisionPairInserter.cpp
   TriOverlap.cpp
   SSVTreeCollider.cpp

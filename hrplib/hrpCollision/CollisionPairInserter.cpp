@@ -26,7 +26,8 @@ int tri_tri_overlap(dvector3 &P1,
                     dvector3 &Q1,
                     dvector3 &Q2,
                     dvector3 &Q3,
-                    collision_data *col_p);
+                    collision_data *col_p,
+                    Opcode::CollisionPairInserter* collisionPairInserter);
 
 namespace {
     const bool COLLIDE_DEBUG = false;
@@ -209,7 +210,7 @@ int CollisionPairInserter::detectTriTriOverlap(dvector3& P1,
                                 dvector3& Q3,
                                 collision_data* col_p)
 {
-    return tri_tri_overlap(P1, P2, P3, Q1, Q2, Q3, col_p);
+    return tri_tri_overlap(P1, P2, P3, Q1, Q2, Q3, col_p, this);
 }
     
 
