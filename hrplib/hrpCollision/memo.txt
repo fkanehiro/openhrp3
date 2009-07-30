@@ -1,4 +1,25 @@
 
+TODO:
+
+
+ColdetModelPair に vector<collision_data> 相当のデータを持たせる。
+
+ColdetModelPairの実装と CollisionPairInserter を統合する。
+
+collision_data のリファクタリング。
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+
 *** Global変数を取り除く法
 
 - InsertCollisionPair の内容をクラス化する (CollisionPairInserter ?)
