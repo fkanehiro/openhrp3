@@ -169,8 +169,8 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
     links_[index] = linkInfo;
     try	{
         Matrix44 unit4d(tvmet::identity<Matrix44>());
-        traverseShapeNodes(jointNodeSet->segmentNode.get(), unit4d, links_[index].shapeIndices, links_[index].inlinedShapeTransformMatrices, &topUrl());
-
+        if(jointNodeSet->segmentNode)
+            traverseShapeNodes(jointNodeSet->segmentNode.get(), unit4d, links_[index].shapeIndices, links_[index].inlinedShapeTransformMatrices, &topUrl());
         setJointParameters(index, jointNodeSet->jointNode);
         setSegmentParameters(index, jointNodeSet->segmentNode);
         setSensors(index, jointNodeSet);
