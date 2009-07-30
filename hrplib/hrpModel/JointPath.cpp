@@ -299,4 +299,5 @@ std::ostream& operator<<(std::ostream& os, JointPath& path)
         }
     }
     os << std::endl;
+    return os;
 }
