@@ -41,9 +41,10 @@ set(sources
 
 set(headers
   config.h
+  CollisionData.h
   ColdetModel.h
   ColdetModelPair.h
-  CollisionData.h
+  CollisionPairInserter.h
   )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Opcode)
