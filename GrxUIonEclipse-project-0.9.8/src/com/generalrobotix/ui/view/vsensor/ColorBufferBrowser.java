@@ -22,7 +22,6 @@ import javax.swing.JFrame;
 
 // Sun
 import com.generalrobotix.ui.view.Grx3DView;
-import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
  * Color buffer browser

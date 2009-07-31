@@ -14,7 +14,6 @@ package com.generalrobotix.ui.item;
 import java.util.List;
 import java.util.Vector;
 
-import javax.media.j3d.Appearance;
 import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Switch;
@@ -27,13 +26,11 @@ import jp.go.aist.hrp.simulator.ModelLoader;
 import jp.go.aist.hrp.simulator.ModelLoaderHelper;
 import jp.go.aist.hrp.simulator.SceneInfo;
 import jp.go.aist.hrp.simulator.ShapePrimitiveType;
-import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
-import com.sun.j3d.utils.geometry.Box;
 
 /**
  * @brief item which have a transformation

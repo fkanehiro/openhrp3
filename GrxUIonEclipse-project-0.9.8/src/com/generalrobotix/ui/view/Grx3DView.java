@@ -64,8 +64,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 import jp.go.aist.hrp.simulator.*;
-import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.IntegrateMethod;
-import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.SensorOption;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;

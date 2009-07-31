@@ -42,7 +42,6 @@ import org.eclipse.ui.PlatformUI;
 
 import jp.go.aist.hrp.simulator.*;
 
-import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.GrxTimeSeriesItem;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
@@ -51,7 +50,6 @@ import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.view.graph.*;
 import com.generalrobotix.ui.util.GrxCopyUtil;
 import com.generalrobotix.ui.view.GrxLoggerView;
-import com.generalrobotix.ui.view.GrxOpenHRPView;
 
 @SuppressWarnings("serial")
 public class GrxWorldStateItem extends GrxTimeSeriesItem {
@@ -215,6 +213,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         });
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void registerCharacter(String cname, BodyInfo binfo) {
 		ArrayList<String> logList = new ArrayList<String>();
 		logList.add("time");

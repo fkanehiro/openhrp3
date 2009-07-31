@@ -21,8 +21,6 @@ import java.util.*;
 import java.io.*;
 import java.util.zip.*;
 
-import com.generalrobotix.ui.util.GrxDebugUtil;
-
 import jp.go.aist.hrp.simulator.CollisionPoint;
 
 /**

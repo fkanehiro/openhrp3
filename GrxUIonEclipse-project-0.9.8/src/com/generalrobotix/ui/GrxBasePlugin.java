@@ -38,7 +38,6 @@ import org.w3c.dom.NodeList;
 import com.generalrobotix.ui.item.GrxProjectItem;
 import com.generalrobotix.ui.util.GrxConfigBundle;
 import com.generalrobotix.ui.util.GrxXmlUtil;
-import com.generalrobotix.ui.util.GrxDebugUtil;
 
 @SuppressWarnings("serial")
 /**
