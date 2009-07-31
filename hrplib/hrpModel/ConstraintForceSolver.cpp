@@ -36,6 +36,14 @@
 #include <boost/numeric/ublas/lu.hpp>
 
 
+using namespace std;
+using namespace boost;
+using namespace tvmet;
+using namespace boost::numeric::ublas;
+using namespace hrp;
+using namespace OpenHRP;
+
+
 
 // Is LCP solved by Iterative or Pivoting method ?
 // #define USE_PIVOTING_LCP
@@ -101,14 +109,6 @@ static const bool CFS_MCP_DEBUG_SHOW_ITERATION_STOP = false;
 static const bool CFS_PUT_NUM_CONTACT_POINTS = false;
 
 
-using namespace std;
-using namespace boost;
-using namespace tvmet;
-using namespace boost::numeric::ublas;
-using namespace hrp;
-using namespace OpenHRP;
-
-
 namespace hrp
 {
     class CFSImpl
@@ -138,6 +138,7 @@ namespace hrp
 
         WorldBase& world;
 
+        bool isConstraintForceOutputMode;
         bool useBuiltinCollisionDetector;
 
         struct ConstraintPoint {
@@ -215,7 +216,8 @@ namespace hrp
             Body::LinkConnection* connection;
 
         };
-        typedef std::vector<LinkPair> LinkPairArray;
+        typedef intrusive_ptr<LinkPair> LinkPairPtr;
+        typedef std::vector<LinkPairPtr> LinkPairArray;
 
         LinkPairArray collisionCheckLinkPairs;
         LinkPairArray connectedLinkPairs;
@@ -373,6 +375,7 @@ CFSImpl::CFSImpl(WorldBase& world) :
     maxNumGaussSeidelIteration = DEFAULT_MAX_NUM_GAUSS_SEIDEL_ITERATION;
     numGaussSeidelInitialIteration = DEFAULT_NUM_GAUSS_SEIDEL_INITIAL_ITERATION;
     gaussSeidelMaxRelError = DEFAULT_GAUSS_SEIDEL_MAX_REL_ERROR;
+    isConstraintForceOutputMode = false;
     useBuiltinCollisionDetector = false;
 }
 
@@ -392,22 +395,23 @@ bool CFSImpl::addCollisionCheckLinkPair
             collisionCheckLinkPairs.resize(index+1);
         }
 
-        LinkPair& linkPair = collisionCheckLinkPairs[index];
+        LinkPairPtr& linkPair = collisionCheckLinkPairs[index];
+        if(!linkPair){
+            linkPair = new LinkPair();
+        }
 
-        // initialize super class ColdetModelPair
-        linkPair.set(link1->coldetModel, link2->coldetModel);
-
-        linkPair.isSameBodyPair = (bodyIndex1 == bodyIndex2);
-        linkPair.bodyIndex[0] = bodyIndex1;
-        linkPair.link[0] = link1;
-        linkPair.bodyIndex[1] = bodyIndex2;
-        linkPair.link[1] = link2;
-        linkPair.index = index;
-        linkPair.muStatic = muStatic;
-        linkPair.muDynamic = muDynamic;
-        linkPair.culling_thresh = culling_thresh;
-        linkPair.epsilon = epsilon;
-        linkPair.connection = 0;
+        linkPair->set(link1->coldetModel, link2->coldetModel);
+        linkPair->isSameBodyPair = (bodyIndex1 == bodyIndex2);
+        linkPair->bodyIndex[0] = bodyIndex1;
+        linkPair->link[0] = link1;
+        linkPair->bodyIndex[1] = bodyIndex2;
+        linkPair->link[1] = link2;
+        linkPair->index = index;
+        linkPair->muStatic = muStatic;
+        linkPair->muDynamic = muDynamic;
+        linkPair->culling_thresh = culling_thresh;
+        linkPair->epsilon = epsilon;
+        linkPair->connection = 0;
     }
 
     return (index >= 0 && !isRegistered);
@@ -466,8 +470,8 @@ void CFSImpl::initialize(void)
         Body::LinkConnectionArray& connections = body->linkConnections;
         for(size_t j=0; j < connections.size(); ++j){
 
-            connectedLinkPairs.push_back(LinkPair());
-            LinkPair& linkPair = connectedLinkPairs.back();
+            connectedLinkPairs.push_back(new LinkPair());
+            LinkPair& linkPair = *connectedLinkPairs.back();
 
             Body::LinkConnection& connection = connections[j];
             linkPair.connection = &connection;
@@ -492,7 +496,7 @@ void CFSImpl::initialize(void)
 
     int numLinkPairs = collisionCheckLinkPairs.size();
     for(int i=0; i < numLinkPairs; ++i){
-        LinkPair& linkPair = collisionCheckLinkPairs[i];
+        LinkPair& linkPair = *collisionCheckLinkPairs[i];
         for(int j=0; j < 2; ++j){
             BodyData& bodyData = bodiesData[linkPair.bodyIndex[j]];
             linkPair.bodyData[j] = &bodyData;
@@ -528,6 +532,13 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
         bodiesData[i].hasConstrainedLinks = false;
         if(useBuiltinCollisionDetector){
             bodiesData[i].body->updateLinkColdetModelPositions();
+        }
+        if(isConstraintForceOutputMode){
+            BodyPtr& body = bodiesData[i].body;
+            const int n = body->numLinks();
+            for(int j=0; j < n; ++j){
+                body->link(j)->constraintForces.clear();
+            }
         }
     }
 
@@ -626,7 +637,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
 	
     for(size_t colIndex=0; colIndex < collisionCheckLinkPairs.size(); ++colIndex){
         pCollisionPoints = 0;
-        LinkPair& linkPair = collisionCheckLinkPairs[colIndex];
+        LinkPair& linkPair = *collisionCheckLinkPairs[colIndex];
 
         if( ! useBuiltinCollisionDetector){
             CollisionPointSequence& points = collisions[colIndex].points;
@@ -644,7 +655,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
             } else {
                 pCollisionPoints = &collisionPoints;
             }
-            
+
             std::vector<collision_data>& cdata = linkPair.detectCollisions();
             
             if(cdata.empty()){
@@ -692,7 +703,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
     globalNumContactNormalVectors = globalNumConstraintVectors;
 
     for(size_t i=0; i < connectedLinkPairs.size(); ++i){
-        LinkPair& linkPair = connectedLinkPairs[i];
+        LinkPair& linkPair = *connectedLinkPairs[i];
         constrainedLinkPairs.push_back(&linkPair);
         if(setConnectionConstraintPoints(linkPair)){
             linkPair.bodyData[0]->hasConstrainedLinks = true;
@@ -1588,11 +1599,13 @@ void CFSImpl::addConstraintForceToLink(LinkPair* linkPair, int ipair)
         f_total   += f;
         tau_total += cross(constraint.point, f);
 
-        ConstraintForce cforce;
-        cforce.point = constraint.point;
-        cforce.force = f;
-        link->constraintForceArray.push_back(cforce);
-
+        if(isConstraintForceOutputMode){
+            Link::ConstraintForceArray& constraintForces = link->constraintForces;
+            constraintForces.resize(constraintForces.size() + 1);
+            Link::ConstraintForce& cforce = constraintForces.back();
+            cforce.point = constraint.point;
+            cforce.force = f;
+        }
     }
     
     link->fext   += f_total;
@@ -2108,6 +2121,12 @@ void ConstraintForceSolver::setGaussSeidelParameters(int maxNumIteration, int nu
     impl->maxNumGaussSeidelIteration = maxNumIteration;
     impl->numGaussSeidelInitialIteration = numInitialIteration;
     impl->gaussSeidelMaxRelError = maxRelError;
+}
+
+
+void ConstraintForceSolver::enableConstraintForceOutput(bool on)
+{
+    impl->isConstraintForceOutputMode = on;
 }
 
 

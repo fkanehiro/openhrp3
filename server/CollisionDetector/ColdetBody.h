@@ -17,7 +17,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <hrpUtil/Referenced.h>
 #include <hrpUtil/Tvmet4d.h>
 #include <hrpCorba/ModelLoader.hh>
 #include <hrpCollision/ColdetModel.h>
@@ -28,7 +28,7 @@ using namespace hrp;
 using namespace OpenHRP;
 
 
-class ColdetBody
+class ColdetBody : public hrp::Referenced
 {
 public:
     ColdetBody(BodyInfo_ptr bodyInfo);
@@ -69,6 +69,6 @@ public:
     string name_;
 };
 
-typedef boost::shared_ptr<ColdetBody> ColdetBodyPtr;
+typedef boost::intrusive_ptr<ColdetBody> ColdetBodyPtr;
 
 #endif

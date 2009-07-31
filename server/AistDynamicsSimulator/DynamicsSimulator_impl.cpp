@@ -549,6 +549,7 @@ void DynamicsSimulator_impl::initSimulation()
     }
 
     world.initialize();
+    world.constraintForceSolver.enableConstraintForceOutput(true);
 
     _updateCharacterPositions();
 
@@ -809,18 +810,19 @@ void DynamicsSimulator_impl::getCharacterLinkData
         rdata[5] = link->tauext(2);
         break;
     
-    case OpenHRP::DynamicsSimulator::CONSTRAINT_FORCE:
-        int n;
-        n = link->constraintForceArray.size();
+    case OpenHRP::DynamicsSimulator::CONSTRAINT_FORCE: {
+        Link::ConstraintForceArray& constraintForces = link->constraintForces;
+        int n = constraintForces.size();
         rdata->length(6*n);
         for(int i=0; i<n; i++){
-            rdata[i*6] = link->constraintForceArray[i].point(0);
-            rdata[i*6+1] = link->constraintForceArray[i].point(1);
-            rdata[i*6+2] = link->constraintForceArray[i].point(2);
-            rdata[i*6+3] = link->constraintForceArray[i].force(0);
-            rdata[i*6+4] = link->constraintForceArray[i].force(1);
-            rdata[i*6+5] = link->constraintForceArray[i].force(2);
+            rdata[i*6  ] = constraintForces[i].point(0);
+            rdata[i*6+1] = constraintForces[i].point(1);
+            rdata[i*6+2] = constraintForces[i].point(2);
+            rdata[i*6+3] = constraintForces[i].force(0);
+            rdata[i*6+4] = constraintForces[i].force(1);
+            rdata[i*6+5] = constraintForces[i].force(2);
         }
+    }
         break;
 
     default:

@@ -66,6 +66,8 @@ namespace hrp {
         Vector3 CD_Trans2;
         double CD_s2;
 
+        std::vector<collision_data> cdContact;
+
       private:
 
         class tri
@@ -82,8 +84,6 @@ namespace hrp {
             Vector3 p1, p2, p3;
             Vector3 n;
         };
-
-        std::vector<collision_data> cdContact;
 
         static void copy_tri(col_tri* t1, tri* t2);
         

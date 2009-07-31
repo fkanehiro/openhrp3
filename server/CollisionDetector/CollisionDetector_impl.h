@@ -1,4 +1,3 @@
-// -*- mode: c++;
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -104,8 +103,9 @@ private:
     class ColdetModelPairEx : public ColdetModelPair
     {
     public:
-        ColdetModelPairEx(ColdetBodyPtr& body0, ColdetModelPtr& link0, ColdetBodyPtr& body1, ColdetModelPtr& link1, double tolerance=0) :
-            ColdetModelPair(link0, link1, tolerance),
+      ColdetModelPairEx(
+          ColdetBodyPtr& body0, ColdetModelPtr& link0, ColdetBodyPtr& body1, ColdetModelPtr& link1, double tolerance=0)
+          : ColdetModelPair(link0, link1, tolerance),
             body0(body0),
             body1(body1)
             { }
@@ -113,21 +113,22 @@ private:
         ColdetBodyPtr body1;
         double tolerance;
     };
+    typedef intrusive_ptr<ColdetModelPairEx> ColdetModelPairExPtr;
+    
+    vector<ColdetModelPairExPtr> coldetModelPairs;
 
-    vector<ColdetModelPairEx> coldetModelPairs;
-
-    void addCollisionPairSub(const LinkPair& linkPair, vector<ColdetModelPairEx>& io_coldetPairs);
+    void addCollisionPairSub(const LinkPair& linkPair, vector<ColdetModelPairExPtr>& io_coldetPairs);
     void updateAllLinkPositions(const CharacterPositionSequence& characterPositions);
-    bool detectAllCollisions(vector<ColdetModelPairEx>& coldetPairs, CollisionSequence_out& out_collisions);
+    bool detectAllCollisions(vector<ColdetModelPairExPtr>& coldetPairs, CollisionSequence_out& out_collisions);
     bool detectCollisionsOfLinkPair(
         ColdetModelPairEx& coldetPair, CollisionPointSequence& out_collisionPoints, const bool addCollisionPoints);
-    bool detectIntersectionOfLinkPair(ColdetModelPairEx& coldetPair);
+    bool detectIntersectionOfLinkPair(ColdetModelPairExPtr& coldetPair);
     bool detectCollidedLinkPairs(
-        vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll);
+        vector<ColdetModelPairExPtr>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll);
     bool detectIntersectingLinkPairs(
-        vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll);
+        vector<ColdetModelPairExPtr>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll);
     void computeDistances(
-        vector<ColdetModelPairEx>& coldetPairs, DistanceSequence_out& out_distances);
+        vector<ColdetModelPairExPtr>& coldetPairs, DistanceSequence_out& out_distances);
 };
 
 

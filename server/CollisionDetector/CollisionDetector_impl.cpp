@@ -57,9 +57,9 @@ void CollisionDetector_impl::registerCharacter(const char* name,	BodyInfo_ptr bo
 	
     StringToColdetBodyMap::iterator it = bodyInfoToColdetBodyMap.find(bodyInfoId);
     if(it != bodyInfoToColdetBodyMap.end()){
-        coldetBody.reset(new ColdetBody(*it->second));
+        coldetBody = new ColdetBody(*it->second);
     } else {
-        coldetBody.reset(new ColdetBody(bodyInfo));
+        coldetBody = new ColdetBody(bodyInfo);
         coldetBody->setName(name);
     }
 
@@ -84,7 +84,7 @@ void CollisionDetector_impl::addCollisionPair
 
 
 void CollisionDetector_impl::addCollisionPairSub
-(const LinkPair& linkPair, vector<ColdetModelPairEx>& io_coldetPairs)
+(const LinkPair& linkPair, vector<ColdetModelPairExPtr>& io_coldetPairs)
 {
     const char* bodyName[2];
     bodyName[0] = linkPair.charName1;
@@ -116,7 +116,8 @@ void CollisionDetector_impl::addCollisionPairSub
     }
 
     if(!notFound){
-        io_coldetPairs.push_back(ColdetModelPairEx(coldetBody[0], coldetModel[0], coldetBody[1], coldetModel[1], linkPair.tolerance));
+        io_coldetPairs.push_back(
+            new ColdetModelPairEx(coldetBody[0], coldetModel[0], coldetBody[1], coldetModel[1], linkPair.tolerance));
     }
 }	
 
@@ -136,7 +137,7 @@ CORBA::Boolean CollisionDetector_impl::queryContactDeterminationForGivenPairs
 {
     updateAllLinkPositions(characterPositions);
 
-    vector<ColdetModelPairEx> tmpColdetPairs;
+    vector<ColdetModelPairExPtr> tmpColdetPairs;
 	
     for(unsigned int i=0; i < checkPairs.length(); ++i){
         const LinkPair& linkPair = checkPairs[i];
@@ -163,7 +164,7 @@ void CollisionDetector_impl::updateAllLinkPositions
 
 
 bool CollisionDetector_impl::detectAllCollisions
-(vector<ColdetModelPairEx>& coldetPairs, CollisionSequence_out& out_collisions)
+(vector<ColdetModelPairExPtr>& coldetPairs, CollisionSequence_out& out_collisions)
 {
     bool detected = false;
     const int numColdetPairs = coldetPairs.size();
@@ -172,7 +173,7 @@ bool CollisionDetector_impl::detectAllCollisions
 	
     for(CORBA::ULong i=0; i < numColdetPairs; ++i){
 
-        ColdetModelPairEx& coldetPair = coldetPairs[i];
+        ColdetModelPairEx& coldetPair = *coldetPairs[i];
         Collision& collision = out_collisions[i];
 
         if(detectCollisionsOfLinkPair(coldetPair, collision.points, true)){
@@ -193,7 +194,7 @@ bool CollisionDetector_impl::detectCollisionsOfLinkPair
 (ColdetModelPairEx& coldetPair, CollisionPointSequence& out_collisionPoints, const bool addCollisionPoints)
 {
     bool detected = false;
-	
+
     vector<collision_data>& cdata = coldetPair.detectCollisions();
 
     int npoints = 0;
@@ -254,7 +255,7 @@ CORBA::Boolean CollisionDetector_impl::queryIntersectionForGivenPairs
 {
     updateAllLinkPositions(characterPositions);
 
-    vector<ColdetModelPairEx> tmpColdetPairs;
+    vector<ColdetModelPairExPtr> tmpColdetPairs;
 	
     for(unsigned int i=0; i < checkPairs.length(); ++i){
         const LinkPair& linkPair = checkPairs[i];
@@ -285,7 +286,7 @@ void CollisionDetector_impl::queryDistanceForGivenPairs
 {
     updateAllLinkPositions(characterPositions);
 
-    vector<ColdetModelPairEx> tmpColdetPairs;
+    vector<ColdetModelPairExPtr> tmpColdetPairs;
 	
     for(unsigned int i=0; i < checkPairs.length(); ++i){
         const LinkPair& linkPair = checkPairs[i];
@@ -346,7 +347,7 @@ DblSequence* CollisionDetector_impl::scanDistanceWithRay(const DblArray3 p, cons
 }
 
 bool CollisionDetector_impl::detectCollidedLinkPairs
-(vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll)
+(vector<ColdetModelPairExPtr>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll)
 {
     CollisionPointSequence dummy;
 	
@@ -356,7 +357,7 @@ bool CollisionDetector_impl::detectCollidedLinkPairs
     collidedPairIndices.reserve(coldetPairs.size());
 
     for(unsigned int i=0; i < coldetPairs.size(); ++i){
-        if(detectCollisionsOfLinkPair(coldetPairs[i], dummy, false)){
+        if(detectCollisionsOfLinkPair(*coldetPairs[i], dummy, false)){
             detected = true;
             collidedPairIndices.push_back(i);
             if(!checkAll){
@@ -370,7 +371,7 @@ bool CollisionDetector_impl::detectCollidedLinkPairs
 
     for(CORBA::ULong i=0; i < collidedPairIndices.size(); ++i){
         int pairIndex = collidedPairIndices[i];
-        ColdetModelPairEx& coldetPair = coldetPairs[pairIndex];
+        ColdetModelPairEx& coldetPair = *coldetPairs[pairIndex];
         LinkPair& linkPair = out_collidedPairs[i];
         linkPair.charName1 = CORBA::string_dup(coldetPair.body0->name());
         linkPair.linkName1 = CORBA::string_dup(coldetPair.model0()->name());
@@ -382,7 +383,7 @@ bool CollisionDetector_impl::detectCollidedLinkPairs
 }
 
 bool CollisionDetector_impl::detectIntersectingLinkPairs
-(vector<ColdetModelPairEx>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll)
+(vector<ColdetModelPairExPtr>& coldetPairs, LinkPairSequence_out& out_collidedPairs, const bool checkAll)
 {
     bool detected = false;
 	
@@ -390,7 +391,7 @@ bool CollisionDetector_impl::detectIntersectingLinkPairs
     collidedPairIndices.reserve(coldetPairs.size());
 
     for(unsigned int i=0; i < coldetPairs.size(); ++i){
-        if(coldetPairs[i].detectIntersection()){
+        if(coldetPairs[i]->detectIntersection()){
             detected = true;
             collidedPairIndices.push_back(i);
             if(!checkAll){
@@ -404,7 +405,7 @@ bool CollisionDetector_impl::detectIntersectingLinkPairs
 
     for(CORBA::ULong i=0; i < collidedPairIndices.size(); ++i){
         int pairIndex = collidedPairIndices[i];
-        ColdetModelPairEx& coldetPair = coldetPairs[pairIndex];
+        ColdetModelPairEx& coldetPair = *coldetPairs[pairIndex];
         LinkPair& linkPair = out_collidedPairs[i];
         linkPair.charName1 = CORBA::string_dup(coldetPair.body0->name());
         linkPair.linkName1 = CORBA::string_dup(coldetPair.model0()->name());
@@ -416,13 +417,13 @@ bool CollisionDetector_impl::detectIntersectingLinkPairs
 }
 
 void CollisionDetector_impl::computeDistances
-(vector<ColdetModelPairEx>& coldetPairs, DistanceSequence_out& out_distances)
+(vector<ColdetModelPairExPtr>& coldetPairs, DistanceSequence_out& out_distances)
 {
     out_distances = new DistanceSequence();
     out_distances->length(coldetPairs.size());
 
     for(unsigned int i=0; i < coldetPairs.size(); ++i){
-        ColdetModelPairEx& coldetPair = coldetPairs[i];
+        ColdetModelPairEx& coldetPair = *coldetPairs[i];
         Distance& dinfo = out_distances[i];
         dinfo.minD = coldetPair.computeDistance(dinfo.point0, dinfo.point1);
         LinkPair& linkPair = dinfo.pair;

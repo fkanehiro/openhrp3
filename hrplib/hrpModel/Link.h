@@ -11,27 +11,28 @@
    \author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_LINK_H_INCLUDED
-#define OPENHRP_LINK_H_INCLUDED
+#ifndef HRPMODEL_LINK_H_INCLUDED
+#define HRPMODEL_LINK_H_INCLUDED
 
 #include <string>
 #include <ostream>
 #include <vector>
 #include <boost/intrusive_ptr.hpp>
-#include <boost/shared_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
 #include "exportdef.h"
 
+namespace hrp {
+    class Link;
+}
+
+HRPMODEL_API std::ostream& operator<<(std::ostream &out, hrp::Link& link);
 
 namespace hrp {
 
+    class Body;
+
     class ColdetModel;
     typedef boost::intrusive_ptr<ColdetModel> ColdetModelPtr;
-
-    struct ConstraintForce{
-        Vector3 point;
-        Vector3 force;
-    };
 
     class HRPMODEL_API Link {
 
@@ -58,7 +59,7 @@ namespace hrp {
         */
         Matrix33 segmentAttitude() { return Matrix33(this->R * Rs); }
 
-        void putInformation(std::ostream& os);
+        Body* body;
 
         int index; 
         int jointId;  ///< jointId value written in a model file
@@ -161,17 +162,25 @@ namespace hrp {
 
         ColdetModelPtr coldetModel;
 
-        std::vector<ConstraintForce> constraintForceArray;
+        struct ConstraintForce {
+            Vector3 point;
+            Vector3 force;
+        };
+
+        typedef std::vector<ConstraintForce> ConstraintForceArray;
+        ConstraintForceArray constraintForces;
 
       private:
 
         Link& operator=(const Link& link); // no implementation is given to disable the copy operator
+
+        void setBodyIter(Body* body);
+        
+        friend std::ostream& ::operator<<(std::ostream &out, hrp::Link& link);
+        void putInformation(std::ostream& out); // for the iostream output
     };
 
 };
 	
-
-HRPMODEL_API std::ostream& operator<<(std::ostream &out, hrp::Link& link);
-
 
 #endif

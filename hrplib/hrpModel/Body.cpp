@@ -93,6 +93,7 @@ Body::Body()
     initialize();
 	
     rootLink_ = new Link;
+    rootLink_->body = this;
 
     defaultRootPosition = 0.0;
     defaultRootAttitude = identity<Matrix33>();
@@ -182,6 +183,7 @@ void Body::updateLinkTree()
     
     for(int i=0; i < n; ++i){
         Link* link = linkTraverse_[i];
+        link->body = this;
         link->index = i;
         nameToLinkMap[link->name] = link;
 
@@ -555,7 +557,6 @@ void Body::clearExternalForces()
         Link* link = linkTraverse_[i];
         link->fext = 0.0;
         link->tauext = 0.0;
-        link->constraintForceArray.clear();
     }
 }
 
