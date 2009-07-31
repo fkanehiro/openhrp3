@@ -18,10 +18,11 @@
 #include "ColdetModel.h"
 #include "CollisionPairInserter.h"
 #include <vector>
+#include <hrpUtil/Referenced.h>
 
 namespace hrp {
 
-    class HRP_COLLISION_EXPORT ColdetModelPair
+    class HRP_COLLISION_EXPORT ColdetModelPair : public Referenced
     {
       public:
         ColdetModelPair();
@@ -33,9 +34,13 @@ namespace hrp {
         void set(ColdetModelPtr model0, ColdetModelPtr model1);
         ColdetModelPtr& model0() { return model0_; }
         ColdetModelPtr& model1() { return model1_; }
-        
+
         std::vector<collision_data>& detectCollisions() {
             return detectCollisionsSub(true);
+        }
+
+        std::vector<collision_data>& collisions() {
+            return collisionPairInserter.cdContact;
         }
 
         bool checkCollision() {
@@ -62,6 +67,8 @@ namespace hrp {
         int boxTestsCount;
         int triTestsCount;
     };
+
+    typedef boost::intrusive_ptr<ColdetModelPair> ColdetModelPairPtr;
 }
 
 

@@ -40,6 +40,7 @@ namespace hrp
 		void setGaussSeidelParameters(int maxNumIteration, int numInitialIteration, double maxRelError);
 		bool enableJointRangeStopper(bool isEnabled);
 		bool enableVelocityOverwriting(bool isEnabled);
+                void enableConstraintForceOutput(bool on);
 		void useBuiltinCollisionDetector(bool on);
 
 		void initialize(void);

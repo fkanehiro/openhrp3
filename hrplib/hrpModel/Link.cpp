@@ -50,6 +50,7 @@ using namespace hrp;
 
 Link::Link()
 {
+    body = 0;
     index = -1;
     jointId = -1;
     parent = 0;
@@ -65,6 +66,7 @@ Link::Link()
 Link::Link(const Link& org)
     : name(org.name)
 {
+    body = 0;
     index = -1; // should be set by a Body object
     jointId = org.jointId;
     jointType = org.jointType;
@@ -145,10 +147,12 @@ void Link::addChild(Link* link)
     if(link->parent){
         link->parent->detachChild(link);
     }
-    
+
     link->sibling = child;
     link->parent = this;
     child = link;
+
+    link->setBodyIter(body);
 }
 
 
@@ -180,9 +184,19 @@ bool Link::detachChild(Link* childToRemove)
     if(removed){
         childToRemove->parent = 0;
         childToRemove->sibling = 0;
+        childToRemove->setBodyIter(0);
     }
 
     return removed;
+}
+
+
+void Link::setBodyIter(Body* body)
+{
+    this->body = body;
+    for(Link* link = child; link; link = link->sibling){
+        link->setBodyIter(body);
+    }
 }
 
 
@@ -192,83 +206,82 @@ std::ostream& operator<<(std::ostream &out, Link& link)
     return out;
 }
 
-
-void Link::putInformation(std::ostream& os)
+void Link::putInformation(std::ostream& out)
 {
-    os << "Link " << name << " Link Index = " << index << ", Joint ID = " << jointId << "\n";
+    out << "Link " << name << " Link Index = " << index << ", Joint ID = " << jointId << "\n";
 
-    os << "Joint Type: ";
+    out << "Joint Type: ";
 
     switch(jointType) {
     case FREE_JOINT:
-        os << "Free Joint\n";
+        out << "Free Joint\n";
         break;
     case FIXED_JOINT:
-        os << "Fixed Joint\n";
+        out << "Fixed Joint\n";
         break;
     case ROTATIONAL_JOINT:
-        os << "Rotational Joint\n";
-        os << "Axis = " << a << "\n";
+        out << "Rotational Joint\n";
+        out << "Axis = " << a << "\n";
         break;
     case SLIDE_JOINT:
-        os << "Slide Joint\n";
-        os << "Axis = " << d << "\n";
+        out << "Slide Joint\n";
+        out << "Axis = " << d << "\n";
         break;
     }
 
-    os << "parent = " << (parent ? parent->name : "null") << "\n";
+    out << "parent = " << (parent ? parent->name : "null") << "\n";
 
-    os << "child = ";
+    out << "child = ";
     if(child){
         Link* link = child;
         while(true){
-            os << link->name;
+            out << link->name;
             link = link->sibling;
             if(!link){
                 break;
             }
-            os << ", ";
+            out << ", ";
         }
     } else {
-        os << "null";
+        out << "null";
     }
-    os << "\n";
+    out << "\n";
 
-    os << "b = "  << b << "\n";
-    os << "Rs = " << Rs << "\n";
-    os << "c = "  << c << "\n";
-    os << "m = "  << m << "\n";
-    os << "Ir = " << Ir << "\n";
-    os << "I = "  << I << "\n";
-    os << "torqueConst = " << torqueConst << "\n";
-    os << "encoderPulse = " << encoderPulse << "\n";
-    os << "gearRatio = " << gearRatio << "\n";
-    os << "gearEfficiency = " << gearEfficiency << "\n";
-    os << "Jm2 = " << Jm2 << "\n";
-    os << "ulimit = " << ulimit << "\n";
-    os << "llimit = " << llimit << "\n";
-    os << "uvlimit = " << uvlimit << "\n";
-    os << "lvlimit = " << lvlimit << "\n";
+    out << "b = "  << b << "\n";
+    out << "Rs = " << Rs << "\n";
+    out << "c = "  << c << "\n";
+    out << "m = "  << m << "\n";
+    out << "Ir = " << Ir << "\n";
+    out << "I = "  << I << "\n";
+    out << "torqueConst = " << torqueConst << "\n";
+    out << "encoderPulse = " << encoderPulse << "\n";
+    out << "gearRatio = " << gearRatio << "\n";
+    out << "gearEfficiency = " << gearEfficiency << "\n";
+    out << "Jm2 = " << Jm2 << "\n";
+    out << "ulimit = " << ulimit << "\n";
+    out << "llimit = " << llimit << "\n";
+    out << "uvlimit = " << uvlimit << "\n";
+    out << "lvlimit = " << lvlimit << "\n";
 
     if(false){
-        os << "R = " << R << "\n";
-        os << "p = " << p << ", wc = " << wc << "\n";
-    	os << "v = " << v << ", vo = " << vo << ", dvo = " << dvo << "\n";
-    	os << "w = " << w << ", dw = " << dw << "\n";
+        out << "R = " << R << "\n";
+        out << "p = " << p << ", wc = " << wc << "\n";
+    	out << "v = " << v << ", vo = " << vo << ", dvo = " << dvo << "\n";
+    	out << "w = " << w << ", dw = " << dw << "\n";
 
-    	os << "u = " << u << ", q = " << q << ", dq = " << dq << ", ddq = " << ddq << "\n";
+    	out << "u = " << u << ", q = " << q << ", dq = " << dq << ", ddq = " << ddq << "\n";
 
-    	os << "fext = " << fext << ", tauext = " << tauext << "\n";
+    	out << "fext = " << fext << ", tauext = " << tauext << "\n";
 
-    	os << "sw = " << sw << ", sv = " << sv << "\n";
-    	os << "Ivv = " << Ivv << "\n";
-    	os << "Iwv = " << Iwv << "\n";
-    	os << "Iww = " << Iww << "\n";
-    	os << "cv = " << cv << ", cw = " << cw << "\n";
-    	os << "pf = " << pf << ", ptau = " << ptau << "\n";
-    	os << "hhv = " << hhv << ", hhw = " << hhw << "\n";
-    	os << "uu = " << uu << ", dd = " << dd << "\n";
+    	out << "sw = " << sw << ", sv = " << sv << "\n";
+    	out << "Ivv = " << Ivv << "\n";
+    	out << "Iwv = " << Iwv << "\n";
+    	out << "Iww = " << Iww << "\n";
+    	out << "cv = " << cv << ", cw = " << cw << "\n";
+    	out << "pf = " << pf << ", ptau = " << ptau << "\n";
+    	out << "hhv = " << hhv << ", hhw = " << hhw << "\n";
+    	out << "uu = " << uu << ", dd = " << dd << "\n";
 
-    	os << std::endl;
+    	out << std::endl;
     }
 }
