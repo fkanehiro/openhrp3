@@ -66,12 +66,14 @@ class IseBehaviorHandler implements BehaviorHandler {
     private OperationHandler operationHandler_;
     private BehaviorHandler indicator_;
     private int timerMode_;
+    private BehaviorManager bManager_;
 
     //--------------------------------------------------------------------
     // コンストラクタ
-    public IseBehaviorHandler() {
+    public IseBehaviorHandler(BehaviorManager bManager) {
         viewHandler_ = ROOM_VIEW_HANDLER;
         ROOM_VIEW_HANDLER.setParallelMode(false);
+        bManager_ = bManager;
     }
 
     //--------------------------------------------------------------------
@@ -79,7 +81,7 @@ class IseBehaviorHandler implements BehaviorHandler {
     public void setViewIndicator(BehaviorHandler handler) {
         indicator_ = handler;
     }
-
+    
     public void setViewMode(int mode) {
         switch (mode) {
         case BehaviorManager.WALK_VIEW_MODE:
@@ -284,11 +286,14 @@ class IseBehaviorHandler implements BehaviorHandler {
         }
     }
 
-    public void processTimerOperation(final BehaviorInfo info) {
+    public boolean processTimerOperation(final BehaviorInfo info) {
         switch (timerMode_) {
         case TIMER_MODE_OFF:
             break;
         case TIMER_MODE_OPERATION:
+        	if(operationHandler_ instanceof InvKinemaHandler)
+            if(!bManager_.initDynamicsSimulator())	
+            	return false;
         	syncExec(new Runnable(){
             	public void run(){
             		operationHandler_.processTimerOperation(info);
@@ -299,6 +304,7 @@ class IseBehaviorHandler implements BehaviorHandler {
             viewHandler_.processTimerOperation(info);
             break;
         }
+        return true;
     }
     
     private boolean syncExec(Runnable r){

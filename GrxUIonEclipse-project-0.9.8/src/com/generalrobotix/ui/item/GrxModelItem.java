@@ -27,9 +27,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.*;
@@ -92,21 +89,29 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	bModified_ = true;
     }
     
+    public boolean isModified(){
+    	return bModified_;
+    }
+    
+    public boolean saveAndLoad(){
+    	if(!_saveAs())
+    		return false;
+    	File f = new File(getURL(true));
+    	load(f);
+    	restoreProperties();
+    	return true;
+    }
+    
     /**
      * @brief get BodyInfo
      * @return BodyInfo
      */
     public BodyInfo getBodyInfo(){
     	String url = getURL(true);
-    	if (bModified_ || url == null || url.equals("")){
-        	MessageDialog.openInformation(null, "", "Please save model("+getName()+") before starting simulation");
-        	if(!_saveAs())
-        		return null;
-        	File f = new File(getURL(true));
-        	load(f);
-        	restoreProperties();
-    	}
-    	return bInfo_;
+    	if (bModified_ || url == null || url.equals(""))
+    		return null;
+    	else
+    		return bInfo_;
     }
     
     /**

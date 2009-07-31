@@ -24,6 +24,7 @@ import javax.vecmath.*;
 
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.view.Grx3DView;
 import com.sun.j3d.utils.picking.*;
 
 /**
@@ -63,20 +64,11 @@ class ObjectRotationHandler extends OperationHandler {
             if (tg == null)
             	return;
 
-            if (tg != tgTarget_) {
-                if (_enableBoundingBox(tg, info)) {
-                    isPicked_ = true;
-                    Point3d startPoint = info.pickCanvas.getStartPosition();
-                    PickIntersection intersection = pickResult.getClosestIntersection(startPoint);
-                    norm_ = new Vector3f(intersection.getPointNormal());
-                    //evt.consume();  
-                }
-            } else {
-                Point3d startPoint = info.pickCanvas.getStartPosition();
-                PickIntersection intersection = pickResult.getClosestIntersection(startPoint);
-                norm_ = new Vector3f(intersection.getPointNormal());
-                isPicked_ = true;
-                //evt.consume();
+            if (_enableBoundingBox(tg, info)) {
+            	isPicked_ = true;
+            	Point3d startPoint = info.pickCanvas.getStartPosition();
+            	PickIntersection intersection = pickResult.getClosestIntersection(startPoint);
+            	norm_ = new Vector3f(intersection.getPointNormal());
             }
         } catch (CapabilityNotSetException ex) {
             // もう出ることはないと思うが、読み込むモデルによっては
@@ -187,6 +179,7 @@ class ObjectRotationHandler extends OperationHandler {
                 prevPoint_.x = evt.getPoint().x;
                 prevPoint_.y = evt.getPoint().y;
             }
+            ((Grx3DView)info.drawable).showOption();
             evt.consume();
         }
     }
@@ -197,7 +190,9 @@ class ObjectRotationHandler extends OperationHandler {
         }
     }
 
-    public void processTimerOperation(BehaviorInfo info) {}
+    public boolean processTimerOperation(BehaviorInfo info) {
+    	return true;
+    }
 
     //--------------------------------------------------------------------
     // OperationHandlerの実装

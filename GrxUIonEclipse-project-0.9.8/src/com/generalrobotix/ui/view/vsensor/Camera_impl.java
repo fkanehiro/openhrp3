@@ -239,9 +239,9 @@ public class Camera_impl extends CameraPOA {
 		
         if(frm_!=null) {
         	frm_.setVisible(false);
-			frm_.dispose();
-			frm_ = null;
-		}
+        	frm_.dispose();
+        	frm_ = null;
+        }
 
 		raster_ = null;
 

@@ -24,6 +24,7 @@ import javax.vecmath.*;
 
 
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.view.Grx3DView;
 import com.sun.j3d.utils.picking.*;
 
 class ObjectFittingHandler extends OperationHandler {
@@ -173,6 +174,7 @@ class ObjectFittingHandler extends OperationHandler {
         bHaveSecond = false;
         fittingInfoFrom_.setTransformGroup(null);
         fittingInfoTo_.setTransformGroup(null);
+        ((Grx3DView)info.drawable).showOption();
         return true;
     }
  
@@ -183,19 +185,29 @@ class ObjectFittingHandler extends OperationHandler {
 
         try {
             info.pickCanvas.setShapeLocation(mouse.x, mouse.y);
-            PickResult pickResult = info.pickCanvas.pickClosest();
+            
+            PickResult pickResult[] = info.pickCanvas.pickAllSorted();
             if (pickResult == null) {
                 return;
             }
-
-            TransformGroup tg =
-                (TransformGroup)pickResult.getNode(PickResult.TRANSFORM_GROUP);
-            //System.out.println(pickResult.getSceneGraphPath());            
+            TransformGroup tg = (TransformGroup)pickResult[0].getNode(PickResult.TRANSFORM_GROUP);
             Point3d startPoint = info.pickCanvas.getStartPosition();
-            PickIntersection intersection =
-                        pickResult.getClosestIntersection(startPoint);
-            intersectVW_ =
-                new Point3f(intersection.getPointCoordinatesVW());
+            PickIntersection intersection = pickResult[0].getClosestIntersection(startPoint);
+            GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
+            if (model == null) 
+            	return;
+            else{
+            	if(info.manager_.focusedItem()==model){
+            		if( pickResult.length > 1){
+                		tg = (TransformGroup)pickResult[1].getNode(PickResult.TRANSFORM_GROUP );
+                		intersection = pickResult[1].getClosestIntersection(startPoint);
+                    	info.manager_.focusedItem(null);
+            		}else
+            			return;
+            	}
+            }
+            
+            intersectVW_ = new Point3f(intersection.getPointCoordinatesVW());
             verticesVW_ = intersection.getPrimitiveCoordinatesVW();
             _enableIndicator(tg, info);
         } catch (CapabilityNotSetException ex) {
@@ -209,7 +221,9 @@ class ObjectFittingHandler extends OperationHandler {
     public void processStartDrag(MouseEvent evt, BehaviorInfo info) {}
     public void processDragOperation(MouseEvent evt, BehaviorInfo info) {}
     public void processReleased(MouseEvent evt, BehaviorInfo info) {}
-    public void processTimerOperation(BehaviorInfo info) {}
+    public boolean processTimerOperation(BehaviorInfo info) {
+    	return true;
+    }
 
     //--------------------------------------------------------------------
     // OperationHandlerの実装

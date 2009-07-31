@@ -785,10 +785,15 @@ public class GrxOpenHRPView extends GrxBaseView {
 				GrxModelItem model = modelList.get(i);
 				if (model.links_ == null)
 					continue;
+				if(model.isModified()){
+					MessageDialog.openInformation(null, "", "Please save model("+model.getName()+") before starting simulation");
+					if(!model.saveAndLoad())
+						return false;
+				}
 				BodyInfo bodyInfo = model.getBodyInfo();
 				if(bodyInfo==null)	return false;
 				currentWorld_.registerCharacter(model.getName(), bodyInfo);
-				currentDynamics_.registerCharacter(model.getName(), model.getBodyInfo());
+				currentDynamics_.registerCharacter(model.getName(), bodyInfo);
 				if (model.isRobot()) {
 					robotEntry_.add(model.getName());
 				}

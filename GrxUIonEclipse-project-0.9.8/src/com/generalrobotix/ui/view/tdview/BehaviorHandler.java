@@ -27,6 +27,6 @@ public interface BehaviorHandler {
     public void processStartDrag(MouseEvent evt, BehaviorInfo info);
     public void processDragOperation(MouseEvent evt, BehaviorInfo info);
     public void processReleased(MouseEvent evt, BehaviorInfo info);
-    public void processTimerOperation(BehaviorInfo info);
+    public boolean processTimerOperation(BehaviorInfo info);
 }
 
