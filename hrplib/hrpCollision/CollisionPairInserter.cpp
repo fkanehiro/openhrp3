@@ -490,7 +490,7 @@ int CollisionPairInserter::new_point_test(int k)
 {
     const double eps = 1.0e-12; // 1 micro meter to judge two contact points are identical
 
-    int last = cdContact.size();
+    int last = cdContact.size()-1;
     
     for(int i=0; i < last; ++i){
         for(int j=0; j < cdContact[i].num_of_i_points; ++j){
