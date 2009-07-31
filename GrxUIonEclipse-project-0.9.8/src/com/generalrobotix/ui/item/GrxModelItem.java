@@ -24,7 +24,6 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 

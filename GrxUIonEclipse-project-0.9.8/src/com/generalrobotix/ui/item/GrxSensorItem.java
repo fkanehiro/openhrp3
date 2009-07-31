@@ -20,7 +20,6 @@ package com.generalrobotix.ui.item;
 
 import javax.media.j3d.Geometry;
 import javax.media.j3d.IndexedTriangleArray;
-import javax.media.j3d.Node;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
@@ -34,9 +33,6 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
 import jp.go.aist.hrp.simulator.SensorInfo;
 import jp.go.aist.hrp.simulator.CameraPackage.CameraParameter;

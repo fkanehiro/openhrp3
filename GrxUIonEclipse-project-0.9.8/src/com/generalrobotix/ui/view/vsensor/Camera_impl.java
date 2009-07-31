@@ -21,7 +21,6 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import com.generalrobotix.ui.view.Grx3DView;
-import com.sun.j3d.utils.universe.SimpleUniverse;
 
 import jp.go.aist.hrp.simulator.CameraPOA;
 import jp.go.aist.hrp.simulator.ImageData;
