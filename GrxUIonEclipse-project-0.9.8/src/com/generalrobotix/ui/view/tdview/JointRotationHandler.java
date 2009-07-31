@@ -24,6 +24,7 @@ import javax.vecmath.*;
 
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.view.Grx3DView;
 import com.sun.j3d.utils.picking.*;
 
 class JointRotationHandler extends OperationHandler {
@@ -227,6 +228,7 @@ class JointRotationHandler extends OperationHandler {
         prevPoint_.x = evt.getPoint().x;
         prevPoint_.y = evt.getPoint().y;
         _jointAngleChanged(info);
+        ((Grx3DView)info.drawable).showOption();
         
         evt.consume();
     }
@@ -237,7 +239,9 @@ class JointRotationHandler extends OperationHandler {
 //        }
     }
 
-    public void processTimerOperation(BehaviorInfo info) {}
+    public boolean processTimerOperation(BehaviorInfo info) {
+    	return true;
+    }
 
     //--------------------------------------------------------------------
     // OperationHandlerの実装

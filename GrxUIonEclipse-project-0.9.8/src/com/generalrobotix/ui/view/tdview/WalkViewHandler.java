@@ -85,7 +85,7 @@ class WalkViewHandler extends ViewHandler {
 
     public void processReleased(MouseEvent evt, BehaviorInfo info) {}
 
-    public void processTimerOperation(BehaviorInfo info) {
+    public boolean processTimerOperation(BehaviorInfo info) {
         Transform3D tr = new Transform3D();
         Transform3D trView = new Transform3D();
         TransformGroup tgView = info.drawable.getTransformGroupRoot();
@@ -101,6 +101,7 @@ class WalkViewHandler extends ViewHandler {
 
         trView.mul(tr);
         info.drawable.setTransform(trView);
+        return true;
     }
 
     //--------------------------------------------------------------------

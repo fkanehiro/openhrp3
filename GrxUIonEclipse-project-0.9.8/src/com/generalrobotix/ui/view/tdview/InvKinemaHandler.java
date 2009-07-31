@@ -24,6 +24,7 @@ import javax.vecmath.*;
 
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.view.Grx3DView;
 import com.sun.j3d.utils.picking.*;
 
 class InvKinemaHandler extends OperationHandler {
@@ -195,19 +196,21 @@ class InvKinemaHandler extends OperationHandler {
         }
     }
 
-    public void processTimerOperation(BehaviorInfo info) {
+    public boolean processTimerOperation(BehaviorInfo info) {
         switch (mode_) {
         case FROM_MODE:
             break;
-	case ROTATION_MODE:
+        case ROTATION_MODE:
             _rotation(info);
             break;
-	case TRANSLATION_MODE:
+        case TRANSLATION_MODE:
             _translation(info);
             break;
         default:
             break;
         }
+        ((Grx3DView)info.drawable).showOption();
+        return true;
     }
 
     //--------------------------------------------------------------------
