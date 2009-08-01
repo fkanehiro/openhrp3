@@ -10,8 +10,8 @@
    @author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_COLDET_MODEL_PAIR_H_INCLUDED
-#define OPENHRP_COLDET_MODEL_PAIR_H_INCLUDED
+#ifndef HRPCOLLISION_COLDET_MODEL_PAIR_H_INCLUDED
+#define HRPCOLLISION_COLDET_MODEL_PAIR_H_INCLUDED
 
 #include "config.h"
 #include "CollisionData.h"
@@ -32,8 +32,8 @@ namespace hrp {
         virtual ~ColdetModelPair();
 
         void set(ColdetModelPtr model0, ColdetModelPtr model1);
-        ColdetModelPtr& model0() { return model0_; }
-        ColdetModelPtr& model1() { return model1_; }
+
+        ColdetModel* model(int index) { return models[index].get(); }
 
         std::vector<collision_data>& detectCollisions() {
             return detectCollisionsSub(true);
@@ -57,9 +57,8 @@ namespace hrp {
         std::vector<collision_data>& detectCollisionsSub(bool detectAllContacts);
         bool detectMeshMeshCollisions(bool detectAllContacts);
         bool detectPlaneCylinderCollisions(bool detectAllContacts);
-        
-        ColdetModelPtr model0_;
-        ColdetModelPtr model1_;
+
+        ColdetModelPtr models[2];
         double tolerance_;
 
         CollisionPairInserter collisionPairInserter;

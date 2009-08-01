@@ -38,7 +38,6 @@ set(headers
   World.h
   exportdef.h
   uBlasCommonTypes.h
-  tvmet3d.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
   )	
 

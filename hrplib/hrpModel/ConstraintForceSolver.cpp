@@ -16,7 +16,6 @@
 #define NOMINMAX
 #endif
 
-#include "tvmet3d.h"
 #include "World.h"
 #include "Body.h"
 #include "Link.h"
