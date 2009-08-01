@@ -28,16 +28,16 @@ ColdetModelPair::ColdetModelPair()
 ColdetModelPair::ColdetModelPair(ColdetModelPtr model0, ColdetModelPtr model1,
                                  double tolerance)
 {
-    model0_ = model0;
-    model1_ = model1;
+    models[0] = model0;
+    models[1] = model1;
     tolerance_ = tolerance;
 }
 
 
 ColdetModelPair::ColdetModelPair(const ColdetModelPair& org)
 {
-    model0_ = org.model0_;
-    model1_ = org.model1_;
+    models[0] = org.models[0];
+    models[1] = org.models[1];
     tolerance_ = org.tolerance_;
 }
 
@@ -50,8 +50,8 @@ ColdetModelPair::~ColdetModelPair()
 
 void ColdetModelPair::set(ColdetModelPtr model0, ColdetModelPtr model1)
 {
-    model0_ = model0;
-    model1_ = model1;
+    models[0] = model0;
+    models[1] = model1;
 }
 
 
@@ -61,10 +61,10 @@ std::vector<collision_data>& ColdetModelPair::detectCollisionsSub(bool detectAll
 
     bool detected;
     
-    if ((model0_->getPrimitiveType() == ColdetModel::SP_PLANE &&
-         model1_->getPrimitiveType() == ColdetModel::SP_CYLINDER)
-        || (model1_->getPrimitiveType() == ColdetModel::SP_PLANE &&
-            model0_->getPrimitiveType() == ColdetModel::SP_CYLINDER)){
+    if ((models[0]->getPrimitiveType() == ColdetModel::SP_PLANE &&
+         models[1]->getPrimitiveType() == ColdetModel::SP_CYLINDER)
+        || (models[1]->getPrimitiveType() == ColdetModel::SP_PLANE &&
+            models[0]->getPrimitiveType() == ColdetModel::SP_CYLINDER)){
         detected = detectPlaneCylinderCollisions(detectAllContacts);
     }else{
         detected = detectMeshMeshCollisions(detectAllContacts);
@@ -82,14 +82,14 @@ bool ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
 {
     bool result = false;
     
-    if(model0_->isValid() && model1_->isValid()){
+    if(models[0]->isValid() && models[1]->isValid()){
 
         Opcode::BVTCache colCache;
 
         // inverse order because of historical background
         // this should be fixed.(note that the direction of normal is inversed when the order inversed 
-        colCache.Model0 = &model1_->dataSet->model;
-        colCache.Model1 = &model0_->dataSet->model;
+        colCache.Model0 = &models[1]->dataSet->model;
+        colCache.Model1 = &models[0]->dataSet->model;
 
         Opcode::AABBTreeCollider collider;
         collider.setCollisionPairInserter(&collisionPairInserter);
@@ -98,7 +98,7 @@ bool ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
             collider.SetFirstContact(true);
         }
         
-        result = collider.Collide(colCache, model1_->transform, model0_->transform);
+        result = collider.Collide(colCache, models[1]->transform, models[0]->transform);
         
         boxTestsCount = collider.GetNbBVBVTests();
         triTestsCount = collider.GetNbPrimPrimTests();
@@ -112,16 +112,16 @@ bool ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts)
 {
     ColdetModelPtr plane, cylinder;
     bool reversed=false;
-    if (model0_->getPrimitiveType() == ColdetModel::SP_PLANE){
-        plane = model0_;
-    }else if(model0_->getPrimitiveType() == ColdetModel::SP_CYLINDER){
-        cylinder = model0_;
+    if (models[0]->getPrimitiveType() == ColdetModel::SP_PLANE){
+        plane = models[0];
+    }else if(models[0]->getPrimitiveType() == ColdetModel::SP_CYLINDER){
+        cylinder = models[0];
     }
-    if (model1_->getPrimitiveType() == ColdetModel::SP_PLANE){
-        plane = model1_;
+    if (models[1]->getPrimitiveType() == ColdetModel::SP_PLANE){
+        plane = models[1];
         reversed = true;
-    }else if(model1_->getPrimitiveType() == ColdetModel::SP_CYLINDER){
-        cylinder = model1_;
+    }else if(models[1]->getPrimitiveType() == ColdetModel::SP_CYLINDER){
+        cylinder = models[1];
     }
     if (!plane || !cylinder) return false;
 
@@ -221,19 +221,19 @@ bool ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts)
 
 double ColdetModelPair::computeDistance(double *point0, double *point1)
 {
-    if(model0_->isValid() && model1_->isValid()){
+    if(models[0]->isValid() && models[1]->isValid()){
 
         Opcode::BVTCache colCache;
 
-        colCache.Model0 = &model1_->dataSet->model;
-        colCache.Model1 = &model0_->dataSet->model;
+        colCache.Model0 = &models[1]->dataSet->model;
+        colCache.Model1 = &models[0]->dataSet->model;
         
         SSVTreeCollider collider;
         
         float d;
         Point p0, p1;
         collider.Distance(colCache, d, p0, p1,
-                          model1_->transform, model0_->transform);
+                          models[1]->transform, models[0]->transform);
         point0[0] = p0.x;
         point0[1] = p0.y;
         point0[2] = p0.z;
@@ -248,17 +248,17 @@ double ColdetModelPair::computeDistance(double *point0, double *point1)
 
 bool ColdetModelPair::detectIntersection()
 {
-    if(model0_->isValid() && model1_->isValid()){
+    if(models[0]->isValid() && models[1]->isValid()){
 
         Opcode::BVTCache colCache;
 
-        colCache.Model0 = &model1_->dataSet->model;
-        colCache.Model1 = &model0_->dataSet->model;
+        colCache.Model0 = &models[1]->dataSet->model;
+        colCache.Model1 = &models[0]->dataSet->model;
         
         SSVTreeCollider collider;
         
         return collider.Collide(colCache, tolerance_, 
-                                model1_->transform, model0_->transform);
+                                models[1]->transform, models[0]->transform);
     }
 
     return false;
