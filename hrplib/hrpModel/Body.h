@@ -19,11 +19,9 @@
 #include <boost/shared_ptr.hpp>
 #include <hrpUtil/Referenced.h>
 #include <hrpUtil/Tvmet3d.h>
-
-#include "uBlasCommonTypes.h"
+#include <hrpUtil/uBlasCommonTypes.h>
 #include "LinkTraverse.h"
 #include "exportdef.h"
-
 
 namespace hrp {
     class Sensor;

@@ -9,7 +9,9 @@ ColdetModelPairの実装と CollisionPairInserter を統合する。
 collision_data のリファクタリング。
 
 
-
+ColdetModel には位置姿勢情報は持たせず、ColdetModelPair において干渉検出を
+呼び出すときにパラメータとして位置姿勢を渡すことにする？
+（Linkクラスとの連携のため）
 
 
 
