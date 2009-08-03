@@ -36,8 +36,8 @@ namespace hrp {
 
         /**
            Triangulated indices.
-           This value is available after calling the 'triangulate' method.
-           The indices are local ones in the polygon index vector given to the triangulate method.
+           This value is available after calling the 'apply' method.
+           The indices are local ones in the polygon index vector given to the apply method.
         */
         const std::vector<int>& triangles() {
             return triangles_;
