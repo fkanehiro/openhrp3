@@ -16,8 +16,7 @@
 #include "Link.h"
 #include "LinkTraverse.h"
 #include "Sensor.h"
-#include "uBlasCommonTypes.h"
-
+#include <hrpUtil/uBlasCommonTypes.h>
 #include <boost/numeric/ublas/triangular.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 

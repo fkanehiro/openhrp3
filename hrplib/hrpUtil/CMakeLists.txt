@@ -19,6 +19,7 @@ set(sources
   EasyScanner.cpp
   Tvmet3d.cpp
   Tvmet4d.cpp
+  MatrixSolvers.cpp
   UrlUtil.cpp
   VrmlNodes.cpp
   VrmlParser.cpp
@@ -35,6 +36,8 @@ set(headers
   EasyScanner.h
   Tvmet3d.h
   Tvmet4d.h
+  uBlasCommonTypes.h
+  MatrixSolvers.h
   TimeMeasure.h
   UrlUtil.h
   VrmlNodes.h
@@ -54,23 +57,24 @@ set_target_properties(${target} PROPERTIES VERSION 0.0.0 SOVERSION 0)
 
 if(UNIX)
   target_link_libraries(${target}
+    hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     boost_filesystem boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
-    ${OMNIORB_LIBRARIES}
-    hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION})
+    ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
+    )
 
 elseif(WIN32)
   add_definitions(-DHRP_UTIL_MAKE_DLL)
   set_target_properties(${target} PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d )
 
-    target_link_libraries(${target}
-    ${OMNIORB_LIBRARIES}
-    optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-    debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
-    optimized ${ZLIB_LIBRARY} debug ${ZLIB_LIBRARY}d
-    optimized ${PNG_LIBRARY} debug ${PNG_LIBRARY}d
-    optimized ${JPEG_LIBRARY} debug ${JPEG_LIBRARY}d)
-endif()
+  target_link_libraries(${target}
+      optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+      debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
+      optimized ${ZLIB_LIBRARY} debug ${ZLIB_LIBRARY}d
+      optimized ${PNG_LIBRARY} debug ${PNG_LIBRARY}d
+      optimized ${JPEG_LIBRARY} debug ${JPEG_LIBRARY}d
+      ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES})
+  endif()
 
 if(WIN32)
   install(TARGETS ${target}

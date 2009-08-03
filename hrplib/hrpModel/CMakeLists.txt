@@ -12,7 +12,6 @@ set(sources
   ForwardDynamics.cpp
   ForwardDynamicsABM.cpp
   ForwardDynamicsCBM.cpp
-  MatrixSolvers.cpp
   World.cpp
   ConstraintForceSolver.cpp
   ModelNodeSet.cpp
@@ -31,13 +30,11 @@ set(headers
   LinkPath.h
   JointPath.h
   IInverseKinematics.h
-  MatrixSolvers.h
   ModelNodeSet.h
   ModelLoaderUtil.h
   Sensor.h
   World.h
   exportdef.h
-  uBlasCommonTypes.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
   )	
 
@@ -54,7 +51,7 @@ if(UNIX)
     hrpUtil-${OPENHRP_LIBRARY_VERSION}
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     hrpCollision-${OPENHRP_LIBRARY_VERSION}
-    ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
+    ${OMNIORB_LIBRARIES}
     boost_filesystem boost_regex dl)
 
 elseif(WIN32)
@@ -66,7 +63,7 @@ elseif(WIN32)
     debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCollision-${OPENHRP_LIBRARY_VERSION}d
-    ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES})  
+    ${OMNIORB_LIBRARIES})  
   set_target_properties(${target} PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT )
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d )
 endif()

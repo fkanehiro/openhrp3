@@ -15,7 +15,7 @@
   
 #include "JointPath.h"
 #include "Link.h"
-#include "MatrixSolvers.h"
+#include <hrpUtil/MatrixSolvers.h>
 #include <algorithm>
 
 using namespace std;

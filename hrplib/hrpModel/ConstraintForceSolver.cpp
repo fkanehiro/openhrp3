@@ -20,10 +20,10 @@
 #include "Body.h"
 #include "Link.h"
 #include "LinkTraverse.h"
-#include "uBlasCommonTypes.h"
 #include "ForwardDynamicsCBM.h"
 #include "ConstraintForceSolver.h"
 
+#include <hrpUtil/uBlasCommonTypes.h>
 #include <hrpCorba/OpenHRPCommon.hh>
 #include <hrpCollision/ColdetModelPair.h>
 
