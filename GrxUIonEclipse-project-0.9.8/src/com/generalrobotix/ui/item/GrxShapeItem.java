@@ -613,10 +613,15 @@ public class GrxShapeItem extends GrxTransformItem{
             texture2d.setImage(0, icomp2d);
             appearance.setTexture(texture2d);
         }else{
-            //System.out.println("url: "+texInfo.url);
-            TextureLoader tloader = new TextureLoader(texInfo.url, null);  
-            Texture texture = tloader.getTexture();
-            appearance.setTexture(texture);
+        	if(!texInfo.url.equals("")){
+        		try{
+		            TextureLoader tloader = new TextureLoader(texInfo.url, null);  
+		            Texture texture = tloader.getTexture();
+		            appearance.setTexture(texture);
+        		}catch(Exception ex){
+        			System.out.println(ex+" "+texInfo.url);
+        		}
+        	}
         }
         TextureAttributes texAttrBase =  new TextureAttributes();
         texAttrBase.setTextureMode(TextureAttributes.REPLACE);
