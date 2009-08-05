@@ -11,8 +11,8 @@
    \author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_SENSOR_H_INCLUDED
-#define OPENHRP_SENSOR_H_INCLUDED
+#ifndef HRPMODEL_SENSOR_H_INCLUDED
+#define HRPMODEL_SENSOR_H_INCLUDED
 
 #include <string>
 #include <iostream>
@@ -22,105 +22,105 @@
 
 namespace hrp {
 
-	class Link;
+    class Link;
 
-	class HRPMODEL_API Sensor
-	{
-	public:
+    class HRPMODEL_API Sensor
+    {
+      public:
 
-		enum SensorType {
-			COMMON = 0,
-			FORCE,
-			RATE_GYRO,
-			ACCELERATION,
-			PRESSURE,
-			PHOTO_INTERRUPTER,
-			VISION,
-			TORQUE,
-			RANGE,
-			NUM_SENSOR_TYPES
-		};
+        enum SensorType {
+            COMMON = 0,
+            FORCE,
+            RATE_GYRO,
+            ACCELERATION,
+            PRESSURE,
+            PHOTO_INTERRUPTER,
+            VISION,
+            TORQUE,
+            RANGE,
+            NUM_SENSOR_TYPES
+        };
 
-		static const int TYPE = COMMON;
+        static const int TYPE = COMMON;
 		
         Sensor(); 
         virtual ~Sensor();
 
         static Sensor* create(int type);
-		static void destroy(Sensor* sensor);
+        static void destroy(Sensor* sensor);
 
-		virtual void operator=(const Sensor& org);
+        virtual void operator=(const Sensor& org);
 
         virtual void clear();
 		
-		std::string		name;
-		int				type;
-		int				id;
-		Link*			link;
-		Matrix33		localR;
-		Vector3			localPos;
+        std::string		name;
+        int				type;
+        int				id;
+        Link*			link;
+        Matrix33		localR;
+        Vector3			localPos;
 
-		virtual void putInformation(std::ostream& os);
+        virtual void putInformation(std::ostream& os);
 
-	};
+    };
 
 
-	class HRPMODEL_API ForceSensor : public Sensor
-	{
-	public:
-		static const int TYPE = FORCE;
+    class HRPMODEL_API ForceSensor : public Sensor
+    {
+      public:
+        static const int TYPE = FORCE;
 		
         ForceSensor();
-		Vector3 f;
-		Vector3 tau;
+        Vector3 f;
+        Vector3 tau;
 
         virtual void clear();
-		virtual void putInformation(std::ostream& os);
-	};
+        virtual void putInformation(std::ostream& os);
+    };
 
 
-	class HRPMODEL_API RateGyroSensor : public Sensor
-	{
-	public:
-		static const int TYPE = RATE_GYRO;
+    class HRPMODEL_API RateGyroSensor : public Sensor
+    {
+      public:
+        static const int TYPE = RATE_GYRO;
 
         RateGyroSensor();
-		Vector3 w;
+        Vector3 w;
 
         virtual void clear();
-		virtual void putInformation(std::ostream& os);
-	};
+        virtual void putInformation(std::ostream& os);
+    };
 
 
-	class HRPMODEL_API AccelSensor : public Sensor
-	{
-	public:
-		static const int TYPE = ACCELERATION;
+    class HRPMODEL_API AccelSensor : public Sensor
+    {
+      public:
+        static const int TYPE = ACCELERATION;
 
         AccelSensor();
 
-		Vector3 dv;
+        Vector3 dv;
 
         virtual void clear();
-		virtual void putInformation(std::ostream& os);
+        virtual void putInformation(std::ostream& os);
 
-		// The following members are used in the ForwardDynamics class
-		typedef tvmet::Vector<double, 2> vector2;
-		vector2 x[3]; 
-		bool isFirstUpdate;
-	};
+        // The following members are used in the ForwardDynamics class
+        typedef tvmet::Vector<double, 2> vector2;
+        vector2 x[3]; 
+        bool isFirstUpdate;
+    };
 
-	class HRPMODEL_API RangeSensor : public Sensor
-	{
-	public:
-		static const int TYPE = RANGE;
+    class HRPMODEL_API RangeSensor : public Sensor
+    {
+      public:
+        static const int TYPE = RANGE;
 
-		RangeSensor();
+        RangeSensor();
 
-		double scanAngle, scanStep, scanRate, maxDistance;  
-		std::vector<double> distances;
-		double nextUpdateTime;
-	};
+        double scanAngle, scanStep, scanRate, maxDistance;  
+        std::vector<double> distances;
+        double nextUpdateTime;
+    };
 };
 
 

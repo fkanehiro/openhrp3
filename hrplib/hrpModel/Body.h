@@ -10,8 +10,8 @@
     \author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_BODY_H_INCLUDED
-#define OPENHRP_BODY_H_INCLUDED
+#ifndef HRPMODEL_BODY_H_INCLUDED
+#define HRPMODEL_BODY_H_INCLUDED
 
 #include <map>
 #include <vector>
@@ -41,8 +41,7 @@ namespace hrp {
     typedef void* BodyHandle;
     typedef void* BodyCustomizerHandle;
 
-	
-    class HRPMODEL_API  Body : public Referenced
+    class HRPMODEL_API Body : public Referenced
     {
 
       public:
