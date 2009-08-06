@@ -9,5 +9,6 @@ set(IDL_FILE_BASENAMES
   ViewSimulator
   OnlineViewer
   ClockGenerator
+  PathPlanner
 )
 
