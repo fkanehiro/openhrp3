@@ -18,5 +18,6 @@
         <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" visible="true"/>
         <item class="com.generalrobotix.ui.item.GrxGraphItem" visible="true"/>
         <item class="com.generalrobotix.ui.item.GrxPythonScriptItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem"/>
     </mode>
 </grxui>
