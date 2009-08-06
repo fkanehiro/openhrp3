@@ -1,0 +1,286 @@
+// -*- mode: idl; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
+#ifndef PATH_PLANNER_IDL_INCLUDED
+#define PATH_PLANNER_IDL_INCLUDED
+
+#include "OpenHRPCommon.idl"
+#include "CollisionDetector.idl"
+#include "DynamicsSimulator.idl"
+#include "ModelLoader.idl"
+
+module OpenHRP {
+	/**
+　	 * @if jp
+	 * @brief 移動動作設計サービス
+	 * 
+	 * 主なインタフェース呼び出し順序は以下の通り
+	 * -# initPlanner()
+	 * -# registerCharacter()
+	 * -# registerIntersectionCheckPair()
+	 * -# setMobilityName()
+	 * -# setRobotName()
+	 * -# setStartPosition()
+	 * -# setGoalPosition()
+	 * -# setProperties()
+	 * -# initSimulation()
+	 * -# setCharacterPosition()
+	 * -# calcPath()
+	 * -# getPath()
+	 * @endif
+	 */
+	interface PathPlanner : World{
+		/**
+		 * @if jp
+		 * @brief (x,y,theta)の配列
+		 * @endif
+		 */
+		typedef sequence <DblSequence3> PointArray;
+
+		/**
+		 * @if jp
+		 * @brief プロパティ（名称と値のペア）の配列
+		 * @endif
+		 */
+		typedef sequence <sequence <string, 2> > Property;
+
+		/**
+		 * @if jp
+		 * @brief ロードマップのノード
+		 * @endif
+		 */
+		struct RoadmapNode {
+			/**
+			 * @if jp
+			 * 位置
+			 * @endif
+			 */
+			DblArray3 cfg;
+			/**
+			 * @if jp
+			 * リンク
+			 * @else
+			 * link
+			 * @endif
+			 */
+			LongSequence neighbors;
+		};
+
+		/**
+		 * @brief ロードマップ
+		 */
+		typedef sequence<RoadmapNode> Roadmap;
+
+		/**
+		 * @if jp
+		 * @brief calcPathを中断する
+		 * @endif
+		 */
+		void stopPlanning();
+
+		/**
+		 * @if jp
+		 * @brief ロードマップを取得
+		 *
+		 * @param rdmp ロードマップ
+		 * @endif
+		 */
+		void getRoadmap(out Roadmap rdmp);
+
+		/**
+		 * @brief ロードマップをクリアする
+		 */
+		void clearRoadmap();
+
+		/**
+		 * @brief 使用可能な移動能力名一覧を取得
+		 *
+		 * @param mobilities 移動能力名の配列
+		 */
+		void getMobilityNames(out StringSequence mobilities);
+
+		/**
+		 * @if jp
+		 * @brief 移動能力名を指定する
+		 * @param mobility 移動能力名
+		 * @return 指定した移動能力が存在しない場合false、それ以外はtrue
+		 * @endif
+		 */
+		boolean setMobilityName(in string mobility);
+
+		/**
+		 * @if jp
+		 * @brief 使用可能な経路最適化アルゴリズム名一覧を取得
+		 *
+		 * @param optimizers 経路最適化アルゴリズム名の配列
+		 * @endif
+		 */
+		void getOptimizerNames(out StringSequence optimizers);
+
+		/**
+		 * @if jp
+		 * @brief ロボット名を指定する
+		 *
+		 * 登録されたキャラクタの中から経路計画の対象とするキャラクタを指定する
+		 * @param model 経路計画の対象とするキャラクタの名前
+		 * @endif
+		 */
+		void setRobotName(in string model);
+
+		/**
+		 * @if jp
+		 * @brief 経路計画アルゴリズム名を指定する
+		 * @param 使用する経路計画アルゴリズム名
+		 * @endif
+		 */
+		void setAlgorithmName(in string model);
+
+		/**
+		 * @brief 使用可能な経路計画アルゴリズム名一覧を取得
+		 *
+		 * @param algos 経路計画アルゴリズム名の配列
+		 */
+		void getAlgorithmNames(out StringSequence algos);
+
+		/**
+		 * @brief エンジンの初期化を行う
+		 *
+		 * @param algorithm 経路計画アルゴリズム名
+		 */
+		void initPlanner();
+
+		/**
+		 * @if jp
+		 * @brief スタート位置を指定する
+		 *
+		 * 経路が開始する位置姿勢を指定する。
+		 * @param x x座標
+		 * @param y y座標
+		 * @param theta 角度
+		 * @endif
+		 */
+		void setStartPosition(in double x, in double y, in double theta);
+
+		/**
+		 * @brief ゴール位置を指定する
+		 *
+		 * 経路が終了する位置姿勢を指定する。
+		 * @param x x座標
+		 * @param y y座標
+		 * @param theta 角度
+		 */
+		void setGoalPosition(in double x, in double y, in double theta);
+
+		/**
+		 * @brief 使用可能なプロパティ名一覧を取得
+		 *
+		 * @param alg 経路計画アルゴリズム名
+		 * @param props 使用可能なプロパティ名の配列
+		 * @param defaults 各プロパティのデフォルト値
+		 * @return 指定した経路計画アルゴリズムが存在しない場合false、それ以外はtrue
+		 */
+		boolean getProperties(in string alg, out StringSequence props, out StringSequence defaults );
+
+		/**
+		 * @brief 計画エンジンにプロパティをあたえる
+		 *
+		 * 各種パラメタを文字列-文字列の組としてあたえる。
+		 * @param properties 名-値の組として解釈されるn*2文字列配列
+		 */
+		void setProperties(in Property properties);
+
+		/**
+		 * @if jp
+		 * @brief 経路計画を行う
+		 *
+		 * 既に指定された開始/終了位置、プロパティに基づき、経路を計画する。
+		 * @return 経路が計画された場合true，それ以外はfalse
+		 * @endif
+		 */
+		boolean calcPath();
+
+		/**
+		 * @brief 計画された経路を取得する
+		 *
+		 * 経路の姿勢列をx,y,thetaの順に並べた配列の配列として返す
+		 *
+		 * ノード数がNであるとき、
+		 *
+		 * path[0][0] ~ path[0][2]が最初のx,y,thetaで与えられる姿勢、
+		 *
+		 * path[N][0] ~ path[N][2]がゴールの姿勢となる。
+		 * @param path 経路の姿勢列をx,y,thetaの順に並べた配列の配列
+		 */
+		void getPath(out PointArray path);
+
+		/**
+		 * @if jp
+		 * @brief 衝突検出ペアを追加します。
+		 *
+		 * ここで登録されたペア同士の衝突検出が行われます。
+		 *
+		 * @param	char1	  リンクのキャラクタ名
+		 * @param	name1	  リンク名
+		 * @param	char2     もう一方のキャラクタ名
+		 * @param	name2     リンク名
+		 * @param	tolerance リンク間の距離がこの値以下になると干渉と見なされる
+		 * @else
+		 * Add Collision Pairs
+		 * @param	char1	  Name of character for first link
+		 * @param	name1	  Name of first link
+		 * @param	char2     Name of character for second link
+		 * @param	name2     Name of second link
+		 * @param	tolerance When distance between links is smaller than this value, it is regarded as collision
+		 * @endif
+		 */
+		void registerIntersectionCheckPair
+		(
+		 in string char1,
+		 in string name1,
+		 in string char2,
+		 in string name2,
+		 in double tolerance
+		 );
+
+		/**
+		 * @if jp
+		 * @brief URL からキャラクタを登録する。
+		 * 
+		 * ModelLoader から得られた情報でキャラクタを登録します。
+		 * @param name シミュレーションでのキャラクタ名
+		 * @param url モデルURL
+		 * @else
+		 * Register a character from model url
+		 * @param	name	Object Character Name for Simulation
+		 * @param	url		Model url
+		 * @endif
+		 */
+		void registerCharacterByURL(in string name, in string url);
+
+		/**
+		 * @if jp
+		 * @brief キャラクタの位置・姿勢を設定する
+		 *
+		 * @param character シミュレーションでのキャラクタ名
+		 * @param pos キャラクタの位置及び回転行列を格納した配列
+		 * @note 初期位置／姿勢の設定はinitSimulation()呼び出し後に行わなければならない
+		 * @else
+		 * @param character Object Character Name for Simulation
+		 * @param pos position and orientation of the character
+		 * @endif
+		 */
+		void setCharacterPosition(in string character, in DblSequence pos);
+
+		/**
+		 * @brief シミュレーションの初期化
+		 */
+		void initSimulation();
+
+		/**
+		 * @brief 経路の最適化
+		 * @param optimizer 最適化アルゴリズムの名称
+		 * @return 指定した最適化アルゴリズムが存在しない場合false、それ以外true
+		 */
+		boolean optimize(in string optimizer);
+	};
+};
+
+#endif
