@@ -4,6 +4,7 @@
 
 #include <vector>
 #include "Position.h"
+#include "exportdef.h"
 
 namespace PathEngine{
     class PathPlanner;
@@ -12,7 +13,7 @@ namespace PathEngine{
     /**
      * @brief ロードマップ
      */
-    class Roadmap{
+    class HRPPLANNER_API Roadmap{
     public:
         /**
          * @brief コンストラクタ

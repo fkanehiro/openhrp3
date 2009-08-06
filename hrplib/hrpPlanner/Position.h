@@ -9,6 +9,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288
 #endif
+#include "exportdef.h"
 
 namespace PathEngine {
     /**
@@ -17,11 +18,16 @@ namespace PathEngine {
      * 座標 (x, y, theta) を扱うクラス。
      * x[m], y[m], theta[rad]　thetaの値は0以上2*M_PI未満
      */
-    class Position {
+    class HRPPLANNER_API Position {
     private:
         double x_, y_, theta_;
-        static double weightX_, weightY_, weightTh_;
-        static double maxX_, maxY_, minX_, minY_;
+        static double weightX_;
+        static double weightY_;
+        static double weightTh_;
+        static double maxX_;
+        static double maxY_;
+        static double minX_;
+        static double minY_;
     public:
         Position();
     

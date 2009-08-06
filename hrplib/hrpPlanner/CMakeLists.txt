@@ -27,6 +27,7 @@ set(headers
   OmniWheel.h
   Position.h
   Optimizer.h
+  exportdef.h
   )
 
 set(target hrpPlanner-${OPENHRP_LIBRARY_VERSION})
@@ -43,6 +44,7 @@ if(UNIX)
     hrpCollision-${OPENHRP_LIBRARY_VERSION})
 
 elseif(WIN32)
+  add_definitions(-DHRPPLANNER_MAKE_DLL)
   target_link_libraries(${target}
     optimized hrpModel-${OPENHRP_LIBRARY_VERSION}
     optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
