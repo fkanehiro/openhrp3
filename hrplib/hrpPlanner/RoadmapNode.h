@@ -4,12 +4,13 @@
 
 #include <vector>
 #include "Position.h"
+#include "exportdef.h"
 
 namespace PathEngine {
   /**
    * @brief ロードマップのノード
    */
-  class RoadmapNode {
+  class HRPPLANNER_API RoadmapNode {
   public:
     /**
      * @brief コンストラクタ

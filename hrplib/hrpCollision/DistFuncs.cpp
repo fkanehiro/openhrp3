@@ -275,7 +275,7 @@ float SegSegDist(const Point& u0, const Point& u1,
     return SegSegDist(u0, u1-u0, v0, v1-v0, cp0, cp1);
 }
 
-#if 1
+#if 0
 
 int main()
 {

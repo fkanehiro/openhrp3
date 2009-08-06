@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 
-
+#include "exportdef.h"
 #include "Algorithm.h"
 #include "Position.h"
 #include "Mobility.h"
@@ -36,7 +36,7 @@ namespace PathEngine {
      *
      * 経路計画を行うプログラムはこのクラスを使用する。干渉検出などを簡易化したメソッドを持つ。
      */
-    class PathPlanner {
+    class HRPPLANNER_API PathPlanner {
 
     private:
         typedef std::map<const std::string, std::pair<AlgorithmNewFunc, AlgorithmDeleteFunc> > AlgorithmFactory;

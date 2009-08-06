@@ -7,6 +7,7 @@
 #ifndef PATHPLANNERSVC_IMPL_H
 #define PATHPLANNERSVC_IMPL_H
 
+#include <rtm/RTC.h>
 #include <map>
 #include <hrpCorba/PathPlanner.hh>
 #include <hrpPlanner/PathPlanner.h>
