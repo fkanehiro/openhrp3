@@ -22,6 +22,12 @@
             name="Item View">
       </view>
       <view
+            class="com.generalrobotix.ui.view.GrxPathPlanningViewPart"
+            id="com.generalrobotix.ui.view.GrxPathPlanningViewPart"
+            category="com.generalrobotix.ui.view"
+            name="Path Planning View">
+      </view>
+      <view
             class="com.generalrobotix.ui.view.GrxRangeSensorViewPart"
             id="com.generalrobotix.ui.view.GrxRangeSensorViewPart"
             category="com.generalrobotix.ui.view"
