@@ -8066,40 +8066,48 @@
 	    collide	FALSE
 	  }
 
-	  translation	-20.059 -91.6589 -50.0163
+	  #translation	-20.059 -91.6589 -50.0163
 	  rotation	0 0 1  0
 	  scale	0.00198953 0.00198941 0.0019895
 	}
 
       }
 
-      translation	-118.519 65.576 23.8377
-      rotation	0.589239 0.571313 -0.571313  2.07665
-      scale	-1.29274 -1.2928 -1.29273
+      #translation	-118.519 65.576 23.8377
+      #rotation	0.589239 0.571313 -0.571313  2.07665
+      translation 1 0.9 1
+      rotation -0.5775 0.577 0.5775 2.0935
+      scale 1.29274 1.2928 1.29273
       scaleOrientation	0.596398 -0.763339 -0.248239  0.00229024
     }
     Transform {
       children	USE CHAIR
 
-      translation	-118.608 65.9761 26.5223
-      rotation	0.578426 0.576812 -0.576812  2.09278
-      scale	-1.30087 -1.30088 -1.30088
+      #translation	-118.608 65.9761 26.5223
+      #rotation	0.578426 0.576812 -0.576812  2.09278
+      translation 1 0.9 1.7
+      rotation -0.5775 0.577 0.5775 2.0935
+      scale	1.30087 1.30088 1.30088
       scaleOrientation	0.99561 -0.0268138 -0.089676  0.352141
     }
     Transform {
       children	USE CHAIR
 
-      translation	110.211 68.3854 -65.8558
-      rotation	0.709165 -0.498541 0.49854  1.90789
-      scale	-1.3481 -1.34818 -1.34809
+     # translation	110.211 68.3854 -65.8558
+     # rotation	0.709165 -0.498541 0.49854  1.90789
+      translation 3 0.9 1.7
+      rotation -0.7185 -0.4916 -0.492 1.8947
+      scale	1.3481 1.34818 1.34809
       scaleOrientation	-0.00638707 0.998679 -0.0509761  0.0434935
     }
     Transform {
       children	USE CHAIR
 
-      translation	124.45 67.0761 -24.9112
-      rotation	-0.574258 0.57889 -0.57889  4.18415
-      scale	-1.32242 -1.32238 -1.32241
+     # translation	124.45 67.0761 -24.9112
+     # rotation	-0.574258 0.57889 -0.57889  4.18415
+      translation 3 0.9 1
+      rotation -0.5775 -0.577 -0.5775 2.0935
+      scale	1.32242 1.32238 1.32241
       scaleOrientation	-0.265026 0.962856 -0.0516608  0.017442
     }
     Transform {
@@ -8968,16 +8976,18 @@
 	    collide	FALSE
 	  }
 
-	  translation	94.0478 21.7256 15.5312
+	  #translation	94.0478 21.7256 15.5312
 	  rotation	0 0 1  0
 	  scale	0.0351144 0.0351141 0.0351141
 	}
 
       }
 
-      translation	68.0886 -11.1643 18.0271
-      rotation	1 0.000464498 -0.000464498  1.5708
-      scale	-0.718378 -0.718379 -0.718376
+      #translation	68.0886 -11.1643 18.0271
+      #rotation	1 0.000464498 -0.000464498  1.5708
+      translation -4.3 0 2.5
+      rotation 1 0 0 -1.57
+      scale	0.718378 0.718379 0.718376
       scaleOrientation	0.510693 0.0395749 -0.858852  0.0146485
     }
     Transform {
