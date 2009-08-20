@@ -14,6 +14,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 
+import com.generalrobotix.ui.grxui.Activator;
+
 /**
  * 軸情報クラス
  *
@@ -73,9 +75,9 @@ public class AxisInfo {
         tickLength = 3;
         labelEvery = 0.0;
         labelFormat = "0";
-        labelFont = new Font(Display.getDefault(),"monospaced", 10, SWT.NORMAL);
+        labelFont = Activator.getDefault().getFont( "monospaced" );
         labelColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
-        unitFont = new Font(Display.getDefault(),"dialog", 10, SWT.NORMAL);
+        unitFont = Activator.getDefault().getFont( "monospaced" );
         unitLabel = "";
         unitColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
         unitXOfs = 0;

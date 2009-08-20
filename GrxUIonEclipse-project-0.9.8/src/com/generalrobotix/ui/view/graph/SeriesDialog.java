@@ -46,6 +46,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.MessageBundle;
@@ -646,9 +647,10 @@ public class SeriesDialog extends Dialog {
 			      element = ((Item) element).getData();
 			}
 			DataItemInfo item = (DataItemInfo) element;
-			if(property == "color")
-				item.color = new Color(Display.getDefault(),((RGB)value));
-			else if(property == "legend")
+			if(property == "color"){
+				Activator.getDefault().setColor(((RGB)value).toString(), (RGB)value);
+				item.color =Activator.getDefault().getColor(((RGB)value).toString());
+			}else if(property == "legend")
 				item.legend = (String)value;
 				
 			 viewer_.update(element, null);

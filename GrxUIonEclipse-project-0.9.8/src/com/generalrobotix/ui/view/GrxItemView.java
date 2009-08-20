@@ -40,6 +40,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
@@ -291,10 +292,10 @@ public class GrxItemView extends GrxBaseView {
 			if( GrxBaseItem.class.isAssignableFrom( element.getClass() ) ) {
 				//選択
 				if( ((GrxBaseItem)element).isSelected() ) {
-					label.setForeground( new Color(null,0,0,0) );
+					label.setForeground( Display.getDefault().getSystemColor(SWT.COLOR_BLACK) );
 				//非選択
 				} else{
-					label.setForeground( new Color(null,128,128,128) );
+					label.setForeground( Display.getDefault().getSystemColor(SWT.COLOR_GRAY) );
 					label.setText( "("+getText(element)+")" );
 				}
 			}

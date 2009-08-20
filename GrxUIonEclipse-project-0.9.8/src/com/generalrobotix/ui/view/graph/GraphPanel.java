@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxGraphItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.MessageBundle;
@@ -52,8 +53,8 @@ public class GraphPanel extends Composite {
     private TrendGraphManager trendGraphMgr_;
     private List<GrxModelItem> currentModels_ = null;
 
-    private static final Color normalColor_ = new Color(Display.getDefault(),0, 0, 0);
-    private static final Color focusedColor_ = new Color(Display.getDefault(),0, 0, 100);
+    private static final Color normalColor_ = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
+    private static final Color focusedColor_ = Activator.getDefault().getColor( "focusedColor" );
 
     private Composite graphElementBase_;
     private Composite comp_;
