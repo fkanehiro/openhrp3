@@ -16,6 +16,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 
+import com.generalrobotix.ui.grxui.Activator;
+
 
 /**
  *
@@ -112,7 +114,7 @@ public class TrendGraph {
 
         xAxisInfo_ = model_.getTimeAxisInfo();
         yAxisInfo_ = new AxisInfo(0, 1);
-        yAxisInfo_.unitFont = new Font(Display.getDefault(),"dialog", 12, SWT.NORMAL);
+        yAxisInfo_.unitFont = Activator.getDefault().getFont( "dialog12" );
         yAxisInfo_.unitXOfs = 5;
         yAxisInfo_.unitYOfs = 15;
 

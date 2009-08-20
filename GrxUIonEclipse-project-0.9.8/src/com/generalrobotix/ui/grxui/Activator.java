@@ -7,9 +7,17 @@ import java.net.URL;
 import java.util.jar.*;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbench;
@@ -40,6 +48,8 @@ public class Activator extends AbstractUIPlugin{
 
     public GrxPluginManager    manager_;
     private ImageRegistry      ireg_     = new ImageRegistry();
+    private FontRegistry 		freg_ = new FontRegistry();
+    private ColorRegistry		creg_ = new ColorRegistry();
     private boolean           bStartedGrxUI_ = false; 
 
     // パースペクティブのイベント初期化、振る舞いを定義するクラス
@@ -196,7 +206,15 @@ public class Activator extends AbstractUIPlugin{
         URL cur_url = cur.toURI().toURL();
         GrxDebugUtil.println("[ACTIVATOR] START in " + cur_url);
 
-        if (getPath().matches(".*\\.jar!.+$")) {
+        registryImage();
+        registryFont();
+        registryColor();
+        
+        eventInnerClass.setEventListner();
+    }
+
+    private void registryImage() throws Exception{
+    	if (getPath().matches(".*\\.jar!.+$")) {
             // Jarファイル化した場合の ireg_ セット
             URL localUrl = new URL(getPath().substring(0, getPath().length() - 2));
             JarInputStream in = new JarInputStream(localUrl.openStream());
@@ -218,10 +236,26 @@ public class Activator extends AbstractUIPlugin{
                 ireg_.put(f.getName(), ImageDescriptor.createFromURL(f.toURI().toURL()));
             }
         }
-
-        eventInnerClass.setEventListner();
     }
-
+    
+    private void registryFont(){
+    	FontData[] monospaced = {new FontData("monospaced", 10, SWT.NORMAL)};
+    	freg_.put("monospaced", monospaced);
+    	FontData[] dialog10 = {new FontData("dialog", 10, SWT.NORMAL )};
+    	freg_.put("dialog10", dialog10);
+    	FontData[] dialog12 = {new FontData("dialog", 12, SWT.NORMAL )};
+    	freg_.put("dialog12", dialog12);
+ 
+    }
+    
+    private void registryColor(){
+    	RGB focusedColor = new RGB(0,0,100);
+    	creg_.put("focusedColor", focusedColor);
+    	RGB markerColor = new RGB(255,128,128);
+    	creg_.put("markerColor", markerColor);
+    }
+    
+    
     /**
      * プラグインのディレクトリ取得. プラグイン内の画像や設定ファイルを取得するとき使えるかも
      * 
@@ -281,6 +315,17 @@ public class Activator extends AbstractUIPlugin{
         return ireg_.getDescriptor(iconName);
     }
 
+    public Font getFont(String fontName){
+    	return freg_.get(fontName);
+    }
+    
+    public Color getColor(String colorName){
+    	return creg_.get(colorName);
+    }
+    
+    public void setColor(String colorName, RGB rgb){
+    	creg_.put(colorName, rgb);
+    }
     /*
      * (non-Javadoc)
      * 

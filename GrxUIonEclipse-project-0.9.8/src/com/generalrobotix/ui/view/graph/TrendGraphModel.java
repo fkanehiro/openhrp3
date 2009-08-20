@@ -11,8 +11,7 @@ package com.generalrobotix.ui.view.graph;
 
 import java.util.*;
 
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
@@ -108,7 +107,7 @@ public class TrendGraphModel
         timeAxisInfo_.unitYOfs = 0;
         timeAxisInfo_.unitLabel = "(sec)";
         timeAxisInfo_.markerPos = markerPos_;
-        timeAxisInfo_.markerColor = new Color(Display.getDefault(), 255, 128, 128);
+        timeAxisInfo_.markerColor = Activator.getDefault().getColor( "markerColor" );
         timeAxisInfo_.markerVisible = true;
 
         //dataSeriesMap_ = new HashMap();
