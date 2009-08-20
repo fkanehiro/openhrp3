@@ -49,7 +49,7 @@ namespace hrp {
         }
 
         inline Link* rootLink() const {
-            return links.front();
+            return (links.empty() ? 0 : links.front());
         }
 
         inline Link* link(int index) const {
