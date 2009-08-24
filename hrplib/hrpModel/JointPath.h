@@ -20,7 +20,7 @@
 #include <hrpUtil/uBlasCommonTypes.h>
 #include "LinkPath.h"
 #include "IInverseKinematics.h"
-#include "exportdef.h"
+#include "config.h"
 
 namespace hrp {
 

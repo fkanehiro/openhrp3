@@ -19,7 +19,7 @@
 
 #include <vector>
 #include <ostream>
-#include "exportdef.h"
+#include "config.h"
 
 namespace hrp {
 
