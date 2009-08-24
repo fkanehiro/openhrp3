@@ -154,11 +154,15 @@ public class GrxCorbaUtil {
      * @return CORBA object associated with id
      */
     public static org.omg.CORBA.Object getReference(String id, String nsHost, int nsPort) {
+    	return getReference(id, "", nsHost, nsPort);
+    }
+    
+    public static org.omg.CORBA.Object getReference(String id, String kind, String nsHost, int nsPort){
         NamingContext namingContext = getNamingContext(nsHost, nsPort);
         org.omg.CORBA.Object obj = null;
         try {
             NameComponent[] nc = new NameComponent[1];
-            nc[0] = new NameComponent(id, "");
+            nc[0] = new NameComponent(id, kind);
             obj = namingContext.resolve(nc);
         } catch (Exception excep) {
             obj = null;
