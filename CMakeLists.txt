@@ -14,20 +14,15 @@ cmake_minimum_required(VERSION 2.4)
 
 project(OpenHRP)
 
-#set(OpenHRP_MAJOR_VERSION 3)
-#set(OpenHRP_MINOR_VERSION 1)
-#set(OpenHRP_RELEASE_VERSION 0)
-
 set(OPENHRP_VERSION_MAJOR 3)
 set(OPENHRP_VERSION_MINOR 1)
-set(OPENHRP_VERSION_PATCH 0)
+set(OPENHRP_VERSION_MICRO 0)
 
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules/)
 
 include(FindPkgConfig)
 include(CheckIncludeFiles)
-
 
 option(ENABLE_INSTALL_RPATH "Enable RPATH setting for installed binary files" OFF)
 
@@ -347,7 +342,7 @@ set(CPACK_PACKAGE_CONTACT "Shin'ichiro Nakaoka <s.nakaoka@aist.go.jp>")
 #set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
 set(CPACK_PACKAGE_VERSION_MAJOR ${OPENHRP_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${OPENHRP_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${OPENHRP_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION_PATCH ${OPENHRP_VERSION_MICRO})
 
 if(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make

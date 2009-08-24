@@ -19,7 +19,7 @@
 #include <vector>
 #include <boost/intrusive_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
-#include "exportdef.h"
+#include "config.h"
 
 namespace hrp {
     class Link;

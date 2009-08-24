@@ -18,7 +18,7 @@
 #include <iostream>
 #include <vector>
 #include <hrpUtil/Tvmet3d.h>
-#include "exportdef.h"
+#include "config.h"
 
 namespace hrp {
 

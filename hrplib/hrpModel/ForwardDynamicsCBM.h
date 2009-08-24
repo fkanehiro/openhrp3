@@ -20,7 +20,7 @@
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/uBlasCommonTypes.h>
 #include "ForwardDynamics.h"
-#include "exportdef.h"
+#include "config.h"
 
 namespace hrp
 {

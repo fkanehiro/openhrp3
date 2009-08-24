@@ -20,7 +20,7 @@
 #include <hrpUtil/Tvmet3d.h>
 #include "Body.h"
 #include "ForwardDynamics.h"
-#include "exportdef.h"
+#include "config.h"
 
 namespace OpenHRP {
 	class CollisionSequence;
