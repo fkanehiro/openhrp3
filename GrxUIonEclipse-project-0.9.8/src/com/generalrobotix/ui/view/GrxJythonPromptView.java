@@ -34,6 +34,7 @@ import javax.swing.JOptionPane;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.custom.StyledText;
@@ -119,8 +120,8 @@ public class GrxJythonPromptView extends GrxBaseView {
         display_ = parent.getDisplay();
         parent_ = parent;
         composite_.setLayout(new GridLayout(1,false));
-        simScriptStartIcon_ = Activator.getDefault().getImage( "sim_script_start.png" );
-        simScriptStopIcon_ = Activator.getDefault().getImage( "sim_script_stop.png");
+        simScriptStartIcon_ = ImageDescriptor.createFromURL(GrxJythonPromptView.class.getResource( "/resources/images/sim_script_start.png")).createImage();
+        simScriptStopIcon_ = ImageDescriptor.createFromURL(GrxJythonPromptView.class.getResource( "/resources/images/sim_script_stop.png")).createImage();
         frame_ = SWT_AWT.new_Frame(new Composite(parent.getShell(),SWT.EMBEDDED));
         
         btnExec_ = new Button(composite_,SWT.TOGGLE);
@@ -343,6 +344,10 @@ public class GrxJythonPromptView extends GrxBaseView {
         }
         
         final String url = currentItem_.getURL(true);
+	execFile(url);
+    }
+
+    public void execFile(final String url) {
         File f = new File(url);
         File p = f.getParentFile();
         interpreter_.exec("import sys");
