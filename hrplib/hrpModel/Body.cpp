@@ -39,6 +39,7 @@ namespace hrp {
     {
         Body* body;
         int ikTypeId;
+        bool isCustomizedIkPathReversed;
         virtual void onJointPathUpdated();
     public:
         CustomizedJointPath(Body* body, Link* baseLink, Link* targetLink);
@@ -701,8 +702,18 @@ CustomizedJointPath::~CustomizedJointPath()
 
 void CustomizedJointPath::onJointPathUpdated()
 {
-    ikTypeId = body->customizerInterface->initializeAnalyticIk
-        (body->customizerHandle, baseLink()->index, endLink()->index);
+    ikTypeId = body->customizerInterface->initializeAnalyticIk(
+        body->customizerHandle, baseLink()->index, endLink()->index);
+    if(ikTypeId){
+        isCustomizedIkPathReversed = false;
+    } else {
+        // try reversed path
+        ikTypeId = body->customizerInterface->initializeAnalyticIk(
+            body->customizerHandle, endLink()->index, baseLink()->index);
+        if(ikTypeId){
+            isCustomizedIkPathReversed = true;
+        }
+    }
 }
 
 
@@ -722,12 +733,20 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
             qorg[i] = joint(i)->q;
         }
 
-        Link* targetLink = endLink();
-        Link* baseLink_   = baseLink();
-        Matrix33 end_R(end_R0 * trans(targetLink->Rs));
-        Vector3 p_relative(trans(baseLink_->R) * Vector3(end_p - baseLink_->p));
-        Matrix33 R_relative(trans(baseLink_->R) * end_R);
+        const Link* targetLink = endLink();
+        const Link* baseLink_ = baseLink();
 
+        Matrix33 end_R(end_R0 * trans(targetLink->Rs));
+
+        Vector3 p_relative;
+        Matrix33 R_relative;
+        if(!isCustomizedIkPathReversed){
+            p_relative = trans(baseLink_->R) * Vector3(end_p - baseLink_->p);
+            R_relative = trans(baseLink_->R) * end_R;
+        } else {
+            p_relative = trans(end_R) * Vector3(baseLink_->p - end_p);
+            R_relative = trans(end_R) * baseLink_->R;
+        }
         solved = body->customizerInterface->
             calcAnalyticIk(body->customizerHandle, ikTypeId, p_relative, R_relative);
 
