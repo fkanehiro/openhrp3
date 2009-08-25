@@ -16,7 +16,7 @@
 #define HRPMODEL_LINK_PATH_H_INCLUDED
 
 #include "LinkTraverse.h"
-#include "config.h"
+#include "Config.h"
 
 namespace hrp {
 

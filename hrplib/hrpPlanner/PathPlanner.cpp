@@ -338,7 +338,7 @@ void computeBoundingBox(BodyPtr body, double min[3], double max[3])
             }
         }
     }
-    std::cout << "bounding box of " << body->name << ": ("
+    std::cout << "bounding box of " << body->name() << ": ("
               << min[0] << ", " << min[1] << ", " << min[2] << ") - ("
               << max[0] << ", " << max[1] << ", " << max[2] << ")" 
               << std::endl;
@@ -395,14 +395,14 @@ void PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr cInf
 
     BodyPtr body = loadBodyFromBodyInfo(cInfo, USE_INTERNAL_COLLISION_DETECTOR);
     if(body){
-        body->name = name;
+        body->setName(name);
         if(debug_){
             //std::cout << "Loaded Model:\n" << *body << std::endl;
         }
 
         if (bboxMode_ && USE_INTERNAL_COLLISION_DETECTOR){
             body = createBoundingBoxBody(body);
-            body->name = name;
+            body->setName(name);
         }
 
         if(!USE_INTERNAL_COLLISION_DETECTOR){
@@ -756,7 +756,7 @@ void PathPlanner::_setupCharacterData()
 
         int numLinks = body->numLinks();
         OpenHRP::CharacterPosition& characterPosition = allCharacterPositions_[i];
-        characterPosition.characterName = CORBA::string_dup(body->name.c_str());
+        characterPosition.characterName = CORBA::string_dup(body->name().c_str());
         OpenHRP::LinkPositionSequence& linkPositions = characterPosition.linkPositions;
         linkPositions.length(numLinks);
 

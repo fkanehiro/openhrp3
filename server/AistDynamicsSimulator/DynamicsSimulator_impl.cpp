@@ -183,7 +183,7 @@ void DynamicsSimulator_impl::registerCharacter
     BodyPtr body = loadBodyFromBodyInfo(bodyInfo, USE_INTERNAL_COLLISION_DETECTOR);
 
     if(body){
-        body->name = name;
+        body->setName(name);
         if(debugMode){
             std::cout << "Loaded Model:\n" << *body << std::endl;
         }
@@ -1177,7 +1177,7 @@ void DynamicsSimulator_impl::_setupCharacterData()
 
         int numLinks = body->numLinks();
         CharacterPosition& characterPosition = allCharacterPositions[i];
-        characterPosition.characterName = CORBA::string_dup(body->name.c_str());
+        characterPosition.characterName = CORBA::string_dup(body->name().c_str());
         LinkPositionSequence& linkPositions = characterPosition.linkPositions;
         linkPositions.length(numLinks);
 

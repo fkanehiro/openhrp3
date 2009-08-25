@@ -21,7 +21,7 @@
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/uBlasCommonTypes.h>
 #include "LinkTraverse.h"
-#include "config.h"
+#include "Config.h"
 
 namespace hrp {
     class Sensor;
@@ -46,15 +46,28 @@ namespace hrp {
 
       public:
 
-        static BodyInterface* bodyInterface;
-
-        std::string modelName;
-        std::string name;
+        static BodyInterface* bodyInterface();
 
         Body();
         Body(const Body& org);
 
         virtual ~Body();
+
+        const std::string& name() {
+            return name_;
+        }
+
+        void setName(const std::string& name) {
+            name_ = name;
+        }
+
+        const std::string& modelName() {
+            return modelName_;
+        }
+        
+        void setModelName(const std::string& name) {
+            modelName_ = name;
+        }
 
         void setRootLink(Link* link);
 
@@ -228,7 +241,6 @@ namespace hrp {
 
         LinkConnectionArray linkConnections;
 
-		
       private:
 
         bool isStatic_;
@@ -240,6 +252,9 @@ namespace hrp {
         LinkArray jointIdToLinkArray;
 
         LinkTraverse linkTraverse_;
+
+        std::string name_;
+        std::string modelName_;
 
         typedef std::map<std::string, Link*> NameToLinkMap;
         NameToLinkMap nameToLinkMap;
