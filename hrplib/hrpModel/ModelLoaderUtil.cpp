@@ -158,8 +158,8 @@ BodyPtr ModelLoaderHelper::createBody(BodyInfo_ptr bodyInfo)
 	
     body = new Body();
 
-    CORBA::String_var name = bodyInfo->name();
-    body->modelName = name;
+    const char* name = bodyInfo->name();
+    body->setModelName(name);
 
     int n = bodyInfo->links()->length();
     linkInfoSeq = bodyInfo->links();
@@ -231,7 +231,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
     if(jointId < 0){
         if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
             std::cerr << "Warning:  Joint ID is not given to joint " << link->name
-                      << " of model " << body->modelName << "." << std::endl;
+                      << " of model " << body->modelName() << "." << std::endl;
         }
     }
 
@@ -311,7 +311,7 @@ void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sens
         int id = sensorInfo.id;
         if(id < 0) {
             std::cerr << "Warning:  sensor ID is not given to sensor " << sensorInfo.name
-                      << "of model " << body->modelName << "." << std::endl;
+                      << "of model " << body->modelName() << "." << std::endl;
         } else {
             int sensorType = Sensor::COMMON;
 

@@ -13,7 +13,7 @@
 #ifndef OPENHRP_CONSTRAINT_FORCE_SOLVER_H_INCLUDED
 #define OPENHRP_CONSTRAINT_FORCE_SOLVER_H_INCLUDED
 
-#include "config.h"
+#include "Config.h"
 
 namespace OpenHRP {
 	class CollisionSequence;

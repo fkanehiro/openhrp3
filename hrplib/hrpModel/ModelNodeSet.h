@@ -18,7 +18,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/signals.hpp>
 #include <hrpUtil/VrmlNodes.h>
-#include "config.h"
+#include "Config.h"
 
 
 namespace hrp {

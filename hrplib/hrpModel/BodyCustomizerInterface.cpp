@@ -1,4 +1,3 @@
-// -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 4; -*-
 /*
  * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
  * All rights reserved. This program is made available under the terms of the
@@ -8,11 +7,14 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  * General Robotix Inc. 
  */
-/** \file
-    \brief The implementation for the BodyCustomizer class
-    \author S.NAKAOKA
+/**
+   \file
+   \brief The implementation for the BodyCustomizer class
+   \author Shin'ichiro Nakaoka
 */
 
+#include "BodyCustomizerInterface.h"
+#include "Body.h"
 #include <cstdlib>
 #include <map>
 #include <boost/version.hpp>
@@ -26,9 +28,6 @@
 #include <boost/filesystem.hpp>
 #endif
 
-
-#include "BodyCustomizerInterface.h"
-
 using namespace hrp;
 using namespace std;
 using namespace boost;
@@ -37,33 +36,33 @@ namespace {
 
 #ifdef _WIN32
 # include <windows.h>
-	const char* DLLSFX =	".dll";
-	const char* PATH_DELIMITER =	";";
-	typedef HINSTANCE DllHandle;
-	inline DllHandle loadDll(const char* filename) { return LoadLibrary(filename); }
-	inline void* resolveDllSymbol(DllHandle handle, const char* symbol) { return GetProcAddress(handle, symbol); }
-	inline void unloadDll(DllHandle handle) { FreeLibrary(handle); }
+    const char* DLLSFX = ".dll";
+    const char* PATH_DELIMITER = ";";
+    typedef HINSTANCE DllHandle;
+    inline DllHandle loadDll(const char* filename) { return LoadLibrary(filename); }
+    inline void* resolveDllSymbol(DllHandle handle, const char* symbol) { return GetProcAddress(handle, symbol); }
+    inline void unloadDll(DllHandle handle) { FreeLibrary(handle); }
 #else
 # include <dlfcn.h>
-	const char* DLLSFX = ".so";
-	const char* PATH_DELIMITER =	":";
-	typedef void* DllHandle;
-	inline DllHandle loadDll(const char* filename) { return dlopen(filename, RTLD_LAZY); }
-	inline void* resolveDllSymbol(DllHandle handle, const char* symbol) { return dlsym(handle, symbol); }
-	inline void unloadDll(DllHandle handle) { dlclose(handle); }
+    const char* DLLSFX = ".so";
+    const char* PATH_DELIMITER = ":";
+    typedef void* DllHandle;
+    inline DllHandle loadDll(const char* filename) { return dlopen(filename, RTLD_LAZY); }
+    inline void* resolveDllSymbol(DllHandle handle, const char* symbol) { return dlsym(handle, symbol); }
+    inline void unloadDll(DllHandle handle) { dlclose(handle); }
 #endif
 
-	typedef std::map<std::string, BodyCustomizerInterface*> NameToInterfaceMap;
-	NameToInterfaceMap customizerRepository;
-	bool pluginLoadingFunctionsCalled = false;
+    typedef std::map<std::string, BodyCustomizerInterface*> NameToInterfaceMap;
+    NameToInterfaceMap customizerRepository;
+    bool pluginLoadingFunctionsCalled = false;
 
-	inline string toNativePathString(const filesystem::path& path) {
+    inline string toNativePathString(const filesystem::path& path) {
 #if (BOOST_VERSION <= 103301)
-		return path.native_file_string();
+        return path.native_file_string();
 #else
-		return path.file_string();
+        return path.file_string();
 #endif
-	}
+    }
 
 }
 
@@ -91,37 +90,37 @@ static bool loadCustomizerDll(BodyInterface* bodyInterface, const std::string fi
 	
     if(dll){
 		
-		GetBodyCustomizerInterfaceFunc getCustomizerInterface =
-			(GetBodyCustomizerInterfaceFunc)resolveDllSymbol(dll, "getHrpBodyCustomizerInterface");
+        GetBodyCustomizerInterfaceFunc getCustomizerInterface =
+            (GetBodyCustomizerInterfaceFunc)resolveDllSymbol(dll, "getHrpBodyCustomizerInterface");
 		
-		if(!getCustomizerInterface){
-			unloadDll(dll);
-		} else {
-			customizerInterface = getCustomizerInterface(bodyInterface);
+        if(!getCustomizerInterface){
+            unloadDll(dll);
+        } else {
+            customizerInterface = getCustomizerInterface(bodyInterface);
 			
-			if(customizerInterface){
+            if(customizerInterface){
 				
-				if(!checkInterface(customizerInterface)){
-					cout << "Body customizer \"" << filename << "\" is incomatible and cannot be loaded.";
-				} else {
-					cout << "Loading \"" << filename << "\" for ";
+                if(!checkInterface(customizerInterface)){
+                    cout << "Body customizer \"" << filename << "\" is incomatible and cannot be loaded.";
+                } else {
+                    cout << "Loading \"" << filename << "\" for ";
 					
-					const char** names = customizerInterface->getTargetModelNames();
+                    const char** names = customizerInterface->getTargetModelNames();
 					
-					for(int i=0; names[i]; ++i){
-						if(i > 0){
-							cout << ", ";
-						}
-						string name(names[i]);
-						if(!name.empty()){
-							customizerRepository[name] = customizerInterface;
-						}
-						cout << names[i];
-					}
-					cout << endl;
-				}
-			}
-		}
+                    for(int i=0; names[i]; ++i){
+                        if(i > 0){
+                            cout << ", ";
+                        }
+                        string name(names[i]);
+                        if(!name.empty()){
+                            customizerRepository[name] = customizerInterface;
+                        }
+                        cout << names[i];
+                    }
+                    cout << endl;
+                }
+            }
+        }
     }
 	
     return (customizerInterface != 0);
@@ -139,65 +138,87 @@ static bool loadCustomizerDll(BodyInterface* bodyInterface, const std::string fi
 */
 int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyInterface)
 {
-	pluginLoadingFunctionsCalled = true;
+    pluginLoadingFunctionsCalled = true;
 	
     int numLoaded = 0;
 
-	filesystem::path pluginPath(pathString, filesystem::native);
+    filesystem::path pluginPath(pathString, filesystem::native);
 	
-	if(filesystem::exists(pluginPath)){
+    if(filesystem::exists(pluginPath)){
 
-		if(!filesystem::is_directory(pluginPath)){
-			if(loadCustomizerDll(bodyInterface, toNativePathString(pluginPath))){
-				numLoaded++;
-			}
-		} else {
-			regex pluginNamePattern(string(".+Customizer") + DLLSFX);
-			filesystem::directory_iterator end;
+        if(!filesystem::is_directory(pluginPath)){
+            if(loadCustomizerDll(bodyInterface, toNativePathString(pluginPath))){
+                numLoaded++;
+            }
+        } else {
+            regex pluginNamePattern(string(".+Customizer") + DLLSFX);
+            filesystem::directory_iterator end;
 			
-			for(filesystem::directory_iterator it(pluginPath); it != end; ++it){
-				const filesystem::path& filepath = *it;
-				if(!filesystem::is_directory(filepath)){
-					if(regex_match(filepath.leaf(), pluginNamePattern)){
-						if(loadCustomizerDll(bodyInterface, toNativePathString(filepath))){
-							numLoaded++;
-						}
-					}
-				}
-			}
-		}
-	}
+            for(filesystem::directory_iterator it(pluginPath); it != end; ++it){
+                const filesystem::path& filepath = *it;
+                if(!filesystem::is_directory(filepath)){
+                    if(regex_match(filepath.leaf(), pluginNamePattern)){
+                        if(loadCustomizerDll(bodyInterface, toNativePathString(filepath))){
+                            numLoaded++;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	return numLoaded;
+    return numLoaded;
+}
+
+
+int hrp::loadBodyCustomizers(const std::string pathString)
+{
+    return loadBodyCustomizers(pathString, Body::bodyInterface());
 }
 
 
 /**
    The function loads the customizers in the directories specified
-   by the environmental variable OPENHRP_PLUGIN_PATH.
+   by the environmental variable HRPMODEL_CUSTOMIZER_PATH
 */
-int hrp::loadBodyCustomizersInDefaultDirectories(BodyInterface* bodyInterface)
+int hrp::loadBodyCustomizers(BodyInterface* bodyInterface)
 {
     int numLoaded = 0;
 
     if(!pluginLoadingFunctionsCalled){
 
-		pluginLoadingFunctionsCalled = true;
+        pluginLoadingFunctionsCalled = true;
 
-		char* pathListEnv = getenv("OPENHRP_PLUGIN_PATH");
+        char* pathListEnv = getenv("HRPMODEL_CUSTOMIZER_PATH");
 
-		if(pathListEnv){
-			char_separator<char> sep(PATH_DELIMITER);
-			string pathList(pathListEnv);
-			tokenizer< char_separator<char> > paths(pathList, sep);
-			tokenizer< char_separator<char> >::iterator p;
-			for(p = paths.begin(); p != paths.end(); ++p){
-				numLoaded = loadBodyCustomizers(*p, bodyInterface);
-			}
-		}
+        if(pathListEnv){
+            char_separator<char> sep(PATH_DELIMITER);
+            string pathList(pathListEnv);
+            tokenizer< char_separator<char> > paths(pathList, sep);
+            tokenizer< char_separator<char> >::iterator p;
+            for(p = paths.begin(); p != paths.end(); ++p){
+                numLoaded = loadBodyCustomizers(*p, bodyInterface);
+            }
+        }
+
+#ifndef _WIN32
+        Dl_info info;
+        if(dladdr((void*)&hrp::findBodyCustomizer, &info)){
+            filesystem::path customizerPath =
+                filesystem::path(info.dli_fname).branch_path().branch_path() / OPENHRP_RELATIVE_SHARE_DIR / "customizer";
+            numLoaded += loadBodyCustomizers(customizerPath.string(), bodyInterface);
+        }
+#endif
+
     }
 
     return numLoaded;
+}
+
+
+int hrp::loadBodyCustomizers()
+{
+    return loadBodyCustomizers(Body::bodyInterface());
 }
 
 

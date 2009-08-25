@@ -18,7 +18,6 @@
 #include "Sensor.h"
 #include "BodyCustomizerInterface.h"
 #include <hrpCollision/ColdetModel.h>
-
 #include <map>
 #include <cstdlib>
 
@@ -101,8 +100,8 @@ Body::Body()
 
 
 Body::Body(const Body& org)
-    : modelName(org.modelName),
-      name(org.name),
+    : modelName_(org.modelName_),
+      name_(org.name_),
       allSensors(Sensor::NUM_SENSOR_TYPES)
 {
     initialize();
@@ -208,7 +207,7 @@ void Body::updateLinkTree()
                 invalidLink = new Link;
             }
             jointIdToLinkArray[i] = invalidLink;
-            std::cerr << "Warning: Model " << modelName <<
+            std::cerr << "Warning: Model " << modelName_ <<
                 " has empty joint ID in the valid IDs." << std::endl;
         }
     }
@@ -287,6 +286,7 @@ Vector3 Body::calcCM()
 
     return Vector3(mc / totalMass_);
 }
+
 
 /**
    calculate the mass matrix using the unit vector method
@@ -376,6 +376,7 @@ void Body::calcMassMatrix(dmatrix& out_M)
     rootLink_->dw  = dworg;
 }
 
+
 void Body::setColumnOfMassMatrix(dmatrix& out_M, int column)
 {
     Vector3 f;
@@ -395,6 +396,7 @@ void Body::setColumnOfMassMatrix(dmatrix& out_M, int column)
         out_M(i + 6, column) = ptr->u;
     }
 }
+
 
 /*
  *  see Kajita et al. Humanoid Robot Ohm-sha,  p.210
@@ -486,6 +488,7 @@ void Body::calcTotalMomentum(Vector3& out_P, Vector3& out_L)
     }
 }
 
+
 void Body::calcForwardKinematics(bool calcVelocity, bool calcAcceleration)
 {
     linkTraverse_.calcForwardKinematics(calcVelocity, calcAcceleration);
@@ -573,11 +576,9 @@ void Body::updateLinkColdetModelPositions()
 }
 
 
-
 void Body::putInformation(std::ostream &out)
 {
-    out << "Body: model name = " << modelName
-        << " name = " << name << "\n\n";
+    out << "Body: model name = " << modelName_ << " name = " << name_ << "\n\n";
 
     int n = numLinks();
     for(int i=0; i < n; ++i){
@@ -593,11 +594,11 @@ void Body::putInformation(std::ostream &out)
 bool Body::installCustomizer()
 {
     if(!pluginsInDefaultDirectoriesLoaded){
-        loadBodyCustomizersInDefaultDirectories(bodyInterface);
+        loadBodyCustomizers(bodyInterface());
         pluginsInDefaultDirectoriesLoaded = true;
     }
 		
-    BodyCustomizerInterface* interface = findBodyCustomizer(modelName);
+    BodyCustomizerInterface* interface = findBodyCustomizer(modelName_);
 
     return interface ? installCustomizer(interface) : false;
 }
@@ -614,7 +615,7 @@ bool Body::installCustomizer(BodyCustomizerInterface * customizerInterface)
     }
 	
     if(customizerInterface){
-        customizerHandle = customizerInterface->create(bodyHandle, modelName.c_str());
+        customizerHandle = customizerInterface->create(bodyHandle, modelName_.c_str());
         if(customizerHandle){
             this->customizerInterface = customizerInterface;
         }
@@ -669,17 +670,19 @@ static double* getJointTorqueForcePtr(BodyHandle bodyHandle, int linkIndex)
 }
 
 
-static BodyInterface bodyInterfaceEntity = {
-    hrp::BODY_INTERFACE_VERSION,
-    getLinkIndexFromName,
-    getLinkName,
-    getJointValuePtr,
-    getJointVelocityPtr,
-    getJointTorqueForcePtr,
-};
+BodyInterface* Body::bodyInterface()
+{
+    static BodyInterface interface = {
+        hrp::BODY_INTERFACE_VERSION,
+        getLinkIndexFromName,
+        getLinkName,
+        getJointValuePtr,
+        getJointVelocityPtr,
+        getJointTorqueForcePtr,
+    };
 
-
-BodyInterface* Body::bodyInterface = &bodyInterfaceEntity;
+    return &interface;
+}
 
 
 CustomizedJointPath::CustomizedJointPath(Body* body, Link* baseLink, Link* targetLink) :

@@ -20,7 +20,7 @@
 #include <boost/intrusive_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
 
-#include "config.h"
+#include "Config.h"
 
 
 namespace hrp

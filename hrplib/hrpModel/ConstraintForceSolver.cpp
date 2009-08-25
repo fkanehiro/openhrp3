@@ -646,8 +646,8 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
         } else {
             if(enableNormalVisualization){
                 Collision& collision = collisions[colIndex];
-                collision.pair.charName1 = CORBA::string_dup(linkPair.bodyData[0]->body->name.c_str());
-                collision.pair.charName2 = CORBA::string_dup(linkPair.bodyData[1]->body->name.c_str());
+                collision.pair.charName1 = CORBA::string_dup(linkPair.bodyData[0]->body->name().c_str());
+                collision.pair.charName2 = CORBA::string_dup(linkPair.bodyData[1]->body->name().c_str());
                 collision.pair.linkName1 = CORBA::string_dup(linkPair.link[0]->name.c_str());
                 collision.pair.linkName2 = CORBA::string_dup(linkPair.link[1]->name.c_str());
                 pCollisionPoints = &collision.points;
@@ -907,9 +907,9 @@ void CFSImpl::putContactPoints()
 
         if(!linkPair->connection){
 
-            std::cout << " " << linkPair->link[0]->name << " of " << linkPair->bodyData[0]->body->modelName;
+            std::cout << " " << linkPair->link[0]->name << " of " << linkPair->bodyData[0]->body->modelName();
             std::cout << "<-->";
-            std::cout << " " << linkPair->link[1]->name << " of " << linkPair->bodyData[1]->body->modelName;
+            std::cout << " " << linkPair->link[1]->name << " of " << linkPair->bodyData[1]->body->modelName();
 
             ConstraintPointArray& constraintPoints = linkPair->constraintPoints;
             std::cout << "\n";

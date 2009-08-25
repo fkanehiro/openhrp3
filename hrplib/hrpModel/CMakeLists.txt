@@ -1,5 +1,5 @@
 
-configure_file(config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
+configure_file(Config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/Config.h)
 
 set(sources
   Sensor.cpp
@@ -34,8 +34,7 @@ set(headers
   ModelLoaderUtil.h
   Sensor.h
   World.h
-  config.h
-  ${CMAKE_CURRENT_BINARY_DIR}/config.h
+  Config.h
   )	
 
 
@@ -45,6 +44,7 @@ add_library(${target} SHARED ${sources})
 
 # interface version 0.0.0 - version 3.0.0 beta1
 set_target_properties(${target} PROPERTIES VERSION 0.0.0 SOVERSION 0)
+
 
 if(UNIX)
   target_link_libraries(${target}
@@ -82,3 +82,25 @@ install(TARGETS ${target}
   ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug)
 
 install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpModel)
+
+
+# Body Customizers
+set(OPENHRP_3_0_CUSTOMIZERS ${OPENHRP_3_0_CUSTOMIZERS} CACHE FILEPATH "Source files of the body customizer for OpenHRP 3.0")
+
+if(OPENHRP_3_0_CUSTOMIZERS)
+
+  foreach(src ${OPENHRP_3_0_CUSTOMIZERS})
+
+    get_filename_component(customizer ${src} NAME_WE)
+    add_library(${customizer} MODULE ${src})
+    set_target_properties(${customizer} PROPERTIES COMPILE_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}")
+    set_target_properties(${customizer} PROPERTIES PREFIX "")
+    set_target_properties(${customizer} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/customizer)
+
+    install(TARGETS ${customizer}
+      LIBRARY DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug)
+
+  endforeach()
+endif()
+
+

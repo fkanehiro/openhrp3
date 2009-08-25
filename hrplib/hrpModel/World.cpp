@@ -142,16 +142,11 @@ void WorldBase::calcNextState()
 
 int WorldBase::addBody(BodyPtr body)
 {
-    const string& name = body->name;
-
-    if(!name.empty()){
-        nameToBodyIndexMap[name] = bodyInfoArray.size();
+    if(!body->name().empty()){
+        nameToBodyIndexMap[body->name()] = bodyInfoArray.size();
     }
-
     BodyInfo info;
-
     info.body = body;
-
     bodyInfoArray.push_back(info);
 
     return bodyInfoArray.size() - 1;
