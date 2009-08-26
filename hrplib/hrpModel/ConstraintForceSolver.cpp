@@ -441,7 +441,7 @@ void CFSImpl::initialize(void)
         bodyData.linksData.resize(body->numLinks());
         bodyData.hasConstrainedLinks = false;
         bodyData.isTestForceBeingApplied = false;
-        bodyData.isStatic = body->isStatic();
+        bodyData.isStatic = body->isStaticModel();
 
         bodyData.forwardDynamicsMM =
             dynamic_pointer_cast<ForwardDynamicsMM>(world.forwardDynamics(bodyIndex));

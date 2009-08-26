@@ -24,7 +24,6 @@ class Joint;
 class SDContactPair;
 
 
-	class OpenHRP::CollisionSequence;
 	class Sensor;
 	class ForceSensor;
 	class RateGyroSensor;

@@ -122,7 +122,7 @@ ImageConverter::loadPNG(
         png_byte    header[8];
         int         is_png;
 
-        fread( header, 1, number, fp );
+        size_t n = fread( header, 1, number, fp );
         is_png = !png_sig_cmp( header, 0, number );
         if( !is_png )   throw "File is not png.";
 
