@@ -175,8 +175,8 @@ namespace hrp {
         /**
            This function returns true when the whole body is a static, fixed object like a floor.
         */
-        inline bool isStatic() {
-            return isStatic_;
+        inline bool isStaticModel() {
+            return isStaticModel_;
         }
 
         double calcTotalMass();
@@ -243,7 +243,7 @@ namespace hrp {
 
       private:
 
-        bool isStatic_;
+        bool isStaticModel_;
         Link* rootLink_;
         Link* invalidLink;
 

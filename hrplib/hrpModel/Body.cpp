@@ -215,7 +215,7 @@ void Body::updateLinkTree()
 
     calcTotalMass();
 
-    isStatic_ = (rootLink_->jointType == Link::FIXED_JOINT && numJoints() == 0);
+    isStaticModel_ = (rootLink_->jointType == Link::FIXED_JOINT && numJoints() == 0);
 }
 
 
@@ -312,7 +312,7 @@ void Body::calcMassMatrix(dmatrix& out_M)
 
     uint nJ = numJoints();
     int totaldof = nJ;
-    if( !isStatic_ ) totaldof += 6;
+    if( !isStaticModel_ ) totaldof += 6;
 
     out_M.resize(totaldof,totaldof);
     b1.resize(totaldof, 1);
@@ -336,7 +336,7 @@ void Body::calcMassMatrix(dmatrix& out_M)
 	
     setColumnOfMassMatrix(b1, 0);
 
-    if( !isStatic_ ){
+    if( !isStaticModel_ ){
         for(int i=0; i < 3; ++i){
             rootLink_->dvo[i] += 1.0;
             setColumnOfMassMatrix(out_M, i);
@@ -385,7 +385,7 @@ void Body::setColumnOfMassMatrix(dmatrix& out_M, int column)
 
     calcInverseDynamics(rootLink_, f, tau);
 
-    if( !isStatic_ ){
+    if( !isStaticModel_ ){
         tau -= cross(rootLink_->p, f);
         setVector3(f,   out_M, 0, column);
         setVector3(tau, out_M, 3, column);

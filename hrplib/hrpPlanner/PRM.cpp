@@ -38,7 +38,7 @@ bool PRM::buildRoadmap()
       roadmap_->addNode(node);
       numPoints++;
     }
-    printf("creating nodes, registered : %d / tested : %d\r", numPoints, numTotalPoints); 
+    printf("creating nodes, registered : %ld / tested : %ld\r", numPoints, numTotalPoints); 
   }
   printf("\n");
   
