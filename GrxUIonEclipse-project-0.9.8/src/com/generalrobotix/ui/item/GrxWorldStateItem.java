@@ -1065,9 +1065,15 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		public void setServoState(String charName, long[] servoStat) {
 			_get(charName).servoState = servoStat;
 		}
+		public void setJointState(String charName, int[] jointStat){
+			_get(charName).jointState = jointStat;
+		}
 		
 		public void setCalibState(String charName, long[] calibStat) {
 			_get(charName).calibState = calibStat;
+		}
+		public void setPowerState(String charName, double voltage, double current){
+			_get(charName).powerState = new double[]{voltage, current};
 		}
         
         protected Object clone() throws CloneNotSupportedException{
@@ -1093,7 +1099,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		public SensorState sensorState;
 		public double[]    targetState;
 		public long[]       servoState;
+	        public int[]        jointState;
 		public long[]       calibState;
+	        public double[]	    powerState;
         
         protected Object clone() throws CloneNotSupportedException{
             CharacterStateEx ret = new CharacterStateEx();
