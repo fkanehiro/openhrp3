@@ -90,6 +90,7 @@ public class GrxRobotStatView extends GrxBaseView {
     private TableViewer jointTV_;
     private TableViewer forceTV_;
     private TableViewer sensorTV_;
+    private TableViewer powerTV_;
     
     //private Label lblInstruction1_;// = new Label("Select Model Item on ItemView");
     //private Label lblInstruction2_;
@@ -149,27 +150,34 @@ public class GrxRobotStatView extends GrxBaseView {
         });
 
         String[][] header = new String[][] {
-                { "No", "Joint", "Angle", "Target", "Current", "PWR", "SRV", "Pgain", "Dgain" },
+	    { "No", "Joint", "Angle", "Target", "Torque", "PWR", "SRV", "ARM", "T", "Pgain", "Dgain" },
                 { "Force", "Fx[N]", "Fy[N]", "Fz[N]", "Mx[Nm]", "My[Nm]", "Mz[Nm]" }, 
-				{ "Sensor", "Xaxis", "Yaxis", "Zaxis" } };
+	    { "Sensor", "Xaxis", "Yaxis", "Zaxis" }, 
+				{ "Voltage[V]", "Current[A]"},
+};
         int[][] alignment = new int[][] {
-                { SWT.LEFT, SWT.LEFT,  SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.CENTER, SWT.CENTER, SWT.RIGHT, SWT.RIGHT },
+	    { SWT.RIGHT, SWT.LEFT,  SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.CENTER, SWT.CENTER, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
                 { SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
-                { SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT } };
+	    { SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
+	    { SWT.RIGHT, SWT.RIGHT}
+	};
 
         jointTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);
         forceTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);    
         sensorTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);    
+        powerTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);    
         
         jointTV_.setContentProvider(new ArrayContentProvider());
         forceTV_.setContentProvider(new ArrayContentProvider());
         sensorTV_.setContentProvider(new ArrayContentProvider());
+        powerTV_.setContentProvider(new ArrayContentProvider());
         
         jointTV_.setLabelProvider(new JointTableLabelProvider());
         forceTV_.setLabelProvider(new ForceTableLabelProvider());
         sensorTV_.setLabelProvider(new SensorTableLabelProvider());
+        powerTV_.setLabelProvider(new PowerTableLabelProvider());
         
-        viewers_ = new TableViewer[]{jointTV_,forceTV_,sensorTV_};
+        viewers_ = new TableViewer[]{jointTV_,forceTV_,sensorTV_,powerTV_};
         for(int i=0;i<viewers_.length;i++){
             TableLayout tableLayout = new TableLayout();
             for(int j=0;j<header[i].length;j++){
@@ -244,6 +252,10 @@ public class GrxRobotStatView extends GrxBaseView {
             input[i] = i;
         }
         return input;
+    }
+
+    private Integer[] _createPowerTVInput(){
+	
     }
 
     public void restoreProperties() {
@@ -368,6 +380,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    jointTV_.setInput(_createJointTVInput());
 	    forceTV_.setInput(_createForceTVInput());
 	    sensorTV_.setInput(_createSensorTVInput());	
+	    powerTV_.setInput(_createPowerTVInput());
     }
     
     private void _refresh(){
@@ -386,6 +399,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    jointTV_.refresh();
 	    forceTV_.refresh();
 	    sensorTV_.refresh();	
+	    powerTV_.refresh();
     }
     
     private void _resizeTables() {
@@ -462,6 +476,13 @@ public class GrxRobotStatView extends GrxBaseView {
 //    }
 
     class JointTableLabelProvider implements ITableLabelProvider,ITableColorProvider,ITableFontProvider {
+	        final int CALIB_STATE_MASK = 0x1;
+	        final int SERVO_STATE_MASK = 0x2;
+		final int POWER_STATE_MASK = 0x4;
+		final int SERVO_ALARM_MASK = 0x7fff8;
+		final int SERVO_ALARM_SHIFT = 3;
+		final int DRIVER_TEMP_MASK = 0xff000000;
+		final int DRIVER_TEMP_SHIFT = 24;
         
         public Image getColumnImage(Object element, int columnIndex) {
             return null;
@@ -478,26 +499,42 @@ public class GrxRobotStatView extends GrxBaseView {
             }
             */
             switch (columnIndex) {
-                case 0:
+	    case 0: // id
                     return Integer.toString(rowIndex);
-                case 1:
+	    case 1: // name
                     if (jointList_.size() <= 0)
                         break;
                     return jointList_.get(rowIndex).getName();
-                case 2:
+	    case 2: // angle
                     if (currentSensor_ == null)
                         break;
                     return FORMAT1.format(Math.toDegrees(currentSensor_.q[rowIndex]));
-                case 3:
+	    case 3: // command
                     if (currentRefAng_ == null)
                         break;
                     return FORMAT1.format(Math.toDegrees(currentRefAng_[rowIndex]));
-                case 6:
+	    case 4: // torque
+		if (currentSensor_ == null || currentSensor_.u == null)
+		    break;
+		return FORMAT1.format(currentSensor_.u[rowIndex]);
+
+	    case 5: // power
+		break;
+
+	    case 6: // servo
                     if (currentSvStat_ == null)
                         break;
                     if (_isSwitchOn(rowIndex, currentSvStat_)) {
                         return "ON";
                     } else return "OFF";
+	    case 7: // alarm
+		break;
+	    case 8: // driver temperature
+		break;
+	    case 9: // P gain
+		break;
+	    case 10: // D gain
+		break;
                 default:
                     break;
             }
@@ -726,6 +763,55 @@ public class GrxRobotStatView extends GrxBaseView {
         
     }
     
+    class PowerTableLabelProvider implements ITableLabelProvider,ITableColorProvider,ITableFontProvider{
+
+        public Image getColumnImage(Object element, int columnIndex) {
+            return null;
+        }
+        
+        public String getColumnText(Object element, int columnIndex) {
+            int rowIndex = ((Integer)element).intValue();
+	    if(currentSensor_ == null || currentSensor_.power == null)
+		return "---";
+	    if (columnIndex < powerTV_.getTable().getColumnCount())
+		return FORMAT2.format(currentSensor_.power[columnIndex - 1]);
+            return null;
+        }
+
+        public void addListener(ILabelProviderListener listener) {
+        }
+
+        public void dispose() {
+        }
+
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+
+        public void removeListener(ILabelProviderListener listener) {
+        }
+
+        public Color getBackground(Object element, int columnIndex) {
+            int rowIndex = ((Integer)element).intValue();;
+            GrxBaseItem bitem = manager_.focusedItem();
+            if (bitem instanceof GrxSensorItem) {
+                if (forceName_[rowIndex].equals(((GrxSensorItem)bitem).getName())) {
+                    return yellow_;
+                }
+            }
+            return white_;
+        }
+
+        public Color getForeground(Object element, int columnIndex) {
+            return black_;
+        }
+
+        public Font getFont(Object element, int columnIndex) {
+            return plain12_;
+        }
+        
+    }
+
     public void shutdown() {
         manager_.removeItemChangeListener(this, GrxModelItem.class);
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
