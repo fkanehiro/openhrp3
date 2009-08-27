@@ -103,7 +103,7 @@ static bool loadCustomizerDll(BodyInterface* bodyInterface, const std::string fi
                 if(!checkInterface(customizerInterface)){
                     cout << "Body customizer \"" << filename << "\" is incomatible and cannot be loaded.";
                 } else {
-                    cout << "Loading body customier \"" << filename << "\" for ";
+                    cout << "Loading body customizer \"" << filename << "\" for ";
 					
                     const char** names = customizerInterface->getTargetModelNames();
 					
