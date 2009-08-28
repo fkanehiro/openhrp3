@@ -178,9 +178,9 @@ public class GrxPluginManager {
             try {
                 InputStream in;
                 if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) {
-                    in = new FileInputStream(Activator.getPath() + File.separator + "grxuirc.xml");
+                	in = getClass().getResourceAsStream("/grxuirc.xml");
                 } else {
-                    in = new FileInputStream(Activator.getPath() + File.separator + "grxuirc_win.xml");
+                    in = getClass().getResourceAsStream("/grxuirc_win.xml");
                 }
                 OutputStream out = new FileOutputStream(rcFile.toString());
                 byte[] buf = new byte[1024];

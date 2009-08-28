@@ -34,7 +34,6 @@ import javax.swing.JOptionPane;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.custom.StyledText;
@@ -120,8 +119,8 @@ public class GrxJythonPromptView extends GrxBaseView {
         display_ = parent.getDisplay();
         parent_ = parent;
         composite_.setLayout(new GridLayout(1,false));
-        simScriptStartIcon_ = ImageDescriptor.createFromURL(GrxJythonPromptView.class.getResource( "/resources/images/sim_script_start.png")).createImage();
-        simScriptStopIcon_ = ImageDescriptor.createFromURL(GrxJythonPromptView.class.getResource( "/resources/images/sim_script_stop.png")).createImage();
+        simScriptStartIcon_ = Activator.getDefault().getImage( "sim_script_start.png" );
+        simScriptStopIcon_ = Activator.getDefault().getImage( "sim_script_stop.png");
         frame_ = SWT_AWT.new_Frame(new Composite(parent.getShell(),SWT.EMBEDDED));
         
         btnExec_ = new Button(composite_,SWT.TOGGLE);
@@ -163,14 +162,19 @@ public class GrxJythonPromptView extends GrxBaseView {
         interpreter_.setOut(writer_);
         interpreter_.set("uimanager", manager_);
         interpreter_.exec("import sys");
-        interpreter_.exec("sys.path.append('" + Activator.getPath() + "/script')");
-        interpreter_.exec("sys.path.append('" + Activator.getPath() + "/jythonLib')");
+        String dir = System.getenv("JYTHON_LIB");
+        if(dir!=null && new File(dir).exists())
+        	interpreter_.exec("sys.path.append('"+dir+"')");
+        dir = System.getenv("PROJECT_DIR")+"/../script";
+        if(new File(dir).exists())
+        	interpreter_.exec("sys.path.append('"+dir+"')");
         URL[] urls = manager_.pluginLoader_.getURLs();
         for (int i=0; i<urls.length; i++) {
             interpreter_.exec("sys.path.append('"+urls[i].getPath()+"')");
             interpreter_.exec("print \"sys.path.append(\'"+urls[i].getPath()+"\')\"");
         }
-        interpreter_.exec("import rbimporter");
+        if(new File(dir).exists())
+        	interpreter_.exec("import rbimporter");
         interpreter_.exec("import __builtin__");
         
         interpreter_.set("view", this);
