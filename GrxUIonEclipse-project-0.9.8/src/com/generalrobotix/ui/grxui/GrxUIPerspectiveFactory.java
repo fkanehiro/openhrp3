@@ -67,7 +67,6 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
 
         top_left.addView("com.generalrobotix.ui.view.GrxItemViewPart");
 
-        top_right.addView("com.generalrobotix.ui.view.GrxJythonPromptViewPart");
         top_right.addView("com.generalrobotix.ui.view.GrxORBMonitorViewPart");
         top_right
                 .addView("com.generalrobotix.ui.view.GrxProcessManagerViewPart");

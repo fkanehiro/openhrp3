@@ -47,19 +47,32 @@ public class Activator extends AbstractUIPlugin{
     private static Activator   plugin;
 
     public GrxPluginManager    manager_;
-    private ImageRegistry      ireg_     = new ImageRegistry();
-    private FontRegistry 		freg_ = new FontRegistry();
-    private ColorRegistry		creg_ = new ColorRegistry();
+    private ImageRegistry      ireg_     = null;
+    private FontRegistry 		freg_ = null;
+    private ColorRegistry		creg_ = null;
     private boolean           bStartedGrxUI_ = false; 
-
+    private final static String[] images_ = {"sim_start.png",
+    											"sim_stop.png",
+    											"fastrwd.png",
+    											"slowrwd.png",
+    											"pause.png",
+    											"playback.png",
+    											"slowfwd.png",
+    											"fastfwd.png",
+    											"frame+.png",
+    											"frame-.png",
+    											"sim_script_start.png",
+    											"sim_script_stop.png",
+    											"grxrobot1.png"};
+	
     // パースペクティブのイベント初期化、振る舞いを定義するクラス
     class EventInnerClass extends PerspectiveAdapter
             implements IWindowListener, IWorkbenchListener, SynchronousBundleListener, FrameworkListener {
-
+    	
         private IWorkbench      workbench_                  = null;
         private BundleContext   context_                    = null;
         public EventInnerClass(IWorkbench workbench, BundleContext context) {
-            super();
+    	    super();
             workbench_ = workbench;
             context_ = context;
         }
@@ -194,10 +207,7 @@ public class Activator extends AbstractUIPlugin{
     public void start(BundleContext context)
             throws Exception {
         super.start(context);
-        plugin = this;
-
-        // イベントリスナークラスの登録
-        eventInnerClass = new EventInnerClass(PlatformUI.getWorkbench(), context);
+        plugin = this;      
 
         // デバッグ表示モード
         GrxDebugUtil.setDebugFlag(true);
@@ -206,15 +216,22 @@ public class Activator extends AbstractUIPlugin{
         URL cur_url = cur.toURI().toURL();
         GrxDebugUtil.println("[ACTIVATOR] START in " + cur_url);
 
-        registryImage();
-        registryFont();
-        registryColor();
-        
-        eventInnerClass.setEventListner();
+        if(PlatformUI.isWorkbenchRunning()){
+        	//        	 イベントリスナークラスの登録
+            eventInnerClass = new EventInnerClass(PlatformUI.getWorkbench(), context);
+            eventInnerClass.setEventListner();
+            registryImage();
+            registryFont();
+            registryColor();
+            
+        }
     }
 
-    private void registryImage() throws Exception{
+    public void registryImage() throws Exception{
+    	ireg_ = new ImageRegistry();
+    	/*
     	if (getPath().matches(".*\\.jar!.+$")) {
+    		GrxDebugUtil.println("registryImage" + getPath());
             // Jarファイル化した場合の ireg_ セット
             URL localUrl = new URL(getPath().substring(0, getPath().length() - 2));
             JarInputStream in = new JarInputStream(localUrl.openStream());
@@ -236,9 +253,16 @@ public class Activator extends AbstractUIPlugin{
                 ireg_.put(f.getName(), ImageDescriptor.createFromURL(f.toURI().toURL()));
             }
         }
+		*/
+    	for(int i=0; i<images_.length; i++){
+    		URL url = getClass().getResource("/resources/images/"+images_[i]);
+    		ireg_.put(images_[i], ImageDescriptor.createFromURL(url));
+    	}
+        
     }
     
-    private void registryFont(){
+    public void registryFont(){
+    	freg_ = new FontRegistry();
     	FontData[] monospaced = {new FontData("monospaced", 10, SWT.NORMAL)};
     	freg_.put("monospaced", monospaced);
     	FontData[] dialog10 = {new FontData("dialog", 10, SWT.NORMAL )};
@@ -248,7 +272,8 @@ public class Activator extends AbstractUIPlugin{
  
     }
     
-    private void registryColor(){
+    public void registryColor(){
+    	creg_ = new ColorRegistry();
     	RGB focusedColor = new RGB(0,0,100);
     	creg_.put("focusedColor", focusedColor);
     	RGB markerColor = new RGB(255,128,128);
@@ -340,7 +365,7 @@ public class Activator extends AbstractUIPlugin{
     }
 
     // GrxUIパースペクティブが有効になったときの動作
-    private void startGrxUI() {
+    public void startGrxUI() {
         if( !bStartedGrxUI_ ) {
             
             //暫定処置 Grx3DViewがGUIのみの機能に分離できたらstopGrxUIか
@@ -354,9 +379,21 @@ public class Activator extends AbstractUIPlugin{
     }
 
     // GrxUIパースペクティブが無効になったときの動作
-    private void stopGrxUI() {
+    public void stopGrxUI() {
         manager_.shutdown();
         manager_ = null;
         bStartedGrxUI_ = false;
+    }
+    
+    public ImageRegistry getImageRegistry(){
+    	return ireg_;
+    }
+    
+    public FontRegistry getFontRegistry(){
+    	return freg_;
+    }
+    
+    public ColorRegistry getColorRegistry(){
+    	return creg_;
     }
 }
