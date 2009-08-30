@@ -19,12 +19,12 @@
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/uBlasCommonTypes.h>
 #include "LinkPath.h"
-#include "IInverseKinematics.h"
+#include "InverseKinematics.h"
 #include "Config.h"
 
 namespace hrp {
 
-    class HRPMODEL_API JointPath : public IInverseKinematics
+    class HRPMODEL_API JointPath : public InverseKinematics
     {
       public:
 		

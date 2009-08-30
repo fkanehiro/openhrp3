@@ -29,7 +29,7 @@ set(headers
   LinkTraverse.h
   LinkPath.h
   JointPath.h
-  IInverseKinematics.h
+  InverseKinematics.h
   ModelNodeSet.h
   ModelLoaderUtil.h
   Sensor.h
