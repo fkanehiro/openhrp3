@@ -11,22 +11,22 @@
     \author Shin'ichiro Nakaoka
 */
 
-#ifndef HRPMODEL_I_INVERSE_KINEMATICS_H_INCLUDED
-#define HRPMODEL_I_INVERSE_KINEMATICS_H_INCLUDED
+#ifndef HRPMODEL_INVERSE_KINEMATICS_H_INCLUDED
+#define HRPMODEL_INVERSE_KINEMATICS_H_INCLUDED
 
 #include <boost/shared_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
 
 namespace hrp {
 
-    class IInverseKinematics
+    class InverseKinematics
     {
       public:
-        virtual ~IInverseKinematics() { }
+        virtual ~InverseKinematics() { }
         virtual bool calcInverseKinematics(const Vector3& end_p, const Matrix33& end_R) = 0;
     };
 
-    typedef boost::shared_ptr<IInverseKinematics> IInverseKinematicsPtr;
+    typedef boost::shared_ptr<InverseKinematics> IInverseKinematicsPtr;
 }
 
 #endif
