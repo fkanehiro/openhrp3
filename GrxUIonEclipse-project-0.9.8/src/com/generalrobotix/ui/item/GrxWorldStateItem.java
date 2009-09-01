@@ -293,6 +293,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			}
 		}
 		
+		logList.add("command");
+		logList.add("float["+jointList.size()+"]");
 		try {
 			logger_.addLogObject(cname, logList.toArray(new String[0]));
 		} catch (LogFileFormatException e) {
@@ -403,12 +405,18 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                     for (int m=0; m<sdata.accel[j].length; m++) 
                         recDat_[i][k++] = (float)sdata.accel[j][m];
                 }
-                for (int j=0; j<sdata.range.length; j++) {
-                    for (int m=0; m<sdata.range[j].length; m++) 
-                        recDat_[i][k++] = (float)sdata.range[j][m];
+                if (sdata.range != null){
+                	for (int j=0; j<sdata.range.length; j++) {
+                		for (int m=0; m<sdata.range[j].length; m++) 
+                			recDat_[i][k++] = (float)sdata.range[j][m];
+                	}
                 }
             }
-            
+            if (cpos.targetState != null){
+            	for (int j=0; j<cpos.targetState.length; j++){
+            		recDat_[i][k++]	 = (float)cpos.targetState[j];
+            	}
+            }
             try {
                 temp.put(cname, recDat_[i]);
             } catch (Exception e) {
@@ -545,10 +553,17 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                         for (int m=0; m<sdata.accel[j].length; m++) 
                             sdata.accel[j][m] = (double)f[k++];
                     }
-                    for (int j=0; j<sdata.range.length; j++) {
-                        for (int m=0; m<sdata.range[j].length; m++) 
-                            sdata.range[j][m] = (double)f[k++];
+                    if (sdata.range != null){
+                    	for (int j=0; j<sdata.range.length; j++) {
+                    		for (int m=0; m<sdata.range[j].length; m++) 
+                    			sdata.range[j][m] = (double)f[k++];
+                    	}
                     }
+                }
+                if (cpos.targetState != null){
+                	for (int j=0; j<cpos.targetState.length; j++){
+                		cpos.targetState[j]	= (double)f[k++];
+                	}
                 }
             }
         } catch (IOException e) {
@@ -1062,16 +1077,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			_get(charName).targetState = targets;
 		}
 		
-		public void setServoState(String charName, long[] servoStat) {
+		public void setServoState(String charName, int[] servoStat) {
 			_get(charName).servoState = servoStat;
 		}
-		public void setJointState(String charName, int[] jointStat){
-			_get(charName).jointState = jointStat;
-		}
 		
-		public void setCalibState(String charName, long[] calibStat) {
-			_get(charName).calibState = calibStat;
-		}
 		public void setPowerState(String charName, double voltage, double current){
 			_get(charName).powerState = new double[]{voltage, current};
 		}
@@ -1098,9 +1107,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		public LinkPosition[] position;
 		public SensorState sensorState;
 		public double[]    targetState;
-		public long[]       servoState;
-	        public int[]        jointState;
-		public long[]       calibState;
+		public int[]        servoState;
 	        public double[]	    powerState;
         
         protected Object clone() throws CloneNotSupportedException{
@@ -1152,12 +1159,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                 GrxCopyUtil.copyDim(targetState, ret.targetState, targetState.length);
             }
             if(servoState != null){
-                ret.servoState = new long[servoState.length];
+                ret.servoState = new int[servoState.length];
                 GrxCopyUtil.copyDim(servoState, ret.servoState, servoState.length);
-            }
-            if(calibState != null){
-                ret.calibState = new long[calibState.length];
-                GrxCopyUtil.copyDim(calibState, ret.calibState, calibState.length);
             }
             return ret;
         }
