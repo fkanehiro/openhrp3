@@ -813,7 +813,7 @@ public class Grx3DView
             if (charStat != null) {
                 if (charStat.sensorState != null){
                     model.setCharacterPos(charStat.position, charStat.sensorState.q);
-                    if (charStat.sensorState.range.length > 0){
+                    if (charStat.sensorState.range != null && charStat.sensorState.range.length > 0){
                     	List<GrxSensorItem> sensors = model.getSensors("Range");
                     	for (int j=0; j<sensors.size(); j++){
                     		GrxSensorItem sensor = sensors.get(j);
