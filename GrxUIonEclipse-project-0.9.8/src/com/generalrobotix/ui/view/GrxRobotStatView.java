@@ -75,7 +75,8 @@ public class GrxRobotStatView extends GrxBaseView {
     private GrxModelItem currentModel_ = null;
     private SensorState  currentSensor_;
     private double[]     currentRefAng_;
-    private long[]       currentSvStat_;
+    private int[]       currentSvStat_;
+    private double[]      currentPower_;
     private WorldStateEx	currentState_ = null;
     
     private List<GrxLinkItem> jointList_ = new ArrayList<GrxLinkItem>();
@@ -255,7 +256,9 @@ public class GrxRobotStatView extends GrxBaseView {
     }
 
     private Integer[] _createPowerTVInput(){
-	
+        Integer[] input = new Integer[1];
+        input[0] = 0;
+        return input;
     }
 
     public void restoreProperties() {
@@ -369,12 +372,14 @@ public class GrxRobotStatView extends GrxBaseView {
     	currentSensor_ = null;
         currentRefAng_ = null;
         currentSvStat_ = null;
+        currentPower_  = null;
     	if (currentState_ != null) {
             CharacterStateEx charStat = currentState_.get(currentModel_.getName());
             if (charStat != null) {
                 currentSensor_ = charStat.sensorState;
                 currentRefAng_ = charStat.targetState;
                 currentSvStat_ = charStat.servoState;
+                currentPower_  = charStat.powerState;
             }
         }
 	    jointTV_.setInput(_createJointTVInput());
@@ -388,12 +393,14 @@ public class GrxRobotStatView extends GrxBaseView {
     	currentSensor_ = null;
         currentRefAng_ = null;
         currentSvStat_ = null;
+        currentPower_  = null;
     	if (currentState_ != null) {
             CharacterStateEx charStat = currentState_.get(currentModel_.getName());
             if (charStat != null) {
                 currentSensor_ = charStat.sensorState;
                 currentRefAng_ = charStat.targetState;
                 currentSvStat_ = charStat.servoState;
+                currentPower_  = charStat.powerState;
             }
         }
 	    jointTV_.refresh();
@@ -476,13 +483,13 @@ public class GrxRobotStatView extends GrxBaseView {
 //    }
 
     class JointTableLabelProvider implements ITableLabelProvider,ITableColorProvider,ITableFontProvider {
-	        final int CALIB_STATE_MASK = 0x1;
-	        final int SERVO_STATE_MASK = 0x2;
-		final int POWER_STATE_MASK = 0x4;
-		final int SERVO_ALARM_MASK = 0x7fff8;
-		final int SERVO_ALARM_SHIFT = 3;
-		final int DRIVER_TEMP_MASK = 0xff000000;
-		final int DRIVER_TEMP_SHIFT = 24;
+    	final int CALIB_STATE_MASK = 0x1;
+    	final int SERVO_STATE_MASK = 0x2;
+    	final int POWER_STATE_MASK = 0x4;
+    	final int SERVO_ALARM_MASK = 0x7fff8;
+    	final int SERVO_ALARM_SHIFT = 3;
+    	final int DRIVER_TEMP_MASK = 0xff000000;
+    	final int DRIVER_TEMP_SHIFT = 24;
         
         public Image getColumnImage(Object element, int columnIndex) {
             return null;
@@ -508,27 +515,34 @@ public class GrxRobotStatView extends GrxBaseView {
 	    case 2: // angle
                     if (currentSensor_ == null)
                         break;
-                    return FORMAT1.format(Math.toDegrees(currentSensor_.q[rowIndex]));
+                    return FORMAT2.format(Math.toDegrees(currentSensor_.q[rowIndex]));
 	    case 3: // command
                     if (currentRefAng_ == null)
                         break;
-                    return FORMAT1.format(Math.toDegrees(currentRefAng_[rowIndex]));
+                    return FORMAT2.format(Math.toDegrees(currentRefAng_[rowIndex]));
 	    case 4: // torque
-		if (currentSensor_ == null || currentSensor_.u == null)
-		    break;
-		return FORMAT1.format(currentSensor_.u[rowIndex]);
+	    	if (currentSensor_ == null || currentSensor_.u == null)
+	    		break;
+	    	return FORMAT2.format(currentSensor_.u[rowIndex]);
 
 	    case 5: // power
-		break;
-
+            if (currentSvStat_ == null)
+                break;
+            if (_isPowerOn(currentSvStat_[rowIndex])){
+            	return "ON";
+            }else{
+            	return "OFF";
+            }
 	    case 6: // servo
                     if (currentSvStat_ == null)
                         break;
-                    if (_isSwitchOn(rowIndex, currentSvStat_)) {
+                    if (_isServoOn(currentSvStat_[rowIndex])) {
                         return "ON";
                     } else return "OFF";
 	    case 7: // alarm
-		break;
+            if (currentSvStat_ == null) break;
+            int alarm = _getAlarm(currentSvStat_[rowIndex]);
+            return String.format("%03x", alarm);
 	    case 8: // driver temperature
 		break;
 	    case 9: // P gain
@@ -571,7 +585,7 @@ public class GrxRobotStatView extends GrxBaseView {
             switch (columnIndex) {
                 case 0:
                     if (currentSvStat_ != null
-                        && !_isSwitchOn(rowIndex, currentSvStat_)) {
+                        &&  !_isCalibrated(currentSvStat_[rowIndex])) {
                         return red_;
                     }
                 case 1:
@@ -586,8 +600,13 @@ public class GrxRobotStatView extends GrxBaseView {
                 case 6:
                     if (currentSvStat_ == null)
                         break;
-                    if (_isSwitchOn(rowIndex, currentSvStat_))
+                    if (_isServoOn(currentSvStat_[rowIndex])) 
                         return red_;
+                case 7: // alarm                                        
+                    if (currentSvStat_ == null)                         
+                        break;                                          
+                    if (_getAlarm(currentSvStat_[rowIndex]) != 0)       
+                        return red_;                                    
                 default:
                     break;
             }
@@ -601,7 +620,7 @@ public class GrxRobotStatView extends GrxBaseView {
             switch (columnIndex) {
                 case 0:
                     if (currentSvStat_ != null
-                        && !_isSwitchOn(rowIndex, currentSvStat_)) {
+                        &&  !_isCalibrated(currentSvStat_[rowIndex])) {
                         return bold12_;
                     }
                 case 2:
@@ -613,12 +632,17 @@ public class GrxRobotStatView extends GrxBaseView {
                case 6:
                     if (currentSvStat_ == null)
                         break;
-                    if (_isSwitchOn(rowIndex, currentSvStat_)) {
+                    if (_isServoOn(currentSvStat_[rowIndex])) {
                         return bold12_;
                     }
+               case 7: // alarm                                        
+                   if (currentSvStat_ == null)                     
+                           break;                                  
+                   if (_getAlarm(currentSvStat_[rowIndex]) != 0){  
+                           return bold12_;                         
+                   }                                               
                 case 4:
                 case 5:
-                case 7:
                 case 8:
                 default:
                     break;
@@ -626,17 +650,35 @@ public class GrxRobotStatView extends GrxBaseView {
             return plain12_;
         }
 
+        private boolean _isServoOn(int state) {                         
+        	if ((state & SERVO_STATE_MASK) != 0){                   
+        		return true;                                    
+        	}else{                                                  
+        		return false;                                   
+        	}                                                       
+        }
+        private boolean _isPowerOn(int state) {
+        	if ((state & POWER_STATE_MASK) != 0){
+        		return true;
+        	}else{
+        		return false;
+        	}
+        }
+        private boolean _isCalibrated(int state) {
+        	if ((state & CALIB_STATE_MASK) != 0){
+        		return true;
+        	}else{
+        		return false;
+        	}
+        }
+        private int _getAlarm(int state){
+        	return (state&SERVO_ALARM_MASK)>>SERVO_ALARM_SHIFT;
+        }
+
+        
     }
 
-    private boolean _isSwitchOn(int ch, long[] state) {
-        long a = 1 << (ch % 64);
-        if ((state[ch / 64] & a) > 0)
-            return true;
-        return false;
-    }
-
-    
-    class ForceTableLabelProvider implements ITableLabelProvider,ITableColorProvider,ITableFontProvider{
+     class ForceTableLabelProvider implements ITableLabelProvider,ITableColorProvider,ITableFontProvider{
 
         public Image getColumnImage(Object element, int columnIndex) {
             return null;
@@ -770,11 +812,10 @@ public class GrxRobotStatView extends GrxBaseView {
         }
         
         public String getColumnText(Object element, int columnIndex) {
-            int rowIndex = ((Integer)element).intValue();
-	    if(currentSensor_ == null || currentSensor_.power == null)
-		return "---";
-	    if (columnIndex < powerTV_.getTable().getColumnCount())
-		return FORMAT2.format(currentSensor_.power[columnIndex - 1]);
+            if(currentPower_ == null)
+            	return "---";
+            if (columnIndex < powerTV_.getTable().getColumnCount())
+            	return FORMAT1.format(currentPower_[columnIndex]);
             return null;
         }
 
