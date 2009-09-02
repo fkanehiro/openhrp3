@@ -63,7 +63,9 @@ public class Activator extends AbstractUIPlugin{
     											"frame-.png",
     											"sim_script_start.png",
     											"sim_script_stop.png",
-    											"grxrobot1.png"};
+    											"grxrobot1.png",
+    											"robot_servo_start.png",
+    											"robot_servo_stop.png"};
 	
     // パースペクティブのイベント初期化、振る舞いを定義するクラス
     class EventInnerClass extends PerspectiveAdapter
