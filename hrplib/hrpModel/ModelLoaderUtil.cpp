@@ -135,9 +135,10 @@ namespace {
 
         BodyPtr createBody(BodyInfo_ptr bodyInfo);
 
+        void createBody(Body *io_body,  BodyInfo_ptr bodyInfo);
     private:
 
-        BodyPtr body;
+        Body* body;
         LinkInfoSequence_var linkInfoSeq;
         ShapeInfoSequence_var shapeInfoSeq;
         bool collisionDetectionModelLoading;
@@ -150,13 +151,9 @@ namespace {
 }
 
 
-BodyPtr ModelLoaderHelper::createBody(BodyInfo_ptr bodyInfo)
+void ModelLoaderHelper::createBody(Body *io_body, BodyInfo_ptr bodyInfo)
 {
-    if(debugMode){
-        dumpBodyInfo(bodyInfo);
-    }
-	
-    body = new Body();
+    body = io_body;
 
     const char* name = bodyInfo->name();
     body->setModelName(name);
@@ -189,8 +186,19 @@ BodyPtr ModelLoaderHelper::createBody(BodyInfo_ptr bodyInfo)
         body->installCustomizer();
         body->initializeConfiguration();
     }
+}
 
-    return body;
+BodyPtr ModelLoaderHelper::createBody(BodyInfo_ptr bodyInfo)
+{
+    if(debugMode){
+        dumpBodyInfo(bodyInfo);
+    }
+	
+    body = new Body();
+
+    createBody(body, bodyInfo);
+
+    return BodyPtr(body);
 }
 
 
@@ -486,10 +494,8 @@ BodyPtr hrp::loadBodyFromBodyInfo(OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeome
 }
 
 
-BodyPtr hrp::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt)
+bool hrp::loadBodyFromModelLoader(const char *url, Body *body, CosNaming::NamingContext_var cxt)
 {
-    BodyPtr body;
-    
     CosNaming::Name ncName;
     ncName.length(1);
     ncName[0].id = CORBA::string_dup("ModelLoader");
@@ -509,13 +515,13 @@ BodyPtr hrp::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_v
             std::cerr << "Not Object" << std::endl;
             break;
         }
-        return body;
+        return false;
     } catch(CosNaming::NamingContext::CannotProceed &exc) {
         std::cerr << "Resolve ModelLoader CannotProceed" << std::endl;
-        return body;
+        return false;
     } catch(CosNaming::NamingContext::AlreadyBound &exc) {
         std::cerr << "Resolve ModelLoader InvalidName" << std::endl;
-        return body;
+        return false;
     }
 
     BodyInfo_var bodyInfo;
@@ -529,14 +535,23 @@ BodyPtr hrp::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_v
 
     if(!CORBA::is_nil(bodyInfo)){
         ModelLoaderHelper helper;
-        body = helper.createBody(bodyInfo);
+        helper.createBody(body, bodyInfo);
     }
 
-    return body;
+    return true;
 }
 
+BodyPtr hrp::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt)
+{
+    Body *body = new Body();
+    if (loadBodyFromModelLoader(url, body, cxt)){
+        return BodyPtr(body);
+    }else{
+        return BodyPtr();
+    }
+}
 
-BodyPtr hrp::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
+bool hrp::loadBodyFromModelLoader(const char *url, Body *body, CORBA_ORB_var orb)
 {
     CosNaming::NamingContext_var cxt;
     try {
@@ -544,19 +559,36 @@ BodyPtr hrp::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
         cxt = CosNaming::NamingContext::_narrow(nS);
     } catch(CORBA::SystemException& ex) {
         std::cerr << "NameService doesn't exist" << std::endl;
-        return BodyPtr();
+        return false;
     }
 
-    return loadBodyFromModelLoader(url, cxt);
+    loadBodyFromModelLoader(url, body, cxt);
+    return true;
 }
 
+
+BodyPtr hrp::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
+{
+    Body *body = new Body();
+    if (loadBodyFromModelLoader(url, body, orb)){
+        return BodyPtr(body);
+    }else{
+        return BodyPtr();
+    }
+}
+
+bool hrp::loadBodyFromModelLoader(const char *url, Body *body, int argc, char *argv[])
+{
+    CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
+    return loadBodyFromModelLoader(url, body, orb);
+}
 
 BodyPtr hrp::loadBodyFromModelLoader(const char *url, int argc, char *argv[])
 {
-    CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
-    return loadBodyFromModelLoader(url, orb);
+    Body *body = new Body();
+    loadBodyFromModelLoader(url, body, argc, argv);
+    return BodyPtr(body);
 }
-
 
 BodyPtr hrp::loadBodyFromModelLoader(const char *URL, istringstream &strm)
 {
