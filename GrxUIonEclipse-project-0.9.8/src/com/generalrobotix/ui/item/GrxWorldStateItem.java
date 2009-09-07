@@ -287,8 +287,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			}else if(sensList.get(i).type.equals("Range")){
 				logList.add(sname+".range");
 				SensorInfo info = sensList.get(i).info;
-				int half = (int)(info.specValues[0]/info.specValues[1]);// = scanAngle/scanStep
-				logList.add("float["+half*2+1+"]");
+				int half = (int)(info.specValues[0]/2/info.specValues[1]);// = scanAngle/scanStep
+				logList.add("float["+(half*2+1)+"]");
 			}else{
 			}
 		}
