@@ -814,8 +814,9 @@ public class GrxRobotStatView extends GrxBaseView {
         public String getColumnText(Object element, int columnIndex) {
             if(currentPower_ == null)
             	return "---";
-            if (columnIndex < powerTV_.getTable().getColumnCount())
+            if (columnIndex < powerTV_.getTable().getColumnCount()){
             	return FORMAT1.format(currentPower_[columnIndex]);
+            }
             return null;
         }
 
@@ -833,13 +834,6 @@ public class GrxRobotStatView extends GrxBaseView {
         }
 
         public Color getBackground(Object element, int columnIndex) {
-            int rowIndex = ((Integer)element).intValue();;
-            GrxBaseItem bitem = manager_.focusedItem();
-            if (bitem instanceof GrxSensorItem) {
-                if (forceName_[rowIndex].equals(((GrxSensorItem)bitem).getName())) {
-                    return yellow_;
-                }
-            }
             return white_;
         }
 
