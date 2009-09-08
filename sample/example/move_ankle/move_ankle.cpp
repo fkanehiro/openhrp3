@@ -23,8 +23,8 @@ main(int argc, char* argv[])
     }
 
     // モデルロード  //
-    BodyPtr body = loadBodyFromModelLoader(url.c_str(), argc, argv);
-    if(body == NULL) {
+    BodyPtr body = new Body();
+    if(!loadBodyFromModelLoader(body, url.c_str(), argc, argv)){
         cerr << "ModelLoader: " << url << " cannot be loaded" << endl;
         return 0;
     }

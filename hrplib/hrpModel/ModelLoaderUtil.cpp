@@ -13,15 +13,13 @@
 */
 
 #include "ModelLoaderUtil.h"
-
-#include <stack>
+#include "Link.h"
+#include "Sensor.h"
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/Tvmet4d.h>
 #include <hrpCorba/OpenHRPCommon.hh>
 #include <hrpCollision/ColdetModel.h>
-
-#include "Link.h"
-#include "Sensor.h"
+#include <stack>
 
 using namespace std;
 using namespace hrp;
@@ -117,10 +115,12 @@ namespace {
         cout.flush();
     }
 
+
     inline double getLimitValue(DblSequence limitseq, double defaultValue)
     {
         return (limitseq.length() == 0) ? defaultValue : limitseq[0];
     }
+    
 
     class ModelLoaderHelper
     {
@@ -133,12 +133,10 @@ namespace {
             collisionDetectionModelLoading = isEnabled;
         };
 
-        BodyPtr createBody(BodyInfo_ptr bodyInfo);
-
-        void createBody(Body *io_body,  BodyInfo_ptr bodyInfo);
+        bool createBody(BodyPtr& body,  BodyInfo_ptr bodyInfo);
+        
     private:
-
-        Body* body;
+        BodyPtr body;
         LinkInfoSequence_var linkInfoSeq;
         ShapeInfoSequence_var shapeInfoSeq;
         bool collisionDetectionModelLoading;
@@ -151,9 +149,9 @@ namespace {
 }
 
 
-void ModelLoaderHelper::createBody(Body *io_body, BodyInfo_ptr bodyInfo)
+bool ModelLoaderHelper::createBody(BodyPtr& body, BodyInfo_ptr bodyInfo)
 {
-    body = io_body;
+    this->body = body;
 
     const char* name = bodyInfo->name();
     body->setModelName(name);
@@ -169,15 +167,15 @@ void ModelLoaderHelper::createBody(Body *io_body, BodyInfo_ptr bodyInfo)
             if(rootIndex < 0){
                 rootIndex = i;
             } else {
-                body = 0; // more than one root !
+                 // more than one root !
+                rootIndex = -1;
+                break;
             }
         }
     }
-    if(rootIndex < 0){
-        body = 0; // no root !
-    }
 
-    if(body){
+    if(rootIndex >= 0){ // root exists
+
         Matrix33 Rs(tvmet::identity<Matrix33>());
         Link* rootLink = createLink(rootIndex, Rs);
         body->setRootLink(rootLink);
@@ -185,20 +183,11 @@ void ModelLoaderHelper::createBody(Body *io_body, BodyInfo_ptr bodyInfo)
 
         body->installCustomizer();
         body->initializeConfiguration();
+
+        return true;
     }
-}
 
-BodyPtr ModelLoaderHelper::createBody(BodyInfo_ptr bodyInfo)
-{
-    if(debugMode){
-        dumpBodyInfo(bodyInfo);
-    }
-	
-    body = new Body();
-
-    createBody(body, bodyInfo);
-
-    return BodyPtr(body);
+    return false;
 }
 
 
@@ -480,21 +469,20 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel,
 #endif
 
 
-BodyPtr hrp::loadBodyFromBodyInfo(OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection)
+bool hrp::loadBodyFromBodyInfo(BodyPtr& body, OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection)
 {
-    BodyPtr body;
     if(!CORBA::is_nil(bodyInfo)){
         ModelLoaderHelper helper;
         if(loadGeometryForCollisionDetection){
             helper.enableCollisionDetectionModelLoading(true);
         }
-        body = helper.createBody(bodyInfo);
+        return helper.createBody(body, bodyInfo);
     }
-    return body;
+    return false;
 }
 
 
-bool hrp::loadBodyFromModelLoader(const char *url, Body *body, CosNaming::NamingContext_var cxt)
+bool hrp::loadBodyFromModelLoader(BodyPtr& body, const char* url, CosNaming::NamingContext_var cxt)
 {
     CosNaming::Name ncName;
     ncName.length(1);
@@ -535,23 +523,14 @@ bool hrp::loadBodyFromModelLoader(const char *url, Body *body, CosNaming::Naming
 
     if(!CORBA::is_nil(bodyInfo)){
         ModelLoaderHelper helper;
-        helper.createBody(body, bodyInfo);
+        return helper.createBody(body, bodyInfo);
     }
 
-    return true;
+    return false;
 }
 
-BodyPtr hrp::loadBodyFromModelLoader(const char *url, CosNaming::NamingContext_var cxt)
-{
-    Body *body = new Body();
-    if (loadBodyFromModelLoader(url, body, cxt)){
-        return BodyPtr(body);
-    }else{
-        return BodyPtr();
-    }
-}
 
-bool hrp::loadBodyFromModelLoader(const char *url, Body *body, CORBA_ORB_var orb)
+bool hrp::loadBodyFromModelLoader(BodyPtr& body, const char* url, CORBA_ORB_var orb)
 {
     CosNaming::NamingContext_var cxt;
     try {
@@ -562,51 +541,12 @@ bool hrp::loadBodyFromModelLoader(const char *url, Body *body, CORBA_ORB_var orb
         return false;
     }
 
-    loadBodyFromModelLoader(url, body, cxt);
-    return true;
+    return loadBodyFromModelLoader(body, url, cxt);
 }
 
 
-BodyPtr hrp::loadBodyFromModelLoader(const char *url, CORBA_ORB_var orb)
-{
-    Body *body = new Body();
-    if (loadBodyFromModelLoader(url, body, orb)){
-        return BodyPtr(body);
-    }else{
-        return BodyPtr();
-    }
-}
-
-bool hrp::loadBodyFromModelLoader(const char *url, Body *body, int argc, char *argv[])
+bool hrp::loadBodyFromModelLoader(BodyPtr& body, const char* url, int argc, char* argv[])
 {
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
-    return loadBodyFromModelLoader(url, body, orb);
-}
-
-BodyPtr hrp::loadBodyFromModelLoader(const char *url, int argc, char *argv[])
-{
-    Body *body = new Body();
-    loadBodyFromModelLoader(url, body, argc, argv);
-    return BodyPtr(body);
-}
-
-BodyPtr hrp::loadBodyFromModelLoader(const char *URL, istringstream &strm)
-{
-    vector<string> argvec;
-    while (!strm.eof()){
-        string arg;
-        strm >> arg;
-        argvec.push_back(arg);
-    }
-    int argc = argvec.size();
-    char **argv = new char *[argc];
-    for (int i=0; i<argc; i++){
-        argv[i] = (char *)argvec[i].c_str();
-    }
-
-    BodyPtr body = loadBodyFromModelLoader(URL, argc, argv);
-
-    delete [] argv;
-
-    return body;
+    return loadBodyFromModelLoader(body, url,  orb);
 }

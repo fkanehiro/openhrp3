@@ -393,8 +393,9 @@ void PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr cInf
         std::cerr << "PathPlanner::registerCharacter(" << name << ", " << cInfo << ")" << std::endl;
     }
 
-    BodyPtr body = loadBodyFromBodyInfo(cInfo, USE_INTERNAL_COLLISION_DETECTOR);
-    if(body){
+    BodyPtr body = new Body();
+
+    if(loadBodyFromBodyInfo(body, cInfo, USE_INTERNAL_COLLISION_DETECTOR)){
         body->setName(name);
         if(debug_){
             //std::cout << "Loaded Model:\n" << *body << std::endl;
