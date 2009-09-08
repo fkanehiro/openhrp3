@@ -95,6 +95,8 @@ private:
 
 	typedef std::map<std::string, RtcInfoPtr> RtcInfoMap;
 	RtcInfoMap rtcInfoMap;
+    typedef std::vector<RtcInfoPtr> RtcInfoVector;
+    RtcInfoVector rtcInfoVector;
 
 	RTC::CorbaNaming* naming;
 
@@ -117,7 +119,7 @@ private:
 
 	void detectRtcs();
 	void makePortMap(RtcInfoPtr& rtcInfo);
-	void addRtcWithConnection(RTC::RTObject_var rtcRef);
+    Controller_impl::RtcInfoPtr addRtcVectorWithConnection(RTC::RTObject_var rtcRef);
 	void setupRtcConnections();
 	bool connectPorts(RTC::Port_ptr outPort, RTC::Port_ptr inPort);
 

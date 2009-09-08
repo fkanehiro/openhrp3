@@ -270,15 +270,20 @@ void VirtualRobotRTC::addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcL
             RTC::RTObject_var thisRef = getObjRef();
 
             if(!CORBA::is_nil(connectedRtcRef) && !connectedRtcRef->_is_equivalent(thisRef)){
+                CORBA::ULong ii=0;
+                for(; ii<rtcList.length(); ii++){
+                    if(rtcList[ii]->_is_equivalent(connectedRtcRef))
+                        break;
+                }
+
                 RTC::ComponentProfile_var componentProfile = connectedRtcRef->get_component_profile();
                 string connectedRtcName(componentProfile->instance_name);
-                set<string>::iterator it = foundRtcNames.find(connectedRtcName);
 
                 cout << "detected a port connection: ";
                 cout << "\"" << portName << "\" of " << getInstanceName() << " <--> \"";
                 cout << connectedPortProfile->name << "\" of " << connectedRtcName << endl;
 
-                if(it == foundRtcNames.end()){
+                if(ii == rtcList.length()){
                     RTC::ExecutionContextServiceList_var execServices = connectedRtcRef->get_execution_context_services();
 
                     for(CORBA::ULong k=0; k < execServices->length(); k++) {

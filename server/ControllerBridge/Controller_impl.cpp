@@ -85,31 +85,37 @@ void Controller_impl::detectRtcs()
         if(connection.controllerInstanceName.empty()){
             if(!bridgeConf->moduleInfoList.empty()){
                 RTC::RtcBase* rtcServant = bridgeConf->moduleInfoList.front().rtcServant;
-                rtcName = rtcServant->getInstanceName();
+                rtcName = "";                                                 
                 rtcRef = rtcServant->getObjRef();
             }
         } else {
             rtcName = connection.controllerInstanceName;
-            string rtcNamingName = rtcName + ".rtc";
-            CORBA::Object_var objRef = naming->resolve(rtcNamingName.c_str());
-            if(CORBA::is_nil(objRef)){
-                cout << rtcName << " is not found." << endl;
-            } else {
-                rtcRef = RTC::RTObject::_narrow(objRef);
-                if(CORBA::is_nil(rtcRef)){
-                    cout << rtcName << " is not an RTC object." << endl;
+        }
+         
+        RtcInfoMap::iterator it = rtcInfoMap.find(rtcName);
+        if(it==rtcInfoMap.end()){
+            if(rtcName!=""){
+                string rtcNamingName = rtcName + ".rtc";
+                CORBA::Object_var objRef = naming->resolve(rtcNamingName.c_str());
+                if(CORBA::is_nil(objRef)){
+                    cout << rtcName << " is not found." << endl;
+                } else {
+                    rtcRef = RTC::RTObject::_narrow(objRef);
+                    if(CORBA::is_nil(rtcRef)){
+                        cout << rtcName << " is not an RTC object." << endl;
+                    }
                 }
             }
-        }
-
-        if(!CORBA::is_nil(rtcRef)){
-            addRtcWithConnection(rtcRef);
+            if(!CORBA::is_nil(rtcRef)){
+                RtcInfoPtr rtcInfo = addRtcVectorWithConnection(rtcRef);
+                rtcInfoMap.insert(make_pair(rtcName,rtcInfo));
+            }
         }
     }
 
     RTC::RTCList_var rtcList = virtualRobotRTC->getConnectedRtcs();
     for(CORBA::ULong i=0; i < rtcList->length(); ++i){
-        addRtcWithConnection(rtcList[i]);
+        addRtcVectorWithConnection(rtcList[i]);
     }
 }
 
@@ -123,38 +129,33 @@ void Controller_impl::makePortMap(RtcInfoPtr& rtcInfo)
     }
 }
 
-
-void Controller_impl::addRtcWithConnection(RTC::RTObject_var rtcRef)
+Controller_impl::RtcInfoPtr Controller_impl::addRtcVectorWithConnection(RTC::RTObject_var new_rtcRef)
 {
-    RTC::ComponentProfile_var profile = rtcRef->get_component_profile();
+    RtcInfoVector::iterator it = rtcInfoVector.begin();
+    for( ; it != rtcInfoVector.end(); ++it){
+        if((*it)->rtcRef->_is_equivalent(new_rtcRef))
+            return *it;
+    }
 
-    string instanceName(profile->instance_name);
+    RtcInfoPtr rtcInfo(new RtcInfo());
+    rtcInfo->rtcRef = new_rtcRef;
+    makePortMap(rtcInfo);
+    rtcInfo->timeRate = 1.0;
 
-    RtcInfoMap::iterator p = rtcInfoMap.find(instanceName);
+    rtcInfoVector.push_back(rtcInfo);
 
-    if(p == rtcInfoMap.end()){
-        cout << "detected " << instanceName << endl;
-
-        RtcInfoPtr rtcInfo(new RtcInfo());
-        rtcInfo->rtcRef = rtcRef;
-        makePortMap(rtcInfo);
-        rtcInfo->timeRate = 1.0;
-
-        rtcInfoMap.insert(make_pair(instanceName, rtcInfo));
-
-        RTC::ExecutionContextServiceList_var eclist = rtcInfo->rtcRef->get_execution_context_services();
-        for(CORBA::ULong i=0; i < eclist->length(); ++i){
-            if(!CORBA::is_nil(eclist[i])){
-                rtcInfo->execContext = RTC::ExtTrigExecutionContextService::_narrow(eclist[i]);
-                if(!CORBA::is_nil(rtcInfo->execContext)){
-                    cout << "detected the ExtTrigExecutionContext of " << instanceName << endl;
-                }
-                break;
+    RTC::ExecutionContextServiceList_var eclist = rtcInfo->rtcRef->get_execution_context_services();
+    for(CORBA::ULong i=0; i < eclist->length(); ++i){
+        if(!CORBA::is_nil(eclist[i])){
+            rtcInfo->execContext = RTC::ExtTrigExecutionContextService::_narrow(eclist[i]);
+            if(!CORBA::is_nil(rtcInfo->execContext)){
+                cout << "detected the ExtTrigExecutionContext"  << endl;
             }
+            break;
         }
     }
+    return rtcInfo;
 }
-
 
 void Controller_impl::setupRtcConnections()
 {
@@ -165,8 +166,7 @@ void Controller_impl::setupRtcConnections()
         string controllerInstanceName = connection.controllerInstanceName;
         if(controllerInstanceName.empty()){
             if(!bridgeConf->moduleInfoList.empty()){
-                RTC::RtcBase* rtcServant = bridgeConf->moduleInfoList.front().rtcServant;
-                controllerInstanceName = rtcServant->getInstanceName();
+                controllerInstanceName = "";
             }
         }
 
@@ -383,8 +383,8 @@ void Controller_impl::control()
 
   virtualRobotRTC->writeDataToOutPorts(this);
 
-    for(RtcInfoMap::iterator p = rtcInfoMap.begin(); p != rtcInfoMap.end(); ++p){
-        RtcInfoPtr& rtcInfo = p->second;
+    for(RtcInfoVector::iterator p = rtcInfoVector.begin(); p != rtcInfoVector.end(); ++p){
+        RtcInfoPtr& rtcInfo = *p;
         if(!CORBA::is_nil(rtcInfo->execContext)){
             rtcInfo->timeRateCounter += rtcInfo->timeRate;
             if(rtcInfo->timeRateCounter >= 1.0){
@@ -455,8 +455,8 @@ void Controller_impl::restart()
 }
 void Controller_impl::activeComponents()
 {
-    for(RtcInfoMap::iterator p = rtcInfoMap.begin(); p != rtcInfoMap.end(); ++p){
-        RtcInfoPtr& rtcInfo = p->second;
+    for(RtcInfoVector::iterator p = rtcInfoVector.begin(); p != rtcInfoVector.end(); ++p){
+        RtcInfoPtr& rtcInfo = *p;
         rtcInfo->timeRateCounter = 1.0;
         if(!CORBA::is_nil(rtcInfo->execContext)){
             if( RTC::PRECONDITION_NOT_MET == rtcInfo->execContext->activate_component(rtcInfo->rtcRef) )
@@ -471,8 +471,8 @@ void Controller_impl::activeComponents()
 void Controller_impl::deactiveComponents()
 {
     std::vector<RTC::ExtTrigExecutionContextService_var> vecExecContext;
-    for(RtcInfoMap::iterator p = rtcInfoMap.begin(); p != rtcInfoMap.end(); ++p){
-        RtcInfoPtr& rtcInfo = p->second;
+    for(RtcInfoVector::iterator p = rtcInfoVector.begin(); p != rtcInfoVector.end(); ++p){
+        RtcInfoPtr& rtcInfo = *p;
         rtcInfo->timeRateCounter = 1.0;
         if(!CORBA::is_nil(rtcInfo->execContext)){
             if ( RTC::RTC_OK == rtcInfo->execContext->deactivate_component(rtcInfo->rtcRef) ){
