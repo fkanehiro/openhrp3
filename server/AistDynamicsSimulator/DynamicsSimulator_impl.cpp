@@ -180,9 +180,9 @@ void DynamicsSimulator_impl::registerCharacter
              << name << ", " << bodyInfo << " )" << std::endl;
     }
 
-    BodyPtr body = loadBodyFromBodyInfo(bodyInfo, USE_INTERNAL_COLLISION_DETECTOR);
+    BodyPtr body = new Body();
 
-    if(body){
+    if(loadBodyFromBodyInfo(body, bodyInfo, USE_INTERNAL_COLLISION_DETECTOR)){
         body->setName(name);
         if(debugMode){
             std::cout << "Loaded Model:\n" << *body << std::endl;
