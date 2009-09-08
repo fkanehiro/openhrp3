@@ -111,7 +111,6 @@ public class Grx3DView
     // for view
     private Canvas3D  canvas_;
     private Canvas3D offscreen_;
-    private BranchGroup offScreenBg_;
     private View view_;
     private TransformGroup tgView_;
     private Transform3D t3dViewHome_ = new Transform3D();
@@ -859,24 +858,13 @@ public class Grx3DView
 		
 		// オフスクリーンレンダリングの設定
 		offscreen_=new Canvas3D(graphicsConfiguration,true);
-		offscreen_.setOffScreenBuffer(buffer);
-		
-		View view=new View();
-		view.setPhysicalBody(view_.getPhysicalBody());
-		view.setPhysicalEnvironment(view_.getPhysicalEnvironment());
-		view.addCanvas3D(offscreen_);
+		offscreen_.setOffScreenBuffer(buffer);	
+		view_.addCanvas3D(offscreen_);
 		
 		offscreen_.getScreen3D().setSize(canvasSize);
 		Screen3D screen = canvas_.getScreen3D();
 		offscreen_.getScreen3D().setPhysicalScreenWidth(screen.getPhysicalScreenWidth());
 		offscreen_.getScreen3D().setPhysicalScreenHeight(screen.getPhysicalScreenHeight());
-		
-		ViewPlatform platform=new ViewPlatform();
-		view.attachViewPlatform(platform);
-		offScreenBg_ = new BranchGroup();
-		offScreenBg_.setCapability(BranchGroup.ALLOW_DETACH);
-		offScreenBg_.addChild(platform);
-		tgView_.addChild(offScreenBg_);
 				
         recordingMgr_ = RecordingManager.getInstance();
         recordingMgr_.setImageSize(canvasSize.width , canvasSize.height);
@@ -965,7 +953,7 @@ public class Grx3DView
     private void stopRecording(){
     	recordingMgr_.endRecord();
 		btnRec_.setSelected(false);
-		tgView_.removeChild(offScreenBg_);
+		view_.removeCanvas3D(offscreen_);
 		syncExec(new Runnable(){
 			public void run(){
 				MessageDialog.openInformation( comp.getShell(), "Infomation", "Recording finished");
