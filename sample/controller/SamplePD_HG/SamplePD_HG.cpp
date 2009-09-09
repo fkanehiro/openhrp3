@@ -125,16 +125,15 @@ SamplePD_HG::SamplePD_HG(RTC::Manager* manager)
   Pgain = new double[DOF];
   Dgain = new double[DOF];
 
-
-  if (access(GAIN_FILE, 0)){
-    std::cerr << GAIN_FILE << " not found" << std::endl;
-  }else{
-    gain.open(GAIN_FILE);
+  gain.open(GAIN_FILE);
+  if (gain.is_open()){
     for (int i=0; i<DOF; i++){
       gain >> Pgain[i];
       gain >> Dgain[i];
     }
     gain.close();
+  }else{
+    std::cerr << GAIN_FILE << " not opened" << std::endl;
   }
   
   m_angle_in.data.length(DOF);
@@ -343,23 +342,20 @@ RTC::ReturnCode_t SamplePD_HG::onExecute(RTC::UniqueId ec_id)
 
 void SamplePD_HG::openFiles()
 {
-  if (access(ANGLE_FILE, 0)){
-    std::cerr << ANGLE_FILE << " not found" << std::endl;
-  }else{
-    angle.open(ANGLE_FILE);
+  angle.open(ANGLE_FILE);
+  if (!angle.is_open()){
+    std::cerr << ANGLE_FILE << " not opened" << std::endl;
   }
 
-  if (access(VEL_FILE, 0)){
-    std::cerr << VEL_FILE << " not found" << std::endl;
-  }else{
-    vel.open(VEL_FILE);
+  vel.open(VEL_FILE);
+  if (!vel.is_open()){
+    std::cerr << VEL_FILE << " not opened" << std::endl;
   }
 
-   if (access(ACC_FILE, 0))
+  acc.open(ACC_FILE);
+  if (!acc.is_open())
   {
-    std::cerr << ACC_FILE << " not found" << std::endl;
-  }else{
-    acc.open(ACC_FILE);
+    std::cerr << ACC_FILE << " not opend" << std::endl;
   }
 }
 

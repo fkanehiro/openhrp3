@@ -6,7 +6,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
+ * General Robotix Inc.
  */
 /**
    \file
@@ -29,6 +29,8 @@
 
 #include "BridgeConf.h"
 
+#include "config.h"
+
 using namespace OpenHRP;
 
 class BridgeConf;
@@ -48,10 +50,10 @@ public:
 	ImageData* getCameraImageFromSimulator(int cameraId);
 	DblSequence& getJointDataSeqRef(DynamicsSimulator::LinkDataType linkDataType);
 	void flushJointDataSeqToSimulator(DynamicsSimulator::LinkDataType linkDataType);
-    void flushLinkDataToSimulator(const std::string& linkName, 
+    void flushLinkDataToSimulator(const std::string& linkName,
 	                                DynamicsSimulator::LinkDataType linkDataType,
 									const DblSequence& linkData);
-  
+
 	virtual void setDynamicsSimulator(DynamicsSimulator_ptr dynamicsSimulator);
 	virtual void setViewSimulator(ViewSimulator_ptr viewSimulator);
 	void setTimeStep(CORBA::Double _timeStep){
@@ -73,7 +75,7 @@ public:
     virtual void setModelName(const char* localModelName){ modelName = localModelName;}
     virtual void initilize();
     double controlTime;
-  
+
 private:
 	BridgeConf* bridgeConf;
 	RTC::Manager* rtcManager;
@@ -81,13 +83,13 @@ private:
 	std::string modelName;
 	VirtualRobotRTC* virtualRobotRTC;
 
-	typedef std::map<std::string, RTC::Port_var> PortMap;
+	typedef std::map<std::string, Port_Service_Var_Type> PortMap;
 
 	struct RtcInfo
 	{
 		RTC::RTObject_var rtcRef;
 		PortMap portMap;
-		RTC::ExtTrigExecutionContextService_var execContext;
+		ExtTrigExecutionContextService_Var_Type execContext;
 		double timeRate;
 		double timeRateCounter;
 	};
@@ -110,7 +112,7 @@ private:
 		bool flushed;
 		DblSequence values;
 	};
-			
+
 	typedef std::map<DynamicsSimulator::LinkDataType, JointValueSeqInfo> JointValueSeqInfoMap;
 	JointValueSeqInfoMap outputJointValueSeqInfos;
 
@@ -121,7 +123,7 @@ private:
 	void makePortMap(RtcInfoPtr& rtcInfo);
     Controller_impl::RtcInfoPtr addRtcVectorWithConnection(RTC::RTObject_var rtcRef);
 	void setupRtcConnections();
-	bool connectPorts(RTC::Port_ptr outPort, RTC::Port_ptr inPort);
+	bool connectPorts(Port_Service_Ptr_Type outPort, Port_Service_Ptr_Type inPort);
 
     void activeComponents();
     void deactiveComponents();

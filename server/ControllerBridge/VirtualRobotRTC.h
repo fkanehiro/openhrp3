@@ -6,7 +6,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
+ * General Robotix Inc.
  */
 /**
    \file
@@ -37,7 +37,7 @@ public:
     PortHandlerPtr getPortHandler(const std::string& name);
 
     RTC::RTCList* getConnectedRtcs();
-    
+
     void inputDataFromSimulator(Controller_impl* controller);
     void outputDataToSimulator(Controller_impl* controller);
 
@@ -77,7 +77,7 @@ private:
 
     void updatePortObjectRefs();
 
-    void addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcList, std::set<std::string>& foundRtcNames);
+    void addConnectedRtcs(Port_Service_Ptr_Type portRef, RTC::RTCList& rtcList, std::set<std::string>& foundRtcNames);
 };
 
 

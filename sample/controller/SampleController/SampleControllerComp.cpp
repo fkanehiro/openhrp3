@@ -6,7 +6,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
+ * General Robotix Inc.
  */
 /*!
  * @file SampleControllerComp.cpp
@@ -40,19 +40,19 @@ void MyModuleInit(RTC::Manager* manager)
   rtobj = RTC::RTObject::_narrow(manager->getPOA()->servant_to_reference(comp));
 
   // Get the port list of the component
-  PortList* portlist;
+  PortServiceList* portlist;
   portlist = rtobj->get_ports();
 
   // getting port profiles
   std::cout << "Number of Ports: ";
-  std::cout << portlist->length() << std::endl << std::endl; 
+  std::cout << portlist->length() << std::endl << std::endl;
   for (CORBA::ULong i(0), n(portlist->length()); i < n; ++i)
   {
-    Port_ptr port;
+    PortService_ptr port;
     port = (*portlist)[i];
     std::cout << "Port" << i << " (name): ";
     std::cout << port->get_port_profile()->name << std::endl;
-    
+
     RTC::PortInterfaceProfileList iflist;
     iflist = port->get_port_profile()->interfaces;
     std::cout << "---interfaces---" << std::endl;

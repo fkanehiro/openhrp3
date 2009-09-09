@@ -6,7 +6,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
+ * General Robotix Inc.
  */
 /**
    \file
@@ -43,16 +43,16 @@ void VirtualRobotRTC::registerFactory(RTC::Manager* manager, const char* compone
     "lang_type",         "compile",
     ""
   };
-	
+
   if(CONTROLLER_BRIDGE_DEBUG){
     cout << "initVirtualRobotRTC()" << endl;
   }
-	
+
   RTC::Properties profile(spec);
 
   profile.setDefault("implementation_id", componentTypeName);
   profile.setDefault("type_name", componentTypeName);
-	
+
   manager->registerFactory(profile,
 			   RTC::Create<VirtualRobotRTC>,
 			   RTC::Delete<VirtualRobotRTC>);
@@ -212,14 +212,14 @@ void VirtualRobotRTC::updatePortObjectRefs()
 {
   for(OutPortHandlerMap::iterator it = outPortHandlers.begin(); it != outPortHandlers.end(); ++it){
     OutPortHandlerPtr& handler = it->second;
-    handler->portRef = RTC::Port::_nil();
+    handler->portRef = Port_Service_Type::_nil();
   }
   for(InPortHandlerMap::iterator it = inPortHandlers.begin(); it != inPortHandlers.end(); ++it){
     InPortHandlerPtr& handler = it->second;
-    handler->portRef = RTC::Port::_nil();
+    handler->portRef = Port_Service_Type::_nil();
   }
-	
-  RTC::PortList_var ports = get_ports();
+
+  Port_Service_List_Var_Type ports = get_ports();
 
   for(CORBA::ULong i=0; i < ports->length(); ++i){
 
@@ -238,7 +238,7 @@ RTC::RTCList* VirtualRobotRTC::getConnectedRtcs()
   RTC::RTCList* rtcList = new RTC::RTCList;
 
   set<string> foundRtcNames;
-	
+
   for(OutPortHandlerMap::iterator it = outPortHandlers.begin(); it != outPortHandlers.end(); ++it){
     OutPortHandlerPtr& handler = it->second;
     addConnectedRtcs(handler->portRef, *rtcList, foundRtcNames);
@@ -252,7 +252,7 @@ RTC::RTCList* VirtualRobotRTC::getConnectedRtcs()
 }
 
 
-void VirtualRobotRTC::addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcList, std::set<std::string>& foundRtcNames)
+void VirtualRobotRTC::addConnectedRtcs(Port_Service_Ptr_Type portRef, RTC::RTCList& rtcList, std::set<std::string>& foundRtcNames)
 {
     RTC::PortProfile_var portProfile = portRef->get_port_profile();
     string portName(portProfile->name);
@@ -261,10 +261,10 @@ void VirtualRobotRTC::addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcL
 
     for(CORBA::ULong i=0; i < connectorProfiles->length(); ++i){
         RTC::ConnectorProfile& connectorProfile = connectorProfiles[i];
-        RTC::PortList& connectedPorts = connectorProfile.ports;
+        Port_Service_List_Type& connectedPorts = connectorProfile.ports;
 
         for(CORBA::ULong j=0; j < connectedPorts.length(); ++j){
-            RTC::Port_ptr connectedPortRef = connectedPorts[j];
+        	Port_Service_Ptr_Type connectedPortRef = connectedPorts[j];
             RTC::PortProfile_var connectedPortProfile = connectedPortRef->get_port_profile();
             RTC::RTObject_var connectedRtcRef = connectedPortProfile->owner;
             RTC::RTObject_var thisRef = getObjRef();
@@ -284,13 +284,15 @@ void VirtualRobotRTC::addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcL
                 cout << connectedPortProfile->name << "\" of " << connectedRtcName << endl;
 
                 if(ii == rtcList.length()){
-                    RTC::ExecutionContextServiceList_var execServices = connectedRtcRef->get_execution_context_services();
+
+#ifdef OPENRTM_VERSION_042
+                	RTC::ExecutionContextServiceList_var execServices = connectedRtcRef->get_execution_context_services();
 
                     for(CORBA::ULong k=0; k < execServices->length(); k++) {
                         RTC::ExecutionContextService_var execContext = execServices[k];
 
-                        RTC::ExtTrigExecutionContextService_var extTrigExecContext =
-                        RTC::ExtTrigExecutionContextService::_narrow(execContext);
+                    	ExtTrigExecutionContextService_Var_Type extTrigExecContext =
+                    		ExtTrigExecutionContextService_Type::_narrow(execContext);
 
                         if(!CORBA::is_nil(extTrigExecContext)){
                             CORBA::ULong n = rtcList.length();
@@ -299,6 +301,24 @@ void VirtualRobotRTC::addConnectedRtcs(RTC::Port_ptr portRef, RTC::RTCList& rtcL
                             foundRtcNames.insert(connectedRtcName);
                         }
                     }
+#else
+                    RTC::ExecutionContextList_var execServices = connectedRtcRef->get_owned_contexts();
+
+                    for(CORBA::ULong k=0; k < execServices->length(); k++) {
+                    	RTC::ExecutionContext_var execContext = execServices[k];
+
+                    	ExtTrigExecutionContextService_Var_Type extTrigExecContext =
+                    		ExtTrigExecutionContextService_Type::_narrow(execContext);
+
+                        if(!CORBA::is_nil(extTrigExecContext)){
+                            CORBA::ULong n = rtcList.length();
+                            rtcList.length(n + 1);
+                            rtcList[n] = connectedRtcRef;
+                            foundRtcNames.insert(connectedRtcName);
+                        }
+                    }
+#endif
+
                 }
             }
         }
@@ -359,5 +379,5 @@ void VirtualRobotRTC::readDataFromInPorts(Controller_impl* controller)
 
 void VirtualRobotRTC::stop()
 {
-    
+
 }

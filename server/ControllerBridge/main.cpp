@@ -22,7 +22,9 @@
 
 
 #if ( defined ( WIN32 ) || defined ( _WIN32 ) || defined(__WIN32__) ) 
+#  if( defined (OPENRTM_VERSION_042) )
 #include <ace/OS_main.h> 
+#  endif
 #endif
 
 

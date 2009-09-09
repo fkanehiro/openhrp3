@@ -5,7 +5,7 @@
  * available at http://www.eclipse.org/legal/epl-v10.html
  * Contributors:
  * National Institute of Advanced Industrial Science and Technology (AIST)
- * General Robotix Inc. 
+ * General Robotix Inc.
  */
 /**
    \file
@@ -27,6 +27,8 @@
 
 #include "BridgeConf.h"
 
+#include "config.h"
+
 using namespace OpenHRP;
 
 
@@ -36,7 +38,7 @@ class PortHandler
 {
 public:
     virtual ~PortHandler();
-    RTC::Port_var portRef;
+    Port_Service_Var_Type portRef;
 };
 
 typedef boost::shared_ptr<PortHandler> PortHandlerPtr;
@@ -170,7 +172,7 @@ public:
     virtual void outputDataToSimulator(Controller_impl* controller);
     virtual void readDataFromPort(Controller_impl* controller);
     RTC::InPort<RTC::TimedDoubleSeq> inPort;
-private:      
+private:
     RTC::TimedDoubleSeq values;
     std::vector<std::string> linkName;
     DynamicsSimulator::LinkDataType linkDataType;

@@ -87,15 +87,15 @@ SamplePD::SamplePD(RTC::Manager* manager)
   Pgain = new double[DOF];
   Dgain = new double[DOF];
 
-  if (access(GAIN_FILE, 0)){
-    std::cerr << GAIN_FILE << " not found" << std::endl;
-  }else{
-    gain.open(GAIN_FILE);
+  gain.open(GAIN_FILE);
+  if (gain.is_open()){
     for (int i=0; i<DOF; i++){
       gain >> Pgain[i];
       gain >> Dgain[i];
     }
     gain.close();
+  }else{
+    std::cerr << GAIN_FILE << " not found" << std::endl;
   }
   m_torque.data.length(DOF);
   m_angle.data.length(DOF);
@@ -240,17 +240,15 @@ RTC::ReturnCode_t SamplePD::onRateChanged(RTC::UniqueId ec_id)
 
 void SamplePD::openFiles()
 {
-    if (access(ANGLE_FILE, 0)){
-        std::cerr << ANGLE_FILE << " not found" << std::endl;
-    }else{
-        angle.open(ANGLE_FILE);
+    angle.open(ANGLE_FILE);
+    if(!angle.is_open()){
+        std::cerr << ANGLE_FILE << " not opened" << std::endl;
     }
 
-    if (access(VEL_FILE, 0)){
-        std::cerr << VEL_FILE << " not found" << std::endl;
-    }else{
-        vel.open(VEL_FILE);
-    }   
+    vel.open(VEL_FILE);
+    if (!vel.is_open()){
+        std::cerr << VEL_FILE << " not opened" << std::endl;
+    }  
 }
 
 void SamplePD::closeFiles()

@@ -10,11 +10,15 @@ set(sources
 
 add_executable(${program} ${sources})
 
+if( NOT ADDITIONAL_SYMBOL STREQUAL "")
+  add_definitions(-D${ADDITIONAL_SYMBOL})
+endif()
+
 if(UNIX)
   target_link_libraries(
     ${program}
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-    ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES}
+    ${OPENRTM_LIBRARIES}
     boost_filesystem boost_program_options boost_regex)
 elseif(WIN32)
   add_definitions(${OPENRTM_DEFINITIONS})
@@ -22,7 +26,7 @@ elseif(WIN32)
   target_link_libraries(${program}
     optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d 
-    ${OMNIORB_LIBRARIES} ${OPENRTM_LIBRARIES})
+    ${OPENRTM_LIBRARIES})
 endif()
 
 if(WIN32)

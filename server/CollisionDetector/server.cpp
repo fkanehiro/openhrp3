@@ -8,7 +8,7 @@
  * General Robotix Inc. 
  */
 /**
- * CollisionDetector¤Î¥µ¡¼¥Ğ¥¹¥¿¡¼¥È¥¢¥Ã¥×
+ * CollisionDetectorã®ã‚µãƒ¼ãƒã‚¹ã‚¿ãƒ¼ãƒˆã‚¢ãƒƒãƒ— //
  *
  * @author  K Saito (Kernel. Co.,Ltd.)
  * @version 0.1 (2002/02/22)
@@ -26,7 +26,7 @@
 using namespace std;
 
 /**
- * ¥µ¡¼¥Ğ¥¹¥¿¡¼¥È¥¢¥Ã¥×
+ * ã‚µãƒ¼ãƒã‚¹ã‚¿ãƒ¼ãƒˆã‚¢ãƒƒãƒ— //
  *
  * @param   argc
  * @param   argv
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
         //
         PortableServer::POAManager_var manager = rootPOA -> the_POAManager();
 
-    // ¥Í¡¼¥à¥µ¡¼¥Ğ¤Ø¤Î»²¾È¼èÆÀ
+    // ãƒãƒ¼ãƒ ã‚µãƒ¼ãƒã¸ã®å‚ç…§å–å¾— //
     CORBA_Object_var ns;
     try {
       ns = orb -> resolve_initial_references("NameService");
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
       return 1;
     }
     
-    // ¥ë¡¼¥È¥Í¡¼¥ß¥ó¥°¥³¥ó¥Æ¥­¥¹¥È¼èÆÀ
+    // ãƒ«ãƒ¼ãƒˆãƒãƒ¼ãƒŸãƒ³ã‚°ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆå–å¾— //
     CosNaming_NamingContext_var rootnc = CosNaming_NamingContext::_narrow(ns);
     if(CORBA_is_nil(rootnc)) {
       cerr << argv[0]
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
     nc[0].kind = CORBA_string_dup("");
     rootnc -> rebind(nc, cdFactory);
     
-    // ¥¯¥é¥¤¥¢¥ó¥ÈÂ¦¤«¤é¤ÎÀÜÂ³ÂÔ¤Á
+    // ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆå´ã‹ã‚‰ã®æ¥ç¶šå¾…ã¡ //
     manager -> activate();
     cout << "ready" << endl;
     

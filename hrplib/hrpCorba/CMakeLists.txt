@@ -3,7 +3,12 @@
 
 include(${OPENHRP_IDL_DIR}/OpenHRP/IDL_FILE_BASENAMES.cmake)
 
-set(idl_flags -bcxx -Wbuse_quotes -Wbh=.hh -Wbs=Sk.cpp -I${OPENRTM_IDL_DIR})
+set(idl_flags ${VERBOSE_FLAG} -bcxx -Wbuse_quotes -Wbh=.hh -Wbs=Sk.cpp -I${OPENRTM_IDL_DIR})
+
+if( NOT ADDITIONAL_SYMBOL STREQUAL "")
+  set(idl_flags ${idl_flags} -D ${ADDITIONAL_SYMBOL})
+endif()
+
 
 foreach(name ${IDL_FILE_BASENAMES})
   set(idl_files ${idl_files} ${OPENHRP_IDL_DIR}/OpenHRP/${name}.idl)

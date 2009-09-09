@@ -219,23 +219,20 @@ RTC::ReturnCode_t SampleHG::onExecute(RTC::UniqueId ec_id)
 
 void SampleHG::openFiles()
 {
-  if (access(ANGLE_FILE, 0)){
-    std::cerr << ANGLE_FILE << " not found" << std::endl;
-  }else{
-    angle.open(ANGLE_FILE);
+  angle.open(ANGLE_FILE);
+  if (!angle.is_open()){
+    std::cerr << ANGLE_FILE << " not opened" << std::endl;
   }
 
-  if (access(VEL_FILE, 0)){
-    std::cerr << VEL_FILE << " not found" << std::endl;
-  }else{
-    vel.open(VEL_FILE);
+  vel.open(VEL_FILE);
+  if (!vel.is_open()){
+    std::cerr << VEL_FILE << " not opened" << std::endl;
   }
 
-  if (access(ACC_FILE, 0))
+  acc.open(ACC_FILE);
+  if (!acc.is_open())
   {
-    std::cerr << ACC_FILE << " not found" << std::endl;
-  }else{
-    acc.open(ACC_FILE);
+    std::cerr << ACC_FILE << " not opend" << std::endl;
   }
 }
 

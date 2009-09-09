@@ -60,8 +60,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	public static final double DEFAULT_TOTAL_TIME = 20.0;
     private static final int MAX_RAM_BUFFER_SIZE = -1; // 無制限
     private static final int LOAD_LOG_MODITOR_DIM = 32; // プログレスモニター用定数
-//    private static final long HEAP_MEMORY_TOLERANCE = 512*1024; //ヒープメモリサイズの許容量 
-    private static final long HEAP_MEMORY_TOLERANCE = 4*1024*1024; //ヒープメモリサイズの許容量
+    private static final long HEAP_MEMORY_TOLERANCE = 4*1024*1024; //残りヒープメモリサイズの許容量
     private static final String OVER_HEAP_LOG_DIR_NAME = "over"; //ヒープメモリを超えたときにログを退避させるディレクトリ
 	private static String LOG_DIR;
 	

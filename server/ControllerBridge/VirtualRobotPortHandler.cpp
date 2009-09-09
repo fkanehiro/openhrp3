@@ -251,6 +251,9 @@ void JointDataSeqInPortHandler::outputDataToSimulator(Controller_impl* controlle
 
 void JointDataSeqInPortHandler::readDataFromPort(Controller_impl* controller)
 {
+  if( inPort.isNew() == false ){
+      return;
+  }
   inPort.read();
 
   DblSequence& data = controller->getJointDataSeqRef(linkDataType);
@@ -289,6 +292,9 @@ void LinkDataInPortHandler::outputDataToSimulator(Controller_impl* controller)
 
 void LinkDataInPortHandler::readDataFromPort(Controller_impl* controller)
 {
+  if( inPort.isNew() == false ){
+      return;
+  }
   inPort.read();
 
   CORBA::ULong n = values.data.length();
