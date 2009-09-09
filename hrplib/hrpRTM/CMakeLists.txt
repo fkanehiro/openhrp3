@@ -2,6 +2,10 @@ set(sources
   SimulationExecutionContext.cpp
 )
 
+if( NOT ADDITIONAL_SYMBOL STREQUAL "")
+  add_definitions(-D${ADDITIONAL_SYMBOL})
+endif()
+
 set(target hrpRTM-${OPENHRP_LIBRARY_VERSION})
 
 add_library(${target} SHARED ${sources})

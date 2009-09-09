@@ -232,11 +232,10 @@ RTC::ReturnCode_t PD_HGtest::onExecute(RTC::UniqueId ec_id)
 
 void PD_HGtest::openFiles()
 {
-  if (access(WAIST_FILE, 0))
+  waist.open(WAIST_FILE);
+  if (!waist.is_open())
   {
-    std::cerr << WAIST_FILE << " not found" << std::endl;
-  }else{
-    waist.open(WAIST_FILE);
+    std::cerr << WAIST_FILE << " not opened" << std::endl;
   }
 }
 

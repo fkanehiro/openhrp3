@@ -101,12 +101,10 @@ RTC::ReturnCode_t SampleController::onInitialize()
   // </rtc-template>
 	Pgain = new double[DOF];
 	Dgain = new double[DOF];
+	std::ifstream gain;
 
-	if (access(GAIN_FILE, 0)){
-		cerr << GAIN_FILE << " not found" << endl;
-	}else{
-		std::ifstream gain;
-		gain.open(GAIN_FILE);
+    gain.open(GAIN_FILE);
+    if (gain.is_open()){
 		for (int i=0; i<DOF; i++){
 			gain >> Pgain[i];
 			gain >> Dgain[i];
@@ -118,6 +116,8 @@ RTC::ReturnCode_t SampleController::onInitialize()
 #ifdef SC_DEBUG
 		cout << endl;
 #endif
+	}else{
+		cerr << GAIN_FILE << " not opened" << endl;
 	}
 
 	m_torque.data.length(DOF);
@@ -347,17 +347,15 @@ RTC::ReturnCode_t SampleController::onRateChanged(RTC::UniqueId ec_id)
 
 void SampleController::openFiles()
 {
-	if (access(ANGLE_FILE, 0)){
-		cerr << ANGLE_FILE << " not found" << endl;
-	}else{
-		angle.open(ANGLE_FILE);
-	}
+  angle.open(ANGLE_FILE);
+  if (!angle.is_open()){
+    std::cerr << ANGLE_FILE << " not opened" << std::endl;
+  }
 
-	if (access(VEL_FILE, 0)){
-		cerr << VEL_FILE << " not found" << endl;
-	}else{
-		vel.open(VEL_FILE);
-	}
+  vel.open(VEL_FILE);
+  if (!vel.is_open()){
+    std::cerr << VEL_FILE << " not opened" << std::endl;
+  }
 }
 void SampleController::closeFiles()
 {

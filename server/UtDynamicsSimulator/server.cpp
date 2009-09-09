@@ -9,7 +9,7 @@
  * General Robotix Inc. 
  */
 /** @file DynamicsSimulator/server/server.cpp
- * control¤Î¥µ¡¼¥Ð¥¹¥¿¡¼¥È¥¢¥Ã¥×
+ * controlã®ã‚µãƒ¼ãƒã‚¹ã‚¿ãƒ¼ãƒˆã‚¢ãƒƒãƒ—  
  *
  * @author  Ichitaro Kohara (Kernel. Co.,Ltd.)
  * @version 0.1 (2000/03/22)
@@ -30,7 +30,7 @@ using namespace OpenHRP;
 
 
 /**
- * ¥µ¡¼¥Ð¥¹¥¿¡¼¥È¥¢¥Ã¥×
+ * ã‚µãƒ¼ãƒã‚¹ã‚¿ãƒ¼ãƒˆã‚¢ãƒƒãƒ—  
  *
  * @param   argc
  * @param   argv
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
     nc[0].kind = CORBA::string_dup("");
     cxT -> rebind(nc, integratorFactory);
 
-    // ¥¯¥é¥¤¥¢¥ó¥ÈÂ¦¤«¤é¤ÎÀÜÂ³ÂÔ¤Á
+    // ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆå´ã‹ã‚‰ã®æŽ¥ç¶šå¾…ã¡ //
     manager -> activate();
     cout << "ready" << endl;
 

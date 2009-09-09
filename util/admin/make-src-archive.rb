@@ -7,6 +7,7 @@ require "optparse"
 require "maketar"
 
 script_file = nil
+command = String("svn export #{SRC_REPOSITORY_PATH} #{EXPORT_TMP_DIR}")
 use_zip = false
 
 parser = OptionParser.new
@@ -22,6 +23,10 @@ END
 
 parser.on("--script script", String) { |script|
   script_file = File.expand_path(script)
+}
+
+parser.on("--svn-path svnPath", String) { |svnPath|
+  command = String( "svn export " + svnPath + " #{EXPORT_TMP_DIR}" )
 }
 
 parser.on("--use-zip") { use_zip = true }
@@ -66,9 +71,10 @@ files = [ ]
 
 
 
-puts "svn export #{SRC_REPOSITORY_PATH} #{EXPORT_TMP_DIR}"
+puts command
+command.insert(0,"|")
 
-open("|svn export #{SRC_REPOSITORY_PATH} #{EXPORT_TMP_DIR}") { |io|
+open(command.to_str) { |io|
   while io.gets
     print "."
     STDOUT.flush

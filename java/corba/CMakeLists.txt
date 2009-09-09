@@ -23,8 +23,8 @@ foreach(name ${IDL_FILE_BASENAMES})
     add_custom_command(
       OUTPUT ${idl_file}
       COMMAND ${NATIVE2ASCII} -encoding UTF-8 ${src_idl_file} ${idl_file}
-      COMMAND ${RMDIR} src
-      COMMAND ${RMDIR} jp
+      COMMAND if [ -e src ]; then ${RMDIR} src\; fi
+      COMMAND if [ -e jp ]; then ${RMDIR} jp\; fi
       DEPENDS ${src_idl_file}
     )
   elseif(WIN32)
@@ -41,7 +41,11 @@ endforeach()
 
 
 # TODO: '-pkgPrefix' option should be used instead of '-pkgTranslate'
-set(idlj_flags -fclient -fserver -pkgTranslate OpenHRP ${package} -td ${CMAKE_CURRENT_BINARY_DIR}/src -I${OPENHRP_IDL_DIR}/OpenRTM)
+if(OPENRTM_VERSION STREQUAL OPENRTM_VERSION042)
+  set(idlj_flags ${VERBOSE_FLAG} -fclient -fserver -pkgTranslate OpenHRP ${package} -td ${CMAKE_CURRENT_BINARY_DIR}/src -i ${OPENHRP_RTM_IDL_DIR} -d ${ADDITIONAL_SYMBOL})
+else()
+  set(idlj_flags ${VERBOSE_FLAG} -fclient -fserver -pkgTranslate OpenHRP ${package} -td ${CMAKE_CURRENT_BINARY_DIR}/src -I${OPENHRP_RTM_IDL_DIR})
+endif()
 
 foreach(idl_file ${idl_files})
   get_filename_component(idl_file_basename ${idl_file} NAME_WE)
@@ -57,11 +61,11 @@ endforeach()
 
 
 if(UNIX)
-set(javac_flags -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
-  -classpath ${package_path}:${GrxUI_ON_ECLIPSE_DIR}/OpenRTM-aist-0.4.1.jar -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
+set(javac_flags ${JAVAC_VFLAG} -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
+  -classpath ${package_path}:${GrxUI_ON_ECLIPSE_DIR}/${rtm_stub_jar} -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
 elseif(WIN32)
-set(javac_flags -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
-  -classpath "${package_path}\;${GrxUI_ON_ECLIPSE_DIR}/OpenRTM-aist-0.4.1.jar" -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
+set(javac_flags ${JAVAC_VFLAG} -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
+  -classpath "${package_path}\;${GrxUI_ON_ECLIPSE_DIR}/${rtm_stub_jar}" -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
@@ -72,7 +76,6 @@ set(jarfile ${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar)
 
 if(UNIX)
   add_custom_command(
-#    OUTPUT ${jarfile} jp
     OUTPUT ${jarfile}
     COMMAND ${JAVAC} ${javac_flags} src/${package_path}/*.java
     COMMAND ${JAR} cf ${jarfile} -C ${CMAKE_CURRENT_BINARY_DIR} jp
@@ -91,6 +94,7 @@ elseif(WIN32)
   )
   
 endif()
+
 
 add_custom_target(JavaStubSkel ALL DEPENDS ${jarfile})
 

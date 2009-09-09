@@ -59,13 +59,13 @@ bool ImageConverter::initializeSFImage( )
 //==================================================================================================
 SFImage* ImageConverter::convert( string url )
 {
-    // Šg’£q’Šo
+    // æ‹¡å¼µå­æŠ½å‡º //
     string  ext = url.substr( url.rfind( '.' ) );
 
-    // Šg’£q‚ğ¬•¶š‚É•ÏŠ·
+    // æ‹¡å¼µå­ã‚’å°æ–‡å­—ã«å¤‰æ› //
     transform( ext.begin(), ext.end(), ext.begin(), (int(*)(int))tolower );
 
-   // SFImage‚Ìì¬
+   // SFImageã®ä½œæˆ //
     if( !ext.compare( ".png" ) )
     {
         if(loadPNG( url ))
@@ -112,12 +112,12 @@ ImageConverter::loadPNG(
 
     try
     {
-        // ƒtƒ@ƒCƒ‹ƒI[ƒvƒ“
+        // ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³ //
         fp = fopen( filePath.c_str(), "rb" );
         if( !fp )       throw "File open error.";
 
 
-        // ƒVƒOƒlƒ`ƒƒ‚ÌŠm”F
+        // ã‚·ã‚°ãƒãƒãƒ£ã®ç¢ºèª //
         png_size_t  number = 8;
         png_byte    header[8];
         int         is_png;
@@ -127,14 +127,14 @@ ImageConverter::loadPNG(
         if( !is_png )   throw "File is not png.";
 
 
-        // png_struct \‘¢‘Ì‚Ì‰Šú‰»
+        // png_struct æ§‹é€ ä½“ã®åˆæœŸåŒ– //
         png_structp pPng;
 
         pPng = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
         if( !pPng )     throw "Failed to create png_struct";
 
 
-        // png_info \‘¢‘Ì‚Ì‰Šú‰»
+        // png_info æ§‹é€ ä½“ã®åˆæœŸåŒ– //
         png_infop   pInfo;
         
         pInfo = png_create_info_struct( pPng );
@@ -145,7 +145,7 @@ ImageConverter::loadPNG(
         }
 
 
-        // ƒtƒ@ƒCƒ‹ƒ|ƒCƒ“ƒ^‚ÌƒZƒbƒg‚ÆƒVƒOƒlƒ`ƒƒŠm”F‚Ì‚½‚ßƒ|ƒCƒ“ƒ^‚ªi‚ñ‚Å‚¢‚é‚±‚Æ‚ğ’Ê’m
+        // ãƒ•ã‚¡ã‚¤ãƒ«ãƒã‚¤ãƒ³ã‚¿ã®ã‚»ãƒƒãƒˆã¨ã‚·ã‚°ãƒãƒãƒ£ç¢ºèªã®ãŸã‚ãƒã‚¤ãƒ³ã‚¿ãŒé€²ã‚“ã§ã„ã‚‹ã“ã¨ã‚’é€šçŸ¥ //
         png_init_io( pPng, fp );
         png_set_sig_bytes( pPng, (int)number );
 

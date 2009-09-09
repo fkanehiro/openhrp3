@@ -122,7 +122,7 @@ void Controller_impl::detectRtcs()
 
 void Controller_impl::makePortMap(RtcInfoPtr& rtcInfo)
 {
-    RTC::PortList_var ports = rtcInfo->rtcRef->get_ports();
+	Port_Service_List_Var_Type ports = rtcInfo->rtcRef->get_ports();
     for(CORBA::ULong i=0; i < ports->length(); ++i){
         RTC::PortProfile_var profile = ports[i]->get_port_profile();
         rtcInfo->portMap[string(profile->name)] = ports[i];
@@ -144,16 +144,30 @@ Controller_impl::RtcInfoPtr Controller_impl::addRtcVectorWithConnection(RTC::RTO
 
     rtcInfoVector.push_back(rtcInfo);
 
+
+#ifdef OPENRTM_VERSION_042
     RTC::ExecutionContextServiceList_var eclist = rtcInfo->rtcRef->get_execution_context_services();
     for(CORBA::ULong i=0; i < eclist->length(); ++i){
         if(!CORBA::is_nil(eclist[i])){
-            rtcInfo->execContext = RTC::ExtTrigExecutionContextService::_narrow(eclist[i]);
+            rtcInfo->execContext = ExtTrigExecutionContextService_Type::_narrow(eclist[i]);
             if(!CORBA::is_nil(rtcInfo->execContext)){
-                cout << "detected the ExtTrigExecutionContext"  << endl;
+                cout << "detected the ExtTrigExecutionContext" << endl;
             }
             break;
         }
     }
+#else
+    RTC::ExecutionContextList_var eclist = rtcInfo->rtcRef->get_owned_contexts();
+    for(CORBA::ULong i=0; i < eclist->length(); ++i){
+        if(!CORBA::is_nil(eclist[i])){
+            rtcInfo->execContext = ExtTrigExecutionContextService_Type::_narrow(eclist[i]);
+            if(!CORBA::is_nil(rtcInfo->execContext)){
+                cout << "detected the ExtTrigExecutionContext" << endl;
+            }
+            break;
+        }
+    }
+#endif
     return rtcInfo;
 }
 
@@ -185,14 +199,14 @@ void Controller_impl::setupRtcConnections()
                 cout << controllerInstanceName << " does not have a port ";
                 cout << connection.controllerPortName << "\n";
             } else {
-                RTC::Port_ptr controllerPortRef = q->second;
+            	Port_Service_Ptr_Type controllerPortRef = q->second;
 
                 PortHandlerPtr robotPortHandler = virtualRobotRTC->getPortHandler(connection.robotPortName);
                 if(!robotPortHandler){
                     cout << "\n";
                     cout << "The robot does not have a port named " << connection.robotPortName << "\n";
                 } else {
-                    RTC::Port_ptr robotPortRef = robotPortHandler->portRef;
+                	Port_Service_Ptr_Type robotPortRef = robotPortHandler->portRef;
 
                     if(!CORBA::is_nil(robotPortRef)){
                         if(dynamic_pointer_cast<OutPortHandler>(robotPortHandler)){
@@ -214,25 +228,34 @@ void Controller_impl::setupRtcConnections()
 }
 
 
-bool Controller_impl::connectPorts(RTC::Port_ptr outPort, RTC::Port_ptr inPort)
+bool Controller_impl::connectPorts(Port_Service_Ptr_Type outPort, Port_Service_Ptr_Type inPort)
 {
     // connect ports
     RTC::ConnectorProfile cprof;
     cprof.connector_id = "";
     cprof.name = CORBA::string_dup("connector0");
     cprof.ports.length(2);
-    cprof.ports[0] = RTC::Port::_duplicate(inPort);
-    cprof.ports[1] = RTC::Port::_duplicate(outPort);
+    cprof.ports[0] = Port_Service_Type::_duplicate(inPort);
+    cprof.ports[1] = Port_Service_Type::_duplicate(outPort);
 
+    CORBA_SeqUtil::push_back(cprof.properties,
+		       NVUtil::newNV("dataport.dataflow_type",
+				     "Push"));
+#ifdef OPENRTM_VERSION_042
     CORBA_SeqUtil::push_back(cprof.properties,
 		       NVUtil::newNV("dataport.interface_type",
 				     "CORBA_Any"));
     CORBA_SeqUtil::push_back(cprof.properties,
-		       NVUtil::newNV("dataport.dataflow_type",
-				     "Push"));
-    CORBA_SeqUtil::push_back(cprof.properties,
 		       NVUtil::newNV("dataport.subscription_type",
 				     "Flush"));
+#else
+    CORBA_SeqUtil::push_back(cprof.properties,
+		       NVUtil::newNV("dataport.interface_type",
+				     "corba_cdr"));
+    CORBA_SeqUtil::push_back(cprof.properties,
+		       NVUtil::newNV("dataport.subscription_type",
+				     "flush"));
+#endif
     RTC::ReturnCode_t result = inPort->connect(cprof);
 
     return (result == RTC::RTC_OK);
@@ -319,7 +342,7 @@ ImageData* Controller_impl::getCameraImageFromSimulator(int cameraId)
         return imageData;
     }
 }
-    
+
 
 void Controller_impl::input()
 {
@@ -351,7 +374,7 @@ void Controller_impl::flushJointDataSeqToSimulator(DynamicsSimulator::LinkDataTy
     }
 }
 
-void Controller_impl::flushLinkDataToSimulator(const std::string& linkName, 
+void Controller_impl::flushLinkDataToSimulator(const std::string& linkName,
 					       DynamicsSimulator::LinkDataType linkDataType,
 					       const DblSequence& linkData)
 {
@@ -470,7 +493,7 @@ void Controller_impl::activeComponents()
 
 void Controller_impl::deactiveComponents()
 {
-    std::vector<RTC::ExtTrigExecutionContextService_var> vecExecContext;
+    std::vector<ExtTrigExecutionContextService_Var_Type> vecExecContext;
     for(RtcInfoVector::iterator p = rtcInfoVector.begin(); p != rtcInfoVector.end(); ++p){
         RtcInfoPtr& rtcInfo = *p;
         rtcInfo->timeRateCounter = 1.0;
@@ -480,7 +503,7 @@ void Controller_impl::deactiveComponents()
             }
         }
     }
-    for( std::vector<RTC::ExtTrigExecutionContextService_var>::iterator ite = vecExecContext.begin();
+    for( std::vector<ExtTrigExecutionContextService_Var_Type>::iterator ite = vecExecContext.begin();
          ite != vecExecContext.end();   ++ite   ){
         if(!CORBA::is_nil( *ite )){
             try{

@@ -13,8 +13,7 @@
 #---------------------------------------
 omni="libomniorb4 libomniorb4-dev omniidl4 omniorb4-nameserver"
 ace="libace libace-dev"
-#openrtm="openrtm-aist openrtm-aist-doc openrtm-aist-dev openrtm-aist-example python-yaml"
-openrtm="python-yaml"
+openrtm="openrtm-aist openrtm-aist-doc openrtm-aist-dev openrtm-aist-example python-yaml"
 
 devel="gcc g++ make"
 packages="$devel $omni $ace $openrtm"

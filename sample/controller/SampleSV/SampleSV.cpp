@@ -141,6 +141,8 @@ RTC::ReturnCode_t SampleSV::onActivated(RTC::UniqueId ec_id)
 
 	std::cout << "on Activated" << std::endl;
     openFiles();
+    m_steerIn.update();
+    m_velIn.update();
 	wheel_ref = 0.0;
 
 	return RTC::RTC_OK;
@@ -223,10 +225,9 @@ RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
 
 void SampleSV::openFiles()
 {
-	if (access( STEERING_FILE, 0))
-        std::cerr << STEERING_FILE <<" not found" << std::endl;
-	else
-		steer.open( STEERING_FILE );
+    steer.open( STEERING_FILE );
+    if (!steer.is_open())
+        std::cerr << STEERING_FILE <<" not opened" << std::endl;
 }
 
 void SampleSV::closeFiles()

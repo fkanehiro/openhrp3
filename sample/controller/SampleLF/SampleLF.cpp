@@ -89,16 +89,15 @@ SampleLF::SampleLF(RTC::Manager* manager)
   Pgain = new double[DOF];
   Dgain = new double[DOF];
 
-
-  if (access(GAIN_FILE, 0)){
-    std::cerr << GAIN_FILE << " not found" << std::endl;
-  }else{
-    gain.open(GAIN_FILE);
+  gain.open(GAIN_FILE);
+  if (gain.is_open()){
     for (int i=0; i<DOF; i++){
       gain >> Pgain[i];
       gain >> Dgain[i];
     }
     gain.close();
+  }else{
+    std::cerr << GAIN_FILE << " not opened" << std::endl;
   }
   m_torque.data.length(DOF);
   m_torqueL.data.length(1);
@@ -290,25 +289,25 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
 */
 void SampleLF::openFiles()
 {
-    if (access("etc/LFangle1.dat", 0))
-        std::cerr << "etc/LFangle1.dat not found" << std::endl;
-    else
-	    angle1.open("etc/LFangle1.dat");
+    angle1.open("etc/LFangle1.dat");
+    if (!angle1.is_open()){
+        std::cerr << "etc/LFangle1.dat not opened" << std::endl;
+    }
 
-    if (access("etc/LFangle2.dat", 0))
-	    std::cerr << "etc/LFangle2.dat not found" << std::endl;
-    else
-	    angle2.open("etc/LFangle2.dat");
+    angle2.open("etc/LFangle2.dat");
+    if (!angle2.is_open()){
+	    std::cerr << "etc/LFangle2.dat not opened" << std::endl;
+    }
 
-    if (access("etc/LFvel1.dat", 0))
-	    std::cerr << "etc/LFvel1.dat not found" << std::endl;
-    else
-	    vel1.open("etc/LFvel1.dat");
+    vel1.open("etc/LFvel1.dat");
+    if (!vel1.is_open()){
+	    std::cerr << "etc/LFvel1.dat not opened" << std::endl;
+    }
 
-    if (access("etc/LFvel2.dat", 0))
-	    std::cerr << "etc/LFvel2.dat not found" << std::endl;
-    else
-	    vel2.open("etc/LFvel2.dat");
+    vel2.open("etc/LFvel2.dat");
+    if (!vel2.is_open()){
+	    std::cerr << "etc/LFvel2.dat not opened" << std::endl;
+    }
 }
 
 void SampleLF::closeFiles()

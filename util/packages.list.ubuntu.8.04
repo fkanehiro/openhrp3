@@ -57,6 +57,7 @@ zlib1g-dev
 libace-dev
 libjpeg62-dev
 libpng12-dev
+uuid-dev
 
 # for hrpsys
 # libncurses5-dev

@@ -258,7 +258,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
     DblSequence uvlimit = linkInfo.uvlimit;
     DblSequence lvlimit = linkInfo.lvlimit;
 
-    double maxlimit = numeric_limits<double>::max();
+    double maxlimit = (numeric_limits<double>::max)();
 
     link->ulimit  = getLimitValue(ulimit,  +maxlimit);
     link->llimit  = getLimitValue(llimit,  -maxlimit);

@@ -24,10 +24,14 @@ namespace RTC
 
     // invoke on_shutdown for each comps.
     std::for_each(m_comps.begin(), m_comps.end(), invoke_on_shutdown());
-    
+
     // change EC thread state
+#ifdef OPENRTM_VERSION_042
     m_state = false;
-    
+#else
+    //m_running = false;
+    m_svc = false;
+#endif
     return RTC::RTC_OK;
   }
 

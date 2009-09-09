@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grxui>
+    <processmanagerconfig>
+        <process dir="$(BIN_DIR)" id="" waitcount="500"/>
+        <process args="-start 2809 -logdir &quot;$(APPDATA)/OpenHRP-3.1/omninames-log&quot;" autostart="true" com="&quot;$(OMNI_ROOT)/bin/x86_win32/omniNames&quot;" id="NameService"/>
+        <process args="" autostart="true" com="$(BIN_DIR)/openhrp-model-loader" hasshutdown="true" id="ModelLoader" useORB="true"/>
+        <process args="" autostart="true" com="$(BIN_DIR)/openhrp-collision-detector" hasshutdown="true" id="CollisionDetectorFactory" useORB="true"/>
+        <process args="" autostart="true" com="$(BIN_DIR)/openhrp-aist-dynamics-simulator" hasshutdown="true" id="DynamicsSimulatorFactory" useORB="true" waitcount="1000"/>
+    </processmanagerconfig>
+
+    <mode name="Simulation" select="true">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxLinkItem" visible="false"/>
+        <item class="com.generalrobotix.ui.item.GrxShapeItem" visible="false"/>
+        <item class="com.generalrobotix.ui.item.GrxSensorItem" visible="false"/>
+        <item class="com.generalrobotix.ui.item.GrxHwcItem" visible="false"/>
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxGraphItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxPythonScriptItem" visible="true"/>
+        <item class="com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem"/>
+    </mode>
+</grxui>

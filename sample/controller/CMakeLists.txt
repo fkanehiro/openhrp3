@@ -9,10 +9,10 @@ macro(create_simple_controller CONTROLLER_NAME)
 
   add_executable(${CONTROLLER_NAME}Comp ${CONTROLLER_NAME}Comp.cpp ${CONTROLLER_NAME}.cpp)
   target_link_libraries(${CONTROLLER_NAME}Comp ${OPENRTM_LIBRARIES})
-  
+
   if(WIN32)
-	  add_definitions(${OPENRTM_DEFINITIONS})
-	  set_target_properties(${CONTROLLER_NAME}Comp PROPERTIES DEBUG_POSTFIX d )
+    add_definitions(${OPENRTM_DEFINITIONS})
+    set_target_properties(${CONTROLLER_NAME}Comp PROPERTIES DEBUG_POSTFIX d )
   endif()
 
   set(controller_install_path ${RELATIVE_SAMPLE_INSTALL_PATH}/controller/${CONTROLLER_NAME})

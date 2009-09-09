@@ -1,0 +1,80 @@
+// -*- IDL -*-
+/*!
+ * @file RTCManager.idl
+ * @brief RTCManager interface
+ * @date $Date: 2005-05-12 09:06:18 $
+ * @author Noriaki Ando <n-ando@aist.go.jp>
+ *
+ * Copyright (C) 2003-2005
+ *     Task-intelligence Research Group,
+ *     Intelligent Systems Research Institute,
+ *     National Institute of
+ *         Advanced Industrial Science and Technology (AIST), Japan
+ *     All rights reserved.
+ *
+ * $Id: RTCManager.idl,v 1.1.1.1 2005-05-12 09:06:18 n-ando Exp $
+ */
+
+/*
+ * $Log: not supported by cvs2svn $
+ *
+ */
+
+#ifndef __MANAGER_IDL__
+#define __MANAGER_IDL__
+
+#include "SDOPackage.idl"
+#include "RTC.idl"
+
+module RTM
+{
+  typedef SDOPackage::NVList NVList;
+
+  struct ModuleProfile
+  {
+    NVList properties;
+  };
+
+  typedef sequence<ModuleProfile> ModuleProfileList;
+  
+  struct ManagerProfile
+  {
+    NVList properties;
+  };
+
+  interface Manager
+  {
+    // module ŠÖ˜A
+    RTC::ReturnCode_t load_module(in string pathname, in string initfunc);
+    RTC::ReturnCode_t unload_module(in string pathname);
+    ModuleProfileList get_loadable_modules();
+    ModuleProfileList get_loaded_modules();
+    
+    // component ŠÖ˜A
+    ModuleProfileList get_factory_profiles();
+    RTC::RTObject create_component(in string module_name);
+    RTC::ReturnCode_t delete_component(in string instance_name);
+    RTC::RTCList get_components();
+    RTC::ComponentProfileList get_component_profiles();
+
+    // manager Šî–{
+    ManagerProfile get_profile();
+    NVList get_configuration();
+    RTC::ReturnCode_t set_configuration(in string name, in string value);
+
+    Manager get_owner();
+    Manager set_owner(in Manager mgr);
+    Manager get_child();
+    Manager set_child(in Manager mgr);
+
+    RTC::ReturnCode_t fork();
+    RTC::ReturnCode_t shutdown();
+    RTC::ReturnCode_t restart();
+
+    Object get_service(in string name);
+    //    ServiceProfileList get_service_profiles();
+  };
+  
+}; // end of namespace RTM
+
+#endif // __MANAGER_IDL__

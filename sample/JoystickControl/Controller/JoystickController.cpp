@@ -74,7 +74,7 @@ JoystickController::~JoystickController()
 
 RTC::ReturnCode_t JoystickController::onInitialize()
 {
-  // ƒ|[ƒg‰Šú‰»
+  // ãƒãƒ¼ãƒˆåˆæœŸåŒ– //
   m_torque.data.length(4);
 
   return RTC::RTC_OK;
@@ -117,25 +117,25 @@ RTC::ReturnCode_t JoystickController::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t JoystickController::onExecute(RTC::UniqueId ec_id)
 {
-  // ƒƒ{ƒbƒg‚©‚ç‚Ìƒf[ƒ^“ü—Í
+  // ãƒ­ãƒœãƒƒãƒˆã‹ã‚‰ã®ãƒ‡ãƒ¼ã‚¿å…¥åŠ› //
   m_angleIn.read();
   m_velocityIn.read();
   double steerAngle = m_angle.data[0];
   double steerVel = m_velocity.data[0];
   double tireVel = m_velocity.data[1];
 
-  // ƒWƒ‡ƒCƒXƒeƒBƒbƒNiƒ†[ƒUj‚©‚ç‚Ìƒf[ƒ^“ü—Í
+  // ã‚¸ãƒ§ã‚¤ã‚¹ãƒ†ã‚£ãƒƒã‚¯ï¼ˆãƒ¦ãƒ¼ã‚¶ï¼‰ã‹ã‚‰ã®ãƒ‡ãƒ¼ã‚¿å…¥åŠ› //
   m_commandIn.read();
   double steerCommandAngle = 3.14159 * -0.5 * m_command.data[0] / 180.0;
   double tireCommandVel = m_command.data[1] / 10;
 
-  // ƒXƒeƒAƒŠƒ“ƒOƒgƒ‹ƒNŒvZ
+  // ã‚¹ãƒ†ã‚¢ãƒªãƒ³ã‚°ãƒˆãƒ«ã‚¯è¨ˆç®— //
   double steerCommandTorque = 20.0 * (steerCommandAngle - steerAngle) - 2.0 * steerVel;
 
-  // ‹ì“®ƒgƒ‹ƒNŒvZ
+  // é§†å‹•ãƒˆãƒ«ã‚¯è¨ˆç®— //
   double tireCommandTorque = 1.0 * (tireCommandVel - tireVel);
 
-  // ƒƒ{ƒbƒg‚Ö‚Ìƒgƒ‹ƒNo—Í
+  // ãƒ­ãƒœãƒƒãƒˆã¸ã®ãƒˆãƒ«ã‚¯å‡ºåŠ› //
   m_torque.data[0] = steerCommandTorque;
   m_torque.data[1] = tireCommandTorque;
   m_torque.data[2] = tireCommandTorque; 
