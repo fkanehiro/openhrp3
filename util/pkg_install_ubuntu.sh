@@ -23,7 +23,7 @@ u_packages="$omni $ace $openrtm "
 # リポジトリサーバ
 #---------------------------------------
 create_srclist () {
-    cnames="sarge edgy feisty gutsy hardy intrepid"
+    cnames="sarge edgy feisty gutsy hardy intrepid jaunty"
     for c in $cnames; do
 	if test -f "/etc/apt/sources.list"; then
 	    res=`grep $c /etc/apt/sources.list`
