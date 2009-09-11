@@ -986,9 +986,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		stime.setTimeStep(val);
 		setDbl("logTimeStep",val);
 		
-		val = getDbl("totalTime", DEFAULT_TOTAL_TIME) + time;
-	    stime.setTotalTime(val);
-	    setDbl("totalTime", val);
+	    stime.setTotalTime(time);
+	    setDbl("totalTime", time);
 	    
 		//logger_.initCollisionLog(stime);
 	    logger_.extendTime(stime);
