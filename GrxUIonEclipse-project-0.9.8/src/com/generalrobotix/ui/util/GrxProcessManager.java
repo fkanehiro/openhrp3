@@ -571,6 +571,8 @@ public class GrxProcessManager {
                         opt = "";
                     }
                     GrxDebugUtil.println(com_.toString() + " " + opt);
+                    if(!dir_.exists())
+                    	dir_ = null;
                     process_ = rt.exec(com_.toString() + " " + opt, env_, dir_);
 
                     is_ = process_.getInputStream();
