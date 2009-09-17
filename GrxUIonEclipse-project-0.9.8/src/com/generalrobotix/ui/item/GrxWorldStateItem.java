@@ -44,6 +44,7 @@ import jp.go.aist.hrp.simulator.*;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.GrxTimeSeriesItem;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -926,7 +927,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	private void _saveCSV() {
         DirectoryDialog ddlg = new DirectoryDialog(GrxUIPerspectiveFactory.getCurrentShell());
-        ddlg.setFilterPath(java.lang.System.getenv("PROJECT_DIR"));
+        String projectDir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR");
+        if(projectDir.equals(""))
+        	projectDir = System.getenv("PROJECT_DIR");
+        if(projectDir!=null)
+        	ddlg.setFilterPath(projectDir);
         final String dir = ddlg.open();
         if (dir != null){
             Thread t = new Thread() {

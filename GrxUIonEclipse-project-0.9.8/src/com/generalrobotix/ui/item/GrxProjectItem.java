@@ -45,6 +45,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.view.Grx3DView;
@@ -763,7 +764,9 @@ public class GrxProjectItem extends GrxBaseItem {
 	
 	//
 	private void setDefaultDirectory(){
-		String dir = java.lang.System.getenv("PROJECT_DIR");
+		String dir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR");
+        if(dir.equals(""))
+        	dir = System.getenv("PROJECT_DIR");
 		if( dir != null ){
 			setDefaultDirectory( dir );
 		}

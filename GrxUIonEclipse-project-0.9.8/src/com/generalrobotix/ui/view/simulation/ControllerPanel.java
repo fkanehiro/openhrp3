@@ -49,6 +49,7 @@ import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
+import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.graph.SEDoubleTextWithSpinForSWT;
 
@@ -281,7 +282,7 @@ public class ControllerPanel extends Composite{
             lbl.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             
             tfSetupDirectory_ = new Text(this,SWT.DROP_DOWN);
-            tfSetupDirectory_.setText("$(PROJECT_DIR)");
+            tfSetupDirectory_.setText(GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)"));
             gridData = new GridData(GridData.FILL_HORIZONTAL);
             gridData.horizontalSpan = 2;
             tfSetupDirectory_.setLayoutData(gridData);
@@ -415,7 +416,7 @@ public class ControllerPanel extends Composite{
                     }
                 }
             	spinControlTime_.setValue(node.getProperty(ATTRIBUTE_CONTROL_TIME, "0.001"));
-            	tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,"$(PROJECT_DIR)"));
+            	tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)")));
                 
                 attr = node.getProperty(ATTRIBUTE_SETUP_COMMAND, "");
                 tfSetupCommand_.setText(attr);

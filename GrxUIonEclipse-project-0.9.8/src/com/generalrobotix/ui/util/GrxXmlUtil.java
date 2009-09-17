@@ -41,6 +41,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.generalrobotix.ui.grxui.Activator;
+
 public class GrxXmlUtil {
 	public static Document doc_ = null;
 	public static Element root_ = null;
@@ -298,9 +300,15 @@ public class GrxXmlUtil {
 				break;
 			if ((idx2 = str.indexOf(")", idx1)) != -1) {
 				String key = str.substring(idx1 + 2, idx2);
-				String val = System.getProperty(key, System.getenv(key));
-				if (val == null)
-					val = "";
+				String val = System.getProperty(key);
+				if(val==null){
+					val = Activator.getDefault().getPreferenceStore().getString(key);
+					if(val.equals("")){
+						val = System.getenv(key);			
+						if (val == null)
+							val = "";
+					}
+				}
 				str = str.replace("$(" + key + ")", val);
 			}
 		}
