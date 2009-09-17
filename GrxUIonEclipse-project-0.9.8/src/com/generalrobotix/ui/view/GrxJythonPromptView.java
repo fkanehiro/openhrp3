@@ -162,10 +162,16 @@ public class GrxJythonPromptView extends GrxBaseView {
         interpreter_.setOut(writer_);
         interpreter_.set("uimanager", manager_);
         interpreter_.exec("import sys");
-        String dir = System.getenv("JYTHON_LIB");
+        String dir = Activator.getDefault().getPreferenceStore().getString("JYTHON_LIB");
+        if(dir.equals(""))
+        	dir = System.getenv("JYTHON_LIB");
         if(dir!=null && new File(dir).exists())
         	interpreter_.exec("sys.path.append('"+dir+"')");
-        dir = System.getenv("PROJECT_DIR")+"/../script";
+        dir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR");
+        if(dir.equals(""))
+        	dir = System.getenv("PROJECT_DIR");
+        if(dir!=null)
+        	dir += "/../script";
         if(new File(dir).exists())
         	interpreter_.exec("sys.path.append('"+dir+"')");
         URL[] urls = manager_.pluginLoader_.getURLs();

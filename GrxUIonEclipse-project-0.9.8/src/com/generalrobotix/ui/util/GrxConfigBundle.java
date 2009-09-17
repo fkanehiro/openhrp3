@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Properties;
 
+import com.generalrobotix.ui.grxui.Activator;
+
 @SuppressWarnings("serial")
 /**
  * @brief
@@ -96,8 +98,14 @@ public class GrxConfigBundle extends Properties {
 				// check the property file 
 				String keyword = buf.substring(index1+2,index2);
 				String prop = System.getProperty(keyword);
-				if (prop == null)
-					prop = getStr(keyword,"");				
+				if(prop==null){
+					prop = Activator.getDefault().getPreferenceStore().getString(keyword);
+					if(prop.equals("")){
+						prop = System.getenv(keyword);			
+						if (prop == null)
+							prop = getStr(keyword,"");
+					}
+				}
 				buf.replace(index1,index2+1,prop);
 			}
 		}

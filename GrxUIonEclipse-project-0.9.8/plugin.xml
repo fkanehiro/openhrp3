@@ -170,5 +170,16 @@
             application="com.generalrobotix.ui.grxui.applications"
             name="GRXUI"/>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="com.generalrobotix.ui.grxui.GrxuiPreferencePage"
+            id="com.generalrobotix.ui.grxui.GrxuiPreferencePage"
+            name="GRXUI"/>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="com.generalrobotix.ui.grxui.PreferenceInitializer"/>
+   </extension>
 
 </plugin>
