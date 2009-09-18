@@ -351,9 +351,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 							} else {
 								if (!simulateOneStep()){
 									long s = System.currentTimeMillis();
-									simThreadState_ = TIMEOVER;
 									synchronized(lock_){
-											lock_.wait();
+										simThreadState_ = TIMEOVER;
+										lock_.wait();
 									}
 									suspendT += System.currentTimeMillis() - s;
 									if(simThreadState_==STOP)
