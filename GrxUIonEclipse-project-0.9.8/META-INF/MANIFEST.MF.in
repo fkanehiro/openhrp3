@@ -80,19 +80,11 @@ Export-Package: com.generalrobotix.ui;
  jp.go.aist.hrp.simulator.CameraPackage,
  jp.go.aist.hrp.simulator.DynamicsSimulatorPackage,
  jp.go.aist.hrp.simulator.ModelLoaderPackage,
- jp.go.aist.rtm,
- jp.go.aist.rtm.RTC,
- jp.go.aist.rtm.RTC.SDOPackage,
- jp.go.aist.rtm.RTC.buffer,
- jp.go.aist.rtm.RTC.executionContext,
- jp.go.aist.rtm.RTC.log,
- jp.go.aist.rtm.RTC.port,
- jp.go.aist.rtm.RTC.port.publisher,
- jp.go.aist.rtm.RTC.util
+ @OPEN_EXPORT_PACKAGE@
 Bundle-ClassPath: .,
  jython.jar,
  openhrpstubskel.jar,
  commons-cli-1.1.jar,
- OpenRTM-aist-0.4.1.jar,
+ @rtm_stub_jar@,
  jmf.jar,
  grxui.jar

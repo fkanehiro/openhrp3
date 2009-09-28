@@ -1,102 +1,74 @@
 set(GrxUI_ON_ECLIPSE_DIR ${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8)
 
-macro(copy_files_switch_rtm_ver MACRO_OPENRTM_VERSION)
-  set(src_path ${GrxUI_ON_ECLIPSE_DIR}/${MACRO_OPENRTM_VERSION}/)
-  set(dest_path ${GrxUI_ON_ECLIPSE_DIR}/)
-  if(WIN32)
-    string(REGEX REPLACE "/" "\\\\\\\\" src_path ${src_path})
-    string(REGEX REPLACE "/" "\\\\\\\\" dest_path ${dest_path})
-  endif()
-  set(src_files
-    build.properties
-    grxuirc.xml
-    grxuirc_win.xml
-    plugin.xml
-    .classpath
-  )
-  foreach(src_file_name ${src_files})
-    if(WIN32)
-      execute_process(
-        COMMAND cmd /C "${COPY_COMMAND} ${src_path}${src_file_name} ${dest_path}"
-        OUTPUT_VARIABLE output_var
-        RESULT_VARIABLE result_var
-        OUTPUT_STRIP_TRAILING_WHITESPACE )
-    elseif(UNIX)
-      execute_process(
-        COMMAND ${COPY_COMMAND} ${src_path}${src_file_name} ${dest_path}
-        OUTPUT_VARIABLE output_var
-        RESULT_VARIABLE result_var
-        OUTPUT_STRIP_TRAILING_WHITESPACE )
-    endif()
-  endforeach()
-
-  set(src_path ${GrxUI_ON_ECLIPSE_DIR}/${MACRO_OPENRTM_VERSION}/META-INF/)
-  set(dest_path ${GrxUI_ON_ECLIPSE_DIR}/META-INF/)
-  if(WIN32)
-    string(REGEX REPLACE "/" "\\\\\\\\" src_path ${src_path})
-    string(REGEX REPLACE "/" "\\\\\\\\" dest_path ${dest_path})
-  endif()
-  if(WIN32)
-    execute_process(
-      COMMAND cmd /C "${COPY_COMMAND} ${src_path}MANIFEST.MF ${dest_path}"
-      OUTPUT_VARIABLE output_var
-      RESULT_VARIABLE result_var
-      OUTPUT_STRIP_TRAILING_WHITESPACE )
-  elseif(UNIX)
-    execute_process(
-      COMMAND ${COPY_COMMAND} ${src_path}MANIFEST.MF ${dest_path}
-      OUTPUT_VARIABLE output_var
-      RESULT_VARIABLE result_var
-      OUTPUT_STRIP_TRAILING_WHITESPACE )
-  endif()
-
-  set(src_path ${GrxUI_ON_ECLIPSE_DIR}/${MACRO_OPENRTM_VERSION}/src/com/generalrobotix/ui/view/)
-  set(dest_path ${GrxUI_ON_ECLIPSE_DIR}/src/com/generalrobotix/ui/view/)
-  if(WIN32)
-    string(REGEX REPLACE "/" "\\\\\\\\" src_path ${src_path})
-    string(REGEX REPLACE "/" "\\\\\\\\" dest_path ${dest_path})
-  endif()
-  set(src_files GrxOpenHRPView.java )
-  foreach(src_file_name ${src_files})
-    if(WIN32)
-      execute_process(
-        COMMAND cmd /C "${COPY_COMMAND} ${src_path}${src_file_name} ${dest_path}"
-        OUTPUT_VARIABLE output_var
-        RESULT_VARIABLE result_var
-        OUTPUT_STRIP_TRAILING_WHITESPACE )
-    elseif(UNIX)
-      execute_process(
-        COMMAND ${COPY_COMMAND} ${src_path}${src_file_name} ${dest_path}
-        OUTPUT_VARIABLE output_var
-        RESULT_VARIABLE result_var
-        OUTPUT_STRIP_TRAILING_WHITESPACE )
-    endif()
-  endforeach()
+macro(configure_grxui_on_eclipse)
+    set(depends_rtm_path "src/com/generalrobotix/ui/depends/rtm")
+    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/${depends_rtm_path}/SwitchDependVerClockGenerator.java.in ${GrxUI_ON_ECLIPSE_DIR}/${depends_rtm_path}/SwitchDependVerClockGenerator.java)
+    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/META-INF/MANIFEST.MF.in ${GrxUI_ON_ECLIPSE_DIR}/META-INF/MANIFEST.MF)
+    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/classpath.in ${GrxUI_ON_ECLIPSE_DIR}/.classpath)
+    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/plugin.xml.in ${GrxUI_ON_ECLIPSE_DIR}/plugin.xml)
+    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/grxuirc.xml.in ${GrxUI_ON_ECLIPSE_DIR}/grxuirc.xml)
+    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/grxuirc_win.xml.in ${GrxUI_ON_ECLIPSE_DIR}/grxuirc_win.xml)
+    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/build.properties.in ${GrxUI_ON_ECLIPSE_DIR}/build.properties)
 endmacro()
 
 
 
 if( ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION042} )
   set(rtm_stub_jar OpenRTM-aist-0.4.1.jar)
+  set(OPENRTM_VERSION_NUM "042")
+  set(ADDITIONAL_EXCLUDING "|com/generalrobotix/ui/depends/rtm/ClockGeneratorRtm100_impl.java")
+  set(GRX_PATH_PLANNING_ALGORITHM_ITEM "<item class=\"com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem\"/>" )
+
+  set(GRX_PATH_PLANNING_VIEW_PART "
+      <view
+            class=\"com.generalrobotix.ui.view.GrxPathPlanningViewPart\"
+            id=\"com.generalrobotix.ui.view.GrxPathPlanningViewPart\"
+            category=\"com.generalrobotix.ui.view\"
+            name=\"Path Planning View\">
+      </view>" )
+
+  set(OPEN_EXPORT_PACKAGE "jp.go.aist.rtm,
+ jp.go.aist.rtm.RTC,
+ jp.go.aist.rtm.RTC.SDOPackage,
+ jp.go.aist.rtm.RTC.buffer,
+ jp.go.aist.rtm.RTC.executionContext,
+ jp.go.aist.rtm.RTC.log,
+ jp.go.aist.rtm.RTC.port,
+ jp.go.aist.rtm.RTC.port.publisher,
+ jp.go.aist.rtm.RTC.util" )
+
   if( NOT EXISTS "${OpenHRP_SOURCE_DIR}/.svn" )
-    copy_files_switch_rtm_ver(${OPENRTM_VERSION042})
-    message(STATUS "Copy eclipse project files and java code files.")
+    configure_grxui_on_eclipse()
   endif()
 elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION100})
   set(rtm_stub_jar openrtmstubskel.jar)
+  set(OPENRTM_VERSION_NUM "100")
+  set(ADDITIONAL_EXCLUDING "|com/generalrobotix/ui/view/GrxPathPlanning*.java|com/generalrobotix/ui/depends/rtm/ClockGeneratorRtm042_impl.java|jp/**/*.java")
+  set(GRX_PATH_PLANNING_ALGORITHM_ITEM "" )
+  set(GRX_PATH_PLANNING_VIEW_PART "" )
+  set(OPEN_EXPORT_PACKAGE "RTM,
+ jp.go.aist.openrtm.OpenRTM,
+ jp.go.aist.openrtm.RTC" )
+
   add_subdirectory(rtmStubCorba)
   message(STATUS "OpenRTM version is ${OPENRTM_VERSION}. Generate Makefile compiles openrtmstubskel.jar.")
   if( NOT EXISTS "${OpenHRP_SOURCE_DIR}/.svn" )
-    copy_files_switch_rtm_ver(${OPENRTM_VERSION100})
-    message(STATUS "Copy eclipse project files and java code files.")
+    configure_grxui_on_eclipse()
   endif()
 else()
   set(rtm_stub_jar openrtmstubskel.jar)
+  set(OPENRTM_VERSION_NUM "100")
+  set(ADDITIONAL_EXCLUDING "|com/generalrobotix/ui/view/GrxPathPlanning*.java|com/generalrobotix/ui/depends/rtm/ClockGeneratorRtm042_impl.java|jp/**/*.java")
+  set(GRX_PATH_PLANNING_ALGORITHM_ITEM "" )
+  set(GRX_PATH_PLANNING_VIEW_PART "" )
+  set(OPEN_EXPORT_PACKAGE "RTM,
+ jp.go.aist.openrtm.OpenRTM,
+ jp.go.aist.openrtm.RTC" )
+
   add_subdirectory(rtmStubCorba)
   message(STATUS "OpenRTM version is ${OPENRTM_VERSION}. Generate Makefile compiles openrtmstubskel.jar.")
   if( NOT EXISTS "${OpenHRP_SOURCE_DIR}/.svn" )
-    copy_files_switch_rtm_ver(${OPENRTM_VERSION100})
-    message(STATUS "Copy eclipse project files and java code files.")
+    configure_grxui_on_eclipse()
   endif()
 endif()
 

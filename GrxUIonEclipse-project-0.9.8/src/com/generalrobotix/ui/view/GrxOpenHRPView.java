@@ -39,7 +39,6 @@ import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.IntegrateMethod;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.JointDriveMode;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.LinkDataType;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.SensorOption;
-import jp.go.aist.hrp.simulator.ClockGeneratorPOA;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -57,7 +56,8 @@ import org.eclipse.ui.PlatformUI;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 
-import RTC.ExtTrigExecutionContextService;
+//import RTC.ExtTrigExecutionContextService;
+import com.generalrobotix.ui.depends.rtm.SwitchDependVerClockGenerator;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBasePlugin;
@@ -119,85 +119,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 	/**
 	 * @brief implementation of ClockGenerator interface
 	 */
-	private class ClockGenerator_impl extends ClockGeneratorPOA {
-		private Vector<ExecutionContext> ecs_;
+	private class ClockGenerator_impl extends SwitchDependVerClockGenerator {
 		private double simTime_ = 0.0;
-
-		/**
-		 * @brief This class manages execution timing of execution context
-		 */
-		private class ExecutionContext {
-			public ExtTrigExecutionContextService ec_;
-			private double period_;
-			private double nextExecutionTime_;
-			
-			/**
-			 * @brief constructor
-			 * @param ec execution context
-			 * @param period ExtTrigExecutionContextService.tick() is called with this period
-			 */
-			ExecutionContext(ExtTrigExecutionContextService ec, double period){
-				ec_ = ec;
-				period_ = period;
-				reset();
-			}
-			
-			/**
-			 * @param t current time in the simulation world
-			 * @return true if executed successfully, false otherwise
-			 */
-			boolean execute(double t){
-				if (t >= nextExecutionTime_){
-					try{
-						ec_.tick();
-						nextExecutionTime_ += period_;
-					}catch(Exception ex){
-						return false;
-					}
-				}
-				return true;
-			}
-
-			/**
-			 * @brief reset
-			 */
-			void reset(){
-				nextExecutionTime_ = 0;
-			}
-		}
-		
-		/**
-		 * @brief constructor
-		 */
-		ClockGenerator_impl(){
-			ecs_ = new Vector<ExecutionContext>();
-		}
-		
-		/**
-		 * @brief register an execution context with its execution period
-		 * @param ec execution context
-		 * @param period execution period
-		 */
-		public void subscribe(ExtTrigExecutionContextService ec, double period) {
-			System.out.println("ClockGenerator::subscribe("+ec+", "+period);
-			ecs_.add(new ExecutionContext(ec, period));
-		}
-
-		/**
-		 * @brief remove execution context from execution list
-		 * @param ec execution context
-		 */
-		public void unsubscribe(ExtTrigExecutionContextService ec) {
-			System.out.println("ClockGenerator::unsubscribe("+ec+")");
-			for (int i=0; i<ecs_.size(); i++){
-				ExecutionContext ec2 = ecs_.get(i);
-				if (ec._is_equivalent(ec2.ec_)){
-					ecs_.remove(ec2);
-					return;
-				}
-			}
-		}
-		
 		private static final int EXEC = -1;
 		private static final int TIMEOVER = 0;
 		private static final int STOP = 1;
@@ -272,7 +195,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			currentWorld_.startSimulation(isSimulatingView_);
 			
 			// TODO disable "start simulation" button and menu
-			_resetClockReceivers();
+			resetClockReceivers();
 
 			simTime_ = 0.0;
 			simulateTime_ = 0;
@@ -380,22 +303,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			thread.setPriority(Thread.currentThread().getPriority() - 1);
 			return thread;
 		}
-		/**
-		 * reset execution contexts(clock receivers)
-		 */
-		private void _resetClockReceivers(){
-			for (int i=0; i<ecs_.size();){
-				ExecutionContext ec = ecs_.get(i);
-				try{
-					System.out.println(i+": rate = "+ec.ec_.get_rate());
-					ec.reset();
-					i++;
-				}catch(Exception ex){
-					ecs_.remove(ec);
-				}
-			}
-		}
-		
+        
 		public void continueSimulation(){
 			simThread_ = _createSimulationThread();
 			simThread_.start();
@@ -474,15 +382,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 				ControllerAttribute attr = controllers_.get(i);
 				attr.control();
 			}
-			for (int i=0; i<ecs_.size();){
-				ExecutionContext ec = ecs_.get(i);
-				if (ec.execute(simTime_)){
-					i++;
-				}else{
-					ecs_.remove(ec);
-				}
-			}
-			
+            updateExecutionContext(simTime_);			
+            
 			// simulate
 			if (isIntegrate_) {
 				currentDynamics_.stepSimulation();

@@ -2,19 +2,20 @@ bin.includes = plugin.xml,\
                grxuirc.xml,\
                jython.jar,\
                icons/,\
-               openhrpstubskel.jar,\
+               @rtm_stub_jar@,\
                commons-cli-1.1.jar,\
+               OpenRTM-aist-0.4.1.jar,\
                jmf.jar,\
                grxui.jar,\
                grxuirc_win.xml,\
                resources/,\
-               META-INF/,\
-               openrtmstubskel.jar
+               META-INF/
 javacDefaultEncoding.grxui.jar = UTF-8
 jars.compile.order = grxui.jar
 source.grxui.jar = bin/
-jars.compsource.grxui.jar = bin/
+output.grxui.jar = bin/
 bin.excludes = META-INF/.svn/,\
                resources/.svn/,\
                resources/images/.svn/,\
-               icons/.svn
+               icons/.svn/,\
+               META-INF/MANIFEST.MF.in
