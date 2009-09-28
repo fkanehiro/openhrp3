@@ -28,6 +28,7 @@
             category="com.generalrobotix.ui.view"
             name="Item View">
       </view>
+      @GRX_PATH_PLANNING_VIEW_PART@
       <view
             class="com.generalrobotix.ui.view.GrxRangeSensorViewPart"
             id="com.generalrobotix.ui.view.GrxRangeSensorViewPart"
