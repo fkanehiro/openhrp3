@@ -20,9 +20,10 @@ import java.awt.*;
 import javax.swing.*;
 
 import com.generalrobotix.ui.util.FileInput;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.ModalDialog;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class RecordingDialog extends ModalDialog {
 
 //	 --------------------------------------------------------------------
@@ -36,31 +37,31 @@ public class RecordingDialog extends ModalDialog {
 	private static final double[] playbackRate_ =
 		 new double[] { 4, 2, 1, 0.5, 0.25 };
 	private static final String[] playbackRateString_ =
-		 new String[] { "x 4", "x 2", "x 1", "x 1/2", "x 1/4" };
+		 new String[] { "x 4", "x 2", "x 1", "x 1/2", "x 1/4" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 	 
     private FileInput fileInput_;
     private JComboBox imSizeCombo_;
     private JComboBox playbackRateCombo_;
     private JTextField frameRateField_;
-    public final static String EXTEND_ = "mov";
+    public final static String EXTEND_ = "mov"; //$NON-NLS-1$
     public RecordingDialog(Frame owner) {
         super(
             owner,
-            "Recording Dialog",
-            "Input recording parameters.",
+            MessageBundle.get("RecordingDialog.dialog.title.recording"), //$NON-NLS-1$
+            MessageBundle.get("RecordingDialog.dialog.message.recording"), //$NON-NLS-1$
             OK_CANCEL_TYPE
         );
 
-		fileInput_ = new FileInput(new String[] { "mov" }, System.getProperty("user.dir"));
+		fileInput_ = new FileInput(new String[] { "mov" }, System.getProperty("user.dir")); //$NON-NLS-1$ //$NON-NLS-2$
 		imSizeCombo_ = new JComboBox(_makeSizeStrings(imageSize_));
         playbackRateCombo_ = new JComboBox(playbackRateString_);
         playbackRateCombo_.setSelectedIndex(2);
-        frameRateField_ = new JTextField("10");
+        frameRateField_ = new JTextField("10"); //$NON-NLS-1$
         
-        addInputComponent("File name", fileInput_, MULTILINE_CAPTION, true);
-        addInputComponent("Image size", imSizeCombo_, MULTILINE_CAPTION, true);
-        addInputComponent("playrate", playbackRateCombo_, MULTILINE_CAPTION, true);
-        addInputComponent("framerate (frame/sec)", frameRateField_, MULTILINE_CAPTION, true);
+        addInputComponent(MessageBundle.get("RecordingDialog.label.fileName"), fileInput_, MULTILINE_CAPTION, true); //$NON-NLS-1$
+        addInputComponent(MessageBundle.get("RecordingDialog.label.imageSize"), imSizeCombo_, MULTILINE_CAPTION, true); //$NON-NLS-1$
+        addInputComponent(MessageBundle.get("RecordingDialog.label.playRate"), playbackRateCombo_, MULTILINE_CAPTION, true); //$NON-NLS-1$
+        addInputComponent(MessageBundle.get("RecordingDialog.label.frameRate"), frameRateField_, MULTILINE_CAPTION, true); //$NON-NLS-1$
 		 setInputAreaWidth(300);
 	 }
 

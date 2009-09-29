@@ -38,8 +38,9 @@ import org.w3c.dom.NodeList;
 import com.generalrobotix.ui.item.GrxProjectItem;
 import com.generalrobotix.ui.util.GrxConfigBundle;
 import com.generalrobotix.ui.util.GrxXmlUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 /**
  * @brief
  */
@@ -60,10 +61,10 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	private Document doc_;
 	protected Element element_;
 
-    protected final static String ITEM_TAG = "item";
-    protected final static String VIEW_TAG = "view";
-    protected final static String PROPERTY_TAG = "property";
-    protected final static String INDENT4 = "    ";
+    protected final static String ITEM_TAG = "item"; //$NON-NLS-1$
+    protected final static String VIEW_TAG = "view"; //$NON-NLS-1$
+    protected final static String PROPERTY_TAG = "property"; //$NON-NLS-1$
+    protected final static String INDENT4 = "    "; //$NON-NLS-1$
     
     private ArrayList<GrxBaseView> observers_ = new ArrayList<GrxBaseView>();
 
@@ -79,7 +80,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		// menu item : restore Properties
 		Action a = new Action(){
 			public String getText(){
-				return "restore Properties";
+				return MessageBundle.get("GrxBasePlugin.menu.restoreProperties"); //$NON-NLS-1$
 			}
 			public void run(){
 				restoreProperties();
@@ -90,11 +91,11 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		// menu item : rename
 		Action item = new Action(){
 				public String getText(){
-					return "rename";
+					return MessageBundle.get("GrxBasePlugin.menu.rename"); //$NON-NLS-1$
 				}
 				public void run(){
 					InputDialog dialog = new InputDialog( null, null,
-							"Input new name (without extension).", getName(),null);
+							MessageBundle.get("GrxBasePlugin.dialog.message.input"), getName(),null); //$NON-NLS-1$
 					if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 						rename( dialog.getValue() );
 				}
@@ -113,8 +114,8 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		NodeList props = element_.getElementsByTagName(PROPERTY_TAG);
 		for (int j = 0; j < props.getLength(); j++) {
 			Element propEl = (Element) props.item(j);
-			String key = propEl.getAttribute("name");
-			String val = propEl.getAttribute("value");
+			String key = propEl.getAttribute("name"); //$NON-NLS-1$
+			String val = propEl.getAttribute("value"); //$NON-NLS-1$
 			if (!propertyChanged(key, val)){
 				setProperty(key, val);
 			}
@@ -138,12 +139,12 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		String tag = (this instanceof GrxBaseItem) ? ITEM_TAG:VIEW_TAG;
 		element_ = doc_.createElement(tag);
 
-		element_.setAttribute("class",getClass().getName());
-		element_.setAttribute("name", getName());
-		element_.setAttribute("select", String.valueOf(isSelected()));
+		element_.setAttribute("class",getClass().getName()); //$NON-NLS-1$
+		element_.setAttribute("name", getName()); //$NON-NLS-1$
+		element_.setAttribute("select", String.valueOf(isSelected())); //$NON-NLS-1$
 		if (getURL(false) != null)
-			element_.setAttribute("url", getURL(false));
-		element_.appendChild(doc_.createTextNode("\n"));
+			element_.setAttribute("url", getURL(false)); //$NON-NLS-1$
+		element_.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 
 		Enumeration<?> keys = propertyNames();
 		while (keys.hasMoreElements()) {
@@ -153,12 +154,12 @@ public class GrxBasePlugin extends GrxConfigBundle {
 				continue;
 
 			Element propEl = doc_.createElement(GrxProjectItem.PROPERTY_TAG);
-			propEl.setAttribute("name",  key);
-			propEl.setAttribute("value", val);
+			propEl.setAttribute("name",  key); //$NON-NLS-1$
+			propEl.setAttribute("value", val); //$NON-NLS-1$
 
 			element_.appendChild(doc_.createTextNode(INDENT4+INDENT4+INDENT4));
 			element_.appendChild(propEl);
-			element_.appendChild(doc_.createTextNode("\n"));
+			element_.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 		}
 		element_.appendChild(doc_.createTextNode(INDENT4+INDENT4));
 
@@ -171,7 +172,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	 */
 	public void setName(String name) {
 		name_ = name;
-		setProperty("name", name);
+		setProperty("name", name); //$NON-NLS-1$
 	}
 
 	/**
@@ -254,7 +255,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	protected void setIcon(String iconName) {
 		iconName_ = iconName;
 		if( ireg_.get( iconName_ ) == null )
-			ireg_.put( iconName_, ImageDescriptor.createFromURL( getClass().getResource( "/resources/images/"+iconName_ ) ) );
+			ireg_.put( iconName_, ImageDescriptor.createFromURL( getClass().getResource( "/resources/images/"+iconName_ ) ) ); //$NON-NLS-1$
 		//icon_ = icon;
 	}
 
@@ -356,7 +357,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	 */
 	public void setURL(String url) {
 		url = url.replace('\\','/');
-		setProperty("url", url);
+		setProperty("url", url); //$NON-NLS-1$
 		url_ =url;
 	}
 
@@ -426,7 +427,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
      * @return true if checked(even if value is not used), false otherwise
      */
 	public boolean propertyChanged(String property, String value) {
-		if (property.equals("name")){
+		if (property.equals("name")){ //$NON-NLS-1$
 			rename(value);
 			return true;
 		}
@@ -442,7 +443,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public Object setProperty(String key, String value){
 		//System.out.println("GrxBasePlugin.setProperty("+key+","+value+")");
 		Object o = super.setProperty(key, value);
-		notifyObservers("PropertyChange");
+		notifyObservers("PropertyChange"); //$NON-NLS-1$
 		return o;
 	}
 	

@@ -51,7 +51,9 @@ public class Activator extends AbstractUIPlugin{
     private FontRegistry 		freg_ = null;
     private ColorRegistry		creg_ = null;
     private boolean           bStartedGrxUI_ = false; 
-    private final static String[] images_ = {"sim_start.png",
+    private final static String[] images_ = { "save_edit.png",
+    											"saveas_edit.png",
+    											"sim_start.png",
     											"sim_stop.png",
     											"fastrwd.png",
     											"slowrwd.png",

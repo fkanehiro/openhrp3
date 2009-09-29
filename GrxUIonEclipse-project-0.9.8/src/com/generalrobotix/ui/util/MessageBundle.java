@@ -11,6 +11,7 @@ package com.generalrobotix.ui.util;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
+import com.generalrobotix.ui.util.GrxDebugUtil;
 
 public class MessageBundle {
     private static MessageBundle this_;
@@ -18,11 +19,11 @@ public class MessageBundle {
 
     private MessageBundle() {
         messages_ =
-            ResourceBundle.getBundle("resources.MessageBundle", Locale.US);
+            ResourceBundle.getBundle("com.generalrobotix.messages", Locale.US);
     }
 
     private  MessageBundle(Locale locale) {
-        messages_ = ResourceBundle.getBundle("resources.MessageBundle", locale);
+        messages_ = ResourceBundle.getBundle("com.generalrobotix.messages", locale);
     }
 
     public static final void setLocale(Locale locale) {
@@ -30,17 +31,17 @@ public class MessageBundle {
             this_ = new MessageBundle(locale);
         } else {
             messages_ =
-                ResourceBundle.getBundle("resources.MessageBundle", locale);
+                ResourceBundle.getBundle("com.generalrobotix.messages", locale);
         }
     }
 
-    public static final void setLocal(String language, String country) {
+    public static final void setLocale(String language, String country) {
         if (this_ == null) {
             this_ = new MessageBundle(new Locale(language, country));
         } else {
             messages_ =
                 ResourceBundle.getBundle(
-                    "resources.MessageBundle",
+                    "com.generalrobotix.messages",
                     new Locale(language, country)
                 );
         }
@@ -48,10 +49,20 @@ public class MessageBundle {
 
     public static final String get(String key) {
         if (this_ == null) {
-            new MessageBundle();
+            this_ = new MessageBundle(Locale.getDefault());
         }
-        return messages_.getString(key);
+        try{
+        	return messages_.getString(key);
+        }catch(Exception e){
+        	try{
+        		GrxDebugUtil.println("not found " + key + "in messages_(defaultlocale).properties");
+        		return ResourceBundle.getBundle("com.generalrobotix.messages", Locale.US).getString(key);
+        	}catch(Exception e1){
+        		GrxDebugUtil.println("not found " + key + "in messages_en.properties");
+        		return "";
+        	}
+        }
     }
-
+    
     public static final ResourceBundle getMessages() { return messages_; }
 } 

@@ -42,6 +42,7 @@ import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxPluginLoader;
 import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxXmlUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.OrderedHashMap;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
@@ -117,39 +118,39 @@ public class GrxPluginManager {
      * @see GrxProjectItem
      */
     public GrxPluginManager() {
-        GrxDebugUtil.println("[PM] GrxPluginManager created");
+        GrxDebugUtil.println("[PM] GrxPluginManager created"); //$NON-NLS-1$
 
-        String dir = System.getenv("ROBOT_DIR");
+        String dir = System.getenv("ROBOT_DIR"); //$NON-NLS-1$
         if (dir != null && new File(dir).isDirectory())
             homePath_ = dir + File.separator;
         else
-            homePath_ = System.getProperty("user.home", "") + File.separator;
+            homePath_ = System.getProperty("user.home", "") + File.separator; //$NON-NLS-1$ //$NON-NLS-2$
 
-        System.out.println("[PM] WORKSPACE PATH=" + ResourcesPlugin.getWorkspace().getRoot().getLocation());
+        System.out.println("[PM] WORKSPACE PATH=" + ResourcesPlugin.getWorkspace().getRoot().getLocation()); //$NON-NLS-1$
 
         // TODO: プラグインローダに、プラグインがおいてあるフォルダを指定する方法を検討
         // 1.そもそもプラグイン管理をEclipseでやらせる
         // 2.Eclipseの機能を使ってプラグインのディレクトリを持ってきてもらう
         // 3.とりあえずGrxUIプラグイン自身をロードしたクラスローダを渡しておく <- いまこれ
-        pluginLoader_ = new GrxPluginLoader("plugin", GrxPluginManager.class.getClassLoader());
+        pluginLoader_ = new GrxPluginLoader("plugin", GrxPluginManager.class.getClassLoader()); //$NON-NLS-1$
         registerPlugin(GrxModeInfoItem.class);
 
         // load default plugin settings
         // 移植前はhomePath_においてある事を期待していたが、プラグインに含めるようにした。
         // homePath_にgrxuirc.xmlがあるかチェックし、なければプラグインフォルダからデフォルトをコピーする。
-        rcProject_ = new GrxProjectItem("grxuirc", this);
+        rcProject_ = new GrxProjectItem("grxuirc", this); //$NON-NLS-1$
         // File rcFile = new File( Activator.getPath() + "/grxuirc.xml");
         // Windows と Linuxで使い分ける。
         File rcFile;
-        System.out.println("os.name = " + System.getProperty("os.name"));
-        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) {
-            rcFile = new File(homePath_ + ".OpenHRP-3.1/grxuirc.xml");
+        System.out.println("os.name = " + System.getProperty("os.name")); //$NON-NLS-1$ //$NON-NLS-2$
+        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            rcFile = new File(homePath_ + ".OpenHRP-3.1/grxuirc.xml"); //$NON-NLS-1$
             File rcFileDir;
-            rcFileDir = new File(homePath_ + ".OpenHRP-3.1");
+            rcFileDir = new File(homePath_ + ".OpenHRP-3.1"); //$NON-NLS-1$
             if (!rcFileDir.exists()) {
                 rcFileDir.mkdir();
             }
-            rcFileDir = new File(homePath_ + ".OpenHRP-3.1/omninames-log");
+            rcFileDir = new File(homePath_ + ".OpenHRP-3.1/omninames-log"); //$NON-NLS-1$
             if (!rcFileDir.exists()) {
                 rcFileDir.mkdir();
             } else {
@@ -159,12 +160,12 @@ public class GrxPluginManager {
         } else {
             // Windows環境の処理
 
-            rcFile = new File(System.getenv("APPDATA") + File.separator + "OpenHRP-3.1" + File.separator + "grxuirc.xml");
+            rcFile = new File(System.getenv("APPDATA") + File.separator + "OpenHRP-3.1" + File.separator + "grxuirc.xml"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             File rcFileDir = rcFile.getParentFile();
             if (!rcFileDir.exists()) {
                 rcFileDir.mkdir();
             }
-            rcFileDir = new File(rcFile.getParent() + File.separator + "omninames-log");
+            rcFileDir = new File(rcFile.getParent() + File.separator + "omninames-log"); //$NON-NLS-1$
             if (!rcFileDir.exists()) {
                 rcFileDir.mkdir();
             } else {
@@ -172,15 +173,15 @@ public class GrxPluginManager {
                deleteNameServerLog();
             }
         }
-        System.out.println("rcFile=" + rcFile);
+        System.out.println("rcFile=" + rcFile); //$NON-NLS-1$
         if (!rcFile.exists()) {
             // File copy
             try {
                 InputStream in;
-                if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) {
-                	in = getClass().getResourceAsStream("/grxuirc.xml");
+                if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                	in = getClass().getResourceAsStream("/grxuirc.xml"); //$NON-NLS-1$
                 } else {
-                    in = getClass().getResourceAsStream("/grxuirc_win.xml");
+                    in = getClass().getResourceAsStream("/grxuirc_win.xml"); //$NON-NLS-1$
                 }
                 OutputStream out = new FileOutputStream(rcFile.toString());
                 byte[] buf = new byte[1024];
@@ -195,15 +196,15 @@ public class GrxPluginManager {
             }
         }
         if (!rcProject_.load(rcFile)) {
-            MessageDialog.openError(null, "Can't Start GrxUI", "Can't find grxuirc.xml. on " + rcFile);
+            MessageDialog.openError(null, MessageBundle.get("GrxPluginManager.dialog.tittle..openerror"), MessageBundle.get("GrxPluginManager.dialog.message.openerror") + rcFile); //$NON-NLS-1$ //$NON-NLS-2$
             // TODO: プラグインを閉じる方法があればそれを採用する?
             // System.exit(0);
             return;
         }
-        currentProject_ = new GrxProjectItem("newproject", this);
+        currentProject_ = new GrxProjectItem("newproject", this); //$NON-NLS-1$
 
         // load default project
-        String defaultProject = System.getProperty("PROJECT", null);
+        String defaultProject = System.getProperty("PROJECT", null); //$NON-NLS-1$
         if (defaultProject == null || !currentProject_.load(new File(GrxXmlUtil.expandEnvVal(defaultProject))))
             currentProject_.create();
         // root_.setUserObject(currentProject_);
@@ -305,13 +306,13 @@ public class GrxPluginManager {
      * デフォルトのモードが指定されていない場合、最初に現れたモードをデフォルトとして、ダイアログを出してユーザに選択を求める。
      */
     public void start() {
-        System.out.println("[PM] START GrxPluginManager");
+        System.out.println("[PM] START GrxPluginManager"); //$NON-NLS-1$
         new Thread() {
             public void run() {
                 try {
                     poa_ = GrxCorbaUtil.getRootPOA();
                     poa_.the_POAManager().activate();
-                    GrxDebugUtil.println("Corba Server Ready.");
+                    GrxDebugUtil.println("Corba Server Ready."); //$NON-NLS-1$
                     orb_ = GrxCorbaUtil.getORB();
                     orb_.run();
                     orb_.destroy();
@@ -324,14 +325,14 @@ public class GrxPluginManager {
 
         // frame_.setVisible(true);
 
-        String defaultMode = System.getProperty("MODE", "");
+        String defaultMode = System.getProperty("MODE", ""); //$NON-NLS-1$ //$NON-NLS-2$
         GrxModeInfoItem mode = (GrxModeInfoItem) getItem(GrxModeInfoItem.class, defaultMode);
-        GrxDebugUtil.println("[PM] current mode=" + mode);
+        GrxDebugUtil.println("[PM] current mode=" + mode); //$NON-NLS-1$
 
         Map<?, ?> m = pluginMap_.get(GrxModeInfoItem.class);
         GrxModeInfoItem[] modes = (GrxModeInfoItem[]) m.values().toArray(new GrxModeInfoItem[0]);
 
-        System.out.println("[PM] try to setMode");
+        System.out.println("[PM] try to setMode"); //$NON-NLS-1$
 
         try {
             if (mode == null) {
@@ -340,7 +341,7 @@ public class GrxPluginManager {
                     String[] modeInfoNames = new String[modes.length];
                     for (int i = 0; i < modes.length; i++)
                         modeInfoNames[i] = modes[i].getName();
-                    MessageDialog dlg = new MessageDialog(null, "Select Mode", null, "Select Initial Mode.", MessageDialog.NONE, modeInfoNames, 0);
+                    MessageDialog dlg = new MessageDialog(null, MessageBundle.get("GrxPluginManager.dialog.title.mode"), null, MessageBundle.get("GrxPluginManager.dialog.message.mode"), MessageDialog.NONE, modeInfoNames, 0); //$NON-NLS-1$ //$NON-NLS-2$
                     ans = dlg.open();
                 }
                 mode = modes[ans];
@@ -349,7 +350,7 @@ public class GrxPluginManager {
             // frame_.updateModeButtons(modes, currentMode_);
 
         } catch (Exception e) {
-            GrxDebugUtil.printErr("GrxPluginManager:", e);
+            GrxDebugUtil.printErr("GrxPluginManager:", e); //$NON-NLS-1$
         }
     }
 
@@ -357,7 +358,7 @@ public class GrxPluginManager {
      * モードを設定する. アクティブなプラグインのリストの更新と、画面の更新を行う。
      */
     void setMode(GrxModeInfoItem mode) {
-        System.out.println("[PM] setMode to " + mode);
+        System.out.println("[PM] setMode to " + mode); //$NON-NLS-1$
 
         if (currentMode_ == mode)
             return;
@@ -380,7 +381,7 @@ public class GrxPluginManager {
         return currentMode_;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
 	public Class<? extends GrxBasePlugin> registerPlugin(String className) {
         Class<?> cls = pluginLoader_.loadClass(className);
         return registerPlugin((Class<? extends GrxBasePlugin>) cls);
@@ -392,9 +393,9 @@ public class GrxPluginManager {
      * @param el
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
 	public Class<?> registerPlugin(Element el) {
-        Class<?> cls = pluginLoader_.loadClass(el.getAttribute("class"));
+        Class<?> cls = pluginLoader_.loadClass(el.getAttribute("class")); //$NON-NLS-1$
         Class<? extends GrxBasePlugin> ret = registerPlugin((Class<? extends GrxBasePlugin>) cls);
         if (ret != null) {
             PluginInfo pi = pinfoMap_.get(ret);
@@ -412,22 +413,22 @@ public class GrxPluginManager {
     public Class<? extends GrxBasePlugin> registerPlugin(Class<? extends GrxBasePlugin> cls) {
         if (cls != null && GrxBasePlugin.class.isAssignableFrom(cls)) {
             if (pluginMap_.get(cls) == null) {
-                GrxDebugUtil.println("[PM] register " + cls.getName());
+                GrxDebugUtil.println("[PM] register " + cls.getName()); //$NON-NLS-1$
 
                 pluginMap_.put(cls, new OrderedHashMap());
 
                 PluginInfo pi = new PluginInfo();
-                pi.title = (String) GrxBasePlugin.getField(cls, "TITLE", cls.getSimpleName());
-                pi.lastDir = new File(homePath_ + (String) GrxBasePlugin.getField(cls, "DEFAULT_DIR", ""));
-                String ext = (String) GrxBasePlugin.getField(cls, "FILE_EXTENSION", null);
+                pi.title = (String) GrxBasePlugin.getField(cls, "TITLE", cls.getSimpleName()); //$NON-NLS-1$
+                pi.lastDir = new File(homePath_ + (String) GrxBasePlugin.getField(cls, "DEFAULT_DIR", "")); //$NON-NLS-1$ //$NON-NLS-2$
+                String ext = (String) GrxBasePlugin.getField(cls, "FILE_EXTENSION", null); //$NON-NLS-1$
                 if (ext != null)
-                    pi.filter = "*." + ext;// GrxGuiUtil.createFileFilter(ext);
+                    pi.filter = "*." + ext;// GrxGuiUtil.createFileFilter(ext); //$NON-NLS-1$
                 pinfoMap_.put(cls, pi);
             }
 
             return cls;
         }
-        GrxDebugUtil.println("[PM] 該当クラスなし。" + cls.toString() + " register fault.");
+        GrxDebugUtil.println("[PM] 該当クラスなし。" + cls.toString() + " register fault."); //$NON-NLS-1$ //$NON-NLS-2$
         return null;
     }
 
@@ -442,8 +443,8 @@ public class GrxPluginManager {
     public GrxBaseItem createItem(Class<? extends GrxBaseItem> cls, String name) {
         //System.out.println("[PM]@createItem " + name + "(" + cls + ")");
         if (name == null) {
-            String baseName = "new" + getItemTitle(cls);
-            baseName = baseName.toLowerCase().replaceAll(" ", "");
+            String baseName = "new" + getItemTitle(cls); //$NON-NLS-1$
+            baseName = baseName.toLowerCase().replaceAll(" ", ""); //$NON-NLS-1$ //$NON-NLS-2$
             for (int i = 0;; i++) {
                 name = baseName + i;
                 if (getItem(cls, name) == null)
@@ -483,7 +484,7 @@ public class GrxPluginManager {
             return null;
 
         if (name == null){
-        	String basename = f.getName().split("[.]")[0];
+        	String basename = f.getName().split("[.]")[0]; //$NON-NLS-1$
         	if (getItem(cls, basename) != null){
         		Integer index = 0;
         		do {
@@ -547,7 +548,7 @@ public class GrxPluginManager {
      */
     private GrxBasePlugin createPlugin(Class<? extends GrxBasePlugin> cls, String name) {
         if (registerPlugin(cls) == null) {
-            GrxDebugUtil.println("[PM]@createPlugin registerPlugin failed");
+            GrxDebugUtil.println("[PM]@createPlugin registerPlugin failed"); //$NON-NLS-1$
             return null;
         }
         try {
@@ -557,7 +558,7 @@ public class GrxPluginManager {
             }
             return plugin;
         } catch (Exception e) {
-            showExceptionTrace("Couldn't load Class:" + cls.getName(), e);
+            showExceptionTrace("Couldn't load Class:" + cls.getName(), e); //$NON-NLS-1$
         }
         return null;
     }
@@ -568,12 +569,12 @@ public class GrxPluginManager {
      *            instance of plugin
      * @return true if registered successfully, false otherwise
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
 	public boolean registerPluginInstance(GrxBasePlugin instance) {
         HashMap<String, GrxBasePlugin> map = pluginMap_.get(instance.getClass());
         GrxBasePlugin plugin = map.get(instance.getName());
         if ( plugin != null) {
-            GrxDebugUtil.println("[PM]@createPlugin Plugin instance named "+instance.getName()+" is already registered.");
+            GrxDebugUtil.println("[PM]@createPlugin Plugin instance named "+instance.getName()+" is already registered."); //$NON-NLS-1$ //$NON-NLS-2$
             if(plugin instanceof GrxBaseItem){
             	((GrxBaseItem)plugin).delete();
             	map.put(instance.getName(), instance);
@@ -594,26 +595,26 @@ public class GrxPluginManager {
 
         Throwable cause = e.getCause();
         StackTraceElement[] trace = null;
-        String msg = m + "\n\n";
+        String msg = m + "\n\n"; //$NON-NLS-1$
         if (cause != null) {
-            msg = cause.toString() + "\n\n";
+            msg = cause.toString() + "\n\n"; //$NON-NLS-1$
             trace = cause.getStackTrace();
         } else {
             trace = e.getStackTrace();
         }
 
         for (int i = 0; i < trace.length; i++) {
-            msg += "at " + trace[i].getClassName() + "." + trace[i].getMethodName() + "(";
+            msg += "at " + trace[i].getClassName() + "." + trace[i].getMethodName() + "("; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
             if (trace[i].isNativeMethod()) {
-                msg += "(Native Method)\n";
+                msg += "(Native Method)\n"; //$NON-NLS-1$
             } else if (trace[i].getFileName() == null) {
-                msg += "(No source code)\n";
+                msg += "(No source code)\n"; //$NON-NLS-1$
             } else {
-                msg += trace[i].getFileName() + ":" + trace[i].getLineNumber() + ")\n";
+                msg += trace[i].getFileName() + ":" + trace[i].getLineNumber() + ")\n"; //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
-        MessageDialog.openWarning(null, "Exception Occered", msg);
+        MessageDialog.openWarning(null, "Exception Occered", msg); //$NON-NLS-1$
     }
 
     /**
@@ -662,7 +663,7 @@ public class GrxPluginManager {
     public boolean renamePlugin(GrxBasePlugin item, String newName) {
         OrderedHashMap m = pluginMap_.get(item.getClass());
         if (m == null) {
-            System.out.println("map for " + item.getClass() + " doesn't exist in pluginMap_");
+            System.out.println("map for " + item.getClass() + " doesn't exist in pluginMap_"); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
         if (m.get(newName) == null) {
@@ -673,7 +674,7 @@ public class GrxPluginManager {
             }
             return true;
         } else {
-            System.out.println("GrxPluginManager.renamePlugin() : " + newName + " is already used");
+            System.out.println("GrxPluginManager.renamePlugin() : " + newName + " is already used"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return false;
     }
@@ -710,7 +711,7 @@ public class GrxPluginManager {
                 return item;
             }
         }
-        GrxDebugUtil.println("[PM] fault getItem " + cls.getName() + ":" + name);
+        GrxDebugUtil.println("[PM] fault getItem " + cls.getName() + ":" + name); //$NON-NLS-1$ //$NON-NLS-2$
         return null;
     }
 
@@ -745,7 +746,7 @@ public class GrxPluginManager {
      * @param name
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
 	public <T> T getSelectedItem(Class<? extends GrxBaseItem> cls, String name) {
     	Map<String, ? extends GrxBaseItem> oMap = pluginMap_.get(cls);
     	if(oMap==null) return null;
@@ -769,7 +770,7 @@ public class GrxPluginManager {
      * @param cls
      * @return
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
 	public <T> List<T> getSelectedItemList(Class<? extends GrxBaseItem> cls) {
         ArrayList<T> list = new ArrayList<T>();
         Map<String, ? extends GrxBaseItem> oMap = pluginMap_.get(cls);
@@ -820,7 +821,7 @@ public class GrxPluginManager {
      * @param select
      *            true to select, false to unselect
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
 	public void setSelectedItem(GrxBaseItem item, boolean select) {
         if (item == null)
             return;
@@ -882,7 +883,7 @@ public class GrxPluginManager {
      * @brief information of plugin class
      */
     private class PluginInfo {
-        static final String VISIBLE = "visible";
+        static final String VISIBLE = "visible"; //$NON-NLS-1$
         String title;
         File lastDir;
         String filter;
@@ -907,7 +908,7 @@ public class GrxPluginManager {
         // menu item : create
         Action create = new Action() {
             public String getText() {
-                return "create";
+                return MessageBundle.get("GrxPluginManager.menu.create"); //$NON-NLS-1$
             }
 
             public void run() {
@@ -921,7 +922,7 @@ public class GrxPluginManager {
         // menu item : load
         Action load = new Action() {
             public String getText() {
-                return "load";
+                return MessageBundle.get("GrxPluginManager.menu.load"); //$NON-NLS-1$
             }
 
             public void run() {
@@ -943,34 +944,34 @@ public class GrxPluginManager {
         // menu item : clear
         Action clear = new Action() {
             public String getText() {
-                return "clear";
+                return MessageBundle.get("GrxPluginManager.menu.clear"); //$NON-NLS-1$
             }
 
             public void run() {
-                if (MessageDialog.openConfirm(null, "remove items", "Remove all the items : " + GrxPluginManager.this.getItemTitle(cls) + " ?"))
+                if (MessageDialog.openConfirm(null, MessageBundle.get("GrxPluginManager.dialog.title.removeItem"), MessageBundle.get("GrxPluginManager.dialog.message.removeItem") + GrxPluginManager.this.getItemTitle(cls) + " ?")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     removeItems(cls);
             }
         };
         menu.add(clear);
 
         try {
-            Method m = cls.getMethod("create", (Class[]) null);
+            Method m = cls.getMethod("create", (Class[]) null); //$NON-NLS-1$
             Class<?> c = m.getDeclaringClass();
             create.setEnabled(!(c == GrxBaseItem.class));
 
-            m = cls.getMethod("load", File.class);
+            m = cls.getMethod("load", File.class); //$NON-NLS-1$
             c = m.getDeclaringClass();
             load.setEnabled(!(c == GrxBaseItem.class));
-            m = cls.getMethod("paste", String.class);
+            m = cls.getMethod("paste", String.class); //$NON-NLS-1$
             c = m.getDeclaringClass();
             if (c != GrxBaseItem.class) {
                 Action paste = new Action() {
                     public String getText() {
-                        return "paste";
+                        return "paste"; //$NON-NLS-1$
                     }
 
                     public void run() {
-                        GrxDebugUtil.println("GrxPluginManager.GrxModelItemClass paste Action");
+                        GrxDebugUtil.println("GrxPluginManager.GrxModelItemClass paste Action"); //$NON-NLS-1$
                         // paste();
                     }
                 };
@@ -989,11 +990,11 @@ public class GrxPluginManager {
      */
     private void dynamicChangeMenu(final Class<? extends GrxBaseItem> cls, Vector<Action> menu) {
         try {
-            Method m = cls.getMethod("paste", String.class);
+            Method m = cls.getMethod("paste", String.class); //$NON-NLS-1$
             Class<?> c = m.getDeclaringClass();
             if (c != GrxBaseItem.class) {
                 for (Action action : menu) {
-                    if (action.getText().equals("paste")) {
+                    if (action.getText().equals("paste")) { //$NON-NLS-1$
                         action.setEnabled(!isEmptyClipBord());
                         break;
                     }
@@ -1016,7 +1017,7 @@ public class GrxPluginManager {
      * @brief shutdown this manager
      */
     public void shutdown() {
-        GrxDebugUtil.println("[PM] shutdown.");
+        GrxDebugUtil.println("[PM] shutdown."); //$NON-NLS-1$
 
         Iterator<OrderedHashMap> it = pluginMap_.values().iterator();
         for (; it.hasNext();) {
@@ -1109,10 +1110,10 @@ public class GrxPluginManager {
     {
         // log のクリア
         String[] com;
-        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) {
-            com = new String[] { "/bin/sh", "-c", "rm " + homePath_ + ".OpenHRP-3.1/omninames-log/*" };
+        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            com = new String[] { "/bin/sh", "-c", "rm " + homePath_ + ".OpenHRP-3.1/omninames-log/*" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         } else {
-            com = new String[] { "cmd", "/c", "del " + "\"" + System.getenv("APPDATA") + File.separator + "OpenHRP-3.1" + File.separator + "omninames-log" + File.separator + "omninames-*.*" + "\""};
+            com = new String[] { "cmd", "/c", "del " + "\"" + System.getenv("APPDATA") + File.separator + "OpenHRP-3.1" + File.separator + "omninames-log" + File.separator + "omninames-*.*" + "\""}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
         }
         try {
             Process pr = Runtime.getRuntime().exec(com);
@@ -1165,18 +1166,18 @@ public class GrxPluginManager {
     private static void setClipBordVal() {
         Clipboard clp = Toolkit.getDefaultToolkit().getSystemClipboard();
         Transferable data = clp.getContents(null);
-        String ret = "";
+        String ret = ""; //$NON-NLS-1$
         if (data != null && data.isDataFlavorSupported(DataFlavor.stringFlavor)) {
             try {
                 ret = (String) data.getTransferData(DataFlavor.stringFlavor);
             } catch (Exception e) {
-                GrxDebugUtil.printErr("GrxPluginManager.setClipBordVal: ", e);
+                GrxDebugUtil.printErr("GrxPluginManager.setClipBordVal: ", e); //$NON-NLS-1$
             }
         }
         GrxPluginManager.clipValue_.set(ret);
     }
 
-    private static SynchronizedAccessor<String> clipValue_ = new SynchronizedAccessor<String>("");
+    private static SynchronizedAccessor<String> clipValue_ = new SynchronizedAccessor<String>(""); //$NON-NLS-1$
     
     
     public void registerItemChangeListener(GrxBaseView view, Class<? extends GrxBaseItem> cls){

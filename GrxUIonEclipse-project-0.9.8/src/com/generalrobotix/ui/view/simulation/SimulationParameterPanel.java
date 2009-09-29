@@ -31,10 +31,10 @@ import com.generalrobotix.ui.util.ItemPropertyDoubleSpinForSWT;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.graph.SEEnumeration;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class SimulationParameterPanel extends Composite{
   private GrxBaseItem currentItem_;
-  public static final String[] METHOD_NAMES = { "RUNGE_KUTTA", "EULER" };
+  public static final String[] METHOD_NAMES = { "RUNGE_KUTTA", "EULER" }; //$NON-NLS-1$ //$NON-NLS-2$
   private static final SEEnumeration seTemp_ = new SEEnumeration(METHOD_NAMES, 0);
   
   private static final int COMBO_WIDTH = 100;
@@ -53,46 +53,46 @@ public class SimulationParameterPanel extends Composite{
     setLayout(new GridLayout(2,true));
 
     Label label = new Label(this,SWT.SHADOW_NONE);
-    label.setText(MessageBundle.get("panel.simulation.start.title"));
+    label.setText(MessageBundle.get("panel.simulation.start.title")); //$NON-NLS-1$
     //label.setBounds(12, 12, 240, 24);
 
     label = new Label(this,SWT.SHADOW_NONE);//dummy
 
     label = new Label(this,SWT.SHADOW_NONE);
-    label.setText(MessageBundle.get("panel.simulation.start.totalTime"));
+    label.setText(MessageBundle.get("panel.simulation.start.totalTime")); //$NON-NLS-1$
     GridData gridData = new GridData();
     gridData.horizontalAlignment = SWT.END;
     label.setLayoutData(gridData);
     //label.setBounds(12, 12 + 36, 130, 24);
     
     spinTotalTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,MIN_TIME_STEP, Double.POSITIVE_INFINITY, 0.1);
-    spinTotalTime_.setKey("totalTime");
+    spinTotalTime_.setKey("totalTime"); //$NON-NLS-1$
     //spinTotalTime_.setBounds(12 + 130 + 6, 12 + 36, 100, 24);
 
     label = new Label(this,SWT.SHADOW_NONE);
-    label.setText(MessageBundle.get("panel.simulation.start.stepTime"));
+    label.setText(MessageBundle.get("panel.simulation.start.stepTime")); //$NON-NLS-1$
     gridData = new GridData();
     gridData.horizontalAlignment = SWT.END;
     label.setLayoutData(gridData);
     //label.setBounds(12, 12 + 36 + 36, 130, 24);
     
     spinStepTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,MIN_TIME_STEP, 0.1, 0.001);
-    spinStepTime_.setKey("timeStep");
+    spinStepTime_.setKey("timeStep"); //$NON-NLS-1$
     //spinStepTime_.setBounds(12 + 130 + 6, 12 + 36 + 36, 100, 24);
     
     label = new Label(this,SWT.SHADOW_NONE);
-    label.setText(MessageBundle.get("panel.simulation.start.logStepTime"));
+    label.setText(MessageBundle.get("panel.simulation.start.logStepTime")); //$NON-NLS-1$
     gridData = new GridData();
     gridData.horizontalAlignment = SWT.END;
     label.setLayoutData(gridData);
     //label.setBounds(12, 12 + 36 + 36 + 36, 130, 24);
 
     spinLogStepTime_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,0.00001, 0.1, 0.001);
-    spinLogStepTime_.setKey("logTimeStep");
+    spinLogStepTime_.setKey("logTimeStep"); //$NON-NLS-1$
     //spinLogStepTime_.setBounds(12 + 130 + 6, 12 + 36 + 36 + 36, 100, 24);
     
     label = new Label(this,SWT.SHADOW_NONE);
-    label.setText(MessageBundle.get("panel.simulation.start.method"));
+    label.setText(MessageBundle.get("panel.simulation.start.method")); //$NON-NLS-1$
     gridData = new GridData();
     gridData.horizontalAlignment = SWT.END;
     label.setLayoutData(gridData);
@@ -112,7 +112,7 @@ public class SimulationParameterPanel extends Composite{
 
         public void widgetSelected(SelectionEvent e) {
             if (currentItem_ != null)
-                currentItem_.setProperty("method", cmbMethod_.getText());
+                currentItem_.setProperty("method", cmbMethod_.getText()); //$NON-NLS-1$
         }
         
     });
@@ -125,18 +125,18 @@ public class SimulationParameterPanel extends Composite{
     //-------------------------
 
     label = new Label(this,SWT.SHADOW_NONE);
-    label.setText(MessageBundle.get("panel.simulation.start.gravitation"));
+    label.setText(MessageBundle.get("panel.simulation.start.gravitation")); //$NON-NLS-1$
     gridData = new GridData();
     gridData.horizontalAlignment = SWT.END;
     label.setLayoutData(gridData);
     //label.setBounds(12, 12 + 36 + 36 + 36 + 36 + 36, 130, 24);
 
     spinGravity_ = new ItemPropertyDoubleSpinForSWT(this,SWT.NONE,0, Double.POSITIVE_INFINITY, 0.1);
-    spinGravity_.setKey("gravity");
+    spinGravity_.setKey("gravity"); //$NON-NLS-1$
     spinGravity_.setBounds(12 + 130 + 6, 12 + 36 + 36 + 36 + 36 + 36, 100, 24);
 
     chkIntegrate_ = new Button(this,SWT.CHECK);
-    chkIntegrate_.setText(MessageBundle.get("panel.simulation.start.integrate"));
+    chkIntegrate_.setText(MessageBundle.get("panel.simulation.start.integrate")); //$NON-NLS-1$
     //chkIntegrate_.setBounds(12 + 80 + 6, 12 + 36 + 36 + 36 + 36 + 36 + 36, 160, 24);
     chkIntegrate_.addSelectionListener(new SelectionListener() {
 
@@ -145,21 +145,21 @@ public class SimulationParameterPanel extends Composite{
 
         public void widgetSelected(SelectionEvent e) {
             if (currentItem_ != null)
-                currentItem_.setProperty("integrate", String.valueOf(chkIntegrate_.getSelection()));
+                currentItem_.setProperty("integrate", String.valueOf(chkIntegrate_.getSelection())); //$NON-NLS-1$
         }
     });
     
     label = new Label(this,SWT.SHADOW_NONE);//dummy
 
     chkViewSimulate_ = new Button(this,SWT.CHECK);
-    chkViewSimulate_.setText(MessageBundle.get("panel.simulation.start.viewsimulate"));
+    chkViewSimulate_.setText(MessageBundle.get("panel.simulation.start.viewsimulate")); //$NON-NLS-1$
     chkViewSimulate_.addSelectionListener(new SelectionListener() {
         public void widgetDefaultSelected(SelectionEvent e) {
         }
 
         public void widgetSelected(SelectionEvent e) {
             if (currentItem_ != null)
-                currentItem_.setProperty("viewsimulate", String.valueOf(chkViewSimulate_.getSelection()));
+                currentItem_.setProperty("viewsimulate", String.valueOf(chkViewSimulate_.getSelection())); //$NON-NLS-1$
         }
 
     });
@@ -250,13 +250,13 @@ public class SimulationParameterPanel extends Composite{
   	  spinGravity_.setItem(item);
 	  
 	  if (item != null) { 
-		  setTotalTime(item.getDbl("totalTime", 20.0));
-		  setStepTime(item.getDbl("timeStep", 0.001));
-		  setLogStepTime(item.getDbl("logTimeStep", 0.001));
-		  setGravity(item.getDbl("gravity", 9.8));
-		  setMethod(item.getProperty("method",METHOD_NAMES[0]));
-		  setIntegrate(item.isTrue("integrate", true));
-		  setViewSimulate(item.isTrue("viewsimulate", false));
+		  setTotalTime(item.getDbl("totalTime", 20.0)); //$NON-NLS-1$
+		  setStepTime(item.getDbl("timeStep", 0.001)); //$NON-NLS-1$
+		  setLogStepTime(item.getDbl("logTimeStep", 0.001)); //$NON-NLS-1$
+		  setGravity(item.getDbl("gravity", 9.8)); //$NON-NLS-1$
+		  setMethod(item.getProperty("method",METHOD_NAMES[0])); //$NON-NLS-1$
+		  setIntegrate(item.isTrue("integrate", true)); //$NON-NLS-1$
+		  setViewSimulate(item.isTrue("viewsimulate", false)); //$NON-NLS-1$
 		  setEnabled(true);
 	  }
   }

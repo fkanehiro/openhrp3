@@ -51,7 +51,7 @@ import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.graph.SEBoolean;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class CollisionPairPanel extends Composite {
     private GrxPluginManager manager_;
     private TableViewer viewer_;
@@ -67,24 +67,24 @@ public class CollisionPairPanel extends Composite {
     private String defaultSlidingFriction_;
     private String defaultCullingThresh_;
     
-    private static final String ATTR_NAME_SPRING = "springConstant";
-    private static final String ATTR_NAME_DAMPER = "damperConstant";
-    private static final String ATTR_NAME_SD = "springDamperModel";
-    private static final String ATTR_NAME_STATIC_FRICTION = "staticFriction";
-    private static final String ATTR_NAME_SLIDING_FRICTION = "slidingFriction";
-    private static final String ATTR_NAME_CULLING_THRESH = "cullingThresh";
+    private static final String ATTR_NAME_SPRING = "springConstant"; //$NON-NLS-1$
+    private static final String ATTR_NAME_DAMPER = "damperConstant"; //$NON-NLS-1$
+    private static final String ATTR_NAME_SD = "springDamperModel"; //$NON-NLS-1$
+    private static final String ATTR_NAME_STATIC_FRICTION = "staticFriction"; //$NON-NLS-1$
+    private static final String ATTR_NAME_SLIDING_FRICTION = "slidingFriction"; //$NON-NLS-1$
+    private static final String ATTR_NAME_CULLING_THRESH = "cullingThresh"; //$NON-NLS-1$
     
     private final String[] clmName_ ={
-        MessageBundle.get("panel.collision.table.obj1"),
-        MessageBundle.get("panel.collision.table.link1"),
-        MessageBundle.get("panel.collision.table.obj2"),
-        MessageBundle.get("panel.collision.table.link2"),
-        MessageBundle.get("panel.collision.table.sd")
+        MessageBundle.get("panel.collision.table.obj1"), //$NON-NLS-1$
+        MessageBundle.get("panel.collision.table.link1"), //$NON-NLS-1$
+        MessageBundle.get("panel.collision.table.obj2"), //$NON-NLS-1$
+        MessageBundle.get("panel.collision.table.link2"), //$NON-NLS-1$
+        MessageBundle.get("panel.collision.table.sd") //$NON-NLS-1$
     };
 
     private final String[] attrName_ ={
-        "objectName1","jointName1",
-        "objectName2","jointName2",
+        "objectName1","jointName1", //$NON-NLS-1$ //$NON-NLS-2$
+        "objectName2","jointName2", //$NON-NLS-1$ //$NON-NLS-2$
         ATTR_NAME_SD
     };
     
@@ -117,9 +117,9 @@ public class CollisionPairPanel extends Composite {
         super(parent, style);
         manager_ = manager;
         //AttributeProperties props = AttributeProperties.getProperties("CollisionPair");
-        defaultStaticFriction_ = "0.5";//props.getProperty(ATTR_NAME_STATIC_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE);
-        defaultSlidingFriction_ = "0.5";//props.getProperty(ATTR_NAME_SLIDING_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE);
-        defaultCullingThresh_ = "0.01";
+        defaultStaticFriction_ = "0.5";//props.getProperty(ATTR_NAME_STATIC_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE); //$NON-NLS-1$
+        defaultSlidingFriction_ = "0.5";//props.getProperty(ATTR_NAME_SLIDING_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE); //$NON-NLS-1$
+        defaultCullingThresh_ = "0.01"; //$NON-NLS-1$
         
         vecCollision_ = new Vector<GrxCollisionPairItem>();
    
@@ -159,7 +159,7 @@ public class CollisionPairPanel extends Composite {
         pnlBttn.setLayout(new FillLayout(SWT.HORIZONTAL));
         
         btnAdd_ = new Button(pnlBttn,SWT.PUSH);
-        btnAdd_.setText(MessageBundle.get("panel.add"));
+        btnAdd_.setText(MessageBundle.get("panel.add")); //$NON-NLS-1$
         btnAdd_.addSelectionListener(new SelectionListener(){
 
             public void widgetDefaultSelected(SelectionEvent e) {
@@ -173,7 +173,7 @@ public class CollisionPairPanel extends Composite {
         });
         
         btnRemove_ = new Button(pnlBttn,SWT.PUSH);
-        btnRemove_.setText(MessageBundle.get("panel.remove"));
+        btnRemove_.setText(MessageBundle.get("panel.remove")); //$NON-NLS-1$
         btnRemove_.addSelectionListener(new SelectionListener(){
 
             public void widgetDefaultSelected(SelectionEvent e) {
@@ -182,7 +182,7 @@ public class CollisionPairPanel extends Composite {
             public void widgetSelected(SelectionEvent e) {
                 int row = viewer_.getTable().getSelectionIndex();
                 if (row >= 0 && row < vecCollision_.size()) {
-                    if (_checkDialog(MessageBundle.get("collision.remove"))) {
+                    if (_checkDialog(MessageBundle.get("collision.remove"))) { //$NON-NLS-1$
                         vecCollision_.get(row).delete();
                     }
                 }
@@ -191,7 +191,7 @@ public class CollisionPairPanel extends Composite {
         });
 
         btnEdit_ = new Button(pnlBttn,SWT.PUSH);
-        btnEdit_.setText(MessageBundle.get("panel.edit"));
+        btnEdit_.setText(MessageBundle.get("panel.edit")); //$NON-NLS-1$
         btnEdit_.addSelectionListener(new SelectionListener(){
 
             public void widgetDefaultSelected(SelectionEvent e) {
@@ -208,7 +208,7 @@ public class CollisionPairPanel extends Composite {
         });
         
         btnAddAll_ = new Button(pnlBttn,SWT.PUSH);
-        btnAddAll_.setText(MessageBundle.get("panel.addAll"));
+        btnAddAll_.setText(MessageBundle.get("panel.addAll")); //$NON-NLS-1$
         btnAddAll_.addSelectionListener(new SelectionListener(){
 
             public void widgetDefaultSelected(SelectionEvent e) {
@@ -240,7 +240,7 @@ public class CollisionPairPanel extends Composite {
     }
 
     private boolean _checkDialog(String msg) {
-        boolean overwrite = MessageDialog.openQuestion(getShell(), MessageBundle.get("dialog.overwrite"), msg);
+        boolean overwrite = MessageDialog.openQuestion(getShell(), MessageBundle.get("dialog.overwrite"), msg); //$NON-NLS-1$
         return overwrite;
     }
 
@@ -281,16 +281,16 @@ public class CollisionPairPanel extends Composite {
             super(parent,style);
             setLayout(new GridLayout(2,false));
             
-            pnlJoint1_ = new JointSelectPanel(this,SWT.NONE,"1");
+            pnlJoint1_ = new JointSelectPanel(this,SWT.NONE,"1"); //$NON-NLS-1$
             pnlJoint1_.setLayoutData(new GridData(GridData.FILL_BOTH));
             //pnlJoint1_.setBounds(0,0,180,60);
             
-            pnlJoint2_ = new JointSelectPanel(this,SWT.NONE,"2");
+            pnlJoint2_ = new JointSelectPanel(this,SWT.NONE,"2"); //$NON-NLS-1$
             pnlJoint2_.setLayoutData(new GridData(GridData.FILL_BOTH));
             //pnlJoint2_.setBounds(0 + 180,0,180,60);
             
             chkDamper_ = new Button(this,SWT.CHECK);
-            chkDamper_.setText(MessageBundle.get("panel.collision.sd"));
+            chkDamper_.setText(MessageBundle.get("panel.collision.sd")); //$NON-NLS-1$
             chkDamper_.setSelection(false);
             chkDamper_.addSelectionListener(new SelectionListener(){
 
@@ -307,7 +307,7 @@ public class CollisionPairPanel extends Composite {
             new Label(this,SWT.SHADOW_NONE);//dummy
             
             lblSpring_ = new Label(this,SWT.SHADOW_NONE);
-            lblSpring_.setText(MessageBundle.get("panel.collision.springConst"));
+            lblSpring_.setText(MessageBundle.get("panel.collision.springConst")); //$NON-NLS-1$
             lblSpring_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             //lblSpring_.setBounds(0,60+24,144,24);
             
@@ -316,7 +316,7 @@ public class CollisionPairPanel extends Composite {
             //txtSpring_.setBounds(150,60+24,180,24);
             
             lblDamper_ = new Label(this,SWT.SHADOW_NONE);
-            lblDamper_.setText(MessageBundle.get("panel.collision.dumperConst"));
+            lblDamper_.setText(MessageBundle.get("panel.collision.dumperConst")); //$NON-NLS-1$
             lblDamper_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             //lblDamper_.setBounds(0,60+24+24,144,24);
             
@@ -325,13 +325,13 @@ public class CollisionPairPanel extends Composite {
             //txtDamper_.setBounds(150,60+24+24,180,24);
             
             lblFriction_ = new Label(this,SWT.SHADOW_NONE);
-            lblFriction_.setText(MessageBundle.get("panel.collision.friction"));
+            lblFriction_.setText(MessageBundle.get("panel.collision.friction")); //$NON-NLS-1$
             //lblFriction_.setBounds(20,60+24+24+ 24,144,24);
             
             new Label(this,SWT.SHADOW_NONE);//dummy
             
             lblStaticFric_ = new Label(this,SWT.SHADOW_NONE);
-            lblStaticFric_.setText(MessageBundle.get("panel.collision.staticFriction"));
+            lblStaticFric_.setText(MessageBundle.get("panel.collision.staticFriction")); //$NON-NLS-1$
             lblStaticFric_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             //lblStaticFric_.setBounds(0,60+24 + 24+ 24 + 24,144,24);
 
@@ -340,7 +340,7 @@ public class CollisionPairPanel extends Composite {
             //txtStaticFric_.setBounds(150,60+24+ 24 + 24+ 24,80,24);
             
             lblSlidingFric_ = new Label(this,SWT.SHADOW_NONE);
-            lblSlidingFric_.setText(MessageBundle.get("panel.collision.slidingFriction"));
+            lblSlidingFric_.setText(MessageBundle.get("panel.collision.slidingFriction")); //$NON-NLS-1$
             lblSlidingFric_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             //lblSlidingFric_.setBounds(0,60+24+24+ 24 + 24 + 24,144,24);
 
@@ -349,14 +349,14 @@ public class CollisionPairPanel extends Composite {
             //txtSlidingFric_.setBounds(150,60+24+24+ 24 + 24+ 24,80,24);
             
             lblCullingThresh_ = new Label(this,SWT.SHADOW_NONE);
-            lblCullingThresh_.setText(MessageBundle.get("panel.collision.cullingThresh"));
+            lblCullingThresh_.setText(MessageBundle.get("panel.collision.cullingThresh")); //$NON-NLS-1$
             lblCullingThresh_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             txtCullingThresh_ = new Text(this,SWT.SINGLE | SWT.BORDER);
             txtCullingThresh_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             
             btnOk_ = new Button(this,SWT.PUSH);
-            btnOk_.setText(MessageBundle.get("dialog.okButton"));
+            btnOk_.setText(MessageBundle.get("dialog.okButton")); //$NON-NLS-1$
             btnOk_.addSelectionListener(new SelectionListener(){
 
                 public void widgetDefaultSelected(SelectionEvent e) {
@@ -367,7 +367,7 @@ public class CollisionPairPanel extends Composite {
                         case MODE_ADD:
                             if (pnlJoint1_.getObjectName().equals(pnlJoint2_.getObjectName())
                                 && pnlJoint1_.getJointName().equals(pnlJoint2_.getJointName())) {
-                                MessageDialog.openWarning(getShell(), "", MessageBundle.get("collision.invalid"));
+                                MessageDialog.openWarning(getShell(), "", MessageBundle.get("collision.invalid")); //$NON-NLS-1$ //$NON-NLS-2$
                                 return;
                             }
 
@@ -375,7 +375,7 @@ public class CollisionPairPanel extends Composite {
                                     pnlJoint2_.getObjectName(), pnlJoint2_.getJointName());
                             
                             if (item == null || !_setAttribute(item)){
-                                System.out.println("error: item = "+item);
+                                System.out.println("error: item = "+item); //$NON-NLS-1$
                                 return;
                             }
                             
@@ -414,7 +414,7 @@ public class CollisionPairPanel extends Composite {
                             txtCullingThresh_.getText()
                         );
                     } catch (Exception ex) {
-                        MessageDialog.openWarning(getShell(), "", MessageBundle.get("message.attributeerror"));
+                        MessageDialog.openWarning(getShell(), "", MessageBundle.get("message.attributeerror")); //$NON-NLS-1$ //$NON-NLS-2$
                         return false;
                     }
                     return true;
@@ -427,7 +427,7 @@ public class CollisionPairPanel extends Composite {
             //btnOk_.setBounds(24,144+ 24+ 24+ 24,84,24);
 
             btnCancel_ = new Button(this,SWT.PUSH);
-            btnCancel_.setText(MessageBundle.get("dialog.cancelButton"));
+            btnCancel_.setText(MessageBundle.get("dialog.cancelButton")); //$NON-NLS-1$
             btnCancel_.addSelectionListener(new SelectionListener(){
 
                 public void widgetDefaultSelected(SelectionEvent e) {
@@ -449,8 +449,8 @@ public class CollisionPairPanel extends Composite {
             setEnabled(true);
             if (pnlJoint1_.entry()){
                 pnlJoint2_.entry();
-                txtSpring_.setText("0 0 0 0 0 0");
-                txtDamper_.setText("0 0 0 0 0 0");
+                txtSpring_.setText("0 0 0 0 0 0"); //$NON-NLS-1$
+                txtDamper_.setText("0 0 0 0 0 0"); //$NON-NLS-1$
                 txtStaticFric_.setText(defaultStaticFriction_);
                 txtSlidingFric_.setText(defaultSlidingFriction_);
                 txtCullingThresh_.setText(defaultCullingThresh_);
@@ -468,29 +468,29 @@ public class CollisionPairPanel extends Composite {
 
         public void doCancel() {
             setEnabled(false);
-            txtSpring_.setText("");
-            txtDamper_.setText("");
-            txtStaticFric_.setText("");
-            txtSlidingFric_.setText("");
-            txtCullingThresh_.setText("");
+            txtSpring_.setText(""); //$NON-NLS-1$
+            txtDamper_.setText(""); //$NON-NLS-1$
+            txtStaticFric_.setText(""); //$NON-NLS-1$
+            txtSlidingFric_.setText(""); //$NON-NLS-1$
+            txtCullingThresh_.setText(""); //$NON-NLS-1$
         }
 
         public void setNode(GrxCollisionPairItem node) {
             try{
                 pnlJoint1_.setJoint(
-                    node.getStr("objectName1", ""), 
-                    node.getStr("jointName1", "")
+                    node.getStr("objectName1", ""),  //$NON-NLS-1$ //$NON-NLS-2$
+                    node.getStr("jointName1", "") //$NON-NLS-1$ //$NON-NLS-2$
                 );
                 pnlJoint2_.setJoint(
-                    node.getStr("objectName2", ""), 
-                    node.getStr("jointName2", "")
+                    node.getStr("objectName2", ""),  //$NON-NLS-1$ //$NON-NLS-2$
+                    node.getStr("jointName2", "") //$NON-NLS-1$ //$NON-NLS-2$
                 );
                 chkDamper_.setSelection(node.isTrue(ATTR_NAME_SD,false));
-                txtSpring_.setText(node.getStr(ATTR_NAME_SPRING, ""));
-                txtDamper_.setText(node.getStr(ATTR_NAME_DAMPER, ""));
-                txtStaticFric_.setText(node.getStr(ATTR_NAME_STATIC_FRICTION, ""));
-                txtSlidingFric_.setText(node.getStr(ATTR_NAME_SLIDING_FRICTION, ""));
-                txtCullingThresh_.setText(node.getStr(ATTR_NAME_CULLING_THRESH, ""));
+                txtSpring_.setText(node.getStr(ATTR_NAME_SPRING, "")); //$NON-NLS-1$
+                txtDamper_.setText(node.getStr(ATTR_NAME_DAMPER, "")); //$NON-NLS-1$
+                txtStaticFric_.setText(node.getStr(ATTR_NAME_STATIC_FRICTION, "")); //$NON-NLS-1$
+                txtSlidingFric_.setText(node.getStr(ATTR_NAME_SLIDING_FRICTION, "")); //$NON-NLS-1$
+                txtCullingThresh_.setText(node.getStr(ATTR_NAME_CULLING_THRESH, "")); //$NON-NLS-1$
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -543,7 +543,7 @@ public class CollisionPairPanel extends Composite {
                 setLayout(new GridLayout(2,false));
                 
                 Label label = new Label(this,SWT.SHADOW_NONE);
-                label.setText(MessageBundle.get("panel.joint.object") + title);
+                label.setText(MessageBundle.get("panel.joint.object") + title); //$NON-NLS-1$
                 label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
                 //label.setBounds(0,6,48,12);
                 
@@ -552,7 +552,7 @@ public class CollisionPairPanel extends Composite {
                 //boxObject_.setBounds(6+48,6 ,126,24);
                 
                 label = new Label(this,SWT.SHADOW_NONE);
-                label.setText(MessageBundle.get("panel.joint.link") + title);
+                label.setText(MessageBundle.get("panel.joint.link") + title); //$NON-NLS-1$
                 label.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
                 //label.setBounds(0,6 + 24, 48, 12);
                 
@@ -657,7 +657,7 @@ public class CollisionPairPanel extends Composite {
             GrxBaseItem item = (GrxBaseItem)element;
             String str = null;
             try {
-                str = item.getProperty(attrName_[columnIndex], "");
+                str = item.getProperty(attrName_[columnIndex], ""); //$NON-NLS-1$
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -740,12 +740,12 @@ public class CollisionPairPanel extends Composite {
     private GrxCollisionPairItem _createItem(String oName1, String jName1, String oName2, String jName2) {
         GrxCollisionPairItem item = (GrxCollisionPairItem)manager_.createItem(
              GrxCollisionPairItem.class,
-             "CP#"+oName1+"_"+jName1+"#"+oName2+"_"+jName2);
+             "CP#"+oName1+"_"+jName1+"#"+oName2+"_"+jName2); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         if (item != null) {
-         	item.setProperty("objectName1", oName1);
-           	item.setProperty("jointName1",  jName1); 
-           	item.setProperty("objectName2", oName2);
-           	item.setProperty("jointName2",  jName2); 
+         	item.setProperty("objectName1", oName1); //$NON-NLS-1$
+           	item.setProperty("jointName1",  jName1);  //$NON-NLS-1$
+           	item.setProperty("objectName2", oName2); //$NON-NLS-1$
+           	item.setProperty("jointName2",  jName2);  //$NON-NLS-1$
         } 
         manager_.itemChange(item, GrxPluginManager.ADD_ITEM);
         manager_.setSelectedItem(item, true);

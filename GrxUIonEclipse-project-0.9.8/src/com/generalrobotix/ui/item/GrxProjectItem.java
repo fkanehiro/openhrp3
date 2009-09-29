@@ -54,18 +54,19 @@ import com.generalrobotix.ui.util.GrxConfigBundle;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxXmlUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 
-@SuppressWarnings({ "unchecked", "serial" })
+@SuppressWarnings({ "unchecked", "serial" }) //$NON-NLS-1$ //$NON-NLS-2$
 public class GrxProjectItem extends GrxBaseItem {
-	public static final String TITLE = "Project";
-	public static final String DEFAULT_DIR = "project";
-	public static final String FILE_EXTENSION = "xml";
+	public static final String TITLE = "Project"; //$NON-NLS-1$
+	public static final String DEFAULT_DIR = "project"; //$NON-NLS-1$
+	public static final String FILE_EXTENSION = "xml"; //$NON-NLS-1$
 
 	public static final int MENU_CREATE=0, MENU_RESTORE=1, MENU_LOAD=2, MENU_SAVE=3, MENU_SAVE_AS=4, MENU_IMPORT=5;
 	private Vector<Action> menu_;
 	
-    private static final String MODE_TAG = "mode";
-    private static final String WINCONF_TAG = "windowconfig";
+    private static final String MODE_TAG = "mode"; //$NON-NLS-1$
+    private static final String WINCONF_TAG = "windowconfig"; //$NON-NLS-1$
 
 	private Document doc_;
     private DocumentBuilder builder_;
@@ -90,8 +91,8 @@ public class GrxProjectItem extends GrxBaseItem {
 		try {
 			builder_ = dbfactory.newDocumentBuilder();
 			transformer_ = tffactory.newTransformer();
-            transformer_.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer_.setOutputProperty(OutputKeys.METHOD, "xml");
+            transformer_.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
+            transformer_.setOutputProperty(OutputKeys.METHOD, "xml"); //$NON-NLS-1$
             setDefaultDirectory();
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
@@ -102,16 +103,16 @@ public class GrxProjectItem extends GrxBaseItem {
 
 	public boolean create() {
 		for (int i=0; ; i++) {
-			File f = new File(getDefaultDir().getAbsolutePath()+"/"+"newproject"+i+".xml");
+			File f = new File(getDefaultDir().getAbsolutePath()+"/"+"newproject"+i+".xml"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			if (!f.isFile()) {
-				setName(f.getName().split("[.]")[0]);
+				setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
 				break;
 			}
 		}
 			
 		doc_ = builder_.newDocument();
-		element_ = doc_.createElement("grxui");
-		element_.appendChild(doc_.createTextNode("\n"));
+		element_ = doc_.createElement("grxui"); //$NON-NLS-1$
+		element_.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 		doc_.appendChild(element_);
 		_updateModeInfo();
 		return true;
@@ -124,7 +125,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		for (int i=0; i<modeList.getLength(); i++) {
             ModeNodeInfo mi = new ModeNodeInfo();
 			mi.root = (Element)modeList.item(i);
-            modeInfoMap_.put(mi.root.getAttribute("name"), mi);
+            modeInfoMap_.put(mi.root.getAttribute("name"), mi); //$NON-NLS-1$
 
 			// property node 
 			NodeList propList = mi.root.getElementsByTagName(PROPERTY_TAG);
@@ -156,17 +157,17 @@ public class GrxProjectItem extends GrxBaseItem {
 		    NodeList nodeList = doc_.getElementsByTagName(MODE_TAG);
 		    for (int i=0; i<nodeList.getLength(); i++) {
 			    Element e = (Element)nodeList.item(i);
-			    if (e.getAttribute("name").equals(mode)) {
+			    if (e.getAttribute("name").equals(mode)) { //$NON-NLS-1$
 				    mi.root = e;
                     break;
                 }
 		    }
 		    if (mi.root == null) {
 			    mi.root = doc_.createElement(MODE_TAG);
-			    mi.root.setAttribute("name", mode);
+			    mi.root.setAttribute("name", mode); //$NON-NLS-1$
 			    element_.appendChild(doc_.createTextNode(INDENT4));
 			    element_.appendChild(mi.root);
-			    element_.appendChild(doc_.createTextNode("\n"));
+			    element_.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
             } 
 
 			_updateModeInfo();
@@ -181,10 +182,10 @@ public class GrxProjectItem extends GrxBaseItem {
    
     private Element _createWindowConfigElement(String mode) {
         ModeNodeInfo mi = _getModeNodeInfo(mode);
-		mi.windowConfig = doc_.createElement("windowconfig");
-		mi.root.appendChild(doc_.createTextNode("\n"+INDENT4+INDENT4));
+		mi.windowConfig = doc_.createElement("windowconfig"); //$NON-NLS-1$
+		mi.root.appendChild(doc_.createTextNode("\n"+INDENT4+INDENT4)); //$NON-NLS-1$
 		mi.root.appendChild(mi.windowConfig);
-		mi.root.appendChild(doc_.createTextNode("\n"+INDENT4));
+		mi.root.appendChild(doc_.createTextNode("\n"+INDENT4)); //$NON-NLS-1$
         return mi.windowConfig;
     }
 
@@ -194,7 +195,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		for (int i=list.getLength()-1; i>=0; i--)
 			modeEl.removeChild(list.item(i));
 		
-		modeEl.appendChild(doc_.createTextNode("\n"));
+		modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 		
 		List<GrxBaseItem> itemList = manager_.getActiveItemList();
 		for (int i=0; i<itemList.size(); i++) {
@@ -202,7 +203,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			modeEl.appendChild(doc_.createTextNode(INDENT4+INDENT4));
 			item.setDocument(doc_);
 			modeEl.appendChild(item.storeProperties());
-			modeEl.appendChild(doc_.createTextNode("\n"));
+			modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 		}
 		
 		List<GrxBaseView> viewList = manager_.getActiveViewList();
@@ -212,7 +213,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				modeEl.appendChild(doc_.createTextNode(INDENT4+INDENT4));
 				view.setDocument(doc_);
 				modeEl.appendChild(view.storeProperties());
-				modeEl.appendChild(doc_.createTextNode("\n"));
+				modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 			}
 		}
 		
@@ -226,9 +227,9 @@ public class GrxProjectItem extends GrxBaseItem {
 
 			// MENU_CREATE=0
 			menu_.add( new Action(){
-				public String getText(){ return "Create Project"; }
+				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.CreateProject"); } //$NON-NLS-1$
 				public void run(){
-					boolean ans = MessageDialog.openConfirm( null, "Create New Project", "Before create new Project,\nRemove all items ?" );
+					boolean ans = MessageDialog.openConfirm( null, MessageBundle.get("GrxProjectItem.dialog.title.createProject"), MessageBundle.get("GrxProjectItem.dialog.message.createProject") ); //$NON-NLS-1$ //$NON-NLS-2$
 					if ( ans )
 						manager_.removeAllItems();
 					else if ( ans == false )
@@ -238,35 +239,35 @@ public class GrxProjectItem extends GrxBaseItem {
 			} );
 			// MENU_RESTORE=1
 			menu_.add( new Action(){
-				public String getText(){ return "Restore Project"; }
+				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.restoreProject"); } //$NON-NLS-1$
 				public void run(){
 					restoreProject();
 				}
 			} );
 			// MENU_LOAD=2
 			menu_.add( new Action(){
-				public String getText(){ return "Load Project"; }
+				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.loadProject"); } //$NON-NLS-1$
 				public void run(){
 					load();
 				}
 			} );
 			// MENU_SAVE=3
 			menu_.add( new Action(){
-				public String getText(){ return "Save Project"; }
+				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.saveProject"); } //$NON-NLS-1$
 				public void run(){
 					save();
 				}
 			} );
 			// MENU_SAVE_AS=4
 			menu_.add( new Action(){
-				public String getText(){ return "Save Project As ..."; }
+				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.saveProjectAs"); } //$NON-NLS-1$
 				public void run(){
 					saveAs();
 				}
 			} );
 			// MENU_IMPORT=3
 			menu_.add( new Action(){
-				public String getText(){ return "Import ISE Project"; }
+				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.ImportISE"); } //$NON-NLS-1$
 				public void run(){
 					importISEProject();
 				}
@@ -286,7 +287,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		String mode = manager_.getCurrentModeName();
 		storeMode(mode);
 
-		setName(f.getName().split("[.]")[0]);
+		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
       	setURL(f.getAbsolutePath());
       	
         // manager_.getFrame().update(manager_.getFrame().getGraphics());
@@ -310,10 +311,10 @@ public class GrxProjectItem extends GrxBaseItem {
       	*/
 
       	if (f == null)
-			f = new File(getDefaultDir().getAbsolutePath()+"/"+getName()+".xml");
+			f = new File(getDefaultDir().getAbsolutePath()+"/"+getName()+".xml"); //$NON-NLS-1$ //$NON-NLS-2$
 		
-		if (!f.getAbsolutePath().endsWith(".xml"))
-			f = new File(f.getAbsolutePath()+".xml");
+		if (!f.getAbsolutePath().endsWith(".xml")) //$NON-NLS-1$
+			f = new File(f.getAbsolutePath()+".xml"); //$NON-NLS-1$
 		
 	   	try {
 	  		DOMSource src = new DOMSource();
@@ -333,12 +334,12 @@ public class GrxProjectItem extends GrxBaseItem {
 	public void saveAs() {
 		String path = getURL(true);
 		if (path == null)
-			path = getDefaultDir().getAbsolutePath()+"/"+getName()+".xml";
+			path = getDefaultDir().getAbsolutePath()+"/"+getName()+".xml"; //$NON-NLS-1$ //$NON-NLS-2$
 		
 		File initialFile = new File(path);
 
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
-		String[] exts = { "*.xml" }, extNames={"GrxUI Project"};
+		String[] exts = { "*.xml" }, extNames={"GrxUI Project"}; //$NON-NLS-1$ //$NON-NLS-2$
 		fdlg.setFilterExtensions( exts );
 		fdlg.setFilterNames( extNames );
 
@@ -349,9 +350,9 @@ public class GrxProjectItem extends GrxBaseItem {
 		if( fPath != null ) {
 			File f = new File(fPath);
 			if (f.exists() && f.isFile()){
-				boolean ans = MessageDialog.openConfirm( null, "Save Project",
-						"Project: "+f.getName()+" is already exist.\n" +
-				"Overwrite this file ?" );
+				boolean ans = MessageDialog.openConfirm( null, MessageBundle.get("GrxProjectItem.dialog.title.saveProject"), //$NON-NLS-1$
+						MessageBundle.get("GrxProjectItem.dialog.message.saveProject0")+f.getName()+MessageBundle.get("GrxProjectItem.dialog.message.saveProject1") + //$NON-NLS-1$ //$NON-NLS-2$
+				MessageBundle.get("GrxProjectItem.dialog.message.saveProject2") ); //$NON-NLS-1$
 				if (ans == false)
 					return;
 			}
@@ -387,7 +388,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
-		String[] fe = { "*.xml" };
+		String[] fe = { "*.xml" }; //$NON-NLS-1$
 		fdlg.setFilterExtensions( fe );
 		if( filterPath != null )
 			fdlg.setFilterPath(filterPath.getPath());
@@ -410,7 +411,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	 * @return true if loaded successfully, false otherwise
 	 */
 	public boolean load(File f) {
-		System.out.println( "[ProjectItem]@load ProjectFile load "+ f.toString());
+		System.out.println( "[ProjectItem]@load ProjectFile load "+ f.toString()); //$NON-NLS-1$
 		
 		if (f == null || !f.isFile())
 			return false;
@@ -420,13 +421,13 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 
 		manager_.removeAllItems();
-		setName(f.getName().split("[.]")[0]);
+		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
 
 		// set PROJECT_DIR, which is referred to in a project file
 		String dir = f.getParent();
 		if (dir!=null) {
-		    System.setProperty("PROJECT_DIR", dir);
-		    System.out.println("PROJECT_DIR is set to "+dir);
+		    System.setProperty("PROJECT_DIR", dir); //$NON-NLS-1$
+		    System.out.println("PROJECT_DIR is set to "+dir); //$NON-NLS-1$
 		}
 		
     	try {
@@ -436,7 +437,7 @@ public class GrxProjectItem extends GrxBaseItem {
       		file_ = f;
       		setURL(f.getAbsolutePath());
     	} catch (Exception e) {
-      		GrxDebugUtil.printErr("project load:",e);
+      		GrxDebugUtil.printErr("project load:",e); //$NON-NLS-1$
       		file_ = null;
       		return false;
     	}
@@ -446,7 +447,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		NodeList list = doc_.getElementsByTagName(MODE_TAG);
 		for (int i=0; i<list.getLength(); i++) {
 			Element modeEl = (Element) list.item(i);
-			String modeName = modeEl.getAttribute("name");
+			String modeName = modeEl.getAttribute("name"); //$NON-NLS-1$
 			if (modeName == null) 
 				continue;
 			
@@ -454,7 +455,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			if (item != null)  {
 				manager_.itemChange(item, GrxPluginManager.ADD_ITEM);
 				item.setElement(modeEl);
-				if (GrxXmlUtil.getBoolean(modeEl, "select", false)) {
+				if (GrxXmlUtil.getBoolean(modeEl, "select", false)) { //$NON-NLS-1$
 					selectedMode = item;
 				} else {
 					manager_.setSelectedItem(selectedMode, false);
@@ -471,12 +472,12 @@ public class GrxProjectItem extends GrxBaseItem {
 	public void restoreProject() {
 
 		String mode = manager_.getCurrentModeName();
-		System.out.println("Restore Project (Mode:" +mode+")");
+		System.out.println("Restore Project (Mode:" +mode+")"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		IRunnableWithProgress runnableProgress = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) throws InterruptedException {
 				String mode = manager_.getCurrentModeName();
-				monitor.beginTask("Restore Project (Mode:" +mode+")", 10 );
+				monitor.beginTask("Restore Project (Mode:" +mode+")", 10 ); //$NON-NLS-1$ //$NON-NLS-2$
 				restoreProject_work(mode, monitor);
 				monitor.done();
 			}
@@ -513,8 +514,8 @@ public class GrxProjectItem extends GrxBaseItem {
 		if (propList != null) {
 			for (int i=0; i<propList.size(); i++) {
 				Element propEl = (Element)propList.get(i);
-				String key = propEl.getAttribute("name");
-				String val = propEl.getAttribute("value");
+				String key = propEl.getAttribute("name"); //$NON-NLS-1$
+				String val = propEl.getAttribute("value"); //$NON-NLS-1$
 				setProperty(key, val);
 			}
 		}
@@ -550,7 +551,7 @@ public class GrxProjectItem extends GrxBaseItem {
             // for a item that is exclusive selection reselect 
             for (int i=0; i<il.size(); i++) {
 			    GrxBaseItem item = il.get(i);
-                boolean select = GrxXmlUtil.getBoolean(item.getElement(), "select", false);
+                boolean select = GrxXmlUtil.getBoolean(item.getElement(), "select", false); //$NON-NLS-1$
 			    //manager_.setSelectedItem(item, select);
             }
 		}
@@ -560,11 +561,11 @@ public class GrxProjectItem extends GrxBaseItem {
 	}
 	
 	private GrxBasePlugin _restorePlugin(Element e) {
-		String iname = e.getAttribute("name");
+		String iname = e.getAttribute("name"); //$NON-NLS-1$
 		if (iname == null || iname.length() == 0)
 			return null;
-		manager_.pluginLoader_.addURL(GrxXmlUtil.expandEnvVal(e.getAttribute("lib")));
-		Class cls = manager_.registerPlugin(e.getAttribute("class"));
+		manager_.pluginLoader_.addURL(GrxXmlUtil.expandEnvVal(e.getAttribute("lib"))); //$NON-NLS-1$
+		Class cls = manager_.registerPlugin(e.getAttribute("class")); //$NON-NLS-1$
 		if (cls == null)
 			return null;
 	//TODO: プログレスバーに変更する？いっそいらない？	
@@ -574,8 +575,8 @@ public class GrxProjectItem extends GrxBaseItem {
 		GrxBasePlugin plugin = null;
 		if (GrxBaseItem.class.isAssignableFrom(cls)) {
 			Class<? extends GrxBaseItem> icls = (Class<? extends GrxBaseItem>) cls;
-			String url = e.getAttribute("url");
-			if (!url.equals(""))
+			String url = e.getAttribute("url"); //$NON-NLS-1$
+			if (!url.equals("")) //$NON-NLS-1$
 				plugin = manager_.loadItem(icls, iname, url);
 			else
 				plugin = manager_.createItem(icls, iname);
@@ -596,13 +597,13 @@ public class GrxProjectItem extends GrxBaseItem {
         return plugin;
 	}
 	
-	private static final File DEFAULT_ISE_PROJECT_DIR = new File("../ISE/Projects");
+	private static final File DEFAULT_ISE_PROJECT_DIR = new File("../ISE/Projects"); //$NON-NLS-1$
 	public void importISEProject() {
 
 		FileDialog fDialog = new FileDialog(null,SWT.SAVE);
 
-		String [] exts = {"*.prj"};
-		String [] filterNames = {"ISE Project File(*.prj)"};
+		String [] exts = {"*.prj"}; //$NON-NLS-1$
+		String [] filterNames = {"ISE Project File(*.prj)"}; //$NON-NLS-1$
 		fDialog.setFilterExtensions(exts);
 		fDialog.setFilterNames(filterNames);
 		if( DEFAULT_ISE_PROJECT_DIR != null )
@@ -618,7 +619,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				//public void run() {
 					//File f = fc.getSelectedFile();
 					File f = new File( openPath );
-					setName(f.getName().split(".prj")[0]);
+					setName(f.getName().split(".prj")[0]); //$NON-NLS-1$
 					importISEProject(f);
 					//manager_.processingWindow_.setVisible(false);
 					//fc.setSelectedFile(null);
@@ -629,15 +630,15 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 	}
 	
-	private static String ENVIRONMENT_NODE = "jp.go.aist.hrp.simulator.EnvironmentNode";
-	private static String ROBOT_NODE = "jp.go.aist.hrp.simulator.RobotNode";
-	private static String COLLISIONPAIR_NODE = "jp.go.aist.hrp.simulator.CollisionPairNode";
-	private static String GRAPH_NODE = "jp.go.aist.hrp.simulator.GraphNode";
+	private static String ENVIRONMENT_NODE = "jp.go.aist.hrp.simulator.EnvironmentNode"; //$NON-NLS-1$
+	private static String ROBOT_NODE = "jp.go.aist.hrp.simulator.RobotNode"; //$NON-NLS-1$
+	private static String COLLISIONPAIR_NODE = "jp.go.aist.hrp.simulator.CollisionPairNode"; //$NON-NLS-1$
+	private static String GRAPH_NODE = "jp.go.aist.hrp.simulator.GraphNode"; //$NON-NLS-1$
 			
-	private static String WORLD_STATE_ITEM = "com.generalrobotix.ui.item.GrxWorldStateItem";
-	private static String MODEL_ITEM = "com.generalrobotix.ui.item.GrxModelItem";
-	private static String COLLISIONPAIR_ITEM = "com.generalrobotix.ui.item.GrxCollisionPairItem";
-	private static String GRAPH_ITEM = "com.generalrobotix.ui.item.GrxGraphItem";
+	private static String WORLD_STATE_ITEM = "com.generalrobotix.ui.item.GrxWorldStateItem"; //$NON-NLS-1$
+	private static String MODEL_ITEM = "com.generalrobotix.ui.item.GrxModelItem"; //$NON-NLS-1$
+	private static String COLLISIONPAIR_ITEM = "com.generalrobotix.ui.item.GrxCollisionPairItem"; //$NON-NLS-1$
+	private static String GRAPH_ITEM = "com.generalrobotix.ui.item.GrxGraphItem"; //$NON-NLS-1$
 	
 	public void importISEProject(File f) {
 		manager_.removeAllItems();
@@ -651,31 +652,31 @@ public class GrxProjectItem extends GrxBaseItem {
 			e.printStackTrace();
 		}
 
-		setProperty("nsHost", GrxCorbaUtil.nsHost());
+		setProperty("nsHost", GrxCorbaUtil.nsHost()); //$NON-NLS-1$
 		Integer nsPort = new Integer(GrxCorbaUtil.nsPort());
-		setProperty("nsPort", nsPort.toString());
+		setProperty("nsPort", nsPort.toString()); //$NON-NLS-1$
 
-		String pname = prop.getStr("Project.name", "");
+		String pname = prop.getStr("Project.name", ""); //$NON-NLS-1$ //$NON-NLS-2$
 		Class cls = manager_.registerPlugin(WORLD_STATE_ITEM);
 		GrxBaseItem newItem = manager_.createItem((Class <? extends GrxBaseItem>)cls, pname);
-		newItem.setDbl("totalTime",   prop.getDbl("Project.totalTime", 20.0));
-		newItem.setDbl("timeStep",    prop.getDbl("Project.timeStep", 0.001));
-		newItem.setDbl("logTimeStep", prop.getDbl("Project.timeStep", 0.001));
-		newItem.setProperty("method", prop.getStr("Project.method"));
+		newItem.setDbl("totalTime",   prop.getDbl("Project.totalTime", 20.0)); //$NON-NLS-1$ //$NON-NLS-2$
+		newItem.setDbl("timeStep",    prop.getDbl("Project.timeStep", 0.001)); //$NON-NLS-1$ //$NON-NLS-2$
+		newItem.setDbl("logTimeStep", prop.getDbl("Project.timeStep", 0.001)); //$NON-NLS-1$ //$NON-NLS-2$
+		newItem.setProperty("method", prop.getStr("Project.method")); //$NON-NLS-1$ //$NON-NLS-2$
 		manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
         manager_.setSelectedItem(newItem, true);
 
-		for (int i = 0; i < prop.getInt("Project.num_object", 0); i++) {
-			String header = "Object" + i + ".";
-			String oName = prop.getStr(header + "name");
-			String cName = prop.getStr(header + "class");
+		for (int i = 0; i < prop.getInt("Project.num_object", 0); i++) { //$NON-NLS-1$
+			String header = "Object" + i + "."; //$NON-NLS-1$ //$NON-NLS-2$
+			String oName = prop.getStr(header + "name"); //$NON-NLS-1$
+			String cName = prop.getStr(header + "class"); //$NON-NLS-1$
 			if (oName == null || cName == null)
 				continue;
 			
 			if (cName.equals(ENVIRONMENT_NODE) || cName.equals(ROBOT_NODE)) {
 				cls = manager_.registerPlugin(MODEL_ITEM);
 				try {
-					URL url = new URL(prop.getStr(header + "url"));
+					URL url = new URL(prop.getStr(header + "url")); //$NON-NLS-1$
 					newItem = manager_.loadItem((Class<? extends GrxBaseItem>)cls, oName, url.getPath());
 					manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
 			        manager_.setSelectedItem(newItem, true);
@@ -686,74 +687,74 @@ public class GrxProjectItem extends GrxBaseItem {
 					continue;
 
 	  			if (cName.equals(ENVIRONMENT_NODE)) {
-					newItem.setProperty("isRobot", "false");
+					newItem.setProperty("isRobot", "false"); //$NON-NLS-1$ //$NON-NLS-2$
 	  			} else if (cName.equals(ROBOT_NODE)) {
-					newItem.setProperty("isRobot", "true");
+					newItem.setProperty("isRobot", "true"); //$NON-NLS-1$ //$NON-NLS-2$
 	  				Enumeration e = prop.keys();
 	  				while (e.hasMoreElements()) {
 	  					String key = (String)e.nextElement();
 	  					if (key.startsWith(header)) {
 	  						String newKey = key.substring(header.length());
-	  						if (key.endsWith(".angle")) {
+	  						if (key.endsWith(".angle")) { //$NON-NLS-1$
 	  							newItem.setDbl(newKey, prop.getDbl(key, 0.0));
-	  						} else if (key.endsWith(".mode")) {
-								newItem.setProperty(newKey, prop.getStr(key, "Torque"));
-	  						} else if (key.endsWith(".translation"))  {
+	  						} else if (key.endsWith(".mode")) { //$NON-NLS-1$
+								newItem.setProperty(newKey, prop.getStr(key, "Torque")); //$NON-NLS-1$
+	  						} else if (key.endsWith(".translation"))  { //$NON-NLS-1$
 								newItem.setDblAry(newKey, 
 									prop.getDblAry(key, new double[]{0.0, 0.0, 0.0}));
-	  						} else if (key.endsWith(".rotation"))  {
+	  						} else if (key.endsWith(".rotation"))  { //$NON-NLS-1$
 								newItem.setDblAry(newKey, 
 									prop.getDblAry(key, new double[]{0.0, 1.0, 0.0, 0.0}));
 	  						}
 	  					}
 	  				}
 	  				
-					String controller = prop.getStr(header + "controller");
-					controller = controller.replaceFirst("openhrp.", "");
-					double controlTime = prop.getDbl(header + "controlTime", 0.001);
-					newItem.setProperty("controller", controller);
-					newItem.setProperty("controlTime", String.valueOf(controlTime));
+					String controller = prop.getStr(header + "controller"); //$NON-NLS-1$
+					controller = controller.replaceFirst("openhrp.", ""); //$NON-NLS-1$ //$NON-NLS-2$
+					double controlTime = prop.getDbl(header + "controlTime", 0.001); //$NON-NLS-1$
+					newItem.setProperty("controller", controller); //$NON-NLS-1$
+					newItem.setProperty("controlTime", String.valueOf(controlTime)); //$NON-NLS-1$
 
-					String imageProcessor = prop.getStr(header + "imageProcessor");
+					String imageProcessor = prop.getStr(header + "imageProcessor"); //$NON-NLS-1$
 					if (imageProcessor != null) {
-						double imageProcessTime = prop.getDbl(header + "imageProcessTime", 0.001);
-						newItem.setProperty("imageProcessor", imageProcessor);
-						newItem.setProperty("imageProcessTime", String.valueOf(imageProcessTime));
+						double imageProcessTime = prop.getDbl(header + "imageProcessTime", 0.001); //$NON-NLS-1$
+						newItem.setProperty("imageProcessor", imageProcessor); //$NON-NLS-1$
+						newItem.setProperty("imageProcessTime", String.valueOf(imageProcessTime)); //$NON-NLS-1$
 					}
 				}
 	  			
 			} else if (cName.equals(COLLISIONPAIR_NODE)) {
 				cls = manager_.registerPlugin(COLLISIONPAIR_ITEM); 
 				newItem = manager_.createItem((Class<? extends GrxBaseItem>)cls, oName);
-				newItem.setProperty("objectName1", prop.getStr(header + "objectName1"));
-				newItem.setProperty("jointName1",  prop.getStr(header + "jointName1"));
-				newItem.setProperty("objectName2", prop.getStr(header + "objectName2"));
-				newItem.setProperty("jointName2",  prop.getStr(header + "jointName2"));
-				newItem.setProperty("slidingFriction", prop.getStr(header + "slidingFriction", "0.5"));
-				newItem.setProperty("staticFriction",  prop.getStr(header + "staticFriction", "0.5"));
-				newItem.setProperty("cullingThresh",  prop.getStr(header + "cullingThresh", "0.01"));
-				newItem.setProperty("sprintDamperModel", prop.getStr(header + "springDamplerModel", "false"));
-				newItem.setProperty("springConstant", prop.getStr(header + "springConstant", "0.0 0.0 0.0 0.0 0.0 0.0"));
-				newItem.setProperty("damperConstant", prop.getStr(header + "damperConstant", "0.0 0.0 0.0 0.0 0.0 0.0"));
+				newItem.setProperty("objectName1", prop.getStr(header + "objectName1")); //$NON-NLS-1$ //$NON-NLS-2$
+				newItem.setProperty("jointName1",  prop.getStr(header + "jointName1")); //$NON-NLS-1$ //$NON-NLS-2$
+				newItem.setProperty("objectName2", prop.getStr(header + "objectName2")); //$NON-NLS-1$ //$NON-NLS-2$
+				newItem.setProperty("jointName2",  prop.getStr(header + "jointName2")); //$NON-NLS-1$ //$NON-NLS-2$
+				newItem.setProperty("slidingFriction", prop.getStr(header + "slidingFriction", "0.5")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				newItem.setProperty("staticFriction",  prop.getStr(header + "staticFriction", "0.5")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				newItem.setProperty("cullingThresh",  prop.getStr(header + "cullingThresh", "0.01")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				newItem.setProperty("sprintDamperModel", prop.getStr(header + "springDamplerModel", "false")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				newItem.setProperty("springConstant", prop.getStr(header + "springConstant", "0.0 0.0 0.0 0.0 0.0 0.0")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				newItem.setProperty("damperConstant", prop.getStr(header + "damperConstant", "0.0 0.0 0.0 0.0 0.0 0.0")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 			} else if (cName.equals(GRAPH_NODE)) {
 				cls = manager_.registerPlugin(GRAPH_ITEM);
 				newItem = manager_.getItem((Class<? extends GrxBaseItem>)cls, null);
 				if (newItem == null)
-					newItem = manager_.createItem((Class<? extends GrxBaseItem>)cls, "GraphList1");
-				String items = prop.getStr(header + "dataItems");
-				newItem.setProperty(oName + ".dataItems", items);
-				String[] str = items.split(",");
+					newItem = manager_.createItem((Class<? extends GrxBaseItem>)cls, "GraphList1"); //$NON-NLS-1$
+				String items = prop.getStr(header + "dataItems"); //$NON-NLS-1$
+				newItem.setProperty(oName + ".dataItems", items); //$NON-NLS-1$
+				String[] str = items.split(","); //$NON-NLS-1$
 				String[] p = { 
-					"object", "node", "attr", "index", 
-					"numSibling", "legend", "color" 
+					"object", "node", "attr", "index",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					"numSibling", "legend", "color"  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				};
 				for (int j = 0; j < str.length; j++) {
 					for (int k = 0; k < p.length; k++) {
-						String key = str[j] + "." + p[k];
+						String key = str[j] + "." + p[k]; //$NON-NLS-1$
 						String value = prop.getStr(header + key);
 						if (value != null)
-							newItem.setProperty(oName + "." + key, value);
+							newItem.setProperty(oName + "." + key, value); //$NON-NLS-1$
 					}
 				}
 			}
@@ -764,9 +765,9 @@ public class GrxProjectItem extends GrxBaseItem {
 	
 	//
 	private void setDefaultDirectory(){
-		String dir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR");
-        if(dir.equals(""))
-        	dir = System.getenv("PROJECT_DIR");
+		String dir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR"); //$NON-NLS-1$
+        if(dir.equals("")) //$NON-NLS-1$
+        	dir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
 		if( dir != null ){
 			setDefaultDirectory( dir );
 		}

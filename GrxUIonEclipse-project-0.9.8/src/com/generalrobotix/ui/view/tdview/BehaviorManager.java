@@ -45,6 +45,7 @@ import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.Grx3DViewClickListener;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.Grx3DView;
 import com.sun.j3d.utils.picking.PickCanvas;
 import com.sun.j3d.utils.picking.PickTool;
@@ -208,7 +209,7 @@ public class BehaviorManager implements WorldReplaceListener {
             try {
 			  currentDynamics_.destroy();
             } catch (Exception e) {
-				GrxDebugUtil.printErr("getDynamicsSimulator: destroy failed.");
+				GrxDebugUtil.printErr("getDynamicsSimulator: destroy failed."); //$NON-NLS-1$
             }
 			currentDynamics_ = null;
 		}
@@ -216,7 +217,7 @@ public class BehaviorManager implements WorldReplaceListener {
 		if (currentDynamics_ == null) {
 			try {
 				org.omg.CORBA.Object obj = //process_.get(DynamicsSimulatorID_).getReference();
-				GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
+				GrxCorbaUtil.getReference("DynamicsSimulatorFactory"); //$NON-NLS-1$
 				DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper
 						.narrow(obj);
 				currentDynamics_ = ifactory.create();
@@ -224,7 +225,7 @@ public class BehaviorManager implements WorldReplaceListener {
 				//dynamicsMap_.put(currentWorld_, currentDynamics_);
 
 			} catch (Exception e) {
-				GrxDebugUtil.printErr("getDynamicsSimulator: create failed.");
+				GrxDebugUtil.printErr("getDynamicsSimulator: create failed."); //$NON-NLS-1$
 				currentDynamics_ = null;
 			}
 		}
@@ -254,7 +255,7 @@ public class BehaviorManager implements WorldReplaceListener {
 					Display display = Display.getDefault();
 					display.syncExec(new Runnable(){
 						public void run(){
-							MessageDialog.openInformation(null, "", "Please save and reload model("+name+") ");
+							MessageDialog.openInformation(null, "", MessageBundle.get("BehaviorManager.dialog.message.reloadModel")+name+") "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 						}
 					});
 				}
@@ -297,20 +298,20 @@ public class BehaviorManager implements WorldReplaceListener {
 			Map<String, GrxModelItem> modelmap = (Map<String, GrxModelItem>)manager_.getItemMap(GrxModelItem.class);
 			for (int i=0; i<currentCollisionPairs_.size(); i++) {
 				GrxCollisionPairItem item = (GrxCollisionPairItem) currentCollisionPairs_.get(i);
-				GrxModelItem m1 = modelmap.get(item.getStr("objectName1", ""));
-				GrxModelItem m2 = modelmap.get(item.getStr("objectName2", ""));
+				GrxModelItem m1 = modelmap.get(item.getStr("objectName1", "")); //$NON-NLS-1$ //$NON-NLS-2$
+				GrxModelItem m2 = modelmap.get(item.getStr("objectName2", "")); //$NON-NLS-1$ //$NON-NLS-2$
 				if (m1 == null || m2 == null) continue;
 				Vector<GrxLinkItem> links1, links2;
-				String lname1 = item.getStr("jointName1","");
-				if (lname1.equals("")){
+				String lname1 = item.getStr("jointName1",""); //$NON-NLS-1$ //$NON-NLS-2$
+				if (lname1.equals("")){ //$NON-NLS-1$
 					links1 = m1.links_;
 				}else{
 					links1 = new Vector<GrxLinkItem>();
 					GrxLinkItem l = m1.getLink(lname1);
 					if (l != null) links1.add(l);
 				}
-				String lname2 = item.getStr("jointName2","");
-				if (lname2.equals("")){
+				String lname2 = item.getStr("jointName2",""); //$NON-NLS-1$ //$NON-NLS-2$
+				if (lname2.equals("")){ //$NON-NLS-1$
 					links2 = m2.links_;
 				}else{
 					links2 = new Vector<GrxLinkItem>();
@@ -322,13 +323,13 @@ public class BehaviorManager implements WorldReplaceListener {
 						currentDynamics_.registerIntersectionCheckPair(
 								m1.getName(), links1.get(j).getName(),
 								m2.getName(), links2.get(k).getName(),
-								links1.get(j).getDbl("tolerance",0.0)+links2.get(k).getDbl("tolerance",0.0));
+								links1.get(j).getDbl("tolerance",0.0)+links2.get(k).getDbl("tolerance",0.0)); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				}
 			}
             //state_.value = null;
 		} catch (Exception e) {
-			GrxDebugUtil.printErr("initDynamicsSimulator:", e);
+			GrxDebugUtil.printErr("initDynamicsSimulator:", e); //$NON-NLS-1$
 			return false;
 		}
 		resolver_.setDynamicsSimulator(currentDynamics_);
@@ -415,7 +416,7 @@ public class BehaviorManager implements WorldReplaceListener {
 		try {
 			currentDynamics_.destroy();
 		} catch (Exception e) {
-			GrxDebugUtil.printErr("getDynamicsSimulator: destroy failed.");
+			GrxDebugUtil.printErr("getDynamicsSimulator: destroy failed."); //$NON-NLS-1$
 		}
 		currentDynamics_ = null;
 	}

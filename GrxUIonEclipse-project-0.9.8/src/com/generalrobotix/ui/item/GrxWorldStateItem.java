@@ -48,21 +48,22 @@ import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.graph.*;
 import com.generalrobotix.ui.util.GrxCopyUtil;
 import com.generalrobotix.ui.view.GrxLoggerView;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxWorldStateItem extends GrxTimeSeriesItem {
-	public static final String TITLE = "World State";
-	public static final String DEFAULT_DIR = "log";
-	public static final String FILE_EXTENSION = "log";
+	public static final String TITLE = "World State"; //$NON-NLS-1$
+	public static final String DEFAULT_DIR = "log"; //$NON-NLS-1$
+	public static final String FILE_EXTENSION = "log"; //$NON-NLS-1$
 	
 	public static final double DEFAULT_TOTAL_TIME = 20.0;
     private static final int MAX_RAM_BUFFER_SIZE = -1; // 無制限
     private static final int LOAD_LOG_MODITOR_DIM = 32; // プログレスモニター用定数
     private static final long HEAP_MEMORY_TOLERANCE = 4*1024*1024; //残りヒープメモリサイズの許容量
-    private static final String OVER_HEAP_LOG_DIR_NAME = "over"; //ヒープメモリを超えたときにログを退避させるディレクトリ
+    private static final String OVER_HEAP_LOG_DIR_NAME = "over"; //ヒープメモリを超えたときにログを退避させるディレクトリ //$NON-NLS-1$
 	private static String LOG_DIR;
 	
 	private WorldStateEx newStat_ = null;
@@ -77,35 +78,35 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	private boolean storeAllPos_ = true;
 	
 	private Action save_ = new Action(){
-        public String getText(){ return "save log"; }
+        public String getText(){ return MessageBundle.get("GrxWorldStateItem.menu.saveLog"); } //$NON-NLS-1$
 		public void run(){
             if(isRemoved()){
                 MessageDialog.openWarning(
                         GrxUIPerspectiveFactory.getCurrentShell(),
-                        "Warning! It is not possible to save log.",
-                        "Log data is removed.\nPlease increase the bufferSize or set useDisk to true in project file.");
+                        MessageBundle.get("GrxWorldStateItem.dialog.title.saveLog"), //$NON-NLS-1$
+                        MessageBundle.get("GrxWorldStateItem.dialog.message.saveLog")); //$NON-NLS-1$
                 return;
             }
 			_saveLog();
 		}
 	};
 	private Action saveCSV_ = new Action(){
-        public String getText(){ return "save log AsCSV"; }
+        public String getText(){ return MessageBundle.get("GrxWorldStateItem.menu.saveAsCSV"); } //$NON-NLS-1$
         public void run(){
             if(isRemoved()){
                 MessageDialog.openWarning(
                         GrxUIPerspectiveFactory.getCurrentShell(),
-                        "Warning! It is not possible to save log.",
-                        "Log data is removed.\nPlease increase the bufferSize or set useDisk to true in project file.");
+                        MessageBundle.get("GrxWorldStateItem.dialog.title.saveAsCSV"), //$NON-NLS-1$
+                        MessageBundle.get("GrxWorldStateItem.dialog.message.saveAsCSV")); //$NON-NLS-1$
                 return;
             }
             _saveCSV();
 		}
 	};
 	private Action clear_ = new Action(){
-        public String getText(){ return "clear log"; }
+        public String getText(){ return MessageBundle.get("GrxWorldStateItem.menu.clearLog"); } //$NON-NLS-1$
 		public void run(){
-			if( MessageDialog.openQuestion( null, "Clear Log", "Are you sure to clear log ?" ) )
+			if( MessageDialog.openQuestion( null, MessageBundle.get("GrxWorldStateItem.dialog.title.clearLog"), MessageBundle.get("GrxWorldStateItem.dialog.message.clearLog") ) ) //$NON-NLS-1$ //$NON-NLS-2$
 				clearLog();
 		}
 	};
@@ -121,14 +122,14 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	public GrxWorldStateItem(String name, GrxPluginManager manager) {
     	super(name, manager);
 
-		tempDirBase_ = System.getProperty("java.io.tmpdir")+File.separator+"grxui-"+System.getProperty("user.name")+File.separator;
+		tempDirBase_ = System.getProperty("java.io.tmpdir")+File.separator+"grxui-"+System.getProperty("user.name")+File.separator; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		tempDir_ = tempDirBase_+getName();
     	
     	Action load = new Action(){
-            public String getText(){ return "load log"; }
+            public String getText(){ return MessageBundle.get("GrxWorldStateItem.menu.loadLog"); } //$NON-NLS-1$
     		public void run(){
     	        FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
-    	        fdlg.setFilterExtensions(new String[]{"*.log"});
+    	        fdlg.setFilterExtensions(new String[]{"*.log"}); //$NON-NLS-1$
     	        final String fPath = fdlg.open();                
     			_loadLog(new File(fPath));
     		}
@@ -139,7 +140,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		setMenuItem(clear_);
 
 		setExclusive(true);
-		setIcon( "world.png" );
+		setIcon( "world.png" ); //$NON-NLS-1$
 
 		logger_.init();
 	}
@@ -150,11 +151,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 
 	public boolean create() {
         clearLog();
-        setDbl("totalTime", 20.0);
-		setDbl("timeStep", 0.001);
-		setDbl("logTimeStep", 0.001);
-		setDbl("gravity", 9.8);
-		setProperty("method","RUNGE_KUTTA");
+        setDbl("totalTime", 20.0); //$NON-NLS-1$
+		setDbl("timeStep", 0.001); //$NON-NLS-1$
+		setDbl("logTimeStep", 0.001); //$NON-NLS-1$
+		setDbl("gravity", 9.8); //$NON-NLS-1$
+		setProperty("method","RUNGE_KUTTA"); //$NON-NLS-1$ //$NON-NLS-2$
 		return true;
 	}
 
@@ -171,13 +172,13 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
     
 	public void restoreProperties() {
 		super.restoreProperties();
-		useDisk_ = isTrue("useDisk", true);
-		storeAllPos_ = isTrue("storeAllPosition", storeAllPos_);
-        int size = getInt("bufferSize", MAX_RAM_BUFFER_SIZE);
+		useDisk_ = isTrue("useDisk", true); //$NON-NLS-1$
+		storeAllPos_ = isTrue("storeAllPosition", storeAllPos_); //$NON-NLS-1$
+        int size = getInt("bufferSize", MAX_RAM_BUFFER_SIZE); //$NON-NLS-1$
 		if ( useDisk_ ) {
 			super.setMaximumLogSize(MAX_RAM_BUFFER_SIZE);
 		} else {
-			GrxDebugUtil.println("GrxWorldStateItem: useDisk = false");
+			GrxDebugUtil.println("GrxWorldStateItem: useDisk = false"); //$NON-NLS-1$
 			super.setMaximumLogSize(size);
 		}
 	}
@@ -208,16 +209,16 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         setLogMenus(false);
 		syncExec(new Runnable(){
         	public void run(){
-        		notifyObservers("ClearLog");
+        		notifyObservers("ClearLog"); //$NON-NLS-1$
         	}
         });
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked") //$NON-NLS-1$
 	public void registerCharacter(String cname, BodyInfo binfo) {
 		ArrayList<String> logList = new ArrayList<String>();
-		logList.add("time");
-		logList.add("float");
+		logList.add("time"); //$NON-NLS-1$
+		logList.add("float"); //$NON-NLS-1$
 		
 		LinkInfo[] li = binfo.links();
 		ArrayList<Short> jointList = new ArrayList<Short>();
@@ -235,20 +236,20 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		int len = storeAllPos_ ? li.length : 1;
 		for (int i=0; i< len; i++) {
 			String jname = li[i].name;
-			logList.add(jname+".translation");
-			logList.add("float[3]");
-			logList.add(jname+".rotation");
-			logList.add("float[4]");
+			logList.add(jname+".translation"); //$NON-NLS-1$
+			logList.add("float[3]"); //$NON-NLS-1$
+			logList.add(jname+".rotation"); //$NON-NLS-1$
+			logList.add("float[4]"); //$NON-NLS-1$
 		}
 		
 		for (short i=0; i<jointList.size(); i++) { // short <- its depend on the idl def.
 			int idx = jointList.indexOf(i);
 			if (idx >= 0) {
 				String jname = li[idx].name;
-				logList.add(jname+".angle");
-				logList.add("float");
-				logList.add(jname+".jointTorque");
-				logList.add("float");
+				logList.add(jname+".angle"); //$NON-NLS-1$
+				logList.add("float"); //$NON-NLS-1$
+				logList.add(jname+".jointTorque"); //$NON-NLS-1$
+				logList.add("float"); //$NON-NLS-1$
 			}
 		}
 		
@@ -273,28 +274,28 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			//default:
 			//    break;
 			//}
-			if(sensList.get(i).type.equals("Force")){
-				logList.add(sname+".force");
-				logList.add("float[3]");
-				logList.add(sname+".torque");
-				logList.add("float[3]");
-			}else if(sensList.get(i).type.equals("RateGyro")){
-			    logList.add(sname+".angularVelocity");
-			    logList.add("float[3]");
-			}else if(sensList.get(i).type.equals("Acceleration")){
-			    logList.add(sname+".acceleration");
-			    logList.add("float[3]");
-			}else if(sensList.get(i).type.equals("Range")){
-				logList.add(sname+".range");
+			if(sensList.get(i).type.equals("Force")){ //$NON-NLS-1$
+				logList.add(sname+".force"); //$NON-NLS-1$
+				logList.add("float[3]"); //$NON-NLS-1$
+				logList.add(sname+".torque"); //$NON-NLS-1$
+				logList.add("float[3]"); //$NON-NLS-1$
+			}else if(sensList.get(i).type.equals("RateGyro")){ //$NON-NLS-1$
+			    logList.add(sname+".angularVelocity"); //$NON-NLS-1$
+			    logList.add("float[3]"); //$NON-NLS-1$
+			}else if(sensList.get(i).type.equals("Acceleration")){ //$NON-NLS-1$
+			    logList.add(sname+".acceleration"); //$NON-NLS-1$
+			    logList.add("float[3]"); //$NON-NLS-1$
+			}else if(sensList.get(i).type.equals("Range")){ //$NON-NLS-1$
+				logList.add(sname+".range"); //$NON-NLS-1$
 				SensorInfo info = sensList.get(i).info;
 				int half = (int)(info.specValues[0]/2/info.specValues[1]);// = scanAngle/scanStep
-				logList.add("float["+(half*2+1)+"]");
+				logList.add("float["+(half*2+1)+"]"); //$NON-NLS-1$ //$NON-NLS-2$
 			}else{
 			}
 		}
 		
-		logList.add("command");
-		logList.add("float["+jointList.size()+"]");
+		logList.add("command"); //$NON-NLS-1$
+		logList.add("float["+jointList.size()+"]"); //$NON-NLS-1$ //$NON-NLS-2$
 		try {
 			logger_.addLogObject(cname, logList.toArray(new String[0]));
 		} catch (LogFileFormatException e) {
@@ -366,7 +367,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                 temp.putCollisionPointData(cd);
             }
         } catch (Exception e) {
-            GrxDebugUtil.printErr("",e);
+            GrxDebugUtil.printErr("",e); //$NON-NLS-1$
         }
         
         for (int i=0; i < newStat_.charList.size(); i++) {
@@ -426,10 +427,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
     }
     
 	public void init(){
-		double val = getDbl("logTimeStep",0.001);
-		setDbl("logTimeStep",val);
-		val = getDbl("totalTime", DEFAULT_TOTAL_TIME);
-		setDbl("totalTime", val);
+		double val = getDbl("logTimeStep",0.001); //$NON-NLS-1$
+		setDbl("logTimeStep",val); //$NON-NLS-1$
+		val = getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
+		setDbl("totalTime", val); //$NON-NLS-1$
 	}
 	
 	private void _initLog() {
@@ -442,10 +443,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		stime.setCurrentTime(newStat_.time);
 		stime.setStartTime(newStat_.time);
 		
-		double val = getDbl("logTimeStep",0.001);
+		double val = getDbl("logTimeStep",0.001); //$NON-NLS-1$
 		stime.setTimeStep(val);
 			
-		val = getDbl("totalTime", DEFAULT_TOTAL_TIME);
+		val = getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
 		stime.setTotalTime(val);
 
 		logger_.setTempDir(tempDir_);
@@ -590,7 +591,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                         return;
                     }
                     
-					monitor.beginTask("Loading log as a file:"+logFile.getName(), size + LOAD_LOG_MODITOR_DIM + 2);
+					monitor.beginTask("Loading log as a file:"+logFile.getName(), size + LOAD_LOG_MODITOR_DIM + 2); //$NON-NLS-1$
 					_loadLog(logFile,monitor);
 					monitor.done();
 				}
@@ -607,7 +608,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	private void _loadLog(File logFile, IProgressMonitor monitor ) throws InterruptedException{
 		try {
 			if (logFile == null) 
-				logFile = new File("log"+File.separator+getName()+".log");
+				logFile = new File("log"+File.separator+getName()+".log"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			if (!logFile.isFile())
 				return;
@@ -617,15 +618,15 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             clearLog();
             tempDir_ = tempDirBase_ + getName();
 			logger_.setTempDir(tempDir_);
-			logger_.load(fname, "");
+			logger_.load(fname, ""); //$NON-NLS-1$
             
 			monitor.worked(1);
 			final SimulationTime sTime = new SimulationTime();
 			logger_.getSimulationTime(sTime);
 			syncExec(new Runnable(){
 	        	public void run(){
-	        		setDbl("totalTime", sTime.getTotalTime());
-	    			setDbl("logTimeStep", sTime.getTimeStep());
+	        		setDbl("totalTime", sTime.getTotalTime()); //$NON-NLS-1$
+	    			setDbl("logTimeStep", sTime.getTimeStep()); //$NON-NLS-1$
 	        	}
 	        });
             
@@ -644,7 +645,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             	    continue;
                 }
                 
-            	lastCharName_ = new File(entry).getName().split(".tmp")[0];
+            	lastCharName_ = new File(entry).getName().split(".tmp")[0]; //$NON-NLS-1$
             	String[] format = logger_.getDataFormat(lastCharName_);
             	List<LinkPosition> lposList = new ArrayList<LinkPosition>();
             	int jointCount = 0;
@@ -654,25 +655,25 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             	int rangeCount = 0;
             	
             	for (int i=0; i<format.length; i++) {
-            		String[] str = format[i].split("[.]");
+            		String[] str = format[i].split("[.]"); //$NON-NLS-1$
             		if (str.length <= 1) {
             			continue;
-            		} else if (str[1].equals("translation")) {
+            		} else if (str[1].equals("translation")) { //$NON-NLS-1$
             			LinkPosition lpos = new LinkPosition();
             			lpos.p = new double[3];
             			lpos.R = new double[9];
             			lposList.add(lpos);
-            		} else if (str[1].equals("angle")) {
+            		} else if (str[1].equals("angle")) { //$NON-NLS-1$
             			if (!storeAllPos_) 
             				lposList.add(new LinkPosition());
             			jointCount++;
-            		} else if (str[1].equals("force")) {
+            		} else if (str[1].equals("force")) { //$NON-NLS-1$
             			forceCount++;
-            		} else if (str[1].equals("angularVelocity")) {
+            		} else if (str[1].equals("angularVelocity")) { //$NON-NLS-1$
             			gyroCount++;
-            		} else if (str[1].equals("acceleration")) {
+            		} else if (str[1].equals("acceleration")) { //$NON-NLS-1$
             			accelCount++;
-                	} else if (str[1].equals("range")){
+                	} else if (str[1].equals("range")){ //$NON-NLS-1$
                 		rangeCount++;
                 	}
             	}
@@ -765,8 +766,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 
 	private void _saveLog() {
         FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
-        fdlg.setFileName(GrxWorldStateItem.this.getName()+".log");
-        fdlg.setFilterExtensions(new String[]{"*.log"});
+        fdlg.setFileName(GrxWorldStateItem.this.getName()+".log"); //$NON-NLS-1$
+        fdlg.setFilterExtensions(new String[]{"*.log"}); //$NON-NLS-1$
         final String fPath = fdlg.open();
         if (fPath != null) {
 	 		Thread t = new Thread() {
@@ -776,12 +777,12 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                             // 従来の処理
                             logger_.closeAsWrite();
                             logger_.closeCollisionLogAsWrite();
-                            logger_.save(fPath, getName()+".prj");
+                            logger_.save(fPath, getName()+".prj"); //$NON-NLS-1$
                         } else {
                             // オンメモリデータをファイルへ
                             LogManager temp = _restoreLogFileFromSuperLog();
                             if(temp != null){
-                                temp.save(fPath, getName()+".prj");
+                                temp.save(fPath, getName()+".prj"); //$NON-NLS-1$
                                 if(temp != logger_){
                                     temp.closeReads();
                                 }
@@ -883,10 +884,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             stime.setCurrentTime(preStat_.time);
             stime.setStartTime( super.getTime(0) );
             
-            double localTime = getDbl("logTimeStep",0.001);
+            double localTime = getDbl("logTimeStep",0.001); //$NON-NLS-1$
             stime.setTimeStep(localTime);
                 
-            localTime = getDbl("totalTime", DEFAULT_TOTAL_TIME);
+            localTime = getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
             stime.setTotalTime(localTime);
             temp.initCollisionLog(stime);
             try {
@@ -927,9 +928,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	private void _saveCSV() {
         DirectoryDialog ddlg = new DirectoryDialog(GrxUIPerspectiveFactory.getCurrentShell());
-        String projectDir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR");
-        if(projectDir.equals(""))
-        	projectDir = System.getenv("PROJECT_DIR");
+        String projectDir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR"); //$NON-NLS-1$
+        if(projectDir.equals("")) //$NON-NLS-1$
+        	projectDir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
         if(projectDir!=null)
         	ddlg.setFilterPath(projectDir);
         final String dir = ddlg.open();
@@ -943,7 +944,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                     }
     				for (int i=0; i<preStat_.charList.size(); i++) {
     					String name = preStat_.charList.get(i).characterName;
-                        String fname = dir+File.separator+name+".csv";
+                        String fname = dir+File.separator+name+".csv"; //$NON-NLS-1$
     					try {
                             if( useDisk_ ){                            
                                 logger_.saveCSV(fname, name);
@@ -987,12 +988,12 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		stime.setCurrentTime(preStat_.time);
 		stime.setStartTime(preStat_.time);
 	
-		double val = getDbl("logTimeStep",0.001);
+		double val = getDbl("logTimeStep",0.001); //$NON-NLS-1$
 		stime.setTimeStep(val);
-		setDbl("logTimeStep",val);
+		setDbl("logTimeStep",val); //$NON-NLS-1$
 		
 	    stime.setTotalTime(time);
-	    setDbl("totalTime", time);
+	    setDbl("totalTime", time); //$NON-NLS-1$
 	    
 		//logger_.initCollisionLog(stime);
 	    logger_.extendTime(stime);
@@ -1006,17 +1007,17 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	    		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 	    		IWorkbenchPage page = window.getActivePage();
 	    		try {
-	    			page.showView("com.generalrobotix.ui.view.GrxLoggerViewPart", null, IWorkbenchPage.VIEW_CREATE);  
+	    			page.showView("com.generalrobotix.ui.view.GrxLoggerViewPart", null, IWorkbenchPage.VIEW_CREATE);   //$NON-NLS-1$
 	    		} catch (PartInitException e1) {
 	    			e1.printStackTrace();
 	    		}
 	        }
 		}
-		notifyObservers("StartSimulation", isSimulatingView);
+		notifyObservers("StartSimulation", isSimulatingView); //$NON-NLS-1$
 	}
 	
 	public void stopSimulation(){
-		notifyObservers("StopSimulation");
+		notifyObservers("StopSimulation"); //$NON-NLS-1$
 	}
     
     public boolean isUseDsik(){ return useDisk_; }
@@ -1216,15 +1217,15 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		}
 		
 		private int getOrder(String type) {
-			if (type.equals("Force")) 
+			if (type.equals("Force"))  //$NON-NLS-1$
 				return 0;
-			else if (type.equals("RateGyro")) 
+			else if (type.equals("RateGyro"))  //$NON-NLS-1$
 				return 1;
-			else if (type.equals("Acceleration")) 
+			else if (type.equals("Acceleration"))  //$NON-NLS-1$
 				return 2;
-			else if (type.equals("Vision")) 
+			else if (type.equals("Vision"))  //$NON-NLS-1$
 				return 3;
-			else if (type.equals("Range"))
+			else if (type.equals("Range")) //$NON-NLS-1$
 				return 4;
 			else
 				return -1;

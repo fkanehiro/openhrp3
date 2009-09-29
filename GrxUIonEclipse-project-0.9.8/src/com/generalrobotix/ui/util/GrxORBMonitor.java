@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxORBMonitor extends Composite {
     private MessageBox dialog_     = null;
 
@@ -50,7 +50,7 @@ public class GrxORBMonitor extends Composite {
         northPane.setLayout(gridLayout);
 
         Button button = new Button(northPane, SWT.PUSH);
-        button.setText("update");
+        button.setText(MessageBundle.get("GrxORBMonitor.button.update")); //$NON-NLS-1$
         GridData btnGridData = new GridData();
         btnGridData.widthHint = 80;
         btnGridData.heightHint = 26;
@@ -62,7 +62,7 @@ public class GrxORBMonitor extends Composite {
             }
         });
 
-        new Label(northPane, SWT.NONE).setText("Host:");
+        new Label(northPane, SWT.NONE).setText(MessageBundle.get("GrxORBMonitor.label.host")); //$NON-NLS-1$
 
         textNsHost_ = new Text(northPane, SWT.SINGLE | SWT.BORDER);
         textNsHost_.setText(GrxCorbaUtil.nsHost());
@@ -70,7 +70,7 @@ public class GrxORBMonitor extends Composite {
         textGridData.widthHint = 100;
         textNsHost_.setLayoutData(textGridData);
 
-        new Label(northPane, SWT.NONE).setText("Port:");
+        new Label(northPane, SWT.NONE).setText(MessageBundle.get("GrxORBMonitor.label.port")); //$NON-NLS-1$
 
         textNsPort_ = new Text(northPane, SWT.SINGLE | SWT.BORDER);
         Integer nsPort = new Integer(GrxCorbaUtil.nsPort());
@@ -82,7 +82,7 @@ public class GrxORBMonitor extends Composite {
         multiText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         labelNs = new Label(this, SWT.SHADOW_NONE);
-        labelNs.setText("NS_URL:");
+        labelNs.setText(MessageBundle.get("GrxORBMonitor.label.NSURL0")); //$NON-NLS-1$
         labelNs.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         setSize(412, 280);
@@ -100,7 +100,7 @@ public class GrxORBMonitor extends Composite {
         if (dialog_ == null) {
             dialog_ = new MessageBox(null, SWT.OK);
             //dialog_ = new JDialog(frame,"ORB Monitor",false);
-            dialog_.setMessage("ORB Monitor");
+            dialog_.setMessage(MessageBundle.get("GrxORBMonitor.dialog.message.ORB")); //$NON-NLS-1$
             //dialog_.pack();
             //dialog_.setContentPane(this);
             //            dialog_.addWindowListener(new java.awt.event.WindowAdapter() { 
@@ -109,7 +109,7 @@ public class GrxORBMonitor extends Composite {
             //                }
             //            });
         }
-        multiText.setText("");
+        multiText.setText(""); //$NON-NLS-1$
         dialog_.open();
     }
 
@@ -120,25 +120,25 @@ public class GrxORBMonitor extends Composite {
             return;
         }
         int nsPortInt = Integer.parseInt(nsPort);
-        labelNs.setText("NS_URL: corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService");
+        labelNs.setText(MessageBundle.get("GrxORBMonitor.label.NSURL1") + nsHost + ":" + nsPort + "/NameService"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
         String s[] = GrxCorbaUtil.getObjectNameList(nsHost, nsPortInt);
-        multiText.setText("");
+        multiText.setText(""); //$NON-NLS-1$
         if (s == null) {
             return;
         }
         for (int i = 0; i < s.length; i++) {
             String str = null;
             if (GrxCorbaUtil.isConnected(s[i], nsHost, nsPortInt)) {
-                str = "(    Active    )  " + s[i] + "\n";
+                str = MessageBundle.get("GrxORBMonitor.text.active") + s[i] + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
             } else {
-                GrxDebugUtil.println("[GrxORBMonitor] " + s[i] + " is not in " + nsHost + ":" + nsPortInt + " active");
-                str = "( not Active )  " + s[i] + "\n";
+                GrxDebugUtil.println("[GrxORBMonitor] " + s[i] + " is not in " + nsHost + ":" + nsPortInt + " active"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                str = MessageBundle.get("GrxORBMonitor.text.notActive") + s[i] + "\n"; //$NON-NLS-1$ //$NON-NLS-2$
             }
             multiText.append(str);
         }
 
-        GrxDebugUtil.println("ObjectNum:" + s.length);
+        GrxDebugUtil.println("ObjectNum:" + s.length); //$NON-NLS-1$
     }
 
     public String getNSHost() {

@@ -24,7 +24,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 
-@SuppressWarnings("serial")
+import com.generalrobotix.ui.util.MessageBundle;
+
+@SuppressWarnings("serial") //$NON-NLS-1$
 
 /**
  *
@@ -34,7 +36,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	private   File defaultFileDir_;
 	protected File file_;
 	private   String ext_;
-	protected String clipValue_ = "";
+	protected String clipValue_ = ""; //$NON-NLS-1$
 
 	/**
 	 * @brief constructor
@@ -46,11 +48,11 @@ public class GrxBaseItem extends GrxBasePlugin {
 		// delete
 		Action item = new Action(){
 				public String getText(){
-					return "delete";
+					return MessageBundle.get("GrxBaseItem.menu.delete"); //$NON-NLS-1$
 				}
 				public void run(){
-					if( MessageDialog.openQuestion( null, "delete item",
-							"Are you sure to delete " + GrxBaseItem.this.getName() + " ?") )
+					if( MessageDialog.openQuestion( null, MessageBundle.get("GrxBaseItem.dialog.title.delete"), //$NON-NLS-1$
+							MessageBundle.get("GrxBaseItem.dialog.message.delete") + GrxBaseItem.this.getName() + " ?") ) //$NON-NLS-1$ //$NON-NLS-2$
 						delete();
 				}
 			};
@@ -90,7 +92,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	 */
 	public String getFileExtention() {
 		if (ext_ == null)
-			ext_ = (String)GrxBasePlugin.getField(this.getClass(), "FILE_EXTENSION", "");
+			ext_ = (String)GrxBasePlugin.getField(this.getClass(), "FILE_EXTENSION", ""); //$NON-NLS-1$ //$NON-NLS-2$
 		return ext_;
 	}
 
@@ -100,7 +102,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	 */
 	public File getDefaultDir() {
         if (defaultFileDir_ == null)
-            defaultFileDir_ = new File(manager_.getHomePath() + GrxBasePlugin.getField(this.getClass(), "DEFAULT_DIR", ""));
+            defaultFileDir_ = new File(manager_.getHomePath() + GrxBasePlugin.getField(this.getClass(), "DEFAULT_DIR", "")); //$NON-NLS-1$ //$NON-NLS-2$
 		return defaultFileDir_;
 	}
 
@@ -127,7 +129,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	protected void setDefaultDirectory(String dir) {
         String home = manager_.getHomePath();
         if (home == null)
-            home = "";
+            home = ""; //$NON-NLS-1$
 		defaultFileDir_ = new File(dir);
 		if (!defaultFileDir_.isDirectory())
 			defaultFileDir_ = new File(home);

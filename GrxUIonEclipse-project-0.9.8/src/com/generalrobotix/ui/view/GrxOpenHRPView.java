@@ -74,15 +74,16 @@ import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxProcessManager;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 import com.generalrobotix.ui.view.simulation.CollisionPairPanel;
 import com.generalrobotix.ui.view.simulation.ControllerPanel;
 import com.generalrobotix.ui.view.simulation.SimulationParameterPanel;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxOpenHRPView extends GrxBaseView {
-    public static final String TITLE = "OpenHRP";
+    public static final String TITLE = "OpenHRP"; //$NON-NLS-1$
     private static final int WAIT_COUNT_ = 4;
 	private GrxWorldStateItem currentWorld_;
 	private List<GrxModelItem> currentModels_;
@@ -113,7 +114,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private static final int interval_ = 100; //[ms]
 	private Grx3DView view3D;
 	
-	private static final String FORMAT1 = "%8.3f";
+	private static final String FORMAT1 = "%8.3f"; //$NON-NLS-1$
 	private Object lock2_ = new Object();
 	
 	/**
@@ -121,6 +122,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	 */
 	private class ClockGenerator_impl extends SwitchDependVerClockGenerator {
 		private double simTime_ = 0.0;
+
 		private static final int EXEC = -1;
 		private static final int TIMEOVER = 0;
 		private static final int STOP = 1;
@@ -131,20 +133,20 @@ public class GrxOpenHRPView extends GrxBaseView {
 		public boolean startSimulation(boolean isInteractive) {
 			
 			if (isExecuting_){
-				GrxDebugUtil.println("[HRP]@startSimulation now executing.");
+				GrxDebugUtil.println("[HRP]@startSimulation now executing."); //$NON-NLS-1$
 				return false;
 			}
 
 			if (currentWorld_ == null) {
-				MessageDialog.openError(null, "Failed to start simulation", "There is no WorldState item.");
-				GrxDebugUtil.println("[HRP]@startSimulation there is no world.");
+				MessageDialog.openError(null, MessageBundle.get("GrxOpenHRPView.dialog.title.Fail"), MessageBundle.get("GrxOpenHRPView.dialog.message.noWorldState")); //$NON-NLS-1$ //$NON-NLS-2$
+				GrxDebugUtil.println("[HRP]@startSimulation there is no world."); //$NON-NLS-1$
 				return false;
 			}
 			
 			isInteractive_ = isInteractive;
 
 			if (isInteractive && currentWorld_.getLogSize() > 0) {
-	            boolean ans = MessageDialog.openConfirm(getParent().getShell(), "Start Simulation", "The log data will be cleared.\n" + "Are you sure to start ?");
+	            boolean ans = MessageDialog.openConfirm(getParent().getShell(), MessageBundle.get("GrxOpenHRPView.dialog.title.start"), MessageBundle.get("GrxOpenHRPView.dialog.message.start0") + MessageBundle.get("GrxOpenHRPView.dialog.message.start1")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				
 				if (ans != true) {
 					return false;
@@ -158,15 +160,15 @@ public class GrxOpenHRPView extends GrxBaseView {
 			currentWorld_.clearLog();
 			try {
 				if (!initDynamicsSimulator()) {
-	                MessageDialog.openInformation(getParent().getShell(),"", "Failed to initialize DynamicsSimulator.");
+	                MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxOpenHRPView.dialog.message.failedInit")); //$NON-NLS-1$ //$NON-NLS-2$
 					return false;
 				}
 				if (!initController()) {
-	                MessageDialog.openInformation(getParent().getShell(), "", "Failed to initialize Controller.");
+	                MessageDialog.openInformation(getParent().getShell(), "", MessageBundle.get("GrxOpenHRPView.dialog.message.failedController")); //$NON-NLS-1$ //$NON-NLS-2$
 					return false;
 				}
 			} catch (Exception e) {
-				GrxDebugUtil.printErr("SimulationLoop:", e);
+				GrxDebugUtil.printErr("SimulationLoop:", e); //$NON-NLS-1$
 				return false;
 			}
 
@@ -184,7 +186,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 					IWorkbenchPage page = window.getActivePage();
 					try {
-						page.showView("com.generalrobotix.ui.view.Grx3DViewPart", null, IWorkbenchPage.VIEW_CREATE);  
+						page.showView("com.generalrobotix.ui.view.Grx3DViewPart", null, IWorkbenchPage.VIEW_CREATE);   //$NON-NLS-1$
 					} catch (PartInitException e1) {
 						e1.printStackTrace();
 					}
@@ -231,7 +233,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 							break;
 						case INTERRUPT:
 							MessageDialog.openError( GrxUIPerspectiveFactory.getCurrentShell(),
-											"Simulation Interrupted", "Simulation Interrupted by Exception.");
+											MessageBundle.get("GrxOpenHRPView.dialog.title.Interrupt"), MessageBundle.get("GrxOpenHRPView.dialog.message.Interrupt")); //$NON-NLS-1$ //$NON-NLS-2$
 							endOfSimulation();
 							break;
 						default :
@@ -244,16 +246,16 @@ public class GrxOpenHRPView extends GrxBaseView {
 	        	display.timerExec(interval_, run);
 	        }
 	        
-			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function.");
+			GrxDebugUtil.println("[OpenHRP]@startSimulation Start Thread and end this function."); //$NON-NLS-1$
 			return true;
 		}
 
 		String timeMsg_;
 		String updateTimeMsg(){
 			timeMsg_ = 
-				"   (A)Sim. Time = " + String.format(FORMAT1, simTime_) + "[s]\n" +
-				"   (B)Real Time = " + String.format(FORMAT1, simulateTime_) + "[s]\n" +
-				"     (B) / (A)  = " + String.format(FORMAT1, simulateTime_/simTime_);
+				MessageBundle.get("GrxOpenHRPView.dialog.message.simTime0") + String.format(FORMAT1, simTime_) + MessageBundle.get("GrxOpenHRPView.dialog.message.simTime1") + //$NON-NLS-1$ //$NON-NLS-2$
+				MessageBundle.get("GrxOpenHRPView.dialog.message.simTime2") + String.format(FORMAT1, simulateTime_) + MessageBundle.get("GrxOpenHRPView.dialog.message.simTime3") + //$NON-NLS-1$ //$NON-NLS-2$
+				MessageBundle.get("GrxOpenHRPView.dialog.message.simTime4") + String.format(FORMAT1, simulateTime_/simTime_); //$NON-NLS-1$
 			return timeMsg_;
 		}
 
@@ -293,7 +295,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			    		simThreadState_ = STOP;
 
 					} catch (Exception e) {
-						GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e);
+						GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e); //$NON-NLS-1$
 						isExecuting_ = false;
 						simThreadState_ = INTERRUPT;
 					}
@@ -303,7 +305,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			thread.setPriority(Thread.currentThread().getPriority() - 1);
 			return thread;
 		}
-        
+
 		public void continueSimulation(){
 			simThread_ = _createSimulationThread();
 			simThread_.start();
@@ -317,13 +319,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 		public void endOfSimulation(){
 				
 				updateTimeMsg();
-				System.out.println(new java.util.Date()+timeMsg_.replace(" ", "").replace("\n", " : "));
+				System.out.println(new java.util.Date()+timeMsg_.replace(" ", "").replace("\n", " : ")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				if (isInteractive_) {
 					isInteractive_ = false;
 					execSWT( new Runnable(){
 							public void run(){
 						        MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(),
-                                        "Simulation Finished", timeMsg_);
+                                        MessageBundle.get("GrxOpenHRPView.dialog.title.finish"), timeMsg_); //$NON-NLS-1$
 							}
 						} ,
 						Thread.currentThread() != simThread_
@@ -348,9 +350,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 						controllerPane_.setEnabled(true);
 						collisionPane_.setEnabled(true);
 						if (action_ != null){
-							action_.setToolTipText("Start Simulation");
-							action_.setText("Start Simulation");
-							action_.setImageDescriptor(Activator.getDefault().getDescriptor("sim_start.png"));
+							action_.setToolTipText(MessageBundle.get("GrxOpenHRPView.text.start")); //$NON-NLS-1$
+							action_.setText(MessageBundle.get("GrxOpenHRPView.menu.start")); //$NON-NLS-1$
+							action_.setImageDescriptor(Activator.getDefault().getDescriptor("sim_start.png")); //$NON-NLS-1$
 							action_ = null;
 						}
 					}
@@ -429,9 +431,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 		if (clockGenerator_.startSimulation(isInteractive)){
 			action_ = action;
 			if (action_ != null){
-				action_.setToolTipText("Stop Simulation");
-				action_.setText("Stop Simulation");
-				action_.setImageDescriptor(Activator.getDefault().getDescriptor("sim_stop.png"));
+				action_.setToolTipText(MessageBundle.get("GrxOpenHRPView.text.stop")); //$NON-NLS-1$
+				action_.setText(MessageBundle.get("GrxOpenHRPView.menu.stop")); //$NON-NLS-1$
+				action_.setImageDescriptor(Activator.getDefault().getDescriptor("sim_stop.png")); //$NON-NLS-1$
 			}
 		}
 	}
@@ -484,7 +486,7 @@ public class GrxOpenHRPView extends GrxBaseView {
                     controller_.input();
                 }
             } catch (Exception e) {
-                GrxDebugUtil.printErr("Exception in input", e); 
+                GrxDebugUtil.printErr("Exception in input", e);  //$NON-NLS-1$
             }
         }
 
@@ -492,7 +494,7 @@ public class GrxOpenHRPView extends GrxBaseView {
             try {
                 if (doFlag_) controller_.control();
             } catch (Exception e) {
-                GrxDebugUtil.printErr("Exception in control", e); 
+                GrxDebugUtil.printErr("Exception in control", e);  //$NON-NLS-1$
             }
         }
 
@@ -500,7 +502,7 @@ public class GrxOpenHRPView extends GrxBaseView {
             try {
                 if (doFlag_) controller_.output();
             } catch (Exception e) {
-                GrxDebugUtil.printErr("Exception in output", e); 
+                GrxDebugUtil.printErr("Exception in output", e);  //$NON-NLS-1$
             }
         }
         
@@ -508,14 +510,14 @@ public class GrxOpenHRPView extends GrxBaseView {
             try {
             	controller_.stop();
             } catch (Exception e) {
-                GrxDebugUtil.printErr("Exception in deactive", e); 
+                GrxDebugUtil.printErr("Exception in deactive", e);  //$NON-NLS-1$
             }
         }
         private void active() {
             try {
             	controller_.initilize();
             } catch (Exception e) {
-                GrxDebugUtil.printErr("Exception in active", e); 
+                GrxDebugUtil.printErr("Exception in active", e);  //$NON-NLS-1$
             }
         }
 	}
@@ -526,20 +528,20 @@ public class GrxOpenHRPView extends GrxBaseView {
         TabFolder folder = new TabFolder(composite_,SWT.TOP);
         
         TabItem tabItem = new TabItem(folder,SWT.NONE);
-        tabItem.setText("simulation");
+        tabItem.setText(MessageBundle.get("GrxOpenHRPView.tabItem.simulation")); //$NON-NLS-1$
         simParamPane_ = new SimulationParameterPanel(folder, SWT.NONE);
         tabItem.setControl(simParamPane_);
         simParamPane_.setEnabled(true);//false
         
         tabItem = new TabItem(folder,SWT.NONE);
-        tabItem.setText("controller");
+        tabItem.setText(MessageBundle.get("GrxOpenHRPView.tabItem.controller")); //$NON-NLS-1$
         controllerPane_ = new ControllerPanel(folder, SWT.NONE, manager_);
         tabItem.setControl(controllerPane_);
         controllerPane_.setEnabled(true);//false
 
         
         tabItem = new TabItem(folder,SWT.NONE);
-        tabItem.setText("collision");
+        tabItem.setText(MessageBundle.get("GrxOpenHRPView.tabItem.collision")); //$NON-NLS-1$
         collisionPane_ = new CollisionPairPanel(folder, SWT.NONE, manager_);
         tabItem.setControl(collisionPane_);
         controllerPane_.setEnabled(true);//false
@@ -561,14 +563,14 @@ public class GrxOpenHRPView extends GrxBaseView {
 		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
 	       
 		ClockGenerator cg = clockGenerator_._this(manager_.orb_);
-		NameComponent[] path = {new NameComponent("ClockGenerator", "")};
+		NameComponent[] path = {new NameComponent("ClockGenerator", "")}; //$NON-NLS-1$ //$NON-NLS-2$
 	       
 		try {
 			rootnc.rebind(path, cg);
 		} catch (Exception ex) {
-			GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
+			GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService"); //$NON-NLS-1$
 		}
-		GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
+		GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService"); //$NON-NLS-1$
 
 	}
 		
@@ -652,7 +654,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 	
 	public void update(GrxBasePlugin plugin, Object... arg) {
 		if(currentWorld_!=plugin) return;
-    	if((String)arg[0]=="PropertyChange")
+    	if((String)arg[0]=="PropertyChange") //$NON-NLS-1$
     		simParamPane_.updateItem(currentWorld_);	
     	return;
     }
@@ -662,7 +664,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			try {
 				currentDynamics_.destroy();
 			} catch (Exception e) {
-				GrxDebugUtil.printErr("", e);
+				GrxDebugUtil.printErr("", e); //$NON-NLS-1$
 			}
 			currentDynamics_ = null;
 		}
@@ -687,7 +689,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 				if (model.links_ == null)
 					continue;
 				if(model.isModified()){
-					MessageDialog.openInformation(null, "", "Please save model("+model.getName()+") before starting simulation");
+					MessageDialog.openInformation(null, "", MessageBundle.get("GrxOpenHRPView.dialog.message.saveModel0")+model.getName()+MessageBundle.get("GrxOpenHRPView.dialog.message.saveModel1")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					if(!model.saveAndLoad())
 						return false;
 				}
@@ -744,21 +746,21 @@ public class GrxOpenHRPView extends GrxBaseView {
 			for (int i=0; i<collisionPair.size(); i++) {
 				GrxCollisionPairItem item = (GrxCollisionPairItem) collisionPair.get(i);
 				currentDynamics_.registerCollisionCheckPair(
-						item.getStr("objectName1", ""), 
-						item.getStr("jointName1", ""), 
-						item.getStr("objectName2", ""),
-						item.getStr("jointName2", ""), 
-						item.getDbl("staticFriction", 0.5),
-						item.getDbl("slidingFriction", 0.5),
-						item.getDblAry("springConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}), 
-						item.getDblAry("damperConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}),
-						item.getDbl("cullingThresh", 0.01)); 
+						item.getStr("objectName1", ""),  //$NON-NLS-1$ //$NON-NLS-2$
+						item.getStr("jointName1", ""),  //$NON-NLS-1$ //$NON-NLS-2$
+						item.getStr("objectName2", ""), //$NON-NLS-1$ //$NON-NLS-2$
+						item.getStr("jointName2", ""),  //$NON-NLS-1$ //$NON-NLS-2$
+						item.getDbl("staticFriction", 0.5), //$NON-NLS-1$
+						item.getDbl("slidingFriction", 0.5), //$NON-NLS-1$
+						item.getDblAry("springConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}),  //$NON-NLS-1$
+						item.getDblAry("damperConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}), //$NON-NLS-1$
+						item.getDbl("cullingThresh", 0.01));  //$NON-NLS-1$
 			}
 			currentDynamics_.initSimulation();
 			
 			stateH_.value = null;
 		} catch (Exception e) {
-			GrxDebugUtil.printErr("initDynamicsSimulator:", e);
+			GrxDebugUtil.printErr("initDynamicsSimulator:", e); //$NON-NLS-1$
 			return false;
 		}
 		return true;
@@ -769,7 +771,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 			try {
 				currentDynamics_.destroy();
 			} catch (Exception e) {
-				GrxDebugUtil.printErr("", e);
+				GrxDebugUtil.printErr("", e); //$NON-NLS-1$
 			}
 			currentDynamics_ = null;
 		}
@@ -777,13 +779,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 		if (currentDynamics_ == null) {
 			try {
 				org.omg.CORBA.Object obj = //process_.get(DynamicsSimulatorID_).getReference();
-				GrxCorbaUtil.getReference("DynamicsSimulatorFactory");
+				GrxCorbaUtil.getReference("DynamicsSimulatorFactory"); //$NON-NLS-1$
 				DynamicsSimulatorFactory ifactory = DynamicsSimulatorFactoryHelper.narrow(obj);
 				currentDynamics_ = ifactory.create();
 				currentDynamics_._non_existent();
 
 			} catch (Exception e) {
-				GrxDebugUtil.printErr("getDynamicsSimulator: create failed.");
+				GrxDebugUtil.printErr("getDynamicsSimulator: create failed."); //$NON-NLS-1$
 				e.printStackTrace();
 				currentDynamics_ = null;
 			}
@@ -796,9 +798,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 		List<String> localStrList = new Vector<String>();
         for (GrxModelItem model: manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class) ) {
             if( model.isRobot() ){
-        		if ( _setupController(model, _getControllerFromControllerName(model.getProperty("controller"))) < 0 )
+        		if ( _setupController(model, _getControllerFromControllerName(model.getProperty("controller"))) < 0 ) //$NON-NLS-1$
         			ret =  false;
-            	localStrList.add( model.getProperty("controller") );
+            	localStrList.add( model.getProperty("controller") ); //$NON-NLS-1$
             }
         }
         _refreshControllers( localStrList );
@@ -849,30 +851,30 @@ public class GrxOpenHRPView extends GrxBaseView {
 	}
 	
 	private short _setupController(GrxModelItem model, ControllerAttribute deactivatedController) {
-        String controllerName = model.getProperty("controller");
-        double step = model.getDbl("controlTime", 0.005);
+        String controllerName = model.getProperty("controller"); //$NON-NLS-1$
+        double step = model.getDbl("controlTime", 0.005); //$NON-NLS-1$
 		
-		if (controllerName == null || controllerName.equals(""))
+		if (controllerName == null || controllerName.equals("")) //$NON-NLS-1$
 			return 0;
 		String optionAdd = null;
 		if (!simParamPane_.isIntegrate())
-			optionAdd = " -nosim";
+			optionAdd = " -nosim"; //$NON-NLS-1$
 		
-        GrxDebugUtil.println("model name = " + model.getName() + " : controller = " + controllerName + " : cycle time[s] = " + step);
+        GrxDebugUtil.println("model name = " + model.getName() + " : controller = " + controllerName + " : cycle time[s] = " + step); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         GrxProcessManager  pManager = GrxProcessManager.getInstance();
 
         boolean doRestart = false;
         org.omg.CORBA.Object cobj = GrxCorbaUtil.getReference(controllerName);
         AProcess proc = pManager.get(controllerName);
-        String dir = model.getStr("setupDirectory", "");
-        String com = model.getStr("setupCommand", "");
+        String dir = model.getStr("setupDirectory", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        String com = model.getStr("setupCommand", ""); //$NON-NLS-1$ //$NON-NLS-2$
         
         if (cobj != null) {
             try {
                 cobj._non_existent();
-                if (isInteractive_ && (!com.equals("") || proc != null)) { // ask only in case being abled to restart process
-                    MessageDialog dialog =new MessageDialog(getParent().getShell(),"Restart the Controller",null,
-                        "Controller '"+controllerName+"' may already exist.\n" + "Restart it ?" ,MessageDialog.QUESTION, new String[]{"YES","NO","CANCEL"}, 2);
+                if (isInteractive_ && (!com.equals("") || proc != null)) { // ask only in case being abled to restart process //$NON-NLS-1$
+                    MessageDialog dialog =new MessageDialog(getParent().getShell(),MessageBundle.get("GrxOpenHRPView.dialog.title.restartController"),null, //$NON-NLS-1$
+                        MessageBundle.get("GrxOpenHRPView.dialog.message.restartController0")+controllerName+MessageBundle.get("GrxOpenHRPView.dialog.message.restartController1") + MessageBundle.get("GrxOpenHRPView.dialog.message.restartController2") ,MessageDialog.QUESTION, new String[]{MessageBundle.get("GrxOpenHRPView.dialog.button.yes"),MessageBundle.get("GrxOpenHRPView.dialog.button.no"),MessageBundle.get("GrxOpenHRPView.dialog.button.cancel")}, 2); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
                     switch( dialog.open() ){
                     case 0: // 0 == "YES"
                     	doRestart = true;
@@ -895,11 +897,11 @@ public class GrxOpenHRPView extends GrxBaseView {
             if (proc != null)
                 proc.stop();
 
-            if (!com.equals("")) {
+            if (!com.equals("")) { //$NON-NLS-1$
                 com = dir+java.io.File.separator+com;
-                String osname = System.getProperty("os.name");
-                if(osname.indexOf("Windows") >= 0){
-                    com = "\"" + com + "\"";
+                String osname = System.getProperty("os.name"); //$NON-NLS-1$
+                if(osname.indexOf("Windows") >= 0){ //$NON-NLS-1$
+                    com = "\"" + com + "\""; //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 ProcessInfo pi = new ProcessInfo();
                 pi.id = controllerName;
@@ -918,9 +920,9 @@ public class GrxOpenHRPView extends GrxBaseView {
             }
 
             if (proc != null) {
-                GrxDebugUtil.println("Executing controller process ...");
-                GrxDebugUtil.println("dir: " + dir);
-                GrxDebugUtil.println("command: " + com);
+                GrxDebugUtil.println("Executing controller process ..."); //$NON-NLS-1$
+                GrxDebugUtil.println("dir: " + dir); //$NON-NLS-1$
+                GrxDebugUtil.println("command: " + com); //$NON-NLS-1$
                 proc.start(optionAdd);
             }
         }
@@ -936,7 +938,7 @@ public class GrxOpenHRPView extends GrxBaseView {
                     controller.initilize();
 
                     if (simParamPane_.isSimulatingView()) {
-                        cobj = GrxCorbaUtil.getReference("ViewSimulator");
+                        cobj = GrxCorbaUtil.getReference("ViewSimulator"); //$NON-NLS-1$
                         ViewSimulator viewsim = ViewSimulatorHelper.narrow(cobj);
                         controller.setViewSimulator(viewsim);
                     }
@@ -946,19 +948,19 @@ public class GrxOpenHRPView extends GrxBaseView {
                     }else{
                     	refAttr.reset(controller, step);
                     }
-                    GrxDebugUtil.println(" connected to the Controller("+controllerName+")\n");
+                    GrxDebugUtil.println(" connected to the Controller("+controllerName+")\n"); //$NON-NLS-1$ //$NON-NLS-2$
                     controller.setTimeStep(step);
                     controller.start();
                     break;
                 } catch (Exception e) {
-                    GrxDebugUtil.printErr("setupController:", e);
+                    GrxDebugUtil.printErr("setupController:", e); //$NON-NLS-1$
                 }
             }
 
             if (j > WAIT_COUNT_ || (new Date().getTime() - before.getTime() > WAIT_COUNT_*1000)) {
-                GrxDebugUtil.println(" failed to setup controller:"+controllerName);
+                GrxDebugUtil.println(" failed to setup controller:"+controllerName); //$NON-NLS-1$
                 //タイトル画像をなしにするにはどうすればいいのか？とりあえずnullにしてみた
-                MessageDialog dialog = new MessageDialog(getParent().getShell(),"Setup Controller",null,"Can't connect the Controller("+controllerName+").\n" +"Wait more seconds ?",MessageDialog.QUESTION,new String[]{"YES","NO","CANCEL"}, 2);
+                MessageDialog dialog = new MessageDialog(getParent().getShell(),MessageBundle.get("GrxOpenHRPView.dialog.title.setupController"),null,MessageBundle.get("GrxOpenHRPView.dialog.message.setupController0")+controllerName+").\n" +MessageBundle.get("GrxOpenHRPView.dialog.message.setupController1"),MessageDialog.QUESTION,new String[]{MessageBundle.get("GrxOpenHRPView.dialog.button.yes"),MessageBundle.get("GrxOpenHRPView.dialog.button.no"),MessageBundle.get("GrxOpenHRPView.dialog.button.cancel")}, 2); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
                 int ans = dialog.open();
                 if (ans == 0) {
                     before = new Date();
@@ -978,13 +980,13 @@ public class GrxOpenHRPView extends GrxBaseView {
 	
 	private boolean extendTime() {
         
-		boolean state = MessageDialog.openQuestion(getParent().getShell(), "Time is up", "Finish Simulation ?");
+		boolean state = MessageDialog.openQuestion(getParent().getShell(), MessageBundle.get("GrxOpenHRPView.dialog.title.timeUp"), MessageBundle.get("GrxOpenHRPView.dialog.message.TimeUp")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (state == true)
 			return false;
 		
 		String str = null;
 		while (true) {
-            InputDialog dialog = new InputDialog(getParent().getShell(),"Extend Time","Input time value[s] to extend.","5.0",null);
+            InputDialog dialog = new InputDialog(getParent().getShell(),MessageBundle.get("GrxOpenHRPView.dialog.title.ExtendTime"),MessageBundle.get("GrxOpenHRPView.dialog.message.extendTime"),"5.0",null); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             int result = dialog.open();
 			str = dialog.getValue();
 			if (result == InputDialog.CANCEL)

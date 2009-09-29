@@ -39,7 +39,7 @@ import com.generalrobotix.ui.item.GrxGraphItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.MessageBundle;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class GraphPanel extends Composite {
     //--------------------------------------------------------------------
     private static final int INITIAL_GRAPH_HEIGHT = 200;
@@ -54,7 +54,7 @@ public class GraphPanel extends Composite {
     private List<GrxModelItem> currentModels_ = null;
 
     private static final Color normalColor_ = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
-    private static final Color focusedColor_ = Activator.getDefault().getColor( "focusedColor" );
+    private static final Color focusedColor_ = Activator.getDefault().getColor( "focusedColor" ); //$NON-NLS-1$
 
     private Composite graphElementBase_;
     private Composite comp_;
@@ -126,7 +126,7 @@ public class GraphPanel extends Composite {
         graphElement_[0].setBorderColor(focusedColor_);
 
         Label lb = new Label( graphControlPanel, SWT.NONE);
-		lb.setText("Height:");
+		lb.setText(MessageBundle.get("GraphPanel.label.height")); //$NON-NLS-1$
         heightSlider_ = new Scale(graphControlPanel, SWT.HORIZONTAL);
         heightSlider_.setMaximum(MAX_GRAPH_HEIGHT);
         heightSlider_.setMinimum(MIN_GRAPH_HEIGHT);
@@ -141,7 +141,7 @@ public class GraphPanel extends Composite {
 		} );
 
         hRangeButton_ = new Button(graphControlPanel,  SWT.PUSH);
-        hRangeButton_.setText(MessageBundle.get("graph.hrange"));
+        hRangeButton_.setText(MessageBundle.get("GraphPanel.button.hrange")); //$NON-NLS-1$
         hRangeDialog_ = new HRangeDialog(graphControlPanel.getShell());
         hRangeButton_.addSelectionListener(new SelectionAdapter(){
         	public void widgetSelected(SelectionEvent e) {
@@ -170,7 +170,7 @@ public class GraphPanel extends Composite {
                         }
                         syncExec( new Runnable(){
 							public void run() {
-								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos});
+								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos}); //$NON-NLS-1$
 							}
                         });
                         for (int i = 0; i < numGraph_; i ++) {
@@ -182,7 +182,7 @@ public class GraphPanel extends Composite {
         });
 
         vRangeButton_ = new Button(graphControlPanel,  SWT.PUSH);
-        vRangeButton_.setText(MessageBundle.get("graph.vrange"));
+        vRangeButton_.setText(MessageBundle.get("GraphPanel.button.vrange")); //$NON-NLS-1$
         vRangeDialog_ = new VRangeDialog(graphControlPanel.getShell());
         vRangeButton_.addSelectionListener(new SelectionAdapter(){
         	public void widgetSelected(SelectionEvent e) {
@@ -199,7 +199,7 @@ public class GraphPanel extends Composite {
                         	return;
                         syncExec( new Runnable(){
 							public void run() {
-								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent});
+								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent}); //$NON-NLS-1$
 							}
                         });
                         currentGraph_.redraw();
@@ -209,7 +209,7 @@ public class GraphPanel extends Composite {
         );
 
         seriesButton_ = new Button(graphControlPanel,  SWT.TOGGLE);
-        seriesButton_.setText(MessageBundle.get("graph.series"));
+        seriesButton_.setText(MessageBundle.get("GraphPanel.button.series")); //$NON-NLS-1$
         
         seriesDialog_ = new SeriesDialog(currentGraph_, graphControlPanel.getShell());
         seriesButton_.addSelectionListener(new SelectionAdapter(){
@@ -242,29 +242,29 @@ public class GraphPanel extends Composite {
                         	if (key.startsWith(graphName))
                         		graphItem.remove(key);
                         }
-                        String dataItems = "";
+                        String dataItems = ""; //$NON-NLS-1$
                         DataItemInfo[] list = tg.getDataItemInfoList();
                         for (int i = 0; i<list.length;i++) {
                         	final DataItem di = list[i].dataItem;
                         	final String header = tg._getDataItemNodeName(di);
                         	if (i > 0)
-                        		dataItems += ",";
-                        	dataItems += graphName+"_"+di.object+"_"+di.node+"_"+di.attribute;
+                        		dataItems += ","; //$NON-NLS-1$
+                        	dataItems += graphName+"_"+di.object+"_"+di.node+"_"+di.attribute; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         	if (di.index >= 0)
-                        		dataItems += "_"+di.index;
+                        		dataItems += "_"+di.index; //$NON-NLS-1$
                         	syncExec( new Runnable(){
 								public void run() {
-									graphItem.setProperty(header+".object",di.object);
-									graphItem.setProperty(header+".node",di.node);
-									graphItem.setProperty(header+".attr",di.attribute);
-									graphItem.setProperty(header+".index", String.valueOf(di.index));
+									graphItem.setProperty(header+".object",di.object); //$NON-NLS-1$
+									graphItem.setProperty(header+".node",di.node); //$NON-NLS-1$
+									graphItem.setProperty(header+".attr",di.attribute); //$NON-NLS-1$
+									graphItem.setProperty(header+".index", String.valueOf(di.index)); //$NON-NLS-1$
 								}
                         	});
                         }
                         final String value = dataItems;
                         syncExec( new Runnable(){
 							public void run() {
-								graphItem.setProperty(graphName+".dataItems",value);
+								graphItem.setProperty(graphName+".dataItems",value); //$NON-NLS-1$
 							}
                         });
                         updateButtons();

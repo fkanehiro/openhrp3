@@ -5,6 +5,7 @@ Bundle-SymbolicName: com.generalrobotix.ui.grxui;singleton:=true
 Bundle-Version: 0.9.8
 Bundle-Activator: com.generalrobotix.ui.grxui.Activator
 Bundle-Vendor: GENERALROBOTIX
+Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,

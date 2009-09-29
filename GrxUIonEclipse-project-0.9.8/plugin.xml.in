@@ -26,71 +26,71 @@
             class="com.generalrobotix.ui.view.GrxItemViewPart"
             id="com.generalrobotix.ui.view.GrxItemViewPart"
             category="com.generalrobotix.ui.view"
-            name="Item View">
+            name="%Itemview.name">
       </view>
-      @GRX_PATH_PLANNING_VIEW_PART@
-      <view
+     @GRX_PATH_PLANNING_VIEW_PART@
+     <view
             class="com.generalrobotix.ui.view.GrxRangeSensorViewPart"
             id="com.generalrobotix.ui.view.GrxRangeSensorViewPart"
             category="com.generalrobotix.ui.view"
-            name="Range Sensor View">
+            name="%RangeSensorView.name">
       </view>
       <view
             class="com.generalrobotix.ui.view.GrxJythonPromptViewPart"
             id="com.generalrobotix.ui.view.GrxJythonPromptViewPart"
             category="com.generalrobotix.ui.view"
-            name="JythonPrompt View"/>
+            name="%JythonPromptView.name"/>
       <view
             class="com.generalrobotix.ui.view.GrxPropertyViewPart"
             id="com.generalrobotix.ui.view.GrxPropertyViewPart"
             category="com.generalrobotix.ui.view"
-            name="Property View"/>
+            name="%PropertyView.name"/>
       <view
             class="com.generalrobotix.ui.view.GrxORBMonitorViewPart"
             id="com.generalrobotix.ui.view.GrxORBMonitorViewPart"
             category="com.generalrobotix.ui.view"
-            name="NameService Monitor"/>
+            name="%NameServiceMonitor.name"/>
       <view
             class="com.generalrobotix.ui.view.Grx3DViewPart"
             id="com.generalrobotix.ui.view.Grx3DViewPart"
             category="com.generalrobotix.ui.view"
-            name="3DView"/>
+            name="%3DView.name"/>
       <view
             class="com.generalrobotix.ui.view.GrxLoggerViewPart"
             id="com.generalrobotix.ui.view.GrxLoggerViewPart"
             category="com.generalrobotix.ui.view"
-            name="Logger View"/>
+            name="%LoggerView.name"/>
       <view
             class="com.generalrobotix.ui.view.GrxGraphViewPart"
             id="com.generalrobotix.ui.view.GrxGraphViewPart"
             category="com.generalrobotix.ui.view"
-            name="Graph"/>
+            name="%Graph.name"/>
       <view
             class="com.generalrobotix.ui.view.GrxProcessManagerViewPart"
             id="com.generalrobotix.ui.view.GrxProcessManagerViewPart"
             category="com.generalrobotix.ui.view"
-            name="Process Manager"/>
+            name="%ProcessManager.name"/>
       <view
             class="com.generalrobotix.ui.view.GrxOpenHRPViewPart"
             id="com.generalrobotix.ui.view.GrxOpenHRPViewPart"
             category="com.generalrobotix.ui.view"
-            name="OpenHRP"/>
+            name="%OpenHRP.name"/>
       <view
             class="com.generalrobotix.ui.view.GrxRobotStatViewPart"
             id="com.generalrobotix.ui.view.GrxRobotStatViewPart"
             category="com.generalrobotix.ui.view"
-            name="Robot State"/>
+            name="%RobotState.name"/>
       <view
             class="com.generalrobotix.ui.view.GrxTextEditorViewPart"
             id="com.generalrobotix.ui.view.GrxTextEditorViewPart"
             category="com.generalrobotix.ui.view"
-            name="Text Editor">
+            name="%TextEditor.name">
       </view>
       <view
             class="com.generalrobotix.ui.view.GrxServerManagerViewPart"
             id="com.generalrobotix.ui.view.GrxServerManagerViewPart"
             category="com.generalrobotix.ui.view"
-            name="Server Manager"/>
+            name="%ServeManager.name"/>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">
@@ -109,7 +109,7 @@
                class="com.generalrobotix.ui.actions.StartSimulate"
                icon="resources/images/sim_start.png"
                id="com.generalrobotix.ui.actions.StartSimulate"
-               label="&amp;Start Simulation"
+               label="%action.StartSimulation.label"
                menubarPath="GrxUIMenu/GrxUIGroup"
                toolbarPath="GrxUIGroup"
                tooltip="Start Simulation">
@@ -117,32 +117,32 @@
          <action
                class="com.generalrobotix.ui.actions.SaveProjectAs"
                id="com.generalrobotix.ui.actions.SaveProjectAs"
-               label="Save Project As"
+               label="%action.SaveProjectAs.label"
                menubarPath="GrxUIMenu/GrxUIGroup">
          </action>
          <action
                class="com.generalrobotix.ui.actions.SaveProject"
                id="com.generalrobotix.ui.actions.SaveProject"
-               label="Save Project"
+               label="%action.SaveProject.label"
                menubarPath="GrxUIMenu/GrxUIGroup">
          </action>
          <action
                class="com.generalrobotix.ui.actions.RestoreProject"
                id="com.generalrobotix.ui.actions.RestoreProject"
-               label="Restore Project"
+               label="%action.RestoreProject.label"
                menubarPath="GrxUIMenu/GrxUIGroup"
                style="push">
          </action>
          <action
                class="com.generalrobotix.ui.actions.LoadProject"
                id="com.generalrobotix.ui.actions.LoadProject"
-               label="Load Project"
+               label="%action.LoadProject.label"
                menubarPath="GrxUIMenu/GrxUIGroup">
          </action>
          <action
                class="com.generalrobotix.ui.actions.NewProject"
                id="com.generalrobotix.ui.actions.NewProject"
-               label="New Project"
+               label="%action.NewProject.label"
                menubarPath="GrxUIMenu/GrxUIGroup">
          </action>
       </actionSet>

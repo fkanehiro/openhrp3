@@ -67,7 +67,7 @@ public class HRangeDialog extends Dialog {
     
     protected void configureShell(Shell newShell) {   
         super.configureShell(newShell);
-        newShell.setText(MessageBundle.get("dialog.graph.hrange.title"));
+        newShell.setText(MessageBundle.get("dialog.graph.hrange.title")); //$NON-NLS-1$
     }
         
     protected Control createDialogArea(Composite parent) {
@@ -77,15 +77,15 @@ public class HRangeDialog extends Dialog {
     	comp0.setLayout(new RowLayout());
     	
     	Label label1 = new Label(comp0, SWT.NONE);
-    	label1.setText(MessageBundle.get("dialog.graph.hrange.hrange"));
+    	label1.setText(MessageBundle.get("dialog.graph.hrange.hrange")); //$NON-NLS-1$
     	
     	hRangeField_ = new Text(comp0, SWT.BORDER);
-    	hRangeField_.setText(String.format("%10.3f", hRange_));
+    	hRangeField_.setText(String.format("%10.3f", hRange_)); //$NON-NLS-1$
     	first_ = true;
     	hRangeField_.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e) {
 				if(first_){
-					hRangeField_.setText("");
+					hRangeField_.setText(""); //$NON-NLS-1$
 					first_ = false;
 				}
 			}
@@ -95,13 +95,13 @@ public class HRangeDialog extends Dialog {
     	hRangeField_.setFocus();
     	
     	Label label2 = new Label(comp0, SWT.NONE);
-    	label2.setText(MessageBundle.get("dialog.graph.hrange.unit"));
+    	label2.setText(MessageBundle.get("dialog.graph.hrange.unit")); //$NON-NLS-1$
     	
     	Composite comp1 = new Composite(composite, SWT.NONE);
     	comp1.setLayout(new RowLayout());
     	
     	Label label3 = new Label(comp1, SWT.NONE);
-    	label3.setText(MessageBundle.get("dialog.graph.hrange.markerpos"));
+    	label3.setText(MessageBundle.get("dialog.graph.hrange.markerpos")); //$NON-NLS-1$
     	
     	markerSlider_ = new Scale(comp1, SWT.HORIZONTAL);
     	markerSlider_.setMinimum(0);
@@ -121,8 +121,8 @@ public class HRangeDialog extends Dialog {
              } catch (NumberFormatException ex) {
                  // エラー表示
             	 MessageDialog.openError(shell_, 
-            			 MessageBundle.get("dialog.graph.hrange.invalidinput.title"),
-                         MessageBundle.get("dialog.graph.hrange.invalidinput.message"));
+            			 MessageBundle.get("dialog.graph.hrange.invalidinput.title"), //$NON-NLS-1$
+                         MessageBundle.get("dialog.graph.hrange.invalidinput.message")); //$NON-NLS-1$
                 
                  hRangeField_.setFocus();    // フォーカス設定
                  return;
@@ -131,9 +131,9 @@ public class HRangeDialog extends Dialog {
              if (range < minHRange_ || range > maxHRange_) {
                  // エラー表示
             	 MessageDialog.openError(shell_, 
-                     MessageBundle.get("dialog.graph.hrange.invalidrange.title"),
-                     MessageBundle.get("dialog.graph.hrange.invalidrange.message")
-                         + "\n(" + minHRange_ + "  -  " + maxHRange_ + ")"    );
+                     MessageBundle.get("dialog.graph.hrange.invalidrange.title"), //$NON-NLS-1$
+                     MessageBundle.get("dialog.graph.hrange.invalidrange.message") //$NON-NLS-1$
+                         + "\n(" + minHRange_ + "  -  " + maxHRange_ + ")"    ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                  hRangeField_.setFocus();    // フォーカス設定
                  return;
              }
