@@ -43,13 +43,14 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 /**
  * @brief
  */
 public class GrxLoggerView extends GrxBaseView {
-    public static final String TITLE = "Logger";
+    public static final String TITLE = "Logger"; //$NON-NLS-1$
 
 	private GrxWorldStateItem currentItem_;
 
@@ -76,25 +77,25 @@ public class GrxLoggerView extends GrxBaseView {
 	private Text tFldTime_;
 
 	private String[] btnToolTips = new String[] {
-			"fast-rwd x-2...","slow-rwd x -1/8 (1/2...)",
-			"one step rewind", "pause", "play", "one step play", 
-			"slow-fwd x 1/8 (1/2...)", "fast-fwd x 2..."
+			MessageBundle.get("GrxLoggerView.text.fastRwd"),MessageBundle.get("GrxLoggerView.text.slowRwd"), //$NON-NLS-1$ //$NON-NLS-2$
+			MessageBundle.get("GrxLoggerView.text.oneRwd"), MessageBundle.get("GrxLoggerView.text.pause"), MessageBundle.get("GrxLoggerView.text.play"), MessageBundle.get("GrxLoggerView.text.onePlay"),  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			MessageBundle.get("GrxLoggerView.text.slowFwd"), MessageBundle.get("GrxLoggerView.text.fastFwd") //$NON-NLS-1$ //$NON-NLS-2$
 		};
-	private final static String iconFRwd_ = "fastrwd.png";
-	private final static String iconSRwd_ = "slowrwd.png";
-	private final static String iconStop_ = "pause.png";
-	private final static String iconPlay_ = "playback.png";
-	private final static String iconSFwd_ = "slowfwd.png";
-	private final static String iconFFwd_ = "fastfwd.png";
-	private final static String iconFrameF_ = "frame+.png";
-	private final static String iconFrameR_ = "frame-.png";
+	private final static String iconFRwd_ = "fastrwd.png"; //$NON-NLS-1$
+	private final static String iconSRwd_ = "slowrwd.png"; //$NON-NLS-1$
+	private final static String iconStop_ = "pause.png"; //$NON-NLS-1$
+	private final static String iconPlay_ = "playback.png"; //$NON-NLS-1$
+	private final static String iconSFwd_ = "slowfwd.png"; //$NON-NLS-1$
+	private final static String iconFFwd_ = "fastfwd.png"; //$NON-NLS-1$
+	private final static String iconFrameF_ = "frame+.png"; //$NON-NLS-1$
+	private final static String iconFrameR_ = "frame-.png"; //$NON-NLS-1$
 	private final static String[] icons_ = { iconFRwd_, iconSRwd_, iconFrameR_, iconStop_, iconPlay_, iconFrameF_, iconSFwd_, iconFFwd_ };
 
 	private Label  lblPlayRate_;
 	
-	private static DecimalFormat FORMAT_FAST  =  new DecimalFormat("Play x ##;Play x-##");
-	private static DecimalFormat FORMAT_SLOW  =  new DecimalFormat("Play x 1/##;Play x-1/##");
-	private static String timeFormat   = "%8.3f"; //"###0.000"
+	private static DecimalFormat FORMAT_FAST  =  new DecimalFormat("Play x ##;Play x-##"); //$NON-NLS-1$
+	private static DecimalFormat FORMAT_SLOW  =  new DecimalFormat("Play x 1/##;Play x-1/##"); //$NON-NLS-1$
+	private static String timeFormat   = "%8.3f"; //"###0.000" //$NON-NLS-1$
 
 	//private static final Font MONO_PLAIN_12 = new Font("Monospaced", Font.PLAIN, 12);
 
@@ -113,7 +114,7 @@ public class GrxLoggerView extends GrxBaseView {
 		
 		// playback rate label
 		lblPlayRate_ = new Label( composite_, SWT.NONE);
-		lblPlayRate_.setText("Pause");
+		lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.pause")); //$NON-NLS-1$
 		GridData lblGridData = new GridData();
         lblGridData.widthHint = 100;
         lblPlayRate_.setLayoutData(lblGridData);
@@ -225,7 +226,7 @@ public class GrxLoggerView extends GrxBaseView {
 
 		// text field to display current time
 		tFldTime_ = new Text(composite_, SWT.SINGLE|SWT.BORDER);
-        tFldTime_.setText("NO DATA");
+        tFldTime_.setText(MessageBundle.get("GrxLoggerView.text.noData")); //$NON-NLS-1$
         GridData textGridData = new GridData();
         textGridData.widthHint = 100;
         tFldTime_.setLayoutData(textGridData);
@@ -270,14 +271,14 @@ public class GrxLoggerView extends GrxBaseView {
 		
 		// frame rate
 		lblFrameRate_ = new Label(composite_, SWT.NONE);
-		lblFrameRate_.setText("FPS:"+10);
+		lblFrameRate_.setText(MessageBundle.get("GrxLoggerView.label.FPS")+10); //$NON-NLS-1$
 		
 		// フレームレート変更スライダ
 		sliderFrameRate_ = new Scale( composite_, SWT.HORIZONTAL );
 		sliderFrameRate_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	frameRate_ = sliderFrameRate_.getSelection();
-				lblFrameRate_.setText( "FPS:"+String.valueOf(frameRate_) );
+				lblFrameRate_.setText( MessageBundle.get("GrxLoggerView.label.FPS")+String.valueOf(frameRate_) ); //$NON-NLS-1$
             }
 		} );
 		//sliderFrameRate_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -311,7 +312,7 @@ public class GrxLoggerView extends GrxBaseView {
 		if(currentItem_ == null) return;
 		if (!isPlaying_) {
 			if (_isAtTheEndAfterPlayback()) currentItem_.setPosition(0);
-			final double stepTime = currentItem_.getDbl("logTimeStep", -1.0)*1000;
+			final double stepTime = currentItem_.getDbl("logTimeStep", -1.0)*1000; //$NON-NLS-1$
 			Runnable playRun_ = new Runnable() {
 				public void run() {
 					if(!isPlaying_) return;
@@ -354,7 +355,7 @@ public class GrxLoggerView extends GrxBaseView {
 	 */
 	public void pause() {
 		isPlaying_ = false;
-		lblPlayRate_.setText("Pause");
+		lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.pause")); //$NON-NLS-1$
 	}
 	
 	/**
@@ -371,8 +372,8 @@ public class GrxLoggerView extends GrxBaseView {
 	public void restoreProperties() {
 		super.restoreProperties();
 		
-		timeFormat = getStr("timeFormat", "%8.3f");
-		GrxDebugUtil.println("LoggerView: timeFormat = \""+timeFormat+"\"\n");
+		timeFormat = getStr("timeFormat", "%8.3f"); //$NON-NLS-1$ //$NON-NLS-2$
+		GrxDebugUtil.println("LoggerView: timeFormat = \""+timeFormat+"\"\n"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	private void _setTimeSeriesItem(GrxWorldStateItem item){
@@ -428,7 +429,7 @@ public class GrxLoggerView extends GrxBaseView {
 			tFldTime_.setText(String.format(timeFormat, t));
 			setEnabled(true);
 		} else if (item.getLogSize() == 0){
-			tFldTime_.setText("NO DATA");
+			tFldTime_.setText(MessageBundle.get("GrxLoggerView.text.noData")); //$NON-NLS-1$
 			setEnabled(false);
 		}
 	}
@@ -451,7 +452,7 @@ public class GrxLoggerView extends GrxBaseView {
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
 		if(currentItem_!=plugin) return;
-		if((String)arg[0]=="PositionChange"){
+		if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
 			int pos = ((Integer)arg[1]).intValue();
 			int logSize = currentItem_.getLogSize();
 			if ( pos < 0 || logSize < pos){
@@ -461,19 +462,19 @@ public class GrxLoggerView extends GrxBaseView {
 			sliderTime_.setMaximum(logSize-1);
 			sliderTime_.setSelection(pos);
 			_updateTimeField(currentItem_);
-		}else if((String)arg[0]=="StartSimulation"){
+		}else if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
 			inSimulation_ = true; 
-			lblPlayRate_.setText("Live");
+			lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.live")); //$NON-NLS-1$
 			if((Boolean)arg[1])
 				disableControl();
 			else
 				play();
-		}else if((String)arg[0]=="StopSimulation"){
+		}else if((String)arg[0]=="StopSimulation"){ //$NON-NLS-1$
 			inSimulation_ = false;
-			lblPlayRate_.setText("Pause");
+			lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.pause")); //$NON-NLS-1$
 			enableControl();
 			pause();
-		}else if((String)arg[0]=="ClearLog"){
+		}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
 			_setTimeSeriesItem(currentItem_);
 		}
 	}

@@ -53,7 +53,7 @@ import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.graph.SEDoubleTextWithSpinForSWT;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class ControllerPanel extends Composite{
     private GrxPluginManager manager_;
     private TableViewer viewer_;
@@ -66,22 +66,22 @@ public class ControllerPanel extends Composite{
     
     private ControllerEditorPanel editorPanel_;
     
-    private static final String ATTRIBUTE_CONTROLLER = "controller";
-    private static final String ATTRIBUTE_CONTROL_TIME = "controlTime";
-    private static final String ATTRIBUTE_SETUP_DIRECTORY = "setupDirectory";
-    private static final String ATTRIBUTE_SETUP_COMMAND = "setupCommand";
+    private static final String ATTRIBUTE_CONTROLLER = "controller"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_CONTROL_TIME = "controlTime"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_SETUP_DIRECTORY = "setupDirectory"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_SETUP_COMMAND = "setupCommand"; //$NON-NLS-1$
     
     private static final int BUTTONS_HEIGHT = 26;
     
     private final String[] clmName_ ={
-        MessageBundle.get("panel.controller.table.robot"),
-        MessageBundle.get("panel.controller.table.controller"),
-        MessageBundle.get("panel.controller.table.controlTime"),
-        MessageBundle.get("panel.controller.table.setupDirectory"),
-        MessageBundle.get("panel.controller.table.setupCommand")
+        MessageBundle.get("panel.controller.table.robot"), //$NON-NLS-1$
+        MessageBundle.get("panel.controller.table.controller"), //$NON-NLS-1$
+        MessageBundle.get("panel.controller.table.controlTime"), //$NON-NLS-1$
+        MessageBundle.get("panel.controller.table.setupDirectory"), //$NON-NLS-1$
+        MessageBundle.get("panel.controller.table.setupCommand") //$NON-NLS-1$
     };
     private final String[] attrName_ = {
-        "dummy",
+        "dummy", //$NON-NLS-1$
         ATTRIBUTE_CONTROLLER,
         ATTRIBUTE_CONTROL_TIME,
         ATTRIBUTE_SETUP_DIRECTORY,
@@ -128,7 +128,7 @@ public class ControllerPanel extends Composite{
         pnlBttn.setLayout(new FillLayout(SWT.HORIZONTAL));
         
         btnRemove_ = new Button(pnlBttn,SWT.PUSH);
-        btnRemove_.setText(MessageBundle.get("panel.detach"));
+        btnRemove_.setText(MessageBundle.get("panel.detach")); //$NON-NLS-1$
         btnRemove_.addSelectionListener(new SelectionListener(){
 
             public void widgetDefaultSelected(SelectionEvent e) {
@@ -137,14 +137,14 @@ public class ControllerPanel extends Composite{
             public void widgetSelected(SelectionEvent e) {
                 int row = viewer_.getTable().getSelectionIndex();
                 if (row >= 0 && row < vecRobot_.size()) {
-                    if (_checkDialog(MessageBundle.get("controller.remove")))
+                    if (_checkDialog(MessageBundle.get("controller.remove"))) //$NON-NLS-1$
                     {
                         GrxModelItem node = vecRobot_.get(row);
                         try {
-                            node.setProperty(ATTRIBUTE_CONTROLLER, "");
-                            node.setProperty(ATTRIBUTE_CONTROL_TIME, "");
-                            node.setProperty(ATTRIBUTE_SETUP_DIRECTORY, "");
-                            node.setProperty(ATTRIBUTE_SETUP_COMMAND, "");
+                            node.setProperty(ATTRIBUTE_CONTROLLER, ""); //$NON-NLS-1$
+                            node.setProperty(ATTRIBUTE_CONTROL_TIME, ""); //$NON-NLS-1$
+                            node.setProperty(ATTRIBUTE_SETUP_DIRECTORY, ""); //$NON-NLS-1$
+                            node.setProperty(ATTRIBUTE_SETUP_COMMAND, ""); //$NON-NLS-1$
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
@@ -156,7 +156,7 @@ public class ControllerPanel extends Composite{
         });
         
         btnEdit_ = new Button(pnlBttn,SWT.PUSH);
-        btnEdit_.setText(MessageBundle.get("panel.edit"));
+        btnEdit_.setText(MessageBundle.get("panel.edit")); //$NON-NLS-1$
         btnEdit_.addSelectionListener(new SelectionListener(){
 
             public void widgetDefaultSelected(SelectionEvent e) {
@@ -188,7 +188,7 @@ public class ControllerPanel extends Composite{
     
     
     private boolean _checkDialog(String msg) {
-        boolean overwrite = MessageDialog.openQuestion(getShell(), MessageBundle.get("dialog.overwrite"), msg);
+        boolean overwrite = MessageDialog.openQuestion(getShell(), MessageBundle.get("dialog.overwrite"), msg); //$NON-NLS-1$
         return overwrite;
     }
 
@@ -258,7 +258,7 @@ public class ControllerPanel extends Composite{
             setLayout(new GridLayout(4,true));
 
             Label lbl = new Label(this,SWT.SHADOW_NONE);
-            lbl.setText(MessageBundle.get("panel.controller.controller"));
+            lbl.setText(MessageBundle.get("panel.controller.controller")); //$NON-NLS-1$
             lbl.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             
             boxController_ = new Combo(this,SWT.DROP_DOWN);
@@ -271,24 +271,24 @@ public class ControllerPanel extends Composite{
             
  			// Control Time
             lbl = new Label(this,SWT.SHADOW_NONE);
-            lbl.setText(MessageBundle.get("panel.controller.controlTime"));
+            lbl.setText(MessageBundle.get("panel.controller.controlTime")); //$NON-NLS-1$
             lbl.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             
             spinControlTime_ = new SEDoubleTextWithSpinForSWT(this,SWT.NONE,0,10,0.001);
             
             // Setup Command Working Directory
             lbl = new Label(this,SWT.SHADOW_NONE);
-            lbl.setText(MessageBundle.get("panel.controller.setupDirectory"));
+            lbl.setText(MessageBundle.get("panel.controller.setupDirectory")); //$NON-NLS-1$
             lbl.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             
             tfSetupDirectory_ = new Text(this,SWT.DROP_DOWN);
-            tfSetupDirectory_.setText(GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)"));
+            tfSetupDirectory_.setText(GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)")); //$NON-NLS-1$
             gridData = new GridData(GridData.FILL_HORIZONTAL);
             gridData.horizontalSpan = 2;
             tfSetupDirectory_.setLayoutData(gridData);
             
             Button btnDirRef = new Button(this, SWT.PUSH);
-            btnDirRef.setText("...");
+            btnDirRef.setText("..."); //$NON-NLS-1$
             btnDirRef.addSelectionListener(new SelectionListener(){
 				public void widgetDefaultSelected(SelectionEvent e) {
 				}
@@ -304,14 +304,14 @@ public class ControllerPanel extends Composite{
 
  			// Setup Command
             lbl = new Label(this,SWT.SHADOW_NONE);
-            lbl.setText(MessageBundle.get("panel.controller.setupCommand"));
+            lbl.setText(MessageBundle.get("panel.controller.setupCommand")); //$NON-NLS-1$
             lbl.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             
             tfSetupCommand_ = new Text(this, SWT.DROP_DOWN);
             tfSetupCommand_.setLayoutData(gridData);
             
             Button btnCmdRef = new Button(this, SWT.PUSH);
-            btnCmdRef.setText("...");
+            btnCmdRef.setText("..."); //$NON-NLS-1$
             btnCmdRef.addSelectionListener(new SelectionListener(){
 				public void widgetDefaultSelected(SelectionEvent e) {
 				}
@@ -327,7 +327,7 @@ public class ControllerPanel extends Composite{
             });
 
             btnOk_ = new Button(this,SWT.PUSH);
-            btnOk_.setText(MessageBundle.get("dialog.okButton"));
+            btnOk_.setText(MessageBundle.get("dialog.okButton")); //$NON-NLS-1$
             btnOk_.addSelectionListener(new SelectionListener(){
 
                 public void widgetDefaultSelected(SelectionEvent e) {
@@ -362,7 +362,7 @@ public class ControllerPanel extends Composite{
                             tfSetupCommand_.getText()
                         );
                     } catch (Exception ex) {
-                        MessageDialog.openWarning(getShell(),"", MessageBundle.get("message.attributeerror"));
+                        MessageDialog.openWarning(getShell(),"", MessageBundle.get("message.attributeerror")); //$NON-NLS-1$ //$NON-NLS-2$
                         return false;
                         //ex.printStackTrace();
                     }
@@ -375,7 +375,7 @@ public class ControllerPanel extends Composite{
             btnOk_.setLayoutData(gridData);
             
             btnCancel_ = new Button(this,SWT.PUSH);
-            btnCancel_.setText(MessageBundle.get("dialog.cancelButton"));
+            btnCancel_.setText(MessageBundle.get("dialog.cancelButton")); //$NON-NLS-1$
             btnCancel_.addSelectionListener(new SelectionListener() {
                     public void widgetDefaultSelected(SelectionEvent e) {
                     }
@@ -415,10 +415,10 @@ public class ControllerPanel extends Composite{
                         break;
                     }
                 }
-            	spinControlTime_.setValue(node.getProperty(ATTRIBUTE_CONTROL_TIME, "0.001"));
-            	tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)")));
+            	spinControlTime_.setValue(node.getProperty(ATTRIBUTE_CONTROL_TIME, "0.001")); //$NON-NLS-1$
+            	tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)"))); //$NON-NLS-1$
                 
-                attr = node.getProperty(ATTRIBUTE_SETUP_COMMAND, "");
+                attr = node.getProperty(ATTRIBUTE_SETUP_COMMAND, ""); //$NON-NLS-1$
                 tfSetupCommand_.setText(attr);
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -467,10 +467,10 @@ public class ControllerPanel extends Composite{
                 str = node.getProperty(attrName_[columnIndex]);
             }catch(Exception ex){
                 ex.printStackTrace();
-                return "";
+                return ""; //$NON-NLS-1$
             }
             if (str == null)
-              str = "";
+              str = ""; //$NON-NLS-1$
             
             return str;
         }

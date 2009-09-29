@@ -70,14 +70,15 @@ import com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.sun.j3d.utils.geometry.Box;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 /**
  * @brief view for PathPlanner
  */
 public class GrxPathPlanningView extends GrxBaseView {
-    public static final String TITLE = "Path Planning";
+    public static final String TITLE = "Path Planning"; //$NON-NLS-1$
 
 	private Grx3DView view_ = null;
 	boolean calcSucceed = false;
@@ -98,7 +99,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 	private Button optimizeButton;
 
 	// 位置、角度の表示用
-	private static final String FORMAT = "%.3f";
+	private static final String FORMAT = "%.3f"; //$NON-NLS-1$
 	private static final int TEXT_WIDTH = 64;
 	// Start Position
 	private Button btnSetStartPoint; 
@@ -168,7 +169,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 								update();
 							}
 						});
-						System.out.println("[PPView] update() is called.");
+						System.out.println("[PPView] update() is called."); //$NON-NLS-1$
 					}
 					if( isCalculating_ ) {
 						imgCnt++;
@@ -224,26 +225,26 @@ public class GrxPathPlanningView extends GrxBaseView {
 		comp = getComp( 5, SWT.NONE );
 
 		l = new Label(comp, SWT.NONE);
-		l.setText("Model:");
+		l.setText(MessageBundle.get("GrxPathPlanningView.label.model")); //$NON-NLS-1$
 		modelSelect = new Combo( comp, SWT.NONE|SWT.READ_ONLY );
 		modelSelect.setLayoutData( new GridData(GridData.FILL_HORIZONTAL) );
 		modelSelect.addSelectionListener(new SelectionListener(){
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 			public void widgetSelected(SelectionEvent e) {
-				ppaItem_.setProperty("model", modelSelect.getItem(modelSelect.getSelectionIndex()));
+				ppaItem_.setProperty("model", modelSelect.getItem(modelSelect.getSelectionIndex())); //$NON-NLS-1$
 			}
 		});
 
 		l = new Label(comp, SWT.NONE);
-		l.setText("Mobility:");
+		l.setText(MessageBundle.get("GrxPathPlanningView.label.mobility")); //$NON-NLS-1$
 		mobilitySelect = new Combo( comp, SWT.NONE|SWT.READ_ONLY );
 		mobilitySelect.setLayoutData( new GridData(GridData.FILL_HORIZONTAL) );
 		mobilitySelect.addSelectionListener(new SelectionListener(){
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 			public void widgetSelected(SelectionEvent e) {
-				ppaItem_.setProperty("mobility", mobilitySelect.getItem(mobilitySelect.getSelectionIndex()));
+				ppaItem_.setProperty("mobility", mobilitySelect.getItem(mobilitySelect.getSelectionIndex())); //$NON-NLS-1$
 			}
 		});
 
@@ -252,7 +253,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 		comp = getComp( 8, SWT.NONE);
 
 		btnSetStartPoint = new Button( comp, SWT.NONE );
-		btnSetStartPoint.setText("START");
+		btnSetStartPoint.setText(MessageBundle.get("GrxPathPlanningView.button.start")); //$NON-NLS-1$
 		btnSetStartPoint.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	getStartPoint();
@@ -261,7 +262,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 
 
 		l = new Label( comp, SWT.NONE );
-		l.setText("X:");
+		l.setText("X:"); //$NON-NLS-1$
 		textStartX = new Text( comp, SWT.SINGLE | SWT.BORDER);
 		gd = new GridData();
 		gd.widthHint = TEXT_WIDTH;
@@ -272,13 +273,13 @@ public class GrxPathPlanningView extends GrxBaseView {
 			public void keyReleased(KeyEvent e) {
 				Double d = Double.parseDouble(textStartX.getText());
 				if (d != null){
-					ppaItem_.setDbl("startX", d);
+					ppaItem_.setDbl("startX", d); //$NON-NLS-1$
 				}
 			}
 		});
 
 		l = new Label( comp, SWT.NONE );
-		l.setText("Y:");
+		l.setText("Y:"); //$NON-NLS-1$
 		textStartY = new Text( comp, SWT.SINGLE | SWT.BORDER);
 		gd = new GridData();
 		gd.widthHint = TEXT_WIDTH;
@@ -289,14 +290,14 @@ public class GrxPathPlanningView extends GrxBaseView {
 			public void keyReleased(KeyEvent e) {
 				Double d = Double.parseDouble(textStartY.getText());
 				if (d != null){
-					ppaItem_.setDbl("startY", d);
+					ppaItem_.setDbl("startY", d); //$NON-NLS-1$
 				}
 			}
 		});
 
 
 		l = new Label( comp, SWT.NONE );
-		l.setText("Yaw:");
+		l.setText("Yaw:"); //$NON-NLS-1$
 		textStartTheta = new Text( comp, SWT.SINGLE | SWT.BORDER);
 		gd = new GridData();
 		gd.widthHint = TEXT_WIDTH;
@@ -307,14 +308,14 @@ public class GrxPathPlanningView extends GrxBaseView {
 			public void keyReleased(KeyEvent e) {
 				Double d = Double.parseDouble(textStartTheta.getText());
 				if (d != null){
-					ppaItem_.setDbl("startTheta", d);
+					ppaItem_.setDbl("startTheta", d); //$NON-NLS-1$
 				}
 			}
 		});
 
 
 		Button setStart = new Button( comp, SWT.NONE );
-		setStart.setText("SET");
+		setStart.setText(MessageBundle.get("GrxPathPlanningView.button.set")); //$NON-NLS-1$
 		setStart.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	setStartPoint();
@@ -323,7 +324,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 
 		
 		btnSetEndPoint = new Button( comp, SWT.NONE );
-		btnSetEndPoint.setText("END");
+		btnSetEndPoint.setText(MessageBundle.get("GrxPathPlanningView.button.end")); //$NON-NLS-1$
 		btnSetEndPoint.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	getEndPoint();
@@ -331,7 +332,7 @@ public class GrxPathPlanningView extends GrxBaseView {
         });
 
 		l = new Label( comp, SWT.NONE );
-		l.setText("X:");
+		l.setText("X:"); //$NON-NLS-1$
 		textEndX = new Text( comp, SWT.SINGLE | SWT.BORDER);
 		gd = new GridData();
 		gd.widthHint = TEXT_WIDTH;
@@ -342,7 +343,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 			public void keyReleased(KeyEvent e) {
 				Double d = Double.parseDouble(textEndX.getText());
 				if (d != null){
-					ppaItem_.setDbl("goalX", d);
+					ppaItem_.setDbl("goalX", d); //$NON-NLS-1$
 				}
 			}
 		});
@@ -350,7 +351,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 
 
 		l = new Label( comp, SWT.NONE );
-		l.setText("Y:");
+		l.setText("Y:"); //$NON-NLS-1$
 		textEndY = new Text( comp, SWT.SINGLE | SWT.BORDER);
 		gd = new GridData();
 		gd.widthHint = TEXT_WIDTH;
@@ -361,13 +362,13 @@ public class GrxPathPlanningView extends GrxBaseView {
 			public void keyReleased(KeyEvent e) {
 				Double d = Double.parseDouble(textEndY.getText());
 				if (d != null){
-					ppaItem_.setDbl("goalY", d);
+					ppaItem_.setDbl("goalY", d); //$NON-NLS-1$
 				}
 			}
 		});
 
 		l = new Label( comp, SWT.NONE );
-		l.setText("Yaw:");
+		l.setText("Yaw:"); //$NON-NLS-1$
 		textEndTheta = new Text( comp, SWT.SINGLE | SWT.BORDER);
 		gd = new GridData();
 		gd.widthHint = TEXT_WIDTH;
@@ -378,13 +379,13 @@ public class GrxPathPlanningView extends GrxBaseView {
 			public void keyReleased(KeyEvent e) {
 				Double d = Double.parseDouble(textEndTheta.getText());
 				if (d != null){
-					ppaItem_.setDbl("goalTheta", d);
+					ppaItem_.setDbl("goalTheta", d); //$NON-NLS-1$
 				}
 			}
 		});
 
 		Button setEnd = new Button( comp, SWT.NONE );
-		setEnd.setText("SET");
+		setEnd.setText(MessageBundle.get("GrxPathPlanningView.button.set")); //$NON-NLS-1$
 		setEnd.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	setEndPoint();
@@ -395,10 +396,10 @@ public class GrxPathPlanningView extends GrxBaseView {
 		Composite roboZComp = getComp( 4, SWT.NONE );
 
 		l = new Label(roboZComp, SWT.NONE);
-		l.setText("Collision detection tolerance:");
+		l.setText(MessageBundle.get("GrxPathPlanningView.label.collision")); //$NON-NLS-1$
 		
 		tolerance_ = new Text(roboZComp, SWT.SINGLE | SWT.BORDER);
-		tolerance_.setText("0");
+		tolerance_.setText("0"); //$NON-NLS-1$
 		gd = new GridData();
 		gd.widthHint = TEXT_WIDTH;
 		tolerance_.setLayoutData( gd );
@@ -408,21 +409,21 @@ public class GrxPathPlanningView extends GrxBaseView {
 			public void focusLost(FocusEvent e) {
 				Double d = Double.parseDouble(tolerance_.getText());
 				if (d != null){
-					ppaItem_.setDbl("tolerance", d);
+					ppaItem_.setDbl("tolerance", d); //$NON-NLS-1$
 				}
 			}
 		});
 		
 	    chkRebuildRoadmap_ = new Button(roboZComp,SWT.CHECK);
-	    chkRebuildRoadmap_.setText("Rebuild Roadmap");
+	    chkRebuildRoadmap_.setText(MessageBundle.get("GrxPathPlanningView.button.rebuild")); //$NON-NLS-1$
 		chkRebuildRoadmap_.addSelectionListener(new SelectionListener(){
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 			public void widgetSelected(SelectionEvent e) {
 				if (chkRebuildRoadmap_.getSelection()){
-					ppaItem_.setProperty("rebuildRoadmap", "true");
+					ppaItem_.setProperty("rebuildRoadmap", "true"); //$NON-NLS-1$ //$NON-NLS-2$
 				}else{
-					ppaItem_.setProperty("rebuildRoadmap", "false");
+					ppaItem_.setProperty("rebuildRoadmap", "false"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			}
 		});
@@ -434,19 +435,19 @@ public class GrxPathPlanningView extends GrxBaseView {
 		Composite algoComp = getComp( 3, SWT.NONE );
 
 		l = new Label(algoComp, SWT.NONE);
-		l.setText("Algorithm:");
+		l.setText(MessageBundle.get("GrxPathPlanningView.label.algorithm")); //$NON-NLS-1$
 		algoSelect = new Combo( algoComp, SWT.READ_ONLY );
 		algoSelect.setLayoutData( new GridData(GridData.FILL_HORIZONTAL) );
 		algoSelect.addSelectionListener(new SelectionListener(){
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 			public void widgetSelected(SelectionEvent e) {
-				ppaItem_.setProperty("algorithm", algoSelect.getItem(algoSelect.getSelectionIndex()));
+				ppaItem_.setProperty("algorithm", algoSelect.getItem(algoSelect.getSelectionIndex())); //$NON-NLS-1$
 			}
 		});
 
 		updatePropertyButton = new Button(algoComp, SWT.NONE);
-		updatePropertyButton.setText("Get Properties");
+		updatePropertyButton.setText(MessageBundle.get("GrxPathPlanningView.button.getProperties")); //$NON-NLS-1$
 		updatePropertyButton.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	propertyUpdate();
@@ -458,7 +459,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 		Composite calcComp = getComp( 5, SWT.NONE );
 
 		btnCalcStart = new Button( calcComp, SWT.NONE );
-		btnCalcStart.setText("CALC START");
+		btnCalcStart.setText(MessageBundle.get("GrxPathPlanningView.button.calcStart")); //$NON-NLS-1$
 		btnCalcStart.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	startCalc();
@@ -466,23 +467,23 @@ public class GrxPathPlanningView extends GrxBaseView {
         });
 
 		imgLabel = new Label(calcComp, SWT.BORDER);
-		imgLabel.setImage( Activator.getDefault().getImage("grxrobot1.png" ) );
+		imgLabel.setImage( Activator.getDefault().getImage("grxrobot1.png" ) ); //$NON-NLS-1$
 
 		
 		l = new Label(calcComp, SWT.NONE);
-		l.setText("Optimizer:");
+		l.setText(MessageBundle.get("GrxPathPlanningView.label.optimizer")); //$NON-NLS-1$
 		optimizerSelect = new Combo( calcComp, SWT.NONE|SWT.READ_ONLY );
 		optimizerSelect.setLayoutData( new GridData(GridData.FILL_HORIZONTAL) );
 		optimizerSelect.addSelectionListener(new SelectionListener(){
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 			public void widgetSelected(SelectionEvent e) {
-				ppaItem_.setProperty("optimizer", optimizerSelect.getItem(optimizerSelect.getSelectionIndex()));
+				ppaItem_.setProperty("optimizer", optimizerSelect.getItem(optimizerSelect.getSelectionIndex())); //$NON-NLS-1$
 			}
 		});
 
 		optimizeButton = new Button( calcComp, SWT.NONE );
-		optimizeButton.setText("Optimize");
+		optimizeButton.setText(MessageBundle.get("GrxPathPlanningView.button.optimize")); //$NON-NLS-1$
 		optimizeButton.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	optimize();
@@ -494,19 +495,19 @@ public class GrxPathPlanningView extends GrxBaseView {
 		Composite carpetComp = getComp( 5, SWT.NONE );
 
 		l = new Label(carpetComp, SWT.NONE);
-		l.setText("Path Visible:");
+		l.setText(MessageBundle.get("GrxPathPlanningView.label.path")); //$NON-NLS-1$
 		
 		btnVisible = new Button( carpetComp, SWT.TOGGLE );
-		btnVisible.setText("Visible");
+		btnVisible.setText(MessageBundle.get("GrxPathPlanningView.button.visible")); //$NON-NLS-1$
 		btnVisible.setSelection(true);
 		btnVisible.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
                	boolean selection = btnVisible.getSelection();
                	if (selection) {
-               		System.out.println("TRUE");
+               		System.out.println("TRUE"); //$NON-NLS-1$
                		switcher_.setWhichChild(0);
                	} else {
-               		System.out.println("FALSE");
+               		System.out.println("FALSE"); //$NON-NLS-1$
                		switcher_.setWhichChild(Switch.CHILD_NONE);
                	}
                	
@@ -514,7 +515,7 @@ public class GrxPathPlanningView extends GrxBaseView {
         });
 
  		l = new Label(carpetComp, SWT.NONE);
-		l.setText("Carpet Z Position:");
+		l.setText(MessageBundle.get("GrxPathPlanningView.label.carpetZ")); //$NON-NLS-1$
 		
 		carpetZ = new Text(carpetComp, SWT.SINGLE | SWT.BORDER );
 		carpetZ.setLayoutData( new GridData(GridData.FILL_HORIZONTAL) );
@@ -533,7 +534,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 			public void focusLost(FocusEvent e) {
 				Double d = Double.parseDouble(carpetZ.getText());
 				if (d != null){
-					ppaItem_.setDbl("carpetZ", d);
+					ppaItem_.setDbl("carpetZ", d); //$NON-NLS-1$
 				}
 			}
 		});
@@ -547,13 +548,13 @@ public class GrxPathPlanningView extends GrxBaseView {
 	private void optimize() {
 	    planner_ = _pathConsumer().getImpl();
 	    if( planner_ == null ){
-			MessageDialog.openInformation(getParent().getShell(),"", "PathPlanner Component is not connected.");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.notConnect")); //$NON-NLS-1$ //$NON-NLS-2$
 	    	return;
 	    }
 	    
 		String optimizer = optimizerSelect.getText();
-		if( optimizer == null || optimizer.equals("") ){
-			MessageDialog.openInformation(getParent().getShell(),"", "Optimizer is not selected.");
+		if( optimizer == null || optimizer.equals("") ){ //$NON-NLS-1$
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.mesage.notSelect")); //$NON-NLS-1$ //$NON-NLS-2$
 			return;
 		}
 
@@ -593,7 +594,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 	private void propertyUpdate(){
 	    planner_ = _pathConsumer().getImpl();
 	    if( planner_ == null ){
-			MessageDialog.openInformation(getParent().getShell(),"", "PathPlanner Component is not connected.");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.messasge.notConnect")); //$NON-NLS-1$ //$NON-NLS-2$
 	    	return;
 	    }
 
@@ -612,7 +613,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 	private void update(){
 	    planner_ = _pathConsumer().getImpl();
 	    if( planner_ == null ){
-			MessageDialog.openInformation(getParent().getShell(),"", "PathPlanner Component is not connected.");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.notConnect")); //$NON-NLS-1$ //$NON-NLS-2$
 	    	return;
 	    }
 	    
@@ -640,15 +641,15 @@ public class GrxPathPlanningView extends GrxBaseView {
 			optimizerSelect.add( s );
 		
 		if (ppaItem_ != null){
-			String algorithmName = ppaItem_.getStr("algorithm", "");
+			String algorithmName = ppaItem_.getStr("algorithm", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (algoSelect.indexOf(algorithmName) >= 0){
 				algoSelect.select(algoSelect.indexOf(algorithmName));
 			}
-			String mobilityName = ppaItem_.getStr("mobility", "");
+			String mobilityName = ppaItem_.getStr("mobility", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (mobilitySelect.indexOf(mobilityName) >= 0){
 				mobilitySelect.select(mobilitySelect.indexOf(mobilityName));
 			}
-			String optimizerName = ppaItem_.getStr("optimizer", "");
+			String optimizerName = ppaItem_.getStr("optimizer", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (optimizerSelect.indexOf(optimizerName) >= 0){
 				optimizerSelect.select(optimizerSelect.indexOf(optimizerName));
 			}
@@ -658,7 +659,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 	private void startCalc(){
 	    planner_ = _pathConsumer().getImpl();
 	    if( planner_ == null ){
-			MessageDialog.openInformation(getParent().getShell(),"", "PathPlanner Component is not connected.");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.notConnect")); //$NON-NLS-1$ //$NON-NLS-2$
 	    	return;
 	    }
 
@@ -694,7 +695,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 	}
 
 	private void calc(){
-		GrxDebugUtil.println("[GrxPathPlanner]@calc" );
+		GrxDebugUtil.println("[GrxPathPlanner]@calc" ); //$NON-NLS-1$
 		calcSucceed = false;
 		IRunnableWithProgress runnableProgress = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) throws InterruptedException {
@@ -703,14 +704,14 @@ public class GrxPathPlanningView extends GrxBaseView {
 				    	calcSucceed = planner_.calcPath();
 					}
 				});
-				GrxDebugUtil.println("[GrxPathPlanner]@calc Thread Start" );
+				GrxDebugUtil.println("[GrxPathPlanner]@calc Thread Start" ); //$NON-NLS-1$
 				calcThread.start();
-				monitor.beginTask("Planning a path. Please Wait.", IProgressMonitor.UNKNOWN );
+				monitor.beginTask("Planning a path. Please Wait.", IProgressMonitor.UNKNOWN ); //$NON-NLS-1$
 				while( calcThread.isAlive() ){
 					Thread.sleep(200);
-					GrxDebugUtil.print("." );
+					GrxDebugUtil.print("." ); //$NON-NLS-1$
 					if( monitor.isCanceled() ){
-						GrxDebugUtil.println("[GrxPathPlanner]@calc Cancel" );
+						GrxDebugUtil.println("[GrxPathPlanner]@calc Cancel" ); //$NON-NLS-1$
 						planner_.stopPlanning();
 						break;
 					}
@@ -730,7 +731,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 		}
 		
 		if( calcSucceed == false ){
-			MessageDialog.openInformation( getParent().getShell(), "Path planning is canceled", "Path planning is canceled.");
+			MessageDialog.openInformation( getParent().getShell(), MessageBundle.get("GrxPathPlanningView.dialog.message.cancel0"), MessageBundle.get("GrxPathPlanningView.dialog.message.cancel1")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		
 		displayPath();
@@ -739,20 +740,20 @@ public class GrxPathPlanningView extends GrxBaseView {
 	private void displayPath() {
     	// path[N][0]=X path[N][1]=Y path[N][2]=Theta
     	planner_.getPath( path_ );
-		GrxDebugUtil.println("[GrxPathPlanningView] Path length="+path_.value.length );
+		GrxDebugUtil.println("[GrxPathPlanningView] Path length="+path_.value.length ); //$NON-NLS-1$
 
     	// TODO:DynamicsSimulatorのdefault simulation time 20sec オーバすると落ちる
     	double dt = 10.0 / path_.value.length, nowTime = 0;
     	GrxWorldStateItem currentWorld_ = (GrxWorldStateItem)manager_.getItem( GrxWorldStateItem.class, null );
     	if( currentWorld_ == null ) {
-    		GrxDebugUtil.printErr("[GrxPathPlanningView] There is no World.");
+    		GrxDebugUtil.printErr("[GrxPathPlanningView] There is no World."); //$NON-NLS-1$
     		return;
     	}
     	currentWorld_.clearLog();
-    	currentWorld_.setDbl("logTimeStep", dt);
+    	currentWorld_.setDbl("logTimeStep", dt); //$NON-NLS-1$
 		DynamicsSimulator dynSim = getDynamicsSimulator();
 		if( dynSim == null ){
-    		GrxDebugUtil.printErr("[GrxPathPlanningView] Faild to get DynamicsSimulator.");
+    		GrxDebugUtil.printErr("[GrxPathPlanningView] Faild to get DynamicsSimulator."); //$NON-NLS-1$
     		return;
 		}
 
@@ -780,7 +781,7 @@ public class GrxPathPlanningView extends GrxBaseView {
             currentWorld_.addValue(nowTime, wsx);
 			nowTime += dt;
     	}
-    	System.out.println("worldstate.getLogSize() = "+currentWorld_.getLogSize());
+    	System.out.println("worldstate.getLogSize() = "+currentWorld_.getLogSize()); //$NON-NLS-1$
     	currentWorld_.setPosition(currentWorld_.getLogSize()-1);
 
     	// make carpet
@@ -796,11 +797,11 @@ public class GrxPathPlanningView extends GrxBaseView {
 	DynamicsSimulator getDynamicsSimulator(){
 		GrxOpenHRPView hrpView = (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
 		if( hrpView == null ) {
-			MessageDialog.openInformation(getParent().getShell(),"", "Failed to get OpenHRPView.");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.OpenHRP")); //$NON-NLS-1$ //$NON-NLS-2$
 			return null;
 		}
 		if( ! hrpView.initDynamicsSimulator() ){
-			MessageDialog.openInformation(getParent().getShell(),"", "Failed to initialize DynamicsSimulator.");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.Dynamics")); //$NON-NLS-1$ //$NON-NLS-2$
 			return null;
 		}
 		return hrpView.getDynamicsSimulator(false);
@@ -811,19 +812,19 @@ public class GrxPathPlanningView extends GrxBaseView {
 	 * @return コンフィグファイルのパス
 	 */
 	private String getConfigFilePath(){
-		String confPath="";
-		URL defaultConfURL = FileLocator.find( Activator.getDefault().getBundle(), new Path("rtc.conf"), null);
+		String confPath=""; //$NON-NLS-1$
+		URL defaultConfURL = FileLocator.find( Activator.getDefault().getBundle(), new Path("rtc.conf"), null); //$NON-NLS-1$
 		try {
 			confPath = FileLocator.resolve(defaultConfURL).getPath();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-    	GrxDebugUtil.println("[GrxPathPlanner] default Config File path="+confPath);
+    	GrxDebugUtil.println("[GrxPathPlanner] default Config File path="+confPath); //$NON-NLS-1$
     	// From Property ( if exist )
-		String confPathFromProperty = System.getProperty("com.generalrobotix.grxui.rtcpath");
+		String confPathFromProperty = System.getProperty("com.generalrobotix.grxui.rtcpath"); //$NON-NLS-1$
 		if( confPathFromProperty != null ) {
 			confPath = confPathFromProperty;
-	    	GrxDebugUtil.println("[GrxPathPlanner] Config File path from Property="+confPath);
+	    	GrxDebugUtil.println("[GrxPathPlanner] Config File path from Property="+confPath); //$NON-NLS-1$
 		}
 
 		return confPath;
@@ -833,8 +834,8 @@ public class GrxPathPlanningView extends GrxBaseView {
 	 *  @brief 経路計画コンポーネントのコンシューマを立ち上げ
 	 */
 	private void execPathPlannerConsumer(){
-    	String[] args = {"-f", getConfigFilePath() };
-    	GrxDebugUtil.println("[GrxPathPlanner] RTC SERVICE CONSUMER THREAD START");
+    	String[] args = {"-f", getConfigFilePath() }; //$NON-NLS-1$
+    	GrxDebugUtil.println("[GrxPathPlanner] RTC SERVICE CONSUMER THREAD START"); //$NON-NLS-1$
 
     	// Initialize manager
     	final Manager manager = Manager.init(args);
@@ -860,10 +861,10 @@ public class GrxPathPlanningView extends GrxBaseView {
 	 * @return 初期化の成否
 	 */
 	private boolean initPathPlanner(){
-		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner" );
+		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner" ); //$NON-NLS-1$
 	    planner_ = _pathConsumer().getImpl();
 	    if( planner_ == null ){
-			MessageDialog.openInformation(getParent().getShell(),"", "PathPlanner Component is not connected.");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.notConnect")); //$NON-NLS-1$ //$NON-NLS-2$
 	    	return false;
 	    }
 
@@ -874,44 +875,44 @@ public class GrxPathPlanningView extends GrxBaseView {
 		planner_.setAlgorithmName( algoSelect.getText() );
 
 	    // 全ての有効なモデルを登録
-		GrxDebugUtil.println("[GrxPathPlanner]@initPathPlanner register character" );
+		GrxDebugUtil.println("[GrxPathPlanner]@initPathPlanner register character" ); //$NON-NLS-1$
 		List<GrxBaseItem> models = manager_.getSelectedItemList( GrxModelItem.class );
 		for( GrxBaseItem model: models ){
 			GrxModelItem m = (GrxModelItem) model;
 			BodyInfo binfo = m.getBodyInfo();
 			if (binfo != null) {
-				GrxDebugUtil.println("register "+m.getName() );
+				GrxDebugUtil.println("register "+m.getName() ); //$NON-NLS-1$
 		    	planner_.registerCharacter( m.getName(), binfo );
 			}else{
-				GrxDebugUtil.println("not register "+m.getName() );
+				GrxDebugUtil.println("not register "+m.getName() ); //$NON-NLS-1$
 			}
 		}
 
 		//全てのコリジョンペアを登録する
-		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner register collision pair" );
+		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner register collision pair" ); //$NON-NLS-1$
 		double t = Double.parseDouble(tolerance_.getText());
 		List<GrxBaseItem> collisionPair = manager_.getSelectedItemList(GrxCollisionPairItem.class);
 		for(GrxBaseItem i : collisionPair) {
 			GrxCollisionPairItem item = (GrxCollisionPairItem) i;
 			planner_.registerIntersectionCheckPair(
-					item.getStr("objectName1", ""), item.getStr("jointName1", ""), 
-					item.getStr("objectName2", ""), item.getStr("jointName2", ""), 
+					item.getStr("objectName1", ""), item.getStr("jointName1", ""),  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					item.getStr("objectName2", ""), item.getStr("jointName2", ""),  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 					t);
 		}
 
 		//移動ロボットとして使用するmodelとrobotを指定
 		String modelName = modelSelect.getText();
-		if( modelName == null || modelName.equals("") ){
-			MessageDialog.openInformation(getParent().getShell(),"", "Model is not selected");
+		if( modelName == null || modelName.equals("") ){ //$NON-NLS-1$
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.model")); //$NON-NLS-1$ //$NON-NLS-2$
 			return false;
 		}
 		String mobilityName = mobilitySelect.getText();
-		if( mobilityName == null || mobilityName.equals("") ){
-			MessageDialog.openInformation(getParent().getShell(),"", "Mobility is not selected");
+		if( mobilityName == null || mobilityName.equals("") ){ //$NON-NLS-1$
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.mobility")); //$NON-NLS-1$ //$NON-NLS-2$
 			return false;
 		}
 		planner_.setMobilityName(mobilityName);
-		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner set robot name" );
+		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner set robot name" ); //$NON-NLS-1$
 		planner_.setRobotName(modelName);
 		
 
@@ -919,10 +920,10 @@ public class GrxPathPlanningView extends GrxBaseView {
 		String[][]p = getAlgoProperty();
 		if( p == null )
 			return false;
-		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner set property" );
+		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner set property" ); //$NON-NLS-1$
 		planner_.setProperties( p );
 
-		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner initialize simulation" );
+		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner initialize simulation" ); //$NON-NLS-1$
 		planner_.initSimulation();
 
 		for( GrxBaseItem model: models ){
@@ -930,12 +931,12 @@ public class GrxPathPlanningView extends GrxBaseView {
 			BodyInfo binfo = m.getBodyInfo();
 			if (binfo != null) {
 			    double v[] = m.getTransformArray(m.rootLink());
-			    GrxDebugUtil.println(m.getName()+":"+v[0]+" "+v[1]+" "+v[2]);
+			    GrxDebugUtil.println(m.getName()+":"+v[0]+" "+v[1]+" "+v[2]); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			    planner_.setCharacterPosition(m.getName(), v);
 			}
 		}
 
-		GrxDebugUtil.println("[GrxPathPlanningView] Planner initialize Succeed");
+		GrxDebugUtil.println("[GrxPathPlanningView] Planner initialize Succeed"); //$NON-NLS-1$
 		return true;
 	}
 
@@ -953,10 +954,10 @@ public class GrxPathPlanningView extends GrxBaseView {
 			while (st < 0) st += 2*Math.PI;
 			while (st > 2*Math.PI) st -= 2*Math.PI;
 		}catch(Exception e){
-			MessageDialog.openInformation(getParent().getShell(),"", "Invalid start position");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.invalidStart")); //$NON-NLS-1$ //$NON-NLS-2$
 			return false;
 		}
-		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner set start" );
+		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner set start" ); //$NON-NLS-1$
 		planner_.setStartPosition( sx,sy,st );
 		return true;
 	}
@@ -975,10 +976,10 @@ public class GrxPathPlanningView extends GrxBaseView {
 			while (et < 0) et += 2*Math.PI;
 			while (et > 2*Math.PI) et -= 2*Math.PI;
 		}catch(Exception e){
-			MessageDialog.openInformation(getParent().getShell(),"", "Invalid end position");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.InvalidEnd")); //$NON-NLS-1$ //$NON-NLS-2$
 			return false;
 		}
-		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner set end" );
+		GrxDebugUtil.println("[GrxPathPlanningView]@initPathPlanner set end" ); //$NON-NLS-1$
 		planner_.setGoalPosition( ex,ey,et);
 		return true;
 	}
@@ -987,7 +988,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 		// 値の入っているパラメータを取得
 		Vector<String[]> tmp = new Vector<String[]>();
 		for( Object s : ppaItem_.keySet() ){
-			if( ! ppaItem_.getStr( s.toString() ).equals("") ){
+			if( ! ppaItem_.getStr( s.toString() ).equals("") ){ //$NON-NLS-1$
 				String []tmp2 = { s.toString(), ppaItem_.getStr( s.toString() ) }; 
 				tmp.add( tmp2 );
 			}
@@ -999,11 +1000,11 @@ public class GrxPathPlanningView extends GrxBaseView {
 		// Z position from input
 		Double z = getZPosition();
 		if( z == null ){
-			MessageDialog.openInformation(getParent().getShell(),"", "Invalid robot Z position");
+			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.invalidRobot")); //$NON-NLS-1$ //$NON-NLS-2$
 			return null;
 		}
 			
-		params[ params.length-1 ][0] = "z-pos";
+		params[ params.length-1 ][0] = "z-pos"; //$NON-NLS-1$
 		params[ params.length-1 ][1] = String.valueOf( getZPosition() );
 
 		return params;
@@ -1022,16 +1023,16 @@ public class GrxPathPlanningView extends GrxBaseView {
 		GrxModelItem robot = (GrxModelItem)(manager_.getItem( GrxModelItem.class, robotName ));
 		if( robot == null )
 			return;
-		double [] tr = robot.getDblAry(getRobotBaseLink(robot)+".translation",null);
-		double [] rot = robot.getDblAry(getRobotBaseLink(robot)+".rotation",null);
+		double [] tr = robot.getDblAry(getRobotBaseLink(robot)+".translation",null); //$NON-NLS-1$
+		double [] rot = robot.getDblAry(getRobotBaseLink(robot)+".rotation",null); //$NON-NLS-1$
 		try{
 			textStartX.setText( String.format( FORMAT, tr[0]) );
 			textStartY.setText( String.format( FORMAT, tr[1]) );
 			textStartTheta.setText( String.format( FORMAT, rot[3] / (2f*Math.PI) * 360f) );
 			if (ppaItem_ != null){
-				ppaItem_.setDbl("startX", tr[0]);
-				ppaItem_.setDbl("startY", tr[1]);
-				ppaItem_.setDbl("startTheta", rot[3]);
+				ppaItem_.setDbl("startX", tr[0]); //$NON-NLS-1$
+				ppaItem_.setDbl("startY", tr[1]); //$NON-NLS-1$
+				ppaItem_.setDbl("startTheta", rot[3]); //$NON-NLS-1$
 			}
 		}catch(Exception e){
 			return;
@@ -1043,16 +1044,16 @@ public class GrxPathPlanningView extends GrxBaseView {
 		GrxModelItem robot = (GrxModelItem)(manager_.getItem( GrxModelItem.class, robotName ));
 		if( robot == null )
 			return;
-		double [] tr = robot.getDblAry(getRobotBaseLink(robot)+".translation",null);
-		double [] rot = robot.getDblAry(getRobotBaseLink(robot)+".rotation",null);
+		double [] tr = robot.getDblAry(getRobotBaseLink(robot)+".translation",null); //$NON-NLS-1$
+		double [] rot = robot.getDblAry(getRobotBaseLink(robot)+".rotation",null); //$NON-NLS-1$
 		try{
 			textEndX.setText( String.format( FORMAT, tr[0]) );
 			textEndY.setText( String.format( FORMAT, tr[1]) );
 			textEndTheta.setText( String.format( FORMAT, rot[3] / (2f*Math.PI) * 360f) );
 			if (ppaItem_ != null){
-				ppaItem_.setDbl("goalX", tr[0]);
-				ppaItem_.setDbl("goalY", tr[1]);
-				ppaItem_.setDbl("goalTheta", rot[3]);
+				ppaItem_.setDbl("goalX", tr[0]); //$NON-NLS-1$
+				ppaItem_.setDbl("goalY", tr[1]); //$NON-NLS-1$
+				ppaItem_.setDbl("goalTheta", rot[3]); //$NON-NLS-1$
 			}
 		}catch(Exception e){
 			return;
@@ -1074,8 +1075,8 @@ public class GrxPathPlanningView extends GrxBaseView {
 		GrxModelItem robot = (GrxModelItem)(manager_.getItem( GrxModelItem.class, modelName ));
 		if( robot == null )
 			return;
-		robot.propertyChanged(getRobotBaseLink(robot)+".translation", ""+sx+" "+sy+" "+getZPosition());
-		robot.propertyChanged(getRobotBaseLink(robot)+".rotation", "0.0 0.0 1.0 "+st);
+		robot.propertyChanged(getRobotBaseLink(robot)+".translation", ""+sx+" "+sy+" "+getZPosition()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		robot.propertyChanged(getRobotBaseLink(robot)+".rotation", "0.0 0.0 1.0 "+st); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private void setEndPoint(){
@@ -1091,8 +1092,8 @@ public class GrxPathPlanningView extends GrxBaseView {
 
 		String modelName = modelSelect.getText();
 		GrxModelItem robot = (GrxModelItem)(manager_.getItem( GrxModelItem.class, modelName ));
-		robot.propertyChanged(getRobotBaseLink(robot)+".translation", ""+ex+" "+ey+" "+getZPosition() );
-		robot.propertyChanged(getRobotBaseLink(robot)+".rotation", "0.0 0.0 1.0 "+et);
+		robot.propertyChanged(getRobotBaseLink(robot)+".translation", ""+ex+" "+ey+" "+getZPosition() ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		robot.propertyChanged(getRobotBaseLink(robot)+".rotation", "0.0 0.0 1.0 "+et); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	Grx3DView get3DView()
@@ -1156,7 +1157,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 			    bg.addChild( switcher_ );
 			    view_.attachUnclickable( bg );
 			}else{	
-			    GrxDebugUtil.println("[GrxPathPlanningView] can't find 3DView");
+			    GrxDebugUtil.println("[GrxPathPlanningView] can't find 3DView"); //$NON-NLS-1$
 			}
 		}
 
@@ -1178,7 +1179,7 @@ public class GrxPathPlanningView extends GrxBaseView {
         	}
         }
 
-        GrxDebugUtil.println("[PPV]@pathGraph size="+vertex.size());
+        GrxDebugUtil.println("[PPV]@pathGraph size="+vertex.size()); //$NON-NLS-1$
         if (vertex.size() == 0) return;
         LineArray geometry = new LineArray(vertex.size(), GeometryArray.COORDINATES | GeometryArray.COLOR_3);
         geometry.setCoordinates(0, vertex.toArray(new Point3d[vertex.size()]) );
@@ -1228,7 +1229,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 
 		String modelName = null;
 		if (ppaItem_ != null){
-			modelName = ppaItem_.getStr("model", null);
+			modelName = ppaItem_.getStr("model", null); //$NON-NLS-1$
 		}else{
 			modelName = modelSelect.getText();
 		}
@@ -1246,63 +1247,63 @@ public class GrxPathPlanningView extends GrxBaseView {
 		}
 		
 		if (ppaItem_ != null){
-			String mobilityName = ppaItem_.getStr("mobility", "");
+			String mobilityName = ppaItem_.getStr("mobility", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (mobilitySelect.indexOf(mobilityName) >= 0){
 				mobilitySelect.select(mobilitySelect.indexOf(mobilityName));
 			}else{
 				mobilitySelect.deselectAll();
 			}
-			String optimizerName = ppaItem_.getStr("optimizer", "");
+			String optimizerName = ppaItem_.getStr("optimizer", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (optimizerSelect.indexOf(optimizerName) >= 0){
 				optimizerSelect.select(optimizerSelect.indexOf(optimizerName));
 			}else{
 				optimizerSelect.deselectAll();
 			}
-			String algorithmName = ppaItem_.getStr("algorithm", "");
+			String algorithmName = ppaItem_.getStr("algorithm", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			if (algoSelect.indexOf(algorithmName) >= 0){
 				algoSelect.select(algoSelect.indexOf(algorithmName));
 			}else{
 				algoSelect.deselectAll();
 			}
-			Double sx = ppaItem_.getDbl("startX", null);
+			Double sx = ppaItem_.getDbl("startX", null); //$NON-NLS-1$
 			if (sx != null){
 				textStartX.setText(sx.toString());
 			}else{
-				textStartX.setText("");
+				textStartX.setText(""); //$NON-NLS-1$
 			}
-			Double sy = ppaItem_.getDbl("startY", null);
+			Double sy = ppaItem_.getDbl("startY", null); //$NON-NLS-1$
 			if (sy != null){
 				textStartY.setText(sy.toString());
 			}else{
-				textStartY.setText("");
+				textStartY.setText(""); //$NON-NLS-1$
 			}
-			Double st = ppaItem_.getDbl("startTheta", null);
+			Double st = ppaItem_.getDbl("startTheta", null); //$NON-NLS-1$
 			if (st != null){
 				textStartTheta.setText(st.toString());
 			}else{
-				textStartTheta.setText("");
+				textStartTheta.setText(""); //$NON-NLS-1$
 			}
-			Double ex = ppaItem_.getDbl("goalX", null);
+			Double ex = ppaItem_.getDbl("goalX", null); //$NON-NLS-1$
 			if (ex != null){
 				textEndX.setText(ex.toString());
 			}else{
-				textEndX.setText("");
+				textEndX.setText(""); //$NON-NLS-1$
 			}
-			Double ey = ppaItem_.getDbl("goalY", null);
+			Double ey = ppaItem_.getDbl("goalY", null); //$NON-NLS-1$
 			if (ey != null){
 				textEndY.setText(ey.toString());
 			}else{
-				textEndY.setText("");
+				textEndY.setText(""); //$NON-NLS-1$
 			}
-			Double et = ppaItem_.getDbl("goalTheta", null);
+			Double et = ppaItem_.getDbl("goalTheta", null); //$NON-NLS-1$
 			if (et != null){
 				textEndTheta.setText(et.toString());
 			}else{
-				textEndTheta.setText("");
+				textEndTheta.setText(""); //$NON-NLS-1$
 			}
-			chkRebuildRoadmap_.setSelection(ppaItem_.isTrue("rebuildRoadmap", true));
-			tolerance_.setText(ppaItem_.getDbl("tolerance",0.0).toString());
-			carpetZ.setText(ppaItem_.getDbl("carpetZ",0.01).toString());
+			chkRebuildRoadmap_.setSelection(ppaItem_.isTrue("rebuildRoadmap", true)); //$NON-NLS-1$
+			tolerance_.setText(ppaItem_.getDbl("tolerance",0.0).toString()); //$NON-NLS-1$
+			carpetZ.setText(ppaItem_.getDbl("carpetZ",0.01).toString()); //$NON-NLS-1$
 		}
 		
 	}
@@ -1317,7 +1318,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 		if (robot == null){
 			return 0d;
 		}else{
-			double [] tr = robot.getDblAry(getRobotBaseLink(robot)+".translation",null);
+			double [] tr = robot.getDblAry(getRobotBaseLink(robot)+".translation",null); //$NON-NLS-1$
 			return tr[2];
 		}
 	}

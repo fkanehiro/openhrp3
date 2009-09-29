@@ -104,17 +104,17 @@ public class GrxProcessManager {
     }
 
     public void setProcessList(Element root) {
-        StringBuffer nsHost = new StringBuffer("");
-        StringBuffer nsPort = new StringBuffer("");
+        StringBuffer nsHost = new StringBuffer(""); //$NON-NLS-1$
+        StringBuffer nsPort = new StringBuffer(""); //$NON-NLS-1$
         Activator.refNSHostPort(nsHost, nsPort);
-        String nsOpt = "-ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService";
+        String nsOpt = "-ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-        NodeList processList = root.getElementsByTagName("processmanagerconfig");
+        NodeList processList = root.getElementsByTagName("processmanagerconfig"); //$NON-NLS-1$
         if (processList == null || processList.getLength() == 0) {
             return;
         }
-        processList = ((Element) processList.item(0)).getElementsByTagName("process");
-        String defaultDir = "";
+        processList = ((Element) processList.item(0)).getElementsByTagName("process"); //$NON-NLS-1$
+        String defaultDir = ""; //$NON-NLS-1$
         int defaultWaitCount = 500;
 
         for (int i = 0; i < processList.getLength(); i++) {
@@ -123,10 +123,10 @@ public class GrxProcessManager {
                 continue;
             }
             Element e = (Element) n;
-            String id = GrxXmlUtil.getString(e, "id", "");
-            if (id.equals("")) {
-                defaultDir = GrxXmlUtil.getString(e, "dir", defaultDir);
-                defaultWaitCount = GrxXmlUtil.getInteger(e, "waitcount", defaultWaitCount);
+            String id = GrxXmlUtil.getString(e, "id", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            if (id.equals("")) { //$NON-NLS-1$
+                defaultDir = GrxXmlUtil.getString(e, "dir", defaultDir); //$NON-NLS-1$
+                defaultWaitCount = GrxXmlUtil.getInteger(e, "waitcount", defaultWaitCount); //$NON-NLS-1$
                 break;
             }
         }
@@ -137,30 +137,30 @@ public class GrxProcessManager {
                 continue;
             }
             Element e = (Element) n;
-            String id = GrxXmlUtil.getString(e, "id", "");
-            if (id == null || id.trim().equals("")) {
+            String id = GrxXmlUtil.getString(e, "id", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            if (id == null || id.trim().equals("")) { //$NON-NLS-1$
                 continue;
             }
             ProcessInfo pi = new ProcessInfo();
             pi.id = id;
-            pi.args = GrxXmlUtil.getString(e, "args", "");
-            pi.useORB = GrxXmlUtil.getBoolean(e, "useORB", false);
+            pi.args = GrxXmlUtil.getString(e, "args", ""); //$NON-NLS-1$ //$NON-NLS-2$
+            pi.useORB = GrxXmlUtil.getBoolean(e, "useORB", false); //$NON-NLS-1$
             if (pi.useORB) {
-                pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args + nsOpt);
+                pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args + nsOpt); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             } else {
-                pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args);
+                pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
             String str = null;
-            for (int j = 0; !(str = GrxXmlUtil.getString(e, "env" + j, "")).equals(""); j++) {
+            for (int j = 0; !(str = GrxXmlUtil.getString(e, "env" + j, "")).equals(""); j++) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 pi.env.add(str);
             }
-            pi.dir = GrxXmlUtil.getString(e, "dir", defaultDir);
-            pi.waitCount = GrxXmlUtil.getInteger(e, "waitcount", defaultWaitCount);
-            pi.isCorbaServer = GrxXmlUtil.getBoolean(e, "iscorbaserver", false);
-            pi.hasShutdown = GrxXmlUtil.getBoolean(e, "hasshutdown", false);
-            pi.doKillall = GrxXmlUtil.getBoolean(e, "dokillall", false);
-            pi.autoStart = GrxXmlUtil.getBoolean(e, "autostart", true);
-            pi.autoStop = GrxXmlUtil.getBoolean(e, "autostop", true);
+            pi.dir = GrxXmlUtil.getString(e, "dir", defaultDir); //$NON-NLS-1$
+            pi.waitCount = GrxXmlUtil.getInteger(e, "waitcount", defaultWaitCount); //$NON-NLS-1$
+            pi.isCorbaServer = GrxXmlUtil.getBoolean(e, "iscorbaserver", false); //$NON-NLS-1$
+            pi.hasShutdown = GrxXmlUtil.getBoolean(e, "hasshutdown", false); //$NON-NLS-1$
+            pi.doKillall = GrxXmlUtil.getBoolean(e, "dokillall", false); //$NON-NLS-1$
+            pi.autoStart = GrxXmlUtil.getBoolean(e, "autostart", true); //$NON-NLS-1$
+            pi.autoStop = GrxXmlUtil.getBoolean(e, "autostop", true); //$NON-NLS-1$
 
             if ( isRegistered(pi) ) {
                 if( !isRunning(pi) ){
@@ -202,15 +202,15 @@ public class GrxProcessManager {
     public boolean unregister(String id) {
         AProcess p = get(id);
         if (p == null) {
-            GrxDebugUtil.println("can't find '" + id + "' on processManager.");
+            GrxDebugUtil.println("can't find '" + id + "' on processManager."); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
         if (p.isRunning()) {
-            GrxDebugUtil.println(id + " is running.");
+            GrxDebugUtil.println(id + " is running."); //$NON-NLS-1$
             return false;
         }
         if (process_.remove(p)) {
-            GrxDebugUtil.println(id + " is unregistered.");
+            GrxDebugUtil.println(id + " is unregistered."); //$NON-NLS-1$
             return true;
         }
 
@@ -265,18 +265,18 @@ public class GrxProcessManager {
 
     private void killall(String pname) {
         try {
-            if (!System.getProperty("os.name").equals("Linux")) {
+            if (!System.getProperty("os.name").equals("Linux")) { //$NON-NLS-1$ //$NON-NLS-2$
                 return;
             }
             ProcessInfo pi = new ProcessInfo();
-            pi.id = "killall";
-            pi.com.add("/usr/bin/killall");
-            pi.dir = "/usr/bin/";
+            pi.id = "killall"; //$NON-NLS-1$
+            pi.com.add("/usr/bin/killall"); //$NON-NLS-1$
+            pi.dir = "/usr/bin/"; //$NON-NLS-1$
             pi.autoStart = false;
             pi.autoStop = true;
             pi.waitCount = 0;
             register(pi);
-            GrxDebugUtil.println("\nkillall " + pname + ":");
+            GrxDebugUtil.println("\nkillall " + pname + ":"); //$NON-NLS-1$ //$NON-NLS-2$
             AProcess p = get(pi.id);
             p.start(pname);
             p.waitFor();
@@ -284,24 +284,24 @@ public class GrxProcessManager {
             p.clearBuffer();
             // p.stop();
         } catch (Exception e) {
-            GrxDebugUtil.printErr("killall:", e);
+            GrxDebugUtil.printErr("killall:", e); //$NON-NLS-1$
         }
     }
 
     private String psaxGrep(String str) {
         try {
-            if (!System.getProperty("os.name").equals("Linux")) {
+            if (!System.getProperty("os.name").equals("Linux")) { //$NON-NLS-1$ //$NON-NLS-2$
                 return null;
             }
             ProcessInfo pi = new ProcessInfo();
-            pi.id = "psaxGrep";
-            pi.com.add("/bin/ps ax");
-            pi.dir = "/bin/";
+            pi.id = "psaxGrep"; //$NON-NLS-1$
+            pi.com.add("/bin/ps ax"); //$NON-NLS-1$
+            pi.dir = "/bin/"; //$NON-NLS-1$
             pi.autoStart = false;
             pi.autoStop = true;
             pi.waitCount = 0;
             register(pi);
-            GrxDebugUtil.println("\nps ax:");
+            GrxDebugUtil.println("\nps ax:"); //$NON-NLS-1$
             AProcess p = get(pi.id);
             p.clearBuffer();
             p.start(null);
@@ -309,16 +309,16 @@ public class GrxProcessManager {
             // p.stop();
             String ret = p.readBuffer();
             GrxDebugUtil.println(ret);
-            String[] rets = ret.split("\n");
-            ret = "";
+            String[] rets = ret.split("\n"); //$NON-NLS-1$
+            ret = ""; //$NON-NLS-1$
             for (int i = 0; i < rets.length; i++) {
-                if (rets[i].indexOf(str + " ") != -1) {
-                    ret += rets[i] + "\n";
+                if (rets[i].indexOf(str + " ") != -1) { //$NON-NLS-1$
+                    ret += rets[i] + "\n"; //$NON-NLS-1$
                 }
             }
             return ret;
         } catch (Exception e) {
-            GrxDebugUtil.printErr("psaxGrep:", e);
+            GrxDebugUtil.printErr("psaxGrep:", e); //$NON-NLS-1$
         }
         return null;
     }
@@ -338,17 +338,17 @@ public class GrxProcessManager {
         public boolean      useORB        = false;
 
         public void print() {
-            GrxDebugUtil.println("\nID: " + id);
+            GrxDebugUtil.println("\nID: " + id); //$NON-NLS-1$
             for (int i = 0; i < com.size(); i++) {
-                GrxDebugUtil.println("COM" + i + ": " + com.get(i));
+                GrxDebugUtil.println("COM" + i + ": " + com.get(i)); //$NON-NLS-1$ //$NON-NLS-2$
             }
             if (env.size() > 0) {
                 for (int i = 0; i < env.size(); i++)
-                    GrxDebugUtil.println("ENV" + i + ": " + env.get(i));
+                    GrxDebugUtil.println("ENV" + i + ": " + env.get(i)); //$NON-NLS-1$ //$NON-NLS-2$
             } else {
-                GrxDebugUtil.println("ENV: use parent process environment");
+                GrxDebugUtil.println("ENV: use parent process environment"); //$NON-NLS-1$
             }
-            GrxDebugUtil.println("DIR: " + dir);
+            GrxDebugUtil.println("DIR: " + dir); //$NON-NLS-1$
         }
     }
 
@@ -436,9 +436,9 @@ public class GrxProcessManager {
             vector.add(action);
         }
 
-        Action actionClearAll = new Action("Clear All!", Action.AS_PUSH_BUTTON) {
+        Action actionClearAll = new Action(MessageBundle.get("GrxProcessManager.menu.clearAll0"), Action.AS_PUSH_BUTTON) { //$NON-NLS-1$
             public void run() {
-                outputArea_.setText("");
+                outputArea_.setText(""); //$NON-NLS-1$
                 outputBuffer_ = new StringBuffer();
             }
         };
@@ -462,13 +462,13 @@ public class GrxProcessManager {
             Action action = new Action(p.pi_.id, Action.AS_CHECK_BOX) {
                 public void run() {
                     p.showOutput_ = isChecked();
-                    String[] processed = outputBuffer_.toString().split("\n");
-                    outputArea_.setText("");
+                    String[] processed = outputBuffer_.toString().split("\n"); //$NON-NLS-1$
+                    outputArea_.setText(""); //$NON-NLS-1$
                     for (int i = 0; i < processed.length; i++) {
                         for (int j = 0; j < size(); j++) {
                             AProcess p2 = get(j);
-                            if (p2.showOutput_ && processed[i].startsWith("[" + p2.pi_.id)) {
-                                outputArea_.append(processed[i] + "\n");
+                            if (p2.showOutput_ && processed[i].startsWith("[" + p2.pi_.id)) { //$NON-NLS-1$
+                                outputArea_.append(processed[i] + "\n"); //$NON-NLS-1$
                             }
 
                         }
@@ -479,9 +479,9 @@ public class GrxProcessManager {
             vector.add(action);
         }
 
-        Action actionClearAll = new Action("Clear All", Action.AS_PUSH_BUTTON) {
+        Action actionClearAll = new Action(MessageBundle.get("GrxProcessManager.menu.clearAll1"), Action.AS_PUSH_BUTTON) { //$NON-NLS-1$
             public void run() {
-                outputArea_.setText("");
+                outputArea_.setText(""); //$NON-NLS-1$
                 outputBuffer_ = new StringBuffer();
             }
         };
@@ -556,7 +556,7 @@ public class GrxProcessManager {
             if (pi_.com.size() > 0) {
                 com_ = new StringBuffer();
                 for (int i = 0; i < pi_.com.size(); i++)
-                    com_.append(pi_.com.get(i) + " ");
+                    com_.append(pi_.com.get(i) + " "); //$NON-NLS-1$
             }
         }
         
@@ -568,12 +568,12 @@ public class GrxProcessManager {
                 Runtime rt = Runtime.getRuntime();
                 try {
                     if (opt == null) {
-                        opt = "";
+                        opt = ""; //$NON-NLS-1$
                     }
-                    GrxDebugUtil.println(com_.toString() + " " + opt);
+                    GrxDebugUtil.println(com_.toString() + " " + opt); //$NON-NLS-1$
                     if(!dir_.exists())
                     	dir_ = null;
-                    process_ = rt.exec(com_.toString() + " " + opt, env_, dir_);
+                    process_ = rt.exec(com_.toString() + " " + opt, env_, dir_); //$NON-NLS-1$
 
                     is_ = process_.getInputStream();
                     br_ = new BufferedReader(new InputStreamReader(is_));
@@ -584,12 +584,12 @@ public class GrxProcessManager {
                     if (pi_.waitCount > 0) {
                         Thread.sleep(pi_.waitCount);
                     }
-                    GrxDebugUtil.println("start:OK(" + pi_.id + ")");
+                    GrxDebugUtil.println("start:OK(" + pi_.id + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                     // StatusOut.append("OK\n");
                     return true;
                 } catch (Exception e) {
                     process_ = null;
-                    GrxDebugUtil.printErr("start:NG(" + pi_.id + ")", e);
+                    GrxDebugUtil.printErr("start:NG(" + pi_.id + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
                     // StatusOut.append("NG\n");
                     return false;
                 }
@@ -598,7 +598,7 @@ public class GrxProcessManager {
         }
 
         public boolean stop() {
-            GrxDebugUtil.println("[PMView] stop:stopping " + pi_.id);
+            GrxDebugUtil.println("[PMView] stop:stopping " + pi_.id); //$NON-NLS-1$
             // StatusOut.append("\nStopping "+pi_.id+" ... ");
             if (isRunning()) {
                 if (pi_.hasShutdown) {
@@ -607,7 +607,7 @@ public class GrxProcessManager {
                 try {
                     if (pi_.doKillall) {
                         String com0 = (pi_.com.get(0));
-                        String path = com0.split(" ")[0];
+                        String path = com0.split(" ")[0]; //$NON-NLS-1$
                         String name = new File(path).getName();
                         killall(name);
                     } else {
@@ -617,22 +617,22 @@ public class GrxProcessManager {
                     if (!isRunning()) {
                         process_ = null;
                         // StatusOut.append("OK\n");
-                        GrxDebugUtil.println("stop:OK(" + pi_.id + ")");
-                        if (pi_.id.equals("NameService")) {
+                        GrxDebugUtil.println("stop:OK(" + pi_.id + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                        if (pi_.id.equals("NameService")) { //$NON-NLS-1$
                             GrxCorbaUtil.removeNameServiceFromList();
                         }
                         return true;
                     }
                     // StatusOut.append("NG\n");
-                    GrxDebugUtil.println("stop:NG(" + pi_.id + ")");
+                    GrxDebugUtil.println("stop:NG(" + pi_.id + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                     return false;
                 } catch (Exception e) {
                     // StatusOut.append("NG\n");
-                    GrxDebugUtil.printErr("stop:NG(" + pi_.id + ")", e);
+                    GrxDebugUtil.printErr("stop:NG(" + pi_.id + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
                 }
             } else {
                 // StatusOut.append("not running.\n");
-                GrxDebugUtil.println("stop:" + pi_.id + " is not running.");
+                GrxDebugUtil.println("stop:" + pi_.id + " is not running."); //$NON-NLS-1$ //$NON-NLS-2$
                 return true;
             }
             return false;
@@ -645,11 +645,11 @@ public class GrxProcessManager {
                 ServerObject serverObj = ServerObjectHelper.narrow(obj);
                 serverObj.shutdown();
                 // StatusOut.append("OK\n");
-                GrxDebugUtil.println("shutdown:OK(" + pi_.id + ")");
+                GrxDebugUtil.println("shutdown:OK(" + pi_.id + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                 return true;
             } catch (Exception e) {
                 // StatusOut.append("NG\n");
-                GrxDebugUtil.printErr("shutdown:NG(" + pi_.id + ")", e);
+                GrxDebugUtil.printErr("shutdown:NG(" + pi_.id + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
             } finally {
                 process_.destroy();
                 process_ = null;
@@ -664,7 +664,7 @@ public class GrxProcessManager {
                 bre_.close();
                 es_.close();
             } catch (IOException e) {
-                GrxDebugUtil.printErr("ProcessManager.closeReader:" + pi_.id + " couldn't close input stream", e);
+                GrxDebugUtil.printErr("ProcessManager.closeReader:" + pi_.id + " couldn't close input stream", e); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
 
@@ -730,7 +730,7 @@ public class GrxProcessManager {
                         break;
                 }
             } catch (Exception e) {
-                GrxDebugUtil.printErr("ProcessManager.readLine:(" + pi_.id + ")", e);
+                GrxDebugUtil.printErr("ProcessManager.readLine:(" + pi_.id + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
             }
             if (ret.length() == 0) {
                 return null;
@@ -745,12 +745,12 @@ public class GrxProcessManager {
                     StringBuffer line1 = readLine(br_);
                     StringBuffer line2 = readLine(bre_);
                     if (line1 != null) {
-                        buf.append("[" + pi_.id + ":O] " + line1);
+                        buf.append("[" + pi_.id + ":O] " + line1); //$NON-NLS-1$ //$NON-NLS-2$
                     } else if (line2 == null) {
                         break;
                     }
                     if (line2 != null) {
-                        buf.append("[" + pi_.id + ":E] " + line2);
+                        buf.append("[" + pi_.id + ":E] " + line2); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
 
@@ -772,7 +772,7 @@ public class GrxProcessManager {
 
         private void println(String line) {
             if (ps_ != null) {
-                ps_.println(line + "\n");
+                ps_.println(line + "\n"); //$NON-NLS-1$
                 ps_.flush();
             }
         }

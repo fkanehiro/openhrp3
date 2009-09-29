@@ -57,7 +57,7 @@ import com.generalrobotix.ui.util.MessageBundle;
  * @author Kernel Inc.
  * @version 1.0 (2001/8/20)
  */
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class SeriesDialog extends Dialog {
 	private boolean updated_;
     private ArrayList<DataItemInfo> dataItemInfoList_; 
@@ -70,15 +70,15 @@ public class SeriesDialog extends Dialog {
     
    // private JTable seriesTable_ = new JTable();
     private TableViewer tableviewer_;
-    private static final String ROBOT_MODEL = "ROBOT MODEL";
-    private static final String DATA_TYPE   = "DATA TYPE";
-    private static final String LINK_NAME   = "LINK NAME";
-    private static final String ATTRIBUTE   = "ATTRIBUTE";
-    private static final String colNode = MessageBundle.get("dialog.graph.series.table.node");
-    private static final String colAttribute = MessageBundle.get("dialog.graph.series.table.attribute");
-    private static final String colIndex = MessageBundle.get("dialog.graph.series.table.index");
-    private static final String colColor = MessageBundle.get("dialog.graph.series.table.color");
-    private static final String colLegend = MessageBundle.get("dialog.graph.series.table.legend");
+    private static final String ROBOT_MODEL = "ROBOT MODEL"; //$NON-NLS-1$
+    private static final String DATA_TYPE   = "DATA TYPE"; //$NON-NLS-1$
+    private static final String LINK_NAME   = "LINK NAME"; //$NON-NLS-1$
+    private static final String ATTRIBUTE   = "ATTRIBUTE"; //$NON-NLS-1$
+    private static final String colNode = MessageBundle.get("dialog.graph.series.table.node"); //$NON-NLS-1$
+    private static final String colAttribute = MessageBundle.get("dialog.graph.series.table.attribute"); //$NON-NLS-1$
+    private static final String colIndex = MessageBundle.get("dialog.graph.series.table.index"); //$NON-NLS-1$
+    private static final String colColor = MessageBundle.get("dialog.graph.series.table.color"); //$NON-NLS-1$
+    private static final String colLegend = MessageBundle.get("dialog.graph.series.table.legend"); //$NON-NLS-1$
     private Combo comboModel_ ;
     private Combo comboType_ ;
     private Combo comboLink_ ;
@@ -86,7 +86,7 @@ public class SeriesDialog extends Dialog {
     private Button setButton_;
 	private Button removeButton_;
 		
-    private static final String GRAPH_PROPERTIES = "/resources/graph.properties";
+    private static final String GRAPH_PROPERTIES = "/resources/graph.properties"; //$NON-NLS-1$
     private URL url = this.getClass().getResource(GRAPH_PROPERTIES);
     private Properties prop = new Properties();
     private GraphElement currentGraph_;
@@ -110,16 +110,16 @@ public class SeriesDialog extends Dialog {
         
 //  	 this is temporary limit for data type
         List<String> typeList = new ArrayList<String>();
-        typeList.add("Joint");
-        typeList.add("ForceSensor");
-        typeList.add("Gyro");
-        typeList.add("AccelerationSensor");
+        typeList.add("Joint"); //$NON-NLS-1$
+        typeList.add("ForceSensor"); //$NON-NLS-1$
+        typeList.add("Gyro"); //$NON-NLS-1$
+        typeList.add("AccelerationSensor"); //$NON-NLS-1$
         
         Iterator<Object> it = prop.keySet().iterator();
         while (it.hasNext()) {
         	String key = (String) it.next();
-        	String[] property = key.split("[.]");
-        	if (property.length > 2 && property[2].equals("dataKind") && typeList.contains(property[0])) {
+        	String[] property = key.split("[.]"); //$NON-NLS-1$
+        	if (property.length > 2 && property[2].equals("dataKind") && typeList.contains(property[0])) { //$NON-NLS-1$
         		if (!nodeMap.containsKey(property[0]))
         			nodeMap.put(property[0], new ArrayList<String>());
         		nodeMap.get(property[0]).add(property[1]);
@@ -129,7 +129,7 @@ public class SeriesDialog extends Dialog {
     
     protected void configureShell(Shell newShell) {   
         super.configureShell(newShell);
-        newShell.setText(MessageBundle.get("dialog.graph.series.title"));
+        newShell.setText(MessageBundle.get("dialog.graph.series.title")); //$NON-NLS-1$
     }
     
     protected Control createDialogArea(Composite parent) {
@@ -140,7 +140,7 @@ public class SeriesDialog extends Dialog {
     	rowdata.width = 600;
     	
     	Label label = new Label(composite, SWT.LEFT);
-    	label.setText(MessageBundle.get("dialog.graph.series.dataseries"));
+    	label.setText(MessageBundle.get("dialog.graph.series.dataseries")); //$NON-NLS-1$
     	tableviewer_ = new TableViewer(composite, SWT.FULL_SELECTION | SWT.BORDER);
     	tableviewer_.getControl().setLayoutData(rowdata);
     	Table table = tableviewer_.getTable();
@@ -162,7 +162,7 @@ public class SeriesDialog extends Dialog {
         column.setText(colLegend);
         column.setWidth(280);
         
-        String[] properties = new String[]{ null, null, null, "color", "legend"};
+        String[] properties = new String[]{ null, null, null, "color", "legend"}; //$NON-NLS-1$ //$NON-NLS-2$
         tableviewer_.setColumnProperties(properties); 
         CellEditor[] editors = new CellEditor[]{ null, null, null, 
                 new ColorCellEditor(table),
@@ -236,19 +236,19 @@ public class SeriesDialog extends Dialog {
 					if(model.getName().equals(modelName))
 						break;
 				}
-				if (type.equals("Joint")) {
+				if (type.equals("Joint")) { //$NON-NLS-1$
 					Vector<GrxLinkItem> li = model.links_;
 					for (int i = 0; i < li.size(); i++) 
-						if(li.get(i).jointType().equals("rotate"))
+						if(li.get(i).jointType().equals("rotate")) //$NON-NLS-1$
 							comboLink_.add(li.get(i).getName());
 				} else {
 					String t = null;
-					if (type.equals("ForceSensor"))
-						t = "Force";
-					else if (type.equals("Gyro"))
-						t = "RateGyro";
-					else if (type.equals("AccelerationSensor"))
-						t = "Acceleration";
+					if (type.equals("ForceSensor")) //$NON-NLS-1$
+						t = "Force"; //$NON-NLS-1$
+					else if (type.equals("Gyro")) //$NON-NLS-1$
+						t = "RateGyro"; //$NON-NLS-1$
+					else if (type.equals("AccelerationSensor")) //$NON-NLS-1$
+						t = "Acceleration"; //$NON-NLS-1$
 					String[] snames = model.getSensorNames(t);
 
 					if (snames != null) {
@@ -311,7 +311,7 @@ public class SeriesDialog extends Dialog {
         group3.setLayout(new FillLayout());
         comboAttr_ = new Combo(group3,SWT.READ_ONLY);
         removeButton_ = new Button(line3,SWT.PUSH);
-        removeButton_.setText(MessageBundle.get("dialog.graph.series.remove"));
+        removeButton_.setText(MessageBundle.get("dialog.graph.series.remove")); //$NON-NLS-1$
         removeButton_.addSelectionListener(new SelectionListener(){
         	public void widgetDefaultSelected(SelectionEvent e) {
         	}
@@ -336,7 +336,7 @@ public class SeriesDialog extends Dialog {
         });
         removeButton_.setEnabled(true); 
         setButton_ = new Button(line3,SWT.PUSH);
-        setButton_.setText(MessageBundle.get("dialog.graph.series.set"));
+        setButton_.setText(MessageBundle.get("dialog.graph.series.set")); //$NON-NLS-1$
         setButton_.addSelectionListener(new SelectionListener(){
 
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -345,15 +345,15 @@ public class SeriesDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				int length = 1;
 				String combo1 = (String)comboType_.getItem(comboType_.getSelectionIndex());
-				if (combo1.equals("ForceSensor") ||
-					combo1.equals("AccelerationSensor") ||
-					combo1.equals("Gyro")) 
+				if (combo1.equals("ForceSensor") || //$NON-NLS-1$
+					combo1.equals("AccelerationSensor") || //$NON-NLS-1$
+					combo1.equals("Gyro"))  //$NON-NLS-1$
 					length = 3;
 				for (int i=0; i<length; i++) {
 					String model = comboModel_.getItem(comboModel_.getSelectionIndex());
 					String link = comboLink_.getItem(comboLink_.getSelectionIndex());
 					String attr = comboAttr_.getItem(comboAttr_.getSelectionIndex());
-					String legend = model + "." + link + "." + attr + (length > 1 ? "." + i : "");
+					String legend = model + "." + link + "." + attr + (length > 1 ? "." + i : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 					if(!tableModel_.contains(legend)){
 						DataItemInfo newDataItemInfo = new DataItemInfo(new DataItem(model,link,attr,
 							length > 1 ? i : -1,
@@ -545,7 +545,7 @@ public class SeriesDialog extends Dialog {
     		    	 if (di.object == null) {
     		    		 return di.node;
     		    	 }else{
-    		    		 return di.object + "." + di.node;
+    		    		 return di.object + "." + di.node; //$NON-NLS-1$
     		    	 }
     		    case 1:
     		    	return di.attribute;
@@ -575,14 +575,14 @@ public class SeriesDialog extends Dialog {
 
     	public String getColumnText(Object element, int columnIndex) {
     		DataItemInfo item = (DataItemInfo) element;
-    		String result = "";
+    		String result = ""; //$NON-NLS-1$
     		DataItem di = item.dataItem;
     		switch (columnIndex) {
     		    case 0:
     		    	 if (di.object == null) {
     		    		 result = di.node;
     		    	 }else{
-    		    		 result = di.object + "." + di.node;
+    		    		 result = di.object + "." + di.node; //$NON-NLS-1$
     		    	 }
     		    	 break;
     		    case 1:
@@ -590,12 +590,12 @@ public class SeriesDialog extends Dialog {
     		    	break;
     		    case 2:
     		    	if(di.index < 0)
-    		    		result = "";
+    		    		result = ""; //$NON-NLS-1$
     		    	else
     		    		result = (new Integer(di.index)).toString();
     		    	break;
     		    case 3:
-    		    	result = "";
+    		    	result = ""; //$NON-NLS-1$
     		    	break;
     		    case 4:
     		    	result = item.legend;
@@ -627,7 +627,7 @@ public class SeriesDialog extends Dialog {
     	  }
 
 		public boolean canModify(Object element, String property) {
-			if(property == "color" || property == "legend")
+			if(property == "color" || property == "legend") //$NON-NLS-1$ //$NON-NLS-2$
 				return true;
 			else
 				return false;
@@ -635,9 +635,9 @@ public class SeriesDialog extends Dialog {
 
 		public Object getValue(Object element, String property) {
 			DataItemInfo item = (DataItemInfo) element;
-			if(property == "color")
+			if(property == "color") //$NON-NLS-1$
 				return item.color.getRGB();
-			else if(property == "legend")
+			else if(property == "legend") //$NON-NLS-1$
 				return item.legend;
 			return null;
 		}
@@ -647,10 +647,10 @@ public class SeriesDialog extends Dialog {
 			      element = ((Item) element).getData();
 			}
 			DataItemInfo item = (DataItemInfo) element;
-			if(property == "color"){
+			if(property == "color"){ //$NON-NLS-1$
 				Activator.getDefault().setColor(((RGB)value).toString(), (RGB)value);
 				item.color =Activator.getDefault().getColor(((RGB)value).toString());
-			}else if(property == "legend")
+			}else if(property == "legend") //$NON-NLS-1$
 				item.legend = (String)value;
 				
 			 viewer_.update(element, null);

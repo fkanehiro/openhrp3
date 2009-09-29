@@ -41,7 +41,7 @@ import javax.swing.border.EmptyBorder;
 /**
  * モーダルダイアログのスーパークラス
  */
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class ModalDialog extends JDialog {
     //--------------------------------------------------------------------
     // 定数
@@ -211,10 +211,10 @@ public class ModalDialog extends JDialog {
 
         JLabel label;
 
-        if (caption == null || caption.equals("")) {
-            label = new JLabel("");
+        if (caption == null || caption.equals("")) { //$NON-NLS-1$
+            label = new JLabel(""); //$NON-NLS-1$
         } else {
-            label = new JLabel(caption + " :");
+            label = new JLabel(caption + " :"); //$NON-NLS-1$
         }
 
         switch (location) {
@@ -308,16 +308,16 @@ public class ModalDialog extends JDialog {
             case CUSTOM_BUTTON:
                 break;
             case OK_BUTTON:
-                setCaption(MessageBundle.get("dialog.okButton"));
+                setCaption(MessageBundle.get("dialog.okButton")); //$NON-NLS-1$
                 break;
             case CANCEL_BUTTON:
-                setCaption(MessageBundle.get("dialog.cancelButton"));
+                setCaption(MessageBundle.get("dialog.cancelButton")); //$NON-NLS-1$
                 break;
             case YES_BUTTON:
-                setCaption(MessageBundle.get("dialog.yesButton"));
+                setCaption(MessageBundle.get("dialog.yesButton")); //$NON-NLS-1$
                 break;
             case NO_BUTTON:
-                setCaption(MessageBundle.get("dialog.noButton"));
+                setCaption(MessageBundle.get("dialog.noButton")); //$NON-NLS-1$
                 break;
             }
 

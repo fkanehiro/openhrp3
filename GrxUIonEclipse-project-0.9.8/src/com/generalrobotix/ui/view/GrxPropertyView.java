@@ -54,14 +54,15 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxGraphItem;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 /**
  * @brief property viewer
  */
 public class GrxPropertyView extends GrxBaseView {
     
-    public static final String TITLE = "Property";
+    public static final String TITLE = "Property"; //$NON-NLS-1$
 
     private GrxBasePlugin currentPlugin_=null;
 
@@ -71,7 +72,7 @@ public class GrxPropertyView extends GrxBaseView {
     
     private Text nameText_ = null;
 
-    private final String[] clmName_ = { "Name", "Value" };
+    private final String[] clmName_ = { MessageBundle.get("GrxPropertyView.text.name"), MessageBundle.get("GrxPropertyView.text.value") }; //$NON-NLS-1$ //$NON-NLS-2$
 
     /**
      * @brief constructor
@@ -88,7 +89,7 @@ public class GrxPropertyView extends GrxBaseView {
 
         super(name, manager, vp, parent);
         
-        GrxDebugUtil.println("GrxPropertyView init");
+        GrxDebugUtil.println("GrxPropertyView init"); //$NON-NLS-1$
 
 		GridLayout gl = new GridLayout(1,false);
 		composite_.setLayout( gl );
@@ -108,7 +109,7 @@ public class GrxPropertyView extends GrxBaseView {
                 	}else if ((p = manager_.getItem(nameText_.getText())) != null){
                 		_setInput(p);
                 	}else{
-                		nameText_.setText("");
+                		nameText_.setText(""); //$NON-NLS-1$
                 	}
                 }
             }
@@ -182,7 +183,7 @@ public class GrxPropertyView extends GrxBaseView {
     }
    
     public void update(GrxBasePlugin plugin, Object... arg) {
-    	if((String)arg[0]!="PropertyChange")
+    	if((String)arg[0]!="PropertyChange") //$NON-NLS-1$
     		return;
     	_refresh();
     }
@@ -222,7 +223,7 @@ public class GrxPropertyView extends GrxBaseView {
                         str = (String) ((Map.Entry)element).getValue();
                         break;
                     default:
-                        str = "---";
+                        str = "---"; //$NON-NLS-1$
                         break;
                 }
             }
@@ -259,7 +260,7 @@ public class GrxPropertyView extends GrxBaseView {
             return null;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked") //$NON-NLS-1$
         public void modify(Object element, String property, Object value) {
             try{
             if (element instanceof TableItem && value instanceof String) {
@@ -282,7 +283,7 @@ public class GrxPropertyView extends GrxBaseView {
     private void _setInput(GrxBasePlugin p){
     	if(p == null){
     		table_.setVisible(false);
-            nameText_.setText("");
+            nameText_.setText(""); //$NON-NLS-1$
     	}else if (p != currentPlugin_) {
             table_.setVisible(false);
             nameText_.setText(p.getName());
@@ -309,8 +310,8 @@ public class GrxPropertyView extends GrxBaseView {
             TableColumn sortColumn = table.getSortColumn();
             int direction = table.getSortDirection();
             
-            String comperedFactor1 = "";
-            String comperedFactor2 = "";
+            String comperedFactor1 = ""; //$NON-NLS-1$
+            String comperedFactor2 = ""; //$NON-NLS-1$
             
             if(sortColumn.getText().equals(clmName_[0])){
                 comperedFactor1 = (String)((Map.Entry)e1).getKey();

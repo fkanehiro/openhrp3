@@ -34,26 +34,28 @@ import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.MessageBundle;
+
 import org.eclipse.swt.widgets.Text;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxTextItem extends GrxBaseItem {
-	public static final String TITLE = "Text Item";
-	public static final String FILE_EXTENSION = "txt";
+	public static final String TITLE = "Text Item"; //$NON-NLS-1$
+	public static final String FILE_EXTENSION = "txt"; //$NON-NLS-1$
 
 	private long lastModified_ = 0;
-	private String old = "";
+	private String old = ""; //$NON-NLS-1$
 	private int caretPosition_ = 0;
 	
 	public GrxTextItem(String name, GrxPluginManager manager) {
 		super(name, manager);
 		Action item = new Action(){
-			public String getText(){ return "save"; }
+			public String getText(){ return MessageBundle.get("GrxTextItem.menu.save"); } //$NON-NLS-1$
 			public void run(){ save(); }
 		};
 		setMenuItem(item);
 		item = new Action(){
-			public String getText(){ return "save As"; }
+			public String getText(){ return MessageBundle.get("GrxTextItem.menu.saveAs"); } //$NON-NLS-1$
 			public void run(){ saveAs(); }
 		};
 		setMenuItem(item);
@@ -62,14 +64,14 @@ public class GrxTextItem extends GrxBaseItem {
 	}
 	
 	public boolean create() {
-		file_ = new File(getDefaultDir()+File.separator+getName()+"."+getFileExtention());
+		file_ = new File(getDefaultDir()+File.separator+getName()+"."+getFileExtention()); //$NON-NLS-1$
 		setURL(file_.getPath());
 		
-		old="";
+		old=""; //$NON-NLS-1$
 		lastModified_ = file_.lastModified();
 //		undo_.discardAllEdits();
 		caretPosition_ = 0;
-		setValue("");
+		setValue(""); //$NON-NLS-1$
 		return true;
 	}
 
@@ -83,7 +85,7 @@ public class GrxTextItem extends GrxBaseItem {
 			}
 			setValue(buf.toString());
 		} catch (FileNotFoundException e) {
-			GrxDebugUtil.println("TextItem: File Not Found. ("+f.getName()+")");
+			GrxDebugUtil.println("TextItem: File Not Found. ("+f.getName()+")"); //$NON-NLS-1$ //$NON-NLS-2$
 			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -100,13 +102,13 @@ public class GrxTextItem extends GrxBaseItem {
 	public void rename(String newName) {
 		String p = file_.getParent();
 		super.rename(newName);
-		file_ = new File(p+File.separator+getName()+"."+getFileExtention());
+		file_ = new File(p+File.separator+getName()+"."+getFileExtention()); //$NON-NLS-1$
 		setURL(file_.getPath());
 	}
 
 	public boolean save() {
 		try {
-			GrxDebugUtil.println("savefile:"+file_.getPath());
+			GrxDebugUtil.println("savefile:"+file_.getPath()); //$NON-NLS-1$
 			if (!file_.exists())
 				saveAs();
 			FileWriter fw = new FileWriter(file_);
@@ -124,13 +126,13 @@ public class GrxTextItem extends GrxBaseItem {
 	
 	public boolean saveAs() {
         FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
-        fdlg.setFileName(getName()+"."+getFileExtention());
-        fdlg.setFilterExtensions(new String[]{"*."+getFileExtention()});
+        fdlg.setFileName(getName()+"."+getFileExtention()); //$NON-NLS-1$
+        fdlg.setFilterExtensions(new String[]{"*."+getFileExtention()}); //$NON-NLS-1$
         final String fPath = fdlg.open();
         if (fPath != null) {
             File f = new File(fPath);
             if( f.exists() ){
-                if( !MessageDialog.openConfirm( GrxUIPerspectiveFactory.getCurrentShell(), "Save File", "Overwrite the file ?"))
+                if( !MessageDialog.openConfirm( GrxUIPerspectiveFactory.getCurrentShell(), MessageBundle.get("GrxTextItem.dialog.title.saveFile"), MessageBundle.get("GrxTextItem.dialog.message.saveFile"))) //$NON-NLS-1$ //$NON-NLS-2$
                     return false;
             }else{
                 try {
@@ -139,7 +141,7 @@ public class GrxTextItem extends GrxBaseItem {
                     e.printStackTrace();
                 }
             }
-            String newName = f.getName().split("[.]")[0];
+            String newName = f.getName().split("[.]")[0]; //$NON-NLS-1$
             manager_.renamePlugin(this, newName);
             if (getName().equals(newName)) {
                 file_ = f;

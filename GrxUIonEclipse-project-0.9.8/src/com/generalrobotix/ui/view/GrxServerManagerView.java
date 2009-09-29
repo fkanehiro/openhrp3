@@ -25,6 +25,7 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxServerManager;
 import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.GrxServerManagerPanel;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
 import org.eclipse.swt.events.SelectionEvent;
@@ -37,10 +38,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxServerManagerView extends GrxBaseView 
     implements DisposeListener {
-    public static final String TITLE = "Server Manager";
+    public static final String TITLE = "Server Manager"; //$NON-NLS-1$
     static private final int    HORIZONTAL_INDENT = 8;
     static private final int    COLLUMN_NUM = 3;
 
@@ -65,19 +66,19 @@ public class GrxServerManagerView extends GrxBaseView
         top.setLayout( localGridLayout );
         
         Button insertBtn = new Button(top , SWT.PUSH);
-        insertBtn.setText("Insert");
+        insertBtn.setText(MessageBundle.get("GrxServerManagerView.button.insert")); //$NON-NLS-1$
         GridData insertBtnGridData = new GridData();
         insertBtnGridData.horizontalIndent = HORIZONTAL_INDENT;
         insertBtn.setLayoutData(insertBtnGridData);
         
         Button addBtn = new Button(top , SWT.PUSH);
-        addBtn.setText("Add");
+        addBtn.setText(MessageBundle.get("GrxServerManagerView.button.add")); //$NON-NLS-1$
         GridData addBtnGridData = new GridData();
         addBtnGridData.horizontalIndent = HORIZONTAL_INDENT;
         addBtn.setLayoutData(addBtnGridData);
         
         Button delBtn = new Button(top , SWT.PUSH);
-        delBtn.setText("Remove");
+        delBtn.setText(MessageBundle.get("GrxServerManagerView.button.remove")); //$NON-NLS-1$
         GridData delBtnGridData = new GridData();
         delBtnGridData.horizontalIndent = HORIZONTAL_INDENT;
         delBtn.setLayoutData(delBtnGridData);
@@ -133,12 +134,12 @@ public class GrxServerManagerView extends GrxBaseView
         Display display = Display.getCurrent();
         final Shell shell = new Shell(display , SWT.TITLE | SWT.OK);
         shell.setLayout(new GridLayout(2,false));
-        shell.setText("Insert New Server");
+        shell.setText(MessageBundle.get("GrxServerManagerView.text.newServer")); //$NON-NLS-1$
         Label idLabel = new Label( shell , SWT.RIGHT);
-        idLabel.setText("id:");
+        idLabel.setText("id:"); //$NON-NLS-1$
         final Text id = new Text( shell , SWT.BORDER);
         Button okBtn = new Button( shell , SWT.PUSH);
-        okBtn.setText("OK");
+        okBtn.setText(MessageBundle.get("GrxServerManagerView.button.ok")); //$NON-NLS-1$
         Point point = display.getCursorLocation();
         shell.setLocation(point.x , point.y );
         shell.setSize(200, 100);
@@ -151,15 +152,15 @@ public class GrxServerManagerView extends GrxBaseView
                 if( isExistenceID(id.getText()) ){
                     MessageDialog.openWarning(
                             composite_.getShell(),
-                            "Warning" ,
-                            "The same ID exists!"  );
+                            MessageBundle.get("GrxServerManagerView.dialog.title.warning") , //$NON-NLS-1$
+                            MessageBundle.get("GrxServerManagerView.dialog.message.sameID")  ); //$NON-NLS-1$
                 }else{
                     int index = folder.getSelectionIndex();
                     ProcessInfo localInfo = new ProcessInfo();
                     localInfo.id = id.getText();
                     localInfo.com.clear();
-                    localInfo.com.add("");
-                    localInfo.args = "";
+                    localInfo.com.add(""); //$NON-NLS-1$
+                    localInfo.args = ""; //$NON-NLS-1$
                     localInfo.autoStart = false;
                     localInfo.useORB = false;
                     Vector<ProcessInfo> vecServerInfo = serverManager_.getServerInfo();    
@@ -182,12 +183,12 @@ public class GrxServerManagerView extends GrxBaseView
         Display display = Display.getCurrent();
         final Shell shell = new Shell(display , SWT.TITLE | SWT.OK);
         shell.setLayout(new GridLayout(2,false));
-        shell.setText("Add New Server");
+        shell.setText(MessageBundle.get("GrxServerManagerView.text.addServer")); //$NON-NLS-1$
         Label idLabel = new Label( shell , SWT.RIGHT);
-        idLabel.setText("id:");
+        idLabel.setText("id:"); //$NON-NLS-1$
         final Text id = new Text( shell , SWT.BORDER);
         Button okBtn = new Button( shell , SWT.PUSH);
-        okBtn.setText("OK");
+        okBtn.setText(MessageBundle.get("GrxServerManagerView.button.ok")); //$NON-NLS-1$
         Point point = display.getCursorLocation();
         shell.setLocation(point.x , point.y );
         shell.setSize(200, 100);
@@ -199,15 +200,15 @@ public class GrxServerManagerView extends GrxBaseView
                 if( isExistenceID(id.getText()) ){
                     MessageDialog.openWarning(
                             composite_.getShell(),
-                            "Warning" ,
-                            "The same ID exists!"  );
+                            MessageBundle.get("GrxServerManagerView.dialog.title.warning") , //$NON-NLS-1$
+                            MessageBundle.get("GrxServerManagerView.dialog.message.sameID")  ); //$NON-NLS-1$
                 }else{
                     int index = folder.getSelectionIndex() + 1;
                     ProcessInfo localInfo = new ProcessInfo();
                     localInfo.id = id.getText();
                     localInfo.com.clear();
-                    localInfo.com.add("");
-                    localInfo.args = "";
+                    localInfo.com.add(""); //$NON-NLS-1$
+                    localInfo.args = ""; //$NON-NLS-1$
                     localInfo.autoStart = false;
                     localInfo.useORB = false;
                     Vector<ProcessInfo> vecServerInfo = serverManager_.getServerInfo();    
@@ -233,8 +234,8 @@ public class GrxServerManagerView extends GrxBaseView
         // 確認ダイアログ表示後 当該 タブを削除
         if ( MessageDialog.openConfirm(
                 composite_.getShell(),
-                "Confirmation remove " + vecTabItem_.elementAt(index).getText(),
-                "Would you like to remove " + vecTabItem_.elementAt(index).getText() +" ?"  ))
+                MessageBundle.get("GrxServerManagerView.dialog.title.remove") + vecTabItem_.elementAt(index).getText(), //$NON-NLS-1$
+                MessageBundle.get("GrxServerManagerView.dialog.message.remove") + vecTabItem_.elementAt(index).getText() +" ?"  )) //$NON-NLS-1$ //$NON-NLS-2$
         {
             vecTabItem_.elementAt(index).getControl().dispose();
             folder.getItem(index).dispose();

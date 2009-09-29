@@ -40,13 +40,14 @@ import jp.go.aist.hrp.simulator.CameraPackage.CameraType;
 
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
 /**
  * @brief sensor
  */
-@SuppressWarnings({ "serial", "unchecked" })
+@SuppressWarnings({ "serial", "unchecked" }) //$NON-NLS-1$ //$NON-NLS-2$
 public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 
 	SensorInfo info_;
@@ -85,11 +86,11 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		// rename
 		item = new Action(){
 			public String getText(){
-				return "rename";
+				return MessageBundle.get("GrxSensorItem.menu.rename"); //$NON-NLS-1$
 			}
 			public void run(){
 				InputDialog dialog = new InputDialog( null, null,
-						"Input new name.", getName(),null);
+						MessageBundle.get("GrxSensorItem.dialog.message.newName"), getName(),null); //$NON-NLS-1$
 				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 					rename( dialog.getValue() );
 			}
@@ -99,11 +100,11 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		// delete
 		item = new Action(){
 			public String getText(){
-				return "delete";
+				return MessageBundle.get("GrxSensorItem.menu.delete"); //$NON-NLS-1$
 			}
 			public void run(){
-				if( MessageDialog.openQuestion( null, "delete item",
-						"Are you sure to delete " + getName() + " ?") )
+				if( MessageDialog.openQuestion( null, MessageBundle.get("GrxSensorItem.dialog.title.delete"), //$NON-NLS-1$
+						MessageBundle.get("GrxSensorItem.dialog.message.delete") + getName() + " ?") ) //$NON-NLS-1$ //$NON-NLS-2$
 					delete();
 			}
 		};
@@ -137,53 +138,53 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		// menu item : add shape
 		item = new Action(){
 			public String getText(){
-				return "add shape from VRML97";
+				return MessageBundle.get("GrxSensorItem.menu.VRML97"); //$NON-NLS-1$
 			}
 			public void run(){
 				FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
 				String fPath = fdlg.open();
-				System.out.println("fPath = "+fPath);
+				System.out.println("fPath = "+fPath); //$NON-NLS-1$
 				addShape(fPath);
 			}
 		};
         setMenuItem(item);
         
 //      menu item : add primitive shape
-        MenuManager subMenu= new MenuManager("add primitive shape");
+        MenuManager subMenu= new MenuManager(MessageBundle.get("GrxSensorItem.menu.primitiveShape")); //$NON-NLS-1$
         setSubMenu(subMenu);      
         item = new Action(){
 			public String getText(){
-				return "Box";
+				return "Box"; //$NON-NLS-1$
 			}
 			public void run(){
-				addPrimitiveShape("Box");
+				addPrimitiveShape("Box"); //$NON-NLS-1$
 			}
 		};
 		subMenu.add(item);
 		item = new Action(){
 			public String getText(){
-				return "Cone";
+				return "Cone"; //$NON-NLS-1$
 			}
 			public void run(){
-				addPrimitiveShape("Cone");
+				addPrimitiveShape("Cone"); //$NON-NLS-1$
 			}
 		};
 		subMenu.add(item);
 		item = new Action(){
 			public String getText(){
-				return "Cylinder";
+				return "Cylinder"; //$NON-NLS-1$
 			}
 			public void run(){
-				addPrimitiveShape("Cylinder");
+				addPrimitiveShape("Cylinder"); //$NON-NLS-1$
 			}
 		};
 		subMenu.add(item);
 		item = new Action(){
 			public String getText(){
-				return "Sphere";
+				return "Sphere"; //$NON-NLS-1$
 			}
 			public void run(){
-				addPrimitiveShape("Sphere");
+				addPrimitiveShape("Sphere"); //$NON-NLS-1$
 			}
 		};
 		subMenu.add(item);
@@ -191,15 +192,15 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 
     	info_ = info;
 
-    	setProperty("type", info_.type);
-    	setProperty("id", String.valueOf(info_.id));
+    	setProperty("type", info_.type); //$NON-NLS-1$
+    	setProperty("id", String.valueOf(info_.id)); //$NON-NLS-1$
     	translation(info_.translation);
     	rotation(info_.rotation);
-    	setProperty("alwaysVisible", "false");
+    	setProperty("alwaysVisible", "false"); //$NON-NLS-1$ //$NON-NLS-2$
 
-        setIcon("camera.png");
+        setIcon("camera.png"); //$NON-NLS-1$
 
-        if (info.type.equals("Vision")) {
+        if (info.type.equals("Vision")) { //$NON-NLS-1$
             CameraParameter prm = new CameraParameter();
             prm.defName = new String(info.name);
             prm.sensorName = new String(info.name);
@@ -217,44 +218,44 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
             prm.height = (int)info.specValues[5];
             prm.frameRate = (float)info.specValues[6];
             
-            setDbl("frontClipDistance", prm.frontClipDistance, 4);
-            setDbl("backClipDistance",  prm.backClipDistance, 4);
-            setDbl("fieldOfView",       prm.fieldOfView, 6);
+            setDbl("frontClipDistance", prm.frontClipDistance, 4); //$NON-NLS-1$
+            setDbl("backClipDistance",  prm.backClipDistance, 4); //$NON-NLS-1$
+            setDbl("fieldOfView",       prm.fieldOfView, 6); //$NON-NLS-1$
             if (prm.type == CameraType.NONE){
-            	setProperty("cameraType", "NONE");
+            	setProperty("cameraType", "NONE"); //$NON-NLS-1$ //$NON-NLS-2$
             }else if (prm.type == CameraType.COLOR){
-            	setProperty("cameraType", "COLOR");
+            	setProperty("cameraType", "COLOR"); //$NON-NLS-1$ //$NON-NLS-2$
             }else if (prm.type == CameraType.MONO){
-            	setProperty("cameraType", "MONO");
+            	setProperty("cameraType", "MONO"); //$NON-NLS-1$ //$NON-NLS-2$
             }else if (prm.type == CameraType.COLOR_DEPTH){
-            	setProperty("cameraType", "COLOR_DEPTH");
+            	setProperty("cameraType", "COLOR_DEPTH"); //$NON-NLS-1$ //$NON-NLS-2$
             }else if (prm.type == CameraType.MONO_DEPTH){
-            	setProperty("cameraType", "MONO_DEPTH");
+            	setProperty("cameraType", "MONO_DEPTH"); //$NON-NLS-1$ //$NON-NLS-2$
             }else if (prm.type == CameraType.DEPTH){
-            	setProperty("cameraType", "DEPTH");
+            	setProperty("cameraType", "DEPTH"); //$NON-NLS-1$ //$NON-NLS-2$
             }
-            setInt("width",             prm.width);
-            setInt("height",            prm.height);
-            setDbl("frameRate",         prm.frameRate);
+            setInt("width",             prm.width); //$NON-NLS-1$
+            setInt("height",            prm.height); //$NON-NLS-1$
+            setDbl("frameRate",         prm.frameRate); //$NON-NLS-1$
             boolean offScreen = false;
             camera_ = new Camera_impl(prm, offScreen);
 
             tg_.addChild(camera_.getBranchGroup());
             switchVisibleArea_ = SceneGraphModifier._makeSwitchNode(_createShapeOfVisibleArea());
             tg_.addChild(switchVisibleArea_);
-        }else if(info.type.equals("RateGyro")){
+        }else if(info.type.equals("RateGyro")){ //$NON-NLS-1$
         	float[] max = new float[3];
         	max[0] = info.specValues[0];
         	max[1] = info.specValues[1];
         	max[2] = info.specValues[2];
-        	setFltAry("maxAngularVelocity", max);
-        }else if(info.type.equals("Acceleration")){
+        	setFltAry("maxAngularVelocity", max); //$NON-NLS-1$
+        }else if(info.type.equals("Acceleration")){ //$NON-NLS-1$
         	float[] max = new float[3];
         	max[0] = info.specValues[0];
         	max[1] = info.specValues[1];
         	max[2] = info.specValues[2];
-        	setFltAry("maxAcceleration", max);
-        }else if(info.type.equals("Force")){
+        	setFltAry("maxAcceleration", max); //$NON-NLS-1$
+        }else if(info.type.equals("Force")){ //$NON-NLS-1$
         	float[] maxf = new float[3];
         	maxf[0] = info.specValues[0];
         	maxf[1] = info.specValues[1];
@@ -263,13 +264,13 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
         	maxt[0] = info.specValues[3];
         	maxt[1] = info.specValues[4];
         	maxt[2] = info.specValues[5];
-        	setFltAry("maxForce", maxf);
-        	setFltAry("maxTorque", maxt);
-        }else if(info.type.equals("Range")){
-        	setFlt("scanAngle", info.specValues[0]);
-        	setFlt("scanStep", info.specValues[1]);
-        	setFlt("scanRate", info.specValues[2]);
-        	setFlt("maxDistance", info.specValues[3]);
+        	setFltAry("maxForce", maxf); //$NON-NLS-1$
+        	setFltAry("maxTorque", maxt); //$NON-NLS-1$
+        }else if(info.type.equals("Range")){ //$NON-NLS-1$
+        	setFlt("scanAngle", info.specValues[0]); //$NON-NLS-1$
+        	setFlt("scanStep", info.specValues[1]); //$NON-NLS-1$
+        	setFlt("scanRate", info.specValues[2]); //$NON-NLS-1$
+        	setFlt("maxDistance", info.specValues[3]); //$NON-NLS-1$
         	switchVisibleArea_ = SceneGraphModifier._makeSwitchNode(_createShapeOfVisibleArea());
         	tg_.addChild(switchVisibleArea_);
         }
@@ -295,15 +296,15 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
      * @return
      */
     private int getOrder(String type) {
-        if (type.equals("Force"))
+        if (type.equals("Force")) //$NON-NLS-1$
             return 0;
-        else if (type.equals("RateGyro"))
+        else if (type.equals("RateGyro")) //$NON-NLS-1$
             return 1;
-        else if (type.equals("Acceleration"))
+        else if (type.equals("Acceleration")) //$NON-NLS-1$
             return 2;
-        else if (type.equals("Vision"))
+        else if (type.equals("Vision")) //$NON-NLS-1$
             return 3;
-        else if (type.equals("Range"))
+        else if (type.equals("Range")) //$NON-NLS-1$
             return 4;
         else
             return -1;
@@ -362,7 +363,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 		Short id = getShort(value);
 		if (id != null && info_.id != id){
 			info_.id = id;
-			setShort("id", id);
+			setShort("id", id); //$NON-NLS-1$
 			if (model_ != null) model_.notifyModified();
 		}
 	}
@@ -375,20 +376,20 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
      */
     public boolean propertyChanged(String property, String value) {
     	if (super.propertyChanged(property, value)){
-    	}else if(property.equals("translation")){
+    	}else if(property.equals("translation")){ //$NON-NLS-1$
     		translation(value);
-    	}else if(property.equals("rotation")){
+    	}else if(property.equals("rotation")){ //$NON-NLS-1$
     		rotation(value);
-    	}else if(property.equals("id")){
+    	}else if(property.equals("id")){ //$NON-NLS-1$
     		id(value);
-    	}else if(property.equals("type")){
+    	}else if(property.equals("type")){ //$NON-NLS-1$
     		type(value);
-    	}else if(property.equals("alwaysVisible")){
-    		if (value.startsWith("true")){
-    			setProperty("alwaysVisible", "true");
+    	}else if(property.equals("alwaysVisible")){ //$NON-NLS-1$
+    		if (value.startsWith("true")){ //$NON-NLS-1$
+    			setProperty("alwaysVisible", "true"); //$NON-NLS-1$ //$NON-NLS-2$
     			setVisibleArea(true);
     		}else{
-    			setProperty("alwaysVisible", "false");
+    			setProperty("alwaysVisible", "false"); //$NON-NLS-1$ //$NON-NLS-2$
     			setVisibleArea(false);
     		}
     	}else{
@@ -400,111 +401,111 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     public void type(String type){
     	if (type().equals(type)) return;
     	
-    	if (type.equals("Vision")){
+    	if (type.equals("Vision")){ //$NON-NLS-1$
     		if (info_.specValues == null || info_.specValues.length != 7){
     			info_.specValues = new float[7];
     			_removeSensorSpecificProperties();
-    			setProperty("frontClipDistance", "0.01");
-    			setProperty("backClipDistance", "10.0");
-    			setProperty("fieldOfView", "0.0785398");
-    			setProperty("cameraType", "COLOR");
-    			setProperty("width", "320");
-    			setProperty("height", "240");
-    			setProperty("frameRate", "30.0");
+    			setProperty("frontClipDistance", "0.01"); //$NON-NLS-1$ //$NON-NLS-2$
+    			setProperty("backClipDistance", "10.0"); //$NON-NLS-1$ //$NON-NLS-2$
+    			setProperty("fieldOfView", "0.0785398"); //$NON-NLS-1$ //$NON-NLS-2$
+    			setProperty("cameraType", "COLOR"); //$NON-NLS-1$ //$NON-NLS-2$
+    			setProperty("width", "320"); //$NON-NLS-1$ //$NON-NLS-2$
+    			setProperty("height", "240"); //$NON-NLS-1$ //$NON-NLS-2$
+    			setProperty("frameRate", "30.0"); //$NON-NLS-1$ //$NON-NLS-2$
     		}
-			info_.specValues[0] = getFlt("frontClipDistance", null);
-			info_.specValues[1] = getFlt("backClipDistance", null);
-			info_.specValues[2] = getFlt("fieldOfView", null);
-			if (getStr("cameraType", "NONE").equals("NONE")){
+			info_.specValues[0] = getFlt("frontClipDistance", null); //$NON-NLS-1$
+			info_.specValues[1] = getFlt("backClipDistance", null); //$NON-NLS-1$
+			info_.specValues[2] = getFlt("fieldOfView", null); //$NON-NLS-1$
+			if (getStr("cameraType", "NONE").equals("NONE")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				info_.specValues[3] = CameraType._NONE;
-			}else if(getStr("cameraType", "NONE").equals("COLOR")){
+			}else if(getStr("cameraType", "NONE").equals("COLOR")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				info_.specValues[3] = CameraType._COLOR;
-			}else if(getStr("cameraType", "NONE").equals("MONO")){
+			}else if(getStr("cameraType", "NONE").equals("MONO")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				info_.specValues[3] = CameraType._MONO;
-			}else if(getStr("cameraType", "NONE").equals("DEPTH")){
+			}else if(getStr("cameraType", "NONE").equals("DEPTH")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				info_.specValues[3] = CameraType._DEPTH;
-			}else if(getStr("cameraType", "NONE").equals("COLOR_DEPTH")){
+			}else if(getStr("cameraType", "NONE").equals("COLOR_DEPTH")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				info_.specValues[3] = CameraType._COLOR_DEPTH;
-			}else if(getStr("cameraType", "NONE").equals("MONO_DEPTH")){
+			}else if(getStr("cameraType", "NONE").equals("MONO_DEPTH")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				info_.specValues[3] = CameraType._MONO_DEPTH;
 			}else{
-				setProperty("cameraType", "NONE");
+				setProperty("cameraType", "NONE"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			info_.specValues[4] = getInt("width", null);
-			info_.specValues[5] = getInt("height", null);
-			info_.specValues[6] = getFlt("frameRate", null);
+			info_.specValues[4] = getInt("width", null); //$NON-NLS-1$
+			info_.specValues[5] = getInt("height", null); //$NON-NLS-1$
+			info_.specValues[6] = getFlt("frameRate", null); //$NON-NLS-1$
 			// TODO update shape of visible area
 			// TODO update camera_
-    	}else if(type.equals("RateGyro")){
-    		if (info_.specValues == null || info_.specValues.length != 3 || getProperty("maxAngularVelocity")==null){
+    	}else if(type.equals("RateGyro")){ //$NON-NLS-1$
+    		if (info_.specValues == null || info_.specValues.length != 3 || getProperty("maxAngularVelocity")==null){ //$NON-NLS-1$
     			info_.specValues = new float[]{-1.0f, -1.0f, -1.0f};
     			_removeSensorSpecificProperties();
-    			setFltAry("maxAngularVelocity", info_.specValues);
+    			setFltAry("maxAngularVelocity", info_.specValues); //$NON-NLS-1$
     		}
-    		info_.specValues = getFltAry("maxAngularVelocity", null);
-    	}else if(type.equals("Acceleration")){
-    		if (info_.specValues == null || info_.specValues.length != 3 || getProperty("maxAcceleration")==null){
+    		info_.specValues = getFltAry("maxAngularVelocity", null); //$NON-NLS-1$
+    	}else if(type.equals("Acceleration")){ //$NON-NLS-1$
+    		if (info_.specValues == null || info_.specValues.length != 3 || getProperty("maxAcceleration")==null){ //$NON-NLS-1$
     			info_.specValues = new float[]{-1.0f, -1.0f, -1.0f};
     			_removeSensorSpecificProperties();
-    			setFltAry("maxAcceleration", info_.specValues);
+    			setFltAry("maxAcceleration", info_.specValues); //$NON-NLS-1$
     		}
-    		info_.specValues = getFltAry("maxAcceleration", null);
-    	}else if(type.equals("Force")){
+    		info_.specValues = getFltAry("maxAcceleration", null); //$NON-NLS-1$
+    	}else if(type.equals("Force")){ //$NON-NLS-1$
     		if (info_.specValues == null || info_.specValues.length != 6){
     			info_.specValues = new float[]{-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
     			_removeSensorSpecificProperties();
-    			setFltAry("maxForce", new float[]{-1.0f, -1.0f, -1.0f});
-    			setFltAry("maxTorque", new float[]{-1.0f, -1.0f, -1.0f});
+    			setFltAry("maxForce", new float[]{-1.0f, -1.0f, -1.0f}); //$NON-NLS-1$
+    			setFltAry("maxTorque", new float[]{-1.0f, -1.0f, -1.0f}); //$NON-NLS-1$
     		}
-    		float[] maxf = getFltAry("maxForce", null);
-    		float[] maxt = getFltAry("maxTorque", null);
+    		float[] maxf = getFltAry("maxForce", null); //$NON-NLS-1$
+    		float[] maxt = getFltAry("maxTorque", null); //$NON-NLS-1$
     		info_.specValues[0] = maxf[0];
     		info_.specValues[1] = maxf[1];
     		info_.specValues[2] = maxf[2];
     		info_.specValues[3] = maxt[0];
     		info_.specValues[4] = maxt[1];
     		info_.specValues[5] = maxt[2];
-    	}else if(type.equals("Range")){
+    	}else if(type.equals("Range")){ //$NON-NLS-1$
     		if (info_.specValues == null || info_.specValues.length != 3){
     			info_.specValues = new float[]{3.14159f, 0.1f, 10.0f, 10.0f};
     			_removeSensorSpecificProperties();
-    			setFlt("scanAngle", 3.14159f);
-    			setFlt("scanStep", 0.1f);
-    			setFlt("scanRate", 10.0f);
-    			setFlt("maxDistance", 10.0f);
+    			setFlt("scanAngle", 3.14159f); //$NON-NLS-1$
+    			setFlt("scanStep", 0.1f); //$NON-NLS-1$
+    			setFlt("scanRate", 10.0f); //$NON-NLS-1$
+    			setFlt("maxDistance", 10.0f); //$NON-NLS-1$
     		}
-    		info_.specValues[0] = getFlt("scanAngle", 3.14159f);
-    		info_.specValues[1] = getFlt("scanStep", 0.1f);
-    		info_.specValues[2] = getFlt("scanRate", 10.0f);
+    		info_.specValues[0] = getFlt("scanAngle", 3.14159f); //$NON-NLS-1$
+    		info_.specValues[1] = getFlt("scanStep", 0.1f); //$NON-NLS-1$
+    		info_.specValues[2] = getFlt("scanRate", 10.0f); //$NON-NLS-1$
     	}else{
-    		System.out.println("GrxSensorItem.propertyChanged() : unknown sensor type : "+info_.type);
+    		System.out.println("GrxSensorItem.propertyChanged() : unknown sensor type : "+info_.type); //$NON-NLS-1$
     		return;
     	}
     	info_.type = type;
-    	setProperty("type", type);
+    	setProperty("type", type); //$NON-NLS-1$
     	if (model_ != null) model_.notifyModified();
     }
     private void _removeSensorSpecificProperties() {
 		// properties of ForceSensor
-		remove("maxForce");
-		remove("maxTorque");
+		remove("maxForce"); //$NON-NLS-1$
+		remove("maxTorque"); //$NON-NLS-1$
 		// property of Gyro
-		remove("maxAngularVelocity");
+		remove("maxAngularVelocity"); //$NON-NLS-1$
 		// property of AccelerationSensor
-		remove("maxAcceleration");
+		remove("maxAcceleration"); //$NON-NLS-1$
 		// property of VisionSensor
-		remove("frontClipDistance");
-		remove("backClipDistance");
-		remove("fieldOfView");
-		remove("width");
-		remove("height");
-		remove("frameRate");
-		remove("cameraType");
+		remove("frontClipDistance"); //$NON-NLS-1$
+		remove("backClipDistance"); //$NON-NLS-1$
+		remove("fieldOfView"); //$NON-NLS-1$
+		remove("width"); //$NON-NLS-1$
+		remove("height"); //$NON-NLS-1$
+		remove("frameRate"); //$NON-NLS-1$
+		remove("cameraType"); //$NON-NLS-1$
 		// property of RangeSensor
-		remove("scanAngle");
-		remove("scanStep");
-		remove("scanRate");
-		remove("maxDistance");
+		remove("scanAngle"); //$NON-NLS-1$
+		remove("scanStep"); //$NON-NLS-1$
+		remove("scanRate"); //$NON-NLS-1$
+		remove("maxDistance"); //$NON-NLS-1$
 	}
 
 	/**
@@ -526,7 +527,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 	 * @return array of 3D point
 	 */
 	private Point3f[] _distances2points(double[] distances){
-    	if (info_.type.equals("Range")){
+    	if (info_.type.equals("Range")){ //$NON-NLS-1$
     		float step = info_.specValues[1];
     		int half = distances.length/2;
     		Point3f[] p3f = new Point3f[half*2+1+1];
@@ -548,7 +549,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 	 * @param distances array of distances
 	 */
 	public void updateShapeOfVisibleArea(double[] distances){
-    	if (info_.type.equals("Range")){
+    	if (info_.type.equals("Range")){ //$NON-NLS-1$
     		Point3f[] p3f = _distances2points(distances);
     		if (p3f == null) return;
         	Shape3D shapeNode = (Shape3D)switchVisibleArea_.getChild(0);
@@ -564,7 +565,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 	 * @return shape 
 	 */
     private Shape3D _createShapeOfVisibleArea() {
-    	if (info_.type.equals("Range")){
+    	if (info_.type.equals("Range")){ //$NON-NLS-1$
     		double scanAngle = info_.specValues[0];
     		double step = info_.specValues[1];
     		float d = info_.specValues[3];
@@ -657,6 +658,6 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
      */
     public void setFocused(boolean b){
     	super.setFocused(b);
-    	if (isFalse("alwaysVisible")) setVisibleArea(b);
+    	if (isFalse("alwaysVisible")) setVisibleArea(b); //$NON-NLS-1$
     }
 }

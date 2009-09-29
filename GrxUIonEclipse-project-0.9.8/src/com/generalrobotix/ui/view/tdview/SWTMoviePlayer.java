@@ -34,6 +34,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import com.generalrobotix.ui.util.MessageBundle;
 import com.sun.image.codec.jpeg.*; 
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -62,8 +63,8 @@ public class SWTMoviePlayer implements ControllerListener{
     private Object waitSync = new Object();
     private  boolean stateTransitionOK = true;
     //表示用
-    private final String STR_TITLE_="SMPlayer"; //ウィンドウタイトル文字列
-    private final String STR_RIGHT_="(C) 2000 Kernel Inc"; //版権文字列（おまけ）
+    private final String STR_TITLE_="SMPlayer"; //ウィンドウタイトル文字列 //$NON-NLS-1$
+    private final String STR_RIGHT_="(C) 2000 Kernel Inc"; //版権文字列（おまけ） //$NON-NLS-1$
 
     Shell window_ = null;
     Frame frame_;
@@ -80,7 +81,7 @@ public class SWTMoviePlayer implements ControllerListener{
     	
     	window_ = new Shell( shell, SWT.SHELL_TRIM );
 		window_.setSize(200, 200);
-		window_.setText("Movie Player");
+		window_.setText(MessageBundle.get("SWTMoviePlayer.window.title")); //$NON-NLS-1$
 
 		createMenu();
 		
@@ -110,7 +111,7 @@ public class SWTMoviePlayer implements ControllerListener{
         //枠線サイズを取得する
         frameX = window_.getSize().x - comp_.getSize().x;
 		frameY = window_.getSize().y - comp_.getSize().y;
-		System.out.println("frame size="+frameX+"-"+frameY);
+		System.out.println("frame size="+frameX+"-"+frameY); //$NON-NLS-1$ //$NON-NLS-2$
 
         //指定ファイルオープン
         if(_load(fileName)==false)_load(null);
@@ -136,13 +137,13 @@ public class SWTMoviePlayer implements ControllerListener{
 		window_.setMenuBar(menubar);
 	    
 	    MenuItem item1 = new MenuItem(menubar,SWT.CASCADE);
-	    item1.setText("File");
+	    item1.setText(MessageBundle.get("SWTMoviePlayer.menu.file")); //$NON-NLS-1$
 	    
 	    Menu menu1 = new Menu(item1);
 	    item1.setMenu(menu1);
 	    
 	    MenuItem item1_1 = new MenuItem(menu1,SWT.PUSH);
-	    item1_1.setText("Open");
+	    item1_1.setText(MessageBundle.get("SWTMoviePlayer.menu.open")); //$NON-NLS-1$
 	    item1_1.addSelectionListener(new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
 				_open();
@@ -150,7 +151,7 @@ public class SWTMoviePlayer implements ControllerListener{
 	    });
 
 	    MenuItem item1_3 = new MenuItem(menu1,SWT.PUSH);
-	    item1_3.setText("Save Image As");
+	    item1_3.setText(MessageBundle.get("SWTMoviePlayer.menu.saveAs")); //$NON-NLS-1$
 	    item1_3.addSelectionListener(new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
 				_saveImageAs();
@@ -158,7 +159,7 @@ public class SWTMoviePlayer implements ControllerListener{
 	    });
 	    
 	    MenuItem item1_4 = new MenuItem(menu1,SWT.PUSH);
-	    item1_4.setText("Quit");
+	    item1_4.setText(MessageBundle.get("SWTMoviePlayer.menu.quit")); //$NON-NLS-1$
 	    item1_4.addSelectionListener(new SelectionAdapter(){
 			public void widgetSelected(SelectionEvent e) {
 				window_.close();
@@ -176,8 +177,8 @@ public class SWTMoviePlayer implements ControllerListener{
     private void _open() {
         FileDialog fDialog = new FileDialog(window_,SWT.OPEN);
 
-        String [] exts = {"*.mpg;*.avi;*.mov"};
-		String [] filterNames = {"Movie Files(*.mpg,*.avi,*.mov)"};
+        String [] exts = {"*.mpg;*.avi;*.mov"}; //$NON-NLS-1$
+		String [] filterNames = {MessageBundle.get("SWTMoviePlayer.dialog.filter")}; //$NON-NLS-1$
 		fDialog.setFilterExtensions(exts);
 		fDialog.setFilterNames(filterNames);
 		
@@ -193,7 +194,7 @@ public class SWTMoviePlayer implements ControllerListener{
 			try {
 				SwingUtilities.invokeAndWait(new Runnable(){
 					public void run(){
-			            if(!_load("file:" + currentFile.getAbsolutePath())){
+			            if(!_load("file:" + currentFile.getAbsolutePath())){ //$NON-NLS-1$
 			                _load(null);
 			            }
 					}
@@ -268,14 +269,14 @@ public class SWTMoviePlayer implements ControllerListener{
         MediaLocator ml;
         if(url==null)return null;
 
-        if (url.indexOf(":") > 0 && (ml = new MediaLocator(url)) != null)
+        if (url.indexOf(":") > 0 && (ml = new MediaLocator(url)) != null) //$NON-NLS-1$
             return ml;
 
         if (url.startsWith(File.separator)) {
-            if ((ml = new MediaLocator("file:" + url)) != null)
+            if ((ml = new MediaLocator("file:" + url)) != null) //$NON-NLS-1$
             return ml;
         } else {
-            String file = "file:" + System.getProperty("user.dir") + File.separator + url;
+            String file = "file:" + System.getProperty("user.dir") + File.separator + url; //$NON-NLS-1$ //$NON-NLS-2$
             if ((ml = new MediaLocator(file)) != null)
             return ml;
         }
@@ -300,12 +301,12 @@ public class SWTMoviePlayer implements ControllerListener{
         
         _remove();
         
-        System.out.println("filename is "+fileName);
+        System.out.println("filename is "+fileName); //$NON-NLS-1$
         
         //fileName==nullならml=nullとなる
         MediaLocator ml=_createMediaLocator(fileName);
 
-        System.out.println("ML="+ml);
+        System.out.println("ML="+ml); //$NON-NLS-1$
 
 
         if(ml==null){
@@ -319,7 +320,7 @@ public class SWTMoviePlayer implements ControllerListener{
             try {
                 p_ = Manager.createProcessor(ml);
             } catch (Exception e) {
-                System.err.println("Failed to create a processor from the given url: " + e);
+                System.err.println("Failed to create a processor from the given url: " + e); //$NON-NLS-1$
                 return false;
             }
 
@@ -328,7 +329,7 @@ public class SWTMoviePlayer implements ControllerListener{
             // Put the Processor into configured state.
             p_.configure();
             if (!_waitForState(Processor.Configured)) {
-                System.err.println("Failed to configure the processor.");
+                System.err.println("Failed to configure the processor."); //$NON-NLS-1$
                 return false;
             }
 
@@ -339,7 +340,7 @@ public class SWTMoviePlayer implements ControllerListener{
             TrackControl tc[] = p_.getTrackControls();
 
             if (tc == null) {
-                System.err.println("Failed to obtain track controls from the processor.");
+                System.err.println("Failed to obtain track controls from the processor."); //$NON-NLS-1$
                 return false;
             }
 
@@ -354,7 +355,7 @@ public class SWTMoviePlayer implements ControllerListener{
             }
 
             if (videoTrack == null) {
-                System.err.println("The input media does not contain a video track.");
+                System.err.println("The input media does not contain a video track."); //$NON-NLS-1$
                 return false;
             }
 
@@ -375,7 +376,7 @@ public class SWTMoviePlayer implements ControllerListener{
             // Realize the processor.
             p_.prefetch();
             if (!_waitForState(Controller.Prefetched)) {
-                System.err.println("Failed to realize the processor.");
+                System.err.println("Failed to realize the processor."); //$NON-NLS-1$
                 return false;
             }
 
@@ -407,16 +408,16 @@ public class SWTMoviePlayer implements ControllerListener{
             panel.setLayout(new BorderLayout());
             Component cc;
             if ((cc = p_.getControlPanelComponent()) != null) {
-                panel.add("Center", cc);
+                panel.add("Center", cc); //$NON-NLS-1$
             }
-            JButton btn=new JButton("Save"); 
+            JButton btn=new JButton(MessageBundle.get("SWTMoviePlayer.button.save"));  //$NON-NLS-1$
             btn.addActionListener(new  ActionListener(){
                     public void actionPerformed(ActionEvent e){
                         _saveImageAs();
                     }
                 }
             );
-            panel.add("East", btn);
+            panel.add("East", btn); //$NON-NLS-1$
             newOpe=panel;
             
             //window_.setText(STR_TITLE_ + " -" + ml);
@@ -427,12 +428,12 @@ public class SWTMoviePlayer implements ControllerListener{
         contentPane_.setLayout(new BorderLayout());
         cmpVisual_=newVisual;
         if (cmpVisual_!= null) {
-            contentPane_.add("Center", cmpVisual_);
+            contentPane_.add("Center", cmpVisual_); //$NON-NLS-1$
         }
         
         cmpOpe_=newOpe;
         if (cmpOpe_ != null) {
-            contentPane_.add("South", cmpOpe_);
+            contentPane_.add("South", cmpOpe_); //$NON-NLS-1$
         }
 
         //はじめの画面を表示
@@ -457,7 +458,7 @@ public class SWTMoviePlayer implements ControllerListener{
             MyBufferToImage bti =new MyBufferToImage((VideoFormat)buf.getFormat());
             Image img=bti.createImage(buf);
             if(img==null){
-                System.out.println("Can't create Image in this format!");
+                System.out.println("Can't create Image in this format!"); //$NON-NLS-1$
                 return null;
             }else{
                 BufferedImage bimg=new BufferedImage(img.getWidth(null),img.getHeight(null),BufferedImage.TYPE_INT_RGB);
@@ -474,7 +475,7 @@ public class SWTMoviePlayer implements ControllerListener{
     JPEGImageEncoder enc;
     private void _saveImageAs(){
         if (p_ == null) {
-        	System.out.println("not init.");
+        	System.out.println("not init."); //$NON-NLS-1$
         	return;
         }
 		try {
@@ -490,8 +491,8 @@ public class SWTMoviePlayer implements ControllerListener{
         try{
             FileDialog fDialog = new FileDialog(window_,SWT.SAVE);
 
-            String [] exts = {"*.jpg"};
-    		String [] filterNames = {"Jpeg Image(*.jpg)"};
+            String [] exts = {"*.jpg"}; //$NON-NLS-1$
+    		String [] filterNames = {MessageBundle.get("SWTMoviePlayer.dialog.filter.jpeg")}; //$NON-NLS-1$
     		fDialog.setFilterExtensions(exts);
     		fDialog.setFilterNames(filterNames);
     		
@@ -558,7 +559,7 @@ public class SWTMoviePlayer implements ControllerListener{
                 JOptionPane.ERROR_MESSAGE
             ); 
         	 */
-        	MessageDialog.openError(window_, "Error", "Can't Save Image :" + exception.getMessage() );
+        	MessageDialog.openError(window_, MessageBundle.get("SWTMoviePlayer.dialog.title.error"), MessageBundle.get("SWTMoviePlayer.dialog.message.save") + exception.getMessage() ); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
 

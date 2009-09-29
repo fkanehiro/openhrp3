@@ -78,12 +78,12 @@ import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.view.tdview.*;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class Grx3DView 
     extends GrxBaseView 
     implements ThreeDDrawable 
 {
-    public static final String TITLE = "3DView";
+    public static final String TITLE = "3DView"; //$NON-NLS-1$
     //  java3D 1.4.1のバグ？　対策		
     public static final GraphicsConfiguration graphicsConfiguration = SimpleUniverse.getPreferredConfiguration();
     // items
@@ -128,20 +128,20 @@ public class Grx3DView
     // UI objects
     private ObjectToolBar objectToolBar_ = new ObjectToolBar();
     private ViewToolBar viewToolBar_ = new ViewToolBar();
-    private JButton btnHomePos_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/home.png")));
-    private JToggleButton btnFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/floor.png")));
-    private JToggleButton btnCollision_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/collision.png")));
-    private JToggleButton btnDistance_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/distance.png")));
-    private JToggleButton btnIntersection_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/proximity.png")));
-    private JToggleButton btnCoM_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/com.png")));
-    private JToggleButton btnCoMonFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/com_z0.png")));
-    private JToggleButton btnRec_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/record.png")));
-    private JButton btnPlayer_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/movie_player.png")));
-    private JButton btnRestore_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/undo.png")));
+    private JButton btnHomePos_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/home.png"))); //$NON-NLS-1$
+    private JToggleButton btnFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/floor.png"))); //$NON-NLS-1$
+    private JToggleButton btnCollision_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/collision.png"))); //$NON-NLS-1$
+    private JToggleButton btnDistance_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/distance.png"))); //$NON-NLS-1$
+    private JToggleButton btnIntersection_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/proximity.png"))); //$NON-NLS-1$
+    private JToggleButton btnCoM_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/com.png"))); //$NON-NLS-1$
+    private JToggleButton btnCoMonFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/com_z0.png"))); //$NON-NLS-1$
+    private JToggleButton btnRec_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/record.png"))); //$NON-NLS-1$
+    private JButton btnPlayer_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/movie_player.png"))); //$NON-NLS-1$
+    private JButton btnRestore_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/undo.png"))); //$NON-NLS-1$
      
-    private JLabel lblMode_ = new JLabel("[VIEW]");
-    private JLabel lblTarget_ = new JLabel("");
-    private JLabel lblValue_  = new JLabel("");
+    private JLabel lblMode_ = new JLabel(MessageBundle.get("Grx3DView.label.view")); //$NON-NLS-1$
+    private JLabel lblTarget_ = new JLabel(""); //$NON-NLS-1$
+    private JLabel lblValue_  = new JLabel(""); //$NON-NLS-1$
     
     private Shape3D collision_;
     private Shape3D distance_;
@@ -187,15 +187,15 @@ public class Grx3DView
         //contentPane.setAlignmentX(JPanel.LEFT_ALIGNMENT);
         
         lblMode_.setForeground(Color.black);
-        lblMode_.setFont(new Font("Monospaced", Font.BOLD, 12));
+        lblMode_.setFont(new Font("Monospaced", Font.BOLD, 12)); //$NON-NLS-1$
         lblMode_.setPreferredSize(new Dimension(300, 20));
 
         lblTarget_.setForeground(Color.white);
-        lblTarget_.setFont(new Font("Monospaced", Font.BOLD, 12));
+        lblTarget_.setFont(new Font("Monospaced", Font.BOLD, 12)); //$NON-NLS-1$
         lblTarget_.setPreferredSize(new Dimension(500, 20));
 
         lblValue_.setForeground(Color.white);
-        lblValue_.setFont(new Font("Monospaced", Font.BOLD, 12));
+        lblValue_.setFont(new Font("Monospaced", Font.BOLD, 12)); //$NON-NLS-1$
         lblValue_.setPreferredSize(new Dimension(300, 20));
         
         canvas_ = new Canvas3D(graphicsConfiguration);
@@ -277,7 +277,7 @@ public class Grx3DView
         behaviorManager_.initDynamicsSimulator();
         behaviorManager_.setOperationMode(BehaviorManager.OPERATION_MODE_NONE);
         behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
-        behaviorManager_.setViewHandlerMode("button_mode_rotation");
+        behaviorManager_.setViewHandlerMode("button_mode_rotation"); //$NON-NLS-1$
         behaviorManager_.replaceWorld(null);
         viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
         viewToolBar_.setOperation(ViewToolBar.ROTATE);
@@ -434,24 +434,24 @@ public class Grx3DView
     }
 
     private void _setupToolBars() {
-        btnHomePos_.setToolTipText("go home of eye pos.");
+        btnHomePos_.setToolTipText(MessageBundle.get("Grx3DView.text.goHomeEyePos")); //$NON-NLS-1$
         btnHomePos_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 tgView_.setTransform(t3dViewHome_);
             }
         });
 
-        btnFloor_.setToolTipText("show z=0 plane");
+        btnFloor_.setToolTipText(MessageBundle.get("Grx3DView.text,showZPlane")); //$NON-NLS-1$
         btnFloor_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (btnFloor_.isSelected()) {
-                    btnFloor_.setToolTipText("hide z=0 plane");
-                    setProperty("showScale", "true");
+                    btnFloor_.setToolTipText(MessageBundle.get("Grx3DView.text.hideZPlane")); //$NON-NLS-1$
+                    setProperty("showScale", "true"); //$NON-NLS-1$ //$NON-NLS-2$
                     if (bgRoot_.indexOfChild(getRuler()) == -1) 
                         bgRoot_.addChild(getRuler());
                 } else {
-                    btnFloor_.setToolTipText("show z=0 plane");
-                    setProperty("showScale", "false");
+                    btnFloor_.setToolTipText(MessageBundle.get("Grx3DView.text.showZPlane")); //$NON-NLS-1$
+                    setProperty("showScale", "false"); //$NON-NLS-1$ //$NON-NLS-2$
                     if (bgRoot_.indexOfChild(getRuler()) != -1)
                         getRuler().detach();
                 }
@@ -459,52 +459,52 @@ public class Grx3DView
         });
         btnFloor_.doClick();
         
-        btnCollision_.setToolTipText("show Collision");
+        btnCollision_.setToolTipText(MessageBundle.get("Grx3DView.text.showCollision")); //$NON-NLS-1$
         btnCollision_.setSelected(true);
         btnCollision_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (btnCollision_.isSelected()){
-                    btnCollision_.setToolTipText("hide Collision");
+                    btnCollision_.setToolTipText(MessageBundle.get("Grx3DView.text.hideCollision")); //$NON-NLS-1$
                     if (viewMode_ == SIMULATION)
                     	_showCollision(currentState_.collisions);
                     else
                     	_showCollision(behaviorManager_.getCollision());
                 }else{
-                    btnCollision_.setToolTipText("show Collision");
+                    btnCollision_.setToolTipText(MessageBundle.get("Grx3DView.text.showCollision")); //$NON-NLS-1$
                     _showCollision(null);
                 }
             }
         });
         
-        btnDistance_.setToolTipText("show Distance");
+        btnDistance_.setToolTipText(MessageBundle.get("Grx3DView.text.showDistance")); //$NON-NLS-1$
         btnDistance_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (btnDistance_.isSelected()){
-                    btnDistance_.setToolTipText("hide Distance");
+                    btnDistance_.setToolTipText(MessageBundle.get("Grx3DView.text.hideDistance")); //$NON-NLS-1$
                     if (viewMode_ != SIMULATION)
                     	_showDistance(behaviorManager_.getDistance());
                 }else {
-                    btnDistance_.setToolTipText("show Distance");
+                    btnDistance_.setToolTipText(MessageBundle.get("Grx3DView.text.showDistance")); //$NON-NLS-1$
                     _showDistance(null);
                 }
             }
         });
         
-        btnIntersection_.setToolTipText("check intersection");
+        btnIntersection_.setToolTipText(MessageBundle.get("Grx3DView.text.checkIntersection")); //$NON-NLS-1$
         btnIntersection_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (btnIntersection_.isSelected()){
-                    btnIntersection_.setToolTipText("nocheck intersection");
+                    btnIntersection_.setToolTipText(MessageBundle.get("Grx3DView.text.nocheckIntersection")); //$NON-NLS-1$
                     if (viewMode_ != SIMULATION)
                     	_showIntersection(behaviorManager_.getIntersection());
                 }else{
-                    btnIntersection_.setToolTipText("check intersection");
+                    btnIntersection_.setToolTipText(MessageBundle.get("Grx3DView.text.checkIntersection")); //$NON-NLS-1$
                     _showIntersection(null);
                 }
             }
         });
         
-        btnCoM_.setToolTipText("show Center of Mass");
+        btnCoM_.setToolTipText(MessageBundle.get("Grx3DView.text.showCom")); //$NON-NLS-1$
         btnCoM_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 boolean b = btnCoM_.isSelected();
@@ -513,7 +513,7 @@ public class Grx3DView
             };
         });
         
-        btnCoMonFloor_.setToolTipText("show Center of Mass on Floor");
+        btnCoMonFloor_.setToolTipText(MessageBundle.get("Grx3DView.text.showcomFloor")); //$NON-NLS-1$
         btnCoMonFloor_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 boolean b = btnCoMonFloor_.isSelected();
@@ -522,7 +522,7 @@ public class Grx3DView
             };
         });
         
-        btnRec_.setToolTipText("record");
+        btnRec_.setToolTipText(MessageBundle.get("Grx3DView.text.record")); //$NON-NLS-1$
         btnRec_.addActionListener(new ActionListener() { 
             public void actionPerformed(ActionEvent e) {    
                 if (btnRec_.isSelected()) {
@@ -536,7 +536,7 @@ public class Grx3DView
             }
         });
         
-        btnPlayer_.setToolTipText("movie player");
+        btnPlayer_.setToolTipText(MessageBundle.get("Grx3DView.text.moviePlayer")); //$NON-NLS-1$
         btnPlayer_.addActionListener(new ActionListener() { 
             public void actionPerformed(ActionEvent e) {
                 Display.getDefault().syncExec( new Runnable(){
@@ -549,7 +549,7 @@ public class Grx3DView
         });
         
 
-        final JButton btnCamera = new JButton("C");
+        final JButton btnCamera = new JButton("C"); //$NON-NLS-1$
         btnCamera.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 for (int i=0; i<currentModels_.size(); i++) {
@@ -573,7 +573,7 @@ public class Grx3DView
         viewToolBar_.add(btnPlayer_);
         viewToolBar_.add(btnCamera);
 
-        btnRestore_.setToolTipText("restore model properties");
+        btnRestore_.setToolTipText(MessageBundle.get("Grx3DView.text.restoreModel")); //$NON-NLS-1$
         btnRestore_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 for (int i=0; i<currentModels_.size(); i++) {
@@ -619,28 +619,28 @@ public class Grx3DView
     
     public void restoreProperties() {
         super.restoreProperties();
-        if (getStr("showScale")==null) setProperty("showScale", "true");
-        if (getStr("showCollision")==null) setProperty("showCollision", "true");
-        if (getStr("showDistance")==null) setProperty("showDistance", "false");
-        if (getStr("showIntersection")==null) setProperty("showIntersection", "false");
-        if (getStr("showCoM")==null) setProperty("showCoM", "false");
-        if (getStr("showCoMonFloor")==null) setProperty("showCoMonFloor", "false");
-        if (getStr("view.mode")==null) setInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM);
+        if (getStr("showScale")==null) setProperty("showScale", "true"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (getStr("showCollision")==null) setProperty("showCollision", "true"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (getStr("showDistance")==null) setProperty("showDistance", "false"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (getStr("showIntersection")==null) setProperty("showIntersection", "false"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (getStr("showCoM")==null) setProperty("showCoM", "false"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (getStr("showCoMonFloor")==null) setProperty("showCoMonFloor", "false"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (getStr("view.mode")==null) setInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM); //$NON-NLS-1$ //$NON-NLS-2$
         
-        default_eye    = getDblAry("view.eye",    default_eye);
-        default_lookat = getDblAry("view.lookat", default_lookat);
-        default_upward = getDblAry("view.upward", default_upward);
+        default_eye    = getDblAry("view.eye",    default_eye); //$NON-NLS-1$
+        default_lookat = getDblAry("view.lookat", default_lookat); //$NON-NLS-1$
+        default_upward = getDblAry("view.upward", default_upward); //$NON-NLS-1$
         
-        if (isTrue("showScale", true) != btnFloor_.isSelected()){
+        if (isTrue("showScale", true) != btnFloor_.isSelected()){ //$NON-NLS-1$
         	btnFloor_.doClick();
         }
-        btnCollision_.setSelected(isTrue("showCollision", true));
-        btnDistance_.setSelected(isTrue("showDistance", false));
-        btnIntersection_.setSelected(isTrue("showIntersection", false));
-        btnCoM_.setSelected(isTrue("showCoM", false));
-        btnCoMonFloor_.setSelected(isTrue("showCoMonFloor",false));
+        btnCollision_.setSelected(isTrue("showCollision", true)); //$NON-NLS-1$
+        btnDistance_.setSelected(isTrue("showDistance", false)); //$NON-NLS-1$
+        btnIntersection_.setSelected(isTrue("showIntersection", false)); //$NON-NLS-1$
+        btnCoM_.setSelected(isTrue("showCoM", false)); //$NON-NLS-1$
+        btnCoMonFloor_.setSelected(isTrue("showCoMonFloor",false)); //$NON-NLS-1$
         
-        viewToolBar_.selectViewMode(getInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM));
+        viewToolBar_.selectViewMode(getInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM)); //$NON-NLS-1$
         //_setViewHomePosition();
     }
     
@@ -730,7 +730,7 @@ public class Grx3DView
     
     public void update(GrxBasePlugin plugin, Object... arg) {
     	if(currentWorld_!=plugin) return;
-		if((String)arg[0]=="PositionChange"){
+		if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
 			if(viewMode_ == VIEW || viewMode_ == SIMULATION){
 				int pos = ((Integer)arg[1]).intValue();
 				currentState_ = currentWorld_.getValue(pos);
@@ -742,17 +742,17 @@ public class Grx3DView
 				if(viewMode_ == VIEW)
 					showOption();
 			}
-		}else if((String)arg[0]=="StartSimulation"){
+		}else if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
 			disableButton();
 			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
 			if((Boolean)arg[1])
 				showViewSimulator(true);
 			viewMode_ = SIMULATION;
-		}else if((String)arg[0]=="StopSimulation"){
+		}else if((String)arg[0]=="StopSimulation"){ //$NON-NLS-1$
 			objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
 			enableButton();
 			viewMode_ = VIEW;
-		}else if((String)arg[0]=="ClearLog"){
+		}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
 			currentState_ = null;
 		}
     }
@@ -813,7 +813,7 @@ public class Grx3DView
                 if (charStat.sensorState != null){
                     model.setCharacterPos(charStat.position, charStat.sensorState.q);
                     if (charStat.sensorState.range != null && charStat.sensorState.range.length > 0){
-                    	List<GrxSensorItem> sensors = model.getSensors("Range");
+                    	List<GrxSensorItem> sensors = model.getSensors("Range"); //$NON-NLS-1$
                     	for (int j=0; j<sensors.size(); j++){
                     		GrxSensorItem sensor = sensors.get(j);
                     		if (sensor.isVisible() && sensor.id() >= 0 && sensor.id() < charStat.sensorState.range.length){
@@ -840,14 +840,14 @@ public class Grx3DView
         try{		
         	framerate = dialog.getFrameRate();		
         }catch(Exception NumberFormatException ){		
-        	new ErrorDialog(frame_, "Error", "framerate must be integer" ).showModalDialog();		
+        	new ErrorDialog(frame_, MessageBundle.get("Grx3DView.dialog.title.error"), MessageBundle.get("Grx3DView.dialog.message.error") ).showModalDialog();		 //$NON-NLS-1$ //$NON-NLS-2$
         	btnRec_.setSelected(false);		
         	return;		
         }		
         double playbackRate = dialog.getPlaybackRate();
         
         Dimension canvasSize = imageSize;
-        GrxDebugUtil.println("ScreenSize: " + canvasSize.width + "x" + canvasSize.height + " (may be)");
+        GrxDebugUtil.println("ScreenSize: " + canvasSize.width + "x" + canvasSize.height + " (may be)"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         canvasSize.width = canvasSize.width;
         canvasSize.height = canvasSize.height;
         
@@ -881,8 +881,8 @@ public class Grx3DView
         lastMovieFileName = pathToURL(fileName);
         ComboBoxDialog cmb = new ComboBoxDialog(
             frame_, 
-                "Video format", 
-                "Select Video format, Please.",
+                MessageBundle.get("Grx3DView.dialog.title.videoFormat"),  //$NON-NLS-1$
+                MessageBundle.get("Grx3DView.dialog.message.videoFormat"), //$NON-NLS-1$
                 recordingMgr_.preRecord(lastMovieFileName, ImageToMovie.QUICKTIME));
         String format__ = (String)cmb.showComboBoxDialog();
         if (format__ == null) {
@@ -896,10 +896,10 @@ public class Grx3DView
                 return;
             }
         } catch (Exception e) {
-            GrxDebugUtil.printErr("Grx3DView.rec():",e);
+            GrxDebugUtil.printErr("Grx3DView.rec():",e); //$NON-NLS-1$
             syncExec(new Runnable(){
 				public void run(){
-					MessageDialog.openError( comp.getShell(), "Error", "Failed to Record Movie");
+					MessageDialog.openError( comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.error"), MessageBundle.get("Grx3DView.dialog.message.recError")); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 			});
             btnRec_.setSelected(false);	
@@ -938,11 +938,11 @@ public class Grx3DView
 				} catch (Exception e) {
 					syncExec(new Runnable(){
 						public void run(){
-							MessageDialog.openError( comp.getShell(), "Error", "Recording Interrupted by Exception.");
+							MessageDialog.openError( comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.error"), MessageBundle.get("Grx3DView.dialog.message.recException")); //$NON-NLS-1$ //$NON-NLS-2$
 						}
 					});
 					stopRecording();
-					GrxDebugUtil.printErr("Recording Interrupted by Exception:",e);
+					GrxDebugUtil.printErr("Recording Interrupted by Exception:",e); //$NON-NLS-1$
 				}
 			}
 		};
@@ -956,7 +956,7 @@ public class Grx3DView
 		view_.removeCanvas3D(offscreen_);
 		syncExec(new Runnable(){
 			public void run(){
-				MessageDialog.openInformation( comp.getShell(), "Infomation", "Recording finished");
+				MessageDialog.openInformation( comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.Infomation"), MessageBundle.get("Grx3DView.dialog.message.recFinish")); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		});
 		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
@@ -970,8 +970,8 @@ public class Grx3DView
 
         syncExec(new Runnable(){
 			public void run(){
-				ret_ = MessageDialog.openConfirm( comp.getShell(), "File is already exist.",
-						fileName + " " + "is already exist. Are you over write?");
+				ret_ = MessageDialog.openConfirm( comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.fileExist"), //$NON-NLS-1$
+						fileName + " " + MessageBundle.get("Grx3DView.dialog.message.fileExist")); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		});
         if(ret_)
@@ -981,22 +981,22 @@ public class Grx3DView
     }
     
     private String pathToURL(String path) {
-        if (path.startsWith("file:///")) {
+        if (path.startsWith("file:///")) { //$NON-NLS-1$
                     //String filePath = path.substring(8);
             path = path.replace(java.io.File.separatorChar, '/');
             return path;
         }
-        if (path.startsWith("http://")) {
+        if (path.startsWith("http://")) { //$NON-NLS-1$
             return path;
         }
         if (!path.startsWith(java.io.File.separator) && (path.indexOf(':') != 1)) {
-            path = System.getProperty("user.dir") + java.io.File.separator + path;
+            path = System.getProperty("user.dir") + java.io.File.separator + path; //$NON-NLS-1$
         }
         if (path.indexOf(':') == 1) {
             path = path.replace(java.io.File.separatorChar, '/');
-            return "file:///" + path;
+            return "file:///" + path; //$NON-NLS-1$
         }
-        return "file://" + path;
+        return "file://" + path; //$NON-NLS-1$
     }
         
     private void _doRecording() {
@@ -1089,7 +1089,7 @@ public class Grx3DView
         }
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
 	private void _showIntersection(LinkPair[] pairs){
     	if (pairs == null){
     		for (int i=0; i<intersectingLinks_.size(); i++){
@@ -1172,21 +1172,21 @@ public class Grx3DView
         
         OnlineViewer_impl olvImpl = new OnlineViewer_impl();
         OnlineViewer olv = olvImpl._this(manager_.orb_);//GrxCorbaUtil.getORB());
-        NameComponent[] path1 = {new NameComponent("OnlineViewer", "")};
+        NameComponent[] path1 = {new NameComponent("OnlineViewer", "")}; //$NON-NLS-1$ //$NON-NLS-2$
         
         ViewSimulator_impl  viewImpl = new ViewSimulator_impl();
         ViewSimulator view = viewImpl._this(manager_.orb_);//GrxCorbaUtil.getORB());
-        NameComponent[] path2 = {new NameComponent("ViewSimulator", "")};
+        NameComponent[] path2 = {new NameComponent("ViewSimulator", "")}; //$NON-NLS-1$ //$NON-NLS-2$
         
         try {
             rootnc.rebind(path1, olv);
             rootnc.rebind(path2, view);
         } catch (Exception ex) {
-            GrxDebugUtil.println("3DVIEW : failed to bind to localhost NameService");
+            GrxDebugUtil.println("3DVIEW : failed to bind to localhost NameService"); //$NON-NLS-1$
             return false;
         }
          
-        GrxDebugUtil.println("3DVIEW : successfully bound to localhost NameService");
+        GrxDebugUtil.println("3DVIEW : successfully bound to localhost NameService"); //$NON-NLS-1$
         return true;
     }
     
@@ -1230,7 +1230,7 @@ public class Grx3DView
           		if (li.llimit()[0] < li.ulimit()[0])
           			li.jointValue(Math.max(li.jointValue(), li.llimit()[0]));
           		item.calcForwardKinematics();
-        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue()));
+        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue())); //$NON-NLS-1$
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,KeyEvent.SHIFT_MASK) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_L,KeyEvent.SHIFT_MASK)) {
@@ -1238,7 +1238,7 @@ public class Grx3DView
           		if (li.llimit()[0] < li.ulimit()[0])
           			li.jointValue(Math.min(li.jointValue(), li.ulimit()[0]));
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue()));
+        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue())); //$NON-NLS-1$
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_H,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0)) {
@@ -1246,7 +1246,7 @@ public class Grx3DView
           		if (li.llimit()[0] < li.ulimit()[0])
           			li.jointValue(Math.max(li.jointValue(), li.llimit()[0]));
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue()));
+        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue())); //$NON-NLS-1$
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_L,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0)) {
@@ -1254,7 +1254,7 @@ public class Grx3DView
           		if (li.llimit()[0] < li.ulimit()[0])
           			li.jointValue(Math.min(li.jointValue(), li.ulimit()[0]));
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue()));
+        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue())); //$NON-NLS-1$
           	}
           	arg0.consume();
         }     
@@ -1326,7 +1326,7 @@ public class Grx3DView
         }
 
         public void load(final String name, String url) {
-            System.out.println(name+":"+url);
+            System.out.println(name+":"+url); //$NON-NLS-1$
             try {
                 URL u = new URL(url);
                 final String url_ = u.getFile();
@@ -1380,7 +1380,7 @@ public class Grx3DView
         			currentWorld_.addValue(t, statex);
         			currentWorld_.setPosition(currentWorld_.getLogSize()-1);
         			if (t > 0 && prevTime > 0)
-        				currentWorld_.setDbl("logTimeStep", t - prevTime);
+        				currentWorld_.setDbl("logTimeStep", t - prevTime); //$NON-NLS-1$
         		}
             });
             prevTime = t;
@@ -1431,7 +1431,7 @@ public class Grx3DView
                 view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
                 behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM); //$NON-NLS-1$
             }
         });
 
@@ -1441,7 +1441,7 @@ public class Grx3DView
                 view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
                 behaviorManager_.setViewMode(BehaviorManager.WALK_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.WALK_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_WALK);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_WALK); //$NON-NLS-1$
             }
         });
 
@@ -1454,7 +1454,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_FRONT);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_FRONT); //$NON-NLS-1$
             }
         });
 
@@ -1467,7 +1467,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_BACK);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_BACK); //$NON-NLS-1$
             }
         });
 
@@ -1480,7 +1480,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_LEFT);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_LEFT); //$NON-NLS-1$
             }
         });
 
@@ -1493,7 +1493,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_RIGHT);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_RIGHT); //$NON-NLS-1$
             }
         });
 
@@ -1506,7 +1506,7 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_TOP);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_TOP); //$NON-NLS-1$
             }
         });
 
@@ -1519,12 +1519,12 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_BOTTOM);
+                setInt("view.mode", ViewToolBar.COMBO_SELECT_BOTTOM); //$NON-NLS-1$
             }
         });
         GUIAction.VIEW_ZOOM_MODE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                behaviorManager_.setViewHandlerMode("button_mode_zoom");
+                behaviorManager_.setViewHandlerMode("button_mode_zoom"); //$NON-NLS-1$
                 // viewHandlerMode_[currentViewer_] = "button_mode_zoom";
                 viewToolBar_.setOperation(ViewToolBar.ZOOM);
                 //objectToolBar_.selectNone();
@@ -1534,7 +1534,7 @@ public class Grx3DView
 
         GUIAction.VIEW_ROTATION_MODE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                behaviorManager_.setViewHandlerMode("button_mode_rotation");
+                behaviorManager_.setViewHandlerMode("button_mode_rotation"); //$NON-NLS-1$
                 // viewHandlerMode_[currentViewer_] = "button_mode_rotation";
                 viewToolBar_.setOperation(ViewToolBar.ROTATE);
                 //objectToolBar_.selectNone();
@@ -1544,7 +1544,7 @@ public class Grx3DView
         
         GUIAction.VIEW_PAN_MODE.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                behaviorManager_.setViewHandlerMode("button_mode_translation");
+                behaviorManager_.setViewHandlerMode("button_mode_translation"); //$NON-NLS-1$
                 // viewHandlerMode_[currentViewer_] = "button_mode_translation";
                 viewToolBar_.setOperation(ViewToolBar.PAN);
                 //objectToolBar_.selectNone();
@@ -1599,7 +1599,7 @@ public class Grx3DView
                                 new Runnable(){
                                     public void run() {
                                         FileDialog fdlg = new FileDialog( getParent().getShell(), SWT.SAVE);
-                                        String[] fe = { "*.png" };
+                                        String[] fe = { "*.png" }; //$NON-NLS-1$
                                         fdlg.setFilterExtensions( fe );
                                         String fPath = fdlg.open();
                                         if( fPath != null ){
@@ -1617,7 +1617,7 @@ public class Grx3DView
                     behaviorManager_.setOperationMode(BehaviorManager.OBJECT_TRANSLATION_MODE);
                     viewMode_ = EDIT;
                     objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-                    lblMode_.setText("[ EDIT : Translate Object ]");
+                    lblMode_.setText(MessageBundle.get("Grx3DView.text.editTranslate")); //$NON-NLS-1$
                     showOption();
             	}
             }
@@ -1629,7 +1629,7 @@ public class Grx3DView
             		behaviorManager_.setOperationMode(BehaviorManager.OBJECT_ROTATION_MODE);
             		viewMode_ = EDIT;
             		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-            		lblMode_.setText("[ EDIT : Rotate Object ]");
+            		lblMode_.setText(MessageBundle.get("Grx3DView.text,editRotate")); //$NON-NLS-1$
             		showOption();
             	}
             }
@@ -1640,7 +1640,7 @@ public class Grx3DView
             		behaviorManager_.setOperationMode(BehaviorManager.JOINT_ROTATION_MODE);
             		viewMode_ = EDIT;
             		objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-            		lblMode_.setText("[ EDIT : Move Joint ]");
+            		lblMode_.setText(MessageBundle.get("Grx3DView.text.editMove")); //$NON-NLS-1$
             		showOption();
             	}
             }
@@ -1653,7 +1653,7 @@ public class Grx3DView
 	                viewToolBar_.setEnabled(true);
 	                behaviorManager_.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
 	                viewMode_ = EDIT;
-	                lblMode_.setText("[ EDIT : Object Placement Select ]");
+	                lblMode_.setText(MessageBundle.get("Grx3DView.text.editObjectSelect")); //$NON-NLS-1$
 	                showOption();
             	}
             }
@@ -1666,7 +1666,7 @@ public class Grx3DView
 	                viewToolBar_.setEnabled(true);
 	                behaviorManager_.setOperationMode(BehaviorManager.FITTING_TO_MODE);
 	                viewMode_ = EDIT;
-	                lblMode_.setText("[ EDIT : Object Placement Destination ]");
+	                lblMode_.setText(MessageBundle.get("Grx3DView.text,editObjectDestination")); //$NON-NLS-1$
 	                showOption();
             	}
             }
@@ -1680,7 +1680,7 @@ public class Grx3DView
                 viewToolBar_.setEnabled(true);
                 behaviorManager_.setOperationMode(BehaviorManager.FITTING_FROM_MODE);
                 viewMode_ = EDIT;
-                lblMode_.setText("[ EDIT : Object Placement Select ]");
+                lblMode_.setText(MessageBundle.get("Grx3DView.text.editObjectSelect")); //$NON-NLS-1$
                 showOption();
             }
         });
@@ -1691,7 +1691,7 @@ public class Grx3DView
 	            	objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
 	            	behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_FROM_MODE);
 	            	viewMode_ = EDIT;
-	            	lblMode_.setText("[ EDIT : Inverse Kinematics Base Link ]");
+	            	lblMode_.setText(MessageBundle.get("Grx3DView.text.IKbaseLink")); //$NON-NLS-1$
 	            	showOption();
             	}
             }
@@ -1703,7 +1703,7 @@ public class Grx3DView
 	                objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
 	                behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_TRANSLATION_MODE);
 	                viewMode_ = EDIT;
-	                lblMode_.setText("[ EDIT : Inverse Kinematics Translate ]");
+	                lblMode_.setText(MessageBundle.get("Grx3DView.text.IKtranslate")); //$NON-NLS-1$
 	                showOption();
             	}
             }
@@ -1715,7 +1715,7 @@ public class Grx3DView
 	                objectToolBar_.setMode(ObjectToolBar.INV_KINEMA_MODE);
 	                behaviorManager_.setOperationMode(BehaviorManager.INV_KINEMA_ROTATION_MODE);
 	                viewMode_ = EDIT;
-	                lblMode_.setText("[ EDIT : Inverse Kinematics Rotate ]");
+	                lblMode_.setText(MessageBundle.get("Grx3DView.text.IKRotate")); //$NON-NLS-1$
 	                showOption();
             	}
             }
@@ -1736,7 +1736,7 @@ public class Grx3DView
         objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
         objectToolBar_.selectNone();
         viewToolBar_.setEnabled(true);
-        lblMode_.setText("[ VIEW ]");
+        lblMode_.setText(MessageBundle.get("Grx3DView.text.view")); //$NON-NLS-1$
         
         if(currentState_!=null){
         	syncExec(new Runnable(){
@@ -1873,10 +1873,10 @@ public class Grx3DView
 
         //保存
         try {
-            javax.imageio.ImageIO.write(image, "PNG", file);
+            javax.imageio.ImageIO.write(image, "PNG", file); //$NON-NLS-1$
         } catch (IOException ex) {
             // この関数はSWTのEDTから呼ばれるのでSWT.syncExec()とかしなくていいはず
-            MessageDialog.openWarning( getParent().getShell(), "", MessageBundle.get("message.ioexception") );
+            MessageDialog.openWarning( getParent().getShell(), "", MessageBundle.get("message.ioexception") ); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
     
@@ -1887,9 +1887,9 @@ public class Grx3DView
     public boolean propertyChanged(String key, String value){
     	if (super.propertyChanged(key, value)){
     		
-    	}else if (key.equals("showScale")){
-    		if ((value.equals("true") && !btnFloor_.isSelected())
-    				|| (value.equals("false") && btnFloor_.isSelected())){
+    	}else if (key.equals("showScale")){ //$NON-NLS-1$
+    		if ((value.equals("true") && !btnFloor_.isSelected()) //$NON-NLS-1$
+    				|| (value.equals("false") && btnFloor_.isSelected())){ //$NON-NLS-1$
     			btnFloor_.doClick();
     		}
     		return true;

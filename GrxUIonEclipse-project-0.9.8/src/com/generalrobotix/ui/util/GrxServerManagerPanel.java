@@ -34,14 +34,14 @@ import org.eclipse.swt.widgets.TabFolder;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxServerManagerPanel extends Composite {
 
     static private final int    HORIZON_INDENT_ = 4;
     static private final int    LABEL_LENGTH_   = 32;
     static private final int    TEXT_LENGTH_    = 256;
-    static private final String START_          = "Start";
-    static private final String STOP_           = "Stop";
+    static private final String START_          = MessageBundle.get("GrxServerManagerPanel.button.start"); //$NON-NLS-1$
+    static private final String STOP_           = MessageBundle.get("GrxServerManagerPanel.button.stop"); //$NON-NLS-1$
     
     private Button  toggleButton_ = null; // Start <-> Stop Button
     private Button  autoChkBox_   = null; // Automatic start process flag
@@ -70,7 +70,7 @@ public class GrxServerManagerPanel extends Composite {
         localPanel.setLayout(localGridLayout);
 
         Label localLabelPath = new Label(localPanel, SWT.RIGHT);
-        localLabelPath.setText("Path: ");
+        localLabelPath.setText(MessageBundle.get("GrxServerManagerPanel.label.path")); //$NON-NLS-1$
         GridData labelPathGridData = new GridData();
         labelPathGridData.widthHint = LABEL_LENGTH_;
 
@@ -86,12 +86,12 @@ public class GrxServerManagerPanel extends Composite {
         });
         
         Button localRefButton = new Button(localPanel, SWT.PUSH);
-        localRefButton.setText("...");
+        localRefButton.setText("..."); //$NON-NLS-1$
         GridData refbtnGridData = new GridData();
         refbtnGridData.horizontalIndent = HORIZON_INDENT_;
 
         Label localLabelArgs = new Label(localPanel, SWT.RIGHT);
-        localLabelArgs.setText("Args: ");
+        localLabelArgs.setText(MessageBundle.get("GrxServerManagerPanel.label.args")); //$NON-NLS-1$
         GridData labelArgsGridData = new GridData();
         labelArgsGridData.widthHint = LABEL_LENGTH_;
 
@@ -134,7 +134,7 @@ public class GrxServerManagerPanel extends Composite {
         btnGridData.widthHint = 64;
 
         Label localLabelAuto = new Label(localPanel, SWT.RIGHT | SWT.FILL);
-        localLabelAuto.setText("Automatic start ");
+        localLabelAuto.setText(MessageBundle.get("GrxServerManagerPanel.label.start")); //$NON-NLS-1$
         GridData labelAutoGridData = new GridData(GridData.FILL_HORIZONTAL);
         labelAutoGridData.horizontalSpan = 2;
         labelAutoGridData.widthHint = LABEL_LENGTH_ + TEXT_LENGTH_;
@@ -153,7 +153,7 @@ public class GrxServerManagerPanel extends Composite {
             
         });
         Label localLabelUseORB = new Label(localPanel, SWT.RIGHT | SWT.FILL);
-        localLabelUseORB.setText("Use -ORBInitRef option ");
+        localLabelUseORB.setText(MessageBundle.get("GrxServerManagerPanel.label.useeRef")); //$NON-NLS-1$
         GridData labelUseORBGridData = new GridData(GridData.FILL_HORIZONTAL);
         labelUseORBGridData.horizontalSpan = 2;
         labelUseORBGridData.widthHint = LABEL_LENGTH_ + TEXT_LENGTH_;
@@ -197,16 +197,16 @@ public class GrxServerManagerPanel extends Composite {
     //ファイル参照用のモーダルダイアログを開く
     private void updateRefBtn(int localDim) {
         //ファイル名の取得
-        String[] filterNames = new String[] { "すべてのファイル(*)" };
-        String[] filterExtensions = new String[] { "*" };
+        String[] filterNames = new String[] { MessageBundle.get("GrxServerManagerPanel.filedialog.filterName") }; //$NON-NLS-1$
+        String[] filterExtensions = new String[] { "*" }; //$NON-NLS-1$
         FileDialog fileDlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
 
-        fileDlg.setText("");
+        fileDlg.setText(""); //$NON-NLS-1$
         fileDlg.setFilterNames(filterNames);
         fileDlg.setFilterExtensions(filterExtensions);
 
         String strServerName = GrxServerManager.vecServerInfo.elementAt(localDim).id;
-        fileDlg.setText("Select " + strServerName);
+        fileDlg.setText(MessageBundle.get("GrxServerManagerPanel.filedialog.title") + strServerName); //$NON-NLS-1$
         pathText_.setText(fileDlg.open());
     }
 
@@ -215,8 +215,8 @@ public class GrxServerManagerPanel extends Composite {
         // 確認ダイアログ表示後 当該 タブを削除
         if ( MessageDialog.openConfirm(
                 this.getShell(),
-                "Confirmation process " + toggleButton_.getText(),
-                "Would you like to " + toggleButton_.getText() +" ?"  ))
+                MessageBundle.get("GrxServerManagerPanel.dialog.title.update") + toggleButton_.getText(), //$NON-NLS-1$
+                MessageBundle.get("GrxServerManagerPanel.dialog.message.update") + toggleButton_.getText() +" ?"  )) //$NON-NLS-1$ //$NON-NLS-2$
         {
             TabFolder tabfolder = (TabFolder)getParent();
             ProcessInfo localInfo = new ProcessInfo(); 

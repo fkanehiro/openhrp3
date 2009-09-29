@@ -36,19 +36,19 @@ import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
 import jp.go.aist.hrp.simulator.*;
 
-@SuppressWarnings({ "unchecked", "serial" })
+@SuppressWarnings({ "unchecked", "serial" }) //$NON-NLS-1$ //$NON-NLS-2$
 /**
  * @brief item corresponds to a robot model
  */
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {
-    public static final String TITLE = "Model";
-    public static final String DEFAULT_DIR = "../../etc";
-    public static final String FILE_EXTENSION = "wrl";
+    public static final String TITLE = "Model"; //$NON-NLS-1$
+    public static final String DEFAULT_DIR = "../../etc"; //$NON-NLS-1$
+    public static final String FILE_EXTENSION = "wrl"; //$NON-NLS-1$
     private static final double DEFAULT_RADIUS = 0.05;
 
     // icons
-   	private static final String robotIcon = "robot.png";
-   	private static final String envIcon = "environment.png";
+   	private static final String robotIcon = "robot.png"; //$NON-NLS-1$
+   	private static final String envIcon = "environment.png"; //$NON-NLS-1$
    	
     private boolean isRobot_ = true;
 
@@ -107,7 +107,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public BodyInfo getBodyInfo(){
     	String url = getURL(true);
-    	if (bModified_ || url == null || url.equals(""))
+    	if (bModified_ || url == null || url.equals("")) //$NON-NLS-1$
     		return null;
     	else
     		return bInfo_;
@@ -119,9 +119,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	class MenuChangeType extends Action {
 		public MenuChangeType() {
 			if (isRobot_) {
-	            setText( "change into environmental model" );
+	            setText( MessageBundle.get("GrxModelItem.menu.changeEnv") ); //$NON-NLS-1$
 	        } else {
-	        	setText( "change into robot model" );
+	        	setText( MessageBundle.get("GrxModelItem.menu.changeRobot") ); //$NON-NLS-1$
 	        }
 		}
 		public void run(){
@@ -146,11 +146,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
         // create root link
-        GrxLinkItem link = new GrxLinkItem("root", manager_, this);
-        link.jointType("free");
+        GrxLinkItem link = new GrxLinkItem("root", manager_, this); //$NON-NLS-1$
+        link.jointType("free"); //$NON-NLS-1$
         bgRoot_.addChild(link.bg_);
         
-        setProperty("url","");
+        setProperty("url",""); //$NON-NLS-1$ //$NON-NLS-2$
         
         _setupMarks();
     }
@@ -183,7 +183,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	private void _initMenu() {
 		// menu item : reload
 		setMenuItem(new Action(){
-            public String getText(){ return "reload"; }
+            public String getText(){ return MessageBundle.get("GrxModelItem.menu.reload"); } //$NON-NLS-1$
 			public void run(){
 				load(GrxModelItem.this.file_);
 			}
@@ -193,10 +193,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         // menu item : save
         setMenuItem(new Action(){
-        	public String getText() { return "save"; }
+        	public String getText() { return MessageBundle.get("GrxModelItem.menu.save"); } //$NON-NLS-1$
         	public void run(){
-		        String url = getStr("url");
-		        if (url == null || url.equals("")){
+		        String url = getStr("url"); //$NON-NLS-1$
+		        if (url == null || url.equals("")){ //$NON-NLS-1$
 		        	_saveAs();
 		        }else{
 					GrxVrmlExporter.export(GrxModelItem.this, url);
@@ -206,7 +206,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         // menu item : save as
         setMenuItem(new Action(){
-        	public String getText() { return "save as"; }
+        	public String getText() { return MessageBundle.get("GrxModelItem.menu.saveAs"); } //$NON-NLS-1$
         	public void run(){
         		_saveAs();
         	}
@@ -275,19 +275,19 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	 */
     public void restoreProperties() {
         super.restoreProperties();
-        if (getStr("markRadius")==null) setDbl("markRadius", DEFAULT_RADIUS);
+        if (getStr("markRadius")==null) setDbl("markRadius", DEFAULT_RADIUS); //$NON-NLS-1$ //$NON-NLS-2$
 
-        _setModelType(isTrue("isRobot", isRobot_));
+        _setModelType(isTrue("isRobot", isRobot_)); //$NON-NLS-1$
 
-        if (getDblAry(rootLink().getName()+".translation", null) == null &&
-            getDblAry(rootLink().getName()+".rotation", null) == null)
+        if (getDblAry(rootLink().getName()+".translation", null) == null && //$NON-NLS-1$
+            getDblAry(rootLink().getName()+".rotation", null) == null) //$NON-NLS-1$
             updateInitialTransformRoot();
 
         for (int i=0; i<jointToLink_.length; i++) {
             GrxLinkItem l = links_.get(jointToLink_[i]);
-            Double d = getDbl(l.getName()+".angle", null);
+            Double d = getDbl(l.getName()+".angle", null); //$NON-NLS-1$
             if (d == null)
-                setDbl(l.getName()+".angle", 0.0);
+                setDbl(l.getName()+".angle", 0.0); //$NON-NLS-1$
         }
     }
 
@@ -299,33 +299,33 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public boolean propertyChanged(String property, String value) {
     	if (super.propertyChanged(property, value)){
-    	}else if(property.equals("isRobot")){
+    	}else if(property.equals("isRobot")){ //$NON-NLS-1$
     		_setModelType(value);
-    	}else if(property.equals("controlTime")){
+    	}else if(property.equals("controlTime")){ //$NON-NLS-1$
     		try{
     			double t = Double.parseDouble(value);
     			if (t > 0){
-    				setProperty("controlTime", value);
+    				setProperty("controlTime", value); //$NON-NLS-1$
     			}
     		}catch(Exception ex){
     		}
-    	}else if(property.equals(rootLink().getName()+".translation")){
+    	}else if(property.equals(rootLink().getName()+".translation")){ //$NON-NLS-1$
     		if (rootLink().translation(value)){
-    			setProperty(rootLink().getName()+".translation", value);
+    			setProperty(rootLink().getName()+".translation", value); //$NON-NLS-1$
     			calcForwardKinematics();
     		}
-    	}else if(property.equals(rootLink().getName()+".rotation")){
+    	}else if(property.equals(rootLink().getName()+".rotation")){ //$NON-NLS-1$
     		if (rootLink().rotation(value)){
-    			setProperty(rootLink().getName()+".rotation", value);
+    			setProperty(rootLink().getName()+".rotation", value); //$NON-NLS-1$
     			calcForwardKinematics();
     		}
     	}else{
             for (int j = 0; j < links_.size(); j++){
             	GrxLinkItem link = links_.get(j);
-            	if (property.equals(link.getName()+".angle")){
+            	if (property.equals(link.getName()+".angle")){ //$NON-NLS-1$
             		if (link.jointValue(value)){
                         calcForwardKinematics();
-                        setProperty(link.getName()+".angle", value);
+                        setProperty(link.getName()+".angle", value); //$NON-NLS-1$
             		}
                     return true;
             	}
@@ -355,14 +355,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         isRobot_ = isRobot;
         if (isRobot_) {
             setIcon(robotIcon);
-            menuChangeType_.setText("change into environmental model");
+            menuChangeType_.setText(MessageBundle.get("GrxModelItem.menu.changeEnv")); //$NON-NLS-1$
         } else {
-        	menuChangeType_.setText( "change into robot model" );
+        	menuChangeType_.setText( MessageBundle.get("GrxModelItem.menu.changeRobot") ); //$NON-NLS-1$
             setIcon(envIcon);
             setVisibleCoM(false);
             setVisibleCoMonFloor(false);
         }
-        setProperty("isRobot", String.valueOf(isRobot_));
+        setProperty("isRobot", String.valueOf(isRobot_)); //$NON-NLS-1$
     }
 
     /**
@@ -373,7 +373,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * created. And if the root link is re-created, this function must be called again.
      */
     private void _setupMarks() {
-        double radius = getDbl("markRadius", DEFAULT_RADIUS);
+        double radius = getDbl("markRadius", DEFAULT_RADIUS); //$NON-NLS-1$
         switchCom_ = GrxShapeUtil.createBall(radius, new Color3f(1.0f, 1.0f, 0.0f));
         switchComZ0_= GrxShapeUtil.createBall(radius, new Color3f(0.0f, 1.0f, 0.0f));
         tgCom_ = (TransformGroup)switchCom_.getChild(0);
@@ -409,10 +409,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         file_ = f;
         
         String url = f.getAbsolutePath();
-        GrxDebugUtil.println("Loading " + url);
+        GrxDebugUtil.println("Loading " + url); //$NON-NLS-1$
         try {
             ModelLoader mloader = ModelLoaderHelper.narrow(
-                GrxCorbaUtil.getReference("ModelLoader"));
+                GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
             bInfo_ = mloader.getBodyInfo(url);
             //
             LinkInfo[] linkInfoList = bInfo_.links();
@@ -434,7 +434,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     jointCount++;
                 }
             }
-            System.out.println("links_.size() = "+links_.size());
+            System.out.println("links_.size() = "+links_.size()); //$NON-NLS-1$
 
             // Search root node.
             int rootIndex = -1;
@@ -443,12 +443,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     if( rootIndex < 0 ) {
                         rootIndex = i;
                     } else {
-                        System.out.println( "Error. Two or more root node exist." );
+                        System.out.println( "Error. Two or more root node exist." ); //$NON-NLS-1$
                     }
                 }
             }
             if( rootIndex < 0 ){
-                System.out.println( "Error, root node doesn't exist." );
+                System.out.println( "Error, root node doesn't exist." ); //$NON-NLS-1$
             }
 
             createLink(rootIndex);
@@ -469,20 +469,20 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             long stime = System.currentTimeMillis();
             _loadVrmlScene(linkInfoList);
             long etime = System.currentTimeMillis();
-            System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms");
+            System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
             setURL(url);
             bModified_ = false;
             manager_.setSelectedItem(this, true);
 
-            setProperty("isRobot", Boolean.toString(isRobot_));
+            setProperty("isRobot", Boolean.toString(isRobot_)); //$NON-NLS-1$
 
         } catch (Exception ex) {
-            System.out.println("Failed to load vrml model:" + url);
+            System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
             ex.printStackTrace();
             return false;
         }
         long load_etime = System.currentTimeMillis();
-        System.out.println("load time = " + (load_etime-load_stime) + "ms");
+        System.out.println("load time = " + (load_etime-load_stime) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
         return true;
     }
 
@@ -545,7 +545,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             	List index = new ArrayList();
             	index.add(list.get(0));
             	if(inlinedSTMIndex == -1){ 
-            		GrxShapeItem shapeItem = new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this );
+            		GrxShapeItem shapeItem = new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this ); //$NON-NLS-1$
             		shapeItem.loadShape(linkInfo.shapeIndices[(Integer) index.get(0)]);
             		link.addShape(shapeItem);
             		l++;
@@ -556,7 +556,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	            			index.add(j);       			
 	            		}
 	            	}
-            		GrxShapeItem shapeItem = new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this);
+            		GrxShapeItem shapeItem = new GrxShapeItem(linkInfo.name+"_shape_"+l, manager_, this); //$NON-NLS-1$
             		shapeItem.loadInlineShape(linkInfo.shapeIndices, linkInfo.inlinedShapeTransformMatrices[inlinedSTMIndex], index);
             		link.addShape(shapeItem);
             		l++;
@@ -586,7 +586,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     	List index = new ArrayList();
                     	index.add(list.get(0));
                     	if(inlinedSTMIndex == -1){ 
-                    		GrxShapeItem shapeItem = new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this);
+                    		GrxShapeItem shapeItem = new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this); //$NON-NLS-1$
                     		shapeItem.loadShape(sensor.info_.shapeIndices[(Integer) index.get(0)]);
                     		sensor.addChild(shapeItem);
                     		l++;
@@ -597,7 +597,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         	            			index.add(k);       			
         	            		}
         	            	}
-                    		GrxShapeItem shapeItem = new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this);
+                    		GrxShapeItem shapeItem = new GrxShapeItem(sensor.getName()+"_shape_"+l, manager_, this); //$NON-NLS-1$
                     		shapeItem.loadInlineShape(sensor.info_.shapeIndices, sensor.info_.inlinedShapeTransformMatrices[inlinedSTMIndex], index);
                     		sensor.addChild(shapeItem);
                     		l++;
@@ -616,7 +616,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     	List index = new ArrayList();
                     	index.add(list.get(0));
                     	if(inlinedSTMIndex == -1){ 
-                    		GrxShapeItem shapeItem = new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this);
+                    		GrxShapeItem shapeItem = new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this); //$NON-NLS-1$
                     		shapeItem.loadShape(hwc.info_.shapeIndices[(Integer) index.get(0)]);
                     		hwc.addChild(shapeItem);
                     		l++;
@@ -627,7 +627,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         	            			index.add(k);       			
         	            		}
         	            	}
-                    		GrxShapeItem shapeItem = new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this);
+                    		GrxShapeItem shapeItem = new GrxShapeItem(hwc.getName()+"_shape_"+l, manager_, this); //$NON-NLS-1$
                     		shapeItem.loadInlineShape(hwc.info_.shapeIndices, hwc.info_.inlinedShapeTransformMatrices[inlinedSTMIndex], index);
                     		hwc.addChild(shapeItem);
                     		l++;
@@ -638,8 +638,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             	}
             }
         }
-        setDblAry(rootLink().getName()+".translation", rootLink().translation());
-        setDblAry(rootLink().getName()+".rotation", rootLink().rotation());
+        setDblAry(rootLink().getName()+".translation", rootLink().translation()); //$NON-NLS-1$
+        setDblAry(rootLink().getName()+".rotation", rootLink().rotation()); //$NON-NLS-1$
         
         for (int i=0; i<links_.size(); i++) {
             Node n = links_.get(i).tg_.getChild(0);
@@ -817,11 +817,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         getTransformGroupRoot().getTransform(t3d);
         t3d.get(m3d, v3d);
-        setDblAry(rootLink().getName()+".translation", new double[]{v3d.x, v3d.y, v3d.z});
+        setDblAry(rootLink().getName()+".translation", new double[]{v3d.x, v3d.y, v3d.z}); //$NON-NLS-1$
 
         AxisAngle4d a4d = new AxisAngle4d();
         a4d.setMatrix(m3d);
-        setDblAry(rootLink().getName()+".rotation", new double[]{a4d.x, a4d.y, a4d.z, a4d.angle});
+        setDblAry(rootLink().getName()+".rotation", new double[]{a4d.x, a4d.y, a4d.z, a4d.angle}); //$NON-NLS-1$
     }
 
     /**
@@ -830,7 +830,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public void updateInitialJointValue(GrxLinkItem link) {
         if (link != null)
-            setDbl(link.getName()+".angle", link.jointValue());
+            setDbl(link.getName()+".angle", link.jointValue()); //$NON-NLS-1$
     }
 
     /**
@@ -839,7 +839,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public void updateInitialJointValues() {
         for (int i=0; i<jointToLink_.length; i++) {
             GrxLinkItem l = links_.get(jointToLink_[i]);
-            setDbl(l.getName()+".angle", l.jointValue());
+            setDbl(l.getName()+".angle", l.jointValue()); //$NON-NLS-1$
         }
     }
 
@@ -956,12 +956,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public double[] getInitialTransformArray(GrxLinkItem link) {
         double[] ret = getTransformArray(link);
 
-        double[] p = getDblAry(link.getName()+".translation", null);
+        double[] p = getDblAry(link.getName()+".translation", null); //$NON-NLS-1$
         if (p != null && p.length == 3) {
             System.arraycopy(p, 0, ret, 0, 3);
         }
 
-        double[] r = getDblAry(link.getName()+".rotation", null);
+        double[] r = getDblAry(link.getName()+".rotation", null); //$NON-NLS-1$
         if (r != null && r.length == 4) {
             Matrix3d mat = new Matrix3d();
             mat.set(new AxisAngle4d(r));
@@ -998,7 +998,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         for (int i=0; i<ret.length; i++) {
             GrxLinkItem l = links_.get(jointToLink_[i]);
             String jname = l.getName();
-            ret[i] = getDbl(jname+".angle", l.jointValue());
+            ret[i] = getDbl(jname+".angle", l.jointValue()); //$NON-NLS-1$
         }
         return ret;
     }
@@ -1016,8 +1016,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         double[] ret = new double[links_.size()];
         for (int i=0; i<ret.length; i++) {
             String lname = links_.get(i).getName();
-            String mode = getStr(lname+".mode", "Torque");
-            ret[i] = mode.equals("HighGain") ? 1.0 : 0.0;
+            String mode = getStr(lname+".mode", "Torque"); //$NON-NLS-1$ //$NON-NLS-2$
+            ret[i] = mode.equals("HighGain") ? 1.0 : 0.0; //$NON-NLS-1$
         }
         return ret;
     }
@@ -1059,9 +1059,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         for (int i=0; i<collisionPairItems.length; i++) {
 			GrxCollisionPairItem item = (GrxCollisionPairItem) collisionPairItems[i];
 			String name = getName();
-			if(name.equals(item.getStr("objectName1", ""))){
+			if(name.equals(item.getStr("objectName1", ""))){ //$NON-NLS-1$ //$NON-NLS-2$
 				item.delete();
-			}else if(name.equals(item.getStr("objectName2", ""))){
+			}else if(name.equals(item.getStr("objectName2", ""))){ //$NON-NLS-1$ //$NON-NLS-2$
 				item.delete();
 			}
         }

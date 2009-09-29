@@ -11,6 +11,8 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 
+import com.generalrobotix.ui.util.MessageBundle;
+
 
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private IWorkbenchAction exitAction;
@@ -30,15 +32,15 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	}
 
 	protected void fillMenuBar(IMenuManager menuBar) {
-		MenuManager fileMenu = new MenuManager("&File",
+		MenuManager fileMenu = new MenuManager(MessageBundle.get("ApplicationActionBarAdvisor.menu.file"), //$NON-NLS-1$
 				IWorkbenchActionConstants.M_FILE);
 		menuBar.add(fileMenu);
 		fileMenu.add(exitAction);
-		MenuManager windowMenu = new MenuManager("&Window",
+		MenuManager windowMenu = new MenuManager(MessageBundle.get("ApplicationActionBarAdvisor.menu.window"), //$NON-NLS-1$
 				IWorkbenchActionConstants.M_WINDOW);
 		
 		menuBar.add(windowMenu);
-		MenuManager showViewMenu = new MenuManager("&View");
+		MenuManager showViewMenu = new MenuManager(MessageBundle.get("ApplicationActionBarAdvisor.menu.view")); //$NON-NLS-1$
 	    showViewMenu.add(showViewItem);
 	    windowMenu.add(showViewMenu);
 	    windowMenu.add(preferencesAction);

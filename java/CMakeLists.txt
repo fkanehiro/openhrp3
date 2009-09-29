@@ -24,7 +24,7 @@ if( ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION042} )
             class=\"com.generalrobotix.ui.view.GrxPathPlanningViewPart\"
             id=\"com.generalrobotix.ui.view.GrxPathPlanningViewPart\"
             category=\"com.generalrobotix.ui.view\"
-            name=\"Path Planning View\">
+            name=\"%PathPlanningView.name\">
       </view>" )
 
   set(OPEN_EXPORT_PACKAGE "jp.go.aist.rtm,
@@ -37,9 +37,7 @@ if( ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION042} )
  jp.go.aist.rtm.RTC.port.publisher,
  jp.go.aist.rtm.RTC.util" )
 
-  if( NOT EXISTS "${OpenHRP_SOURCE_DIR}/.svn" )
-    configure_grxui_on_eclipse()
-  endif()
+ configure_grxui_on_eclipse()
 elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION100})
   set(rtm_stub_jar openrtmstubskel.jar)
   set(OPENRTM_VERSION_NUM "100")
@@ -52,9 +50,8 @@ elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION100})
 
   add_subdirectory(rtmStubCorba)
   message(STATUS "OpenRTM version is ${OPENRTM_VERSION}. Generate Makefile compiles openrtmstubskel.jar.")
-  if( NOT EXISTS "${OpenHRP_SOURCE_DIR}/.svn" )
-    configure_grxui_on_eclipse()
-  endif()
+  configure_grxui_on_eclipse()
+
 else()
   set(rtm_stub_jar openrtmstubskel.jar)
   set(OPENRTM_VERSION_NUM "100")
@@ -67,9 +64,8 @@ else()
 
   add_subdirectory(rtmStubCorba)
   message(STATUS "OpenRTM version is ${OPENRTM_VERSION}. Generate Makefile compiles openrtmstubskel.jar.")
-  if( NOT EXISTS "${OpenHRP_SOURCE_DIR}/.svn" )
-    configure_grxui_on_eclipse()
-  endif()
+
+  configure_grxui_on_eclipse()
 endif()
 
 

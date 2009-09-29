@@ -62,6 +62,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.AxisAngle4d;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cone;
@@ -73,7 +74,7 @@ import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.image.TextureLoader;
 import com.sun.j3d.utils.picking.PickTool;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 /**
  * @brief sensor item
  */
@@ -167,7 +168,7 @@ public class GrxShapeItem extends GrxTransformItem{
 	    	primitive = new Box(size[0]/2, size[1]/2, size[2]/2, primitiveFlag, appearance);
 	    	shapes_[0].primitiveType = ShapePrimitiveType.SP_BOX;
 			shapes_[0].primitiveParameters = size;
-			setFltAry("size", size);
+			setFltAry("size", size); //$NON-NLS-1$
 			break;
     	case ShapePrimitiveType._SP_CONE :
     		float bottomRadius = 1.0f;
@@ -180,10 +181,10 @@ public class GrxShapeItem extends GrxTransformItem{
     		param[2] = 1;   
     		param[3] = 1;	
 			shapes_[0].primitiveParameters = param;
-			setFlt("bottomRadius", bottomRadius);
-			setFlt("height", height);
-			setProperty("side","true");
-			setProperty("bottom","true");
+			setFlt("bottomRadius", bottomRadius); //$NON-NLS-1$
+			setFlt("height", height); //$NON-NLS-1$
+			setProperty("side","true"); //$NON-NLS-1$ //$NON-NLS-2$
+			setProperty("bottom","true"); //$NON-NLS-1$ //$NON-NLS-2$
     		break;
     	case ShapePrimitiveType._SP_CYLINDER :
     		float radius = 1.0f;
@@ -197,11 +198,11 @@ public class GrxShapeItem extends GrxTransformItem{
     		param[3] = 1;	
     		param[4] = 1;
 			shapes_[0].primitiveParameters = param;
-			setFlt("radius", radius);
-			setFlt("height", height);
-			setProperty("side","true");
-			setProperty("bottom","true");
-			setProperty("top","true");
+			setFlt("radius", radius); //$NON-NLS-1$
+			setFlt("height", height); //$NON-NLS-1$
+			setProperty("side","true"); //$NON-NLS-1$ //$NON-NLS-2$
+			setProperty("bottom","true"); //$NON-NLS-1$ //$NON-NLS-2$
+			setProperty("top","true"); //$NON-NLS-1$ //$NON-NLS-2$
     		break;
     	case ShapePrimitiveType._SP_SPHERE :
     		radius = 1.0f;
@@ -210,7 +211,7 @@ public class GrxShapeItem extends GrxTransformItem{
     		param = new float[1];
     		param[0] = radius;
     		shapes_[0].primitiveParameters = param;
-			setFlt("radius", radius);
+			setFlt("radius", radius); //$NON-NLS-1$
 			break;
     	default :
     		break;	
@@ -221,7 +222,7 @@ public class GrxShapeItem extends GrxTransformItem{
     	tg_.addChild(bg_);
 
     	initialize(t3d);
-    	setFltAry("diffuseColor", materials_[0].diffuseColor);
+    	setFltAry("diffuseColor", materials_[0].diffuseColor); //$NON-NLS-1$
    	}
    	
    	public void loadInlineShape(TransformedShapeIndex[] tsi,	double[] inlinedSTM, List index) {
@@ -353,11 +354,11 @@ public class GrxShapeItem extends GrxTransformItem{
 		// rename
 		item = new Action(){
 			public String getText(){
-				return "rename";
+				return MessageBundle.get("GrxShapeItem.menu.rename"); //$NON-NLS-1$
 			}
 			public void run(){
 				InputDialog dialog = new InputDialog( null, null,
-						"Input new name.", getName(),null);
+						MessageBundle.get("GrxShapeItem.dialog.message.newName"), getName(),null); //$NON-NLS-1$
 				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 					rename( dialog.getValue() );
 			}
@@ -367,11 +368,11 @@ public class GrxShapeItem extends GrxTransformItem{
 		// delete
 		item = new Action(){
 			public String getText(){
-				return "delete";
+				return MessageBundle.get("GrxShapeItem.menu.delete"); //$NON-NLS-1$
 			}
 			public void run(){
-				if( MessageDialog.openQuestion( null, "delete shape",
-						"Are you sure to delete " + getName() + " ?") ){
+				if( MessageDialog.openQuestion( null, MessageBundle.get("GrxShapeItem.dialog.title.delete"), //$NON-NLS-1$
+						MessageBundle.get("GrxShapeItem.dialog.message.delete") + getName() + " ?") ){ //$NON-NLS-1$ //$NON-NLS-2$
 					delete();
 				}
 				
@@ -403,7 +404,7 @@ public class GrxShapeItem extends GrxTransformItem{
         setMenuItem(item);
         */
 		
-		setIcon("segment.png");
+		setIcon("segment.png"); //$NON-NLS-1$
     }
 
     protected Appearance createAppearance(){
@@ -473,7 +474,7 @@ public class GrxShapeItem extends GrxTransformItem{
      * @param textureInfo texture information
      * @return created shape
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") //$NON-NLS-1$
 	private Shape3D createShape3D
     (ShapeInfo shapeInfo, AppearanceInfo appearanceInfo, MaterialInfo materialInfo, TextureInfo textureInfo){
         
@@ -613,13 +614,13 @@ public class GrxShapeItem extends GrxTransformItem{
             texture2d.setImage(0, icomp2d);
             appearance.setTexture(texture2d);
         }else{
-        	if(!texInfo.url.equals("")){
+        	if(!texInfo.url.equals("")){ //$NON-NLS-1$
         		try{
 		            TextureLoader tloader = new TextureLoader(texInfo.url, null);  
 		            Texture texture = tloader.getTexture();
 		            appearance.setTexture(texture);
         		}catch(Exception ex){
-        			System.out.println(ex+" "+texInfo.url);
+        			System.out.println(ex+" "+texInfo.url); //$NON-NLS-1$
         		}
         	}
         }
@@ -766,14 +767,14 @@ public class GrxShapeItem extends GrxTransformItem{
      */
     public boolean propertyChanged(String property, String value) {
     	if (super.propertyChanged(property, value)){
-    	}else if(property.equals("translation")){
+    	}else if(property.equals("translation")){ //$NON-NLS-1$
     		translation(value);
-    	}else if(property.equals("rotation")){
+    	}else if(property.equals("rotation")){ //$NON-NLS-1$
     		rotation(value);
-    	}else if(property.equals("size")){
+    	}else if(property.equals("size")){ //$NON-NLS-1$
     			size(value);
-    	}else if(property.equals("bottomRadius") || property.equals("height") || property.equals("radius") ||
-    			property.equals("side") || property.equals("bottom") || property.equals("top")){
+    	}else if(property.equals("bottomRadius") || property.equals("height") || property.equals("radius") || //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    			property.equals("side") || property.equals("bottom") || property.equals("top")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     		if(shapes_[0].primitiveType==ShapePrimitiveType.SP_CONE){
     			coneSize(property, value);
     		}else if(shapes_[0].primitiveType==ShapePrimitiveType.SP_CYLINDER){
@@ -781,7 +782,7 @@ public class GrxShapeItem extends GrxTransformItem{
     		}else{
     			sphereSize(value);
     		}
-    	}else if(property.equals("diffuseColor")){
+    	}else if(property.equals("diffuseColor")){ //$NON-NLS-1$
     			diffuseColor(value);
     	}else
     		return false;
@@ -790,7 +791,7 @@ public class GrxShapeItem extends GrxTransformItem{
 
     private void size(float[] newSize){
    		if (newSize != null && newSize.length == 3){
-	    	setFltAry("size", newSize);
+	    	setFltAry("size", newSize); //$NON-NLS-1$
 	    	tg_.removeChild(bg_);
 	    	bg_ = new BranchGroup();
 	       	bg_.setCapability(BranchGroup.ALLOW_DETACH);
@@ -811,24 +812,24 @@ public class GrxShapeItem extends GrxTransformItem{
     }
     
     public void coneSize(String property, String size){
-    	float bottomRadius = getFlt("bottomRadius", 0.0f);
-    	float height = getFlt("height", 0.0f);
-    	boolean side = isTrue("side");
-    	boolean bottom = isTrue("bottom");
-    	if(property.equals("bottomRadius")){
+    	float bottomRadius = getFlt("bottomRadius", 0.0f); //$NON-NLS-1$
+    	float height = getFlt("height", 0.0f); //$NON-NLS-1$
+    	boolean side = isTrue("side"); //$NON-NLS-1$
+    	boolean bottom = isTrue("bottom"); //$NON-NLS-1$
+    	if(property.equals("bottomRadius")){ //$NON-NLS-1$
     		float newsize = getFlt(size);
     		setFlt(property, newsize );
     		bottomRadius = newsize;
-    	}else if(property.equals("height")){
+    	}else if(property.equals("height")){ //$NON-NLS-1$
     		float newsize = getFlt(size);
     		setFlt(property, newsize );
     		height = newsize;
-    	}else if(property.equals("side")){
-    		boolean flg = size.equals("true");
+    	}else if(property.equals("side")){ //$NON-NLS-1$
+    		boolean flg = size.equals("true"); //$NON-NLS-1$
     		setBool(property, flg);
     		side = flg;
-    	}else if(property.equals("bottom")){
-    		boolean flg = size.equals("true");
+    	}else if(property.equals("bottom")){ //$NON-NLS-1$
+    		boolean flg = size.equals("true"); //$NON-NLS-1$
     		setBool(property, flg);
     		bottom = flg;
     	}
@@ -855,29 +856,29 @@ public class GrxShapeItem extends GrxTransformItem{
     }
     
     public void cylinderSize(String property, String size){
-    	float radius = getFlt("radius", 0.0f);
-    	float height = getFlt("height", 0.0f);
-    	boolean side = isTrue("side");
-    	boolean bottom = isTrue("bottom");
-    	boolean top = isTrue("top");
-    	if(property.equals("radius")){
+    	float radius = getFlt("radius", 0.0f); //$NON-NLS-1$
+    	float height = getFlt("height", 0.0f); //$NON-NLS-1$
+    	boolean side = isTrue("side"); //$NON-NLS-1$
+    	boolean bottom = isTrue("bottom"); //$NON-NLS-1$
+    	boolean top = isTrue("top"); //$NON-NLS-1$
+    	if(property.equals("radius")){ //$NON-NLS-1$
     		float newsize = getFlt(size);
     		setFlt(property, newsize );
     		radius = newsize;
-    	}else if(property.equals("height")){
+    	}else if(property.equals("height")){ //$NON-NLS-1$
     		float newsize = getFlt(size);
     		setFlt(property, newsize );
     		height = newsize;
-    	}else if(property.equals("side")){
-    		boolean flg = size.equals("true");
+    	}else if(property.equals("side")){ //$NON-NLS-1$
+    		boolean flg = size.equals("true"); //$NON-NLS-1$
     		setBool(property, flg);
     		side = flg;
-    	}else if(property.equals("bottom")){
-    		boolean flg = size.equals("true");
+    	}else if(property.equals("bottom")){ //$NON-NLS-1$
+    		boolean flg = size.equals("true"); //$NON-NLS-1$
     		setBool(property, flg);
     		bottom = flg;
-    	}else if(property.equals("top")){
-    		boolean flg = size.equals("true");
+    	}else if(property.equals("top")){ //$NON-NLS-1$
+    		boolean flg = size.equals("true"); //$NON-NLS-1$
     		setBool(property, flg);
     		top = flg;
     	}
@@ -909,7 +910,7 @@ public class GrxShapeItem extends GrxTransformItem{
     
     private void sphereSize(float[] newSize){
    		if (newSize != null && newSize.length == 1){
-	    	setFlt("radius", newSize[0]);
+	    	setFlt("radius", newSize[0]); //$NON-NLS-1$
 	    	tg_.removeChild(bg_);
 	    	bg_ = new BranchGroup();
 	       	bg_.setCapability(BranchGroup.ALLOW_DETACH);
@@ -931,7 +932,7 @@ public class GrxShapeItem extends GrxTransformItem{
     
     void diffuseColor(float[] newValue){
     	if (newValue != null && newValue.length == 3){
-    	    setFltAry("diffuseColor", newValue);
+    	    setFltAry("diffuseColor", newValue); //$NON-NLS-1$
     		materials_[0].diffuseColor = newValue;
     		setMaterial(appearance_, materials_[0]);
     		if (model_ != null) model_.notifyModified();
@@ -1214,27 +1215,27 @@ public class GrxShapeItem extends GrxTransformItem{
 	private void setPrimitiveProperty(ShapeInfo shapeInfo){
 		switch(shapeInfo.primitiveType.value()){
 		case ShapePrimitiveType._SP_BOX :
-			setFltAry("size", shapeInfo.primitiveParameters);
-			setFltAry("diffuseColor", materials_[0].diffuseColor);
+			setFltAry("size", shapeInfo.primitiveParameters); //$NON-NLS-1$
+			setFltAry("diffuseColor", materials_[0].diffuseColor); //$NON-NLS-1$
 			break;
     	case ShapePrimitiveType._SP_CONE :
-			setFlt("bottomRadius", shapeInfo.primitiveParameters[0]);
-			setFlt("height", shapeInfo.primitiveParameters[1]);
-			setProperty("bottom",shapeInfo.primitiveParameters[2]==0?"false":"true");
-			setProperty("side",shapeInfo.primitiveParameters[3]==0?"false":"true");
-			setFltAry("diffuseColor", materials_[0].diffuseColor);
+			setFlt("bottomRadius", shapeInfo.primitiveParameters[0]); //$NON-NLS-1$
+			setFlt("height", shapeInfo.primitiveParameters[1]); //$NON-NLS-1$
+			setProperty("bottom",shapeInfo.primitiveParameters[2]==0?"false":"true"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			setProperty("side",shapeInfo.primitiveParameters[3]==0?"false":"true"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			setFltAry("diffuseColor", materials_[0].diffuseColor); //$NON-NLS-1$
     		break;
     	case ShapePrimitiveType._SP_CYLINDER :
-			setFlt("radius", shapeInfo.primitiveParameters[0]);
-			setFlt("height", shapeInfo.primitiveParameters[1]);
-			setProperty("top",shapeInfo.primitiveParameters[2]==0?"false":"true");
-			setProperty("bottom",shapeInfo.primitiveParameters[3]==0?"false":"true");
-			setProperty("side",shapeInfo.primitiveParameters[4]==0?"false":"true");
-			setFltAry("diffuseColor", materials_[0].diffuseColor);
+			setFlt("radius", shapeInfo.primitiveParameters[0]); //$NON-NLS-1$
+			setFlt("height", shapeInfo.primitiveParameters[1]); //$NON-NLS-1$
+			setProperty("top",shapeInfo.primitiveParameters[2]==0?"false":"true"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			setProperty("bottom",shapeInfo.primitiveParameters[3]==0?"false":"true"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			setProperty("side",shapeInfo.primitiveParameters[4]==0?"false":"true"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			setFltAry("diffuseColor", materials_[0].diffuseColor); //$NON-NLS-1$
     		break;
     	case ShapePrimitiveType._SP_SPHERE :
-			setFlt("radius", shapeInfo.primitiveParameters[0]);
-			setFltAry("diffuseColor", materials_[0].diffuseColor);
+			setFlt("radius", shapeInfo.primitiveParameters[0]); //$NON-NLS-1$
+			setFltAry("diffuseColor", materials_[0].diffuseColor); //$NON-NLS-1$
 			break;
     	default :
     		break;	 

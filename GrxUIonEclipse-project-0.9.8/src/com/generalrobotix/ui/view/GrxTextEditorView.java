@@ -32,8 +32,9 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxPythonScriptItem;
+import com.generalrobotix.ui.util.MessageBundle;
 
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxTextEditorView extends GrxBaseView {
 	private Text area_;
 	private Action save_,saveAs_;
@@ -63,8 +64,8 @@ public class GrxTextEditorView extends GrxBaseView {
 				}
 	        }
 	    };
-	    save_.setToolTipText( "Save" );
-	    save_.setImageDescriptor( Activator.getDefault().getDescriptor("save_edit.png") );
+	    save_.setToolTipText( MessageBundle.get("GrxTextEditorView.text.save") ); //$NON-NLS-1$
+	    save_.setImageDescriptor( Activator.getDefault().getDescriptor("save_edit.png") ); //$NON-NLS-1$
 	    toolbar.add( save_ );
 	
 		saveAs_ = new Action() {
@@ -75,8 +76,8 @@ public class GrxTextEditorView extends GrxBaseView {
 				}
 	        }
 	    };
-	    saveAs_.setToolTipText( "Save As" );
-	    saveAs_.setImageDescriptor( Activator.getDefault().getDescriptor("saveas_edit.png") );
+	    saveAs_.setToolTipText( MessageBundle.get("GrxTextEditorView.text.saveAs") ); //$NON-NLS-1$
+	    saveAs_.setImageDescriptor( Activator.getDefault().getDescriptor("saveas_edit.png") ); //$NON-NLS-1$
 	    toolbar.add( saveAs_ );
 	    setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 	    
@@ -92,7 +93,7 @@ public class GrxTextEditorView extends GrxBaseView {
 			save_.setEnabled(true);
 			saveAs_.setEnabled(true);
 		}else{
-			area_.setText("");
+			area_.setText(""); //$NON-NLS-1$
 			area_.setEnabled(false);
 			save_.setEnabled(false);
 			saveAs_.setEnabled(false);

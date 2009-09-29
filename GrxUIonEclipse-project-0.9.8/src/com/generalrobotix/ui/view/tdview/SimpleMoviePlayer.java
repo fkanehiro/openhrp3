@@ -19,6 +19,7 @@ import javax.media.control.*;
 import javax.media.format.*;
 
 import com.generalrobotix.ui.util.ErrorDialog;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.sun.image.codec.jpeg.*; 
 
 /**
@@ -27,7 +28,7 @@ import com.sun.image.codec.jpeg.*;
  * @author Keisuke Saito
  * @version 1.0 (2000/12/20)
  */
-@SuppressWarnings("serial")
+@SuppressWarnings("serial") //$NON-NLS-1$
 public class SimpleMoviePlayer extends JFrame implements ControllerListener {
     
     public boolean appFlag_=false;//単体アプリとして起動してるかflag
@@ -41,8 +42,8 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
     private Object waitSync = new Object();
     private  boolean stateTransitionOK = true;
     //表示用
-    private final String STR_TITLE_="SMPlayer"; //ウィンドウタイトル文字列
-    private final String STR_RIGHT_="(C) 2000 Kernel Inc"; //版権文字列（おまけ）
+    private final String STR_TITLE_="SMPlayer"; //ウィンドウタイトル文字列 //$NON-NLS-1$
+    private final String STR_RIGHT_="(C) 2000 Kernel Inc"; //版権文字列（おまけ） //$NON-NLS-1$
 
     /**
      * コンストラクタ
@@ -80,13 +81,13 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
 
         //メニュー
 
-        Menu menu=new Menu("File");
+        Menu menu=new Menu(MessageBundle.get("SimpleMoviePlayer.menu.file")); //$NON-NLS-1$
         MenuBar bar=new MenuBar();
         bar.add(menu);
 
         MenuItem item;
 
-        item = new MenuItem("Open...");
+        item = new MenuItem(MessageBundle.get("SimpleMoviePlayer.menu.open")); //$NON-NLS-1$
         item.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 _open();
@@ -94,7 +95,7 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
         });
         menu.add(item);
 
-        item = new MenuItem("Save Image As...");
+        item = new MenuItem(MessageBundle.get("SimpleMoviePlayer.menu.saveAs")); //$NON-NLS-1$
         item.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 _saveImageAs();
@@ -102,7 +103,7 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
         });
         menu.add(item);
 
-        item = new MenuItem("Quit");
+        item = new MenuItem(MessageBundle.get("SimpleMoviePlayer.menu.quit")); //$NON-NLS-1$
         item.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 _quit();
@@ -133,14 +134,14 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
         MediaLocator ml;
         if(url==null)return null;
 
-        if (url.indexOf(":") > 0 && (ml = new MediaLocator(url)) != null)
+        if (url.indexOf(":") > 0 && (ml = new MediaLocator(url)) != null) //$NON-NLS-1$
             return ml;
 
         if (url.startsWith(File.separator)) {
-            if ((ml = new MediaLocator("file:" + url)) != null)
+            if ((ml = new MediaLocator("file:" + url)) != null) //$NON-NLS-1$
             return ml;
         } else {
-            String file = "file:" + System.getProperty("user.dir") + File.separator + url;
+            String file = "file:" + System.getProperty("user.dir") + File.separator + url; //$NON-NLS-1$ //$NON-NLS-2$
             if ((ml = new MediaLocator(file)) != null)
             return ml;
         }
@@ -215,11 +216,11 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
             newOpe=new JLabel(STR_RIGHT_);
             this.setTitle(STR_TITLE_);
         }else{
-            this.setTitle("Openning " + ml +"...");
+            this.setTitle(MessageBundle.get("SimpleMoviePlayer.title.openning") + ml +"..."); //$NON-NLS-1$ //$NON-NLS-2$
             try {
                 p_ = Manager.createProcessor(ml);
             } catch (Exception e) {
-                System.err.println("Failed to create a processor from the given url: " + e);
+                System.err.println("Failed to create a processor from the given url: " + e); //$NON-NLS-1$
                 return false;
             }
 
@@ -228,7 +229,7 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
             // Put the Processor into configured state.
             p_.configure();
             if (!_waitForState(Processor.Configured)) {
-                System.err.println("Failed to configure the processor.");
+                System.err.println("Failed to configure the processor."); //$NON-NLS-1$
                 return false;
             }
 
@@ -239,7 +240,7 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
             TrackControl tc[] = p_.getTrackControls();
 
             if (tc == null) {
-                System.err.println("Failed to obtain track controls from the processor.");
+                System.err.println("Failed to obtain track controls from the processor."); //$NON-NLS-1$
                 return false;
             }
 
@@ -254,7 +255,7 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
             }
 
             if (videoTrack == null) {
-                System.err.println("The input media does not contain a video track.");
+                System.err.println("The input media does not contain a video track."); //$NON-NLS-1$
                 return false;
             }
 
@@ -275,7 +276,7 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
             // Realize the processor.
             p_.prefetch();
             if (!_waitForState(Controller.Prefetched)) {
-                System.err.println("Failed to realize the processor.");
+                System.err.println("Failed to realize the processor."); //$NON-NLS-1$
                 return false;
             }
 
@@ -308,19 +309,19 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
             panel.setLayout(new BorderLayout());
             Component cc;
             if ((cc = p_.getControlPanelComponent()) != null) {
-                panel.add("Center", cc);
+                panel.add("Center", cc); //$NON-NLS-1$
             }
-            JButton btn=new JButton("Save"); 
+            JButton btn=new JButton(MessageBundle.get("SimpleMoviePlayer.button.save"));  //$NON-NLS-1$
             btn.addActionListener(new  ActionListener(){
                     public void actionPerformed(ActionEvent e){
                         _saveImageAs();
                     }
                 }
             );
-            panel.add("East", btn);
+            panel.add("East", btn); //$NON-NLS-1$
             newOpe=panel;
             
-            this.setTitle(STR_TITLE_ + " -" + ml);
+            this.setTitle(STR_TITLE_ + " -" + ml); //$NON-NLS-1$
         }
         
 
@@ -328,12 +329,12 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
         this.getContentPane().setLayout(new BorderLayout());
         cmpVisual_=newVisual;
         if (cmpVisual_!= null) {
-            getContentPane().add("Center", cmpVisual_);
+            getContentPane().add("Center", cmpVisual_); //$NON-NLS-1$
         }
         
         cmpOpe_=newOpe;
         if (cmpOpe_ != null) {
-            getContentPane().add("South", cmpOpe_);
+            getContentPane().add("South", cmpOpe_); //$NON-NLS-1$
         }
         this.pack();
 
@@ -357,11 +358,11 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
         
         try{
             JFileChooser chooser =
-                new JFileChooser(System.getProperty("user.dir"));
+                new JFileChooser(System.getProperty("user.dir")); //$NON-NLS-1$
             ExampleFileFilter filter = new ExampleFileFilter();
             chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-            filter.addExtension("jpg");
-            filter.setDescription("Jpeg Image");
+            filter.addExtension("jpg"); //$NON-NLS-1$
+            filter.setDescription("Jpeg Image"); //$NON-NLS-1$
             chooser.setFileFilter(filter);
             int returnVal = chooser.showSaveDialog(this);
             if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -385,8 +386,8 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
 */
             new ErrorDialog(
                 this,
-                "Error",
-                "Can't Save Image :" + exception.getMessage()
+                MessageBundle.get("SimpleMoviePlayer.dialog.title.error"), //$NON-NLS-1$
+                MessageBundle.get("SimpleMoviePlayer.dialog.message.save") + exception.getMessage() //$NON-NLS-1$
             );
         }
     }
@@ -396,23 +397,23 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
      *
      */
     private void _open(){
-        JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+        JFileChooser chooser = new JFileChooser(System.getProperty("user.dir")); //$NON-NLS-1$
         // Note: source for ExampleFileFilter can be found in FileChooserDemo,
         // under the demo/jfc directory in the Java 2 SDK, Standard Edition.
         ExampleFileFilter filter = new ExampleFileFilter();
-        filter.addExtension("mpg");
-        filter.addExtension("avi");
-        filter.addExtension("mov");
-        filter.setDescription("Movie Files");
+        filter.addExtension("mpg"); //$NON-NLS-1$
+        filter.addExtension("avi"); //$NON-NLS-1$
+        filter.addExtension("mov"); //$NON-NLS-1$
+        filter.setDescription("Movie Files"); //$NON-NLS-1$
         chooser.setFileFilter(filter);
         int returnVal = chooser.showOpenDialog(this);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
-            if(!_load("file:" + chooser.getSelectedFile().getAbsolutePath())){
+            if(!_load("file:" + chooser.getSelectedFile().getAbsolutePath())){ //$NON-NLS-1$
                 //JOptionPane.showMessageDialog(this,  "Can't Open Movie.", "Error", JOptionPane.ERROR_MESSAGE); 
                 new ErrorDialog(
                     this,
-                    "Error",
-                    "Can't Open Movie."
+                    MessageBundle.get("SimpleMoviePlayer.dialog.title.error"), //$NON-NLS-1$
+                    MessageBundle.get("SimpleMoviePlayer.dialog.message.Open") //$NON-NLS-1$
                 );
                 _load(null);
             }
@@ -431,7 +432,7 @@ public class SimpleMoviePlayer extends JFrame implements ControllerListener {
             MyBufferToImage bti =new MyBufferToImage((VideoFormat)buf.getFormat());
             Image img=bti.createImage(buf);
             if(img==null){
-                System.out.println("Can't create Image in this format!");
+                System.out.println("Can't create Image in this format!"); //$NON-NLS-1$
                 return null;
             }else{
                 BufferedImage bimg=new BufferedImage(img.getWidth(null),img.getHeight(null),BufferedImage.TYPE_INT_RGB);
