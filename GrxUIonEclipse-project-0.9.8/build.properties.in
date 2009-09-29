@@ -4,12 +4,17 @@ bin.includes = plugin.xml,\
                icons/,\
                @rtm_stub_jar@,\
                commons-cli-1.1.jar,\
-               OpenRTM-aist-0.4.1.jar,\
                jmf.jar,\
                grxui.jar,\
                grxuirc_win.xml,\
                resources/,\
-               META-INF/
+               META-INF/,\
+               plugin.properties,\
+               plugin_en_US.properties,\
+               plugin_ja_JP.properties,\
+               src/com/generalrobotix/messages_en_US.properties,\
+               src/com/generalrobotix/messages_ja_JP.properties,\
+               openhrpstubskel.jar
 javacDefaultEncoding.grxui.jar = UTF-8
 jars.compile.order = grxui.jar
 source.grxui.jar = bin/
