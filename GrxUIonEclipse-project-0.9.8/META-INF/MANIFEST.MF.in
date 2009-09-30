@@ -84,8 +84,8 @@ Export-Package: com.generalrobotix.ui;
  @OPEN_EXPORT_PACKAGE@
 Bundle-ClassPath: .,
  jython.jar,
+ @rtm_stub_jar@,
  openhrpstubskel.jar,
  commons-cli-1.1.jar,
- @rtm_stub_jar@,
  jmf.jar,
  grxui.jar
