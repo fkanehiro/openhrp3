@@ -174,7 +174,7 @@ public class GrxItemView extends GrxBaseView {
                 	((GrxBaseItem)itI.next()).addObserver(this);
         	}
         }
-        
+        manager_.getProject().addObserver(this);
 	}
 
 	/**
@@ -350,6 +350,7 @@ public class GrxItemView extends GrxBaseView {
                 	((GrxBaseItem)itI.next()).deleteObserver(this);
         	}
         }
+        manager_.getProject().deleteObserver(this);
 	}
 	
 }

@@ -218,12 +218,21 @@ public class CollisionPairPanel extends Composite {
                 List<GrxModelItem> list = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
                 for (int i=0; i<list.size(); i++) {
                     GrxModelItem m1 = list.get(i);
-                    for (int j=0; j<list.size(); j++) {
+                    for (int j=i; j<list.size(); j++) {
                         GrxModelItem m2 = list.get(j);
-                        for (int k=1; k<m1.links_.size(); k++) {
-                            for (int l=1; l<m2.links_.size(); l++) {
-                                if (i != j || k != l)
+                        for (int k=0; k<m1.links_.size(); k++) {
+                        	int l=0;
+                        	if(i==j) l=k;
+                            for (; l<m2.links_.size(); l++) {
+                                if (i != j || k != l){
+                                	editorPanel_.chkDamper_.setSelection(false);
+                                	editorPanel_.txtSpring_.setText("0 0 0 0 0 0"); //$NON-NLS-1$
+                                	editorPanel_.txtDamper_.setText("0 0 0 0 0 0"); //$NON-NLS-1$
+                                	editorPanel_.txtStaticFric_.setText(defaultStaticFriction_);
+                                	editorPanel_.txtSlidingFric_.setText(defaultSlidingFriction_);
+                                	editorPanel_.txtCullingThresh_.setText(defaultCullingThresh_);
                                     _createItem(m1.getName(), m1.links_.get(k).getName(), m2.getName(), m2.links_.get(l).getName());
+                                }
                             }
                         }
                     }
@@ -374,7 +383,7 @@ public class CollisionPairPanel extends Composite {
                             GrxCollisionPairItem item = _createItem(pnlJoint1_.getObjectName(), pnlJoint1_.getJointName(),
                                     pnlJoint2_.getObjectName(), pnlJoint2_.getJointName());
                             
-                            if (item == null || !_setAttribute(item)){
+                            if (item == null ){
                                 System.out.println("error: item = "+item); //$NON-NLS-1$
                                 return;
                             }
@@ -387,40 +396,10 @@ public class CollisionPairPanel extends Composite {
                         setEnabled(false);
                 }
                 
-                private boolean _setAttribute(GrxCollisionPairItem node) {
-                    try{
-                        node.setProperty(
-                            ATTR_NAME_SD,
-                            new SEBoolean(chkDamper_.getSelection()).toString()
-                        );
-                        node.setProperty( 
-                            ATTR_NAME_SPRING,
-                            txtSpring_.getText()
-                        );
-                        node.setProperty( 
-                            ATTR_NAME_DAMPER,
-                            txtDamper_.getText()
-                        );
-                        node.setProperty( 
-                            ATTR_NAME_STATIC_FRICTION,
-                            txtStaticFric_.getText()
-                        );
-                        node.setProperty( 
-                            ATTR_NAME_SLIDING_FRICTION,
-                            txtSlidingFric_.getText()
-                        );
-                        node.setProperty( 
-                        	ATTR_NAME_CULLING_THRESH,
-                            txtCullingThresh_.getText()
-                        );
-                    } catch (Exception ex) {
-                        MessageDialog.openWarning(getShell(), "", MessageBundle.get("message.attributeerror")); //$NON-NLS-1$ //$NON-NLS-2$
-                        return false;
-                    }
-                    return true;
-              }
+                
                 
             });
+            
             GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
             gridData.widthHint = BUTTON_WIDTH;
             btnOk_.setLayoutData(gridData);
@@ -443,7 +422,40 @@ public class CollisionPairPanel extends Composite {
             btnCancel_.setLayoutData(gridData);
             //btnCancel_.setBounds(24 + 84 + 12 ,144+ 24+ 24+ 24,84,24);
         }
-
+        
+        private boolean _setAttribute(GrxCollisionPairItem node) {
+            try{
+                node.setProperty(
+                    ATTR_NAME_SD,
+                    new SEBoolean(chkDamper_.getSelection()).toString()
+                );
+                node.setProperty( 
+                    ATTR_NAME_SPRING,
+                    txtSpring_.getText()
+                );
+                node.setProperty( 
+                    ATTR_NAME_DAMPER,
+                    txtDamper_.getText()
+                );
+                node.setProperty( 
+                    ATTR_NAME_STATIC_FRICTION,
+                    txtStaticFric_.getText()
+                );
+                node.setProperty( 
+                    ATTR_NAME_SLIDING_FRICTION,
+                    txtSlidingFric_.getText()
+                );
+                node.setProperty( 
+                	ATTR_NAME_CULLING_THRESH,
+                    txtCullingThresh_.getText()
+                );
+            } catch (Exception ex) {
+                MessageDialog.openWarning(getShell(), "", MessageBundle.get("message.attributeerror")); //$NON-NLS-1$ //$NON-NLS-2$
+                return false;
+            }
+            return true;
+        }
+        
         public void startAddMode() {
             mode_ = MODE_ADD;
             setEnabled(true);
@@ -746,6 +758,7 @@ public class CollisionPairPanel extends Composite {
            	item.setProperty("jointName1",  jName1);  //$NON-NLS-1$
            	item.setProperty("objectName2", oName2); //$NON-NLS-1$
            	item.setProperty("jointName2",  jName2);  //$NON-NLS-1$
+           	editorPanel_._setAttribute(item);
         } 
         manager_.itemChange(item, GrxPluginManager.ADD_ITEM);
         manager_.setSelectedItem(item, true);

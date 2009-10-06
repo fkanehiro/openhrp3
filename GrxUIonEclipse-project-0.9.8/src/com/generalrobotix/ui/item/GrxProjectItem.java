@@ -102,6 +102,8 @@ public class GrxProjectItem extends GrxBaseItem {
 	}
 
 	public boolean create() {
+		clear();
+		setURL("");
 		for (int i=0; ; i++) {
 			File f = new File(getDefaultDir().getAbsolutePath()+"/"+"newproject"+i+".xml"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			if (!f.isFile()) {
@@ -234,7 +236,7 @@ public class GrxProjectItem extends GrxBaseItem {
 						manager_.removeAllItems();
 					else if ( ans == false )
 						return;
-					GrxProjectItem.this.create();
+					create();
 				}
 			} );
 			// MENU_RESTORE=1
