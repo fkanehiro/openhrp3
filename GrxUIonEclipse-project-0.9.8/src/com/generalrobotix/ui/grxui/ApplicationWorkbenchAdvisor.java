@@ -23,7 +23,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 	public void preStartup(){
 		//window が開く前に実行される　//
+        
 		Activator activator = Activator.getDefault();
+        try{
+            activator.tryLockFile();
+        } catch (Exception ex) {
+            activator.breakStart( ex, null );
+        }
 		if(activator.getImageRegistry() == null)
 			try {
 				activator.registryImage();
@@ -34,7 +40,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			activator.registryFont();
 		if(activator.getColorRegistry() == null)
 			activator.registryColor();
-		activator.startGrxUI();
+        activator.startGrxUI();
 	}
 	
 	public void postShutdown(){
