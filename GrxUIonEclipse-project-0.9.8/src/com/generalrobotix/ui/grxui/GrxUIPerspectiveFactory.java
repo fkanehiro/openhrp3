@@ -7,12 +7,17 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+
+import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 
 public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
 
     public static final String ID = "com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory";
-
+    
     public static final String[] views = {
             "com.generalrobotix.ui.view.GrxItemViewPart",
             "com.generalrobotix.ui.view.GrxJythonPromptViewPart",
@@ -49,9 +54,8 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
     }
 
     public void createInitialLayout(IPageLayout layout) {
-
         System.out.println("START GrxUIPerspectiveFactory");
-
+        
         // エディタ領域を取得
         String editorArea = layout.getEditorArea();
 

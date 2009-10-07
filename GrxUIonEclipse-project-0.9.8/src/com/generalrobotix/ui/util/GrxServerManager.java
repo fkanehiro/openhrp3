@@ -38,7 +38,6 @@ public class GrxServerManager{
 
     public static volatile Vector<ProcessInfo> vecServerInfo          = new Vector<ProcessInfo>();
     private static volatile boolean           bInitializedServerInfo = false;
-    private static volatile String             strTempDir             = null;
 
     static private synchronized void InitServerInfo() {
         if (!bInitializedServerInfo) {
@@ -85,19 +84,30 @@ public class GrxServerManager{
         }
     }
 
-    //Xmlファイルハンドルの取得
-    static private File getConfigXml() {
+    static public File getTempDir() {
         File ret = null;
         if ( System.getProperty("os.name").equals("Linux") ||
              System.getProperty("os.name").equals("Mac OS X")) {
-            strTempDir = LINUX_TMP_DIR;
+            ret = new File(LINUX_TMP_DIR);
         } else { //Windows と　仮定
-            strTempDir = WIN_TMP_DIR;
+            ret = new File(WIN_TMP_DIR);
         }
-        ret = new File(strTempDir, CONFIG_XML);
+        
+        if( !ret.exists() ){
+            ret.mkdirs();
+        }
+        
+        
         return ret;
     }
 
+    //Xmlファイルハンドルの取得
+    static private File getConfigXml() {
+        return new File(getTempDir(), CONFIG_XML);
+    }
+
+    
+    
     /**
      * GrxServerManagerを作り、処理を開始する。
      */

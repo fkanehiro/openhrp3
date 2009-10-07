@@ -1,16 +1,20 @@
 package com.generalrobotix.ui.grxui;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.OverlappingFileLockException;
 import java.net.URL;
 import java.util.jar.*;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -23,10 +27,14 @@ import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.IViewReference;
+
+
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.FrameworkEvent;
@@ -37,7 +45,9 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxProcessManager;
+import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
+import com.generalrobotix.ui.util.GrxServerManager;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -68,10 +78,13 @@ public class Activator extends AbstractUIPlugin{
     											"grxrobot1.png",
     											"robot_servo_start.png",
     											"robot_servo_stop.png"};
-	
+    private final static File lockFilePath_ = new File( GrxServerManager.getTempDir(), "tryLockFileInActivator");
+    private SimpleDateFormat dateFormat_ = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS z Z");
+    private RandomAccessFile lockFile_ = null;
+    
     // パースペクティブのイベント初期化、振る舞いを定義するクラス
     class EventInnerClass extends PerspectiveAdapter
-            implements IWindowListener, IWorkbenchListener, SynchronousBundleListener, FrameworkListener {
+            implements IWindowListener, IWorkbenchListener, SynchronousBundleListener, FrameworkListener{
     	
         private IWorkbench      workbench_                  = null;
         private BundleContext   context_                    = null;
@@ -80,7 +93,10 @@ public class Activator extends AbstractUIPlugin{
             workbench_ = workbench;
             context_ = context;
         }
-
+        
+        public BundleContext getBundleContext(){ return context_; }
+        public IWorkbench getWorkbench(){ return workbench_; }
+        
         // Listenerをセット
         public void setEventListner() {
             workbench_.addWindowListener(this);
@@ -89,14 +105,32 @@ public class Activator extends AbstractUIPlugin{
         }
         
         public void perspectiveOpened(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-            if (GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
-                startGrxUI();
+            if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
+                if( lockFile_ == null ){
+                    try{
+                        tryLockFile();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        return;
+                    }
+                    startGrxUI();
+                }
             }
         }
 
+        public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
+            if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
+                if( lockFile_ == null ){
+                    breakStart( null, perspective );
+                }
+            }
+        }
+        
         public void perspectiveClosed(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
             if (GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
-                stopGrxUI();
+                if( lockFile_ != null ){
+                    stopGrxUI();
+                }
             }
         }
 
@@ -150,15 +184,27 @@ public class Activator extends AbstractUIPlugin{
                 break;
             case BundleEvent.STARTED:
                 if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
-                    // GrxUIパースペクティブが既に開いている場合の処理
-                    startGrxUI();
+                    //ワークスペースを起動して初めてパースペクティブを開く場合
                     IWorkbench localWorkbench = PlatformUI.getWorkbench();
-                    if (localWorkbench != null) {
-                        IWorkbenchWindow localWindow = localWorkbench.getActiveWorkbenchWindow();
-                        if (localWindow != null) {
-                            localWindow.addPerspectiveListener(this);
+                    IWorkbenchWindow wnd = localWorkbench.getActiveWorkbenchWindow();
+                    if( wnd.getActivePage() == null ){
+                        //キャッシュから開く場合
+                        try{
+                            tryLockFile();
+                        } catch (Exception ex) {
+                            breakStart( ex, null );
+                            break;
+                        }
+                        startGrxUI();
+                    } else {
+                        if (localWorkbench != null) {
+                            IWorkbenchWindow localWindow = localWorkbench.getActiveWorkbenchWindow();
+                            if (localWindow != null) {
+                                localWindow.addPerspectiveListener(this);
+                            }
                         }
                     }
+                    
                 }
                 break;
             case BundleEvent.STARTING:
@@ -369,9 +415,9 @@ public class Activator extends AbstractUIPlugin{
     }
 
     // GrxUIパースペクティブが有効になったときの動作
-    public void startGrxUI() {
+    public boolean startGrxUI() {
+        boolean ret = true;
         if( !bStartedGrxUI_ ) {
-            
             //暫定処置 Grx3DViewがGUIのみの機能に分離できたらstopGrxUIか
             //manager_.shutdownで処理できるように変更
             GrxProcessManager.shutDown();
@@ -380,12 +426,24 @@ public class Activator extends AbstractUIPlugin{
             manager_ = new GrxPluginManager();
             manager_.start();
         }
+        return ret;
     }
 
     // GrxUIパースペクティブが無効になったときの動作
     public void stopGrxUI() {
         manager_.shutdown();
         manager_ = null;
+        releaseLockFile();
+        // eclipseプラグイン上での実行を想定した処理
+        for( IWorkbenchWindow localWindow : eventInnerClass.getWorkbench().getWorkbenchWindows() ){
+            for( IWorkbenchPage localPage : localWindow.getPages() ){
+                localPage.getLabel();
+                if( GrxUIPerspectiveFactory.ID.equals( localPage.getPerspective().getId()) ){
+                    localPage.getLabel();
+                }
+            }
+        }
+        
         bStartedGrxUI_ = false;
     }
     
@@ -399,5 +457,71 @@ public class Activator extends AbstractUIPlugin{
     
     public ColorRegistry getColorRegistry(){
     	return creg_;
+    }
+    
+    public void tryLockFile() throws Exception{
+        try{
+            String localStr = "Start GrxUI:" + 
+                dateFormat_.format(new Date()) + System.getProperty("line.separator");
+            lockFile_ = new RandomAccessFile(lockFilePath_,"rwd");
+            
+            if ( lockFile_.getChannel().tryLock() == null){
+                throw new OverlappingFileLockException();
+            }
+            lockFile_.seek(lockFile_.length());
+            lockFile_.write(localStr.getBytes());
+        } catch(Exception eX){
+            eX.printStackTrace();
+            if(lockFile_ != null){
+                lockFile_.close();
+                lockFile_ = null;
+            }
+            throw eX;
+        }
+    }
+    
+    public void releaseLockFile(){
+        try{
+            if(lockFile_ != null){
+                String localStr = "End   GrxUI:" +
+                    dateFormat_.format(new Date()) + System.getProperty("line.separator");
+                lockFile_.write(localStr.getBytes());
+                lockFile_.close();
+                lockFile_ = null;
+            }
+        } catch(Exception ex){
+            ex.printStackTrace();
+        }
+    }
+    
+    public void breakStart(Exception eX, IPerspectiveDescriptor closeDesc ){
+        //二重起動阻止の処理
+        MessageDialog.openError(
+                Display.getDefault().getActiveShell(),
+                MessageBundle.get("Activator.dialog.title.doubleban"),
+                MessageBundle.get("Activator.dialog.message.doubleban") );
+        
+        IWorkbench work = PlatformUI.getWorkbench();
+        IWorkbenchWindow wnd = work.getActiveWorkbenchWindow();
+        if(wnd == null){
+            //RCP時の処理
+            work.close();
+            System.exit( PlatformUI.RETURN_UNSTARTABLE );
+        } else {
+            IWorkbenchPage page = wnd.getActivePage();
+            if(page == null){
+                //パースペクティブが既に開いているワークスペースを開始する時
+                wnd.close();
+                System.exit( PlatformUI.RETURN_UNSTARTABLE );
+            } else {
+                page.closePerspective(closeDesc, false, false);
+                for( IPerspectiveDescriptor local : page.getOpenPerspectives()){
+                    if( !local.getId().equals(GrxUIPerspectiveFactory.ID)){
+                        page.setPerspective(local);
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
