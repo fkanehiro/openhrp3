@@ -469,7 +469,7 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel,
 #endif
 
 
-bool hrp::loadBodyFromBodyInfo(BodyPtr& body, OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection)
+bool hrp::loadBodyFromBodyInfo(BodyPtr body, OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection)
 {
     if(!CORBA::is_nil(bodyInfo)){
         ModelLoaderHelper helper;
@@ -482,7 +482,7 @@ bool hrp::loadBodyFromBodyInfo(BodyPtr& body, OpenHRP::BodyInfo_ptr bodyInfo, bo
 }
 
 
-bool hrp::loadBodyFromModelLoader(BodyPtr& body, const char* url, CosNaming::NamingContext_var cxt)
+bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CosNaming::NamingContext_var cxt)
 {
     CosNaming::Name ncName;
     ncName.length(1);
@@ -530,7 +530,7 @@ bool hrp::loadBodyFromModelLoader(BodyPtr& body, const char* url, CosNaming::Nam
 }
 
 
-bool hrp::loadBodyFromModelLoader(BodyPtr& body, const char* url, CORBA_ORB_var orb)
+bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CORBA_ORB_var orb)
 {
     CosNaming::NamingContext_var cxt;
     try {
@@ -545,7 +545,7 @@ bool hrp::loadBodyFromModelLoader(BodyPtr& body, const char* url, CORBA_ORB_var 
 }
 
 
-bool hrp::loadBodyFromModelLoader(BodyPtr& body, const char* url, int argc, char* argv[])
+bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, int argc, char* argv[])
 {
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
     return loadBodyFromModelLoader(body, url,  orb);
