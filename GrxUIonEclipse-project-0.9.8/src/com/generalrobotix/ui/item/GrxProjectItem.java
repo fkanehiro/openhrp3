@@ -423,6 +423,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 
 		manager_.removeAllItems();
+		manager_.focusedItem(manager_.getProject());
 		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
 
 		// set PROJECT_DIR, which is referred to in a project file

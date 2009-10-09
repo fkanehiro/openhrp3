@@ -199,8 +199,11 @@ public class GrxRobotStatView extends GrxBaseView {
         manager_.registerItemChangeListener(this, GrxModelItem.class);
         if(!modelList_.isEmpty()){
 	        Iterator<GrxModelItem> it = modelList_.iterator();
-	    	while(it.hasNext())
-	    		comboModelName_.add(it.next().getName());
+	    	while(it.hasNext()){
+	    		GrxModelItem model = it.next();
+	    		comboModelName_.add(model.getName());
+	    		model.addObserver(this);
+	    	}
 	    	comboModelName_.select(0);
 	    	currentModel_ = modelList_.get(0);
 			setJointList();
@@ -290,6 +293,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    		if(!modelList_.contains(modelItem)){
 	    			modelList_.add(modelItem);
 	    			comboModelName_.add(modelItem.getName());
+	    			modelItem.addObserver(this);
 	    			if(currentModel_ == null){
 	    				currentModel_ = modelItem;
 	    				comboModelName_.select(comboModelName_.indexOf(modelItem.getName()));
@@ -303,6 +307,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    		if(modelList_.contains(modelItem)){
 	    			int index = modelList_.indexOf(modelItem);
 	    			modelList_.remove(modelItem);
+	    			modelItem.deleteObserver(this);
 	    			comboModelName_.remove(modelItem.getName());
 	    			if(currentModel_ == modelItem){
 	    				if(index < modelList_.size()){
@@ -364,6 +369,13 @@ public class GrxRobotStatView extends GrxBaseView {
 	    	}else if((String)arg[0]=="ClearLog"){
 				currentState_ = null;
 			}
+    	}else if(modelList_.contains(plugin)){
+    		if( (String)arg[0] == "PropertyChange" ){
+    			if( (String)arg[1] == "name" ){
+    				int index = comboModelName_.indexOf(plugin.getOldName());
+    				comboModelName_.setItem(index, (String)arg[2]);
+    			}
+    		}
     	}
     }
     
@@ -852,5 +864,12 @@ public class GrxRobotStatView extends GrxBaseView {
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
         if(currentWorld_ != null)
 			currentWorld_.deleteObserver(this);
+        modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        if(!modelList_.isEmpty()){
+	        Iterator<GrxModelItem> it = modelList_.iterator();
+	    	while(it.hasNext())
+	    		it.next().deleteObserver(this);
+	    	
+        }
 	}
 }

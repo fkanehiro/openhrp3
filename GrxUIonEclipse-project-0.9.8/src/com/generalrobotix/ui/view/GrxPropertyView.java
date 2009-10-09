@@ -296,6 +296,7 @@ public class GrxPropertyView extends GrxBaseView {
      */
     private void _refresh(){
         table_.setVisible(false);
+        nameText_.setText(currentPlugin_.getName());
         viewer_.setInput(currentPlugin_);
         table_.setVisible(true);
     }

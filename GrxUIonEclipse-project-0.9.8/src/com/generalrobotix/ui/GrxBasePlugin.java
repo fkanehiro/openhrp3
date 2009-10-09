@@ -46,6 +46,7 @@ import com.generalrobotix.ui.util.MessageBundle;
  */
 public class GrxBasePlugin extends GrxConfigBundle {
 	private String name_;
+	private String oldName_;
 	protected GrxPluginManager manager_;
 	private String url_;
 	private boolean selected_ = true;
@@ -171,6 +172,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	 * @param name name
 	 */
 	public void setName(String name) {
+		oldName_ = name_;
 		name_ = name;
 		setProperty("name", name); //$NON-NLS-1$
 	}
@@ -191,6 +193,10 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		return name_;
 	}
 
+	public String getOldName(){
+		return oldName_;
+	}
+	
 	/**
 	 * @brief set document
 	 * @param doc document
@@ -443,7 +449,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public Object setProperty(String key, String value){
 		//System.out.println("GrxBasePlugin.setProperty("+key+","+value+")");
 		Object o = super.setProperty(key, value);
-		notifyObservers("PropertyChange"); //$NON-NLS-1$
+		notifyObservers("PropertyChange", key, value); //$NON-NLS-1$
 		return o;
 	}
 	
