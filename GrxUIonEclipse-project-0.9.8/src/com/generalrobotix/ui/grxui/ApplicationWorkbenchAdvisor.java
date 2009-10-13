@@ -1,5 +1,6 @@
 package com.generalrobotix.ui.grxui;
 
+import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
@@ -21,6 +22,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		return PERSPECTIVE_ID;
 	}
 
+	public void initialize(IWorkbenchConfigurer configurer) {
+        configurer.setSaveAndRestore(true);
+    }
+	
 	public void preStartup(){
 		//window が開く前に実行される　//
         
