@@ -219,7 +219,8 @@ bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_
     }
 
     Link* target = linkPath.endLink();
-    Matrix33 end_R(end_R0 * trans(target->Rs));
+    //Matrix33 end_R(end_R0 * trans(target->Rs));
+    Matrix33 end_R(end_R0);
 
     std::vector<double> qorg(n);
     for(int i=0; i < n; ++i){
