@@ -384,12 +384,19 @@ set(OPENHRP_DIR ${CMAKE_INSTALL_PREFIX})
 set(OPENHRP_SHARE_DIR ${OPENHRP_DIR}/${RELATIVE_SHARE_INSTALL_PATH})
 
 # package
-set(CPACK_PACKAGE_NAME openhrp)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenHRP3")
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cpack_modules/)
+set(CPACK_PACKAGE_NAME openhrp-aist)
 set(CPACK_PACKAGE_VENDOR "AIST")
 set(CPACK_PACKAGE_CONTACT "Shin'ichiro Nakaoka <s.nakaoka@aist.go.jp>")
-#set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
-#set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README-en.txt")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE-en.txt")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenHRP-aist: Platform software development of robots and simulations.
+ OpenHRP (Open Architecture Humanoid Robotics Platform) is an integrated 
+ simulation platform for mainly a robot and consists of main dynamics 
+ algorithm developed by Nakamura Lab, Graduate School of Information 
+ Science and Technology Department of Mechano-Informatics in the University 
+ of Tokyo, a graphical user interface developed by General Robotix,
+ Inc and others by Advanced Industrial Science and Technology (AIST).")
 set(CPACK_PACKAGE_VERSION_MAJOR ${OPENHRP_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${OPENHRP_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${OPENHRP_VERSION_MICRO})
@@ -408,12 +415,25 @@ if(WIN32 AND NOT UNIX)
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenHRP ${OPENHRP_VERSION_MAJOR}.${OPENHRP_VERSION_MINOR}")
 
 else()
-#  set(CPACK_GENERATOR DEB)
-  #set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+  include(${CMAKE_MODULE_PATH}DEPENDENT904_BASENAMES.cmake)
+  
+  foreach(name ${DEPENDENT_BASENAMES})
+    if ( depends_line )
+      set(depends_line ${depends_line},${name})
+    else()
+      set(depends_line ${name})
+    endif()
+  endforeach()
+
+  set(CPACK_GENERATOR DEB)
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+  set(DEBIAN_PACKAGE_SECTION "development")
+  set(DEBIAN_PACKAGE_PRIORITY  "extra")
+  set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}-${CMAKE_SYSTEM_NAME}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
 #  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
-  #set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1-6), libgcc1 (>= 1:3.4.2-12)")
-  #set(CPACK_STRIP_FILES "bin/MyExecutable")
-  #set(CPACK_SOURCE_STRIP_FILES "")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "${depends_line}")
+#  set(CPACK_STRIP_FILES "bin/MyExecutable")
+#  set(CPACK_SOURCE_STRIP_FILES "")
 endif()
 
 include(CPack)
