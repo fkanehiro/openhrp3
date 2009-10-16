@@ -379,21 +379,15 @@ public class GrxProjectItem extends GrxBaseItem {
 	 * @brief load a project
 	 */
 	public void load() {
-		String path = getURL(true);
-		File filterPath = null;
-		if (path == null){
-			filterPath = getDefaultDir();
-		} else {
-			File tempFile = new File(path);
-			filterPath = tempFile.getParentFile();
-		}
-		
-		
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
 		String[] fe = { "*.xml" }; //$NON-NLS-1$
 		fdlg.setFilterExtensions( fe );
-		if( filterPath != null )
-			fdlg.setFilterPath(filterPath.getPath());
+		String projectDir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR"); //$NON-NLS-1$
+        if(projectDir.equals("")) //$NON-NLS-1$
+        	projectDir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
+        if(projectDir!=null)
+        	fdlg.setFilterPath(projectDir);
+		
 		String fPath = fdlg.open();
 		if( fPath != null ) {
 			File f = new File(fPath);
@@ -425,13 +419,6 @@ public class GrxProjectItem extends GrxBaseItem {
 		manager_.removeAllItems();
 		manager_.focusedItem(manager_.getProject());
 		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
-
-		// set PROJECT_DIR, which is referred to in a project file
-		String dir = f.getParent();
-		if (dir!=null) {
-		    System.setProperty("PROJECT_DIR", dir); //$NON-NLS-1$
-		    System.out.println("PROJECT_DIR is set to "+dir); //$NON-NLS-1$
-		}
 		
     	try {
       		doc_ = builder_.parse(f);
