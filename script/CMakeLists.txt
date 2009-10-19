@@ -19,7 +19,7 @@ macro(create_bootscripts DESTINATION DO_INSTALL)
 
     configure_file(${script}.in ${DESTINATION}/${script} @ONLY)
     if(DO_INSTALL)
-      install(PROGRAMS ${DESTINATION}/${script} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+      install(PROGRAMS ${DESTINATION}/${script} DESTINATION ${CPACK_INSTALL_PREFIX}bin)
     endif()
   endforeach()
  
