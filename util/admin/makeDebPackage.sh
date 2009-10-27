@@ -11,14 +11,15 @@ else
 fi
 
 cd ../../
-# Get latest *.deb file
+# Generate deb files
+sudo rm -f openhrp-aist*.deb
+#   Generate development deb file
+cmake -D DEBIANPACKAGE_DEVELOP:BOOL=ON .
 sudo cpack -G DEB
-DEB_FILES=`ls -t *.deb`
-for name in ${DEB_FILES}
-do
-  DEB_FILE=${name}
-  break
-done
+#   Generate runtime deb file
+cmake -D DEBIANPACKAGE_DEVELOP:BOOL=OFF .
+sudo cpack -G DEB
+DEB_FILES=`ls openhrp-aist*.deb`
 
 cd ${WORK_DIR}
 DEST_DIR="ubuntu/dists/${DISTRIB_CODENAME}/main/binary-i386/"
@@ -27,7 +28,11 @@ if [ ! -d ${DEST_DIR} ]; then
   mkdir -p ${DEST_DIR}
 fi
 
-sudo cp ../../${DEB_FILE} ${DEST_DIR}
+for name in ${DEB_FILES}
+do
+  sudo cp ../../${name} ${DEST_DIR}
+done
+
 ./makeDebPackageInfo.sh ubuntu dists/${DISTRIB_CODENAME}/main/binary-i386/
 
 cd ${CURRENT_DIR}

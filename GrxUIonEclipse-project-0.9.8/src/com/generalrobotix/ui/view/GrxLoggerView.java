@@ -90,7 +90,7 @@ public class GrxLoggerView extends GrxBaseView {
 	private final static String iconFrameF_ = "frame+.png"; //$NON-NLS-1$
 	private final static String iconFrameR_ = "frame-.png"; //$NON-NLS-1$
 	private final static String[] icons_ = { iconFRwd_, iconSRwd_, iconFrameR_, iconStop_, iconPlay_, iconFrameF_, iconSFwd_, iconFFwd_ };
-
+    private final static int    maxFrameRate_ = 50;
 	private Label  lblPlayRate_;
 	
 	private static DecimalFormat FORMAT_FAST  =  new DecimalFormat("Play x ##;Play x-##"); //$NON-NLS-1$
@@ -271,21 +271,21 @@ public class GrxLoggerView extends GrxBaseView {
 		
 		// frame rate
 		lblFrameRate_ = new Label(composite_, SWT.NONE);
-		lblFrameRate_.setText(MessageBundle.get("GrxLoggerView.label.FPS")+10); //$NON-NLS-1$
+		lblFrameRate_.setText(MessageBundle.get("GrxLoggerView.label.FPS")+maxFrameRate_); //$NON-NLS-1$
 		
 		// フレームレート変更スライダ
 		sliderFrameRate_ = new Scale( composite_, SWT.HORIZONTAL );
-		sliderFrameRate_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-            	frameRate_ = sliderFrameRate_.getSelection();
-				lblFrameRate_.setText( MessageBundle.get("GrxLoggerView.label.FPS")+String.valueOf(frameRate_) ); //$NON-NLS-1$
-            }
-		} );
 		//sliderFrameRate_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		sliderFrameRate_.setSize(80, 27);
-		sliderFrameRate_.setMaximum(50);
+		sliderFrameRate_.setMaximum(maxFrameRate_);
 		sliderFrameRate_.setMinimum(1);
-		sliderFrameRate_.setSelection(frameRate_);
+		sliderFrameRate_.setSelection(maxFrameRate_);
+        sliderFrameRate_.addSelectionListener(new SelectionAdapter(){
+            public void widgetSelected(SelectionEvent e){
+                frameRate_ = maxFrameRate_;
+                lblFrameRate_.setText( MessageBundle.get("GrxLoggerView.label.FPS")+String.valueOf(frameRate_) ); //$NON-NLS-1$
+            }
+        } );
 
 		
 		setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);

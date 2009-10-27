@@ -82,5 +82,6 @@ install(TARGETS ${target}
   ARCHIVE DESTINATION ${CPACK_INSTALL_PREFIX}lib CONFIGURATIONS Release Debug
   )
 
-install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCollision)
-
+if( DEBIANPACKAGE_DEVELOP )
+  install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCollision)
+endif()

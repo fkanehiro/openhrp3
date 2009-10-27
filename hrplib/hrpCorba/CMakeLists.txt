@@ -61,6 +61,7 @@ install(TARGETS ${target}
 
 set(given_headers ORBwrap.h)
 
-install(FILES ${given_headers} ${idl_h_files} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCorba)
-
+if( DEBIANPACKAGE_DEVELOP )
+  install(FILES ${given_headers} ${idl_h_files} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCorba)
+endif()
 
