@@ -62,16 +62,20 @@ elseif(WIN32)
   set(SH_SFX "bat")
 endif()
 
-# check DEBIANPACKAGE_NOT_USR_PREFIX_MODE and then generate aditional path to use INSTALL command. 
+# CPack presetting
+option(DEBIANPACKAGE_DEVELOP "Development and runtime specification switch. If value is OFF cpack generate runtime package." ON)
+  # check DEBIANPACKAGE_NOT_USR_PREFIX_MODE and then generate aditional path to use INSTALL command. 
 set(CPACK_INSTALL_PREFIX "")
 if(UNIX)
-  set(DEBIANPACKAGE_NOT_USR_PREFIX_MODE OFF CACHE BOOL "The compulsion use MAKE_INSTALL_PREFIX equls '/usr' is evaded.")
+  option(DEBIANPACKAGE_NOT_USR_PREFIX_MODE "The compulsion use MAKE_INSTALL_PREFIX equls '/usr' is evaded." OFF)
   if(DEBIANPACKAGE_NOT_USR_PREFIX_MODE)
     string(REGEX REPLACE "^/usr/" "" CPACK_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
     string(REGEX REPLACE "([^/])$" "\\1/" CPACK_INSTALL_PREFIX ${CPACK_INSTALL_PREFIX})
   endif()
 endif()
-    
+
+
+
 # check "dlfcn.h" for using dlopen() and dlclose()
 if(UNIX)
   check_include_files(dlfcn.h HAVE_DLFCN_H)
@@ -88,7 +92,7 @@ if(NOT Boost_INCLUDE_DIR AND NOT Boost_LIBRARY_DIRS)
         BOOST_ROOT
         NAMES boost/algorithm boost/bind boost/regex boost/thread boost/numeric
         PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
-        PATH_SUFFIXES Boost-1.40.0 Boost-1.39.0 Boost-1.38.0 Boost-1.37.0 Boost-1.36.0 Boost-1.35.0
+        PATH_SUFFIXES Boost-1.41.0 Boost-1.40.0 Boost-1.39.0 Boost-1.38.0 Boost-1.37.0 Boost-1.36.0 Boost-1.35.0
         DOC "The root directory of boost")
     else()
       set(BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "The root directory of boost")
@@ -395,7 +399,11 @@ set(OPENHRP_SHARE_DIR ${OPENHRP_DIR}/${RELATIVE_SHARE_INSTALL_PATH})
 
 # package
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cpack_modules/)
-set(CPACK_PACKAGE_NAME openhrp-aist)
+if( DEBIANPACKAGE_DEVELOP )
+  set(CPACK_PACKAGE_NAME openhrp-aist-dev)
+else()
+  set(CPACK_PACKAGE_NAME openhrp-aist)
+endif()
 set(CPACK_PACKAGE_VENDOR "AIST")
 set(CPACK_PACKAGE_CONTACT "Shin'ichiro Nakaoka <s.nakaoka@aist.go.jp>")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README-en.txt")
@@ -473,3 +481,14 @@ endif()
 if(EXISTS ${PROJECT_SOURCE_DIR}/PatternGenerator)
   add_subdirectory(PatternGenerator)
 endif()
+
+# Documents
+if(UNIX)
+  option(ENABLE_DOCUMENTS_GENERATE "Allow generate documents by doxygen." OFF)
+  if(ENABLE_DOCUMENTS_GENERATE)
+    add_subdirectory(doc)
+  endif()
+endif(UNIX)
+install( FILES README-ja.txt LICENSE-ja.txt HISTORY-ja.txt README-en.txt LICENSE-en.txt HISTORY-en.txt
+         DESTINATION ${RELATIVE_DOC_INSTALL_PATH} )
+
