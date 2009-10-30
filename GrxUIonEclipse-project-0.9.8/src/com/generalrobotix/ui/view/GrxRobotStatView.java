@@ -36,12 +36,14 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -163,10 +165,14 @@ public class GrxRobotStatView extends GrxBaseView {
 	    { SWT.RIGHT, SWT.RIGHT}
 	};
 
-        jointTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);
-        forceTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);    
-        sensorTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);    
-        powerTV_ = new TableViewer(mainPanel,SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL|SWT.FULL_SELECTION);    
+        Composite sash = new Composite(mainPanel, SWT.NONE);
+        sash.setLayout(new FillLayout());
+        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+        SashForm sashForm = new SashForm(sash, SWT.VERTICAL);
+        jointTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION);
+        forceTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION);    
+        sensorTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION);    
+        powerTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION);  
         
         jointTV_.setContentProvider(new ArrayContentProvider());
         forceTV_.setContentProvider(new ArrayContentProvider());
