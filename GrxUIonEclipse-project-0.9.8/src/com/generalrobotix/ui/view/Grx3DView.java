@@ -147,6 +147,8 @@ public class Grx3DView
     private Shape3D distance_;
     private Vector<GrxLinkItem> intersectingLinks_;
     
+    private boolean showActualState_ = true;
+    
     // for "Linux resize problem"
     Frame frame_;
     Composite comp;
@@ -641,6 +643,8 @@ public class Grx3DView
         btnCoMonFloor_.setSelected(isTrue("showCoMonFloor",false)); //$NON-NLS-1$
         
         viewToolBar_.selectViewMode(getInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM)); //$NON-NLS-1$
+        
+        showActualState_ = isTrue("showActualState", showActualState_);
         //_setViewHomePosition();
     }
     
@@ -806,14 +810,13 @@ public class Grx3DView
 	
     public void updateModels(WorldStateEx state){
         // update models with new WorldState
-    	boolean showActualState = this.isTrue("showActualState", true);
         for (int i=0; i<currentModels_.size(); i++) {
             GrxModelItem model = currentModels_.get(i);
             CharacterStateEx charStat = state.get(model.getName());
             if (charStat != null) {
                 if (charStat.sensorState != null){
                 	double[] angles;
-                	if (showActualState) {
+                	if (showActualState_) {
                 		angles = charStat.sensorState.q;
                 	} else {
                 		angles = charStat.targetState;
