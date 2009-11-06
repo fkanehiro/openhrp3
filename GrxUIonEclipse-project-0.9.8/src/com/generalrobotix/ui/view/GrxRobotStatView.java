@@ -48,6 +48,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TableColumn;
 
 import com.generalrobotix.ui.GrxBaseItem;
@@ -69,9 +71,8 @@ public class GrxRobotStatView extends GrxBaseView {
     private static final DecimalFormat FORMAT1 = new DecimalFormat(" 0.0;-0.0");
     private static final DecimalFormat FORMAT2 = new DecimalFormat(" 0.000;-0.000");
     
-    private Font plain12_;
-    private Font bold12_;
-    //private Font bold20_;
+    private Font plainFont_;
+    private Font boldFont_;
 
     private GrxWorldStateItem currentWorld_ = null;
     private GrxModelItem currentModel_ = null;
@@ -103,30 +104,34 @@ public class GrxRobotStatView extends GrxBaseView {
     private Color red_;
     private Color yellow_;
     
+    private String osName_ = "Windows";
+    
     private static final int COMBO_WIDTH = 100;
 
     public GrxRobotStatView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
         super(name, manager,vp,parent);
+        osName_ = System.getProperty("os.name");
+        
         white_ = parent.getDisplay().getSystemColor(SWT.COLOR_WHITE);
         black_ = parent.getDisplay().getSystemColor(SWT.COLOR_BLACK);
         red_ = parent.getDisplay().getSystemColor(SWT.COLOR_RED);
         yellow_ = parent.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
         
-        FontRegistry registry = new FontRegistry();
-
         FontData[] data = parent.getFont().getFontData();
-        //windowsだとテーブルのセルに収まらないのでフォントサイズはデフォルトにする
-        //for(int i = 0; i < data.length; i++){
-        //    data[i].setHeight(12);
-        //}
-        registry.put("plain12",data);
-        plain12_ = registry.get("plain12");
-        for(int i = 0; i < data.length; i++){
-            //data[i].setHeight(12);
+        if (osName_ == "Linux") {
+        	for (int i=0; i<data.length; i++) {
+        		data[i].setHeight(10);
+        	}
+        }
+        FontRegistry registry = new FontRegistry();
+        registry.put("plain",data);
+        plainFont_ = registry.get("plain");
+
+        for (int i=0; i<data.length; i++) {
             data[i].setStyle(SWT.BOLD);
         }
-        registry.put("bold12",data);
-        bold12_ = registry.get("bold12");
+        registry.put("bold",data);
+        boldFont_ = registry.get("bold");
         
         Composite mainPanel = new Composite(composite_, SWT.NONE);
         mainPanel.setLayout(new GridLayout(1,false));
@@ -198,6 +203,13 @@ public class GrxRobotStatView extends GrxBaseView {
             viewers_[i].getTable().setHeaderVisible(true);
             viewers_[i].getTable().setLinesVisible(true);
             viewers_[i].getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+            if (osName_ == "Linux") {
+            	viewers_[i].getTable().addListener(SWT.MeasureItem, new Listener() {
+            		public void handleEvent(Event event) {
+            			event.height = 15;
+            		}
+            	});
+            }
         }
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
@@ -221,7 +233,7 @@ public class GrxRobotStatView extends GrxBaseView {
         	currentWorld_.addObserver(this); 
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-        
+        sashForm.setWeights(new int[] {60,20,10,10});
         _resizeTables();
     }
     
@@ -642,28 +654,28 @@ public class GrxRobotStatView extends GrxBaseView {
                 case 0:
                     if (currentSvStat_ != null
                         &&  !_isCalibrated(currentSvStat_[rowIndex])) {
-                        return bold12_;
+                        return boldFont_;
                     }
                     break;
                 case 2:
                     GrxLinkItem info = jointList_.get(rowIndex);
                     if (info.llimit() != null && info.ulimit() != null && info.llimit()[0] < info.ulimit()[0]
                         && (info.jointValue() <= info.llimit()[0] || info.ulimit()[0] <= info.jointValue())) {
-                        return bold12_;
+                        return boldFont_;
                     }
                     break;
                case 6:
                     if (currentSvStat_ == null)
                         break;
                     if (_isServoOn(currentSvStat_[rowIndex])) {
-                        return bold12_;
+                        return boldFont_;
                     }
                     break;
                case 7: // alarm                                        
                    if (currentSvStat_ == null)                     
                            break;                                  
                    if (_getAlarm(currentSvStat_[rowIndex]) != 0){  
-                           return bold12_;                         
+                           return boldFont_;                         
                    }
                    break;
                 case 4:
@@ -672,7 +684,7 @@ public class GrxRobotStatView extends GrxBaseView {
                 default:
                     break;
             }
-            return plain12_;
+            return plainFont_;
         }
 
         private boolean _isServoOn(int state) {                         
@@ -752,7 +764,7 @@ public class GrxRobotStatView extends GrxBaseView {
         }
 
         public Font getFont(Object element, int columnIndex) {
-            return plain12_;
+            return plainFont_;
         }
         
     }
@@ -825,7 +837,7 @@ public class GrxRobotStatView extends GrxBaseView {
         }
 
         public Font getFont(Object element, int columnIndex) {
-            return plain12_;
+            return plainFont_;
         }
         
     }
@@ -867,7 +879,7 @@ public class GrxRobotStatView extends GrxBaseView {
         }
 
         public Font getFont(Object element, int columnIndex) {
-            return plain12_;
+            return plainFont_;
         }
         
     }
