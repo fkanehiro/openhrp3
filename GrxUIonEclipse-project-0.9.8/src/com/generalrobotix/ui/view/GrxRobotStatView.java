@@ -599,13 +599,13 @@ public class GrxRobotStatView extends GrxBaseView {
 
         public Color getForeground(Object element, int columnIndex) {
             int rowIndex = ((Integer)element).intValue();
-            
             switch (columnIndex) {
                 case 0:
                     if (currentSvStat_ != null
                         &&  !_isCalibrated(currentSvStat_[rowIndex])) {
                         return red_;
                     }
+                    break;
                 case 1:
                 case 2:
                     if (jointList_.size() <= 0 || currentSensor_ == null)
@@ -615,16 +615,19 @@ public class GrxRobotStatView extends GrxBaseView {
                         && (currentSensor_.q[rowIndex] <= info.llimit()[0] || info.ulimit()[0] <= currentSensor_.q[rowIndex])) {
                         return red_;
                     }
+                    break;
                 case 6:
                     if (currentSvStat_ == null)
                         break;
                     if (_isServoOn(currentSvStat_[rowIndex])) 
                         return red_;
+                    break;
                 case 7: // alarm                                        
                     if (currentSvStat_ == null)                         
                         break;                                          
                     if (_getAlarm(currentSvStat_[rowIndex]) != 0)       
-                        return red_;                                    
+                        return red_;
+                    break;
                 default:
                     break;
             }
@@ -641,24 +644,28 @@ public class GrxRobotStatView extends GrxBaseView {
                         &&  !_isCalibrated(currentSvStat_[rowIndex])) {
                         return bold12_;
                     }
+                    break;
                 case 2:
                     GrxLinkItem info = jointList_.get(rowIndex);
                     if (info.llimit() != null && info.ulimit() != null && info.llimit()[0] < info.ulimit()[0]
                         && (info.jointValue() <= info.llimit()[0] || info.ulimit()[0] <= info.jointValue())) {
                         return bold12_;
                     }
+                    break;
                case 6:
                     if (currentSvStat_ == null)
                         break;
                     if (_isServoOn(currentSvStat_[rowIndex])) {
                         return bold12_;
                     }
+                    break;
                case 7: // alarm                                        
                    if (currentSvStat_ == null)                     
                            break;                                  
                    if (_getAlarm(currentSvStat_[rowIndex]) != 0){  
                            return bold12_;                         
-                   }                                               
+                   }
+                   break;
                 case 4:
                 case 5:
                 case 8:
