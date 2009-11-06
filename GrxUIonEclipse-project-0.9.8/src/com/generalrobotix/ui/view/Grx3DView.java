@@ -806,12 +806,19 @@ public class Grx3DView
 	
     public void updateModels(WorldStateEx state){
         // update models with new WorldState
+    	boolean showActualState = this.isTrue("showActualState", true);
         for (int i=0; i<currentModels_.size(); i++) {
             GrxModelItem model = currentModels_.get(i);
             CharacterStateEx charStat = state.get(model.getName());
             if (charStat != null) {
                 if (charStat.sensorState != null){
-                    model.setCharacterPos(charStat.position, charStat.sensorState.q);
+                	double[] angles;
+                	if (showActualState) {
+                		angles = charStat.sensorState.q;
+                	} else {
+                		angles = charStat.targetState;
+                	}
+                    model.setCharacterPos(charStat.position, angles);
                     if (charStat.sensorState.range != null && charStat.sensorState.range.length > 0){
                     	List<GrxSensorItem> sensors = model.getSensors("Range"); //$NON-NLS-1$
                     	for (int j=0; j<sensors.size(); j++){
