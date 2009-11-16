@@ -1,3 +1,5 @@
+include (${CMAKE_MODULE_PATH}/macros.cmake)
+
 set(sources
   chain.cpp
   com.cpp
@@ -33,7 +35,9 @@ set(sources
 include_directories(.)
 add_definitions(-DSEGA -DUSE_CLAPACK_INTERFACE)
 add_library(sDIMS SHARED ${sources})
-set_target_properties(sDIMS PROPERTIES VERSION 0.0.0 SOVERSION 0)
+
+set(HRPSDIMS_VERSION 0.0.0 )
+set_target_properties(sDIMS PROPERTIES VERSION ${HRPSDIMS_VERSION} SOVERSION 0)
 
 target_link_libraries(sDIMS ${LAPACK_LIBRARIES})
 
@@ -44,8 +48,4 @@ if (WIN32)
   set_target_properties(sDIMS PROPERTIES DEBUG_POSTFIX d )
 endif()
 
-install(TARGETS sDIMS
-  RUNTIME DESTINATION ${CPACK_INSTALL_PREFIX}bin CONFIGURATIONS Release Debug
-  LIBRARY DESTINATION ${CPACK_INSTALL_PREFIX}lib CONFIGURATIONS Release Debug
-  ARCHIVE DESTINATION ${CPACK_INSTALL_PREFIX}lib CONFIGURATIONS Release Debug
-)
+hrplib_install_macro(sDIMS ${HRPSDIMS_VERSION})

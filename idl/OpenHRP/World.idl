@@ -7,18 +7,18 @@
 module OpenHRP {
     /**
      * @if jp
-     * ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“¢ŠE
+     * ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ä¸–ç•Œ
      * @endif
      */
     interface World
     {
         /**
          * @if jp
-         * @brief ƒLƒƒƒ‰ƒNƒ^‚ğ“o˜^‚·‚éB
+         * @brief ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ã‚’ç™»éŒ²ã™ã‚‹
          * 
-         * ModelLoader ‚©‚ç“¾‚ç‚ê‚½î•ñ‚ÅƒLƒƒƒ‰ƒNƒ^‚ğ“o˜^‚µ‚Ü‚·B
-         * @param name ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚Å‚ÌƒLƒƒƒ‰ƒNƒ^–¼
-         * @param cinfo ModelLoader ‚©‚ç“¾‚ç‚ê‚é CharacterInfo
+         * ModelLoader ã‹ã‚‰å¾—ã‚‰ã‚ŒãŸæƒ…å ±ã§ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ã‚’ç™»éŒ²ã—ã¾ã™ã€‚
+         * @param name ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã§ã®ã‚­ãƒ£ãƒ©ã‚¯ã‚¿å
+         * @param cinfo ModelLoader ã‹ã‚‰å¾—ã‚‰ã‚Œã‚‹ CharacterInfo
          * @else
          * Register a character
          * @param   name    Object Character Name for Simulation

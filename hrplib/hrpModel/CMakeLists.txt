@@ -43,7 +43,8 @@ set(target hrpModel-${OPENHRP_LIBRARY_VERSION})
 add_library(${target} SHARED ${sources})
 
 # interface version 0.0.0 - version 3.0.0 beta1
-set_target_properties(${target} PROPERTIES VERSION 0.0.0 SOVERSION 0)
+set(HRPMODEL_VERSION ${HRPSOVERSION}.0.0 )
+set_target_properties(${target} PROPERTIES VERSION ${HRPMODEL_VERSION} SOVERSION ${HRPSOVERSION})
 
 
 if(UNIX)
@@ -68,22 +69,9 @@ elseif(WIN32)
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d )
 endif()
 
-if(WIN32)
-  install(TARGETS ${target}
-    RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release Debug
-    LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
-    ARCHIVE DESTINATION ${PROJECT_BINARY_DIR}/lib CONFIGURATIONS Release Debug
-    )
-endif() 
+hrplib_install_macro(${target} ${HRPMODEL_VERSION})
 
-install(TARGETS ${target}
-  RUNTIME DESTINATION ${CPACK_INSTALL_PREFIX}bin CONFIGURATIONS Release Debug
-  LIBRARY DESTINATION ${CPACK_INSTALL_PREFIX}lib CONFIGURATIONS Release Debug
-  ARCHIVE DESTINATION ${CPACK_INSTALL_PREFIX}lib CONFIGURATIONS Release Debug)
-
-if( DEBIANPACKAGE_DEVELOP )
-  install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpModel)
-endif()
+install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpModel)
 
 # Body Customizers
 set(OPENHRP_3_0_CUSTOMIZERS ${OPENHRP_3_0_CUSTOMIZERS} CACHE FILEPATH "Source files of the body customizer for OpenHRP 3.0")
