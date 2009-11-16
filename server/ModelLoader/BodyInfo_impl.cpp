@@ -213,7 +213,7 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
     }
     catch( ModelLoader::ModelLoaderException& ex ) {
         string name(linkInfo->name);
-        string error = name.empty() ? "Unnamed JoitNode" : name;
+        string error = name.empty() ? "Unnamed JointNode" : name;
         error += ": ";
         error += ex.description;
         throw ModelLoader::ModelLoaderException( error.c_str() );
