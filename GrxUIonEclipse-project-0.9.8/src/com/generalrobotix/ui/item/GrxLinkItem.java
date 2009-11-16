@@ -20,9 +20,13 @@ package com.generalrobotix.ui.item;
 import java.util.Hashtable;
 import java.util.Map;
 
+import javax.media.j3d.Appearance;
 import javax.media.j3d.BadTransformException;
+import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
+import javax.media.j3d.GeometryArray;
 import javax.media.j3d.LineArray;
+import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
@@ -30,12 +34,15 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3d;
+import javax.vecmath.Point2f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 
+import jp.go.aist.hrp.simulator.DblArray3SequenceHolder;
 import jp.go.aist.hrp.simulator.HwcInfo;
 import jp.go.aist.hrp.simulator.LinkInfo;
 import jp.go.aist.hrp.simulator.SensorInfo;
+import jp.go.aist.hrp.simulator.ShapeInfo;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -51,6 +58,12 @@ import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 import com.generalrobotix.ui.util.MessageBundle;
 
+import com.sun.j3d.utils.geometry.Box;
+import com.sun.j3d.utils.geometry.GeometryInfo;
+import com.sun.j3d.utils.geometry.NormalGenerator;
+import com.sun.j3d.utils.geometry.Primitive;
+import com.sun.j3d.utils.picking.PickTool;
+
 
 @SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxLinkItem extends GrxTransformItem{
@@ -62,8 +75,11 @@ public class GrxLinkItem extends GrxTransformItem{
     private TransformGroup tgCom_;
     private Switch switchBb_;
     private Switch switchAxis_;
+    private Switch switchAABB_;
 
     private double  jointValue_;
+    
+    private int AABBmaxDepth_;
 
     /**
      * @brief get inertia matrix
@@ -580,6 +596,12 @@ public class GrxLinkItem extends GrxTransformItem{
     		if (tr != null){
     			setProperty("tolerance", value); //$NON-NLS-1$
     		}
+    	}else if (property.equals("AABBdepth")){
+    		int depth = Integer.parseInt(value);
+    		if(depth<AABBmaxDepth_){
+    			setProperty("AABBdepth", value);
+    			model_.makeAABB();  
+    		}
     	}else{
     		return false;
     	}
@@ -909,6 +931,11 @@ public class GrxLinkItem extends GrxTransformItem{
         userData.put("boundingBoxSwitch", switchBb_); //$NON-NLS-1$
         tg_.setUserData(userData);
         tg_.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
+        
+        switchAABB_ = SceneGraphModifier._makeSwitchNode();
+        tg_.addChild(switchAABB_);
+        AABBmaxDepth_ = info_.AABBmaxDepth;
+        setProperty("AABBdepth","original data"); //String.valueOf(AABBmaxDepth_));
 	}
 
 	/**
@@ -1191,4 +1218,59 @@ public class GrxLinkItem extends GrxTransformItem{
 			}
 		}
     }
+	
+	public void setVisibleAABB(boolean b){ 
+		switchAABB_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
+	}
+	
+	public void clearAABB(){
+		switchAABB_.removeAllChildren();
+	}
+	
+	public void makeAABB(ShapeInfo shape, double[] T){	
+		TransformGroup tg = new TransformGroup();
+		tg.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+	    tg.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+	    tg.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+	    tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+	    tg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		Transform3D t3d = new Transform3D();
+	    tg.getTransform(t3d);
+	    Vector3d v = new Vector3d(T[3], T[7], T[11]);
+	    t3d.setTranslation(v);
+	    tg.setTransform(t3d);
+	    Appearance appearance = new Appearance();
+	    PolygonAttributes pa = new PolygonAttributes();
+	    pa.setPolygonMode(PolygonAttributes.POLYGON_LINE);
+	    appearance.setPolygonAttributes(pa);
+	    
+	    GeometryInfo geometryInfo = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
+        int numVertices = shape.vertices.length / 3;
+        Point3f[] vertices = new Point3f[numVertices];
+        for(int i=0; i < numVertices; ++i){
+            vertices[i] = new Point3f(shape.vertices[i*3], shape.vertices[i*3+1], shape.vertices[i*3+2]);
+        }
+        geometryInfo.setCoordinates(vertices);
+        geometryInfo.setCoordinateIndices(shape.triangles);
+        NormalGenerator ng = new NormalGenerator();
+        ng.generateNormals(geometryInfo);
+
+        Shape3D shape3D = new Shape3D(geometryInfo.getGeometryArray());
+        shape3D.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
+        shape3D.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+        shape3D.setCapability(GeometryArray.ALLOW_COORDINATE_READ);
+        shape3D.setCapability(GeometryArray.ALLOW_COUNT_READ);
+        PickTool.setCapabilities(shape3D, PickTool.INTERSECT_FULL);
+        shape3D.setAppearance(appearance);
+ 	    
+	    tg.addChild(shape3D);
+	    BranchGroup bg = new BranchGroup();
+	    bg.setCapability(BranchGroup.ALLOW_DETACH);
+	    bg.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+	    bg.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+	    bg.addChild(tg);
+	    switchAABB_.addChild(bg);		
+
+	}
+	
 }

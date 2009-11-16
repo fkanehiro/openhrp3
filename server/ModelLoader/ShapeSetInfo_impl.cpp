@@ -661,3 +661,106 @@ std::string ShapeSetInfo_impl::getModelFileDirPath(const std::string& url)
 
     return dirPath;
 }
+
+void ShapeSetInfo_impl::setColdetModel(ColdetModelPtr& coldetModel, TransformedShapeIndexSequence shapeIndices, const Matrix44& Tparent, int& vertexIndex, int& triangleIndex){
+    for(unsigned int i=0; i < shapeIndices.length(); i++){
+        setColdetModelTriangles(coldetModel, shapeIndices[i], Tparent, vertexIndex, triangleIndex);
+    }
+}
+
+void ShapeSetInfo_impl::setColdetModelTriangles
+(ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, int& vertexIndex, int& triangleIndex)
+{
+    short shapeIndex = tsi.shapeIndex;
+    const DblArray12& M = tsi.transformMatrix;;
+    Matrix44 T, Tlocal;
+    Tlocal = M[0], M[1], M[2],  M[3],
+             M[4], M[5], M[6],  M[7],
+             M[8], M[9], M[10], M[11],
+             0.0,  0.0,  0.0,   1.0;
+    T = Tparent * Tlocal;
+    
+    const ShapeInfo& shapeInfo = shapes_[shapeIndex];
+    
+    const FloatSequence& vertices = shapeInfo.vertices;
+    const LongSequence& triangles = shapeInfo.triangles;
+    const int numTriangles = triangles.length() / 3;
+    
+    coldetModel->setNumTriangles(coldetModel->getNumTriangles()+numTriangles);
+    int numVertices = numTriangles * 3;
+    coldetModel->setNumVertices(coldetModel->getNumVertices()+numVertices);
+    for(int j=0; j < numTriangles; ++j){
+        int vertexIndexTop = vertexIndex;
+        for(int k=0; k < 3; ++k){
+            long orgVertexIndex = shapeInfo.triangles[j * 3 + k];
+            int p = orgVertexIndex * 3;
+            Vector4 v(T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0));
+            coldetModel->setVertex(vertexIndex++, (float)v[0], (float)v[1], (float)v[2]);
+        }
+        coldetModel->setTriangle(triangleIndex++, vertexIndexTop, vertexIndexTop + 1, vertexIndexTop + 2);
+    }
+    
+}
+
+void ShapeSetInfo_impl::saveOriginalData(){
+    originShapes_ = shapes_;
+    originAppearances_ = appearances_;
+    originMaterials_ = materials_;
+}
+
+void ShapeSetInfo_impl::setBoundingBoxData(IceMaths::Point boxSize, int shapeIndex){
+    VrmlBox* box = new VrmlBox();
+    VrmlIndexedFaceSetPtr triangleMesh;
+    box->size[0] = boxSize.x*2;
+    box->size[1] = boxSize.y*2;
+    box->size[2] = boxSize.z*2;
+    triangleMesh = new VrmlIndexedFaceSet();
+    triangleMesh->coord = new VrmlCoordinate();
+    triangleMeshShaper.convertBox(box, triangleMesh);
+       
+    shapes_.length(shapeIndex+1);
+    ShapeInfo& shapeInfo = shapes_[shapeIndex];
+    VrmlIndexedFaceSet* faceSet = triangleMesh.get();
+    setTriangleMesh(shapeInfo, faceSet);
+    shapeInfo.primitiveType = SP_BOX;
+    FloatSequence& param = shapeInfo.primitiveParameters;
+    param.length(3);
+    for(int i=0; i < 3; ++i)
+        param[i] = box->size[i];
+    shapeInfo.appearanceIndex = 0;
+    
+    delete box;
+}
+
+void ShapeSetInfo_impl::createAppearanceInfo(){
+    appearances_.length(1);
+    AppearanceInfo& appInfo = appearances_[0];
+    appInfo.normalPerVertex = false;
+    appInfo.colorPerVertex = false;
+    appInfo.solid = false;
+    appInfo.creaseAngle = 0.0;
+    appInfo.textureIndex = -1;
+    appInfo.normals.length(0);
+    appInfo.normalIndices.length(0);
+    appInfo.colors.length(0);
+    appInfo.colorIndices.length(0);
+    appInfo.materialIndex = 0;
+    appInfo.textureIndex = -1;
+
+    materials_.length(1);
+    MaterialInfo& material = materials_[0];
+    material.ambientIntensity = 0.2;
+    material.shininess = 0.2;
+    material.transparency = 0.0;
+    for(int j = 0 ; j < 3 ; j++){
+        material.diffuseColor[j]  = 0.8;
+        material.emissiveColor[j] = 0.0;
+        material.specularColor[j] = 0.0;
+    }
+}
+
+void ShapeSetInfo_impl::restoreOriginalData(){
+    shapes_ = originShapes_;
+    appearances_ = originAppearances_;
+    materials_ = originMaterials_;
+}

@@ -19,6 +19,7 @@
 #include <hrpCorba/ORBwrap.h>
 #include <hrpCorba/ModelLoader.hh>
 #include <hrpModel/ModelNodeSet.h>
+#include <hrpCollision/ColdetModel.h>
 
 #include "ShapeSetInfo_impl.h"
 
@@ -47,6 +48,8 @@ class BodyInfo_impl :
 
     bool getParam(std::string param);
     void setParam(std::string param, bool value);
+    void changetoBoundingBox(unsigned int* depth) ; 
+    void changetoOriginData();
 
 protected:
 
@@ -62,6 +65,10 @@ private:
     StringSequence info_;
     LinkInfoSequence links_;
     AllLinkShapeIndexSequence linkShapeIndices_;
+    AllLinkShapeIndexSequence originlinkShapeIndices_;
+
+    std::vector<ColdetModelPtr> linkColdetModels;
+    std::vector<unsigned int> currentDepth;
 
     int readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIndex, int motherIndex);
     void setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr jointNode );

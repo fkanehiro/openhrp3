@@ -157,7 +157,9 @@ module OpenHRP {
     ShortSequence childIndices; ///< 子リンクインデックス列  
 
     /// 本リンクに対応する形状情報の変換行列付きインデックス列  
-    TransformedShapeIndexSequence shapeIndices;  
+    TransformedShapeIndexSequence shapeIndices; 
+    /// 形状データのAABBtreeの階層の深さ
+    short AABBmaxDepth;
 
     /**
        @if jp
@@ -572,7 +574,7 @@ module OpenHRP {
       @endif
     */
     BodyInfo getBodyInfo(in string url) raises (ModelLoaderException);
-    BodyInfo getBodyInfoEx(in string url, in boolean readImage) raises (ModelLoaderException);
+    BodyInfo getBodyInfoEx(in string url, in boolean readImage, in ShortSequence AABBdepth) raises (ModelLoaderException);
 
     /**
        @if jp
@@ -581,7 +583,7 @@ module OpenHRP {
        @endif
     */
     BodyInfo loadBodyInfo(in string url) raises (ModelLoaderException);
-    BodyInfo loadBodyInfoEx(in string url, in boolean readImage) raises (ModelLoaderException);
+    BodyInfo loadBodyInfoEx(in string url, in boolean readImage ) raises (ModelLoaderException);
 
     /**
        @if jp

@@ -144,6 +144,41 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     for(size_t i = 0 ; i < numJointNodes ; ++i) {
         linkShapeIndices_[i] = links_[i].shapeIndices;
     }
+    
+    // build coldetModels 
+    linkColdetModels.resize(numJointNodes);    
+    currentDepth.resize(numJointNodes);
+    for(int linkIndex = 0; linkIndex < numJointNodes ; ++linkIndex){
+        ColdetModelPtr coldetModel(new ColdetModel());
+        coldetModel->setName(links_[linkIndex].name);
+        int vertexIndex = 0;
+        int triangleIndex = 0;
+        
+        Matrix44 E(tvmet::identity<Matrix44>());
+        const TransformedShapeIndexSequence& shapeIndices = linkShapeIndices_[linkIndex];
+        setColdetModel(coldetModel, shapeIndices, E, vertexIndex, triangleIndex);
+
+        Matrix44 T(tvmet::identity<Matrix44>());
+        const SensorInfoSequence& sensors = links_[linkIndex].sensors;
+        for (unsigned int i=0; i<sensors.length(); i++){
+            const SensorInfo& sensor = sensors[i];
+            calcRodrigues(T, Vector3(sensor.rotation[0], sensor.rotation[1], 
+                                 sensor.rotation[2]), sensor.rotation[3]);
+            T(0,3) = sensor.translation[0];
+            T(1,3) = sensor.translation[1];
+            T(2,3) = sensor.translation[2];
+            const TransformedShapeIndexSequence& sensorShapeIndices = sensor.shapeIndices;
+            setColdetModel(coldetModel, sensorShapeIndices, T, vertexIndex, triangleIndex);
+        }
+                       
+        if(triangleIndex>0)    
+            coldetModel->build();
+
+        linkColdetModels[linkIndex] = coldetModel;
+        links_[linkIndex].AABBmaxDepth = currentDepth[linkIndex] = coldetModel->getAABBTreeDepth();
+    }
+    //saveOriginalData();
+    //originlinkShapeIndices_ = linkShapeIndices_;
 }
 
 
@@ -482,3 +517,82 @@ bool BodyInfo_impl::getParam(std::string param){
         ;
 }
 
+void BodyInfo_impl::changetoBoundingBox(unsigned int* depth){
+    const double EPS = 1.0e-6;
+    createAppearanceInfo();
+    std::vector<IceMaths::Point> boxSizeMap;
+    for(int i=0; i<links_.length(); i++){
+        int _depth = depth[i];
+        if( _depth >= links_[i].AABBmaxDepth)
+            _depth = links_[i].AABBmaxDepth-1;
+        if(_depth >= 0 ){
+            std::vector<IceMaths::Point> boundingBoxData = linkColdetModels[i]->getBoundingBoxData(_depth);
+            std::vector<TransformedShapeIndex> tsiMap;
+            links_[i].shapeIndices.length(0);
+
+            for(int j=0; j<boundingBoxData.size()/2; j++){
+
+                bool flg=false;
+                int k=0;
+                for( ; k<boxSizeMap.size(); k++)
+                    if(boxSizeMap[k].Distance(boundingBoxData[j*2+1]) < EPS)
+                        break;
+                if( k<boxSizeMap.size() )
+                    flg=true;
+                else{
+                    boxSizeMap.push_back(boundingBoxData[j*2+1]);
+                    setBoundingBoxData(boundingBoxData[j*2+1],k);
+                }
+
+                if(flg){
+                    int l=0;
+                    for( ; l<tsiMap.size(); l++){
+                        IceMaths::Point p(tsiMap[l].transformMatrix[3],tsiMap[l].transformMatrix[7],tsiMap[l].transformMatrix[11]);
+                        if(p.Distance(boundingBoxData[j*2]) < EPS && tsiMap[l].shapeIndex == k)
+                            break;
+                    }
+                    if( l==tsiMap.size() )
+                        flg=false;
+                }
+
+                if(!flg){
+                    int num = links_[i].shapeIndices.length();
+                    links_[i].shapeIndices.length(num+1);
+                    TransformedShapeIndex& tsi = links_[i].shapeIndices[num];
+                    tsi.inlinedShapeTransformMatrixIndex = -1;
+                    tsi.shapeIndex = k;
+                    Matrix44 T(tvmet::identity<Matrix44>());
+                    for(int p = 0,row=0; row < 3; ++row)
+                       for(int col=0; col < 4; ++col)
+                            if(col==3){
+                                switch(row){
+                                    case 0:
+                                        tsi.transformMatrix[p++] = boundingBoxData[j*2].x;
+                                        break;
+                                     case 1:
+                                        tsi.transformMatrix[p++] = boundingBoxData[j*2].y;
+                                        break;
+                                     case 2:
+                                        tsi.transformMatrix[p++] = boundingBoxData[j*2].z;
+                                        break;
+                                     default:
+                                        ;
+                                }
+                            }else
+                                tsi.transformMatrix[p++] = T(row, col);
+
+                    tsiMap.push_back(tsi);
+                }
+            }
+        }   
+        linkShapeIndices_[i] = links_[i].shapeIndices;
+    }
+}
+
+void BodyInfo_impl::changetoOriginData(){
+    linkShapeIndices_ = originlinkShapeIndices_;
+    for(size_t i = 0 ; i < links_.length() ; ++i) {
+        links_[i].shapeIndices = linkShapeIndices_[i];
+    }
+    restoreOriginalData();
+}

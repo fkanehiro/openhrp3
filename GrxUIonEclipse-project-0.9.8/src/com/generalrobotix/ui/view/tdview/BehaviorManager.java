@@ -424,4 +424,8 @@ public class BehaviorManager implements WorldReplaceListener {
 	public void setMessageSkip(boolean flg){
 		messageSkip_ = flg;
 	}
+	
+	public void setItemChange(){
+		itemChangeFlag_ = true;
+	}
 }

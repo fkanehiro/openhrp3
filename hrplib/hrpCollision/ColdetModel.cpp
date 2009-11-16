@@ -54,6 +54,7 @@ ColdetModelSharedDataSet::ColdetModelSharedDataSet()
 {
     refCounter = 0;
     pType = ColdetModel::SP_MESH;
+    AABBTreeMaxDepth=0;
 }    
 
 
@@ -130,6 +131,16 @@ void ColdetModel::addTriangle(int v1, int v2, int v3)
 void ColdetModel::build()
 {
     isValid_ = dataSet->build();
+    /*
+    unsigned int maxDepth = dataSet->getAABBTreeDepth();
+    for(unsigned int i=0; i<maxDepth; i++){
+       vector<IceMaths::Point> data = getBoundingBoxData(i);   
+       cout << "depth= " << i << endl;
+       for(vector<IceMaths::Point>::iterator it=data.begin(); it!=data.end(); it++){
+            cout << (*it).x << " " << (*it).y << " " << (*it).z << endl;
+       }
+   }
+   */
 }
 
 
@@ -152,13 +163,59 @@ bool ColdetModelSharedDataSet::build()
         OPCC.mKeepOriginal = false;
         
         model.Build(OPCC);
-        
+        AABBTreeMaxDepth = computeDepth(((Opcode::AABBCollisionTree*)model.GetTree())->GetNodes(), 0, 0);
         result = true;
     }
 
     return result;
 }
 
+unsigned int ColdetModel::getAABBTreeDepth(){
+    return dataSet->getAABBTreeDepth();
+}
+
+vector<IceMaths::Point> ColdetModel::getBoundingBoxData(const int depth){
+    const Opcode::AABBCollisionNode* rootNode=((Opcode::AABBCollisionTree*)dataSet->model.GetTree())->GetNodes();
+    vector<IceMaths::Point> data;
+    getBoundingBoxData(rootNode, 0, depth, data);
+    return data;
+}
+
+void ColdetModel::getBoundingBoxData(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int depth, std::vector<IceMaths::Point>& data){
+    if(currentDepth == depth || node->IsLeaf() ){
+        IceMaths::Point p = node->mAABB.mCenter;
+        data.push_back(p);
+        p = node->mAABB.mExtents;
+        data.push_back(p);
+    }
+    currentDepth++;
+    if(currentDepth > depth) return;
+    if(!node->IsLeaf()){
+        getBoundingBoxData(node->GetPos(), currentDepth, depth, data);
+        getBoundingBoxData(node->GetNeg(), currentDepth, depth, data);
+    }
+}
+
+unsigned int ColdetModelSharedDataSet::computeDepth(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int max )
+{
+    /*
+	cout << "depth= " << currentDepth << " ";
+    Point p = node->mAABB.mCenter;
+    cout << p.x << " " << p.y << " " << p.z << "     ";
+    p = node->mAABB.mExtents;
+    cout << p.x << " " << p.y << " " << p.z << " ";
+    if(node->IsLeaf()) cout << "is Leaf " ;
+    cout << endl;
+    */
+    currentDepth++;
+    if(max < currentDepth) max = currentDepth;
+
+    if(!node->IsLeaf()){
+        max = computeDepth(node->GetPos(), currentDepth, max);
+        max = computeDepth(node->GetNeg(), currentDepth, max);
+    }
+    return max;
+}
 
 void ColdetModel::setPosition(const Matrix33& R, const Vector3& p)
 {

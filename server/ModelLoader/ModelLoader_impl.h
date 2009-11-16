@@ -46,7 +46,7 @@ class ModelLoader_impl : public POA_OpenHRP::ModelLoader
     virtual BodyInfo_ptr getBodyInfo(const char* url)
         throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 
-    virtual BodyInfo_ptr getBodyInfoEx(const char* url, const bool readImage)
+    virtual BodyInfo_ptr getBodyInfoEx(const char* url, const bool readImage, const ShortSequence& AABBdepth )
         throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 
     virtual BodyInfo_ptr loadBodyInfo(const char* url)

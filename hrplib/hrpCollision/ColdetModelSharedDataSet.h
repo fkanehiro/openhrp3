@@ -33,16 +33,22 @@ namespace hrp {
         // need two instances ?
         Opcode::Model model;
 
-	Opcode::MeshInterface iMesh;
+	    Opcode::MeshInterface iMesh;
 
-	vector<IceMaths::Point> vertices;
-	vector<IceMaths::IndexedTriangle> triangles;
+	    vector<IceMaths::Point> vertices;
+	    vector<IceMaths::IndexedTriangle> triangles;
 
         ColdetModel::PrimitiveType pType;
         std::vector<float> pParams;
 
+        unsigned int getAABBTreeDepth() {
+            return AABBTreeMaxDepth;
+        };
+
       private:
         int refCounter;
+        unsigned int AABBTreeMaxDepth;
+        unsigned int computeDepth(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int max );
 
         friend class ColdetModel;
     };

@@ -37,6 +37,8 @@ namespace hrp
         void defaultTextureMapping(VrmlShape* shapeNode);
         
         boost::signal<void(const std::string& message)> sigMessage;
+        
+        bool convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh);
 
       private:
         TMSImpl* impl;
