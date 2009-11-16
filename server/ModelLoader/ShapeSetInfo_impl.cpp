@@ -18,6 +18,7 @@
 #include <vector>
 #include <iostream>
 #include <boost/bind.hpp>
+#include <sys/stat.h>
 
 #include <hrpCorba/ViewSimulator.hh>
 #include <hrpUtil/VrmlNodes.h>
@@ -150,6 +151,15 @@ void ShapeSetInfo_impl::traverseShapeNodes
                 url_ = inlineNode->urls[0];
             }
             inline_count++;
+            for( MFString::iterator ite = inlineNode->urls.begin(); ite != inlineNode->urls.end(); ++ite ){
+                string filename(deleteURLScheme(*ite));
+                struct stat statbuff;
+                time_t mtime = 0;
+                if( stat( filename.c_str(), &statbuff ) == 0 ){
+                    mtime = statbuff.st_mtime;
+                }
+                fileTimeMap.insert(make_pair(filename, mtime));
+            }
         }
         Matrix44 T2;
         if( transformNode ){
@@ -763,4 +773,20 @@ void ShapeSetInfo_impl::restoreOriginalData(){
     shapes_ = originShapes_;
     appearances_ = originAppearances_;
     materials_ = originMaterials_;
+}
+
+bool ShapeSetInfo_impl::checkFileUpdateTime(){
+    bool ret=true;
+    for( map<std::string, time_t>::iterator it=fileTimeMap.begin(); it != fileTimeMap.end(); ++it){
+        struct stat statbuff;
+        time_t mtime = 0;
+        if( stat( it->first.c_str(), &statbuff ) == 0 ){
+            mtime = statbuff.st_mtime;
+        }  
+        if(it->second!=mtime){
+            ret=false;
+            break;
+        }
+    }
+    return ret;
 }

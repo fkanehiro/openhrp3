@@ -52,6 +52,7 @@ protected:
     void restoreOriginalData();
     void createAppearanceInfo();
     void setBoundingBoxData(IceMaths::Point boxSize, int shapeIndex);
+    bool checkFileUpdateTime();
     bool readImage;
 
 private:
@@ -71,6 +72,8 @@ private:
         
     typedef std::map<VrmlShapePtr, int> ShapeNodeToShapeInfoIndexMap;
     ShapeNodeToShapeInfoIndexMap shapeInfoIndexMap;
+
+    std::map<std::string, time_t> fileTimeMap;
 
     void calcTransformMatrix(VrmlTransform* transform, Matrix44& out_T);
     int createShapeInfo(VrmlShape* shapeNode, const SFString* url);
