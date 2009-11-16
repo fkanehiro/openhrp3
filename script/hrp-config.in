@@ -104,7 +104,7 @@ fi
 
 if test "$echo_libs" = "yes"; then
       if test "${prefix}" != "/usr" ; then
-            echo "-L@CONFIG_PREFIX@/lib"
+            echo "-L${prefix}/lib"
       fi
 fi
 
