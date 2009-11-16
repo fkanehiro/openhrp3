@@ -79,7 +79,7 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readIm
     UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
     // VRMLが複数のファイルからなる場合、inlineのファイルの更新時刻もみないことには、
     // タイムスタンプの比較は完全ではない。
-    if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime()){
+    if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime() && p->second->checkInlineFileUpdateTime()){
         bodyInfo = p->second;
         if(bodyInfo->getParam("readImage")==readImage){
             cout << string("cache found for ") + url << endl;
