@@ -56,7 +56,7 @@ public class GrxLoggerView extends GrxBaseView {
 
 	private int current_ = 0;    // current position
 	private double playRate_ = 1.0; // playback rate
-	private int frameRate_ = 10;
+	private int frameRate_ = maxFrameRate_;
 	private boolean isPlaying_ = false;
     private boolean isControlDisabled_ = false; 
     private boolean inSimulation_ = false;
