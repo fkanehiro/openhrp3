@@ -1,4 +1,7 @@
 
+include (${CMAKE_MODULE_PATH}/macros.cmake)
+SET(HRPSOVERSION 0)
+
 if(ENABLE_INSTALL_RPATH)
   SET(CMAKE_INSTALL_RPATH "$ORIGIN")
 endif()

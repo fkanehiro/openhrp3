@@ -35,7 +35,8 @@ Ver.3.1.0.β3 (2009/09/14)
 
 ・GraphViewのちらつきを軽減いたしました。
 
-・CMakeのboost(Windows環境)、JAVA3D_LIB_DIR、JMFHOME
+・CMakeのBOOST_ROOT、Boost_INCLUDE_DIRS、Boost_LIBRARY_DIRS、JAVA3D_LIB_DIR、
+　JMFHOMEのデフォルト値を自動的に適切な値になるよう改善いたしました。
 
 
 Ver.3.1.0.β2 (2009/06/09)

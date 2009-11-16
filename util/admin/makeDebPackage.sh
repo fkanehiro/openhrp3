@@ -12,13 +12,14 @@ fi
 
 cd ../../
 # Generate deb files
-sudo rm -f openhrp-aist*.deb
+rm -f openhrp-aist*.deb
 #   Generate development deb file
-cmake -D DEBIANPACKAGE_DEVELOP:BOOL=ON .
+#cmake -D DEBIANPACKAGE_DEVELOP:BOOL=ON -D GENERATE_DEBIANPACKAGE:BOOL=ON .
+cmake -D GENERATE_DEBIANPACKAGE:BOOL=ON .
 sudo cpack -G DEB
 #   Generate runtime deb file
-cmake -D DEBIANPACKAGE_DEVELOP:BOOL=OFF .
-sudo cpack -G DEB
+#cmake -D DEBIANPACKAGE_DEVELOP:BOOL=OFF -D GENERATE_DEBIANPACKAGE:BOOL=ON .
+#sudo cpack -G DEB
 DEB_FILES=`ls openhrp-aist*.deb`
 
 cd ${WORK_DIR}
