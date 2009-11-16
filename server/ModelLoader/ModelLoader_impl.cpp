@@ -60,7 +60,7 @@ BodyInfo_ptr ModelLoader_impl::loadBodyInfoEx(const char* url, const bool readIm
 }
 
 
-BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readImage)
+BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readImage, const ShortSequence& AABBdepth)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
     string url(url0);
@@ -79,12 +79,22 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readIm
     UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
     // VRMLが複数のファイルからなる場合、inlineのファイルの更新時刻もみないことには、
     // タイムスタンプの比較は完全ではない。
-    //if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime()){
-    if(false){
+    if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime()){
         bodyInfo = p->second;
         if(bodyInfo->getParam("readImage")==readImage){
             cout << string("cache found for ") + url << endl;
-            return bodyInfo->_this();
+            if(AABBdepth.length()){
+                int length=AABBdepth.length();
+                unsigned int* _depth = new unsigned int[length];
+                for(int i=0; i<length; i++)
+                    _depth[i] = AABBdepth[i];
+                bodyInfo->changetoBoundingBox(_depth);
+                delete _depth;
+                return bodyInfo->_this();
+            }else{
+                //bodyInfo->changetoOriginData();
+                return bodyInfo->_this();
+            }
         }else{
             urlToBodyInfoMap.erase(p);
         }
@@ -99,7 +109,8 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readIm
 BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
-    return getBodyInfoEx(url, false);
+    ShortSequence_var depth = new ShortSequence(0);
+    return getBodyInfoEx(url, false, depth);
 }
 
 BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url, bool readImage)
@@ -122,6 +133,16 @@ BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url, boo
     
     //poa->activate_object(bodyInfo);
     urlToBodyInfoMap[url] = bodyInfo;
+
+    string filename(deleteURLScheme(url));
+    struct stat statbuff;
+    time_t mtime = 0;
+
+    // get a file modification time
+    if( stat( filename.c_str(), &statbuff ) == 0 ){
+        mtime = statbuff.st_mtime;
+    }
+    bodyInfo->setLastUpdateTime( mtime );
 
     return bodyInfo;
 }

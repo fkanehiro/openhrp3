@@ -21,6 +21,7 @@
 #include <hrpUtil/TriangleMeshShaper.h>
 #include <hrpUtil/VrmlNodes.h>
 #include <hrpUtil/Tvmet4d.h>
+#include <hrpCollision/ColdetModel.h>
 
 using namespace OpenHRP;
 using namespace hrp;
@@ -46,6 +47,11 @@ protected:
     std::string& replace(std::string& str, const std::string& sb, const std::string& sa);
     void traverseShapeNodes(VrmlNode* node, const Matrix44& T, TransformedShapeIndexSequence& io_shapeIndices, DblArray12Sequence& inlinedShapeM, const SFString* url = NULL);
     virtual const std::string& topUrl() = 0;
+    void setColdetModel(ColdetModelPtr& coldetModel, TransformedShapeIndexSequence shapeIndices, const Matrix44& Tparent, int& vertexIndex, int& triangleIndex);
+    void saveOriginalData();
+    void restoreOriginalData();
+    void createAppearanceInfo();
+    void setBoundingBoxData(IceMaths::Point boxSize, int shapeIndex);
     bool readImage;
 
 private:
@@ -56,6 +62,10 @@ private:
     AppearanceInfoSequence appearances_;
     MaterialInfoSequence materials_;
     TextureInfoSequence textures_;
+
+    ShapeInfoSequence  originShapes_;
+    AppearanceInfoSequence originAppearances_;
+    MaterialInfoSequence originMaterials_;
 
     TriangleMeshShaper triangleMeshShaper;
         
@@ -74,6 +84,8 @@ private:
     int createTextureInfo(VrmlTexturePtr& textureNode, const SFString *url);
     void createTextureTransformMatrix(AppearanceInfo& appInfo, VrmlTextureTransformPtr& textureTransform );
     std::string getModelFileDirPath(const std::string& url);
+    void setColdetModelTriangles(ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, int& vertexIndex, int& triangleIndex);
+
 };
 
 

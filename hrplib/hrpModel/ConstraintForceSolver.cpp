@@ -123,7 +123,7 @@ namespace hrp
         void solve(CollisionSequence& corbaCollisionSequence);
         inline void clearExternalForces();
 
-
+#undef PI
 #ifdef __WIN32__       // Visual C++ bug
         static const double PI;
         static const double PI_2;
@@ -327,6 +327,7 @@ namespace hrp
 
     };
 #ifdef __WIN32__
+
     const double CFSImpl::PI   = 3.14159265358979323846;
     const double CFSImpl::PI_2 = 1.57079632679489661923;
 #endif

@@ -17,6 +17,7 @@
 #include "TimeUtil.h"
 
 #include "hrpCollision/ColdetModelPair.h"
+#undef random()
 
 #include <hrpCorba/ORBwrap.h>
 #include <hrpCorba/ModelLoader.hh>

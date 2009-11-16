@@ -1567,3 +1567,7 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
         }
     }
 }
+
+ bool TriangleMeshShaper::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh){
+    return impl->convertBox(box, triangleMesh);
+}

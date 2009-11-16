@@ -17,6 +17,8 @@
 #include <string>
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/Referenced.h>
+#include "Opcode/Opcode.h"
+#include <vector>
 
 
 namespace IceMaths {
@@ -193,11 +195,17 @@ namespace hrp {
          * @return distance if ray collides with this mesh, FLT_MAX otherwise
          */
         double computeDistanceWithRay(const double *point, const double *dir);
+
+        
+        std::vector<IceMaths::Point> getBoundingBoxData(const int depth);
+        unsigned int getAABBTreeDepth();
+
       private:
         /**
          * @brief common part of constuctors
          */
         void initialize();
+        void getBoundingBoxData(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int depth, std::vector<IceMaths::Point>& data);
         
         ColdetModelSharedDataSet* dataSet;
         IceMaths::Matrix4x4* transform;

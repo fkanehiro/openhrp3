@@ -79,7 +79,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     // bounding box of the whole body
     private Switch switchBb_;
-    
+       
     /**
      * @brief notify this model is modified
      */
@@ -389,6 +389,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         Color3f color = new Color3f(0.0f, 1.0f, 0.0f);
         switchBb_ = SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
         root.addChild(switchBb_);
+        
     }
 
     /**
@@ -413,7 +414,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         try {
             ModelLoader mloader = ModelLoaderHelper.narrow(
                 GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
-            bInfo_ = mloader.getBodyInfo(url);
+            setURL(url);
+            bInfo_ = mloader.loadBodyInfo(getURL(true));
             //
             LinkInfo[] linkInfoList = bInfo_.links();
 
@@ -470,7 +472,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             _loadVrmlScene(linkInfoList);
             long etime = System.currentTimeMillis();
             System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
-            setURL(url);
+
             bModified_ = false;
             manager_.setSelectedItem(this, true);
 
@@ -1162,6 +1164,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }    	
     }
 
+    public void setVisibleAABB(boolean b){
+    	Iterator<GrxLinkItem> it = links_.iterator();
+    	while(it.hasNext())
+    		it.next().setVisibleAABB(b);
+     }
+    
     /**
      * @brief 
      * @param b
@@ -1298,5 +1306,33 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     		}
     	}
     	return null;
+    }
+    
+    public void makeAABB(){
+    	short[] depth = new short[links_.size()];
+    	for(int i=0; i<links_.size(); i++)
+    		depth[i] = links_.get(i).getInt("AABBdepth", 0).shortValue();
+    	try {
+            ModelLoader mloader = ModelLoaderHelper.narrow(GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
+            bInfo_ = mloader.getBodyInfoEx(getURL(false), false, depth);
+            
+            LinkInfo[] links = bInfo_.links();
+            shapes = bInfo_.shapes();
+            appearances = bInfo_.appearances();
+            materials = bInfo_.materials();
+            textures = bInfo_.textures();
+            
+            int numLinks = links.length;
+            for(int i = 0; i < numLinks; i++) {
+            	links_.get(i).clearAABB();
+            	TransformedShapeIndex[] tsi = links[i].shapeIndices;
+            	for(int j=0; j<tsi.length; j++){
+            		links_.get(i).makeAABB(shapes[tsi[j].shapeIndex], tsi[j].transformMatrix );
+            	}
+            }
+            notifyObservers("BodyInfoChange");
+    	}catch(Exception e){
+    		
+    	}
     }
 }

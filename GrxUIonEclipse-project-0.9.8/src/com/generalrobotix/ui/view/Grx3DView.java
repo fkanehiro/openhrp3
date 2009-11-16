@@ -138,7 +138,8 @@ public class Grx3DView
     private JToggleButton btnRec_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/record.png"))); //$NON-NLS-1$
     private JButton btnPlayer_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/movie_player.png"))); //$NON-NLS-1$
     private JButton btnRestore_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/undo.png"))); //$NON-NLS-1$
-     
+    private JToggleButton btnBBdisp_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/AABB.png")));
+    		
     private JLabel lblMode_ = new JLabel(MessageBundle.get("Grx3DView.label.view")); //$NON-NLS-1$
     private JLabel lblTarget_ = new JLabel(""); //$NON-NLS-1$
     private JLabel lblValue_  = new JLabel(""); //$NON-NLS-1$
@@ -255,7 +256,9 @@ public class Grx3DView
         currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
         Iterator<GrxModelItem> it = currentModels_.iterator();
         while(it.hasNext())	{
-        	bgRoot_.addChild(it.next().bgRoot_);
+        	GrxModelItem model = it.next();
+        	bgRoot_.addChild(model.bgRoot_);
+        	model.addObserver(this);
         }
         updateViewSimulator(0);
         manager_.registerItemChangeListener(this, GrxModelItem.class);
@@ -564,6 +567,22 @@ public class Grx3DView
             }
         });
         
+        btnBBdisp_.addActionListener(new ActionListener() { 
+            public void actionPerformed(ActionEvent e) {
+            	boolean b = btnBBdisp_.isSelected();
+            	if(b){
+	                for (int i=0; i<currentModels_.size(); i++){
+	                    if(setAABBDepth(currentModels_.get(i)))
+	                    	currentModels_.get(i).setVisibleAABB(b);
+	                    else
+	                    	btnBBdisp_.setSelected(false);
+	                }
+            	}else
+            		for (int i=0; i<currentModels_.size(); i++)
+	                    	currentModels_.get(i).setVisibleAABB(b);
+            }
+        });
+        
         viewToolBar_.add(btnHomePos_,0);
         viewToolBar_.add(btnFloor_, 8);
         viewToolBar_.add(btnCollision_, 9);
@@ -574,6 +593,7 @@ public class Grx3DView
         viewToolBar_.add(btnRec_);
         viewToolBar_.add(btnPlayer_);
         viewToolBar_.add(btnCamera);
+        viewToolBar_.add(btnBBdisp_);
 
         btnRestore_.setToolTipText(MessageBundle.get("Grx3DView.text.restoreModel")); //$NON-NLS-1$
         btnRestore_.addActionListener(new ActionListener() {
@@ -673,6 +693,10 @@ public class Grx3DView
 	        		}else
 	        			updateViewSimulator(0);
 	        		showOption();
+	        		if(btnBBdisp_.isSelected()){
+	        			btnBBdisp_.doClick();
+	        		}
+	        		modelItem.addObserver(this);
 	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
@@ -682,6 +706,7 @@ public class Grx3DView
 	        		currentModels_.remove(modelItem);
 	        		behaviorManager_.setItem(currentModels_, currentCollisionPairs_);
 	        		showOption();
+	        		modelItem.deleteObserver(this);
 	    		}
 	    		//if(currentModels_.size()==0)
 	    		//	_showCollision(null);
@@ -733,6 +758,11 @@ public class Grx3DView
     }
     
     public void update(GrxBasePlugin plugin, Object... arg) {
+    	if(currentModels_.contains(plugin)){
+    		if((String)arg[0]=="BodyInfoChange")
+    			behaviorManager_.setItemChange();
+    			showOption();
+    	}
     	if(currentWorld_!=plugin) return;
 		if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
 			if(viewMode_ == VIEW || viewMode_ == SIMULATION){
@@ -1913,7 +1943,9 @@ public class Grx3DView
     	behaviorManager_.destroyDynamicsSimulator();
     	Iterator<GrxModelItem> it = currentModels_.iterator();
     	while(it.hasNext())	{
-    		it.next().bgRoot_.detach();
+    		GrxModelItem model = it.next();
+    		model.bgRoot_.detach();
+    		model.deleteObserver(this);
     	}
     	manager_.removeItemChangeListener(this, GrxModelItem.class);
     	manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
@@ -1926,5 +1958,33 @@ public class Grx3DView
     	view_.repaint();
     	objectToolBar_.repaint();
     	viewToolBar_.repaint();
+    }
+    
+    private boolean ans_;
+     private boolean setAABBDepth(final GrxModelItem model){
+    	boolean flg=false;
+    	for(int i=0; i<model.links_.size(); i++){
+    		if(model.links_.get(i).getStr("AABBdepth").equals("original data")){
+    			flg = true;
+    		}
+    	}
+    	if(flg){
+    		//message ireru
+    		syncExec(new Runnable(){
+    			public void run(){
+    				ans_ = MessageDialog.openConfirm(comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.confirmation"), model.getName()+" "+MessageBundle.get("Grx3DView.dialog.message.setAABBdepth")); //$NON-NLS-1$ //$NON-NLS-2$
+    				if(ans_){
+			    		for(int i=0; i<model.links_.size(); i++){
+			        		if(model.links_.get(i).getStr("AABBdepth").equals("original data")){
+			        			model.links_.get(i).setInt("AABBdepth",0);
+			        		}
+			        	}
+			    		model.makeAABB();
+    				}
+    			}
+    		});
+    		return ans_;
+    	}else
+    		return true;
     }
 }
