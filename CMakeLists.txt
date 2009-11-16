@@ -65,8 +65,9 @@ elseif(WIN32)
 endif()
 
 # CPack presetting
-option(GENERATE_DEBIANPACKAGE "When generate debian package you set ON." OFF)
-
+if(UNIX)
+  option(GENERATE_DEBIANPACKAGE "When generate debian package you set ON." OFF)
+endif()
 
 # check "dlfcn.h" for using dlopen() and dlclose()
 if(UNIX)
