@@ -17,7 +17,7 @@ import javax.vecmath.Vector3d;
 @SuppressWarnings("serial")
 public class AxisAngle4d extends javax.vecmath.AxisAngle4d {
 	
-	private static double EPS = 0.000001;
+	private static double EPS = 0.00001;
 	
 	public AxisAngle4d(AxisAngle4d a1){
 		super(a1);
@@ -67,12 +67,31 @@ public class AxisAngle4d extends javax.vecmath.AxisAngle4d {
 			    z = 0.0f;
 			    angle = 0.0f;
 			}else{
-		    x = Math.sqrt((m1.m00+1)*0.5);
-		    y = Math.sqrt((m1.m11+1)*0.5);
-		    z = Math.sqrt((m1.m22+1)*0.5);
-		    angle = Math.PI;
+			    x = Math.sqrt((m1.m00+1)*0.5);
+			    y = Math.sqrt((m1.m11+1)*0.5);
+			    z = Math.sqrt((m1.m22+1)*0.5);
+			    angle = Math.PI;
+			    
+			    int[][] sign = {{1,1,1},{1,1,-1},{1,-1,1},{1,-1,-1},{-1,1,1},{-1,1,-1},{-1,-1,1},{-1,-1,-1}};
+			    Matrix3d m2 = new Matrix3d();
+			    int i=0;
+			    for(i=0; i<8; i++){
+			    	m2.set(new AxisAngle4d(sign[i][0]*x, sign[i][1]*y, sign[i][2]*z, angle));
+			    	if( Math.abs(m1.m00-m2.m00)<EPS &&
+			    		Math.abs(m1.m01-m2.m01)<EPS &&
+			    		Math.abs(m1.m02-m2.m02)<EPS &&
+			    		Math.abs(m1.m10-m2.m10)<EPS &&
+			    		Math.abs(m1.m11-m2.m11)<EPS &&
+			    		Math.abs(m1.m12-m2.m12)<EPS &&
+			    		Math.abs(m1.m20-m2.m20)<EPS &&
+			    		Math.abs(m1.m21-m2.m21)<EPS &&
+			    		Math.abs(m1.m22-m2.m22)<EPS  ) break;
+			    }
+			    x *= sign[i][0];
+			    y *= sign[i][1];
+			    z *= sign[i][2];
 			}
 		}
 	}
-	
 }
+
