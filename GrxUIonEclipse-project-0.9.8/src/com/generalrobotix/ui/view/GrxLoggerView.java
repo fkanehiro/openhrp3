@@ -282,7 +282,7 @@ public class GrxLoggerView extends GrxBaseView {
 		sliderFrameRate_.setSelection(maxFrameRate_);
         sliderFrameRate_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
-                frameRate_ = maxFrameRate_;
+                frameRate_ = sliderFrameRate_.getSelection();
                 lblFrameRate_.setText( MessageBundle.get("GrxLoggerView.label.FPS")+String.valueOf(frameRate_) ); //$NON-NLS-1$
             }
         } );
