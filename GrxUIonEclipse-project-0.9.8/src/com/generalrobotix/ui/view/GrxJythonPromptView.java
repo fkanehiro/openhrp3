@@ -441,8 +441,10 @@ public class GrxJythonPromptView extends GrxBaseView {
             File f = new File(defaultScript);
             String name = f.getName().replace(".py", ""); //$NON-NLS-1$ //$NON-NLS-2$
             GrxBaseItem newItem = manager_.loadItem(GrxPythonScriptItem.class, name, f.getAbsolutePath());
-            manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
-            manager_.setSelectedItem(newItem, true);
+            if(newItem!=null){
+	            manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+	            manager_.setSelectedItem(newItem, true);
+            }
             execFile();
         }
     }

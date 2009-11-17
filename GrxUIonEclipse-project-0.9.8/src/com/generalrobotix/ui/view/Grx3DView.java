@@ -1373,8 +1373,10 @@ public class Grx3DView
                 syncExec(new Runnable(){
                 	public void run(){
                 		GrxBaseItem newItem = manager_.loadItem(GrxModelItem.class, name, url_);
-                        manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
-                        manager_.setSelectedItem(newItem, true);
+                		if(newItem!=null){
+	                        manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+	                        manager_.setSelectedItem(newItem, true);
+                		}
                 	}
                 });
             } catch (MalformedURLException e) {

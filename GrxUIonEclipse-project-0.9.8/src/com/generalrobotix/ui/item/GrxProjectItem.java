@@ -668,8 +668,10 @@ public class GrxProjectItem extends GrxBaseItem {
 				try {
 					URL url = new URL(prop.getStr(header + "url")); //$NON-NLS-1$
 					newItem = manager_.loadItem((Class<? extends GrxBaseItem>)cls, oName, url.getPath());
-					manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
-			        manager_.setSelectedItem(newItem, true);
+					if(newItem!=null){
+						manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+						manager_.setSelectedItem(newItem, true);
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
