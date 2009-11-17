@@ -826,7 +826,8 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
         if(definedZaxis==-1){
             Vector3 y(normalize(Yaxisarray[i]));    
             SFRotation R;
-            R[0] = y[2]; R[1] = 0.0; R[2] = -y[0]; R[3] = y[1];
+            // R[0,1,2] = y X (0,1,0) cos(R[3]) = y.(0,1,0)
+            R[0] = y[2]; R[1] = 0.0; R[2] = -y[0]; R[3] = acos(y[1]);
             Scp = rodrigues(Vector3(R[0],R[1],R[2]), R[3]);
         }else{
             if(i<definedZaxis)
