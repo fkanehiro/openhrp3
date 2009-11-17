@@ -502,6 +502,7 @@ public class GrxPluginManager {
                 item.setURL(_url);
             } else {
                 removeItem(item);
+                return null;
             }
         }
 
@@ -933,9 +934,11 @@ public class GrxPluginManager {
                 if (fPath != null) {
                     File f = new File(fPath);
                     GrxBaseItem newItem = loadItem(cls, null, f.getAbsolutePath());
-                    itemChange(newItem, GrxPluginManager.ADD_ITEM);
-                    setSelectedItem(newItem, true);
-                    pi.lastDir = f.getParentFile();
+                    if(newItem!=null){
+	                    itemChange(newItem, GrxPluginManager.ADD_ITEM);
+	                    setSelectedItem(newItem, true);
+	                    pi.lastDir = f.getParentFile();
+                    }
                 }
             }
         };
