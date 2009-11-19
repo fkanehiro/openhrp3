@@ -493,7 +493,12 @@ public class GrxShapeItem extends GrxTransformItem{
         if (appearanceInfo != null){
             setColors(geometryInfo, shapeInfo, appearanceInfo);
             setNormals(geometryInfo, shapeInfo, appearanceInfo);
-
+            if(appearanceInfo.solid){
+            	PolygonAttributes pa = appearance.getPolygonAttributes();
+            	pa.setCullFace(PolygonAttributes.CULL_BACK);
+            	appearance.setPolygonAttributes(pa);
+            }
+            
             if(materialInfo != null)
                 setMaterial( appearance, materialInfo);      
 

@@ -723,12 +723,20 @@ bool TMSImpl::convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPt
         const int current = z * grid->xDimension;
         const int next = (z + 1) * grid->xDimension;
         for(int x=0; x < grid->xDimension - 1; ++x){
-            addTriangle(indices, x + current, x + next, (x + 1) + next);
-            addTriangle(indices, x + current, (x + 1) + next, (x + 1) + current);
+            if(grid->ccw){
+                addTriangle(indices, x + current, x + next, (x + 1) + next);
+                addTriangle(indices, x + current, (x + 1) + next, (x + 1) + current);
+            }else{
+                addTriangle(indices, x + current, (x + 1) + next, x + next);
+                addTriangle(indices, x + current, (x + 1) + current, (x + 1) + next);
+            }
         }
     }
 
     triangleMesh->creaseAngle = grid->creaseAngle;
+    triangleMesh->ccw = true;
+    //triangleMesh->normalPerVertex = grid->normalPerVertex;
+    triangleMesh->solid = grid->solid;
 
     if(grid->texCoord){
         triangleMesh->texCoord->point.resize(grid->texCoord->point.size());
@@ -869,10 +877,15 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
         const int upper = i * numcross;
         const int lower = (i + 1) * numcross;
         for(int j=0; j < numcross-1; ++j) {
-            // upward convex triangle
-            addTriangle(indices, j + upper, (j + 1)+ lower, j + lower);
-            // downward convex triangle
-            addTriangle(indices, j + upper, (j + 1)+ upper, j + 1 + lower);
+            if(extrusion->ccw){
+                // upward convex triangle
+                addTriangle(indices, j + upper, (j + 1)+ lower, j + lower);
+                // downward convex triangle
+                addTriangle(indices, j + upper, (j + 1)+ upper, j + 1 + lower);
+            }else{
+                addTriangle(indices, j + upper, j + lower, (j + 1) + lower);
+                addTriangle(indices, j + upper, (j + 1)+ lower, j + 1 + upper);
+            }
         }
     }
 
@@ -887,7 +900,11 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
         triangulator.apply(polygon);
         const vector<int>& triangles = triangulator.triangles();
         for(int i=0; i<triangles.size(); i+=3 )
-            addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
+            if(extrusion->ccw){
+                addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
+            }else{
+                addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+2]], polygon[triangles[i+1]]);
+            }
     }
 
     if(extrusion->endCap && !isClosed){
@@ -898,11 +915,18 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
         triangulator.apply(polygon);
         const vector<int>& triangles = triangulator.triangles();
         for(int i=0; i<triangles.size(); i+=3 )
-            addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
+            if(extrusion->ccw){
+                addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
+            }else{
+                addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+2]], polygon[triangles[i+1]]);
+            }
     }
 
     triangleMesh->creaseAngle = extrusion->creaseAngle;
- 
+    triangleMesh->ccw = true;
+    triangleMesh->convex = true;
+    triangleMesh->solid = extrusion->solid;
+
     return true;
 }
 
