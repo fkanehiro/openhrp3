@@ -31,8 +31,10 @@ int tri_tri_overlap(
 
 namespace {
     const bool COLLIDE_DEBUG = false;
+    // コンパイル時に　-DDEPTH_CHECKとすれば、depth値による接触点選択が有効になります。　　//
+#ifdef  DEPTH_CHECK
     const double MAX_DEPTH = 0.1;
-
+#endif
     const int CD_OK = 0;
     const int CD_ALL_CONTACTS = 1;
     const int CD_FIRST_CONTACT = 2;
@@ -539,6 +541,8 @@ int CollisionPairInserter::apply(
     contact.m = CD_Rot2 * m1;
     examine_normal_vector(b1,b2,ctype, mesh1, mesh2);
 
+
+#ifdef DEPTH_CHECK
     // analyze_neighborhood_of_i_point(b1, b2, cdContactsCount, ctype);
     // remove the intersecting point if depth is deeper than MAX_DEPTH meter
     if(fabs(contact.depth) < MAX_DEPTH){
@@ -550,6 +554,11 @@ int CollisionPairInserter::apply(
             contact.i_point_new[i] = 0;
         }
     }
+#else
+    for(int i=0; i < num_of_i_points; ++i){
+        contact.i_point_new[i] = 1;
+    }
+#endif
 
     return CD_OK;
 }
