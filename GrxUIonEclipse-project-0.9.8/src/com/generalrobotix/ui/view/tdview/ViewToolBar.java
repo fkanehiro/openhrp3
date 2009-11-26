@@ -163,7 +163,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
             mode_ = DISABLE_MODE;
         }
 
-        cmb_.setEnabled(enabled);
+        //cmb_.setEnabled(enabled);
         pan_.setEnabled(enabled);
         zoom_.setEnabled(enabled);
         rotate_.setEnabled(enabled);
