@@ -572,7 +572,7 @@ public class Grx3DView
             	boolean b = btnBBdisp_.isSelected();
             	if(b){
 	                for (int i=0; i<currentModels_.size(); i++){
-	                    if(setAABBDepth(currentModels_.get(i)))
+	                    if(setNumOfAABB(currentModels_.get(i)))
 	                    	currentModels_.get(i).setVisibleAABB(b);
 	                    else
 	                    	btnBBdisp_.setSelected(false);
@@ -1963,22 +1963,21 @@ public class Grx3DView
     }
     
     private boolean ans_;
-     private boolean setAABBDepth(final GrxModelItem model){
+     private boolean setNumOfAABB(final GrxModelItem model){
     	boolean flg=false;
     	for(int i=0; i<model.links_.size(); i++){
-    		if(model.links_.get(i).getStr("AABBdepth").equals("original data")){
+    		if(model.links_.get(i).getStr("NumOfAABB").equals("original data")){
     			flg = true;
     		}
     	}
     	if(flg){
-    		//message ireru
     		syncExec(new Runnable(){
     			public void run(){
     				ans_ = MessageDialog.openConfirm(comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.confirmation"), model.getName()+" "+MessageBundle.get("Grx3DView.dialog.message.setAABBdepth")); //$NON-NLS-1$ //$NON-NLS-2$
     				if(ans_){
 			    		for(int i=0; i<model.links_.size(); i++){
-			        		if(model.links_.get(i).getStr("AABBdepth").equals("original data")){
-			        			model.links_.get(i).setInt("AABBdepth",0);
+			        		if(model.links_.get(i).getStr("NumOfAABB").equals("original data")){
+			        			model.links_.get(i).setInt("NumOfAABB",1);
 			        		}
 			        	}
 			    		model.makeAABB();

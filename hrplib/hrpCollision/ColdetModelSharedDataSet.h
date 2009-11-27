@@ -41,14 +41,22 @@ namespace hrp {
         ColdetModel::PrimitiveType pType;
         std::vector<float> pParams;
 
-        unsigned int getAABBTreeDepth() {
+        int getAABBTreeDepth() {
             return AABBTreeMaxDepth;
+        };
+        int getNumofBB(int depth){
+            return numBBMap.at(depth);
+        };
+        int getmaxNumofBB(){
+            return numBBMap.at(AABBTreeMaxDepth-1);
         };
 
       private:
         int refCounter;
-        unsigned int AABBTreeMaxDepth;
-        unsigned int computeDepth(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int max );
+        int AABBTreeMaxDepth;
+        std::vector<int> numBBMap;
+        std::vector<int> numLeafMap;
+        int computeDepth(const Opcode::AABBCollisionNode* node, int currentDepth, int max );
 
         friend class ColdetModel;
     };

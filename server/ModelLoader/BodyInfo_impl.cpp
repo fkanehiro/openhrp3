@@ -147,7 +147,6 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     
     // build coldetModels 
     linkColdetModels.resize(numJointNodes);    
-    currentDepth.resize(numJointNodes);
     for(int linkIndex = 0; linkIndex < numJointNodes ; ++linkIndex){
         ColdetModelPtr coldetModel(new ColdetModel());
         coldetModel->setName(links_[linkIndex].name);
@@ -175,7 +174,8 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
             coldetModel->build();
 
         linkColdetModels[linkIndex] = coldetModel;
-        links_[linkIndex].AABBmaxDepth = currentDepth[linkIndex] = coldetModel->getAABBTreeDepth();
+        links_[linkIndex].AABBmaxDepth = coldetModel->getAABBTreeDepth();
+        links_[linkIndex].AABBmaxNum = coldetModel->getAABBmaxNum();
     }
     //saveOriginalData();
     //originlinkShapeIndices_ = linkShapeIndices_;
@@ -517,12 +517,23 @@ bool BodyInfo_impl::getParam(std::string param){
         ;
 }
 
-void BodyInfo_impl::changetoBoundingBox(unsigned int* depth){
+void BodyInfo_impl::setParam(std::string param, int value){
+    if(param == "AABBType")
+        AABBdataType_ = (OpenHRP::ModelLoader::AABBdataType)value;
+    else
+        ;
+}
+
+void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
     const double EPS = 1.0e-6;
     createAppearanceInfo();
     std::vector<IceMaths::Point> boxSizeMap;
     for(int i=0; i<links_.length(); i++){
-        int _depth = depth[i];
+        int _depth;
+        if( AABBdataType_ == OpenHRP::ModelLoader::AABB_NUM )
+            _depth = linkColdetModels[i]->numofBBtoDepth(inputData[i]);
+        else
+            _depth = inputData[i];
         if( _depth >= links_[i].AABBmaxDepth)
             _depth = links_[i].AABBmaxDepth-1;
         if(_depth >= 0 ){
