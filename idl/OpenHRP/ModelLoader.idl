@@ -158,8 +158,10 @@ module OpenHRP {
 
     /// 本リンクに対応する形状情報の変換行列付きインデックス列  
     TransformedShapeIndexSequence shapeIndices; 
-    /// 形状データのAABBtreeの階層の深さ
+    /// 形状データのAABBtreeの階層の深さ＋１
     short AABBmaxDepth;
+    /// 形状データのAABBtreeのBoundingBoxの最大個数
+    short AABBmaxNum;
 
     /**
        @if jp
@@ -574,7 +576,20 @@ module OpenHRP {
       @endif
     */
     BodyInfo getBodyInfo(in string url) raises (ModelLoaderException);
-    BodyInfo getBodyInfoEx(in string url, in boolean readImage, in ShortSequence AABBdepth) raises (ModelLoaderException);
+    enum AABBdataType { AABB_DEPTH, AABB_NUM };
+    struct ModelLoadOption
+    {
+        boolean readImage;
+        ShortSequence   AABBdata;
+        AABBdataType    AABBtype;
+    };
+    /**
+      @if jp
+      オプション付きで、getBodyInfoを実行
+      @param   url モデルファイルのURL
+      @endif  
+    **/
+    BodyInfo getBodyInfoEx(in string url, in ModelLoadOption option ) raises (ModelLoaderException);
 
     /**
        @if jp
@@ -583,7 +598,7 @@ module OpenHRP {
        @endif
     */
     BodyInfo loadBodyInfo(in string url) raises (ModelLoaderException);
-    BodyInfo loadBodyInfoEx(in string url, in boolean readImage ) raises (ModelLoaderException);
+    BodyInfo loadBodyInfoEx(in string url, in ModelLoadOption option ) raises (ModelLoaderException);
 
     /**
        @if jp

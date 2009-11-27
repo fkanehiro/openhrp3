@@ -163,15 +163,31 @@ bool ColdetModelSharedDataSet::build()
         OPCC.mKeepOriginal = false;
         
         model.Build(OPCC);
-        AABBTreeMaxDepth = computeDepth(((Opcode::AABBCollisionTree*)model.GetTree())->GetNodes(), 0, 0);
+
+        AABBTreeMaxDepth = computeDepth(((Opcode::AABBCollisionTree*)model.GetTree())->GetNodes(), 0, -1) + 1;
+        for(int i=0; i<AABBTreeMaxDepth; i++)
+            for(int j=0; j<i; j++)
+                numBBMap.at(i) += numLeafMap.at(j);
+
         result = true;
     }
 
     return result;
 }
 
-unsigned int ColdetModel::getAABBTreeDepth(){
+int ColdetModel::numofBBtoDepth(int minNumofBB){
+    for(int i=0; i<getAABBTreeDepth(); i++)
+        if(minNumofBB <= dataSet->getNumofBB(i))
+            return i;
+    return getAABBTreeDepth();
+}
+
+int ColdetModel::getAABBTreeDepth(){
     return dataSet->getAABBTreeDepth();
+}
+
+int ColdetModel::getAABBmaxNum(){
+    return dataSet->getmaxNumofBB();
 }
 
 vector<IceMaths::Point> ColdetModel::getBoundingBoxData(const int depth){
@@ -196,7 +212,7 @@ void ColdetModel::getBoundingBoxData(const Opcode::AABBCollisionNode* node, unsi
     }
 }
 
-unsigned int ColdetModelSharedDataSet::computeDepth(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int max )
+int ColdetModelSharedDataSet::computeDepth(const Opcode::AABBCollisionNode* node, int currentDepth, int max )
 {
     /*
 	cout << "depth= " << currentDepth << " ";
@@ -207,13 +223,20 @@ unsigned int ColdetModelSharedDataSet::computeDepth(const Opcode::AABBCollisionN
     if(node->IsLeaf()) cout << "is Leaf " ;
     cout << endl;
     */
-    currentDepth++;
-    if(max < currentDepth) max = currentDepth;
+    if(max < currentDepth){
+        max = currentDepth;
+        numBBMap.push_back(0);
+        numLeafMap.push_back(0);
+    }
+    numBBMap.at(currentDepth)++;
 
     if(!node->IsLeaf()){
+        currentDepth++;
         max = computeDepth(node->GetPos(), currentDepth, max);
         max = computeDepth(node->GetNeg(), currentDepth, max);
-    }
+    }else
+        numLeafMap.at(currentDepth)++;
+
     return max;
 }
 

@@ -34,7 +34,7 @@ class ModelLoader_impl : public POA_OpenHRP::ModelLoader
     typedef std::map<std::string, BodyInfo_impl*> UrlToBodyInfoMap;
     UrlToBodyInfoMap urlToBodyInfoMap;
 
-    BodyInfo_impl* loadBodyInfoFromModelFile(const std::string url, const bool readImage=false );
+    BodyInfo_impl* loadBodyInfoFromModelFile(const std::string url, const OpenHRP::ModelLoader::ModelLoadOption option );
 		
   public:
 		
@@ -46,13 +46,13 @@ class ModelLoader_impl : public POA_OpenHRP::ModelLoader
     virtual BodyInfo_ptr getBodyInfo(const char* url)
         throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 
-    virtual BodyInfo_ptr getBodyInfoEx(const char* url, const bool readImage, const ShortSequence& AABBdepth )
+    virtual BodyInfo_ptr getBodyInfoEx(const char* url, const OpenHRP::ModelLoader::ModelLoadOption& option )
         throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 
     virtual BodyInfo_ptr loadBodyInfo(const char* url)
         throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 
-    virtual BodyInfo_ptr loadBodyInfoEx(const char* url, const bool readImage)
+    virtual BodyInfo_ptr loadBodyInfoEx(const char* url, const OpenHRP::ModelLoader::ModelLoadOption& option)
         throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException);
 
     virtual SceneInfo_ptr loadSceneInfo(const char* url)

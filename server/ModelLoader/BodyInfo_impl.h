@@ -49,6 +49,7 @@ class BodyInfo_impl :
 
     bool getParam(std::string param);
     void setParam(std::string param, bool value);
+    void setParam(std::string param, int value);
     void changetoBoundingBox(unsigned int* depth) ; 
     void changetoOriginData();
 
@@ -60,6 +61,7 @@ private:
         
     time_t lastUpdate_;
     bool readImage_;
+    OpenHRP::ModelLoader::AABBdataType AABBdataType_;
 
     std::string name_;
     std::string url_;
@@ -69,7 +71,6 @@ private:
     AllLinkShapeIndexSequence originlinkShapeIndices_;
 
     std::vector<ColdetModelPtr> linkColdetModels;
-    std::vector<unsigned int> currentDepth;
 
     int readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIndex, int motherIndex);
     void setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr jointNode );

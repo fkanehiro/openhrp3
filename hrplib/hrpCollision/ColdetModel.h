@@ -198,7 +198,9 @@ namespace hrp {
 
         
         std::vector<IceMaths::Point> getBoundingBoxData(const int depth);
-        unsigned int getAABBTreeDepth();
+        int getAABBTreeDepth();
+        int getAABBmaxNum();
+        int numofBBtoDepth(int minNumofBB);
 
       private:
         /**

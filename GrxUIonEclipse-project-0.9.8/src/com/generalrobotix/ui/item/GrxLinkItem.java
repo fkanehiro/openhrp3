@@ -79,7 +79,7 @@ public class GrxLinkItem extends GrxTransformItem{
 
     private double  jointValue_;
     
-    private int AABBmaxDepth_;
+    private int AABBmaxNum_;
 
     /**
      * @brief get inertia matrix
@@ -596,10 +596,10 @@ public class GrxLinkItem extends GrxTransformItem{
     		if (tr != null){
     			setProperty("tolerance", value); //$NON-NLS-1$
     		}
-    	}else if (property.equals("AABBdepth")){
+    	}else if (property.equals("NumOfAABB")){
     		int depth = Integer.parseInt(value);
-    		if(depth<AABBmaxDepth_){
-    			setProperty("AABBdepth", value);
+    		if(depth<AABBmaxNum_){
+    			setProperty("NumOfAABB", value);
     			model_.makeAABB();  
     		}
     	}else{
@@ -934,8 +934,8 @@ public class GrxLinkItem extends GrxTransformItem{
         
         switchAABB_ = SceneGraphModifier._makeSwitchNode();
         tg_.addChild(switchAABB_);
-        AABBmaxDepth_ = info_.AABBmaxDepth;
-        setProperty("AABBdepth","original data"); //String.valueOf(AABBmaxDepth_));
+        AABBmaxNum_ = info_.AABBmaxNum;
+        setProperty("NumOfAABB","original data"); //String.valueOf(AABBmaxDepth_));
 	}
 
 	/**

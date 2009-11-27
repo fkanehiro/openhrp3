@@ -48,19 +48,21 @@ PortableServer::POA_ptr ModelLoader_impl::_default_POA()
 BodyInfo_ptr ModelLoader_impl::loadBodyInfo(const char* url)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
-    BodyInfo_impl* bodyInfo = loadBodyInfoFromModelFile(url);
+    OpenHRP::ModelLoader::ModelLoadOption option;
+    option.readImage = false;
+    BodyInfo_impl* bodyInfo = loadBodyInfoFromModelFile(url, option);
     return bodyInfo->_this();
 }
 
-BodyInfo_ptr ModelLoader_impl::loadBodyInfoEx(const char* url, const bool readImage)
+BodyInfo_ptr ModelLoader_impl::loadBodyInfoEx(const char* url, const OpenHRP::ModelLoader::ModelLoadOption& option)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
-    BodyInfo_impl* bodyInfo = loadBodyInfoFromModelFile(url, readImage);
+    BodyInfo_impl* bodyInfo = loadBodyInfoFromModelFile(url, option);
     return bodyInfo->_this();
 }
 
 
-BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readImage, const ShortSequence& AABBdepth)
+BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const OpenHRP::ModelLoader::ModelLoadOption& option)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
     string url(url0);
@@ -77,19 +79,18 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readIm
     }
 
     UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
-    // VRMLが複数のファイルからなる場合、inlineのファイルの更新時刻もみないことには、
-    // タイムスタンプの比較は完全ではない。
     if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime() && p->second->checkInlineFileUpdateTime()){
         bodyInfo = p->second;
-        if(bodyInfo->getParam("readImage")==readImage){
+        if(bodyInfo->getParam("readImage")==option.readImage){
             cout << string("cache found for ") + url << endl;
-            if(AABBdepth.length()){
-                int length=AABBdepth.length();
-                unsigned int* _depth = new unsigned int[length];
+            if(option.AABBdata.length()){
+                bodyInfo->setParam("AABBType", (int)option.AABBtype);
+                int length=option.AABBdata.length();
+                unsigned int* _AABBdata = new unsigned int[length];
                 for(int i=0; i<length; i++)
-                    _depth[i] = AABBdepth[i];
-                bodyInfo->changetoBoundingBox(_depth);
-                delete _depth;
+                    _AABBdata[i] = option.AABBdata[i];
+                bodyInfo->changetoBoundingBox(_AABBdata);
+                delete[] _AABBdata;
                 return bodyInfo->_this();
             }else{
                 //bodyInfo->changetoOriginData();
@@ -100,7 +101,7 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readIm
         }
     } 
 
-    bodyInfo = loadBodyInfoFromModelFile(url, readImage);
+    bodyInfo = loadBodyInfoFromModelFile(url, option);
     bodyInfo->setLastUpdateTime( mtime );
     
     return bodyInfo->_this();
@@ -109,16 +110,19 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const bool readIm
 BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
-    ShortSequence_var depth = new ShortSequence(0);
-    return getBodyInfoEx(url, false, depth);
+    OpenHRP::ModelLoader::ModelLoadOption option;
+    option.readImage = false;
+    option.AABBdata.length(0);
+    option.AABBtype = OpenHRP::ModelLoader::AABB_NUM;
+    return getBodyInfoEx(url, option);
 }
 
-BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url, bool readImage)
+BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url, const OpenHRP::ModelLoader::ModelLoadOption option)
 {
     cout << "loading " << url << endl;
 
     BodyInfo_impl* bodyInfo = new BodyInfo_impl(poa);
-    bodyInfo->setParam("readImage", readImage);
+    bodyInfo->setParam("readImage", option.readImage);
 
     try {
 	    bodyInfo->loadModelFile(url);

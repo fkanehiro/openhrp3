@@ -35,6 +35,8 @@ import com.generalrobotix.ui.view.tdview.*;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
 import jp.go.aist.hrp.simulator.*;
+import jp.go.aist.hrp.simulator.ModelLoaderPackage.AABBdataType;
+import jp.go.aist.hrp.simulator.ModelLoaderPackage.ModelLoadOption;
 
 @SuppressWarnings({ "unchecked", "serial" }) //$NON-NLS-1$ //$NON-NLS-2$
 /**
@@ -1311,10 +1313,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public void makeAABB(){
     	short[] depth = new short[links_.size()];
     	for(int i=0; i<links_.size(); i++)
-    		depth[i] = links_.get(i).getInt("AABBdepth", 0).shortValue();
+    		depth[i] = links_.get(i).getInt("NumOfAABB", 1).shortValue();
     	try {
             ModelLoader mloader = ModelLoaderHelper.narrow(GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
-            bInfo_ = mloader.getBodyInfoEx(getURL(false), false, depth);
+            ModelLoadOption option = new ModelLoadOption();
+            option.readImage = false;
+            option.AABBtype = AABBdataType.AABB_NUM;
+            option.AABBdata = depth;
+            bInfo_ = mloader.getBodyInfoEx(getURL(false), option);
             
             LinkInfo[] links = bInfo_.links();
             shapes = bInfo_.shapes();
