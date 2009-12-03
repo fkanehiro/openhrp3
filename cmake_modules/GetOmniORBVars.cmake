@@ -29,7 +29,7 @@ if(WIN32)
            OMNIORB_VERSION_NUM ${OMNIORB_VERSION_NUM})
   endif()
 
-  EXECUTE_PROCESS(COMMAND cmd /c dir /B "${OMNIORB_DIR}\\lib\\x86_win32\\omnithread*"
+  EXECUTE_PROCESS(COMMAND cmd /c dir /B "${OMNIORB_LIBRARY_DIRS}\\omnithread*"
                   RESULT_VARIABLE  result_val
                   OUTPUT_VARIABLE  output_val
                   ERROR_VARIABLE   error_val
