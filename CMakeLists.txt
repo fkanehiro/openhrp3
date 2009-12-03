@@ -220,7 +220,7 @@ elseif(WIN32)
     set(OMNIORB_LIBRARY_DIRS ${OMNIORB_DIR}/lib/x86_win32)
     
     set(OMNIORB_CFLAGS -D__WIN32__;-D__x86__;-D__NT__;-D__OSVERSION__=4;-D_CRT_SECURE_NO_DEPRECATE)
-    set(OMNIORB_LIBRARIES_RELEASE omniORB${OMNIORB_VERSION_NUM}_rt omnithread33_rt omniDynamic${OMNIORB_VERSION_NUM}_rt )
+    set(OMNIORB_LIBRARIES_RELEASE omniORB${OMNIORB_VERSION_NUM}_rt omnithread${OMNIORB_THREAD_NUM}_rt omniDynamic${OMNIORB_VERSION_NUM}_rt )
     foreach(library ${OMNIORB_LIBRARIES_RELEASE})
       list(APPEND OMNIORB_LIBRARIES optimized ${library} debug ${library}d )
     endforeach()
