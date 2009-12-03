@@ -48,7 +48,10 @@ namespace hrp {
             return numBBMap.at(depth);
         };
         int getmaxNumofBB(){
-            return numBBMap.at(AABBTreeMaxDepth-1);
+            if(AABBTreeMaxDepth>0)
+                return numBBMap.at(AABBTreeMaxDepth-1);
+            else
+                return 0;
         };
 
       private:
