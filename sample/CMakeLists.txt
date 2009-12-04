@@ -4,5 +4,5 @@ add_subdirectory(example)
 
 install(DIRECTORY model project script
   DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}
-  PATTERN ".svn" EXCLUDE PATTERN "house" EXCLUDE PATTERN "mockup" EXCLUDE)
+  PATTERN ".svn" EXCLUDE PATTERN "mockup" EXCLUDE)
 
