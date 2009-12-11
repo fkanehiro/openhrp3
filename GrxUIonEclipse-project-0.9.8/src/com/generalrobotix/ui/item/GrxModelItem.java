@@ -61,8 +61,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
     // jontId -> link
     private int[] jointToLink_; 
-    // sensor type name -> list of sensors
-    private final Map<String, List<GrxSensorItem>> sensorMap_ = new HashMap<String, List<GrxSensorItem>>();
     // list of cameras
     private List<Camera_impl> cameraList_ = new ArrayList<Camera_impl>();
 
@@ -432,6 +430,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             cameraList_.clear();
 
             int jointCount = 0;
+
             for (int i = 0; i < linkInfoList.length; i++) {
             	GrxLinkItem link = new GrxLinkItem(linkInfoList[i].name, manager_, this, linkInfoList[i]); 
                 if (link.jointId() >= 0){
@@ -466,10 +465,6 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 }
             }
 
-            Iterator<List<GrxSensorItem>> it = sensorMap_.values().iterator();
-            while (it.hasNext()) {
-                Collections.sort(it.next());
-            }
             long stime = System.currentTimeMillis();
             _loadVrmlScene(linkInfoList);
             long etime = System.currentTimeMillis();
@@ -509,8 +504,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         for (int i=0; i< link.children_.size(); i++){
         	if (link.children_.get(i) instanceof GrxSensorItem){
         		GrxSensorItem sensor = (GrxSensorItem)link.children_.get(i);
-        		if (sensor.camera_ != null){
-                	cameraList_.add(sensor.camera_);
+        		if (sensor.isCamera()){
+                	cameraList_.add(sensor.getCamera());
         		}
         	}
         }
@@ -1057,6 +1052,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public void delete() {
         super.delete();
+        Iterator<Camera_impl> it = cameraList_.iterator();
+        while(it.hasNext())
+        	it.next().destroy();
         if(bgRoot_.isLive()) bgRoot_.detach();
         Map<?, ?> m = manager_.pluginMap_.get((GrxCollisionPairItem.class));
         GrxCollisionPairItem[] collisionPairItems = m.values().toArray(new GrxCollisionPairItem[0]);

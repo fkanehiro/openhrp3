@@ -270,7 +270,7 @@ public class GrxLinkItem extends GrxTransformItem{
 
     public void removeSensor(GrxSensorItem sensor){
     	removeChild(sensor);
-    	if (sensor.camera_ != null){
+    	if (sensor.isCamera()){
     		// TODO : GrxModelItem.sensorMap_ and GrxModelItem.cameraList_ must be updated
     	}
     }
@@ -1272,5 +1272,4 @@ public class GrxLinkItem extends GrxTransformItem{
 	    switchAABB_.addChild(bg);		
 
 	}
-	
 }
