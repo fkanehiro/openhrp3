@@ -494,14 +494,26 @@ public class GrxVrmlExporter {
 		
 		String [] dirs1 = absPath.split( localStr );
 		String [] dirs2 = baseDir.split( localStr );
-		int cnt=0;
-		while (cnt < dirs1.length && cnt < dirs2.length && dirs1[cnt].equals(dirs2[cnt])) cnt++;
 		String relPath = "";
-		for (int i=0; i<dirs2.length-cnt; i++) relPath += "../";
-		for (int i=cnt; i<dirs1.length; i++){
-			relPath += dirs1[i];
-			if (i != dirs1.length-1) relPath += "/";
-		}
+		int cnt=0;
+		//Linux MacOSの場合とWindowsの場合で処理を分岐する
+        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    		while (cnt < dirs1.length && cnt < dirs2.length && dirs1[cnt].equals(dirs2[cnt])) cnt++;
+    		for (int i=0; i<dirs2.length-cnt; i++) relPath += "../";
+    		for (int i=cnt; i<dirs1.length; i++){
+    			relPath += dirs1[i];
+    			if (i != dirs1.length-1) relPath += "/";
+    		}
+        }else{
+        	if(dirs1[0].equals(dirs2[0])) {
+	    		while (cnt < dirs1.length && cnt < dirs2.length && dirs1[cnt].equals(dirs2[cnt])) cnt++;
+	    		for (int i=0; i<dirs2.length-cnt; i++) relPath += "../";
+        	}
+    		for (int i=cnt; i<dirs1.length; i++){
+    			relPath += dirs1[i];
+    			if (i != dirs1.length-1) relPath += "/";
+    		}
+        }
 		return relPath;
 	}
 	
