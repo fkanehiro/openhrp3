@@ -51,7 +51,7 @@ import com.generalrobotix.ui.view.vsensor.Camera_impl;
 public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 
 	SensorInfo info_;
-	public Camera_impl camera_;
+	private Camera_impl camera_ = null;
 	private Switch switchVisibleArea_ = null;
 
 
@@ -660,4 +660,19 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     	super.setFocused(b);
     	if (isFalse("alwaysVisible")) setVisibleArea(b); //$NON-NLS-1$
     }
+    
+    public boolean isCamera(){
+    	if(camera_ != null)
+    		return true;
+    	else
+    		return false;
+    }
+    
+    public Camera_impl getCamera(){
+    	if(isCamera())
+    		return camera_;
+    	else
+    		return null;
+    }
+    
 }

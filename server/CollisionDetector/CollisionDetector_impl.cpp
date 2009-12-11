@@ -61,6 +61,7 @@ void CollisionDetector_impl::registerCharacter(const char* name,	BodyInfo_ptr bo
     } else {
         coldetBody = new ColdetBody(bodyInfo);
         coldetBody->setName(name);
+        bodyInfoToColdetBodyMap.insert(it, make_pair(bodyInfoId, coldetBody));
     }
 
     it = nameToColdetBodyMap.find(name);

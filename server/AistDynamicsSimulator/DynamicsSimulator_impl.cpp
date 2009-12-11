@@ -154,6 +154,7 @@ DynamicsSimulator_impl::~DynamicsSimulator_impl()
     if(debugMode){
         cout << "DynamicsSimulator_impl::~DynamicsSimulator_impl()" << endl;
     }
+    collisionDetector->destroy();
 }
 
 
