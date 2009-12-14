@@ -138,6 +138,10 @@ public class GrxServerManagerView extends GrxBaseView
         Label idLabel = new Label( shell , SWT.RIGHT);
         idLabel.setText("id:"); //$NON-NLS-1$
         final Text id = new Text( shell , SWT.BORDER);
+        GridData idGridData = new GridData();
+        idGridData.horizontalAlignment = SWT.FILL;
+        idGridData.grabExcessHorizontalSpace = true;
+        id.setLayoutData(idGridData);
         Button okBtn = new Button( shell , SWT.PUSH);
         okBtn.setText(MessageBundle.get("GrxServerManagerView.button.ok")); //$NON-NLS-1$
         Point point = display.getCursorLocation();
@@ -187,6 +191,10 @@ public class GrxServerManagerView extends GrxBaseView
         Label idLabel = new Label( shell , SWT.RIGHT);
         idLabel.setText("id:"); //$NON-NLS-1$
         final Text id = new Text( shell , SWT.BORDER);
+        GridData idGridData = new GridData();
+        idGridData.horizontalAlignment = SWT.FILL;
+        idGridData.grabExcessHorizontalSpace = true;
+        id.setLayoutData(idGridData);
         Button okBtn = new Button( shell , SWT.PUSH);
         okBtn.setText(MessageBundle.get("GrxServerManagerView.button.ok")); //$NON-NLS-1$
         Point point = display.getCursorLocation();
