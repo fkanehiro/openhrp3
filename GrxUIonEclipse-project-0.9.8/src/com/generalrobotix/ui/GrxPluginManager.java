@@ -479,7 +479,13 @@ public class GrxPluginManager {
             //GrxDebugUtil.printErr("loadItem(" + url + ") is not URL format\n", e);
             f = new File(_url);
         }
-
+        try {
+			_url = f.getCanonicalPath();
+			f = new File(_url);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        
         if (!f.isFile())
             return null;
 
