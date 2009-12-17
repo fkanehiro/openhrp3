@@ -540,6 +540,11 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
             std::vector<IceMaths::Point> boundingBoxData = linkColdetModels[i]->getBoundingBoxData(_depth);
             std::vector<TransformedShapeIndex> tsiMap;
             links_[i].shapeIndices.length(0);
+            SensorInfoSequence& sensors = links_[i].sensors;
+            for (unsigned int i=0; i<sensors.length(); i++){
+                SensorInfo& sensor = sensors[i];
+                sensor.shapeIndices.length(0);
+            }
 
             for(int j=0; j<boundingBoxData.size()/2; j++){
 
