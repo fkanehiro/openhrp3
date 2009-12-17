@@ -18,10 +18,11 @@
 package com.generalrobotix.ui.item;
 
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-import javax.media.j3d.Appearance;
-import javax.media.j3d.BadTransformException;
+import javax.media.j3d.Appearance;import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
@@ -38,6 +39,7 @@ import javax.vecmath.Point2f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 
+import jp.go.aist.hrp.simulator.BodyInfo;
 import jp.go.aist.hrp.simulator.DblArray3SequenceHolder;
 import jp.go.aist.hrp.simulator.HwcInfo;
 import jp.go.aist.hrp.simulator.LinkInfo;
@@ -600,7 +602,17 @@ public class GrxLinkItem extends GrxTransformItem{
     		int depth = Integer.parseInt(value);
     		if(depth<AABBmaxNum_){
     			setProperty("NumOfAABB", value);
-    			model_.makeAABB();  
+    			BodyInfo bodyInfo = model_.getBodyInfoFromModelLoader();
+    			model_.makeAABB(bodyInfo);
+    			List<GrxModelItem> sameModels = model_.getSameUrlModels();
+    			Iterator<GrxModelItem> it = sameModels.iterator();
+    			while(it.hasNext()){
+    				GrxModelItem model = it.next();
+   					model.getLink(getName()).setProperty("NumOfAABB", value);
+    				model.makeAABB(bodyInfo); 
+    			}
+    		}else if(AABBmaxNum_==0){
+    			setProperty("NumOfAABB", "no shape Data");
     		}
     	}else{
     		return false;

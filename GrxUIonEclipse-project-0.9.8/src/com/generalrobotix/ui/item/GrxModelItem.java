@@ -18,6 +18,7 @@
 package com.generalrobotix.ui.item;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import javax.media.j3d.*;
@@ -185,7 +186,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		setMenuItem(new Action(){
             public String getText(){ return MessageBundle.get("GrxModelItem.menu.reload"); } //$NON-NLS-1$
 			public void run(){
-				load(GrxModelItem.this.file_);
+				boolean ret = load0(file_);
+				if(ret){
+					List<GrxModelItem> sameModels = getSameUrlModels();
+					Iterator<GrxModelItem> it = sameModels.iterator();
+					while(it.hasNext()){
+						it.next().load0(file_);
+					}
+				}
 			}
 		});
 
@@ -398,6 +406,30 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @return true if loaded successfully, false otherwise
      */
     public boolean load(File f) {
+    	boolean ret = load0(f);
+    	if(ret){
+    		List<GrxModelItem> sameModels = getSameUrlModels();
+    		if(!sameModels.isEmpty()){
+    			GrxModelItem model = sameModels.get(0);
+    			boolean flg=false;
+    			for(int i=0; i<model.links_.size(); i++){   				
+					if(!model.links_.get(i).getStr("NumOfAABB").equals("original data")){
+						links_.get(i).setInt("NumOfAABB", model.links_.get(i).getInt("NumOfAABB",1));
+						flg = true;
+					}
+				}
+    			if(flg){
+    				BodyInfo bodyInfo = model.getBodyInfoFromModelLoader();
+    				makeAABB(bodyInfo);
+    			}
+    		}
+    		return true;
+    	}else
+    		return false;
+    	
+    }
+    
+    private boolean load0(File f) {
         long load_stime = System.currentTimeMillis();
         manager_.focusedItem(null);
         manager_.setSelectedItem(this, false);
@@ -409,7 +441,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
         file_ = f;
         
-        String url = f.getAbsolutePath();
+        String url=null;
+		try {
+			url = f.getCanonicalPath();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         GrxDebugUtil.println("Loading " + url); //$NON-NLS-1$
         try {
             ModelLoader mloader = ModelLoaderHelper.narrow(
@@ -1308,7 +1345,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	return null;
     }
     
-    public void makeAABB(){
+    public BodyInfo getBodyInfoFromModelLoader(){
     	short[] depth = new short[links_.size()];
     	for(int i=0; i<links_.size(); i++)
     		depth[i] = links_.get(i).getInt("NumOfAABB", 1).shortValue();
@@ -1318,25 +1355,41 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             option.readImage = false;
             option.AABBtype = AABBdataType.AABB_NUM;
             option.AABBdata = depth;
-            bInfo_ = mloader.getBodyInfoEx(getURL(false), option);
-            
-            LinkInfo[] links = bInfo_.links();
-            shapes = bInfo_.shapes();
-            appearances = bInfo_.appearances();
-            materials = bInfo_.materials();
-            textures = bInfo_.textures();
-            
-            int numLinks = links.length;
-            for(int i = 0; i < numLinks; i++) {
-            	links_.get(i).clearAABB();
-            	TransformedShapeIndex[] tsi = links[i].shapeIndices;
-            	for(int j=0; j<tsi.length; j++){
-            		links_.get(i).makeAABB(shapes[tsi[j].shapeIndex], tsi[j].transformMatrix );
-            	}
-            }
-            notifyObservers("BodyInfoChange");
+
+            return mloader.getBodyInfoEx(getURL(false), option);
     	}catch(Exception e){
-    		
+    		return null;
     	}
+    }
+    
+    public void makeAABB(BodyInfo binfo){
+    	bInfo_ = binfo;
+          
+        LinkInfo[] links = bInfo_.links();
+        shapes = bInfo_.shapes();
+        appearances = bInfo_.appearances();
+        materials = bInfo_.materials();
+        textures = bInfo_.textures();
+           
+        int numLinks = links.length;
+        for(int i = 0; i < numLinks; i++) {
+         	links_.get(i).clearAABB();
+          	TransformedShapeIndex[] tsi = links[i].shapeIndices;
+           	for(int j=0; j<tsi.length; j++){
+           		links_.get(i).makeAABB(shapes[tsi[j].shapeIndex], tsi[j].transformMatrix );
+           	}
+        }
+        notifyObservers("BodyInfoChange");
+    }
+    
+    public List<GrxModelItem> getSameUrlModels(){
+    	List<GrxModelItem> models = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+		Iterator<GrxModelItem> it = models.iterator();
+		while(it.hasNext()){
+			GrxModelItem model = it.next();
+			if(!model.getURL(true).equals(getURL(true)) || model == this)
+				it.remove();
+		}
+		return models;
     }
 }

@@ -55,16 +55,16 @@ void CollisionDetector_impl::registerCharacter(const char* name,	BodyInfo_ptr bo
     // test
     cout << "BodyInfo CORBA ID of " << name << " is " << bodyInfoId << endl;
 	
-    StringToColdetBodyMap::iterator it = bodyInfoToColdetBodyMap.find(bodyInfoId);
-    if(it != bodyInfoToColdetBodyMap.end()){
-        coldetBody = new ColdetBody(*it->second);
-    } else {
+    //StringToColdetBodyMap::iterator it = bodyInfoToColdetBodyMap.find(bodyInfoId);
+    //if(it != bodyInfoToColdetBodyMap.end()){
+    //    coldetBody = new ColdetBody(*it->second);
+    //} else {
         coldetBody = new ColdetBody(bodyInfo);
         coldetBody->setName(name);
-        bodyInfoToColdetBodyMap.insert(it, make_pair(bodyInfoId, coldetBody));
-    }
+      //  bodyInfoToColdetBodyMap.insert(it, make_pair(bodyInfoId, coldetBody));
+    //}
 
-    it = nameToColdetBodyMap.find(name);
+    StringToColdetBodyMap::iterator it = nameToColdetBodyMap.find(name);
     if(it != nameToColdetBodyMap.end()){
         cout << "\n";
         cout << "The model of the name " << name;

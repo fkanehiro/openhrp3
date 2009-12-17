@@ -571,12 +571,12 @@ public class Grx3DView
             public void actionPerformed(ActionEvent e) {
             	boolean b = btnBBdisp_.isSelected();
             	if(b){
-	                for (int i=0; i<currentModels_.size(); i++){
-	                    if(setNumOfAABB(currentModels_.get(i)))
-	                    	currentModels_.get(i).setVisibleAABB(b);
-	                    else
-	                    	btnBBdisp_.setSelected(false);
-	                }
+	                List<GrxModelItem> visibleModels = setNumOfAABB();
+	                Iterator<GrxModelItem> it = visibleModels.iterator();
+	                while(it.hasNext())
+	                	it.next().setVisibleAABB(b);
+	                if(visibleModels.isEmpty())
+	                	btnBBdisp_.setSelected(false);
             	}else
             		for (int i=0; i<currentModels_.size(); i++)
 	                    	currentModels_.get(i).setVisibleAABB(b);
@@ -759,9 +759,10 @@ public class Grx3DView
     
     public void update(GrxBasePlugin plugin, Object... arg) {
     	if(currentModels_.contains(plugin)){
-    		if((String)arg[0]=="BodyInfoChange")
+    		if((String)arg[0]=="BodyInfoChange"){
     			behaviorManager_.setItemChange();
     			showOption();
+    		}
     	}
     	if(currentWorld_!=plugin) return;
 		if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
@@ -1963,29 +1964,56 @@ public class Grx3DView
     }
     
     private boolean ans_;
-     private boolean setNumOfAABB(final GrxModelItem model){
-    	boolean flg=false;
-    	for(int i=0; i<model.links_.size(); i++){
-    		if(model.links_.get(i).getStr("NumOfAABB").equals("original data")){
-    			flg = true;
-    		}
+    private List<GrxModelItem> setNumOfAABB(){
+    	List<GrxModelItem> ret = new ArrayList<GrxModelItem>();
+     	List<GrxModelItem> models = new ArrayList<GrxModelItem>();
+    	models.addAll(currentModels_);
+    	while(!models.isEmpty()){
+    		final GrxModelItem model = models.get(0);
+    		final List<GrxModelItem> sameModels = model.getSameUrlModels(); 
+	    	boolean flg=false;
+	    	for(int i=0; i<model.links_.size(); i++){
+	    		if(model.links_.get(i).getStr("NumOfAABB").equals("original data")){
+	    			flg = true;
+	    			break;
+	    		}
+	    	}
+	    	if(flg){
+	    		syncExec(new Runnable(){
+	    			public void run(){
+	    				ans_ = MessageDialog.openConfirm(comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.confirmation"), model.getName()+" "+MessageBundle.get("Grx3DView.dialog.message.setAABBdepth")); //$NON-NLS-1$ //$NON-NLS-2$
+			    		if(ans_){
+			    			for(int i=0; i<model.links_.size(); i++){
+		    					if(model.links_.get(i).getStr("NumOfAABB").equals("original data")){
+		    						model.links_.get(i).setInt("NumOfAABB",1);
+		    					}
+		    				}
+			    			BodyInfo bodyInfo = model.getBodyInfoFromModelLoader();
+			    			model.makeAABB(bodyInfo);
+			    			Iterator<GrxModelItem> it = sameModels.iterator();
+			    			while(it.hasNext()){
+			    				GrxModelItem _model = it.next();
+			    				for(int i=0; i<_model.links_.size(); i++){
+			    					if(_model.links_.get(i).getStr("NumOfAABB").equals("original data")){
+			    						_model.links_.get(i).setInt("NumOfAABB",1);
+			    					}
+			    				}
+			    				_model.makeAABB(bodyInfo);
+			    			}
+			    		}
+	    			}
+	    		});
+	    		if(ans_){
+	    			ret.addAll(sameModels);
+	    			ret.add(model);
+	    		}
+	    	}else{
+	    		ret.add(model);
+	    		ret.addAll(sameModels);
+	    	}
+	    	models.removeAll(sameModels);
+	    	models.remove(model);
     	}
-    	if(flg){
-    		syncExec(new Runnable(){
-    			public void run(){
-    				ans_ = MessageDialog.openConfirm(comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.confirmation"), model.getName()+" "+MessageBundle.get("Grx3DView.dialog.message.setAABBdepth")); //$NON-NLS-1$ //$NON-NLS-2$
-    				if(ans_){
-			    		for(int i=0; i<model.links_.size(); i++){
-			        		if(model.links_.get(i).getStr("NumOfAABB").equals("original data")){
-			        			model.links_.get(i).setInt("NumOfAABB",1);
-			        		}
-			        	}
-			    		model.makeAABB();
-    				}
-    			}
-    		});
-    		return ans_;
-    	}else
-    		return true;
+    	return ret;
     }
 }
