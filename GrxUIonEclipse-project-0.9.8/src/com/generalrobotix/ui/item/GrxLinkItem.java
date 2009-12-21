@@ -514,14 +514,17 @@ public class GrxLinkItem extends GrxTransformItem{
     	if (super.propertyChanged(property, value)){
     	}else if (property.equals("angle")){ //$NON-NLS-1$
     		if (jointValue(value)){
+    			model_.updateInitialJointValue(this);
         		calcForwardKinematics();
     		}
     	}else if(property.equals("translation")){ //$NON-NLS-1$
     		if (translation(value)){
+    			model_.updateInitialTransformRoot();
             	calcForwardKinematics();
     		}
     	}else if(property.equals("rotation")){ //$NON-NLS-1$
     		if (rotation(value)){
+    			model_.updateInitialTransformRoot();
             	calcForwardKinematics();
     		}
     	}else if(property.equals("jointAxis")){ //$NON-NLS-1$
@@ -599,20 +602,19 @@ public class GrxLinkItem extends GrxTransformItem{
     			setProperty("tolerance", value); //$NON-NLS-1$
     		}
     	}else if (property.equals("NumOfAABB")){
-    		int depth = Integer.parseInt(value);
-    		if(depth<AABBmaxNum_){
-    			setProperty("NumOfAABB", value);
-    			BodyInfo bodyInfo = model_.getBodyInfoFromModelLoader();
-    			model_.makeAABB(bodyInfo);
-    			List<GrxModelItem> sameModels = model_.getSameUrlModels();
-    			Iterator<GrxModelItem> it = sameModels.iterator();
-    			while(it.hasNext()){
-    				GrxModelItem model = it.next();
-   					model.getLink(getName()).setProperty("NumOfAABB", value);
-    				model.makeAABB(bodyInfo); 
-    			}
-    		}else if(AABBmaxNum_==0){
-    			setProperty("NumOfAABB", "no shape Data");
+    		try{
+	    		int depth = Integer.parseInt(value);
+	    		if(depth<AABBmaxNum_){
+	    			setProperty("NumOfAABB", value);
+	    			model_.setProperty(getName()+".NumOfAABB", value);
+	    			model_.makeAABBforSameUrlModels();
+	    		}else if(AABBmaxNum_==0){
+	    			setProperty("NumOfAABB", "no shape Data");
+	    		}
+    		}catch(NumberFormatException e){
+    			System.out.println("input number");
+    			//TODO
+    			return false;
     		}
     	}else{
     		return false;
@@ -948,6 +950,8 @@ public class GrxLinkItem extends GrxTransformItem{
         tg_.addChild(switchAABB_);
         AABBmaxNum_ = info_.AABBmaxNum;
         setProperty("NumOfAABB","original data"); //String.valueOf(AABBmaxDepth_));
+        if(model_.getProperty(getName()+".NumOfAABB")!=null)
+        	model_.remove(getName()+".NumOfAABB");
 	}
 
 	/**

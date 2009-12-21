@@ -1986,20 +1986,10 @@ public class Grx3DView
 			    			for(int i=0; i<model.links_.size(); i++){
 		    					if(model.links_.get(i).getStr("NumOfAABB").equals("original data")){
 		    						model.links_.get(i).setInt("NumOfAABB",1);
+		    						model.setProperty(model.links_.get(i).getName()+".NumOfAABB", "1");
 		    					}
 		    				}
-			    			BodyInfo bodyInfo = model.getBodyInfoFromModelLoader();
-			    			model.makeAABB(bodyInfo);
-			    			Iterator<GrxModelItem> it = sameModels.iterator();
-			    			while(it.hasNext()){
-			    				GrxModelItem _model = it.next();
-			    				for(int i=0; i<_model.links_.size(); i++){
-			    					if(_model.links_.get(i).getStr("NumOfAABB").equals("original data")){
-			    						_model.links_.get(i).setInt("NumOfAABB",1);
-			    					}
-			    				}
-			    				_model.makeAABB(bodyInfo);
-			    			}
+			    			model.makeAABBforSameUrlModels();
 			    		}
 	    			}
 	    		});

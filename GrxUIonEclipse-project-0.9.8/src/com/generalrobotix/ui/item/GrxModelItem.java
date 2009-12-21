@@ -27,6 +27,8 @@ import javax.vecmath.*;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.*;
@@ -62,6 +64,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
     // jontId -> link
     private int[] jointToLink_; 
+    private Map<String, GrxLinkItem> nameToLink_ = new HashMap<String, GrxLinkItem>();
+    
     // list of cameras
     private List<Camera_impl> cameraList_ = new ArrayList<Camera_impl>();
 
@@ -282,7 +286,27 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	 * @brief restore properties
 	 */
     public void restoreProperties() {
-        super.restoreProperties();
+        //super.restoreProperties();   プロパティNumOfAABBは、毎回propertyChanged実行すると遅くなるので、ModelItemだけここで実装する  //
+        boolean flg=false;
+    	if (element_ != null) {
+			NodeList props = element_.getElementsByTagName(PROPERTY_TAG);
+			for (int j = 0; j < props.getLength(); j++) {
+				Element propEl = (Element) props.item(j);
+				String key = propEl.getAttribute("name"); //$NON-NLS-1$
+				String val = propEl.getAttribute("value"); //$NON-NLS-1$
+				if(key.contains("NumOfAABB")){
+					setProperty(key, val);
+					String[] linkName = key.split("\\.");
+					nameToLink_.get(linkName[0]).setProperty("NumOfAABB", val);
+					flg=true;
+				}else{
+					if (!propertyChanged(key, val)){
+						setProperty(key, val);
+					}
+				}
+			}
+        }
+        //
         if (getStr("markRadius")==null) setDbl("markRadius", DEFAULT_RADIUS); //$NON-NLS-1$ //$NON-NLS-2$
 
         _setModelType(isTrue("isRobot", isRobot_)); //$NON-NLS-1$
@@ -297,6 +321,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             if (d == null)
                 setDbl(l.getName()+".angle", 0.0); //$NON-NLS-1$
         }
+        
+        if(flg)
+        	makeAABBforSameUrlModels();
     }
 
     /**
@@ -336,6 +363,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                         setProperty(link.getName()+".angle", value); //$NON-NLS-1$
             		}
                     return true;
+            	}else if(property.equals(link.getName()+".NumOfAABB")){ //$NON-NLS-1$
+            		if(link.propertyChanged("NumOfAABB", value)){
+            			setProperty(link.getName()+".NumOfAABB", value); //$NON-NLS-1$
+            		}
             	}
             }
     		return false;
@@ -415,6 +446,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     			for(int i=0; i<model.links_.size(); i++){   				
 					if(!model.links_.get(i).getStr("NumOfAABB").equals("original data")){
 						links_.get(i).setInt("NumOfAABB", model.links_.get(i).getInt("NumOfAABB",1));
+						setInt(links_.get(i).getName()+".NumOfAABB", model.links_.get(i).getInt("NumOfAABB",1));
 						flg = true;
 					}
 				}
@@ -467,12 +499,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             cameraList_.clear();
 
             int jointCount = 0;
+            nameToLink_.clear();
 
             for (int i = 0; i < linkInfoList.length; i++) {
             	GrxLinkItem link = new GrxLinkItem(linkInfoList[i].name, manager_, this, linkInfoList[i]); 
                 if (link.jointId() >= 0){
                     jointCount++;
                 }
+                nameToLink_.put(link.getName(), link);
             }
             System.out.println("links_.size() = "+links_.size()); //$NON-NLS-1$
 
@@ -1337,15 +1371,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      * @return link if found, null otherwise
      */
     public GrxLinkItem getLink(String name){
-    	for (int i=0; i<links_.size(); i++){
-    		if (links_.get(i).getName().equals(name)){
-    			return links_.get(i);
-    		}
-    	}
-    	return null;
+    	return nameToLink_.get(name);
     }
     
-    public BodyInfo getBodyInfoFromModelLoader(){
+    private BodyInfo getBodyInfoFromModelLoader(){
     	short[] depth = new short[links_.size()];
     	for(int i=0; i<links_.size(); i++)
     		depth[i] = links_.get(i).getInt("NumOfAABB", 1).shortValue();
@@ -1362,7 +1391,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	}
     }
     
-    public void makeAABB(BodyInfo binfo){
+    private void makeAABB(BodyInfo binfo){
     	bInfo_ = binfo;
           
         LinkInfo[] links = bInfo_.links();
@@ -1391,5 +1420,21 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				it.remove();
 		}
 		return models;
+    }
+    
+    public void makeAABBforSameUrlModels(){
+    	BodyInfo bodyInfo = getBodyInfoFromModelLoader();
+		makeAABB(bodyInfo);
+		List<GrxModelItem> sameModels = getSameUrlModels();
+		Iterator<GrxModelItem> it = sameModels.iterator();
+		while(it.hasNext()){
+			GrxModelItem _model = it.next();
+			for(int i=0; i<links_.size(); i++){
+				String value = links_.get(i).getStr("NumOfAABB");
+				_model.nameToLink_.get(links_.get(i).getName()).setProperty("NumOfAABB", value);
+				_model.setProperty(links_.get(i).getName()+".NumOfAABB", value);
+			}
+			_model.makeAABB(bodyInfo); 
+		}
     }
 }
