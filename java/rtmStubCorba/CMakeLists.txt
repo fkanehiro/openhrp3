@@ -66,7 +66,8 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
   list(APPEND javac_flags -g)
 endif()
 
-set(jarfile ${OpenHRP_BINARY_DIR}/java/${rtm_stub_jar})
+#set(jarfile ${OpenHRP_BINARY_DIR}/java/${rtm_stub_jar})
+set(jarfile ${OpenHRP_BINARY_DIR}/java/openrtmstubskel.jar)
 
 if(UNIX)
   add_custom_command(

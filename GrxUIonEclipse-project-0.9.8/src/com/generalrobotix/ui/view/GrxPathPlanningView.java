@@ -2,8 +2,10 @@ package com.generalrobotix.ui.view;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -813,12 +815,10 @@ public class GrxPathPlanningView extends GrxBaseView {
 	 */
 	private String getConfigFilePath(){
 		String confPath=""; //$NON-NLS-1$
-		URL defaultConfURL = FileLocator.find( Activator.getDefault().getBundle(), new Path("rtc.conf"), null); //$NON-NLS-1$
-		try {
-			confPath = FileLocator.resolve(defaultConfURL).getPath();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        File defualtRtcFile = new File(Activator.getDefault().getTempDir() + File.separator + "rtc.conf");
+        if( defualtRtcFile.isFile() ){
+            confPath = defualtRtcFile.getPath(); 
+        }
     	GrxDebugUtil.println("[GrxPathPlanner] default Config File path="+confPath); //$NON-NLS-1$
     	// From Property ( if exist )
 		String confPathFromProperty = System.getProperty("com.generalrobotix.grxui.rtcpath"); //$NON-NLS-1$
@@ -834,7 +834,10 @@ public class GrxPathPlanningView extends GrxBaseView {
 	 *  @brief 経路計画コンポーネントのコンシューマを立ち上げ
 	 */
 	private void execPathPlannerConsumer(){
-    	String[] args = {"-f", getConfigFilePath() }; //$NON-NLS-1$
+        String [] args = {"-f", getConfigFilePath()};
+        if( args[1].isEmpty() ){
+            args[0] = "";
+        }
     	GrxDebugUtil.println("[GrxPathPlanner] RTC SERVICE CONSUMER THREAD START"); //$NON-NLS-1$
 
     	// Initialize manager

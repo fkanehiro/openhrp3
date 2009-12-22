@@ -23,7 +23,6 @@ import com.generalrobotix.ui.grxui.Activator;
 
 @SuppressWarnings("serial")
 public class GrxServerManager{
-    public static String homePath_;
 
     enum GrxServer {
         COLLISION_DETECTOR,
@@ -32,23 +31,15 @@ public class GrxServerManager{
         NAME_SERVER
     };
 
-    public static final String                 LINUX_TMP_DIR          = System.getenv("HOME") + File.separator + ".OpenHRP-3.1" + File.separator;
-    public static final String                 WIN_TMP_DIR            = System.getenv("APPDATA") + File.separator + "OpenHRP-3.1" + File.separator;
     private static final String                CONFIG_XML             = "grxuirc.xml";
-
+    private static File                         CONFIG_XML_PATH = null;                 
     public static volatile Vector<ProcessInfo> vecServerInfo          = new Vector<ProcessInfo>();
     private static volatile boolean           bInitializedServerInfo = false;
 
     static private synchronized void InitServerInfo() {
         if (!bInitializedServerInfo) {
-            File fileXml = getConfigXml();
-            loadConfigXml(fileXml);
-            String dir = System.getenv("ROBOT_DIR");
-            if (dir != null && new File(dir).isDirectory()) {
-                homePath_ = dir+File.separator;
-            } else {
-                homePath_ = System.getProperty( "user.home", "" )+File.separator;
-            }
+            CONFIG_XML_PATH = getConfigXml();
+            loadConfigXml(CONFIG_XML_PATH);
             bInitializedServerInfo = true;
         }
     }
@@ -76,7 +67,7 @@ public class GrxServerManager{
     //Xmlファイルへ次回起動のための値を保存
     static public synchronized void SaveServerInfo() {
         if (bInitializedServerInfo) {
-            GrxServerManagerConfigXml localXml = new GrxServerManagerConfigXml(getConfigXml());
+            GrxServerManagerConfigXml localXml = new GrxServerManagerConfigXml(CONFIG_XML_PATH);
             for (int i = 0; i < vecServerInfo.size(); ++i) {
                 localXml.setServerNode(vecServerInfo.elementAt(i));
             }
@@ -84,26 +75,10 @@ public class GrxServerManager{
         }
     }
 
-    static public File getTempDir() {
-        File ret = null;
-        if ( System.getProperty("os.name").equals("Linux") ||
-             System.getProperty("os.name").equals("Mac OS X")) {
-            ret = new File(LINUX_TMP_DIR);
-        } else { //Windows と　仮定
-            ret = new File(WIN_TMP_DIR);
-        }
-        
-        if( !ret.exists() ){
-            ret.mkdirs();
-        }
-        
-        
-        return ret;
-    }
 
     //Xmlファイルハンドルの取得
     static private File getConfigXml() {
-        return new File(getTempDir(), CONFIG_XML);
+        return new File(Activator.getDefault().getTempDir(), CONFIG_XML);
     }
 
     
@@ -233,12 +208,12 @@ public class GrxServerManager{
         if (System.getProperty("os.name").equals("Linux") ||
                 System.getProperty("os.name").equals("Mac OS X")) {
             com = new String[] { "/bin/sh", "-c",
-                    "rm " + GrxServerManager.homePath_ +
-                    ".OpenHRP-3.1/omninames-log/*" };
+                    "rm " + Activator.getDefault().getTempDir() +
+                    "omninames-log" + File.separator +"*" };
         } else {
             com = new String[] { "cmd", "/c",
                     "del " + "\"" + 
-                    GrxServerManager.WIN_TMP_DIR + "omninames-log" +
+                    Activator.getDefault().getTempDir() + "omninames-log" +
                     File.separator + "omninames-*.*" +  "\"" };
         }
         try {

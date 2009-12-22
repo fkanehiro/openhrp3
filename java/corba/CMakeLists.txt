@@ -56,7 +56,7 @@ foreach(idl_file ${idl_files})
     COMMAND ${CMAKE_COMMAND} -E echo "" > ${compiled_flag_file}
     DEPENDS ${idl_files}
    )
- list(APPEND idl_compiled_flag_files ${compiled_flag_file})
+  list(APPEND idl_compiled_flag_files ${compiled_flag_file})
 endforeach()
 
 

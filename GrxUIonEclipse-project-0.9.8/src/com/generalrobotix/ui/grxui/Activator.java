@@ -55,7 +55,12 @@ import com.generalrobotix.ui.util.GrxServerManager;
 public class Activator extends AbstractUIPlugin{
     public static final String PLUGIN_ID = "com.generalrobotix.ui.grxui";
     private static Activator   plugin;
-
+    private static final String  LINUX_HOME_DIR   = System.getenv("HOME") + File.separator ;
+    private static final String  WIN_HOME_DIR     = System.getenv("APPDATA") + File.separator;
+    private static final String  LINUX_TMP_DIR   = LINUX_HOME_DIR + ".OpenHRP-3.1" + File.separator;
+    private static final String  WIN_TMP_DIR     = WIN_HOME_DIR + "OpenHRP-3.1" + File.separator;
+    private static final File HOME_DIR = initHomeDir();
+    private static final File TMP_DIR = initTempDir();
     public GrxPluginManager    manager_;
     private ImageRegistry      ireg_     = null;
     private FontRegistry 		freg_ = null;
@@ -78,7 +83,7 @@ public class Activator extends AbstractUIPlugin{
     											"grxrobot1.png",
     											"robot_servo_start.png",
     											"robot_servo_stop.png"};
-    private final static File lockFilePath_ = new File( GrxServerManager.getTempDir(), "tryLockFileInActivator");
+    private final static File lockFilePath_ = new File( TMP_DIR, "tryLockFileInActivator");
     private SimpleDateFormat dateFormat_ = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS z Z");
     private RandomAccessFile lockFile_ = null;
     
@@ -348,6 +353,26 @@ public class Activator extends AbstractUIPlugin{
     }
 
     /**
+     * HOMEディレクトリの取得。
+     * 
+     * @return HOMEディレクトリ
+     */
+    public File getHomeDir(){
+        return HOME_DIR;
+    }
+    
+    /**
+     * 設定ファイル、ログファイル、ロックファイルなど。
+     * OpenHRP固有の目的に使用するファイル群の共通格納先ディレクトリ
+     * 
+     * @return テンポラリディレクトリ
+     */
+    public File getTempDir(){
+        return TMP_DIR;
+    }
+    
+  
+    /**
      * Returns the shared instance
      * 
      * @return the shared instance
@@ -523,5 +548,42 @@ public class Activator extends AbstractUIPlugin{
                 }
             }
         }
+    }
+    
+    static private File initTempDir() {
+        File ret = null;
+        
+        String dir = System.getenv("ROBOT_DIR");
+        if (dir != null && new File(dir).isDirectory()) {
+            ret = new File(dir+File.separator);
+        } else {
+            if ( System.getProperty("os.name").equals("Linux") ||
+                 System.getProperty("os.name").equals("Mac OS X")) {
+                ret = new File(LINUX_TMP_DIR);
+            } else { //Windows と　仮定
+                ret = new File(WIN_TMP_DIR);
+            }
+        }
+        if( !ret.exists() ){
+            ret.mkdirs();
+        }
+        
+        return ret;
+    }
+    
+    static private File initHomeDir() {
+        File ret = null;
+        
+        if ( System.getProperty("os.name").equals("Linux") ||
+             System.getProperty("os.name").equals("Mac OS X")) {
+            ret = new File(LINUX_HOME_DIR);
+        } else { //Windows と　仮定
+            ret = new File(WIN_HOME_DIR);
+        }
+        if( !ret.exists() ){
+            ret.mkdirs();
+        }
+        
+        return ret;
     }
 }
