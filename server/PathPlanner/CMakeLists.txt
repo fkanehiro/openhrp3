@@ -16,7 +16,6 @@ if(UNIX)
     )
 
 elseif(WIN32)
-  add_definitions(-DRTC_CORBA_CXXMAPPING11)
   set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d)
   target_link_libraries(${program}
     optimized hrpPlanner-${OPENHRP_LIBRARY_VERSION}

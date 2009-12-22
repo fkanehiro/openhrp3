@@ -102,7 +102,7 @@ public class GrxBaseItem extends GrxBasePlugin {
 	 */
 	public File getDefaultDir() {
         if (defaultFileDir_ == null)
-            defaultFileDir_ = new File(manager_.getHomePath() + GrxBasePlugin.getField(this.getClass(), "DEFAULT_DIR", "")); //$NON-NLS-1$ //$NON-NLS-2$
+            defaultFileDir_ = new File(manager_.getHomePath().getPath() + GrxBasePlugin.getField(this.getClass(), "DEFAULT_DIR", "")); //$NON-NLS-1$ //$NON-NLS-2$
 		return defaultFileDir_;
 	}
 
@@ -127,12 +127,9 @@ public class GrxBaseItem extends GrxBasePlugin {
 	 * @param dir new default directory. If dir is invalid, home is set.
 	 */
 	protected void setDefaultDirectory(String dir) {
-        String home = manager_.getHomePath();
-        if (home == null)
-            home = ""; //$NON-NLS-1$
 		defaultFileDir_ = new File(dir);
 		if (!defaultFileDir_.isDirectory())
-			defaultFileDir_ = new File(home);
+			defaultFileDir_ = manager_.getHomePath();
 	}
 
 	/**

@@ -80,7 +80,6 @@ Export-Package: com.generalrobotix.ui;
  jp.go.aist.hrp.simulator,
  jp.go.aist.hrp.simulator.CameraPackage,
  jp.go.aist.hrp.simulator.DynamicsSimulatorPackage,
- jp.go.aist.hrp.simulator.ModelLoaderPackage,
  @OPEN_EXPORT_PACKAGE@
 Bundle-ClassPath: .,
  jython.jar,

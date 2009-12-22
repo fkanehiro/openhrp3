@@ -19,6 +19,7 @@ if( ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION042} )
   set(ADDITIONAL_EXCLUDING "|com/generalrobotix/ui/depends/rtm/ClockGeneratorRtm100_impl.java")
   set(GRX_PATH_PLANNING_ALGORITHM_ITEM "<item class=\"com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem\"/>" )
 
+
   set(GRX_PATH_PLANNING_VIEW_PART "
       <view
             class=\"com.generalrobotix.ui.view.GrxPathPlanningViewPart\"
@@ -27,7 +28,8 @@ if( ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION042} )
             name=\"%PathPlanningView.name\">
       </view>" )
 
-  set(OPEN_EXPORT_PACKAGE "jp.go.aist.rtm,
+  set(OPEN_EXPORT_PACKAGE " jp.go.aist.hrp.simulator.ModelLoaderPackage,
+ jp.go.aist.rtm,
  jp.go.aist.rtm.RTC,
  jp.go.aist.rtm.RTC.SDOPackage,
  jp.go.aist.rtm.RTC.buffer,
@@ -39,29 +41,35 @@ if( ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION042} )
 
  configure_grxui_on_eclipse()
 elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION100})
-  set(rtm_stub_jar openrtmstubskel.jar)
+  set(rtm_stub_jar OpenRTM-aist-1.0.0.jar)
   set(OPENRTM_VERSION_NUM "100")
-  set(ADDITIONAL_EXCLUDING "|com/generalrobotix/ui/view/GrxPathPlanning*.java|com/generalrobotix/ui/depends/rtm/ClockGeneratorRtm042_impl.java|jp/**/*.java")
-  set(GRX_PATH_PLANNING_ALGORITHM_ITEM "" )
-  set(GRX_PATH_PLANNING_VIEW_PART "" )
-  set(OPEN_EXPORT_PACKAGE "RTM,
- jp.go.aist.openrtm.OpenRTM,
- jp.go.aist.openrtm.RTC" )
+  set(ADDITIONAL_EXCLUDING "|com/generalrobotix/ui/depends/rtm/ClockGeneratorRtm042_impl.java")
+  set(GRX_PATH_PLANNING_ALGORITHM_ITEM "<item class=\"com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem\"/>" )
+  set(GRX_PATH_PLANNING_VIEW_PART "
+      <view
+            class=\"com.generalrobotix.ui.view.GrxPathPlanningViewPart\"
+            id=\"com.generalrobotix.ui.view.GrxPathPlanningViewPart\"
+            category=\"com.generalrobotix.ui.view\"
+            name=\"%PathPlanningView.name\">
+      </view>" )
+  set(OPEN_EXPORT_PACKAGE " jp.go.aist.hrp.simulator.ModelLoaderPackage")
 
-  add_subdirectory(rtmStubCorba)
-  message(STATUS "OpenRTM version is ${OPENRTM_VERSION}. Generate Makefile compiles openrtmstubskel.jar.")
   configure_grxui_on_eclipse()
 
 else()
+# Unsupported OPENRTM_VERSION configure
   set(rtm_stub_jar openrtmstubskel.jar)
+
+# To set supported latest OPENRTM_VERSION
   set(OPENRTM_VERSION_NUM "100")
+
   set(ADDITIONAL_EXCLUDING "|com/generalrobotix/ui/view/GrxPathPlanning*.java|com/generalrobotix/ui/depends/rtm/ClockGeneratorRtm042_impl.java|jp/**/*.java")
   set(GRX_PATH_PLANNING_ALGORITHM_ITEM "" )
   set(GRX_PATH_PLANNING_VIEW_PART "" )
-  set(OPEN_EXPORT_PACKAGE "RTM,
+  set(OPEN_EXPORT_PACKAGE " jp.go.aist.hrp.simulator.ModelLoaderPackage,
+ RTM,
  jp.go.aist.openrtm.OpenRTM,
  jp.go.aist.openrtm.RTC" )
-
   add_subdirectory(rtmStubCorba)
   message(STATUS "OpenRTM version is ${OPENRTM_VERSION}. Generate Makefile compiles openrtmstubskel.jar.")
 

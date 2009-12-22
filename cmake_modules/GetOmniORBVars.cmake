@@ -22,7 +22,7 @@ if(WIN32)
   # omniORB version section
   if(${output_val} MATCHES "THIS_IS_OMNIORB")
     SET(OMNIORB_VERSION "${output_val}")
-    # Ubuntu version number section
+    # omniORB version number section
     STRING(REGEX REPLACE "THIS_IS_OMNIORB" ""
            OMNIORB_VERSION_NUM ${OMNIORB_VERSION})
     STRING(REGEX REPLACE "[_]" ""
@@ -39,7 +39,7 @@ if(WIN32)
   # omnithread number section
   if(${output_val} MATCHES "omnithread")
     SET(OMNIORB_THREAD_NUM "${output_val}")
-    # Ubuntu version number section
+    # omniORB version number section
     STRING(REGEX REPLACE ".*omnithread([0-9]+)_rt\\.lib.*" "\\1"
            OMNIORB_THREAD_NUM ${OMNIORB_THREAD_NUM})
   endif()

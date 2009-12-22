@@ -4,3 +4,5 @@ killall -9 omniNames
 killall -9 openhrp-aist-dynamics-simulator
 killall -9 openhrp-collision-detector
 killall -9 openhrp-model-loader
+killall -9 openhrp-controller-bridge
+killall -9 openhrp-path-planner

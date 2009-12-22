@@ -79,7 +79,7 @@ public class GrxPluginManager {
     public GrxPluginLoader pluginLoader_;
     public HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap> pluginMap_ = new HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap>(); // プラグインとその生成したアイテムのマップ
     private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
-    private String homePath_;
+    private File homePath_;
     private Map<Class<? extends GrxBasePlugin>, PluginInfo> pinfoMap_ = new HashMap<Class<? extends GrxBasePlugin>, PluginInfo>();
     
     private Map<Class<? extends GrxBaseItem>, List<GrxBaseView>> itemChangeListener_ = 
@@ -119,13 +119,7 @@ public class GrxPluginManager {
      */
     public GrxPluginManager() {
         GrxDebugUtil.println("[PM] GrxPluginManager created"); //$NON-NLS-1$
-
-        String dir = System.getenv("ROBOT_DIR"); //$NON-NLS-1$
-        if (dir != null && new File(dir).isDirectory())
-            homePath_ = dir + File.separator;
-        else
-            homePath_ = System.getProperty("user.home", "") + File.separator; //$NON-NLS-1$ //$NON-NLS-2$
-
+        homePath_ = Activator.getDefault().getHomeDir();
         System.out.println("[PM] WORKSPACE PATH=" + ResourcesPlugin.getWorkspace().getRoot().getLocation()); //$NON-NLS-1$
 
         // TODO: プラグインローダに、プラグインがおいてあるフォルダを指定する方法を検討
@@ -139,62 +133,31 @@ public class GrxPluginManager {
         // 移植前はhomePath_においてある事を期待していたが、プラグインに含めるようにした。
         // homePath_にgrxuirc.xmlがあるかチェックし、なければプラグインフォルダからデフォルトをコピーする。
         rcProject_ = new GrxProjectItem("grxuirc", this); //$NON-NLS-1$
-        // File rcFile = new File( Activator.getPath() + "/grxuirc.xml");
         // Windows と Linuxで使い分ける。
-        File rcFile;
         System.out.println("os.name = " + System.getProperty("os.name")); //$NON-NLS-1$ //$NON-NLS-2$
-        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            rcFile = new File(homePath_ + ".OpenHRP-3.1/grxuirc.xml"); //$NON-NLS-1$
-            File rcFileDir;
-            rcFileDir = new File(homePath_ + ".OpenHRP-3.1"); //$NON-NLS-1$
-            if (!rcFileDir.exists()) {
-                rcFileDir.mkdir();
-            }
-            rcFileDir = new File(homePath_ + ".OpenHRP-3.1/omninames-log"); //$NON-NLS-1$
-            if (!rcFileDir.exists()) {
-                rcFileDir.mkdir();
-            } else {
-                // log のクリア
-               deleteNameServerLog();
-            }
+        
+        File rcFile = new File( Activator.getDefault().getTempDir(),"grxuirc.xml");
+        File rtcFile = new File( Activator.getDefault().getTempDir(),"rtc.conf");
+        File logDir = new File( Activator.getDefault().getTempDir(),"omninames-log");
+        if( logDir.exists()){
+            deleteNameServerLog();
         } else {
-            // Windows環境の処理
-
-            rcFile = new File(System.getenv("APPDATA") + File.separator + "OpenHRP-3.1" + File.separator + "grxuirc.xml"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            File rcFileDir = rcFile.getParentFile();
-            if (!rcFileDir.exists()) {
-                rcFileDir.mkdir();
-            }
-            rcFileDir = new File(rcFile.getParent() + File.separator + "omninames-log"); //$NON-NLS-1$
-            if (!rcFileDir.exists()) {
-                rcFileDir.mkdir();
-            } else {
-                // log のクリア
-               deleteNameServerLog();
-            }
+            logDir.mkdir();
         }
+        
         System.out.println("rcFile=" + rcFile); //$NON-NLS-1$
+        // File copy from resource file
         if (!rcFile.exists()) {
-            // File copy
-            try {
-                InputStream in;
-                if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                	in = getClass().getResourceAsStream("/grxuirc.xml"); //$NON-NLS-1$
-                } else {
-                    in = getClass().getResourceAsStream("/grxuirc_win.xml"); //$NON-NLS-1$
-                }
-                OutputStream out = new FileOutputStream(rcFile.toString());
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-                in.close();
-                out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                copyResourceFileToLocal("/grxuirc.xml", rcFile);
+            } else {
+                copyResourceFileToLocal("/grxuirc_win.xml", rcFile);
             }
         }
+        if (!rtcFile.exists()){
+            copyResourceFileToLocal("/default_rtc.conf", rtcFile);
+        }
+        
         if (!rcProject_.load(rcFile)) {
             MessageDialog.openError(null, MessageBundle.get("GrxPluginManager.dialog.tittle..openerror"), MessageBundle.get("GrxPluginManager.dialog.message.openerror") + rcFile); //$NON-NLS-1$ //$NON-NLS-2$
             // TODO: プラグインを閉じる方法があればそれを採用する?
@@ -1022,6 +985,22 @@ public class GrxPluginManager {
         return GrxPluginManager.getClipBoardVal().length()==0;
     }
 
+    private void copyResourceFileToLocal(String resouceFileName, File destFile){
+        try{
+            InputStream in = getClass().getResourceAsStream(resouceFileName);
+            OutputStream out = new FileOutputStream(destFile);
+            byte[] buf = new byte[4096];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            in.close();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     /**
      * @brief shutdown this manager
      */
@@ -1084,7 +1063,7 @@ public class GrxPluginManager {
      * @brief get home path
      * @return home path
      */
-    public String getHomePath() {
+    public File getHomePath() {
         return homePath_;
     }
 
@@ -1119,10 +1098,11 @@ public class GrxPluginManager {
     {
         // log のクリア
         String[] com;
+        File logDir = new File(Activator.getDefault().getTempDir(), "omninames-log");
         if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            com = new String[] { "/bin/sh", "-c", "rm " + homePath_ + ".OpenHRP-3.1/omninames-log/*" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            com = new String[] { "/bin/sh", "-c", "rm " + logDir + File.separator + "*" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         } else {
-            com = new String[] { "cmd", "/c", "del " + "\"" + System.getenv("APPDATA") + File.separator + "OpenHRP-3.1" + File.separator + "omninames-log" + File.separator + "omninames-*.*" + "\""}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
+            com = new String[] { "cmd", "/c", "del " + "\"" + logDir + File.separator + "omninames-*.*" + "\""}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
         }
         try {
             Process pr = Runtime.getRuntime().exec(com);
