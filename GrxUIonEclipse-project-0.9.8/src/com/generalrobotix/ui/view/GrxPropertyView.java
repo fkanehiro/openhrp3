@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -73,6 +74,10 @@ public class GrxPropertyView extends GrxBaseView {
     private Text nameText_ = null;
 
     private final String[] clmName_ = { MessageBundle.get("GrxPropertyView.text.name"), MessageBundle.get("GrxPropertyView.text.value") }; //$NON-NLS-1$ //$NON-NLS-2$
+    private static final	String[] modeItem_ = new String[] { "Torque", "HighGain" };
+    private static final String[] booleanItem_ = new String[] {"true", "false" };
+    private static final String[] jointTypeItem_ = new String[] { "fixed", "rotate", "free", "slide" };
+    private static final String[] methodItem_ = new String[] { "EULER",  "RUNGE_KUTTA" };
 
     /**
      * @brief constructor
@@ -250,12 +255,74 @@ public class GrxPropertyView extends GrxBaseView {
         public boolean canModify(Object element, String property) {
         	if(currentPlugin_ instanceof GrxGraphItem || currentPlugin_ instanceof GrxCollisionPairItem )
         		return false;
-            return property.equals(clmName_[1]);
+        	if(property.equals(clmName_[1])){
+	        	if (element instanceof Map.Entry) {
+	            	Map.Entry<String, String> _element = (Map.Entry)element;
+	            	String key = _element.getKey();
+	            	if(key.contains(".mode") || key.equals("mode")){
+	            		CellEditor[] editors = new CellEditor[] { 
+	            				new TextCellEditor(table_),
+	            	            new ComboBoxCellEditor(table_, modeItem_) };
+	            		viewer_.setCellEditors(editors);
+	            		
+	            	}else if(key.equals("isRobot") || key.equals("integrate") || key.equals("viewsimulate")){
+	            		CellEditor[] editors = new CellEditor[] { 
+	            				new TextCellEditor(table_),
+	            	            new ComboBoxCellEditor(table_, booleanItem_) };
+	            		viewer_.setCellEditors(editors);
+	            		
+	            	}else if(key.equals("jointType")){
+	            		CellEditor[] editors = new CellEditor[] { 
+	            				new TextCellEditor(table_),
+	            	            new ComboBoxCellEditor(table_, jointTypeItem_) };
+	            		viewer_.setCellEditors(editors);
+	            		
+	            	}else if(key.equals("method")){
+	            		CellEditor[] editors = new CellEditor[] { 
+	            				new TextCellEditor(table_),
+	            	            new ComboBoxCellEditor(table_, methodItem_) };
+	            		viewer_.setCellEditors(editors);
+	            		
+	            	}else{
+	            		CellEditor[] editors = new CellEditor[] { 
+	            				new TextCellEditor(table_),
+	            				new TextCellEditor(table_) };
+	            		viewer_.setCellEditors(editors);
+	            		
+	            	}
+	            }
+            	return true;
+        	}else 
+        		return false;
         }
 
         public Object getValue(Object element, String property) {
             if (element instanceof Map.Entry) {
-                return ((Map.Entry)element).getValue();
+            	Map.Entry<String, String> _element = (Map.Entry)element;
+            	String key = _element.getKey();
+            	if(key.contains(".mode") || key.equals("mode")){
+            		for(int i=0; i<modeItem_.length; i++)
+            			if(_element.getValue().equals(modeItem_[i]))
+            				return new Integer(i);
+            		return new Integer(0);
+            	}else if(key.equals("isRobot") || key.equals("integrate") || key.equals("viewsimulate")){
+            		for(int i=0; i<booleanItem_.length; i++)
+            			if(_element.getValue().equals(booleanItem_[i]))
+            				return new Integer(i);
+            		return new Integer(0);
+            	}else if(key.equals("jointType")){
+            		for(int i=0; i<jointTypeItem_.length; i++)
+            			if(_element.getValue().equals(jointTypeItem_[i]))
+            				return new Integer(i);
+            		return new Integer(0);
+            	}else if(key.equals("method")){
+            		for(int i=0; i<methodItem_.length; i++)
+            			if(_element.getValue().equals(methodItem_[i]))
+            				return new Integer(i);
+            		return new Integer(0);
+            	}else{
+            		return _element.getValue();
+            	}
             }
             return null;
         }
@@ -263,12 +330,26 @@ public class GrxPropertyView extends GrxBaseView {
         @SuppressWarnings("unchecked") //$NON-NLS-1$
         public void modify(Object element, String property, Object value) {
             try{
-            if (element instanceof TableItem && value instanceof String) {
-                TableItem item = (TableItem) element;
-                if(!currentPlugin_.getProperty(item.getText()).equals(value)){
-	                if (!currentPlugin_.propertyChanged(item.getText(), (String)value)){
+            if (element instanceof TableItem){
+            	TableItem item = (TableItem) element;
+            	String _value = null;
+            	if( value instanceof String) {
+            		_value = (String)value;
+            	}else if(value instanceof Integer){
+            		if(item.getText().contains(".mode") || item.getText().equals("mode")){
+            			_value = modeItem_[((Integer)value).intValue()];
+            		}else if(item.getText().equals("isRobot") || item.getText().equals("integrate") || item.getText().equals("viewsimulate")){
+            			_value = booleanItem_[((Integer)value).intValue()];
+            		}else if(item.getText().equals("jointType")){
+            			_value = jointTypeItem_[((Integer)value).intValue()];
+            		}else if(item.getText().equals("method")){
+            			_value = methodItem_[((Integer)value).intValue()];
+            		}
+            	}
+            	if(!currentPlugin_.getProperty(item.getText()).equals(_value)){
+	                if (!currentPlugin_.propertyChanged(item.getText(), _value)){
 	                	// if validity of value is not checked by currentPlugin_, it is set
-	                	currentPlugin_.setProperty(item.getText(), (String)value);
+	                	currentPlugin_.setProperty(item.getText(), _value);
 	                }
                 }
                 _refresh();

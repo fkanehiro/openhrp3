@@ -616,7 +616,10 @@ public class GrxLinkItem extends GrxTransformItem{
     			//TODO
     			return false;
     		}
-    	}else{
+    	}else if( property.equals("mode")){
+    		setProperty("mode", value);
+    		model_.setProperty(getName()+".mode", value);
+    	}else {
     		return false;
     	}
     	return true;
