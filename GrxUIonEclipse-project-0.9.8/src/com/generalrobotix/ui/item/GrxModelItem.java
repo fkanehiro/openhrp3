@@ -306,7 +306,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				}
 			}
         }
-        //
+        /////////////
         if (getStr("markRadius")==null) setDbl("markRadius", DEFAULT_RADIUS); //$NON-NLS-1$ //$NON-NLS-2$
 
         _setModelType(isTrue("isRobot", isRobot_)); //$NON-NLS-1$
@@ -324,6 +324,15 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         
         if(flg)
         	makeAABBforSameUrlModels();
+        
+        for (int i=0; i<links_.size(); i++) {
+            GrxLinkItem l = links_.get(i);
+            if(!l.jointType().equals("fixed")){
+	            String s = this.getProperty(l.getName()+".mode", null); //$NON-NLS-1$
+	            if (s == null)
+	                setProperty(l.getName()+".mode", "Torque"); //$NON-NLS-1$
+            }
+        }
     }
 
     /**
@@ -367,6 +376,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             		if(link.propertyChanged("NumOfAABB", value)){
             			setProperty(link.getName()+".NumOfAABB", value); //$NON-NLS-1$
             		}
+            		return true;
+            	}else if(property.equals(link.getName()+".mode")){ //$NON-NLS-1$
+            		setProperty(link.getName()+".mode", value); //$NON-NLS-1$
+            		link.setProperty("mode", value);
+            		return true;
             	}
             }
     		return false;
@@ -541,10 +555,22 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             long etime = System.currentTimeMillis();
             System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
 
+            calcForwardKinematics();
+            updateInitialTransformRoot();
+            updateInitialJointValues();
+
+            _setupMarks();
+            setProperty("isRobot", Boolean.toString(isRobot_)); //$NON-NLS-1$
+            for (int i=0; i<links_.size(); i++) {
+                GrxLinkItem l = links_.get(i);
+                if(!l.jointType().equals("fixed")){
+                	setProperty(l.getName()+".mode", "Torque"); //$NON-NLS-1$
+                	l.setProperty("mode", "Torque");
+                }
+            }
+            
             bModified_ = false;
             manager_.setSelectedItem(this, true);
-
-            setProperty("isRobot", Boolean.toString(isRobot_)); //$NON-NLS-1$
 
         } catch (Exception ex) {
             System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
@@ -716,11 +742,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             if (n.getCapability(Node.ENABLE_PICK_REPORTING))
                 n.clearCapability(Node.ENABLE_PICK_REPORTING);
         }
-        calcForwardKinematics();
-        updateInitialTransformRoot();
-        updateInitialJointValues();
-
-        _setupMarks();
+        
     }
 
 
