@@ -1,21 +1,12 @@
 #!/usr/bin/env python
 # -*- Python -*-
-#/*
-# * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
-# * All rights reserved. This program is made available under the terms of the
-# * Eclipse Public License v1.0 which accompanies this distribution, and is
-# * available at http://www.eclipse.org/legal/epl-v10.html
-# * Contributors:
-# * National Institute of Advanced Industrial Science and Technology (AIST)
-# * General Robotix Inc. 
-# */
 
 import sys
 import time
 sys.path.append(".")
 
 # Import RTM module
-import OpenRTM
+import OpenRTM_aist
 import RTC
 
 # for convert()
@@ -24,16 +15,16 @@ import math
 # This module's spesification
 # <rtc-template block="module_spec">
 tkjoystick_spec = ["implementation_id", "TkJoyStick", 
-		 "type_name",         "TkJoyStick", 
-		 "description",       "Sample component for MobileRobotCanvas component", 
-		 "version",           "1.0", 
-		 "vendor",            "Noriaki Ando and Shinji Kurihara", 
-		 "category",          "example", 
-		 "activity_type",     "DataFlowComponent", 
-		 "max_instance",      "10", 
-		 "language",          "Python", 
-		 "lang_type",         "SCRIPT",
-		 ""]
+		   "type_name",         "TkJoyStick", 
+		   "description",       "Sample component for MobileRobotCanvas component", 
+		   "version",           "1.0", 
+		   "vendor",            "Noriaki Ando and Shinji Kurihara", 
+		   "category",          "example", 
+		   "activity_type",     "DataFlowComponent", 
+		   "max_instance",      "10", 
+		   "language",          "Python", 
+		   "lang_type",         "SCRIPT",
+		   ""]
 # </rtc-template>
 
 import tkjoystick
@@ -49,14 +40,14 @@ position = Position()
 #tkJoyCanvas = tkjoystick.TkJoystick()
 
 
-class TkJoyStick(OpenRTM.DataFlowComponentBase):
+class TkJoyStick(OpenRTM_aist.DataFlowComponentBase):
 	def __init__(self, manager):
-		OpenRTM.DataFlowComponentBase.__init__(self, manager)
+		OpenRTM_aist.DataFlowComponentBase.__init__(self, manager)
 
 		self._d_pos = RTC.TimedFloatSeq(RTC.Time(0,0),[])
-		self._posOut = OpenRTM.OutPort("pos", self._d_pos, OpenRTM.RingBuffer(8))
+		self._posOut = OpenRTM_aist.OutPort("pos", self._d_pos)
 		self._d_vel = RTC.TimedFloatSeq(RTC.Time(0,0),[])
-		self._velOut = OpenRTM.OutPort("vel", self._d_vel, OpenRTM.RingBuffer(8))
+		self._velOut = OpenRTM_aist.OutPort("vel", self._d_vel)
 		
 
 		# Set OutPort buffers
@@ -106,10 +97,10 @@ class TkJoyStick(OpenRTM.DataFlowComponentBase):
 
 
 #def MyModuleInit(manager):
-#    profile = OpenRTM.Properties(defaults_str=tkjoystick_spec)
+#    profile = OpenRTM_aist.Properties(defaults_str=tkjoystick_spec)
 #    manager.registerFactory(profile,
 #                            TkJoyStick,
-#                            OpenRTM.Delete)
+#                            OpenRTM_aist.Delete)
 #
 #    # Create a component
 #    comp = manager.createComponent("TkJoyStick")
@@ -119,15 +110,14 @@ class TkJoyStick(OpenRTM.DataFlowComponentBase):
 def main():
 	tkJoyCanvas = tkjoystick.TkJoystick()
 	tkJoyCanvas.master.title("TkJoystick")
-	mgr = OpenRTM.Manager.init(len(sys.argv), sys.argv)
-	#	mgr.setModuleInitProc(MyModuleInit)
+	mgr = OpenRTM_aist.Manager.init(sys.argv)
 	mgr.activateManager()
 
 	# Register component
-	profile = OpenRTM.Properties(defaults_str=tkjoystick_spec)
+	profile = OpenRTM_aist.Properties(defaults_str=tkjoystick_spec)
 	mgr.registerFactory(profile,
 			    TkJoyStick,
-			    OpenRTM.Delete)
+			    OpenRTM_aist.Delete)
 	# Create a component
 	comp = mgr.createComponent("TkJoyStick")
 
