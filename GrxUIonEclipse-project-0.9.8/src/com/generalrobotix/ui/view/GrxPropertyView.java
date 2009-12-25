@@ -21,6 +21,9 @@ package com.generalrobotix.ui.view;
 import java.util.Map;
 import java.util.Properties;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
@@ -42,6 +45,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -78,6 +83,8 @@ public class GrxPropertyView extends GrxBaseView {
     private static final String[] booleanItem_ = new String[] {"true", "false" };
     private static final String[] jointTypeItem_ = new String[] { "fixed", "rotate", "free", "slide" };
     private static final String[] methodItem_ = new String[] { "EULER",  "RUNGE_KUTTA" };
+    
+    private MenuManager menuMgr_= new MenuManager();
 
     /**
      * @brief constructor
@@ -162,6 +169,38 @@ public class GrxPropertyView extends GrxBaseView {
         currentPlugin_ = item;
         if(currentPlugin_ != null)
         	currentPlugin_.addObserver(this);
+        
+        //      右クリックメニュー
+        table_.setMenu(menuMgr_.createContextMenu( table_ ));
+        table_.addListener ( SWT.MenuDetect, new Listener () {
+    		public void handleEvent (Event event) {
+    			final TableItem[] selection = table_.getSelection();
+                menuMgr_.removeAll(); 
+                if(selection.length!=0)
+                	menuMgr_.add(new Action(){
+                		public String getText(){ return MessageBundle.get("GrxPropertyView.menu.InputValue"); }
+                		public void run(){
+                			InputDialog dialog = new InputDialog( null, null,
+                					MessageBundle.get("GrxPropertyView.dialog.message.input"), "", null); //$NON-NLS-1$
+                			if ( dialog.open() == InputDialog.OK && dialog.getValue() != null){
+                				String _value = dialog.getValue();
+                				String[] _key = new String[selection.length];
+                				for(int i=0; i<selection.length; i++){  // value を変更するとソートがかかってselectionが変わってしまうので、まずkeyを保存
+                					_key[i] = selection[i].getText(0);
+                				}
+                				for(int i=0; i<_key.length; i++){
+                					if(!currentPlugin_.getProperty(_key[i]).equals(_value)){
+                		                if (!currentPlugin_.propertyChanged(_key[i], _value)){
+                		                	currentPlugin_.setProperty(_key[i], _value);
+                		                }
+                	                }
+                				}
+                			}
+                					
+                		}
+                	});
+    		}
+    	});
     }
 
     public void registerItemChange(GrxBaseItem item, int event){
