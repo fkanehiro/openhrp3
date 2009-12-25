@@ -21,7 +21,7 @@
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\OpenRTM-aist.vsprops"
+			InheritedPropertySheets=".\rtm_config.vsprops"
 			CharacterSet="2"
 			>
 			<Tool
@@ -100,7 +100,7 @@
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\OpenRTM-aist.vsprops"
+			InheritedPropertySheets=".\rtm_config.vsprops"
 			CharacterSet="0"
 			WholeProgramOptimization="0"
 			>
@@ -122,7 +122,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="USE_stub_in_nt_dll;WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0400;__NT__;__OSVERSION__=4"
+				PreprocessorDefinitions="USE_stub_in_nt_dll;WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;__NT__;__OSVERSION__=4"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -140,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ACE.lib RTC042.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib advapi32.lib ws2_32.lib mswsock.lib"
+				AdditionalDependencies="coil.lib RTC100.lib omniORB412_rt.lib omniDynamic412_rt.lib omnithread33_rt.lib advapi32.lib ws2_32.lib mswsock.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
