@@ -1,13 +1,6 @@
 #!/usr/bin/env python
-#/*
-# * Copyright (c) 2008, AIST, the University of Tokyo and General Robotix Inc.
-# * All rights reserved. This program is made available under the terms of the
-# * Eclipse Public License v1.0 which accompanies this distribution, and is
-# * available at http://www.eclipse.org/legal/epl-v10.html
-# * Contributors:
-# * National Institute of Advanced Industrial Science and Technology (AIST)
-# * General Robotix Inc. 
-# */
+# -*- coding: euc-jp -*-
+
 #
 # @brief tk joystick
 # @date $Date$
@@ -125,7 +118,7 @@ class CanvasCircle(ToggleItem):
             circnum = 0
         else:
             circnum = max(self.width, self.height) / self.pitch
-        circrange = range(int(circnum))
+        circrange = range((int)circnum)
         circrange.reverse()
         for i in circrange:
             x0 = self.x - self.pitch * i
@@ -184,25 +177,34 @@ class CanvasLine(ToggleItem):
 class Stick:
     def __init__(self, canvas, x, y, r, **key):
         self.canvas = canvas
+        # ジョイスティックID
         self.key = key
         self.id = self.canvas.create_oval(x-r, y-r, x+r, y+r, **key)
+        # 中心からジョイスティックへの線ID
         self.line = None
+        # (x,y) テキスト表示ID
         self.xy_text = None
+        # (r,th) テキスト表示ID
         self.pol_text = None
 
+        # 画面座標系から画面ジョイスティック座標系へのオフセット
         self.offsetx = x
         self.offsety = y
 
+        # 画面ジョイスティック座標系でのジョイスティック位置
         self.x = 0
         self.y = 0
 
+        # ジョイスティック座標系でのジョイスティック位置
         self.pos_x = 0
         self.pos_y = 0
 
         self.coffx = 0
         self.coffy = 0
 
+        # ジョイスティックへのバインド
         self.make_binds()
+        # テキスト描画
 
     def set_on_drag_start(self, func):
         self.on_drag_start = func
@@ -219,6 +221,7 @@ class Stick:
         self.canvas.tag_bind(self.id, '<Button1-ButtonRelease>', self.drag_end)
         
     def drag_start(self, event):
+        # クリック位置のオフセットを計算
         x1 = event.x - self.offsetx
         y1 = event.y - self.offsety
         self.coffx = x1 - self.x
@@ -227,30 +230,35 @@ class Stick:
         self.calc_pol(self.pos_x, self.pos_y)
 #        self.draw_text()
 
-
+        # コールバック
         if self.on_drag_start != None:
             self.on_drag_start((self.pos_x, self.pos_y), (self.r, self.th))
         
     def dragging(self, event):
+        # ドラッグの移動量
         x1 = event.x - self.offsetx
         y1 = event.y - self.offsety
         dx = (x1 - self.x) - self.coffx
         dy = (y1 - self.y) - self.coffy
 
+        # 円を移動
         self.canvas.move(self.id, dx, dy)
         self.canvas.tag_raise(self.id)
+        # ジョイスティック位置を計算
         self.x = x1 - self.coffx
         self.y = y1 - self.coffy
         self.pos_x = self.x
         self.pos_y = -self.y 
         self.calc_pol(self.pos_x, self.pos_y)
 
+        # コールバック
         if self.on_dragging != None:
             self.on_dragging((self.pos_x, self.pos_y), (self.r, self.th))
 
     def drag_end(self, event):
         x1 = event.x - self.offsetx
         y1 = event.y - self.offsety
+        # 戻すための移動量
         dx = x1 - self.coffx
         dy = y1 - self.coffy
         self.canvas.move(self.id, -dx, -dy)
@@ -259,6 +267,7 @@ class Stick:
         self.pos_x = 0
         self.pos_y = 0
         self.calc_pol(self.pos_x, self.pos_y)
+        # コールバック
         if self.on_drag_end != None:
             self.on_drag_end((self.pos_x, self.pos_y), (self.r, self.th))
 
@@ -397,7 +406,7 @@ class TkJoystick(Frame):
         f = Frame(frame, bd=2, relief=GROOVE)
         dummy = Frame(f, width=self.wd)
         dummy.pack(side=TOP)
-        sl = Scale(f, from_=0, to=10, resolution=0.1,
+        sl = Scale(f, from_=0, to=10, resolution=0.01,
                    label="Scale Factor", command=self.on_scale,
                    variable=self.scale_var, orient=HORIZONTAL)
         bt = Button(f, text="Reset Scale", command=self.reset_scale)
