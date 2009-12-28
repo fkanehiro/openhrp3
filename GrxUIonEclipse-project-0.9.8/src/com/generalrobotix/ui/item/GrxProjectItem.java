@@ -59,7 +59,7 @@ import com.generalrobotix.ui.util.MessageBundle;
 @SuppressWarnings({ "unchecked", "serial" }) //$NON-NLS-1$ //$NON-NLS-2$
 public class GrxProjectItem extends GrxBaseItem {
 	public static final String TITLE = "Project"; //$NON-NLS-1$
-	public static final String DEFAULT_DIR = "project"; //$NON-NLS-1$
+	public static final String DEFAULT_DIR = "/"; //$NON-NLS-1$
 	public static final String FILE_EXTENSION = "xml"; //$NON-NLS-1$
 
 	public static final int MENU_CREATE=0, MENU_RESTORE=1, MENU_LOAD=2, MENU_SAVE=3, MENU_SAVE_AS=4, MENU_IMPORT=5;
@@ -359,6 +359,7 @@ public class GrxProjectItem extends GrxBaseItem {
 					return;
 			}
 			save( f );
+			setDefaultDirectory(f.getParent());
 		}	
 	}
 	
@@ -382,22 +383,14 @@ public class GrxProjectItem extends GrxBaseItem {
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
 		String[] fe = { "*.xml" }; //$NON-NLS-1$
 		fdlg.setFilterExtensions( fe );
-		String projectDir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR"); //$NON-NLS-1$
-        if(projectDir.equals("")) //$NON-NLS-1$
-        	projectDir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
-        if(projectDir!=null)
-        	fdlg.setFilterPath(projectDir);
+        fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
 		
 		String fPath = fdlg.open();
 		if( fPath != null ) {
 			File f = new File(fPath);
 			load(f);
-			//Thread t = new Thread() {
-//				public void run() {
-					restoreProject();
-	//			}
-		//	};
-			//t.start();
+			setDefaultDirectory(f.getParent());
+			restoreProject();
 		}
 	}
 

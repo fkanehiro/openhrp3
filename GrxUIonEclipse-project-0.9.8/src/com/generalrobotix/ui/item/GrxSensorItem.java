@@ -18,6 +18,8 @@
 package com.generalrobotix.ui.item;
 
 
+import java.io.File;
+
 import javax.media.j3d.Geometry;
 import javax.media.j3d.IndexedTriangleArray;
 import javax.media.j3d.QuadArray;
@@ -142,9 +144,14 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 			}
 			public void run(){
 				FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
+				fdlg.setFilterExtensions(new String[]{"*.wrl"});
+				fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
 				String fPath = fdlg.open();
 				System.out.println("fPath = "+fPath); //$NON-NLS-1$
-				addShape(fPath);
+				if(fPath!=null){
+					addShape(fPath);
+					setDefaultDirectory(new File(fPath).getParent());
+				}
 			}
 		};
         setMenuItem(item);

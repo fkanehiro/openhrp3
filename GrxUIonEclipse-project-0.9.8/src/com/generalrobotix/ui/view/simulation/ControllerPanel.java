@@ -16,6 +16,8 @@
  */
 package com.generalrobotix.ui.view.simulation;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -295,6 +297,12 @@ public class ControllerPanel extends Composite{
 
 				public void widgetSelected(SelectionEvent e) {
 					DirectoryDialog ddlg = new DirectoryDialog( GrxUIPerspectiveFactory.getCurrentShell() );
+					try {
+						ddlg.setFilterPath(new File(tfSetupDirectory_.getText()).getCanonicalPath());
+					} catch (IOException e1) {
+						// TODO 自動生成された catch ブロック
+						e1.printStackTrace();
+					}
 					String fPath = ddlg.open();
 					if( fPath != null ) {
 						tfSetupDirectory_.setText(fPath);
@@ -416,9 +424,9 @@ public class ControllerPanel extends Composite{
                     }
                 }
             	spinControlTime_.setValue(node.getProperty(ATTRIBUTE_CONTROL_TIME, "0.001")); //$NON-NLS-1$
-            	tfSetupDirectory_.setText(node.getProperty(ATTRIBUTE_SETUP_DIRECTORY ,GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)"))); //$NON-NLS-1$
+            	tfSetupDirectory_.setText(node.getStr(ATTRIBUTE_SETUP_DIRECTORY ,GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)"))); //$NON-NLS-1$
                 
-                attr = node.getProperty(ATTRIBUTE_SETUP_COMMAND, ""); //$NON-NLS-1$
+                attr = node.getStr(ATTRIBUTE_SETUP_COMMAND, ""); //$NON-NLS-1$
                 tfSetupCommand_.setText(attr);
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -464,7 +472,7 @@ public class ControllerPanel extends Composite{
                 return node.getName();
             }
             try{
-                str = node.getProperty(attrName_[columnIndex]);
+                str = node.getStr(attrName_[columnIndex]);
             }catch(Exception ex){
                 ex.printStackTrace();
                 return ""; //$NON-NLS-1$

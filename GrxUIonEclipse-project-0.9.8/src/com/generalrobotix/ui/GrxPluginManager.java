@@ -119,7 +119,13 @@ public class GrxPluginManager {
      */
     public GrxPluginManager() {
         GrxDebugUtil.println("[PM] GrxPluginManager created"); //$NON-NLS-1$
-        homePath_ = Activator.getDefault().getHomeDir();
+        String dir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR"); //$NON-NLS-1$
+        if(dir.equals("")) //$NON-NLS-1$
+        	dir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
+		if( dir != null ){
+			homePath_ = new File(dir);
+		}else
+			homePath_ = Activator.getDefault().getHomeDir();
         System.out.println("[PM] WORKSPACE PATH=" + ResourcesPlugin.getWorkspace().getRoot().getLocation()); //$NON-NLS-1$
 
         // TODO: プラグインローダに、プラグインがおいてあるフォルダを指定する方法を検討
@@ -469,6 +475,8 @@ public class GrxPluginManager {
         if (item != null) {
             if (item.load(f)) {
                 item.setURL(_url);
+                item.setDefaultDirectory(f.getParent());
+                pinfoMap_.get(cls).lastDir = f.getParentFile();
             } else {
                 removeItem(item);
                 return null;
@@ -899,6 +907,7 @@ public class GrxPluginManager {
                 FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
                 String[] fe = { pi.filter };
                 fdlg.setFilterExtensions(fe);
+                fdlg.setFilterPath(pi.lastDir.getAbsolutePath());
                 String fPath = fdlg.open();
                 if (fPath != null) {
                     File f = new File(fPath);
