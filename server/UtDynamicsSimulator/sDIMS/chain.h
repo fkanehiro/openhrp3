@@ -24,6 +24,7 @@
 #endif
 #include <list>
 #include <cstring>
+#include <cstdio>
 #include "hrpModelExportDef.h"
 
 //! Defines for IntegAdaptiveEuler

@@ -53,7 +53,9 @@ if(UNIX)
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     hrpCollision-${OPENHRP_LIBRARY_VERSION}
     ${OMNIORB_LIBRARIES}
-    boost_filesystem boost_regex dl)
+    boost_filesystem-mt boost_regex-mt
+    #${Boost_LIBRARIES}
+    dl)
 
 elseif(WIN32)
   add_definitions(-DHRPMODEL_MAKE_DLL)
