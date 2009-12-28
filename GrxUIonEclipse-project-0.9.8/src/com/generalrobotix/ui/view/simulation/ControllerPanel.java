@@ -416,7 +416,7 @@ public class ControllerPanel extends Composite{
         
         public void setNode(GrxModelItem node) {
             try {
-                String attr = node.getProperty(ATTRIBUTE_CONTROLLER);
+                String attr = node.getProperty(ATTRIBUTE_CONTROLLER, "");
                 for (int i = 0; i < boxController_.getItemCount(); i ++) {
                	    if (attr.equals(boxController_.getItem(i).toString())) {
                         boxController_.select(i);
