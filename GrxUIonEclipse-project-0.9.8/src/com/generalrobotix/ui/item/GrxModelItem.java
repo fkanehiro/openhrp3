@@ -47,7 +47,7 @@ import jp.go.aist.hrp.simulator.ModelLoaderPackage.ModelLoadOption;
  */
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public static final String TITLE = "Model"; //$NON-NLS-1$
-    public static final String DEFAULT_DIR = "../../etc"; //$NON-NLS-1$
+    public static final String DEFAULT_DIR = "/../model"; //$NON-NLS-1$
     public static final String FILE_EXTENSION = "wrl"; //$NON-NLS-1$
     private static final double DEFAULT_RADIUS = 0.05;
 
@@ -253,11 +253,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	 */
 	private boolean _saveAs(){
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
+		fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
 		String fPath = fdlg.open();
 		if( fPath != null ) {
 			fPath = fPath.replace('\\','/');
 			if (GrxVrmlExporter.export(GrxModelItem.this, fPath)){
 				setURL(fPath);
+				setDefaultDirectory(new File(fPath).getParent());
 			}
 			return true;
 		}else

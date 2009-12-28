@@ -56,7 +56,7 @@ import com.generalrobotix.ui.view.GrxLoggerView;
 @SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	public static final String TITLE = "World State"; //$NON-NLS-1$
-	public static final String DEFAULT_DIR = "log"; //$NON-NLS-1$
+	public static final String DEFAULT_DIR = "/"; //$NON-NLS-1$
 	public static final String FILE_EXTENSION = "log"; //$NON-NLS-1$
 	
 	public static final double DEFAULT_TOTAL_TIME = 20.0;
@@ -130,8 +130,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
     		public void run(){
     	        FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
     	        fdlg.setFilterExtensions(new String[]{"*.log"}); //$NON-NLS-1$
+    	        fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
     	        final String fPath = fdlg.open();                
     			_loadLog(new File(fPath));
+    			setDefaultDirectory(new File(fPath).getParent());
     		}
     	};
 		setMenuItem(save_);
@@ -768,6 +770,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
         fdlg.setFileName(GrxWorldStateItem.this.getName()+".log"); //$NON-NLS-1$
         fdlg.setFilterExtensions(new String[]{"*.log"}); //$NON-NLS-1$
+        fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
         final String fPath = fdlg.open();
         if (fPath != null) {
 	 		Thread t = new Thread() {
@@ -796,6 +799,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 				}
 			};
 			t.start();
+			setDefaultDirectory(new File(fPath).getParent());
         }
 	}
     
@@ -928,11 +932,12 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	private void _saveCSV() {
         DirectoryDialog ddlg = new DirectoryDialog(GrxUIPerspectiveFactory.getCurrentShell());
-        String projectDir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR"); //$NON-NLS-1$
-        if(projectDir.equals("")) //$NON-NLS-1$
-        	projectDir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
-        if(projectDir!=null)
-        	ddlg.setFilterPath(projectDir);
+        try {
+			ddlg.setFilterPath(getDefaultDir().getCanonicalPath());
+		} catch (IOException e1) {
+			// TODO 自動生成された catch ブロック
+			e1.printStackTrace();
+		}
         final String dir = ddlg.open();
         if (dir != null){
             Thread t = new Thread() {
@@ -964,6 +969,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
     			}
     		};
     		t.start();
+    		setDefaultDirectory(dir);
         }
 	}
 	

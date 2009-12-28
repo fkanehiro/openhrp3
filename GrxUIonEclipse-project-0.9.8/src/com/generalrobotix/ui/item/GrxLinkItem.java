@@ -17,6 +17,7 @@
 
 package com.generalrobotix.ui.item;
 
+import java.io.File;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -788,10 +789,13 @@ public class GrxLinkItem extends GrxTransformItem{
 			}
 			public void run(){
 				FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
+				fdlg.setFilterExtensions(new String[]{"*.wrl"});
+				fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
 				String fPath = fdlg.open();
 				System.out.println("fPath = "+fPath); //$NON-NLS-1$
 				if( fPath != null ) {
 					addShape( fPath );
+					setDefaultDirectory(new File(fPath).getParent());
 				}
 			}
 		};

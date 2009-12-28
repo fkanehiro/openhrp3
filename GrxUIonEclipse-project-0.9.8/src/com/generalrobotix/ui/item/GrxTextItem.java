@@ -128,6 +128,7 @@ public class GrxTextItem extends GrxBaseItem {
         FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
         fdlg.setFileName(getName()+"."+getFileExtention()); //$NON-NLS-1$
         fdlg.setFilterExtensions(new String[]{"*."+getFileExtention()}); //$NON-NLS-1$
+        fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
         final String fPath = fdlg.open();
         if (fPath != null) {
             File f = new File(fPath);
@@ -146,6 +147,7 @@ public class GrxTextItem extends GrxBaseItem {
             if (getName().equals(newName)) {
                 file_ = f;
                 setURL(f.getPath());
+                setDefaultDirectory(f.getParent());
                 return save();
             }
         }
