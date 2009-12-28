@@ -386,64 +386,71 @@ set(RELATIVE_SAMPLE_INSTALL_PATH share/${OPENHRP_INSTALL_SUB_DIR}/sample)
 set(OPENHRP_DIR ${CMAKE_INSTALL_PREFIX})
 set(OPENHRP_SHARE_DIR ${OPENHRP_DIR}/${RELATIVE_SHARE_INSTALL_PATH})
 
+
+
 # package
-set(CPACK_MODULE_PATH ${PROJECT_SOURCE_DIR}/cpack_modules/)
-set(CPACK_PACKAGE_NAME openhrp-aist)
-set(RELATIVE_DOC_INSTALL_PATH share/doc/${CPACK_PACKAGE_NAME})
-set(CPACK_PACKAGE_VENDOR "AIST")
-set(CPACK_PACKAGE_CONTACT "Shin'ichiro Nakaoka <s.nakaoka@aist.go.jp>")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README-en.txt")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE-en.txt")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Platform software development of robots and simulations.
- OpenHRP (Open Architecture Humanoid Robotics Platform) is an integrated 
- simulation platform for mainly a robot and consists of main dynamics 
- algorithm developed by Nakamura Lab, Graduate School of Information 
- Science and Technology Department of Mechano-Informatics in the University 
- of Tokyo, a graphical user interface developed by General Robotix,
- Inc and others by Advanced Industrial Science and Technology (AIST).")
-set(CPACK_PACKAGE_VERSION_MAJOR ${OPENHRP_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${OPENHRP_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${OPENHRP_VERSION_MICRO})
+option(ENABLE_CPACK "Enable CPack settings" OFF)
 
-if(WIN32 AND NOT UNIX)
-  # There is a bug in NSI that does not handle full unix paths properly. Make
-  # sure there is at least one set of four (4) backlasshes.
-  set(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
-  set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\MyExecutable.exe")
-  set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} My Famous Project")
-  set(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.my-project-home-page.org")
-  set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.my-personal-home-page.com")
-  set(CPACK_NSIS_CONTACT "me@my-personal-home-page.com")
-  set(CPACK_NSIS_MODIFY_PATH ON)
-  # set(CPACK_PACKAGE_EXECUTABLES "MyExecutable" "My Executable")
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenHRP ${OPENHRP_VERSION_MAJOR}.${OPENHRP_VERSION_MINOR}")
+if(ENABLE_CPACK)
+  set(CPACK_MODULE_PATH ${PROJECT_SOURCE_DIR}/cpack_modules/)
+  set(CPACK_PACKAGE_NAME openhrp-aist)
+  set(RELATIVE_DOC_INSTALL_PATH share/doc/${CPACK_PACKAGE_NAME})
+  set(CPACK_PACKAGE_VENDOR "AIST")
+  set(CPACK_PACKAGE_CONTACT "Shin'ichiro Nakaoka <s.nakaoka@aist.go.jp>")
+  set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README-en.txt")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE-en.txt")
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Platform software development of robots and simulations.
+OpenHRP (Open Architecture Humanoid Robotics Platform) is an integrated 
+simulation platform for mainly a robot and consists of main dynamics 
+algorithm developed by Nakamura Lab, Graduate School of Information 
+Science and Technology Department of Mechano-Informatics in the University 
+of Tokyo, a graphical user interface developed by General Robotix,
+Inc and others by Advanced Industrial Science and Technology (AIST).")
+  set(CPACK_PACKAGE_VERSION_MAJOR ${OPENHRP_VERSION_MAJOR})
+  set(CPACK_PACKAGE_VERSION_MINOR ${OPENHRP_VERSION_MINOR})
+  set(CPACK_PACKAGE_VERSION_PATCH ${OPENHRP_VERSION_MICRO})
 
-else()
-  include(${CPACK_MODULE_PATH}DEPENDENT${UBUNTU_VERSION_NUM}_BASENAMES.cmake)
+  if(WIN32 AND NOT UNIX)
+    # There is a bug in NSI that does not handle full unix paths properly. Make
+    # sure there is at least one set of four (4) backlasshes.
+    set(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\MyExecutable.exe")
+    set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} My Famous Project")
+    set(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.my-project-home-page.org")
+    set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.my-personal-home-page.com")
+    set(CPACK_NSIS_CONTACT "me@my-personal-home-page.com")
+    set(CPACK_NSIS_MODIFY_PATH ON)
+    # set(CPACK_PACKAGE_EXECUTABLES "MyExecutable" "My Executable")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenHRP ${OPENHRP_VERSION_MAJOR}.${OPENHRP_VERSION_MINOR}")
+    
+  else()
+    include(${CPACK_MODULE_PATH}DEPENDENT${UBUNTU_VERSION_NUM}_BASENAMES.cmake)
+    
+    foreach(name ${DEPENDENT_BASENAMES})
+      if ( depends_line )
+	set(depends_line ${depends_line},${name})
+      else()
+	set(depends_line ${name})
+      endif()
+    endforeach()
+    
+    set(CPACK_GENERATOR DEB)
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+    set(DEBIAN_PACKAGE_SECTION "development")
+    set(DEBIAN_PACKAGE_PRIORITY  "extra")
+    set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}${OPENHRP_VERSION_ADD_TAIL}-ubuntu${UBUNTU_VERSION}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${CPACK_MODULE_PATH}shlibs 
+      ${CPACK_MODULE_PATH}postinst ${CPACK_MODULE_PATH}postrm)
+    #  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "${depends_line}")
+
+    #  set(CPACK_STRIP_FILES "bin/MyExecutable")
+    #  set(CPACK_SOURCE_STRIP_FILES "")
+  endif()
   
-  foreach(name ${DEPENDENT_BASENAMES})
-    if ( depends_line )
-      set(depends_line ${depends_line},${name})
-    else()
-      set(depends_line ${name})
-    endif()
-  endforeach()
+  include(CPack)
 
-  set(CPACK_GENERATOR DEB)
-  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
-  set(DEBIAN_PACKAGE_SECTION "development")
-  set(DEBIAN_PACKAGE_PRIORITY  "extra")
-  set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}${OPENHRP_VERSION_ADD_TAIL}-ubuntu${UBUNTU_VERSION}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
-  set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${CPACK_MODULE_PATH}shlibs 
-${CPACK_MODULE_PATH}postinst ${CPACK_MODULE_PATH}postrm)
-#  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "${depends_line}")
-
-#  set(CPACK_STRIP_FILES "bin/MyExecutable")
-#  set(CPACK_SOURCE_STRIP_FILES "")
-endif()
-
-include(CPack)
+endif(ENABLE_CPACK)
 
 # Subdirectories
 add_subdirectory(idl)
@@ -476,10 +483,13 @@ if(UNIX)
     add_subdirectory(doc)
   endif()
 endif(UNIX)
-if(GENERATE_DEBIANPACKAGE)
-install( FILES README-ja.txt LICENSE-ja.txt HISTORY-ja.txt README-en.txt LICENSE-en.txt HISTORY-en.txt ${CPACK_MODULE_PATH}copyright
-         DESTINATION ${RELATIVE_DOC_INSTALL_PATH} )
-else()
-install( FILES README-ja.txt LICENSE-ja.txt HISTORY-ja.txt README-en.txt LICENSE-en.txt HISTORY-en.txt
-         DESTINATION ${RELATIVE_DOC_INSTALL_PATH} )
-endif(GENERATE_DEBIANPACKAGE)
+
+if(ENABLE_CPACK)
+  if(GENERATE_DEBIANPACKAGE)
+    install( FILES README-ja.txt LICENSE-ja.txt HISTORY-ja.txt README-en.txt LICENSE-en.txt HISTORY-en.txt ${CPACK_MODULE_PATH}copyright
+      DESTINATION ${RELATIVE_DOC_INSTALL_PATH} )
+  else()
+    install( FILES README-ja.txt LICENSE-ja.txt HISTORY-ja.txt README-en.txt LICENSE-en.txt HISTORY-en.txt
+      DESTINATION ${RELATIVE_DOC_INSTALL_PATH} )
+  endif(GENERATE_DEBIANPACKAGE)
+endif(ENABLE_CPACK)
