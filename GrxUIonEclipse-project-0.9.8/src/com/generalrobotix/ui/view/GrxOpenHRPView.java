@@ -21,6 +21,7 @@ package com.generalrobotix.ui.view;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -554,6 +555,10 @@ public class GrxOpenHRPView extends GrxBaseView {
 			currentWorld_.addObserver(this);
 		currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
 		controllerPane_.updateRobots(currentModels_);
+		Iterator<GrxModelItem> it = currentModels_.iterator();
+		while(it.hasNext())	{
+        	it.next().addObserver(this);
+        }
 		currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
 		collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
 		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
@@ -614,6 +619,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 					currentModels_.add(mitem);
 					controllerPane_.updateRobots(currentModels_);
 					collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
+					mitem.addObserver(this);
 				}
 				break;
 			case GrxPluginManager.REMOVE_ITEM:
@@ -622,6 +628,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 		    		currentModels_.remove(mitem);
 					controllerPane_.updateRobots(currentModels_);
 					collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
+					mitem.deleteObserver(this);
 	    		}
 	    		break;
 	    	default:
@@ -653,10 +660,15 @@ public class GrxOpenHRPView extends GrxBaseView {
 	}
 	
 	public void update(GrxBasePlugin plugin, Object... arg) {
-		if(currentWorld_!=plugin) return;
-    	if((String)arg[0]=="PropertyChange") //$NON-NLS-1$
-    		simParamPane_.updateItem(currentWorld_);	
-    	return;
+		if(currentModels_.contains(plugin)){
+			if((String)arg[0]=="PropertyChange"){ //$NON-NLS-1$
+				if((String)arg[1]=="isRobot")
+					controllerPane_.updateRobots(currentModels_);
+			}
+		}else if(currentWorld_==plugin){
+	    	if((String)arg[0]=="PropertyChange") //$NON-NLS-1$
+	    		simParamPane_.updateItem(currentWorld_);	
+		}
     }
 	
 	public void shutdown() {
@@ -672,6 +684,11 @@ public class GrxOpenHRPView extends GrxBaseView {
 		if(currentWorld_!=null)
     		currentWorld_.deleteObserver(this);
 		
+		Iterator<GrxModelItem> it = currentModels_.iterator();
+    	while(it.hasNext())	{
+    		it.next().deleteObserver(this);
+    	}
+    	
 		manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
 		manager_.removeItemChangeListener(this, GrxModelItem.class);
 		manager_.removeItemChangeListener(this, GrxCollisionPairItem.class);
