@@ -82,7 +82,7 @@ if(UNIX)
 endif()
 
 # check boost
-if(NOT Boost_INCLUDE_DIR AND NOT Boost_LIBRARY_DIRS)
+#if(NOT Boost_INCLUDE_DIR AND NOT Boost_LIBRARY_DIRS)
   if(WIN32)
     if( "$ENV{BOOST_ROOT}" STREQUAL "" )
       find_path(
@@ -95,13 +95,12 @@ if(NOT Boost_INCLUDE_DIR AND NOT Boost_LIBRARY_DIRS)
       set(BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "The root directory of boost")
     endif()
   endif()
-  find_package(Boost REQUIRED)
-  if(Boost_FOUND)
-    message(STATUS "Found Boost C++ library in ${Boost_INCLUDE_DIRS}")
-  endif()
-endif()
+  #find_package(Boost REQUIRED)
+  #find_package(Boost 1.35.0 REQUIRED COMPONENTS filesystem signals system)
+  find_package(Boost 1.35.0 REQUIRED)
+#endif()
 
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
 
@@ -359,7 +358,7 @@ mark_as_advanced(CHECK_UNRESOLVED_SYMBOLS)
 
 if(CHECK_UNRESOLVED_SYMBOLS)
   if(UNIX)
-    list(APPEND CMAKE_SHARED_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-shared-libs")
+    list(APPEND CMAKE_SHARED_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-shared-libs -Wl,--warn-unresolved-symbols")
   endif()
 endif()
 

@@ -59,7 +59,9 @@ set_target_properties(${target} PROPERTIES VERSION ${HRPUTIL_VERSION} SOVERSION 
 if(UNIX)
   target_link_libraries(${target}
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-    boost_filesystem boost_signals ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
+    boost_filesystem-mt boost_signals-mt
+    #${Boost_LIBRARIES}
+    ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
     ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
     )
 

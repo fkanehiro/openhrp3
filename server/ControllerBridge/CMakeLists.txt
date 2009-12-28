@@ -19,7 +19,7 @@ if(UNIX)
     ${program}
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     ${OPENRTM_LIBRARIES}
-    boost_filesystem boost_program_options boost_regex)
+    boost_filesystem-mt boost_program_options-mt boost_regex-mt)
 elseif(WIN32)
   add_definitions(${OPENRTM_DEFINITIONS})
   set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d )
