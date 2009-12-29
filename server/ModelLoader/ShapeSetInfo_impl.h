@@ -20,6 +20,7 @@
 #include <hrpCorba/ModelLoader.hh>
 #include <hrpUtil/TriangleMeshShaper.h>
 #include <hrpUtil/VrmlNodes.h>
+#include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/Tvmet4d.h>
 #include <hrpCollision/ColdetModel.h>
 
@@ -51,7 +52,7 @@ protected:
     void saveOriginalData();
     void restoreOriginalData();
     void createAppearanceInfo();
-    void setBoundingBoxData(IceMaths::Point boxSize, int shapeIndex);
+    void setBoundingBoxData(const Vector3& boxSize, int shapeIndex);
     bool checkFileUpdateTime();
     bool readImage;
 

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdio>
 #include "Roadmap.h"
 #include "RoadmapNode.h"
 #include "PRM.h"

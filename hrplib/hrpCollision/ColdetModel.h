@@ -17,7 +17,6 @@
 #include <string>
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/Referenced.h>
-#include "Opcode/Opcode.h"
 #include <vector>
 
 
@@ -196,8 +195,8 @@ namespace hrp {
          */
         double computeDistanceWithRay(const double *point, const double *dir);
 
+        void getBoundingBoxData(const int depth, std::vector<Vector3>& out_boxes);
         
-        std::vector<IceMaths::Point> getBoundingBoxData(const int depth);
         int getAABBTreeDepth();
         int getAABBmaxNum();
         int numofBBtoDepth(int minNumofBB);
@@ -207,7 +206,6 @@ namespace hrp {
          * @brief common part of constuctors
          */
         void initialize();
-        void getBoundingBoxData(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int depth, std::vector<IceMaths::Point>& data);
         
         ColdetModelSharedDataSet* dataSet;
         IceMaths::Matrix4x4* transform;
