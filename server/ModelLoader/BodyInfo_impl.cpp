@@ -527,7 +527,9 @@ void BodyInfo_impl::setParam(std::string param, int value){
 void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
     const double EPS = 1.0e-6;
     createAppearanceInfo();
-    std::vector<IceMaths::Point> boxSizeMap;
+    std::vector<Vector3> boxSizeMap;
+    std::vector<Vector3> boundingBoxData;
+    
     for(int i=0; i<links_.length(); i++){
         int _depth;
         if( AABBdataType_ == OpenHRP::ModelLoader::AABB_NUM )
@@ -537,7 +539,7 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
         if( _depth >= links_[i].AABBmaxDepth)
             _depth = links_[i].AABBmaxDepth-1;
         if(_depth >= 0 ){
-            std::vector<IceMaths::Point> boundingBoxData = linkColdetModels[i]->getBoundingBoxData(_depth);
+            linkColdetModels[i]->getBoundingBoxData(_depth, boundingBoxData);
             std::vector<TransformedShapeIndex> tsiMap;
             links_[i].shapeIndices.length(0);
             SensorInfoSequence& sensors = links_[i].sensors;
@@ -551,7 +553,7 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
                 bool flg=false;
                 int k=0;
                 for( ; k<boxSizeMap.size(); k++)
-                    if(boxSizeMap[k].Distance(boundingBoxData[j*2+1]) < EPS)
+                    if(norm2(boxSizeMap[k] - boundingBoxData[j*2+1]) < EPS)
                         break;
                 if( k<boxSizeMap.size() )
                     flg=true;
@@ -563,8 +565,8 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
                 if(flg){
                     int l=0;
                     for( ; l<tsiMap.size(); l++){
-                        IceMaths::Point p(tsiMap[l].transformMatrix[3],tsiMap[l].transformMatrix[7],tsiMap[l].transformMatrix[11]);
-                        if(p.Distance(boundingBoxData[j*2]) < EPS && tsiMap[l].shapeIndex == k)
+                        Vector3 p(tsiMap[l].transformMatrix[3],tsiMap[l].transformMatrix[7],tsiMap[l].transformMatrix[11]);
+                        if(norm2(p - boundingBoxData[j*2]) < EPS && tsiMap[l].shapeIndex == k)
                             break;
                     }
                     if( l==tsiMap.size() )
@@ -583,13 +585,13 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
                             if(col==3){
                                 switch(row){
                                     case 0:
-                                        tsi.transformMatrix[p++] = boundingBoxData[j*2].x;
+                                        tsi.transformMatrix[p++] = boundingBoxData[j*2][0];
                                         break;
                                      case 1:
-                                        tsi.transformMatrix[p++] = boundingBoxData[j*2].y;
+                                        tsi.transformMatrix[p++] = boundingBoxData[j*2][1];
                                         break;
                                      case 2:
-                                        tsi.transformMatrix[p++] = boundingBoxData[j*2].z;
+                                        tsi.transformMatrix[p++] = boundingBoxData[j*2][2];
                                         break;
                                      default:
                                         ;

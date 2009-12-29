@@ -190,27 +190,30 @@ int ColdetModel::getAABBmaxNum(){
     return dataSet->getmaxNumofBB();
 }
 
-vector<IceMaths::Point> ColdetModel::getBoundingBoxData(const int depth){
-    const Opcode::AABBCollisionNode* rootNode=((Opcode::AABBCollisionTree*)dataSet->model.GetTree())->GetNodes();
-    vector<IceMaths::Point> data;
-    getBoundingBoxData(rootNode, 0, depth, data);
-    return data;
-}
 
-void ColdetModel::getBoundingBoxData(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int depth, std::vector<IceMaths::Point>& data){
+static void getBoundingBoxDataSub
+(const Opcode::AABBCollisionNode* node, unsigned int currentDepth, unsigned int depth, std::vector<Vector3>& out_data){
     if(currentDepth == depth || node->IsLeaf() ){
-        IceMaths::Point p = node->mAABB.mCenter;
-        data.push_back(p);
-        p = node->mAABB.mExtents;
-        data.push_back(p);
+        const IceMaths::Point& p = node->mAABB.mCenter;
+        out_data.push_back(Vector3(p.x, p.y, p.z));
+        const IceMaths::Point& q = node->mAABB.mExtents;
+        out_data.push_back(Vector3(q.x, q.y, q.z));
     }
     currentDepth++;
     if(currentDepth > depth) return;
     if(!node->IsLeaf()){
-        getBoundingBoxData(node->GetPos(), currentDepth, depth, data);
-        getBoundingBoxData(node->GetNeg(), currentDepth, depth, data);
+        getBoundingBoxDataSub(node->GetPos(), currentDepth, depth, out_data);
+        getBoundingBoxDataSub(node->GetNeg(), currentDepth, depth, out_data);
     }
 }
+
+
+void ColdetModel::getBoundingBoxData(const int depth, std::vector<Vector3>& out_data){
+    const Opcode::AABBCollisionNode* rootNode=((Opcode::AABBCollisionTree*)dataSet->model.GetTree())->GetNodes();
+    out_data.clear();
+    getBoundingBoxDataSub(rootNode, 0, depth, out_data);
+}
+
 
 int ColdetModelSharedDataSet::computeDepth(const Opcode::AABBCollisionNode* node, int currentDepth, int max )
 {

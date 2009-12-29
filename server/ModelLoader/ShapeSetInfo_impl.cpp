@@ -718,12 +718,12 @@ void ShapeSetInfo_impl::saveOriginalData(){
     originMaterials_ = materials_;
 }
 
-void ShapeSetInfo_impl::setBoundingBoxData(IceMaths::Point boxSize, int shapeIndex){
+void ShapeSetInfo_impl::setBoundingBoxData(const Vector3& boxSize, int shapeIndex){
     VrmlBox* box = new VrmlBox();
     VrmlIndexedFaceSetPtr triangleMesh;
-    box->size[0] = boxSize.x*2;
-    box->size[1] = boxSize.y*2;
-    box->size[2] = boxSize.z*2;
+    box->size[0] = boxSize[0]*2;
+    box->size[1] = boxSize[1]*2;
+    box->size[2] = boxSize[2]*2;
     triangleMesh = new VrmlIndexedFaceSet();
     triangleMesh->coord = new VrmlCoordinate();
     triangleMeshShaper.convertBox(box, triangleMesh);
