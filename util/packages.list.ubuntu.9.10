@@ -44,15 +44,14 @@ libgfortran3
 libgfortran3-dbg
 
 # boost
-libboost-dev
-libboost-filesystem-dev 
-libboost-program-options-dev 
-libboost-regex-dev
-libboost-signals-dev
-libboost-thread-dev
+libboost1.40-dev
+libboost-filesystem1.40-dev 
+libboost-program-options1.40-dev 
+libboost-regex1.40-dev
+libboost-signals1.40-dev
+libboost-thread1.40-dev
 
 # etc
-#libc6-dev
 zlib1g-dev
 libjpeg62-dev
 libpng12-dev
