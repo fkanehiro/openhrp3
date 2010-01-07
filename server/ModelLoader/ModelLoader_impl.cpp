@@ -121,10 +121,6 @@ BodyInfo_impl* ModelLoader_impl::loadBodyInfoFromModelFile(const string url, con
 {
     cout << "loading " << url << endl;
 
-    UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
-    if(p != urlToBodyInfoMap.end())
-        delete p->second;
-
     BodyInfo_impl* bodyInfo = new BodyInfo_impl(poa);
     bodyInfo->setParam("readImage", option.readImage);
 
