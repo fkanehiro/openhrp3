@@ -213,15 +213,15 @@ public class SimulationParameterPanel extends Composite{
   }
 
   public double getStepTime() {
-    return spinStepTime_.getValue();
+    return spinStepTime_.getValueDouble();
   }
   
   public double getLogStepTime() {
-    return spinLogStepTime_.getValue();
+    return spinLogStepTime_.getValueDouble();
   }
   
   public double getTotalTime() {
-      return spinTotalTime_.getValue();
+      return spinTotalTime_.getValueDouble();
   }
   
   public boolean isIntegrate() {
@@ -233,7 +233,7 @@ public class SimulationParameterPanel extends Composite{
   }
 
   public double getGravity() {
-	    return spinGravity_.getValue();
+	    return spinGravity_.getValueDouble();
   }
   
   public SEEnumeration getMethod() {
