@@ -996,7 +996,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 	}
 	
 	private boolean extendTime() {
-        
+        if(!isInteractive_)
+        	return false;
 		boolean state = MessageDialog.openQuestion(getParent().getShell(), MessageBundle.get("GrxOpenHRPView.dialog.title.timeUp"), MessageBundle.get("GrxOpenHRPView.dialog.message.TimeUp")); //$NON-NLS-1$ //$NON-NLS-2$
 		if (state == true)
 			return false;
