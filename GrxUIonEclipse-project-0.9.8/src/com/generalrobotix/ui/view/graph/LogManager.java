@@ -145,6 +145,21 @@ public class LogManager {
             ex.printStackTrace();
         }
     }
+    
+    /**
+     * 書き込み専用バッファを閉じる
+     */
+    public void closeWrites() {
+        try{
+            closeAsWrite();
+            closeCollisionLogAsWrite();
+        } catch (IOException ex){
+            ex.printStackTrace();
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
 
     public String getTempFilePath(String objectName) {
         // String tmpdir = System.getProperty("TEMP");

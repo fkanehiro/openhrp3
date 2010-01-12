@@ -209,6 +209,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		prePos_ = -1;
 		lastCharName_ = null;
         setLogMenus(false);
+        if(useDisk_)
+        	logger_.closeReads();
 		syncExec(new Runnable(){
         	public void run(){
         		notifyObservers("ClearLog"); //$NON-NLS-1$
@@ -1024,6 +1026,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	public void stopSimulation(){
 		notifyObservers("StopSimulation"); //$NON-NLS-1$
+		if (useDisk_)
+			logger_.closeWrites();
 	}
     
     public boolean isUseDsik(){ return useDisk_; }
@@ -1239,5 +1243,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 
 		}
 
+	}
+
+	public void delete(){
+		if(useDisk_)
+			logger_.closeReads();
+		super.delete();        
 	}
 } 
