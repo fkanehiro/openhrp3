@@ -274,7 +274,7 @@ public class ControllerPanel extends Composite{
  			// Control Time
             lbl = new Label(this,SWT.SHADOW_NONE);
             lbl.setText(MessageBundle.get("panel.controller.controlTime")); //$NON-NLS-1$
-            lbl.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            lbl.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER|GridData.HORIZONTAL_ALIGN_END));
             
             spinControlTime_ = new SEDoubleTextWithSpinForSWT(this,SWT.NONE,0,10,0.001);
             
@@ -289,6 +289,13 @@ public class ControllerPanel extends Composite{
             gridData.horizontalSpan = 2;
             tfSetupDirectory_.setLayoutData(gridData);
             
+            Button btnCmdRef = new Button(this, SWT.PUSH);
+            GridData btnGridData = new GridData(GridData.VERTICAL_ALIGN_END);
+            btnGridData.verticalSpan = 2;
+            btnCmdRef.setLayoutData(btnGridData);
+            btnCmdRef.setText("..."); //$NON-NLS-1$
+            
+/*
             Button btnDirRef = new Button(this, SWT.PUSH);
             btnDirRef.setText("..."); //$NON-NLS-1$
             btnDirRef.addSelectionListener(new SelectionListener(){
@@ -309,7 +316,7 @@ public class ControllerPanel extends Composite{
 					}
 				}
             });
-
+*/
  			// Setup Command
             lbl = new Label(this,SWT.SHADOW_NONE);
             lbl.setText(MessageBundle.get("panel.controller.setupCommand")); //$NON-NLS-1$
@@ -317,22 +324,23 @@ public class ControllerPanel extends Composite{
             
             tfSetupCommand_ = new Text(this, SWT.DROP_DOWN);
             tfSetupCommand_.setLayoutData(gridData);
-            
-            Button btnCmdRef = new Button(this, SWT.PUSH);
-            btnCmdRef.setText("..."); //$NON-NLS-1$
-            btnCmdRef.addSelectionListener(new SelectionListener(){
-				public void widgetDefaultSelected(SelectionEvent e) {
-				}
 
-				public void widgetSelected(SelectionEvent e) {
-					FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN );
-					fdlg.setFilterPath(tfSetupDirectory_.getText());
-					String fPath = fdlg.open();
-					if( fPath != null ) {
-						tfSetupCommand_.setText(fPath);
-					}
-				}
+            btnCmdRef.addSelectionListener(new SelectionListener(){
+                public void widgetDefaultSelected(SelectionEvent e) {
+                }
+
+                public void widgetSelected(SelectionEvent e) {
+                    FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN );
+                    fdlg.setFilterPath(tfSetupDirectory_.getText());
+                    String fPath = fdlg.open();
+                    if( fPath != null ) {
+                        File selFile = new File(fPath); 
+                        tfSetupDirectory_.setText(selFile.getParent());
+                        tfSetupCommand_.setText(selFile.getName());
+                    }
+                }
             });
+
 
             btnOk_ = new Button(this,SWT.PUSH);
             btnOk_.setText(MessageBundle.get("dialog.okButton")); //$NON-NLS-1$
