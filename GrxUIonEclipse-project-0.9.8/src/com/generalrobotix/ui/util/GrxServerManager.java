@@ -187,8 +187,11 @@ public class GrxServerManager{
                     process.pi_.useORB = pInfo.useORB;
                     process.pi_.args = GrxXmlUtil.expandEnvVal(pInfo.args);
                     process.pi_.com.clear();
-                    for (int i = 0; i < pInfo.com.size(); ++i) {
-                        process.pi_.com.add(GrxXmlUtil.expandEnvVal(pInfo.com.get(i)));
+                    if(pInfo.com.size() > 0){
+                        process.pi_.com.add(GrxXmlUtil.expandEnvVal(pInfo.com.get(0)) + " " + process.pi_.args);
+                        for (int i = 1; i < pInfo.com.size(); ++i) {
+                            process.pi_.com.add(GrxXmlUtil.expandEnvVal(pInfo.com.get(i)));
+                        }
                     }
                     if (process.pi_.useORB) {
                         process.pi_.com.add(nsOpt);
