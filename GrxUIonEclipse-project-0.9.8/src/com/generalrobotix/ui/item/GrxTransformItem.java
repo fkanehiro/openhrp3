@@ -14,6 +14,8 @@ package com.generalrobotix.ui.item;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+
 import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Switch;
@@ -24,13 +26,16 @@ import javax.vecmath.Vector3d;
 
 import jp.go.aist.hrp.simulator.ModelLoader;
 import jp.go.aist.hrp.simulator.ModelLoaderHelper;
+import jp.go.aist.hrp.simulator.ModelLoaderPackage.ModelLoaderException;
 import jp.go.aist.hrp.simulator.SceneInfo;
 import jp.go.aist.hrp.simulator.ShapePrimitiveType;
 
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
+import com.generalrobotix.ui.util.MessageBundle;
 
 /**
  * @brief item which have a transformation
@@ -204,6 +209,13 @@ public class GrxTransformItem extends GrxBaseItem {
                 
             	//manager_.reselectItems();
                 manager_.itemChange(shapeItem, GrxPluginManager.ADD_ITEM);
+            } catch(ModelLoaderException me){
+                MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
+                                        MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
+                                        MessageBundle.get("GrxModelItem.dialog.message.loadSceneError") +"\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                                        fPath + "\n\n" + me.description); //$NON-NLS-1$
+                System.out.println("Failed to load scene info:" + fPath);
+                me.printStackTrace();
             } catch(Exception ex){
                 System.out.println("Failed to load scene info:" + fPath);
                 ex.printStackTrace();
