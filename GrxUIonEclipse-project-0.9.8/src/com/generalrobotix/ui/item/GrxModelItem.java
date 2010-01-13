@@ -25,6 +25,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.w3c.dom.Element;
@@ -40,6 +41,7 @@ import com.generalrobotix.ui.view.vsensor.Camera_impl;
 import jp.go.aist.hrp.simulator.*;
 import jp.go.aist.hrp.simulator.ModelLoaderPackage.AABBdataType;
 import jp.go.aist.hrp.simulator.ModelLoaderPackage.ModelLoadOption;
+import jp.go.aist.hrp.simulator.ModelLoaderPackage.ModelLoaderException;
 
 @SuppressWarnings({ "unchecked", "serial" }) //$NON-NLS-1$ //$NON-NLS-2$
 /**
@@ -574,6 +576,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             bModified_ = false;
             manager_.setSelectedItem(this, true);
 
+        } catch(ModelLoaderException me){
+            MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
+                                    MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
+                                    MessageBundle.get("GrxModelItem.dialog.message.loadError") +"\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                                    url + "\n\n" + me.description); //$NON-NLS-1$
+            System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
+            me.printStackTrace();
+            return false;
         } catch (Exception ex) {
             System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
             ex.printStackTrace();
