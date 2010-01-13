@@ -481,7 +481,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	}
 
 	private void restoreProject_work(String mode, IProgressMonitor monitor) {
-		manager_.restoreProcess();
+		//manager_.restoreProcess();
 
 		monitor.worked(1);
 

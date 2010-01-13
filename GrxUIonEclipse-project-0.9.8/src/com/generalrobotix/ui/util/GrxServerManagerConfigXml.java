@@ -42,13 +42,40 @@ public class GrxServerManagerConfigXml {
     private static Element elementRoot = null;
     private static String  serverInfoDefaultDir_  = "";
     private static int     serverInfoDefaultWaitCount_ = 0;
+    private final static String DEFAULT_NAME_SERVER_ID_ = "NameServer";
+    private static final int    DEFAULT_NAMESERVER_PORT = 2809;
+    private static final String DEFAULT_NAMESERVER_HOST = "localhost";
+    private static int     NAME_SERVER_PORT_ = DEFAULT_NAMESERVER_PORT;
+    private static String  NAME_SERVER_HOST_ = DEFAULT_NAMESERVER_HOST;
+    private static String  NAME_SERVER_LOG_DIR_ = "";
     
     public static String getDefaultDir(){
         return serverInfoDefaultDir_;
     }
-    public static int getDefaultWaitCount_(){
+    public static int getDefaultWaitCount(){
         return serverInfoDefaultWaitCount_;
     }
+    
+    public static int getNameServerPort(){
+        return NAME_SERVER_PORT_;
+    }
+    
+    public static void setNameServerPort(int port){
+        NAME_SERVER_PORT_ = port; 
+    }
+    
+    public static String getNameServerHost(){
+        return NAME_SERVER_HOST_;
+    }
+    
+    public static void setNameServerHost(String host){
+        NAME_SERVER_HOST_ = host;
+    }
+    
+    public static String getNameServerLogDir(){
+        return NAME_SERVER_LOG_DIR_;
+    }
+    
     public GrxServerManagerConfigXml( File refFile){
         xmlFile = refFile;
         try {
@@ -94,6 +121,13 @@ public class GrxServerManagerConfigXml {
         }
         return ret;
     }
+    
+    //NameServerエレメントのノードを取得
+    private Node getNameServerNode(){
+        NodeList localList = elementRoot.getElementsByTagName("nameserver");
+        return localList.getLength() > 0 ? localList.item(0) : null;
+    }
+    
 
     public ProcessInfo getServerInfo(int index){
         ProcessInfo ret = null;
@@ -104,8 +138,6 @@ public class GrxServerManagerConfigXml {
         ret = new ProcessInfo();
         ret.id = GrxXmlUtil.getStringNoexpand((Element)node, "id", "").trim();
         if( ret.id.equals("")){
-            serverInfoDefaultDir_ = GrxXmlUtil.getStringNoexpand((Element)node ,"dir" , "").trim();
-            serverInfoDefaultWaitCount_ = GrxXmlUtil.getInteger((Element)node, "waitcount", 0);
         	return ret;
         }
         ret.com.add( GrxXmlUtil.getStringNoexpand((Element)node , "com" , "").trim());
@@ -114,9 +146,52 @@ public class GrxServerManagerConfigXml {
         ret.useORB = GrxXmlUtil.getBoolean((Element)node , "useORB", false);
         ret.waitCount = GrxXmlUtil.getInteger((Element)node, "waitcount", serverInfoDefaultWaitCount_);
         ret.dir = GrxXmlUtil.getStringNoexpand((Element)node , "dir" , serverInfoDefaultDir_).trim();
+        ret.isCorbaServer = GrxXmlUtil.getBoolean((Element)node, "iscorbaserver", false);
+        ret.hasShutdown = GrxXmlUtil.getBoolean((Element)node, "hasshutdown", false);
+        ret.doKillall = GrxXmlUtil.getBoolean((Element)node, "dokillall", false);
+        ret.autoStop = GrxXmlUtil.getBoolean((Element)node, "autostop", true);        
+        String str = null;
+        for (int j = 0; !(str = GrxXmlUtil.getString((Element)node, "env" + j, "")).equals(""); j++) {
+            ret.env.add(str);
+        }
         return ret;
     }
 
+    public ProcessInfo getNameServerInfo(){
+        ProcessInfo ret = null;
+        NodeList localList = elementRoot.getElementsByTagName("nameserver");
+        Node node = localList.item(0);
+        ret = new ProcessInfo();
+        ret.id = GrxXmlUtil.getStringNoexpand((Element)node, "id", DEFAULT_NAME_SERVER_ID_).trim();
+        NAME_SERVER_LOG_DIR_ = GrxXmlUtil.getString((Element)node, "logdir", "").trim();
+        
+        if(!NAME_SERVER_LOG_DIR_.isEmpty()){
+            String localStr = NAME_SERVER_LOG_DIR_.replaceFirst("^\"", "");
+            File logDir = new File(localStr.replaceFirst("\"$", ""));
+            if(!logDir.exists()){
+                logDir.mkdirs();
+            }
+        }
+        
+        NAME_SERVER_PORT_ = GrxXmlUtil.getInteger((Element)node, "port", NAME_SERVER_PORT_);
+        NAME_SERVER_HOST_ = GrxXmlUtil.getStringNoexpand((Element)node, "host", NAME_SERVER_HOST_);
+        ret.args = "-ORBendPointPublish giop:tcp:"+ NAME_SERVER_HOST_ + ": -start " + 
+                    Integer.toString(NAME_SERVER_PORT_) + " -logdir " + NAME_SERVER_LOG_DIR_;
+        ret.com.add(GrxXmlUtil.getString((Element)node , "com" , "").trim() + " " + ret.args);
+        ret.autoStart = true;
+        ret.waitCount = GrxXmlUtil.getInteger((Element)node, "waitcount", serverInfoDefaultWaitCount_);
+        ret.dir = GrxXmlUtil.getStringNoexpand((Element)node , "dir" , serverInfoDefaultDir_).trim();
+        ret.isCorbaServer = GrxXmlUtil.getBoolean((Element)node, "iscorbaserver", false);
+        ret.hasShutdown = GrxXmlUtil.getBoolean((Element)node, "hasshutdown", false);
+        ret.doKillall = GrxXmlUtil.getBoolean((Element)node, "dokillall", false);
+        ret.autoStop = GrxXmlUtil.getBoolean((Element)node, "autostop", true);
+        String str = null;
+        for (int j = 0; !(str = GrxXmlUtil.getString((Element)node, "env" + j, "")).equals(""); j++) {
+            ret.env.add(str);
+        }
+        return ret;
+    }
+    
     public void setServerNode(ProcessInfo refInfo){
     	Node node = getServerNode(refInfo.id);
     	if( node != null){
@@ -128,8 +203,23 @@ public class GrxServerManagerConfigXml {
             createServerNode( refInfo );
         }
     }
+    
+    public void setNameServer(int port, String host){
+        NAME_SERVER_PORT_ = port;
+        NAME_SERVER_HOST_ = host;
+        setNameServerNode(port, host);
+    }
+    
+    private void setNameServerNode(int port, String host){
+        Node node = getNameServerNode();
+        if( node != null){
+            GrxXmlUtil.setInteger((Element)node, "port", port);
+            GrxXmlUtil.setString((Element)node, "host", host);
+        }
+    }
 
-    public void SaveServerInfo(){
+    public void SaveServerInfo(int port, String host){
+        setNameServerNode(port, host);
         TransformerFactory tff = TransformerFactory.newInstance();
         try {
             DOMSource    source = new DOMSource(document);
@@ -163,6 +253,21 @@ public class GrxServerManagerConfigXml {
         return ref; 
     }
 
+    public String getNameServerElement(String element){
+        String ret = null;
+        NodeList localList = elementRoot.getElementsByTagName("nameserver");
+        Node nodeNameserver = localList.item(0);
+        if( nodeNameserver != null ){
+            NamedNodeMap nodeMap = nodeNameserver.getAttributes();
+            Node nodeElement = nodeMap.getNamedItem(element);
+            if( nodeElement != null ){
+                ret = nodeElement.getNodeValue();
+            }
+        }
+        return ret;
+    }
+    
+    
     // Xml ファイルハンドルの初期化
     private void initXml() throws Exception{
     	if( elementRoot != null )
@@ -180,6 +285,87 @@ public class GrxServerManagerConfigXml {
             document = domImpl.createDocument( "", "grxui", null );
         }
         elementRoot = document.getDocumentElement();
+        
+        NodeList localList = elementRoot.getElementsByTagName("process");
+        if(localList != null){
+            for(int i = 0; i < localList.getLength(); ++i){
+                Node localNode = localList.item(i);
+                if( GrxXmlUtil.getStringNoexpand((Element)localNode, "id", "").trim().equals("") ){
+                    serverInfoDefaultDir_ = GrxXmlUtil.getStringNoexpand((Element)localNode ,"dir" , "").trim();
+                    serverInfoDefaultWaitCount_ = GrxXmlUtil.getInteger((Element)localNode, "waitcount", 0);
+                }
+            }
+            
+        }
+    }
+    
+    /**
+     * @brief grxuirc.xmlのversion比較
+     *         具体的にはgrxuiタグのversionエレメントを比較
+     *         
+     * @param cmpOld   古いと疑わしい比較先File
+     * @param cmpNew   比較元のFile
+     * @return boolean
+     *          true:更新必要
+     *          false:更新不要
+     */
+    public static boolean isUpdatedVersion(File cmpOld, File cmpNew){
+        boolean ret = false;
+        try{
+            
+            String verOld = getGrxUIXmlVersion(cmpOld);
+            String verNew = getGrxUIXmlVersion(cmpNew);
+            
+            //compare
+            String [] splitVerOld = verOld.split("\\.");
+            String [] splitVerNew = verNew.split("\\.");
+            for(int i = 0; i < splitVerOld.length && i < splitVerNew.length; ++i){
+                if( Integer.valueOf(splitVerOld[i]) < Integer.valueOf(splitVerNew[i]) ){
+                    ret = true;
+                    break;
+                }
+            }
+            if (ret == false){
+                if(splitVerOld.length < splitVerNew.length){
+                    ret = true;
+                }
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return ret;
+    }
+    
+    /**
+     * @brief grxuirc.xmlのversion取得
+     *         具体的にはgrxuiタグのversionエレメントを取得
+     *         fileのversionエレメントがない場合は
+     *         String "0.0" を返す
+     * @param File 取得したいgrxuirc.xmlのFile
+     * @return String バージョン番号
+     */
+    public static String getGrxUIXmlVersion(File file){
+        String ret = "0.0";
+        try{
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(new DefaultHandler());
+            Document doc = builder.parse(file);
+            NodeList listNode = doc.getChildNodes();
+            for(int i = 0; i < listNode.getLength(); ++i){
+                Node localNode = listNode.item(i);
+                if( localNode.getNodeName().equals("grxui") ){
+                    Node versionNode = localNode.getAttributes().getNamedItem("version");
+                    if( versionNode != null ){
+                        ret = versionNode.getNodeValue(); 
+                    }
+                    break;
+                }
+            }
+        } catch(Exception ex){
+            ex.printStackTrace();
+        }
+        return ret;
     }
     
     //server エレメントの生成

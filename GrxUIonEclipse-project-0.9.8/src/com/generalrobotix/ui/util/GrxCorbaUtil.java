@@ -27,6 +27,7 @@ import org.omg.CosNaming.*;
 import org.omg.PortableServer.POA;
 
 import com.generalrobotix.ui.grxui.Activator;
+import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 
 /**
  * @brief corba utility functions
@@ -35,8 +36,6 @@ public class GrxCorbaUtil {
 
     private static ORB                            orb_               = null;
     private static HashMap<String, NamingContext> namingContextList_ = null;
-    private static final int                      DEFAULT_PORT       = 2809;
-    private static final String                   DEFAULT_HOST       = "localhost";
 
     /**
      * @brief initialize and get ORB
@@ -66,13 +65,7 @@ public class GrxCorbaUtil {
      * @return port number where naming server is listening
      */
     public static int nsPort() {
-        int nsPort = DEFAULT_PORT;
-        try {
-            nsPort = Integer.parseInt(System.getenv("NS_PORT"));
-        } catch (Exception e) {
-            nsPort = DEFAULT_PORT;
-        }
-        return nsPort;
+        return GrxServerManagerConfigXml.getNameServerPort();
     }
 
     /**
@@ -80,11 +73,7 @@ public class GrxCorbaUtil {
      * @return hostname where naming server is running
      */
     public static String nsHost() {
-        String nsHost = System.getenv("NS_HOST");
-        if (nsHost == null) {
-            nsHost = DEFAULT_HOST;
-        }
-        return nsHost;
+        return GrxServerManagerConfigXml.getNameServerHost();
     }
 
     /**
@@ -236,6 +225,20 @@ public class GrxCorbaUtil {
         return _getObjectNameList(getNamingContext(nsHost, nsPort));
     }
 
+    public static boolean isAliveNameService() {
+        boolean ret = false;
+        try{
+            ORB orb = getORB();
+            String nameServiceURL = "corbaloc:iiop:" + nsHost() + ":" + nsPort() + "/NameService";
+            org.omg.CORBA.Object obj = orb.string_to_object(nameServiceURL);
+            ret = !obj._non_existent();
+        }catch (Exception ex){
+            System.out.println("[GrxCorbaUtil] Name server is not alive!");
+        }
+        return ret;
+    }
+
+    
     private static String[] _getObjectNameList(NamingContext cxt) {
         int a = 100;
         BindingListHolder bl = new BindingListHolder();

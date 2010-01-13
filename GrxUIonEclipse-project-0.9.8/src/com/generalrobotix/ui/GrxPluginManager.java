@@ -42,9 +42,11 @@ import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxPluginLoader;
 import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxXmlUtil;
+import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.OrderedHashMap;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
+import com.generalrobotix.ui.util.FileUtil;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxProjectItem;
 
@@ -91,7 +93,6 @@ public class GrxPluginManager {
     public static final int SETNAME_ITEM=4;
     public static final int FOCUSED_ITEM=5;
     public static final int NOTFOCUSED_ITEM=6;
-
     // for CORBA
     public POA poa_;
     public org.omg.CORBA.ORB orb_;
@@ -144,24 +145,43 @@ public class GrxPluginManager {
         
         File rcFile = new File( Activator.getDefault().getTempDir(),"grxuirc.xml");
         File rtcFile = new File( Activator.getDefault().getTempDir(),"rtc.conf");
-        File logDir = new File( Activator.getDefault().getTempDir(),"omninames-log");
-        if( logDir.exists()){
-            deleteNameServerLog();
-        } else {
-            logDir.mkdir();
-        }
         
         System.out.println("rcFile=" + rcFile); //$NON-NLS-1$
+        String resourceRcPath;
+        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        	resourceRcPath = "/grxuirc.xml";
+        } else {
+        	resourceRcPath = "/grxuirc_win.xml";
+        }
         // File copy from resource file
         if (!rcFile.exists()) {
-            if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                copyResourceFileToLocal("/grxuirc.xml", rcFile);
-            } else {
-                copyResourceFileToLocal("/grxuirc_win.xml", rcFile);
+            try{
+                FileUtil.resourceToFile(getClass(),resourceRcPath, rcFile);
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
+        }else{
+            // Version check "grxuirc.xml" file
+            try {
+                File tmpFile = File.createTempFile("grxuirc", ".xml");
+                FileUtil.resourceToFile(getClass(), resourceRcPath, tmpFile);
+                if( GrxServerManagerConfigXml.isUpdatedVersion(rcFile, tmpFile) ){
+                    // Back up rcFile
+                    FileUtil.copyTransfer(rcFile.getPath(), rcFile.getPath() + "~");
+                    // Update rcFile
+                    FileUtil.copyTransfer(tmpFile.getPath(), rcFile.getPath());
+                }
+                tmpFile.delete();
+            }catch (Exception ex){
+                ex.printStackTrace();
             }
         }
         if (!rtcFile.exists()){
-            copyResourceFileToLocal("/default_rtc.conf", rtcFile);
+        	try{
+        		FileUtil.resourceToFile(getClass(), "/default_rtc.conf", rtcFile);
+        	}catch (IOException ex){
+        		ex.printStackTrace();
+        	}
         }
         
         if (!rcProject_.load(rcFile)) {
@@ -994,22 +1014,6 @@ public class GrxPluginManager {
         return GrxPluginManager.getClipBoardVal().length()==0;
     }
 
-    private void copyResourceFileToLocal(String resouceFileName, File destFile){
-        try{
-            InputStream in = getClass().getResourceAsStream(resouceFileName);
-            OutputStream out = new FileOutputStream(destFile);
-            byte[] buf = new byte[4096];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            in.close();
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
     /**
      * @brief shutdown this manager
      */
@@ -1098,33 +1102,6 @@ public class GrxPluginManager {
      */
     public GrxProjectItem getProject() {
         return currentProject_;
-    }
-
-    /**
-     * @brief delete name server log
-     */
-    public void deleteNameServerLog()
-    {
-        // log のクリア
-        String[] com;
-        File logDir = new File(Activator.getDefault().getTempDir(), "omninames-log");
-        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-            com = new String[] { "/bin/sh", "-c", "rm " + logDir + File.separator + "*" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        } else {
-            com = new String[] { "cmd", "/c", "del " + "\"" + logDir + File.separator + "omninames-*.*" + "\""}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
-        }
-        try {
-            Process pr = Runtime.getRuntime().exec(com);
-            InputStream is = pr.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String line;
-            pr.waitFor();
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     /**

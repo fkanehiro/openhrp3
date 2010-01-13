@@ -16,6 +16,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
@@ -30,6 +31,8 @@ import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener; 
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,10 +47,16 @@ public class GrxServerManagerView extends GrxBaseView
     public static final String TITLE = "Server Manager"; //$NON-NLS-1$
     static private final int    HORIZONTAL_INDENT = 8;
     static private final int    COLLUMN_NUM = 3;
-
+    static private final int    NAME_SERVER_GROUP_COLLUMN_NUM = 3;
+    static private final String START_          = MessageBundle.get("GrxServerManagerPanel.button.start"); //$NON-NLS-1$
+    static private final String STOP_           = MessageBundle.get("GrxServerManagerPanel.button.stop"); //$NON-NLS-1$
+    
     private GrxServerManager serverManager_ = null;
     private Vector<TabItem> vecTabItem_      = new Vector<TabItem>();
-    
+    private Text       textNsPort_ = null;
+    private Text       textNsHost_ = null;
+    private Button     updateNameServerBtn_ = null;    
+
     public GrxServerManagerView(String name, GrxPluginManager manager_,
             GrxBaseViewPart vp, Composite parent) {
         super(name, manager_, vp, parent);
@@ -128,6 +137,77 @@ public class GrxServerManagerView extends GrxBaseView
         folder.addDisposeListener(this);
         folder.setSelection(0);
         
+        // Name Server Goup setting
+        Group localGroup = new Group(top, SWT.FILL);
+        localGroup.setText("Name Service");
+        GridData groupGridData = new GridData();
+        groupGridData.heightHint = 60;
+        groupGridData.horizontalAlignment = SWT.FILL;
+        groupGridData.horizontalSpan = NAME_SERVER_GROUP_COLLUMN_NUM; 
+        
+        localGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL |
+                GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
+
+        GridLayout groupGridLayout = new GridLayout(NAME_SERVER_GROUP_COLLUMN_NUM, false);
+        groupGridLayout.marginWidth = 2;
+        groupGridLayout.marginHeight = 2;
+        
+        localGroup.setLayout(groupGridLayout);
+        localGroup.setLayoutData(groupGridData);
+        
+        Label localHostLabel = new Label(localGroup, SWT.RIGHT);
+        GridData hostLabelGridData = new GridData();
+        hostLabelGridData.widthHint = 100;
+        localHostLabel.setText(MessageBundle.get("GrxORBMonitor.label.host"));
+        localHostLabel.setLayoutData(hostLabelGridData);
+        
+        textNsHost_ = new Text(localGroup, SWT.SINGLE | SWT.BORDER);
+        GridData textNsHostGridData = new GridData();
+        textNsHostGridData.widthHint = 100;
+        textNsHost_.setText( String.valueOf( serverManager_.getNewHost()) );
+        textNsHost_.setLayoutData(textNsHostGridData);
+        textNsHost_.addModifyListener( new ModifyListener(){
+            public void modifyText(ModifyEvent e){
+                updateNameServerBtn_.setEnabled(!equalsHostPort());
+            }
+        }
+        );
+        updateNameServerBtn_ = new Button(localGroup , SWT.PUSH);
+        GridData btnGridData = new GridData();
+        btnGridData.widthHint = 64;
+        btnGridData.verticalSpan = 2;
+        
+        updateNameServerBtn_.setText(MessageBundle.get("GrxServerManagerView.NameServer.button"));
+        
+        updateNameServerBtn_.addSelectionListener(new SelectionListener() {
+            public void widgetDefaultSelected(SelectionEvent e) {}
+
+            public void widgetSelected(SelectionEvent e) {
+                updateNameServerBtn();
+            }
+        }); 
+        
+        updateNameServerBtn_.setEnabled(false);        
+        updateNameServerBtn_.setLayoutData(btnGridData);
+        
+        Label localPortLabel = new Label(localGroup, SWT.RIGHT);
+        GridData portLabelGridData = new GridData();
+        portLabelGridData.widthHint = 100;
+        localPortLabel.setText(MessageBundle.get("GrxORBMonitor.label.port"));
+        localPortLabel.setLayoutData(portLabelGridData);
+        
+        textNsPort_ = new Text(localGroup, SWT.SINGLE | SWT.BORDER);
+        GridData textNsPortGridData = new GridData();
+        textNsPortGridData.widthHint = 100;
+        textNsPort_.setText( String.valueOf( serverManager_.getNewPort()) );
+        textNsPort_.setLayoutData(textNsPortGridData);
+        
+        textNsPort_.addModifyListener( new ModifyListener(){
+            public void modifyText(ModifyEvent e){
+                updateNameServerBtn_.setEnabled(!equalsHostPort());
+            }
+        }
+        );
     }
     
     private void insertServerBtn(final TabFolder folder){
@@ -153,12 +233,7 @@ public class GrxServerManagerView extends GrxBaseView
             public void widgetDefaultSelected(SelectionEvent e) {}
 
             public void widgetSelected(SelectionEvent e) {
-                if( isExistenceID(id.getText()) ){
-                    MessageDialog.openWarning(
-                            composite_.getShell(),
-                            MessageBundle.get("GrxServerManagerView.dialog.title.warning") , //$NON-NLS-1$
-                            MessageBundle.get("GrxServerManagerView.dialog.message.sameID")  ); //$NON-NLS-1$
-                }else{
+                if( checkID(id.getText()) ){
                     int index = folder.getSelectionIndex();
                     ProcessInfo localInfo = new ProcessInfo();
                     localInfo.id = id.getText();
@@ -205,12 +280,7 @@ public class GrxServerManagerView extends GrxBaseView
             public void widgetDefaultSelected(SelectionEvent e) {}
 
             public void widgetSelected(SelectionEvent e) {
-                if( isExistenceID(id.getText()) ){
-                    MessageDialog.openWarning(
-                            composite_.getShell(),
-                            MessageBundle.get("GrxServerManagerView.dialog.title.warning") , //$NON-NLS-1$
-                            MessageBundle.get("GrxServerManagerView.dialog.message.sameID")  ); //$NON-NLS-1$
-                }else{
+                if( checkID(id.getText()) ){
                     int index = folder.getSelectionIndex() + 1;
                     ProcessInfo localInfo = new ProcessInfo();
                     localInfo.id = id.getText();
@@ -253,16 +323,50 @@ public class GrxServerManagerView extends GrxBaseView
         }
     }
     
-    private boolean isExistenceID(String id){
-        boolean ret = false;
+    private boolean checkID(String id){
+        if(id.isEmpty()){
+            MessageDialog.openWarning(
+                    composite_.getShell(),
+                    MessageBundle.get("GrxServerManagerView.dialog.title.warning") , //$NON-NLS-1$
+                    MessageBundle.get("GrxServerManagerView.dialog.message.emptyID")  ); //$NON-NLS-1$
+            return false;
+        }
+        boolean ret = true;
         String localID = id.toUpperCase();
         for (TabItem i:vecTabItem_){
             String srcStr = i.getText().toUpperCase();
             if( srcStr.equals(localID) ){
-                ret = true;
+                ret = false;
+                MessageDialog.openWarning(
+                        composite_.getShell(),
+                        MessageBundle.get("GrxServerManagerView.dialog.title.warning") , //$NON-NLS-1$
+                        MessageBundle.get("GrxServerManagerView.dialog.message.sameID")  ); //$NON-NLS-1$
                 break;
             }
         }
+        return ret;
+    }
+    
+    private boolean equalsHostPort(){
+        boolean ret = true;
+        String port = textNsPort_.getText();
+        String host = textNsHost_.getText();
+        
+        if( !host.equals(serverManager_.getNewHost()) ){
+            ret= false;
+        }
+        
+        try{
+            if( serverManager_.getNewPort() != Integer.valueOf(port) ){
+                ret = false;
+            }
+        }catch (NumberFormatException ex){
+            ret = false;
+        }catch (Exception ex){
+            ex.printStackTrace();
+            ret = false;
+        }
+        
         return ret;
     }
     
@@ -276,6 +380,28 @@ public class GrxServerManagerView extends GrxBaseView
         GrxServerManager.SaveServerInfo();
     }
     
+    private void updateNameServerBtn(){
+        StringBuffer refHost = new StringBuffer("");
+        StringBuffer refPort = new StringBuffer("");
+        String message = serverManager_.setNewHostPort(textNsHost_.getText(), textNsPort_.getText(), refHost, refPort );
+        if(message.isEmpty()){
+            MessageDialog.openInformation(composite_.getShell(),
+                    MessageBundle.get("GrxServerManagerView.dialog.infomation.tittle.updateNameServer"),
+                    MessageBundle.get("GrxServerManagerView.dialog.infomation.message.updateNameServer"));
+            updateNameServerBtn_.setEnabled(false);
+        }else{
+            MessageDialog.openError(composite_.getShell(),
+                    MessageBundle.get("GrxServerManagerView.dialog.error.tittle.updateNameServer"),
+                    message);
+            
+            if( refHost.length() != 0){
+                textNsHost_.setText(refHost.toString());
+            }
+            if( refPort.length() != 0 ){
+                textNsPort_.setText(refPort.toString());
+            }
+        }
+    }
 
     
     public void widgetDisposed(DisposeEvent e)
