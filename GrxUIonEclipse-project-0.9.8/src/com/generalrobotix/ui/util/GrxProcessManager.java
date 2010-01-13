@@ -42,11 +42,12 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
+import com.generalrobotix.ui.util.GrxXmlUtil;
+import com.generalrobotix.ui.util.GrxServerManager;
+import com.generalrobotix.ui.util.FileUtil;
 
 public class GrxProcessManager {
     private static GrxProcessManager      GrxProcessManagerThis_            = null;
@@ -104,64 +105,14 @@ public class GrxProcessManager {
     }
 
     public void setProcessList(Element root) {
+        GrxServerManager serverManager_ = new GrxServerManager();
         StringBuffer nsHost = new StringBuffer(""); //$NON-NLS-1$
         StringBuffer nsPort = new StringBuffer(""); //$NON-NLS-1$
         Activator.refNSHostPort(nsHost, nsPort);
-        String nsOpt = "-ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-
-        NodeList processList = root.getElementsByTagName("processmanagerconfig"); //$NON-NLS-1$
-        if (processList == null || processList.getLength() == 0) {
-            return;
-        }
-        processList = ((Element) processList.item(0)).getElementsByTagName("process"); //$NON-NLS-1$
-        String defaultDir = ""; //$NON-NLS-1$
-        int defaultWaitCount = 500;
-
-        for (int i = 0; i < processList.getLength(); i++) {
-            Node n = processList.item(i);
-            if (n.getNodeType() != Node.ELEMENT_NODE) {
-                continue;
-            }
-            Element e = (Element) n;
-            String id = GrxXmlUtil.getString(e, "id", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            if (id.equals("")) { //$NON-NLS-1$
-                defaultDir = GrxXmlUtil.getString(e, "dir", defaultDir); //$NON-NLS-1$
-                defaultWaitCount = GrxXmlUtil.getInteger(e, "waitcount", defaultWaitCount); //$NON-NLS-1$
-                break;
-            }
-        }
-
-        for (int i = 0; i < processList.getLength(); i++) {
-            Node n = processList.item(i);
-            if (n.getNodeType() != Node.ELEMENT_NODE) {
-                continue;
-            }
-            Element e = (Element) n;
-            String id = GrxXmlUtil.getString(e, "id", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            if (id == null || id.trim().equals("")) { //$NON-NLS-1$
-                continue;
-            }
-            ProcessInfo pi = new ProcessInfo();
-            pi.id = id;
-            pi.args = GrxXmlUtil.getString(e, "args", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            pi.useORB = GrxXmlUtil.getBoolean(e, "useORB", false); //$NON-NLS-1$
-            if (pi.useORB) {
-                pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args + nsOpt); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            } else {
-                pi.com.add(GrxXmlUtil.getString(e, "com", "") + " " + pi.args); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            }
-            String str = null;
-            for (int j = 0; !(str = GrxXmlUtil.getString(e, "env" + j, "")).equals(""); j++) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                pi.env.add(str);
-            }
-            pi.dir = GrxXmlUtil.getString(e, "dir", defaultDir); //$NON-NLS-1$
-            pi.waitCount = GrxXmlUtil.getInteger(e, "waitcount", defaultWaitCount); //$NON-NLS-1$
-            pi.isCorbaServer = GrxXmlUtil.getBoolean(e, "iscorbaserver", false); //$NON-NLS-1$
-            pi.hasShutdown = GrxXmlUtil.getBoolean(e, "hasshutdown", false); //$NON-NLS-1$
-            pi.doKillall = GrxXmlUtil.getBoolean(e, "dokillall", false); //$NON-NLS-1$
-            pi.autoStart = GrxXmlUtil.getBoolean(e, "autostart", true); //$NON-NLS-1$
-            pi.autoStop = GrxXmlUtil.getBoolean(e, "autostop", true); //$NON-NLS-1$
-
+        String nsOpt = " -ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if(!GrxCorbaUtil.isAliveNameService()){
+            ProcessInfo pi = serverManager_.getNameServerInfo();
+            FileUtil.deleteNameServerLog(serverManager_.getNameserverLogDir());
             if ( isRegistered(pi) ) {
                 if( !isRunning(pi) ){
                     unregister(pi.id);
@@ -169,6 +120,24 @@ public class GrxProcessManager {
                 }
             } else {
                 register(pi);
+            }
+        }
+        for(ProcessInfo pi : serverManager_.getServerInfo()){
+            ProcessInfo localPi = pi.expandEnv();
+            if (localPi.useORB) {
+                localPi.com.set(0, localPi.com.get(0) + " " + localPi.args + nsOpt);
+            } else {
+                localPi.com.set(0, localPi.com.get(0) + " " + localPi.args);
+            }
+            
+            
+            if ( isRegistered(localPi) ) {
+                if( !isRunning(localPi) ){
+                    unregister(localPi.id);
+                    register(localPi);
+                }
+            } else {
+                register(localPi);
             }
         }
         autoStart();
@@ -322,8 +291,51 @@ public class GrxProcessManager {
         }
         return null;
     }
+    
+    public  List<Integer> getPID(String processName){
+        int splitNum = 1;
+        List<Integer> ret = new ArrayList<Integer>();
+        String []commands={"tasklist","/NH"}; //$NON-NLS-1$
+        String key = new String(processName + ".exe"); //$NON-NLS-1$
+        Runtime r = Runtime.getRuntime();
+        if (System.getProperty("os.name").equals("Linux") ||    //$NON-NLS-1$
+            System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$
+            commands[0] = new String ("/bin/ps"); //$NON-NLS-1$
+            commands[1] = new String ("axh"); //$NON-NLS-1$
+            key = new String("/" + processName);
+            splitNum = 0;
+        }
+        
+        try{
+            Process p = r.exec(commands);
+            p.waitFor();
+            InputStream in = p.getInputStream(); 
+            p.getOutputStream().toString();
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String line;
+            while ((line = br.readLine()) != null) {
+                if( line.indexOf(key) >= 0){
+                    line = line.replaceAll("^[\\s]+", "");
+                    String[] splitLine = line.split("[\\s]+");
+                    if( splitLine.length > splitNum ){
+                        try {
+                            Integer pid = Integer.valueOf(splitLine[splitNum]);
+                            if(pid > 0 ){
+                                ret.add(pid);
+                            }
+                        } catch (NumberFormatException ex){
+                            ex.printStackTrace();
+                        }
+                    }       
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
 
-    public static class ProcessInfo {
+    public static class ProcessInfo implements Cloneable{
         public String       id            = null;
         public List<String> com           = new ArrayList<String>();
         public List<String> env           = new ArrayList<String>();
@@ -349,6 +361,38 @@ public class GrxProcessManager {
                 GrxDebugUtil.println("ENV: use parent process environment"); //$NON-NLS-1$
             }
             GrxDebugUtil.println("DIR: " + dir); //$NON-NLS-1$
+        }
+        
+        public ProcessInfo expandEnv(){
+            ProcessInfo ret = clone();
+            
+            for(int i = 0; i < com.size(); ++i){
+                ret.com.set(i, GrxXmlUtil.expandEnvVal( com.get(i) )); 
+            }
+            ret.dir = GrxXmlUtil.expandEnvVal(dir);
+            ret.args = GrxXmlUtil.expandEnvVal(args);
+            
+            return ret;
+        }
+        
+        protected ProcessInfo clone(){
+            ProcessInfo ret = null;
+            try{
+                ret = (ProcessInfo)super.clone();
+                ret.args = new String(args);
+                ret.dir = new String(dir);
+                ret.com = new ArrayList<String>();
+                for(String i : com){
+                    ret.com.add(new String(i));
+                }
+                ret.env = new ArrayList<String>();
+                for(String i : env){
+                    ret.com.add(new String(i));
+                }
+            }catch(CloneNotSupportedException ex){
+                ex.printStackTrace();
+            }
+            return ret;
         }
     }
 
@@ -571,8 +615,10 @@ public class GrxProcessManager {
                         opt = ""; //$NON-NLS-1$
                     }
                     GrxDebugUtil.println(com_.toString() + " " + opt); //$NON-NLS-1$
-                    if(!dir_.exists())
-                    	dir_ = null;
+                    if(dir_ != null){
+                        if(!dir_.exists())
+                        	dir_ = null;
+                    }
                     process_ = rt.exec(com_.toString() + " " + opt, env_, dir_); //$NON-NLS-1$
 
                     is_ = process_.getInputStream();
@@ -585,12 +631,10 @@ public class GrxProcessManager {
                         Thread.sleep(pi_.waitCount);
                     }
                     GrxDebugUtil.println("start:OK(" + pi_.id + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-                    // StatusOut.append("OK\n");
                     return true;
                 } catch (Exception e) {
                     process_ = null;
                     GrxDebugUtil.printErr("start:NG(" + pi_.id + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
-                    // StatusOut.append("NG\n");
                     return false;
                 }
             }
@@ -618,7 +662,8 @@ public class GrxProcessManager {
                         process_ = null;
                         // StatusOut.append("OK\n");
                         GrxDebugUtil.println("stop:OK(" + pi_.id + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-                        if (pi_.id.equals("NameService")) { //$NON-NLS-1$
+                        GrxServerManager local = new GrxServerManager();
+                        if (pi_.id.equals(local.getNameServerInfo().id)) { //$NON-NLS-1$
                             GrxCorbaUtil.removeNameServiceFromList();
                         }
                         return true;

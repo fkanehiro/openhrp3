@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grxui>
+<grxui version="@GRXUIRC_XML_VERSION@">
     <processmanagerconfig>
+        <nameserver logdir="$(HOME)/.OpenHRP-3.1/omninames-log" host="localhost" com="omniNames" port="2809"/>
         <process dir="" id="" waitcount="500"/>
-        <process args="-start 2809 -logdir $(HOME)/.OpenHRP-3.1/omninames-log" autostart="true" com="omniNames" id="NameService"/>
         <process args="" autostart="true" com="openhrp-model-loader" hasshutdown="true" id="ModelLoader" useORB="true"/>
         <process args="" autostart="true" com="openhrp-collision-detector" hasshutdown="true" id="CollisionDetectorFactory" useORB="true"/>
         <process args="" autostart="true" com="openhrp-aist-dynamics-simulator" hasshutdown="true" id="DynamicsSimulatorFactory" useORB="true" waitcount="1000"/>
