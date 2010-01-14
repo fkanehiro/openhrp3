@@ -404,6 +404,7 @@ public class ControllerPanel extends Composite{
             gridData = new GridData();
             //gridData.widthHint = BUTTON_WIDTH;
             btnCancel_.setLayoutData(gridData);
+            this.layout();
         }
 
         public void startEditMode(GrxModelItem node) {

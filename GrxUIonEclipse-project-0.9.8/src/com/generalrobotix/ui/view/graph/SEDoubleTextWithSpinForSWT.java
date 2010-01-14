@@ -83,11 +83,20 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
         });
 
         GridData gridData = new GridData();
-        gridData.verticalSpan = 2;
+        //gridData.verticalSpan = 2;
         gridData.widthHint = 80;
         text_.setLayoutData(gridData);
         
-        buttonUP_ = new Button(this,SWT.ARROW | SWT.UP);
+        Composite tmp = new Composite(this, SWT.NULL);
+        GridLayout glt =new GridLayout(1,false);
+        glt.horizontalSpacing = 0;
+        glt.verticalSpacing = 0;
+        tmp.setLayout(glt); 
+        GridData tmpGrid = new GridData();
+        tmpGrid.verticalAlignment = SWT.FILL;
+        tmp.setLayoutData(tmpGrid);
+        
+        buttonUP_ = new Button(tmp,SWT.ARROW | SWT.UP);
         buttonUP_.addMouseTrackListener(new MouseTrackListener(){
             public void mouseEnter(MouseEvent e){
                 isMouseOverBtnUp_ = true;
@@ -120,7 +129,7 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
             }
         });
         
-        buttonDOWN_ = new Button(this,SWT.ARROW | SWT.DOWN);
+        buttonDOWN_ = new Button(tmp,SWT.ARROW | SWT.DOWN);
         buttonDOWN_.addMouseTrackListener(new MouseTrackListener(){
             public void mouseEnter(MouseEvent e){
                 isMouseOverBtnDown_ = true;
@@ -160,9 +169,11 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
                 GridData buttonGrid = new GridData();
                 buttonGrid.heightHint= text_.getSize().y/2;
                 buttonUP_.setLayoutData(buttonGrid);
-                buttonDOWN_.setLayoutData(buttonGrid);
-                //layout();
+                GridData buttonDownGrid = new GridData();
+                buttonDownGrid.heightHint= text_.getSize().y/2;
+                buttonDOWN_.setLayoutData(buttonDownGrid);
                 parent_.layout();
+                //layout();
             }
         });
         
