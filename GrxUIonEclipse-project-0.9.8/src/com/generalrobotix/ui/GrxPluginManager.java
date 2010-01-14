@@ -50,6 +50,7 @@ import com.generalrobotix.ui.util.FileUtil;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxProjectItem;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -949,7 +950,9 @@ public class GrxPluginManager {
             }
 
             public void run() {
-                if (MessageDialog.openConfirm(null, MessageBundle.get("GrxPluginManager.dialog.title.removeItem"), MessageBundle.get("GrxPluginManager.dialog.message.removeItem") + GrxPluginManager.this.getItemTitle(cls) + " ?")) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                String mes = MessageBundle.get("GrxPluginManager.dialog.message.removeItem"); //$NON-NLS-1$
+                mes = NLS.bind(mes, new String[]{GrxPluginManager.this.getItemTitle(cls)});
+                if (MessageDialog.openConfirm(null, MessageBundle.get("GrxPluginManager.dialog.title.removeItem"), mes)) //$NON-NLS-1$
                     removeItems(cls);
             }
         };
