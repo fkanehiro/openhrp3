@@ -83,20 +83,19 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
         });
 
         GridData gridData = new GridData();
-        //gridData.verticalSpan = 2;
         gridData.widthHint = 80;
         text_.setLayoutData(gridData);
         
-        Composite tmp = new Composite(this, SWT.NULL);
-        GridLayout glt =new GridLayout(1,false);
-        glt.horizontalSpacing = 0;
-        glt.verticalSpacing = 0;
-        tmp.setLayout(glt); 
-        GridData tmpGrid = new GridData();
-        tmpGrid.verticalAlignment = SWT.FILL;
-        tmp.setLayoutData(tmpGrid);
-        
-        buttonUP_ = new Button(tmp,SWT.ARROW | SWT.UP);
+        Composite inner = new Composite(this, SWT.NULL);
+        GridLayout rlInner =new GridLayout(1,false);
+        rlInner.horizontalSpacing = 0;
+        rlInner.verticalSpacing = 0;
+        inner.setLayout(rlInner); 
+        GridData innerGrid = new GridData();
+        innerGrid.verticalAlignment = SWT.FILL;
+        inner.setLayoutData(innerGrid);
+
+        buttonUP_ = new Button(inner,SWT.ARROW | SWT.UP);
         buttonUP_.addMouseTrackListener(new MouseTrackListener(){
             public void mouseEnter(MouseEvent e){
                 isMouseOverBtnUp_ = true;
@@ -129,7 +128,7 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
             }
         });
         
-        buttonDOWN_ = new Button(tmp,SWT.ARROW | SWT.DOWN);
+        buttonDOWN_ = new Button(inner,SWT.ARROW | SWT.DOWN);
         buttonDOWN_.addMouseTrackListener(new MouseTrackListener(){
             public void mouseEnter(MouseEvent e){
                 isMouseOverBtnDown_ = true;
@@ -166,9 +165,9 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
             public void controlMoved(ControlEvent e) {
             } 
             public void controlResized(ControlEvent e) {
-                GridData buttonGrid = new GridData();
-                buttonGrid.heightHint= text_.getSize().y/2;
-                buttonUP_.setLayoutData(buttonGrid);
+                GridData buttonUpGrid = new GridData();
+                buttonUpGrid.heightHint= text_.getSize().y/2;
+                buttonUP_.setLayoutData(buttonUpGrid);
                 GridData buttonDownGrid = new GridData();
                 buttonDownGrid.heightHint= text_.getSize().y/2;
                 buttonDOWN_.setLayoutData(buttonDownGrid);
