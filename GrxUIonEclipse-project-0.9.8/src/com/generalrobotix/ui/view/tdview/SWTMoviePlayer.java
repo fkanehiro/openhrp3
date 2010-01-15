@@ -44,6 +44,8 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -101,7 +103,29 @@ public class SWTMoviePlayer implements ControllerListener{
 			}
         });
         //----
-
+        
+        window_.addShellListener(new ShellListener(){
+            public void shellActivated(ShellEvent e) {
+                // TODO 自動生成されたメソッド・スタブ
+            }
+            public void shellClosed(ShellEvent e) {
+                // TODO 自動生成されたメソッド・スタブ
+                _remove();
+            }
+            public void shellDeactivated(ShellEvent e) {
+                // TODO 自動生成されたメソッド・スタブ
+                
+            }
+            public void shellDeiconified(ShellEvent e) {
+                // TODO 自動生成されたメソッド・スタブ
+                
+            }
+            public void shellIconified(ShellEvent e) {
+                // TODO 自動生成されたメソッド・スタブ
+                
+            }
+        });
+        
         contentPane_ = new JPanel();
         frame_.add(contentPane_);
 		
