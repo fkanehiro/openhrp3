@@ -387,12 +387,12 @@ if(ENABLE_CPACK)
   set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README-en.txt")
   set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE-en.txt")
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Platform software development of robots and simulations.
-OpenHRP (Open Architecture Humanoid Robotics Platform) is an integrated 
-simulation platform for mainly a robot and consists of main dynamics 
-algorithm developed by Nakamura Lab, Graduate School of Information 
-Science and Technology Department of Mechano-Informatics in the University 
-of Tokyo, a graphical user interface developed by General Robotix,
-Inc and others by Advanced Industrial Science and Technology (AIST).")
+ OpenHRP (Open Architecture Humanoid Robotics Platform) is an integrated 
+ simulation platform for mainly a robot and consists of main dynamics 
+ algorithm developed by Nakamura Lab, Graduate School of Information 
+ Science and Technology Department of Mechano-Informatics in the University 
+ of Tokyo, a graphical user interface developed by General Robotix,
+ Inc and others by Advanced Industrial Science and Technology (AIST).")
   set(CPACK_PACKAGE_VERSION_MAJOR ${OPENHRP_VERSION_MAJOR})
   set(CPACK_PACKAGE_VERSION_MINOR ${OPENHRP_VERSION_MINOR})
   set(CPACK_PACKAGE_VERSION_PATCH ${OPENHRP_VERSION_MICRO})
