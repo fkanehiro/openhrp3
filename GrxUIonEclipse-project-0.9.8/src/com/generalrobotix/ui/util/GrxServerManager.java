@@ -163,8 +163,14 @@ public class GrxServerManager{
 
             pInfo.dir = GrxXmlUtil.expandEnvVal(GrxServerManagerConfigXml.getDefaultDir());
             pInfo.args = GrxXmlUtil.expandEnvVal(pInfo.args);
+            String serverDir = Activator.getDefault().getPreferenceStore().getString("SERVER_DIR");
             for (int i = 0; i < pInfo.com.size(); ++i) {
-                pInfo.com.set(i, GrxXmlUtil.expandEnvVal(pInfo.com.get(i)));
+                String _com = null;
+            	if( !serverDir.equals("") && !new File(pInfo.com.get(i)).isAbsolute()){
+                	_com = serverDir + "/" + pInfo.com.get(i);
+                }else
+                	_com = pInfo.com.get(i);
+            	pInfo.com.set(i, GrxXmlUtil.expandEnvVal(_com));
             }
             if (pInfo.useORB) {
                 pInfo.com.add(nsOpt);
@@ -182,27 +188,33 @@ public class GrxServerManager{
                 ret = false;
             } else {
                 // 開始処理
-                if (updatedParam(pInfo)) {
-                    process.pi_.autoStart = pInfo.autoStart;
-                    process.pi_.useORB = pInfo.useORB;
-                    process.pi_.args = GrxXmlUtil.expandEnvVal(pInfo.args);
-                    process.pi_.com.clear();
-                    if(pInfo.com.size() > 0){
-                        process.pi_.com.add(GrxXmlUtil.expandEnvVal(pInfo.com.get(0)) + " " + process.pi_.args);
-                        for (int i = 1; i < pInfo.com.size(); ++i) {
-                            process.pi_.com.add(GrxXmlUtil.expandEnvVal(pInfo.com.get(i)));
-                        }
-                    }
-                    if (process.pi_.useORB) {
-                        process.pi_.com.add(nsOpt);
-                    }
-                    process.updateCom();
+                updatedParam(pInfo);
+                process.pi_.autoStart = pInfo.autoStart;
+                process.pi_.useORB = pInfo.useORB;
+                process.pi_.args = GrxXmlUtil.expandEnvVal(pInfo.args);
+                process.pi_.com.clear();
+                String serverDir = Activator.getDefault().getPreferenceStore().getString("SERVER_DIR");
+                if(pInfo.com.size() > 0){
+                	String _com = null;
+                	if( !serverDir.equals("") && !new File(pInfo.com.get(0)).isAbsolute()){
+                		_com = serverDir + "/" + pInfo.com.get(0);
+                	}else
+                		_com = pInfo.com.get(0);
+                	process.pi_.com.add(GrxXmlUtil.expandEnvVal(_com) + " " + process.pi_.args);
+                        
+                	for (int i = 1; i < pInfo.com.size(); ++i) {
+                		process.pi_.com.add(GrxXmlUtil.expandEnvVal(pInfo.com.get(i)));
+                	}
                 }
+                if (process.pi_.useORB) {
+                	process.pi_.com.add(nsOpt);
+                }
+                process.updateCom();
+            }
 
-                if (!process.start(null)) {
-                    // start 失敗
-                    ret = false;
-                }
+            if (!process.start(null)) {
+            	// start 失敗
+            	ret = false;
             }
         }
         return ret;
