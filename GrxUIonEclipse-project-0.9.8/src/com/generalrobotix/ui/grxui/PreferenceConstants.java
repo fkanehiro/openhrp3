@@ -11,4 +11,6 @@ public class PreferenceConstants {
 
 	public static final String JYTHON_LIB = "JYTHON_LIB";
 	
+	public static final String SERVER_DIR= "SERVER_DIR";
+	
 }

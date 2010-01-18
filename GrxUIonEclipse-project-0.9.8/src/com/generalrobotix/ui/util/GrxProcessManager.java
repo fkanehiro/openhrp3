@@ -27,6 +27,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -124,10 +126,16 @@ public class GrxProcessManager {
         }
         for(ProcessInfo pi : serverManager_.getServerInfo()){
             ProcessInfo localPi = pi.expandEnv();
+            String serverDir = Activator.getDefault().getPreferenceStore().getString("SERVER_DIR");
+            String _com = null;
+            if( !serverDir.equals("") && !new File(localPi.com.get(0)).isAbsolute()){
+            	_com = serverDir + "/" + localPi.com.get(0);
+            }else
+            	_com = localPi.com.get(0);
             if (localPi.useORB) {
-                localPi.com.set(0, localPi.com.get(0) + " " + localPi.args + nsOpt);
+                localPi.com.set(0, _com + " " + localPi.args + nsOpt);
             } else {
-                localPi.com.set(0, localPi.com.get(0) + " " + localPi.args);
+                localPi.com.set(0, _com + " " + localPi.args);
             }
             
             
@@ -462,7 +470,7 @@ public class GrxProcessManager {
             e.printStackTrace();
         }
     }
-
+/*
     public Vector<Action> getRunMenu() {
         Vector<Action> vector = new Vector<Action>(size());
         for (int i = 0; i < size(); i++) {
@@ -490,7 +498,7 @@ public class GrxProcessManager {
 
         return vector;
     }
-
+*/
     public Composite getOutputComposite() {
         return outputComposite_;
     }
@@ -609,7 +617,6 @@ public class GrxProcessManager {
             if (isRunning()) {
                 // StatusOut.append("already running.\n");
             } else {
-                Runtime rt = Runtime.getRuntime();
                 try {
                     if (opt == null) {
                         opt = ""; //$NON-NLS-1$
@@ -619,8 +626,36 @@ public class GrxProcessManager {
                         if(!dir_.exists())
                         	dir_ = null;
                     }
-                    process_ = rt.exec(com_.toString() + " " + opt, env_, dir_); //$NON-NLS-1$
-
+                    
+                    String[] _com = com_.toString().split(" ");
+                    String[] _opt = opt.split(" ");
+                    List<String> com = new ArrayList<String>();
+                    for(int i=0; i<_com.length; i++)
+                    	if(_com[i].trim().length()!=0 )
+                    		com.add(_com[i]);
+                    for(int i=0; i<_opt.length; i++)
+                    	if(_opt[i].trim().length()!=0 )
+                    		com.add(_opt[i]);
+                    ProcessBuilder pb = new ProcessBuilder(com);
+                    pb.directory( dir_ );
+                    Map<String, String> env = pb.environment();
+                    if(env_!=null)
+                    	for(int i=0; i<env_.length; i++){
+                    		String[] arg = env_[i].split("=");
+	                    	if(arg.length==2)
+	                    		env.put(arg[0].trim(), arg[1].trim());
+	                    }
+                    Set<String> keySet = env.keySet();
+                    String pathKey = null;
+                    for (String key : keySet) {
+                    	if (key.equalsIgnoreCase("Path")) {
+                   		pathKey = key;
+                    	}
+                    }
+                    String path = env.get(pathKey);
+                    env.put(pathKey, Activator.getDefault().getPreferenceStore().getString("SERVER_DIR")+File.pathSeparator+path );
+                    process_ = pb.start();
+                    
                     is_ = process_.getInputStream();
                     br_ = new BufferedReader(new InputStreamReader(is_));
                     es_ = process_.getErrorStream();

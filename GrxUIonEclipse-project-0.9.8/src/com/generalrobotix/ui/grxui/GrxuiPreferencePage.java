@@ -23,6 +23,18 @@ public class GrxuiPreferencePage
 	public void createFieldEditors() {
 		Composite comp = getFieldEditorParent();
 		
+		Group group2 = new Group(comp, SWT.NONE);
+		group2.setText(MessageBundle.get("GrxuiPreferencePage.serverDir.title")); //$NON-NLS-1$
+		GridData group2Data = new GridData();
+		group2Data.horizontalSpan = 3;
+		group2.setLayoutData(group2Data);
+		Label label2 = new Label(group2, SWT.NONE);
+		label2.setText(MessageBundle.get("GrxuiPreferencePage.serverDir.message")); //$NON-NLS-1$
+		GridData label2Data = new GridData();
+		label2Data.horizontalSpan = 3;
+		label2.setLayoutData(label2Data);
+		addField(new DirectoryFieldEditor(PreferenceConstants.SERVER_DIR, "", group2)); //$NON-NLS-1$
+		
 		Group group0 = new Group(comp, SWT.NONE);
 		group0.setText(MessageBundle.get("GrxuiPreferencePage.projectDir.title")); //$NON-NLS-1$
 		GridData group0Data = new GridData();

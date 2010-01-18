@@ -134,9 +134,9 @@ public class GrxProcessManagerView extends GrxBaseView
         processManager.autoStart();
     }
 
-    public Vector<Action> getMenu() {
-        return processManager.getRunMenu();
-    }
+    //public Vector<Action> getMenu() {
+   //    return processManager.getRunMenu();
+    //}
 
     public String[] getMenuPath() {
         return new String[] { "Tools" };
