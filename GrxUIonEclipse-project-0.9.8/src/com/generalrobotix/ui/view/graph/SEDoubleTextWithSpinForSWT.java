@@ -88,6 +88,8 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
         
         Composite inner = new Composite(this, SWT.NULL);
         GridLayout rlInner =new GridLayout(1,false);
+        rlInner.marginHeight = 0;
+        rlInner.marginWidth = 0;
         rlInner.horizontalSpacing = 0;
         rlInner.verticalSpacing = 0;
         inner.setLayout(rlInner); 
