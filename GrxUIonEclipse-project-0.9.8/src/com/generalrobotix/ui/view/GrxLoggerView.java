@@ -109,14 +109,14 @@ public class GrxLoggerView extends GrxBaseView {
 	public GrxLoggerView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
 		super(name, manager, vp, parent);
 
-		GridLayout gl = new GridLayout(2,false);
+		GridLayout gl = new GridLayout(6,false);
 		composite_.setLayout( gl );
 		
 		// playback rate label
 		lblPlayRate_ = new Label( composite_, SWT.NONE);
 		lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.pause")); //$NON-NLS-1$
 		GridData lblGridData = new GridData();
-        lblGridData.widthHint = 100;
+        lblGridData.widthHint = 80;
         lblPlayRate_.setLayoutData(lblGridData);
 
 
@@ -228,7 +228,7 @@ public class GrxLoggerView extends GrxBaseView {
 		tFldTime_ = new Text(composite_, SWT.SINGLE|SWT.BORDER);
         tFldTime_.setText(MessageBundle.get("GrxLoggerView.text.noData")); //$NON-NLS-1$
         GridData textGridData = new GridData();
-        textGridData.widthHint = 100;
+        textGridData.widthHint = 60;
         tFldTime_.setLayoutData(textGridData);
         tFldTime_.addKeyListener(new KeyListener(){
             public void keyPressed(KeyEvent e) {}
@@ -266,7 +266,7 @@ public class GrxLoggerView extends GrxBaseView {
 			public void keyReleased(KeyEvent e) {
 			}
 		});
-		GridData gd = new GridData(SWT.HORIZONTAL|SWT.FILL);
+		GridData gd = new GridData(SWT.HORIZONTAL|SWT.FILL|GridData.FILL_HORIZONTAL);
 		sliderTime_.setLayoutData(gd);
 		
 		// frame rate
@@ -383,14 +383,14 @@ public class GrxLoggerView extends GrxBaseView {
 			_updateTimeField(item);
 			int size = item.getLogSize();
 			if(size > 0){
-				sliderTime_.setMaximum(item.getLogSize());
+				sliderTimeSetMaximam(item.getLogSize());
 				setEnabled(true);
 			}else{
-				sliderTime_.setMaximum(1);
+				sliderTimeSetMaximam(1);
 				setEnabled(false);
 			}
 		}else{
-			sliderTime_.setMaximum(1);
+			sliderTimeSetMaximam(1);
 			setEnabled(false);
 		}
 	}
@@ -459,7 +459,7 @@ public class GrxLoggerView extends GrxBaseView {
 				return;
 			}
 			current_ = pos;
-			sliderTime_.setMaximum(logSize-1);
+			sliderTimeSetMaximam(logSize-1);
 			sliderTime_.setSelection(pos);
 			_updateTimeField(currentItem_);
 		}else if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
@@ -512,4 +512,15 @@ public class GrxLoggerView extends GrxBaseView {
         	currentItem_.deleteObserver(this);
 	}
     
+    private void sliderTimeSetMaximam(int value)
+    {
+        sliderTime_.setMaximum(value);
+
+        if(value < 150)
+            sliderTime_.setPageIncrement(5);
+        if(value < 1500)
+            sliderTime_.setPageIncrement(50);
+        else
+            sliderTime_.setPageIncrement(500);
+    }
 }
