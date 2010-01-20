@@ -180,7 +180,7 @@ public class GrxPropertyView extends GrxBaseView {
                 	menuMgr_.add(new Action(){
                 		public String getText(){ return MessageBundle.get("GrxPropertyView.menu.InputValue"); }
                 		public void run(){
-                			InputDialog dialog = new InputDialog( null, null,
+                			InputDialog dialog = new InputDialog( null, getText(),
                 					MessageBundle.get("GrxPropertyView.dialog.message.input"), "", null); //$NON-NLS-1$
                 			if ( dialog.open() == InputDialog.OK && dialog.getValue() != null){
                 				String _value = dialog.getValue();

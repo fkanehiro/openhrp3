@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.osgi.util.NLS;
 
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
@@ -212,11 +213,14 @@ public class GrxServerManagerPanel extends Composite {
 
     //プロセス停止と開始
     private void updateBtn(int localDim) {
+        String mes = MessageBundle.get("GrxServerManagerPanel.dialog.message.update"); //$NON-NLS-1$
+        mes = NLS.bind(mes, new String[]{toggleButton_.getText()});
+
         // 確認ダイアログ表示後 当該 タブを削除
         if ( MessageDialog.openConfirm(
                 this.getShell(),
                 MessageBundle.get("GrxServerManagerPanel.dialog.title.update") + toggleButton_.getText(), //$NON-NLS-1$
-                MessageBundle.get("GrxServerManagerPanel.dialog.message.update") + toggleButton_.getText() +" ?"  )) //$NON-NLS-1$ //$NON-NLS-2$
+                mes)) //$NON-NLS-1$ //$NON-NLS-2$
         {
             TabFolder tabfolder = (TabFolder)getParent();
             ProcessInfo localInfo = new ProcessInfo(); 

@@ -91,7 +91,7 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 				return MessageBundle.get("GrxSensorItem.menu.rename"); //$NON-NLS-1$
 			}
 			public void run(){
-				InputDialog dialog = new InputDialog( null, null,
+				InputDialog dialog = new InputDialog( null, getText(),
 						MessageBundle.get("GrxSensorItem.dialog.message.newName"), getName(),null); //$NON-NLS-1$
 				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 					rename( dialog.getValue() );

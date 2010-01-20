@@ -59,6 +59,7 @@ import jp.go.aist.hrp.simulator.TransformedShapeIndex;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.AxisAngle4d;
@@ -357,7 +358,7 @@ public class GrxShapeItem extends GrxTransformItem{
 				return MessageBundle.get("GrxShapeItem.menu.rename"); //$NON-NLS-1$
 			}
 			public void run(){
-				InputDialog dialog = new InputDialog( null, null,
+				InputDialog dialog = new InputDialog( null, getText(),
 						MessageBundle.get("GrxShapeItem.dialog.message.newName"), getName(),null); //$NON-NLS-1$
 				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 					rename( dialog.getValue() );
@@ -371,8 +372,11 @@ public class GrxShapeItem extends GrxTransformItem{
 				return MessageBundle.get("GrxShapeItem.menu.delete"); //$NON-NLS-1$
 			}
 			public void run(){
+                String mes = MessageBundle.get("GrxShapeItem.dialog.message.delete"); //$NON-NLS-1$
+                mes = NLS.bind(mes, new String[]{getName()});
+                
 				if( MessageDialog.openQuestion( null, MessageBundle.get("GrxShapeItem.dialog.title.delete"), //$NON-NLS-1$
-						MessageBundle.get("GrxShapeItem.dialog.message.delete") + getName() + " ?") ){ //$NON-NLS-1$ //$NON-NLS-2$
+						mes) ){
 					delete();
 				}
 				

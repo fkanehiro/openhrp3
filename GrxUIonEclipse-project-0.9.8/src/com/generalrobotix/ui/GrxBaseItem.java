@@ -23,6 +23,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.osgi.util.NLS;
 
 import com.generalrobotix.ui.util.MessageBundle;
 
@@ -51,8 +52,11 @@ public class GrxBaseItem extends GrxBasePlugin {
 					return MessageBundle.get("GrxBaseItem.menu.delete"); //$NON-NLS-1$
 				}
 				public void run(){
+                    String mes = MessageBundle.get("GrxBaseItem.dialog.message.delete"); //$NON-NLS-1$
+                    mes = NLS.bind(mes, new String[]{GrxBaseItem.this.getName()});
+
 					if( MessageDialog.openQuestion( null, MessageBundle.get("GrxBaseItem.dialog.title.delete"), //$NON-NLS-1$
-							MessageBundle.get("GrxBaseItem.dialog.message.delete") + GrxBaseItem.this.getName() + " ?") ) //$NON-NLS-1$ //$NON-NLS-2$
+							mes) )
 						delete();
 				}
 			};
