@@ -53,6 +53,7 @@ Link::Link()
     body = 0;
     index = -1;
     jointId = -1;
+    jointType = FIXED_JOINT;
     parent = 0;
     sibling = 0;
     child = 0;

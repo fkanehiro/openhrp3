@@ -245,7 +245,6 @@ namespace hrp {
 
         bool isStaticModel_;
         Link* rootLink_;
-        Link* invalidLink;
 
         typedef std::vector<Link*> LinkArray;
 
@@ -278,6 +277,7 @@ namespace hrp {
         BodyHandle bodyHandle;
 
         void initialize();
+        Link* createEmptyJoint(int jointId);
         void setVirtualJointForcesSub();
 
         friend class CustomizedJointPath;
