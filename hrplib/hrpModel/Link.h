@@ -42,6 +42,7 @@ namespace hrp {
         Link(const Link& link);
         ~Link();
 
+        bool isValid() { return (index >= 0); }
         void addChild(Link* link);
         bool detachChild(Link* link);
         bool isRoot() { return !parent; }

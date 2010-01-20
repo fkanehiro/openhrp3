@@ -98,6 +98,9 @@ namespace hrp {
             return jointIdToLinkArray[id];
         }
 
+        /**
+           The vector<Link*> corresponding to the sequence of joint().
+        */
         inline const std::vector<Link*>& joints() const {
             return jointIdToLinkArray;
         }
@@ -246,14 +249,13 @@ namespace hrp {
         bool isStaticModel_;
         Link* rootLink_;
 
-        typedef std::vector<Link*> LinkArray;
+        std::string name_;
+        std::string modelName_;
 
+        typedef std::vector<Link*> LinkArray;
         LinkArray jointIdToLinkArray;
 
         LinkTraverse linkTraverse_;
-
-        std::string name_;
-        std::string modelName_;
 
         typedef std::map<std::string, Link*> NameToLinkMap;
         NameToLinkMap nameToLinkMap;
