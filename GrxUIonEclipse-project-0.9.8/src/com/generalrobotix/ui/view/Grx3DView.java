@@ -759,7 +759,11 @@ public class Grx3DView
     
     public void update(GrxBasePlugin plugin, Object... arg) {
     	if(currentModels_.contains(plugin)){
-    		if((String)arg[0]=="BodyInfoChange"){
+    		if((String)arg[0]=="PropertyChange"){
+    			behaviorManager_.setItemChange();
+    			showOption();
+    		}
+    		else if((String)arg[0]=="BodyInfoChange"){
     			behaviorManager_.setItemChange();
     			showOption();
     		}
