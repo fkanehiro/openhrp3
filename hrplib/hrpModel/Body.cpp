@@ -57,9 +57,6 @@ Body::~Body()
     }
 	
     delete rootLink_;
-    if(invalidLink){
-        delete invalidLink;
-    }
 
     // delete sensors
     for(int sensorType =0; sensorType < numSensorTypes(); ++sensorType){
@@ -82,8 +79,6 @@ void Body::initialize()
     customizerInterface = 0;
     bodyHandleEntity.body = this;
     bodyHandle = &bodyHandleEntity;
-	
-    invalidLink = 0;
 }
 	
 
@@ -171,6 +166,46 @@ void Body::getDefaultRootPosition(Vector3& out_p, Matrix33& out_R)
 }
 
 
+Link* Body::createEmptyJoint(int jointId)
+{
+    Link* empty = new Link;
+    empty->body = this;
+    empty->jointId = jointId;
+    empty->p = 0.0;
+    empty->R = identity<Matrix33>();
+    empty->v = 0.0;
+    empty->w = 0.0;
+    empty->dv = 0.0;
+    empty->dw = 0.0;
+    empty->q = 0.0;
+    empty->dq = 0.0;
+    empty->ddq = 0.0;
+    empty->u = 0.0;
+    empty->a = 0.0;
+    empty->d = 0.0;
+    empty->b = 0.0;
+    empty->Rs = identity<Matrix33>();
+    empty->m = 0.0;
+    empty->I = 0.0;
+    empty->c = 0.0;
+    empty->wc = 0.0;
+    empty->vo = 0.0;
+    empty->dvo = 0.0;
+    empty->fext = 0.0;
+    empty->tauext = 0.0;
+    empty->Jm2 = 0.0;
+    empty->ulimit = 0.0;
+    empty->llimit = 0.0;
+    empty->uvlimit = 0.0;
+    empty->lvlimit = 0.0;
+    empty->defaultJointValue = 0.0;
+    empty->Ir = 0.0;
+    empty->gearRatio = 1.0;
+
+    return empty;
+}
+
+
 void Body::updateLinkTree()
 {
     nameToLinkMap.clear();
@@ -204,10 +239,7 @@ void Body::updateLinkTree()
 
     for(size_t i=0; i < jointIdToLinkArray.size(); ++i){
         if(!jointIdToLinkArray[i]){
-            if(!invalidLink){
-                invalidLink = new Link;
-            }
-            jointIdToLinkArray[i] = invalidLink;
+            jointIdToLinkArray[i] = createEmptyJoint(i);
             std::cerr << "Warning: Model " << modelName_ <<
                 " has empty joint ID in the valid IDs." << std::endl;
         }

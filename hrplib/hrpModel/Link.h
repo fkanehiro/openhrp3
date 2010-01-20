@@ -67,8 +67,8 @@ namespace hrp {
         std::string name;
 
         enum JointType {
+            FIXED_JOINT,   ///< fixed joint(0 dof)
             FREE_JOINT,   /// 6-DOF root link
-            FIXED_JOINT,        ///< fixed joint(0 dof)
             ROTATIONAL_JOINT,	///< rotational joint (1 dof)
             SLIDE_JOINT	///< translational joint (1 dof)
         };
@@ -173,9 +173,7 @@ namespace hrp {
       private:
 
         Link& operator=(const Link& link); // no implementation is given to disable the copy operator
-
         void setBodyIter(Body* body);
-        
         friend std::ostream& ::operator<<(std::ostream &out, hrp::Link& link);
         void putInformation(std::ostream& out); // for the iostream output
     };
