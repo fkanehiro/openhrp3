@@ -95,7 +95,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 					return MessageBundle.get("GrxBasePlugin.menu.rename"); //$NON-NLS-1$
 				}
 				public void run(){
-					InputDialog dialog = new InputDialog( null, null,
+					InputDialog dialog = new InputDialog( null, getText(),
 							MessageBundle.get("GrxBasePlugin.dialog.message.input"), getName(),null); //$NON-NLS-1$
 					if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 						rename( dialog.getValue() );

@@ -53,6 +53,7 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.osgi.util.NLS;
 
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -733,7 +734,7 @@ public class GrxLinkItem extends GrxTransformItem{
 				return MessageBundle.get("GrxLinkItem.menu.rename"); //$NON-NLS-1$
 			}
 			public void run(){
-				InputDialog dialog = new InputDialog( null, null,
+				InputDialog dialog = new InputDialog( null, getText(),
 						MessageBundle.get("GrxLinkItem.dialog.message.rename"), getName(),null); //$NON-NLS-1$
 				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 					rename( dialog.getValue() );
@@ -747,8 +748,11 @@ public class GrxLinkItem extends GrxTransformItem{
 				return MessageBundle.get("GrxLinkItem.menu.delete"); //$NON-NLS-1$
 			}
 			public void run(){
+                String mes = MessageBundle.get("GrxLinkItem.dialog.message.delete"); //$NON-NLS-1$
+                mes = NLS.bind(mes, new String[]{getName()});
+                
 				if( MessageDialog.openQuestion( null, MessageBundle.get("GrxLinkItem.dialog.title.delete0"), //$NON-NLS-1$
-						MessageBundle.get("GrxLinkItem.dialog.message.delete0") + getName() + MessageBundle.get("GrxLinkItem.dialog.message.delete1")) ) //$NON-NLS-1$ //$NON-NLS-2$
+						mes) )
 					delete();
 			}
 		};
@@ -760,7 +764,7 @@ public class GrxLinkItem extends GrxTransformItem{
 				return MessageBundle.get("GrxLinkItem.menu.addJoint"); //$NON-NLS-1$
 			}
 			public void run(){
-				InputDialog dialog = new InputDialog( null, null,
+				InputDialog dialog = new InputDialog( null, getText(),
 						MessageBundle.get("GrxLinkItem.dialog.message.jointName"), null,null); //$NON-NLS-1$
 				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 					addLink( dialog.getValue() );
@@ -774,7 +778,7 @@ public class GrxLinkItem extends GrxTransformItem{
 				return MessageBundle.get("GrxLinkItem.menu.addSensor"); //$NON-NLS-1$
 			}
 			public void run(){
-				InputDialog dialog = new InputDialog( null, null,
+				InputDialog dialog = new InputDialog( null, getText(),
 						MessageBundle.get("GrxLinkItem.dialog.message.sensorName"), null,null); //$NON-NLS-1$
 				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 					addSensor( dialog.getValue() );

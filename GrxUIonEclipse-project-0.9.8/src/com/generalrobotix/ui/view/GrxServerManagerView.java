@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.*;
 
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.osgi.util.NLS;
 
 @SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxServerManagerView extends GrxBaseView 
@@ -309,11 +310,14 @@ public class GrxServerManagerView extends GrxBaseView
         int index = folder.getSelectionIndex();
         Vector<ProcessInfo> vecServerInfo = serverManager_.getServerInfo();
 
+        String mes = MessageBundle.get("GrxServerManagerView.dialog.message.remove"); //$NON-NLS-1$
+        mes = NLS.bind(mes, new String[]{vecTabItem_.elementAt(index).getText()});
+        
         // 確認ダイアログ表示後 当該 タブを削除
         if ( MessageDialog.openConfirm(
                 composite_.getShell(),
-                MessageBundle.get("GrxServerManagerView.dialog.title.remove") + vecTabItem_.elementAt(index).getText(), //$NON-NLS-1$
-                MessageBundle.get("GrxServerManagerView.dialog.message.remove") + vecTabItem_.elementAt(index).getText() +" ?"  )) //$NON-NLS-1$ //$NON-NLS-2$
+                MessageBundle.get("GrxServerManagerView.dialog.title.remove"), //$NON-NLS-1$
+                mes))
         {
             vecTabItem_.elementAt(index).getControl().dispose();
             folder.getItem(index).dispose();
