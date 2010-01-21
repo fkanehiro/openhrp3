@@ -62,6 +62,7 @@ public class GrxProcessManager {
     private StringBuffer                  outputBuffer_    = null;
     private ConcurrentLinkedQueue<String> lineQueue        = null;
     private Thread                        thread_          = null;
+    private ProcessInfo 				   nameServerInfo_  = null;
 
     private GrxProcessManager() {
         process_ = new java.util.ArrayList<AProcess>();
@@ -106,22 +107,21 @@ public class GrxProcessManager {
         outputArea_.setMenu(manager.createContextMenu(outputArea_));
     }
 
-    public void setProcessList(Element root) {
-        GrxServerManager serverManager_ = new GrxServerManager();
+    public void setProcessList(GrxServerManager serverManager_) {
         StringBuffer nsHost = new StringBuffer(""); //$NON-NLS-1$
         StringBuffer nsPort = new StringBuffer(""); //$NON-NLS-1$
         Activator.refNSHostPort(nsHost, nsPort);
         String nsOpt = " -ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         if(!GrxCorbaUtil.isAliveNameService()){
-            ProcessInfo pi = serverManager_.getNameServerInfo();
+            nameServerInfo_ = serverManager_.getNameServerInfo();
             FileUtil.deleteNameServerLog(serverManager_.getNameserverLogDir());
-            if ( isRegistered(pi) ) {
-                if( !isRunning(pi) ){
-                    unregister(pi.id);
-                    register(pi);
+            if ( isRegistered(nameServerInfo_) ) {
+                if( !isRunning(nameServerInfo_) ){
+                    unregister(nameServerInfo_.id);
+                    register(nameServerInfo_);
                 }
             } else {
-                register(pi);
+                register(nameServerInfo_);
             }
         }
         for(ProcessInfo pi : serverManager_.getServerInfo()){
@@ -697,8 +697,7 @@ public class GrxProcessManager {
                         process_ = null;
                         // StatusOut.append("OK\n");
                         GrxDebugUtil.println("stop:OK(" + pi_.id + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-                        GrxServerManager local = new GrxServerManager();
-                        if (pi_.id.equals(local.getNameServerInfo().id)) { //$NON-NLS-1$
+                        if (pi_.id.equals(nameServerInfo_.id)) { //$NON-NLS-1$
                             GrxCorbaUtil.removeNameServiceFromList();
                         }
                         return true;
