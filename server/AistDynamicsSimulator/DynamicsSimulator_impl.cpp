@@ -466,6 +466,10 @@ void DynamicsSimulator_impl::getCharacterSensorValues
 
     BodyPtr body = world.body(characterName);
     assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return;
+    }
 
     sensorOutput = new DblSequence;
     Sensor* sensor = body->sensor<Sensor>(sensorName);
@@ -655,6 +659,10 @@ void DynamicsSimulator_impl::setCharacterLinkData
 
     BodyPtr body = world.body(characterName);
     assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return;
+    }
     Link* link = body->link(linkName);
     assert(link);
 
@@ -753,6 +761,10 @@ void DynamicsSimulator_impl::getCharacterLinkData
 
     BodyPtr body = world.body(characterName);
     assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return;
+    }
     Link* link = body->link(linkName);
     assert(link);
 
@@ -849,6 +861,10 @@ void DynamicsSimulator_impl::getCharacterAllLinkData
 
     BodyPtr body = world.body(characterName);
     assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return;
+    }
     int n = body->numJoints();
     rdata = new DblSequence();
     rdata->length(n);
@@ -906,6 +922,10 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
 
     BodyPtr body = world.body(characterName);
     assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return;
+    }
 
     int n = wdata.length();
     if(n > body->numJoints()){
@@ -1000,6 +1020,11 @@ void DynamicsSimulator_impl::setCharacterAllJointModes
     bool isHighGainMode = (jointMode == OpenHRP::DynamicsSimulator::HIGH_GAIN_MODE);
 
     BodyPtr body = world.body(characterName);
+    assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return;
+    }
 
     for(int i=1; i < body->numLinks(); ++i){
         body->link(i)->isHighGainMode = isHighGainMode;
@@ -1035,6 +1060,10 @@ CORBA::Boolean DynamicsSimulator_impl::calcCharacterInverseKinematics
 
     BodyPtr body = world.body(characterName);
     assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return false;
+    }
 
     JointPath path(body->link(fromLink), body->link(toLink));
 
@@ -1071,6 +1100,10 @@ void DynamicsSimulator_impl::calcCharacterForwardKinematics
 
     BodyPtr body = world.body(characterName);
     assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return;
+    }
     body->calcForwardKinematics(true, true);
 
     needToUpdatePositions = true;
@@ -1377,6 +1410,10 @@ void DynamicsSimulator_impl::calcCharacterJacobian
 
     BodyPtr body = world.body(characterName);
     assert(body);
+    if(!body){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return;
+    }
 
     JointPath path(body->link(baseLink), body->link(targetLink));
     int height = 6;
