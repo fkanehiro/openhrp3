@@ -20,9 +20,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
+import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.GrxServerManager;
 import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.GrxServerManagerPanel;
@@ -61,8 +63,12 @@ public class GrxServerManagerView extends GrxBaseView
     public GrxServerManagerView(String name, GrxPluginManager manager_,
             GrxBaseViewPart vp, Composite parent) {
         super(name, manager_, vp, parent);
-        serverManager_ = new GrxServerManager();
-        InitItems();
+        serverManager_ = (GrxServerManager)manager_.getItem(GrxServerManager.class, null);
+		if(serverManager_ != null){
+			InitItems();
+			serverManager_.addObserver(this);
+		}
+		manager_.registerItemChangeListener(this, GrxServerManager.class);
         //setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 	}
     
@@ -381,7 +387,7 @@ public class GrxServerManagerView extends GrxBaseView
             GrxServerManagerPanel localPanel = (GrxServerManagerPanel) vecTabItem_.elementAt(i).getControl();
             localPanel.updateProcessInfo(vecServerInfo.elementAt(i));
         }
-        GrxServerManager.SaveServerInfo();
+        serverManager_.SaveServerInfo();
     }
     
     private void updateNameServerBtn(){
@@ -407,6 +413,22 @@ public class GrxServerManagerView extends GrxBaseView
         }
     }
 
+    public void registerItemChange(GrxBaseItem item, int event){
+		if(item instanceof GrxServerManager){
+			GrxServerManager serverManager = (GrxServerManager) item;
+	    	switch(event){
+	    	case GrxPluginManager.ADD_ITEM:
+	    		if(serverManager_ == null){
+	    			serverManager_ = serverManager;
+	    			InitItems();
+	    			serverManager_.addObserver(this);
+	    		}
+	    		break;
+	    	default:
+	    		break;
+	    	}
+		}
+	}
     
     public void widgetDisposed(DisposeEvent e)
     {
@@ -417,5 +439,11 @@ public class GrxServerManagerView extends GrxBaseView
             ex.printStackTrace();
         }
     }
+    
+    public void shutdown() {
+        manager_.removeItemChangeListener(this, GrxServerManager.class);
+        if(serverManager_!=null)
+        	serverManager_.deleteObserver(this);
+	}
 
 }

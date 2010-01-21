@@ -12,7 +12,12 @@ package com.generalrobotix.ui.util;
 
 import java.io.File;
 import java.util.Vector;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.GrxProcessManager.*;
@@ -21,57 +26,26 @@ import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
 
 @SuppressWarnings("serial")
-public class GrxServerManager{
+public class GrxServerManager extends GrxBaseItem{
 
     private static final String                CONFIG_XML             = "grxuirc.xml";
     private static File                         CONFIG_XML_PATH = null;                 
     public static volatile Vector<ProcessInfo> vecServerInfo          = new Vector<ProcessInfo>();
     public static volatile ProcessInfo         nameServerInfo = new ProcessInfo();
-    private static volatile boolean           bInitializedServerInfo = false;
+    //private static volatile boolean           bInitializedServerInfo = false;
     private static SynchronizedAccessor<Integer>    newPort_ = new SynchronizedAccessor<Integer>(0);
     private static SynchronizedAccessor<String>    newHost_ = new SynchronizedAccessor<String>("");
     private static SynchronizedAccessor<String>    nameServerLogDir = new SynchronizedAccessor<String>("");
     private static final int    MAXMUM_PORT_NUMBER  = 65535;
     private static final String LINE_SEPARATOR = new String( System.getProperty("line.separator") );
 
-    
-    static private synchronized void InitServerInfo() {
-        if (!bInitializedServerInfo) {
-            CONFIG_XML_PATH = getConfigXml();
-            loadConfigXml(CONFIG_XML_PATH);
-            newPort_.set(GrxServerManagerConfigXml.getNameServerPort());
-            newHost_.set(GrxServerManagerConfigXml.getNameServerHost());
-            nameServerLogDir.set(GrxServerManagerConfigXml.getNameServerLogDir());
-            bInitializedServerInfo = true;
-        }
-    }
-
-    //XMLファイルの読み込みとlistServerInfoの初期化
-    static private void loadConfigXml(File fileXml) {
-        GrxServerManagerConfigXml localXml = new GrxServerManagerConfigXml(fileXml);
-        nameServerInfo = localXml.getNameServerInfo();
-        vecServerInfo.clear();
-        for (int i = 0;; ++i) {
-            ProcessInfo localInfo = localXml.getServerInfo(i);
-            if (localInfo == null) {
-                break;
-            }
-            if (localInfo.id.equals("")){
-                continue;
-            }
-            vecServerInfo.add(localInfo);
-        }
-    }
-
     //Xmlファイルへ次回起動のための値を保存
-    static public synchronized void SaveServerInfo() {
-        if (bInitializedServerInfo) {
-            GrxServerManagerConfigXml localXml = new GrxServerManagerConfigXml(CONFIG_XML_PATH);
-            for (int i = 0; i < vecServerInfo.size(); ++i) {
-                localXml.setServerNode(vecServerInfo.elementAt(i));
-            }
-            localXml.SaveServerInfo(newPort_.get(), newHost_.get());
+    public synchronized void SaveServerInfo() {
+        GrxServerManagerConfigXml.setFileName(CONFIG_XML_PATH);
+        for (int i = 0; i < vecServerInfo.size(); ++i) {
+        	GrxServerManagerConfigXml.setServerNode(vecServerInfo.elementAt(i));
         }
+        GrxServerManagerConfigXml.SaveServerInfo(newPort_.get(), newHost_.get());
     }
 
 
@@ -79,14 +53,13 @@ public class GrxServerManager{
     static private File getConfigXml() {
         return new File(Activator.getDefault().getTempDir(), CONFIG_XML);
     }
-
-    
     
     /**
      * GrxServerManagerを作り、処理を開始する。
      */
-	public GrxServerManager() {
-        InitServerInfo();
+	public GrxServerManager(String name, GrxPluginManager manager) {
+		super(name, manager);
+		CONFIG_XML_PATH = getConfigXml();
     }
     
     /**
@@ -295,5 +268,23 @@ public class GrxServerManager{
         return ret;
     }
     
+    public void initialize(Element root){
+    	GrxServerManagerConfigXml.setElementRoot(root);
+        nameServerInfo = GrxServerManagerConfigXml.getNameServerInfo();
+        vecServerInfo.clear();
+        for (int i = 0;; ++i) {
+            ProcessInfo localInfo = GrxServerManagerConfigXml.getServerInfo(i);
+            if (localInfo == null) {
+                break;
+            }
+            if (localInfo.id.equals("")){
+                continue;
+            }
+            vecServerInfo.add(localInfo);
+        }
+        newPort_.set(GrxServerManagerConfigXml.getNameServerPort());
+        newHost_.set(GrxServerManagerConfigXml.getNameServerHost());
+        nameServerLogDir.set(GrxServerManagerConfigXml.getNameServerLogDir());
+    }
     
 }

@@ -37,7 +37,7 @@ import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
 @SuppressWarnings("serial")
 public class GrxServerManagerConfigXml {
-    private File xmlFile = null;
+    private static File xmlFile = null;
     private static Document document = null;         
     private static Element elementRoot = null;
     private static String  serverInfoDefaultDir_  = "";
@@ -76,26 +76,30 @@ public class GrxServerManagerConfigXml {
         return NAME_SERVER_LOG_DIR_;
     }
     
-    public GrxServerManagerConfigXml( File refFile){
-        xmlFile = refFile;
-        try {
-            initXml();
-        } catch (ParserConfigurationException e) {
-            GrxDebugUtil.printErr("GrxServerManagerConfigXml.initXml:", e);
-        } catch (SAXException e) {
-            GrxDebugUtil.printErr("GrxServerManagerConfigXml.initXml:", e);
-        } catch (IOException e) {
-            GrxDebugUtil.printErr("GrxServerManagerConfigXml.initXml:", e);
-        } catch (Exception ex) {
-            GrxDebugUtil.printErr("GrxServerManagerConfigXml.initXml:", ex);
+    public static void setElementRoot(Element root){
+    	elementRoot = root;
+    	NodeList localList = elementRoot.getElementsByTagName("process");
+        if(localList != null){
+            for(int i = 0; i < localList.getLength(); ++i){
+                Node localNode = localList.item(i);
+                if( GrxXmlUtil.getStringNoexpand((Element)localNode, "id", "").trim().equals("") ){
+                    serverInfoDefaultDir_ = GrxXmlUtil.getStringNoexpand((Element)localNode ,"dir" , "").trim();
+                    serverInfoDefaultWaitCount_ = GrxXmlUtil.getInteger((Element)localNode, "waitcount", 0);
+                }
+            }
+            
         }
     }
     
-    public String getRootElementName(){
+    public static void setFileName( File refFile){
+        xmlFile = refFile;
+    }
+    
+    public static String getRootElementName(){
         return elementRoot.getTagName();
     }
     
-    public boolean isExistServer(String name){
+    public static boolean isExistServer(String name){
         boolean ret = false;
         NodeList localList = elementRoot.getElementsByTagName("process");
         for (int i = 0; i < localList.getLength(); ++i ){
@@ -109,7 +113,7 @@ public class GrxServerManagerConfigXml {
     }
     
     //server.nameがnameに等しいserverエレメントのノードを取得
-    private Node getServerNode(String name){
+    private static Node getServerNode(String name){
         Node ret = null;
         NodeList localList = elementRoot.getElementsByTagName("process");
         for (int i = 0; i < localList.getLength(); ++i ){
@@ -123,13 +127,13 @@ public class GrxServerManagerConfigXml {
     }
     
     //NameServerエレメントのノードを取得
-    private Node getNameServerNode(){
+    private static Node getNameServerNode(){
         NodeList localList = elementRoot.getElementsByTagName("nameserver");
         return localList.getLength() > 0 ? localList.item(0) : null;
     }
     
 
-    public ProcessInfo getServerInfo(int index){
+    public static ProcessInfo getServerInfo(int index){
         ProcessInfo ret = null;
         NodeList localList = elementRoot.getElementsByTagName("process");
         if( index >= localList.getLength())
@@ -157,7 +161,7 @@ public class GrxServerManagerConfigXml {
         return ret;
     }
 
-    public ProcessInfo getNameServerInfo(){
+    public static ProcessInfo getNameServerInfo(){
         ProcessInfo ret = null;
         NodeList localList = elementRoot.getElementsByTagName("nameserver");
         Node node = localList.item(0);
@@ -192,7 +196,7 @@ public class GrxServerManagerConfigXml {
         return ret;
     }
     
-    public void setServerNode(ProcessInfo refInfo){
+    public static void setServerNode(ProcessInfo refInfo){
     	Node node = getServerNode(refInfo.id);
     	if( node != null){
     	    GrxXmlUtil.setString((Element)node ,"com" ,refInfo.com.get(0));
@@ -204,13 +208,13 @@ public class GrxServerManagerConfigXml {
         }
     }
     
-    public void setNameServer(int port, String host){
+    public static void setNameServer(int port, String host){
         NAME_SERVER_PORT_ = port;
         NAME_SERVER_HOST_ = host;
         setNameServerNode(port, host);
     }
     
-    private void setNameServerNode(int port, String host){
+    private static void setNameServerNode(int port, String host){
         Node node = getNameServerNode();
         if( node != null){
             GrxXmlUtil.setInteger((Element)node, "port", port);
@@ -218,12 +222,11 @@ public class GrxServerManagerConfigXml {
         }
     }
 
-    public void SaveServerInfo(int port, String host){
+    public static void SaveServerInfo(int port, String host){
         setNameServerNode(port, host);
         TransformerFactory tff = TransformerFactory.newInstance();
         try {
-            DOMSource    source = new DOMSource(document);
-            StringWriter outWriter = new StringWriter();
+            DOMSource    source = new DOMSource(elementRoot.getOwnerDocument());
             Transformer tf = tff.newTransformer();
             //出力形式設定
             tf.setOutputProperty( javax.xml.transform.OutputKeys.INDENT, "yes" );
@@ -231,16 +234,19 @@ public class GrxServerManagerConfigXml {
             tf.setOutputProperty( OutputPropertiesFactory.S_KEY_INDENT_AMOUNT, "4" );
             javax.xml.transform.stream.StreamResult target = new javax.xml.transform.stream.StreamResult( new FileOutputStream(xmlFile) );
             tf.transform(source, target);
+            target.getOutputStream().close();
         } catch (TransformerConfigurationException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (TransformerException e) {
             e.printStackTrace();
+        } catch( IOException e){
+        	e.printStackTrace();
         }
     }
     
-    public String getElementVal(String name, String element){
+    public static String getElementVal(String name, String element){
         String ref = null;
         NodeList localList = elementRoot.getElementsByTagName("process");
         for (int i = 0; i < localList.getLength(); ++i ){
@@ -253,7 +259,7 @@ public class GrxServerManagerConfigXml {
         return ref; 
     }
 
-    public String getNameServerElement(String element){
+    public static String getNameServerElement(String element){
         String ret = null;
         NodeList localList = elementRoot.getElementsByTagName("nameserver");
         Node nodeNameserver = localList.item(0);
@@ -268,36 +274,7 @@ public class GrxServerManagerConfigXml {
     }
     
     
-    // Xml ファイルハンドルの初期化
-    private void initXml() throws Exception{
-    	if( elementRoot != null )
-    		return ;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();   
-        DocumentBuilder builder = factory.newDocumentBuilder();         
-        builder.setErrorHandler(new DefaultHandler());
-        
-        if( xmlFile.exists() ){
-            //ファイルが存在するとき読み込み
-            document = builder.parse(xmlFile);
-        } else {
-            //ファイルが存在しないとき新規作成
-            DOMImplementation domImpl=builder.getDOMImplementation();
-            document = domImpl.createDocument( "", "grxui", null );
-        }
-        elementRoot = document.getDocumentElement();
-        
-        NodeList localList = elementRoot.getElementsByTagName("process");
-        if(localList != null){
-            for(int i = 0; i < localList.getLength(); ++i){
-                Node localNode = localList.item(i);
-                if( GrxXmlUtil.getStringNoexpand((Element)localNode, "id", "").trim().equals("") ){
-                    serverInfoDefaultDir_ = GrxXmlUtil.getStringNoexpand((Element)localNode ,"dir" , "").trim();
-                    serverInfoDefaultWaitCount_ = GrxXmlUtil.getInteger((Element)localNode, "waitcount", 0);
-                }
-            }
-            
-        }
-    }
+    
     
     /**
      * @brief grxuirc.xmlのversion比較
@@ -369,7 +346,7 @@ public class GrxServerManagerConfigXml {
     }
     
     //server エレメントの生成
-    private void createServerNode( ProcessInfo refInfo ){
+    private static void createServerNode( ProcessInfo refInfo ){
         
         Element localElement = document.createElement("process");
         localElement.setAttribute( "id", refInfo.id );

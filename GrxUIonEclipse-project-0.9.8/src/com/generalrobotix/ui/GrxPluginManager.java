@@ -49,6 +49,7 @@ import com.generalrobotix.ui.util.SynchronizedAccessor;
 import com.generalrobotix.ui.util.FileUtil;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxProjectItem;
+import com.generalrobotix.ui.util.GrxServerManager;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -64,7 +65,6 @@ import org.eclipse.ui.PlatformUI;
 
 /**
  * @brief プラグイン管理クラス GrxUIの核になるクラス。プラグインのロード等の、初期化を実行する。
- *        また、タイマーを使ったプラグイン間の同期を行う。
  *        プラグインとそのアイテムのマップ（#pluginMap_）、プラグインとその情報のマップ（#pinfoMap_）などを持つ。
  *        各種プラグインはこのクラスへの参照を持ち、必要に応じてこのクラスから情報を取得する事ができる。
  * @see GrxUIFrame
@@ -97,12 +97,6 @@ public class GrxPluginManager {
     // for CORBA
     public POA poa_;
     public org.omg.CORBA.ORB orb_;
-
-    // 初期化に成功したかどうか
-    public boolean initSucceed = false;
-
-    // アイテムのアップデート確認スレッド実行用
-    Display display;
 
     /**
      * @brief GrxPluginManagerのコンストラクタ.
@@ -198,12 +192,14 @@ public class GrxPluginManager {
         if (defaultProject == null || !currentProject_.load(new File(GrxXmlUtil.expandEnvVal(defaultProject))))
             currentProject_.create();
         // root_.setUserObject(currentProject_);
-
-        // TODO: 「grxuirc.xmlが見つからないとexit()」の代替だが、もっとスマートな方法を考えよう
         
-        GrxProcessManager.getInstance().setProcessList(rcProject_.getElement());
-        
-        initSucceed = true;
+        // サーバの起動　　//
+        GrxServerManager serverManager = (GrxServerManager)createItem(GrxServerManager.class, "serverManager");
+		if (serverManager != null){
+			serverManager.initialize(rcProject_.getElement());
+			itemChange(serverManager, GrxPluginManager.ADD_ITEM);
+		}
+        GrxProcessManager.getInstance().setProcessList(serverManager);
     }
 
     /**
@@ -296,6 +292,7 @@ public class GrxPluginManager {
      * デフォルトのモードが指定されていない場合、最初に現れたモードをデフォルトとして、ダイアログを出してユーザに選択を求める。
      */
     public void start() {
+    	// OnlineViewerなどのサーバの登録用
         System.out.println("[PM] START GrxPluginManager"); //$NON-NLS-1$
         new Thread() {
             public void run() {
@@ -1081,14 +1078,6 @@ public class GrxPluginManager {
      */
     public File getHomePath() {
         return homePath_;
-    }
-
-    /**
-     * @brief restore processes in rc project and current project
-     */
-    public void restoreProcess() {
-        GrxProcessManager localProcessManager = GrxProcessManager.getInstance();
-        localProcessManager.setProcessList(currentProject_.getElement());
     }
 
     /**
