@@ -114,7 +114,7 @@ TriangleMeshShaper::~TriangleMeshShaper()
 */
 void TriangleMeshShaper::setDivisionNumber(int n)
 {
-    impl->divisionNumber = n;
+    impl->divisionNumber = std::max(4, n);
 }
 
 
@@ -648,8 +648,8 @@ bool TMSImpl::convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleM
         return false;
     }
 
-    const int vdn = divisionNumber;  // latitudinal division number
-    const int hdn = divisionNumber;  // longitudinal division number
+    const int vdn = divisionNumber / 2;  // latitudinal division number
+    const int hdn = divisionNumber;      // longitudinal division number
     
     MFVec3f& vertices = triangleMesh->coord->point;
     vertices.reserve((vdn - 1) * hdn + 2);
