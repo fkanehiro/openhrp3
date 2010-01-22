@@ -61,7 +61,7 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
 
         // フォルダの作成
         IFolderLayout top_folder = layout.createFolder("TopViews",
-                IPageLayout.TOP, (float) 0.15f, editorArea);
+                IPageLayout.TOP, (float) 0.11f, editorArea);
         IFolderLayout right_middle = layout.createFolder("RightMIDDLEViews",
                 IPageLayout.RIGHT, (float) 0.6f, editorArea);
         IFolderLayout middle = layout.createFolder("MiddleViews",

@@ -110,6 +110,7 @@ public class GrxLoggerView extends GrxBaseView {
 		super(name, manager, vp, parent);
 
 		GridLayout gl = new GridLayout(6,false);
+		gl.marginHeight = 0;
 		composite_.setLayout( gl );
 		
 		// playback rate label
@@ -121,8 +122,10 @@ public class GrxLoggerView extends GrxBaseView {
 
 
         // playback controller
-		Composite btnComp = new Composite ( composite_, SWT.BORDER);
+		Composite btnComp = new Composite ( composite_, SWT.NONE);
 		GridLayout buttonLayout = new GridLayout(8,false);
+		buttonLayout.marginHeight = 0;
+		buttonLayout.marginWidth = 0;
 		btnComp.setLayout( buttonLayout );
 
 		btnFRwd_ = new Button( btnComp, SWT.NONE );
