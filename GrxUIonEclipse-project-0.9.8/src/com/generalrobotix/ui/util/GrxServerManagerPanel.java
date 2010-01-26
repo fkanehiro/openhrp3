@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.osgi.util.NLS;
 
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
+import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
 @SuppressWarnings("serial") //$NON-NLS-1$
@@ -110,7 +111,9 @@ public class GrxServerManagerPanel extends Composite {
         });
 
         toggleButton_ = new Button(localPanel, SWT.PUSH);
-        if (processInfo_.autoStart) {
+        GrxProcessManager pm = GrxProcessManager.getInstance();
+        AProcess process = pm.get(processInfo_.id);
+        if ( process!=null && process.isRunning() ) {
             toggleButton_.setText(STOP_);
         } else {
             toggleButton_.setText(START_);
