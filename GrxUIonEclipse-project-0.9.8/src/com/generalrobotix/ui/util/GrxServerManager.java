@@ -178,11 +178,11 @@ public class GrxServerManager extends GrxBaseItem{
                 	process.pi_.com.add(nsOpt);
                 }
                 process.updateCom();
-            }
 
-            if (!process.start(null)) {
-            	// start 失敗
-            	ret = false;
+	            if (!process.start(null)) {
+	            	// start 失敗
+	            	ret = false;
+	            }
             }
         }
         return ret;
