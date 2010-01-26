@@ -27,7 +27,6 @@ import org.omg.CosNaming.*;
 import org.omg.PortableServer.POA;
 
 import com.generalrobotix.ui.grxui.Activator;
-import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 
 /**
  * @brief corba utility functions
@@ -65,7 +64,7 @@ public class GrxCorbaUtil {
      * @return port number where naming server is listening
      */
     public static int nsPort() {
-        return GrxServerManagerConfigXml.getNameServerPort();
+        return GrxServerManager.NAME_SERVER_PORT_;
     }
 
     /**
@@ -73,7 +72,7 @@ public class GrxCorbaUtil {
      * @return hostname where naming server is running
      */
     public static String nsHost() {
-        return GrxServerManagerConfigXml.getNameServerHost();
+        return GrxServerManager.NAME_SERVER_HOST_;
     }
 
     /**

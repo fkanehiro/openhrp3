@@ -196,7 +196,7 @@ public class GrxPluginManager {
         // サーバの起動　　//
         GrxServerManager serverManager = (GrxServerManager)createItem(GrxServerManager.class, "serverManager");
 		if (serverManager != null){
-			serverManager.initialize(rcProject_.getElement());
+			serverManager.initialize();
 			itemChange(serverManager, GrxPluginManager.ADD_ITEM);
 		}
         GrxProcessManager.getInstance().setProcessList(serverManager);
@@ -1026,7 +1026,7 @@ public class GrxPluginManager {
             for (; it2.hasNext();)
                 ((GrxBasePlugin) it2.next()).shutdown();
         }
-
+        
         /*
          * この時点ですでにビューは閉じられている いまはViewPartのdisposeメソッドからViewのshutdownを呼んでいる
          * updateViewList(); for( GrxBaseView v : selectedViewList_ )

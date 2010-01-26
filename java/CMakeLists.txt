@@ -1,5 +1,5 @@
 set(GrxUI_ON_ECLIPSE_DIR ${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8)
-set(DEFAULT_GRXUIRC_XML_VERSION "1.0")
+set(DEFAULT_GRXUIRC_XML_VERSION "1.1")
 
 set(GRXUIRC_XML_VERSION ${DEFAULT_GRXUIRC_XML_VERSION} CACHE STRING "If you change grxuirc.xml format, you should increment GRXUIRC_XML_VERSION.")
 

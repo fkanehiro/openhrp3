@@ -37,6 +37,7 @@ import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
 @SuppressWarnings("serial")
 public class GrxServerManagerConfigXml {
+	/*
     private static File xmlFile = null;
     private static Document document = null;         
     private static Element elementRoot = null;
@@ -272,7 +273,7 @@ public class GrxServerManagerConfigXml {
         }
         return ret;
     }
-    
+    */
     
     
     
@@ -312,7 +313,7 @@ public class GrxServerManagerConfigXml {
         }
         return ret;
     }
-    
+
     /**
      * @brief grxuirc.xmlのversion取得
      *         具体的にはgrxuiタグのversionエレメントを取得
@@ -344,7 +345,7 @@ public class GrxServerManagerConfigXml {
         }
         return ret;
     }
-    
+    /*
     //server エレメントの生成
     private static void createServerNode( ProcessInfo refInfo ){
         
@@ -422,4 +423,5 @@ public class GrxServerManagerConfigXml {
         	}
         }
     }
+    */
 }
