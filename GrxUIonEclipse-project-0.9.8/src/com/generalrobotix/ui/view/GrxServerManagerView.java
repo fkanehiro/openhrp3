@@ -49,13 +49,12 @@ public class GrxServerManagerView extends GrxBaseView
     implements DisposeListener {
     public static final String TITLE = "Server Manager"; //$NON-NLS-1$
     static private final int    HORIZONTAL_INDENT = 8;
-    static private final int    COLLUMN_NUM = 3;
+    static private final int    COLLUMN_NUM = 4;
     static private final int    NAME_SERVER_GROUP_COLLUMN_NUM = 3;
-    static private final String START_          = MessageBundle.get("GrxServerManagerPanel.button.start"); //$NON-NLS-1$
-    static private final String STOP_           = MessageBundle.get("GrxServerManagerPanel.button.stop"); //$NON-NLS-1$
     
     private GrxServerManager serverManager_ = null;
     private Vector<TabItem> vecTabItem_      = new Vector<TabItem>();
+    private TabFolder folder_;
     private Text       textNsPort_ = null;
     private Text       textNsHost_ = null;
     private Button     updateNameServerBtn_ = null;    
@@ -98,26 +97,32 @@ public class GrxServerManagerView extends GrxBaseView
         GridData delBtnGridData = new GridData();
         delBtnGridData.horizontalIndent = HORIZONTAL_INDENT;
         delBtn.setLayoutData(delBtnGridData);
+        
+        Button defBtn = new Button(top , SWT.PUSH);
+        defBtn.setText(MessageBundle.get("GrxServerManagerView.button.default")); //$NON-NLS-1$
+        GridData defBtnGridData = new GridData();
+        defBtnGridData.horizontalIndent = HORIZONTAL_INDENT;
+        defBtn.setLayoutData(defBtnGridData);
 
-        final TabFolder folder = new TabFolder(top,SWT.FILL);
+        folder_ = new TabFolder(top,SWT.FILL);
         
         GridData folderGridData = new GridData();
         folderGridData.horizontalSpan = COLLUMN_NUM;
         folderGridData.horizontalAlignment = SWT.FILL;
         folderGridData.grabExcessHorizontalSpace = true;
-        folder.setLayoutData(folderGridData);
+        folder_.setLayoutData(folderGridData);
         
         insertBtn.addSelectionListener(new SelectionListener(){
             public void widgetDefaultSelected(SelectionEvent e) {}
             public void widgetSelected(SelectionEvent e) {
-                insertServerBtn( folder );
+                insertServerBtn( folder_ );
             }
         }
         );
         addBtn.addSelectionListener(new SelectionListener(){
             public void widgetDefaultSelected(SelectionEvent e) {}
             public void widgetSelected(SelectionEvent e) {
-                addServerBtn( folder );
+                addServerBtn( folder_ );
             }
         }
         );
@@ -125,7 +130,16 @@ public class GrxServerManagerView extends GrxBaseView
             public void widgetDefaultSelected(SelectionEvent e) {}
 
             public void widgetSelected(SelectionEvent e) {
-                removeServerBtn( folder );
+                removeServerBtn( folder_ );
+            }
+        }
+        );
+        
+        defBtn.addSelectionListener(new SelectionListener(){
+            public void widgetDefaultSelected(SelectionEvent e) {}
+
+            public void widgetSelected(SelectionEvent e) {
+                restoreDefault();
             }
         }
         );
@@ -134,15 +148,15 @@ public class GrxServerManagerView extends GrxBaseView
         Vector<ProcessInfo> vecServerInfo = serverManager_.getServerInfo();
         
         for (int i = 0; i < vecServerInfo.size() ; ++i ){
-            vecTabItem_.add(new TabItem(folder,SWT.NONE)) ;
+            vecTabItem_.add(new TabItem(folder_,SWT.NONE)) ;
             vecTabItem_.elementAt(i).setText(vecServerInfo.elementAt(i).id);
             
-            folder.setSelection(i);
-            panel = new GrxServerManagerPanel(serverManager_, folder , SWT.NONE , i );
+            folder_.setSelection(i);
+            panel = new GrxServerManagerPanel(serverManager_, folder_ , SWT.NONE , i );
             vecTabItem_.elementAt(i).setControl(panel);
         }
-        folder.addDisposeListener(this);
-        folder.setSelection(0);
+        folder_.addDisposeListener(this);
+        folder_.setSelection(0);
         
         // Name Server Goup setting
         Group localGroup = new Group(top, SWT.FILL);
@@ -217,6 +231,24 @@ public class GrxServerManagerView extends GrxBaseView
         );
     }
     
+    private void updateItems(){
+    	textNsHost_.setText( String.valueOf( serverManager_.getNewHost()) );
+    	textNsPort_.setText( String.valueOf( serverManager_.getNewPort()) );
+    	for (int i = 0; i < vecTabItem_.size() ; ++i ){
+    		vecTabItem_.elementAt(i).getControl().dispose();
+    		vecTabItem_.elementAt(i).dispose();
+    	}
+    	vecTabItem_.clear();
+    	Vector<ProcessInfo> vecServerInfo = serverManager_.getServerInfo();       
+        for (int i = 0; i < vecServerInfo.size() ; ++i ){
+            vecTabItem_.add(new TabItem(folder_,SWT.NONE)) ;
+            vecTabItem_.elementAt(i).setText(vecServerInfo.elementAt(i).id);
+            GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_, folder_ , SWT.NONE , i );
+            vecTabItem_.elementAt(i).setControl(panel);
+        }
+        folder_.setSelection(0);
+    }
+    
     private void insertServerBtn(final TabFolder folder){
         Display display = Display.getCurrent();
         final Shell shell = new Shell(display , SWT.TITLE | SWT.OK);
@@ -249,11 +281,12 @@ public class GrxServerManagerView extends GrxBaseView
                     localInfo.args = ""; //$NON-NLS-1$
                     localInfo.autoStart = false;
                     localInfo.useORB = false;
+                    localInfo.dir=serverManager_.serverInfoDefaultDir_;
+                    localInfo.waitCount=serverManager_.serverInfoDefaultWaitCount_;           
                     Vector<ProcessInfo> vecServerInfo = serverManager_.getServerInfo();    
                     vecServerInfo.add(index,localInfo);
                     vecTabItem_.add(index , new TabItem(folder,SWT.NONE , index)) ;
                     vecTabItem_.elementAt(index).setText(vecServerInfo.elementAt(index).id);
-                    GrxServerManagerConfigXml.insertServerNode(vecServerInfo.elementAt(index+1),localInfo);
                     folder.setSelection(index);
                     GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_,folder , SWT.NONE , index );
                     vecTabItem_.elementAt(index).setControl(panel);
@@ -296,11 +329,12 @@ public class GrxServerManagerView extends GrxBaseView
                     localInfo.args = ""; //$NON-NLS-1$
                     localInfo.autoStart = false;
                     localInfo.useORB = false;
+                    localInfo.dir=serverManager_.serverInfoDefaultDir_;
+                    localInfo.waitCount=serverManager_.serverInfoDefaultWaitCount_;
                     Vector<ProcessInfo> vecServerInfo = serverManager_.getServerInfo();    
                     vecServerInfo.add(index,localInfo);
                     vecTabItem_.add(index , new TabItem(folder,SWT.NONE , index)) ;
                     vecTabItem_.elementAt(index).setText(vecServerInfo.elementAt(index).id);
-                    GrxServerManagerConfigXml.addServerNode(vecServerInfo.elementAt(index-1),localInfo);
                     folder.setSelection(index);
                     GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_, folder , SWT.NONE , index );
                     vecTabItem_.elementAt(index).setControl(panel);
@@ -328,7 +362,6 @@ public class GrxServerManagerView extends GrxBaseView
             vecTabItem_.elementAt(index).getControl().dispose();
             folder.getItem(index).dispose();
             vecTabItem_.remove(index);
-            GrxServerManagerConfigXml.deleteServerNode(vecServerInfo.elementAt(index));
             vecServerInfo.remove(index);
         }
     }
@@ -381,13 +414,11 @@ public class GrxServerManagerView extends GrxBaseView
     }
     
     //タブウィンドウが閉じるときGUIによって生じた変更を反映する。
-    private void storevecServerInfo()throws Exception{
-        Vector<ProcessInfo> vecServerInfo = serverManager_.getServerInfo();        
+    private void storevecServerInfo(){       
         for (int i = 0; i < vecTabItem_.size(); ++i){
             GrxServerManagerPanel localPanel = (GrxServerManagerPanel) vecTabItem_.elementAt(i).getControl();
-            localPanel.updateProcessInfo(vecServerInfo.elementAt(i));
+            localPanel.updateProcessInfo();
         }
-        serverManager_.SaveServerInfo();
     }
     
     private void updateNameServerBtn(){
@@ -413,6 +444,11 @@ public class GrxServerManagerView extends GrxBaseView
         }
     }
 
+    private void restoreDefault(){
+    	serverManager_.restoreDefault();
+    	updateItems();
+    }
+    
     public void registerItemChange(GrxBaseItem item, int event){
 		if(item instanceof GrxServerManager){
 			GrxServerManager serverManager = (GrxServerManager) item;
@@ -420,7 +456,7 @@ public class GrxServerManagerView extends GrxBaseView
 	    	case GrxPluginManager.ADD_ITEM:
 	    		if(serverManager_ == null){
 	    			serverManager_ = serverManager;
-	    			InitItems();
+	    			updateItems();
 	    			serverManager_.addObserver(this);
 	    		}
 	    		break;
@@ -432,18 +468,14 @@ public class GrxServerManagerView extends GrxBaseView
     
     public void widgetDisposed(DisposeEvent e)
     {
-        // TODO 自動生成されたメソッド・スタブ
-        try{
-            storevecServerInfo();
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
+        storevecServerInfo();
     }
     
     public void shutdown() {
         manager_.removeItemChangeListener(this, GrxServerManager.class);
         if(serverManager_!=null)
         	serverManager_.deleteObserver(this);
+        serverManager_.SaveServerInfo();
 	}
 
 }

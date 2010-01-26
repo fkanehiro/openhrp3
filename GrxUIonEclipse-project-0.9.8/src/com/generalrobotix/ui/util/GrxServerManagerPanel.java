@@ -56,10 +56,12 @@ public class GrxServerManagerPanel extends Composite {
     private boolean bUseORB_;
     private boolean bAuto_;
     
+    private ProcessInfo processInfo_=null;
+    
     public GrxServerManagerPanel(GrxServerManager manager, TabFolder parent, int style, int index) {
         super(parent, style);
         serverManager_ = manager;
-        final int localDim = parent.getSelectionIndex();
+        processInfo_ = manager.getServerInfo().elementAt(index);
         Composite localPanel = this;
         localPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL |
                 GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
@@ -78,8 +80,8 @@ public class GrxServerManagerPanel extends Composite {
         pathText_ = new Text(localPanel, SWT.BORDER);
         GridData pathGridData = new GridData(GridData.FILL_HORIZONTAL);
         pathGridData.widthHint = TEXT_LENGTH_;
-        pathText_.setText(GrxServerManager.vecServerInfo.elementAt(localDim).com.get(0));
-        pathStr_ = GrxServerManager.vecServerInfo.elementAt(localDim).com.get(0);
+        pathText_.setText(processInfo_.com.get(0));
+        pathStr_ = processInfo_.com.get(0);
         pathText_.addModifyListener( new ModifyListener() {
             public void modifyText(ModifyEvent e){
                 pathStr_ = new String( pathText_.getText().trim());
@@ -99,8 +101,8 @@ public class GrxServerManagerPanel extends Composite {
         argsText_ = new Text(localPanel, SWT.BORDER);
         GridData argsGridData = new GridData(GridData.FILL_HORIZONTAL);
         argsGridData.widthHint = TEXT_LENGTH_;
-        argsText_.setText(GrxServerManager.vecServerInfo.elementAt(localDim).args);
-        argsStr_ = GrxServerManager.vecServerInfo.elementAt(localDim).args;
+        argsText_.setText(processInfo_.args);
+        argsStr_ = processInfo_.args;
         argsText_.addModifyListener( new ModifyListener() {
             public void modifyText(ModifyEvent e){
                 argsStr_ = new String(argsText_.getText().trim()); 
@@ -108,7 +110,7 @@ public class GrxServerManagerPanel extends Composite {
         });
 
         toggleButton_ = new Button(localPanel, SWT.PUSH);
-        if (GrxServerManager.vecServerInfo.elementAt(localDim).autoStart) {
+        if (processInfo_.autoStart) {
             toggleButton_.setText(STOP_);
         } else {
             toggleButton_.setText(START_);
@@ -118,7 +120,7 @@ public class GrxServerManagerPanel extends Composite {
             public void widgetDefaultSelected(SelectionEvent e) {}
             
             public void widgetSelected(SelectionEvent e) {
-                updateRefBtn(localDim);
+                updateRefBtn();
             }
         });
 
@@ -126,7 +128,7 @@ public class GrxServerManagerPanel extends Composite {
             public void widgetDefaultSelected(SelectionEvent e) {}
 
             public void widgetSelected(SelectionEvent e) {
-                updateBtn(localDim);
+                updateBtn();
             }
         });
 
@@ -143,8 +145,8 @@ public class GrxServerManagerPanel extends Composite {
         autoChkBox_ = new Button(localPanel, SWT.CHECK);
         GridData chkbtnGridData = new GridData();
         chkbtnGridData.horizontalIndent = HORIZON_INDENT_;
-        autoChkBox_.setSelection(GrxServerManager.vecServerInfo.elementAt(localDim).autoStart);
-        bAuto_ = GrxServerManager.vecServerInfo.elementAt(localDim).autoStart;
+        autoChkBox_.setSelection(processInfo_.autoStart);
+        bAuto_ = processInfo_.autoStart;
         autoChkBox_.addSelectionListener( new SelectionListener() {
             public void widgetDefaultSelected(SelectionEvent e){}
             
@@ -162,8 +164,8 @@ public class GrxServerManagerPanel extends Composite {
         useORBChkBox_ = new Button(localPanel, SWT.CHECK);
         GridData UseORBchkbtnGridData = new GridData();
         UseORBchkbtnGridData.horizontalIndent = HORIZON_INDENT_;
-        useORBChkBox_.setSelection(GrxServerManager.vecServerInfo.elementAt(localDim).useORB);
-        bUseORB_ = GrxServerManager.vecServerInfo.elementAt(localDim).useORB;
+        useORBChkBox_.setSelection(processInfo_.useORB);
+        bUseORB_ = processInfo_.useORB;
         useORBChkBox_.addSelectionListener( new SelectionListener() {
             public void widgetDefaultSelected(SelectionEvent e){}
             
@@ -185,18 +187,18 @@ public class GrxServerManagerPanel extends Composite {
     }
 
     //パネルの情報を元にProcessInfoを更新する
-    public void updateProcessInfo(ProcessInfo ref){
-        ref.autoStart = bAuto_;
-        ref.useORB = bUseORB_;
-        ref.args = argsStr_;
+    public void updateProcessInfo(){
+        processInfo_.autoStart = bAuto_;
+        processInfo_.useORB = bUseORB_;
+        processInfo_.args = argsStr_;
         
         // comに関してはupdateBtn(int localDim)を参照
-        ref.com.clear();
-        ref.com.add( pathStr_ );
+        processInfo_.com.clear();
+        processInfo_.com.add( pathStr_ );
     }
     
     //ファイル参照用のモーダルダイアログを開く
-    private void updateRefBtn(int localDim) {
+    private void updateRefBtn() {
         //ファイル名の取得
         String[] filterNames = new String[] { MessageBundle.get("GrxServerManagerPanel.filedialog.filterName") }; //$NON-NLS-1$
         String[] filterExtensions = new String[] { "*" }; //$NON-NLS-1$
@@ -206,13 +208,13 @@ public class GrxServerManagerPanel extends Composite {
         fileDlg.setFilterNames(filterNames);
         fileDlg.setFilterExtensions(filterExtensions);
 
-        String strServerName = GrxServerManager.vecServerInfo.elementAt(localDim).id;
+        String strServerName = processInfo_.id;
         fileDlg.setText(MessageBundle.get("GrxServerManagerPanel.filedialog.title") + strServerName); //$NON-NLS-1$
         pathText_.setText(fileDlg.open());
     }
 
     //プロセス停止と開始
-    private void updateBtn(int localDim) {
+    private void updateBtn() {
         String mes = MessageBundle.get("GrxServerManagerPanel.dialog.message.update"); //$NON-NLS-1$
         mes = NLS.bind(mes, new String[]{toggleButton_.getText()});
 
@@ -222,11 +224,8 @@ public class GrxServerManagerPanel extends Composite {
                 MessageBundle.get("GrxServerManagerPanel.dialog.title.update") + toggleButton_.getText(), //$NON-NLS-1$
                 mes)) //$NON-NLS-1$ //$NON-NLS-2$
         {
-            TabFolder tabfolder = (TabFolder)getParent();
-            ProcessInfo localInfo = new ProcessInfo(); 
-            updateProcessInfo(localInfo);
-            localInfo.id = tabfolder.getItem(localDim).getText();
-            if( serverManager_.toggleProcess(localInfo) )
+            updateProcessInfo();
+            if( serverManager_.toggleProcess(processInfo_) )
             {
                 toggleButton_.setText(STOP_);
             }else{

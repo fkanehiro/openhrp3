@@ -11,47 +11,47 @@
 package com.generalrobotix.ui.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
+
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
-import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.GrxProcessManager.*;
-import com.generalrobotix.ui.util.FileUtil;
 import com.generalrobotix.ui.grxui.Activator;
+import com.generalrobotix.ui.grxui.PreferenceConstants;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
 
 @SuppressWarnings("serial")
-public class GrxServerManager extends GrxBaseItem{
-
-    private static final String                CONFIG_XML             = "grxuirc.xml";
-    private static File                         CONFIG_XML_PATH = null;                 
-    public static volatile Vector<ProcessInfo> vecServerInfo          = new Vector<ProcessInfo>();
-    public static volatile ProcessInfo         nameServerInfo = new ProcessInfo();
-    //private static volatile boolean           bInitializedServerInfo = false;
+public class GrxServerManager extends GrxBaseItem{            
+    private static volatile Vector<ProcessInfo> vecServerInfo          = new Vector<ProcessInfo>();
+    private static volatile ProcessInfo         nameServerInfo = new ProcessInfo();
     private static SynchronizedAccessor<Integer>    newPort_ = new SynchronizedAccessor<Integer>(0);
     private static SynchronizedAccessor<String>    newHost_ = new SynchronizedAccessor<String>("");
     private static SynchronizedAccessor<String>    nameServerLogDir = new SynchronizedAccessor<String>("");
     private static final int    MAXMUM_PORT_NUMBER  = 65535;
     private static final String LINE_SEPARATOR = new String( System.getProperty("line.separator") );
+    
+    public static int     NAME_SERVER_PORT_ ;
+    public static String  NAME_SERVER_HOST_ ;
+    public static String  NAME_SERVER_LOG_DIR_ ;
+    public String  serverInfoDefaultDir_  = "";
+    public int     serverInfoDefaultWaitCount_ = 0;
 
-    //Xmlファイルへ次回起動のための値を保存
+    //次回起動のための値を保存
     public synchronized void SaveServerInfo() {
-        GrxServerManagerConfigXml.setFileName(CONFIG_XML_PATH);
-        for (int i = 0; i < vecServerInfo.size(); ++i) {
-        	GrxServerManagerConfigXml.setServerNode(vecServerInfo.elementAt(i));
-        }
-        GrxServerManagerConfigXml.SaveServerInfo(newPort_.get(), newHost_.get());
-    }
-
-
-    //Xmlファイルハンドルの取得
-    static private File getConfigXml() {
-        return new File(Activator.getDefault().getTempDir(), CONFIG_XML);
+    	setServerInfoToPreferenceStore();
+    	setNameServerInfoToPreferenceStore();
+    	ScopedPreferenceStore store = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
+    	try {
+			store.save();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
     
     /**
@@ -59,7 +59,6 @@ public class GrxServerManager extends GrxBaseItem{
      */
 	public GrxServerManager(String name, GrxPluginManager manager) {
 		super(name, manager);
-		CONFIG_XML_PATH = getConfigXml();
     }
     
     /**
@@ -130,11 +129,7 @@ public class GrxServerManager extends GrxBaseItem{
 
         if (process == null) {
             // 新規登録と開始処理
-            pInfo.waitCount = GrxServerManagerConfigXml.getDefaultWaitCount();
-            pInfo.dir = GrxServerManagerConfigXml.getDefaultDir();
             updatedParam(pInfo);
-
-            pInfo.dir = GrxXmlUtil.expandEnvVal(GrxServerManagerConfigXml.getDefaultDir());
             pInfo.args = GrxXmlUtil.expandEnvVal(pInfo.args);
             String serverDir = Activator.getDefault().getPreferenceStore().getString("SERVER_DIR");
             for (int i = 0; i < pInfo.com.size(); ++i) {
@@ -268,23 +263,160 @@ public class GrxServerManager extends GrxBaseItem{
         return ret;
     }
     
-    public void initialize(Element root){
-    	GrxServerManagerConfigXml.setElementRoot(root);
-        nameServerInfo = GrxServerManagerConfigXml.getNameServerInfo();
+    public void initialize(){
+    	getNameServerInfoFromPerferenceStore();
         vecServerInfo.clear();
-        for (int i = 0;; ++i) {
-            ProcessInfo localInfo = GrxServerManagerConfigXml.getServerInfo(i);
-            if (localInfo == null) {
-                break;
+        getServerInfoFromPerferenceStore();       
+        newPort_.set(NAME_SERVER_PORT_);
+        newHost_.set(NAME_SERVER_HOST_);
+        nameServerLogDir.set(NAME_SERVER_LOG_DIR_);
+    }
+    
+    private void getNameServerInfoFromPerferenceStore(){
+    	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+        nameServerInfo.id = PreferenceConstants.NAMESERVER; 
+        String _dir = store.getString(
+        		PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR);
+        NAME_SERVER_LOG_DIR_ = GrxXmlUtil.expandEnvVal(_dir).trim();       
+        if(!NAME_SERVER_LOG_DIR_.isEmpty()){
+            String localStr = NAME_SERVER_LOG_DIR_.replaceFirst("^\"", "");
+            File logDir = new File(localStr.replaceFirst("\"$", ""));
+            if(!logDir.exists()){
+                logDir.mkdirs();
             }
-            if (localInfo.id.equals("")){
-                continue;
-            }
-            vecServerInfo.add(localInfo);
         }
-        newPort_.set(GrxServerManagerConfigXml.getNameServerPort());
-        newHost_.set(GrxServerManagerConfigXml.getNameServerHost());
-        nameServerLogDir.set(GrxServerManagerConfigXml.getNameServerLogDir());
+        NAME_SERVER_PORT_ = store.getInt(
+        		PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.PORT);
+        if(NAME_SERVER_PORT_==0)
+        	NAME_SERVER_PORT_ = store.getDefaultInt(
+            		PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.PORT);
+        NAME_SERVER_HOST_ = store.getString(
+        			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.HOST);
+        if(NAME_SERVER_HOST_.equals(""))
+        	NAME_SERVER_HOST_ = store.getDefaultString(
+            		PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.HOST);
+        
+        nameServerInfo.args = "-ORBendPointPublish giop:tcp:"+ NAME_SERVER_HOST_ + ": -start " + 
+                    Integer.toString(NAME_SERVER_PORT_) + " -logdir " + NAME_SERVER_LOG_DIR_;
+        String _com = store.getString(
+    			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM);
+        _com = GrxXmlUtil.expandEnvVal(_com).trim();
+        nameServerInfo.com.add(_com + " " + nameServerInfo.args);
+        nameServerInfo.autoStart = true;
+        nameServerInfo.waitCount = store.getInt(
+        			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.WAITCOUNT);
+        nameServerInfo.dir = store.getString(
+    			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.DIR).trim();
+        nameServerInfo.isCorbaServer = false;
+        nameServerInfo.hasShutdown = store.getBoolean(
+    			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.HASSHUTDOWN);
+        nameServerInfo.doKillall = false;
+        nameServerInfo.autoStop = true;
+    }
+    
+    private void getServerInfoFromPerferenceStore(){
+    	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+    	String idList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.ID);
+    	String[] id = idList.split(":",-1);
+    	String dirList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.DIR);
+    	String[] dir = dirList.split(":",-1);
+    	String waitCountList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.WAITCOUNT);
+    	String[] waitCount = waitCountList.split(":",-1);
+    	String comList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.COM);
+    	String[] com = comList.split(":",-1);
+    	String argsList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.ARGS);
+    	String[] args = argsList.split(":",-1);
+    	String autoStartList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.AUTOSTART);
+    	String[] autoStart = autoStartList.split(":",-1);
+    	String useORBList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB);
+    	String[] useORB = useORBList.split(":",-1);
+    	String hasShutDownList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.HASSHUTDOWN);
+    	String[] hasShutDown = hasShutDownList.split(":",-1);
+    	for(int i=1; i<id.length; i++){
+    		ProcessInfo processInfo = new ProcessInfo();
+    		processInfo.id = id[i];
+    		if(i<com.length && !com[i].equals(""))
+    			processInfo.com.add(com[i].trim());
+    		else
+    			processInfo.com.add(com[0].trim());
+    		if(i<args.length && !args[i].equals(""))
+    			processInfo.args = args[i].trim();
+    		else
+    			processInfo.args = args[0].trim();
+    		if(i<autoStart.length && !autoStart[i].equals(""))
+    			processInfo.autoStart = autoStart[i].equals("true")? true : false;
+    		else
+    			processInfo.autoStart = autoStart[0].equals("true")? true : false;
+    		if(i<useORB.length && !useORB[i].equals(""))
+    			processInfo.useORB = useORB[i].equals("true")? true : false;
+    		else
+    			processInfo.useORB = useORB[0].equals("true")? true : false;
+    		if(i<hasShutDown.length && !hasShutDown[i].equals(""))
+    			processInfo.hasShutdown = hasShutDown[i].equals("true")? true : false;
+    		else
+    			processInfo.hasShutdown = hasShutDown[0].equals("true")? true : false;
+    		if(i<waitCount.length && !waitCount[i].equals(""))
+    			processInfo.waitCount = Integer.parseInt(waitCount[i]);
+    		else
+    			processInfo.waitCount = Integer.parseInt(waitCount[0]);
+    		if(i<dir.length && !dir[i].equals(""))
+    			processInfo.dir = dir[i].trim();
+    		else
+    			processInfo.dir = dir[0].trim();
+    		processInfo.isCorbaServer = true;
+    		processInfo.doKillall = false;
+    		processInfo.autoStop = true;   
+    		vecServerInfo.add(processInfo);
+    	}	
+    	serverInfoDefaultDir_ = dir[0].trim();
+    	serverInfoDefaultWaitCount_ = Integer.parseInt(waitCount[0]);
+    	
+    	if(nameServerInfo.waitCount==0)
+        	nameServerInfo.waitCount = serverInfoDefaultWaitCount_;
+    	if(nameServerInfo.dir.equals(""))
+        	nameServerInfo.dir = serverInfoDefaultDir_;
+    }
+    
+    public static void setServerInfoToPreferenceStore(){
+    	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+    	String id = PreferenceConstants.ALLSERVER;
+    	String com = "";
+    	String args = "";
+    	String autoStart= "false";
+    	String useORB= "false";
+    	for(int i=0; i<vecServerInfo.size(); i++){
+    		ProcessInfo processInfo =vecServerInfo.elementAt(i);
+    		id += ":" + processInfo.id;
+    		com += ":" + processInfo.com.get(0);
+    		args += ":" + processInfo.args;
+    		autoStart += ":" + (processInfo.autoStart? "true" : "false");
+    		useORB += ":" + (processInfo.useORB? "true" : "false");
+    	}
+    	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.ID, id);
+    	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.COM, com);
+    	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.ARGS, args);
+    	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.AUTOSTART, autoStart);
+    	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB, useORB);
+    }
+    
+    public static void setNameServerInfoToPreferenceStore(){
+    	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+    	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.PORT, 
+    			newPort_.get());
+    	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.HOST, 
+    			newHost_.get());
+    }
+    
+    public void restoreDefault(){
+    	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+    	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.PORT);
+    	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.HOST);
+    	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.ID);
+    	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.COM);
+    	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.ARGS);
+    	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.AUTOSTART);
+    	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB);
+    	initialize();
     }
     
 }
