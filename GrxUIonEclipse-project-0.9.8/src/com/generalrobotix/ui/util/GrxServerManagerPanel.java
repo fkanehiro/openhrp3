@@ -40,7 +40,8 @@ import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 public class GrxServerManagerPanel extends Composite {
 
     static private final int    HORIZON_INDENT_ = 4;
-    static private final int    LABEL_LENGTH_   = 32;
+    static private final int    LABEL_LENGTH_   = 40;
+    static private final int    BUTTON_LENGTH_   = 64;
     static private final int    TEXT_LENGTH_    = 256;
     static private final String START_          = MessageBundle.get("GrxServerManagerPanel.button.start"); //$NON-NLS-1$
     static private final String STOP_           = MessageBundle.get("GrxServerManagerPanel.button.stop"); //$NON-NLS-1$
@@ -69,7 +70,7 @@ public class GrxServerManagerPanel extends Composite {
 
         GridLayout localGridLayout = new GridLayout(3, false);
 
-        localGridLayout.marginWidth = 0;
+        localGridLayout.marginLeft = 0;
         localGridLayout.horizontalSpacing = 0;
         localPanel.setLayout(localGridLayout);
 
@@ -137,7 +138,7 @@ public class GrxServerManagerPanel extends Composite {
 
         GridData btnGridData = new GridData();
         btnGridData.horizontalIndent = HORIZON_INDENT_;
-        btnGridData.widthHint = 64;
+        btnGridData.widthHint = BUTTON_LENGTH_;
 
         Label localLabelAuto = new Label(localPanel, SWT.RIGHT | SWT.FILL);
         localLabelAuto.setText(MessageBundle.get("GrxServerManagerPanel.label.start")); //$NON-NLS-1$
