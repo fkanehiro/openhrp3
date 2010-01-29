@@ -26,6 +26,10 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseTrackListener;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -34,6 +38,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.jface.action.Action;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBasePlugin;
@@ -65,31 +71,41 @@ public class GrxLoggerView extends GrxBaseView {
 	private Scale sliderFrameRate_;
 	private Label  lblFrameRate_;
 	private Scale sliderTime_;
-	private Button btnFRwd_;
-	private Button btnSRwd_;
-	private Button btnPause_;
-	private Button btnPlay_;
-	private Button btnSFwd_;
-	private Button btnFFwd_;
+    
+
 	private Button btnFrameF_;
 	private Button btnFrameR_;
-	private Button[] btns_ = new Button[8];
-	private Text tFldTime_;
+	private Button[] btns_ = new Button[2];
 
 	private String[] btnToolTips = new String[] {
-			MessageBundle.get("GrxLoggerView.text.fastRwd"),MessageBundle.get("GrxLoggerView.text.slowRwd"), //$NON-NLS-1$ //$NON-NLS-2$
-			MessageBundle.get("GrxLoggerView.text.oneRwd"), MessageBundle.get("GrxLoggerView.text.pause"), MessageBundle.get("GrxLoggerView.text.play"), MessageBundle.get("GrxLoggerView.text.onePlay"),  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			MessageBundle.get("GrxLoggerView.text.slowFwd"), MessageBundle.get("GrxLoggerView.text.fastFwd") //$NON-NLS-1$ //$NON-NLS-2$
+			MessageBundle.get("GrxLoggerView.text.oneRwd"), MessageBundle.get("GrxLoggerView.text.onePlay")  //$NON-NLS-1$ //$NON-NLS-2$
 		};
-	private final static String iconFRwd_ = "fastrwd.png"; //$NON-NLS-1$
-	private final static String iconSRwd_ = "slowrwd.png"; //$NON-NLS-1$
-	private final static String iconStop_ = "pause.png"; //$NON-NLS-1$
-	private final static String iconPlay_ = "playback.png"; //$NON-NLS-1$
-	private final static String iconSFwd_ = "slowfwd.png"; //$NON-NLS-1$
-	private final static String iconFFwd_ = "fastfwd.png"; //$NON-NLS-1$
-	private final static String iconFrameF_ = "frame+.png"; //$NON-NLS-1$
-	private final static String iconFrameR_ = "frame-.png"; //$NON-NLS-1$
-	private final static String[] icons_ = { iconFRwd_, iconSRwd_, iconFrameR_, iconStop_, iconPlay_, iconFrameF_, iconSFwd_, iconFFwd_ };
+
+	private final static String[] icons_ = { "icon_frame-.png", "icon_frame+.png" };//$NON-NLS-1$ //$NON-NLS-2$
+
+    private Text tFldTime_;
+    
+    private Action[] toolActs_ = new Action[6];
+    private String[] actToolTips_ = new String[] {
+        MessageBundle.get("GrxLoggerView.text.fastRwd"),MessageBundle.get("GrxLoggerView.text.slowRwd"), //$NON-NLS-1$ //$NON-NLS-2$
+        MessageBundle.get("GrxLoggerView.text.pause"), MessageBundle.get("GrxLoggerView.text.play"), //$NON-NLS-1$ //$NON-NLS-2$
+        MessageBundle.get("GrxLoggerView.text.slowFwd"), MessageBundle.get("GrxLoggerView.text.fastFwd") //$NON-NLS-1$ //$NON-NLS-2$
+        };
+    private final static String[] actIcons_ = {
+        "icon_fastrwd.png", //$NON-NLS-1$
+        "icon_slowrwd.png", //$NON-NLS-1$
+        "icon_pause.png", //$NON-NLS-1$
+        "icon_playback.png", //$NON-NLS-1$
+        "icon_slowfwd.png", //$NON-NLS-1$
+        "icon_fastfwd.png" }; //$NON-NLS-1$
+    private final static String[] actDIcons_ = {
+        "icond_fastrwd.png", //$NON-NLS-1$
+        "icond_slowrwd.png", //$NON-NLS-1$
+        "icond_pause.png", //$NON-NLS-1$
+        "icond_playback.png", //$NON-NLS-1$
+        "icond_slowfwd.png", //$NON-NLS-1$
+        "icond_fastfwd.png" }; //$NON-NLS-1$
+
     private final static int    maxFrameRate_ = 50;
 	private Label  lblPlayRate_;
 	
@@ -98,7 +114,16 @@ public class GrxLoggerView extends GrxBaseView {
 	private static String timeFormat   = "%8.3f"; //"###0.000" //$NON-NLS-1$
 
 	//private static final Font MONO_PLAIN_12 = new Font("Monospaced", Font.PLAIN, 12);
-
+	
+    private int mouseBtnActionNum = 0;
+    private int mouseBtnRepeat_ = 200;
+    private int mouseBtnAccelNeed_ = 5;
+    private int mouseBtnAccelRepeat_ = 30;
+    private boolean isMouseOverBtnR_ = false;
+    private boolean isMouseOverBtnF_ = false;
+    private Runnable backPosRun_;
+    private Runnable forwardPosRun_;
+    
 	/**
 	 * @brief
 	 * @param name
@@ -123,106 +148,83 @@ public class GrxLoggerView extends GrxBaseView {
 
         // playback controller
 		Composite btnComp = new Composite ( composite_, SWT.NONE);
-		GridLayout buttonLayout = new GridLayout(8,false);
+		GridLayout buttonLayout = new GridLayout(2,false);
 		buttonLayout.marginHeight = 0;
 		buttonLayout.marginWidth = 0;
 		btnComp.setLayout( buttonLayout );
 
-		btnFRwd_ = new Button( btnComp, SWT.NONE );
-		btnFRwd_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-				if (!isPlaying_)
-					playRate_ = -2.0;
-				else if (playRate_ > 0)
-					playRate_ *= -1;
-				else if (playRate_ > -64)
-					playRate_ *= 2.0;
-				play();
+        btnFrameR_ = new Button( btnComp, SWT.NONE );
+        
+        btnFrameR_.addMouseTrackListener(new MouseTrackListener(){
+            public void mouseEnter(MouseEvent e){
+                isMouseOverBtnR_ = true;
             }
-        });
-		
-		btnSRwd_ = new Button( btnComp, SWT.NONE );
-		btnSRwd_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-				if (!isPlaying_)
-					playRate_ = -1.0/8.0;
-				else if (playRate_ > 0)
-					playRate_ *= -1;
-				else if (1/playRate_ > -64)
-					playRate_ *= 0.5;
-				play();
+            public void mouseExit(MouseEvent e){
+                isMouseOverBtnR_ = false;
+            }
+            public void mouseHover(MouseEvent e){
             }
         });
 
-		btnFrameR_ = new Button( btnComp, SWT.NONE );
-		btnFrameR_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-            	if (isPlaying_)
-            		pause();
-            	currentItem_.setPosition(sliderTime_.getSelection()-1);
-            }
-		});
-		
-		btnPause_ = new Button( btnComp, SWT.NONE );
-		btnPause_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-        		pause();
+        btnFrameR_.addMouseMoveListener(new MouseMoveListener(){
+            public void mouseMove(MouseEvent e){
+                isMouseOverBtnR_ = (0 <= e.x && e.x < btnFrameR_.getSize().x && 0 <= e.y && e.y < btnFrameR_.getSize().y);
             }
         });
-
-		btnPlay_ = new Button( btnComp, SWT.NONE );
-		btnPlay_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-				playRate_ = 1.0;
-				play();
+        btnFrameR_.addMouseListener(new MouseListener(){
+            public void mouseDoubleClick(MouseEvent e){
+            }
+            public void mouseDown(MouseEvent e) {
+                if(e.button == 1){
+                    backPosition();
+                    startBackPosTimer();
+                }
+            }
+            public void mouseUp(MouseEvent e) {
+                if(e.button == 1){
+                    stopBackPosTimer();
+                }
             }
         });
 
 		btnFrameF_ = new Button( btnComp, SWT.NONE );
-		btnFrameF_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-            	if (isPlaying_)
-            		pause();
-            	currentItem_.setPosition(sliderTime_.getSelection()+1);
+        
+        btnFrameF_.addMouseTrackListener(new MouseTrackListener(){
+            public void mouseEnter(MouseEvent e){
+                isMouseOverBtnF_ = true;
             }
-		});
-		
-		btnSFwd_ = new Button( btnComp, SWT.NONE );
-		btnSFwd_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-				if (!isPlaying_)
-					playRate_ = 1.0/8.0;
-				else if (playRate_ < 0)
-					playRate_ *= -1;
-				else if (1/playRate_ < 64)
-					playRate_ *= 0.5;
-				play();
+            public void mouseExit(MouseEvent e){
+                isMouseOverBtnF_ = false;
+            }
+            public void mouseHover(MouseEvent e){
             }
         });
 
-		btnFFwd_ = new Button( btnComp, SWT.NONE );
-		btnFFwd_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-        		if (!isPlaying_)
-					playRate_ = 2.0;
-				else if (playRate_ < 0)
-					playRate_ *= -1;
-				else if (playRate_ < 64)
-					playRate_ *= 2.0;
-				play();
-			}
+        btnFrameF_.addMouseMoveListener(new MouseMoveListener(){
+            public void mouseMove(MouseEvent e){
+                isMouseOverBtnF_ = (0 <= e.x && e.x < btnFrameF_.getSize().x && 0 <= e.y && e.y < btnFrameF_.getSize().y);
+            }
+        });
+        btnFrameF_.addMouseListener(new MouseListener(){
+            public void mouseDoubleClick(MouseEvent e){
+            }
+            public void mouseDown(MouseEvent e) {
+                if(e.button == 1){
+                	forwardPosition();
+                    startForwardPosTimer();
+                }
+            }
+            public void mouseUp(MouseEvent e) {
+                if(e.button == 1){
+                    stopForwardPosTimer();
+                }
+            }
         });
 
-		btns_[0] = btnFRwd_;
-		btns_[1] = btnSRwd_; 
-		btns_[2] = btnFrameR_;
-		btns_[3] = btnPause_;
-		btns_[4] = btnPlay_;
-		btns_[5] = btnFrameF_;
-		btns_[6] = btnSFwd_;
-		btns_[7] = btnFFwd_;
+		btns_[0] = btnFrameR_;
+		btns_[1] = btnFrameF_;
 
-		for(int i=0; i<8; i++) {
+		for(int i=0; i<btns_.length; i++) {
 			btns_[i].setImage( Activator.getDefault().getImage( icons_[i] ) );
 			btns_[i].setToolTipText( btnToolTips[i] );
 		}
@@ -260,9 +262,13 @@ public class GrxLoggerView extends GrxBaseView {
 		} );
 		sliderTime_.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e) {
-				if (e.keyCode == SWT.ARROW_LEFT){
+				if (e.keyCode == SWT.ARROW_LEFT || e.keyCode == SWT.ARROW_DOWN){
+			        if (isPlaying_)
+			            pause();
 					currentItem_.setPosition(sliderTime_.getSelection());
-				}else if (e.keyCode == SWT.ARROW_RIGHT){
+				}else if (e.keyCode == SWT.ARROW_RIGHT || e.keyCode == SWT.ARROW_UP){
+			        if (isPlaying_)
+			            pause();
 					currentItem_.setPosition(sliderTime_.getSelection());
 				}
 			}
@@ -290,7 +296,110 @@ public class GrxLoggerView extends GrxBaseView {
             }
         } );
 
-		
+        Action actFRwd_ = new Action(){
+            public void run(){
+                if (!isPlaying_)
+                    playRate_ = -2.0;
+                else if (playRate_ > 0)
+                    playRate_ *= -1;
+                else if (playRate_ > -64)
+                    playRate_ *= 2.0;
+                play();
+            }
+        };
+        
+        Action actSRwd_ = new Action(){
+            public void run(){
+                if (!isPlaying_)
+                    playRate_ = -1.0/8.0;
+                else if (playRate_ > 0)
+                    playRate_ *= -1;
+                else if (1/playRate_ > -64)
+                    playRate_ *= 0.5;
+                play();
+            }
+        };
+        Action actPause_ = new Action(){
+            public void run(){
+                pause();
+            }
+        };
+
+        Action actPlay_ = new Action(){
+            public void run(){
+                playRate_ = 1.0;
+                play();
+            }
+        };
+
+        Action actSFwd_ = new Action(){
+            public void run(){
+                if (!isPlaying_)
+                    playRate_ = 1.0/8.0;
+                else if (playRate_ < 0)
+                    playRate_ *= -1;
+                else if (1/playRate_ < 64)
+                    playRate_ *= 0.5;
+                play();
+            }
+        };
+
+        Action actFFwd_ = new Action(){
+            public void run(){
+                if (!isPlaying_)
+                    playRate_ = 2.0;
+                else if (playRate_ < 0)
+                    playRate_ *= -1;
+                else if (playRate_ < 64)
+                    playRate_ *= 2.0;
+                play();
+            }
+        };
+
+        toolActs_[0] = actFRwd_;
+        toolActs_[1] = actSRwd_; 
+        toolActs_[2] = actPause_;
+        toolActs_[3] = actPlay_;
+        toolActs_[4] = actSFwd_;
+        toolActs_[5] = actFFwd_;
+        IActionBars bars = vp.getViewSite().getActionBars();
+        for(int i = 0; i < toolActs_.length; i++) {
+            toolActs_[i].setImageDescriptor( Activator.getDefault().getDescriptor(actIcons_[i]) );
+            toolActs_[i].setDisabledImageDescriptor(Activator.getDefault().getDescriptor(actDIcons_[i]));
+            toolActs_[i].setToolTipText( actToolTips_[i] );
+            bars.getToolBarManager().add(toolActs_[i]);
+        }
+
+        
+        backPosRun_ = new Runnable() {
+            public void run() { 
+                Display display = btnFrameR_.getDisplay();
+                if (!display.isDisposed())
+                {
+                    if(isMouseOverBtnR_)
+                    {
+                        mouseBtnActionNum += 1;
+                        backPosition();
+                    }
+                    display.timerExec((mouseBtnActionNum < mouseBtnAccelNeed_ ? mouseBtnRepeat_ : mouseBtnAccelRepeat_), this);
+                }
+            }
+        };
+        forwardPosRun_ = new Runnable() {
+            public void run() { 
+                Display display = btnFrameF_.getDisplay();
+                if (!display.isDisposed())
+                {
+                    if(isMouseOverBtnF_)
+                    {
+                        mouseBtnActionNum += 1;
+                        forwardPosition();
+                    }
+                    display.timerExec((mouseBtnActionNum < mouseBtnAccelNeed_ ? mouseBtnRepeat_ : mouseBtnAccelRepeat_), this);
+                }
+            }
+        };
+
 		setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 		
 		currentItem_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
@@ -300,8 +409,8 @@ public class GrxLoggerView extends GrxBaseView {
 		}else
 			_setTimeSeriesItem(null);
 		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-		
-	}
+
+    }
 
 	private boolean _isAtTheEndAfterPlayback(){
 		if (current_ == sliderTime_.getMaximum() && playRate_ > 0){
@@ -497,6 +606,10 @@ public class GrxLoggerView extends GrxBaseView {
 		lblPlayRate_.setEnabled(b);
 		for (int i=0; i<btns_.length; i++)
 			btns_[i].setEnabled(b);
+
+		for (int i=0; i<toolActs_.length; i++)
+			toolActs_[i].setEnabled(b);
+
 	}
 	
     public void disableControl() {
@@ -525,5 +638,52 @@ public class GrxLoggerView extends GrxBaseView {
             sliderTime_.setPageIncrement(50);
         else
             sliderTime_.setPageIncrement(500);
+    }
+    
+    private void backPosition(){
+        if (isPlaying_)
+            pause();
+        currentItem_.setPosition(sliderTime_.getSelection()-1);
+    }
+    private void forwardPosition(){
+        if (isPlaying_)
+            pause();
+        currentItem_.setPosition(sliderTime_.getSelection()+1);
+    }
+    private void startBackPosTimer(){
+        mouseBtnActionNum = 0;
+
+        Display display = btnFrameR_.getDisplay();
+        if (!display.isDisposed())
+        {
+            display.timerExec(mouseBtnRepeat_, backPosRun_);
+        }
+    }
+    private void stopBackPosTimer(){
+        mouseBtnActionNum = 0;
+
+        Display display = btnFrameR_.getDisplay();
+        if (!display.isDisposed())
+        {
+            display.timerExec(-1, backPosRun_);
+        }
+    }
+    private void startForwardPosTimer(){
+        mouseBtnActionNum = 0;
+
+        Display display = btnFrameF_.getDisplay();
+        if (!display.isDisposed())
+        {
+            display.timerExec(mouseBtnRepeat_, forwardPosRun_);
+        }
+    }
+    private void stopForwardPosTimer(){
+        mouseBtnActionNum = 0;
+
+        Display display = btnFrameF_.getDisplay();
+        if (!display.isDisposed())
+        {
+            display.timerExec(-1, forwardPosRun_);
+        }
     }
 }

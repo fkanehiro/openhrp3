@@ -31,7 +31,10 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
     private Button buttonUP_;
     private Button buttonDOWN_;
     
+    private int mouseBtnActionNum = 0;
     private int mouseBtnRepeat_ = 200;
+    private int mouseBtnAccelNeed_ = 5;
+    private int mouseBtnAccelRepeat_ = 50;
     private boolean isMouseOverBtnUp_ = false;
     private boolean isMouseOverBtnDown_ = false;
     private Runnable incrementRun_;
@@ -184,8 +187,11 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
                 if (!display.isDisposed())
                 {
                     if(isMouseOverBtnUp_)
+                    {
+                        mouseBtnActionNum += 1;
                         incrementValue();
-                    display.timerExec(mouseBtnRepeat_, this);
+                    }
+                    display.timerExec((mouseBtnActionNum < mouseBtnAccelNeed_ ? mouseBtnRepeat_ : mouseBtnAccelRepeat_), this);
                 }
             }
         };
@@ -195,8 +201,11 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
                 if (!display.isDisposed())
                 {
                     if(isMouseOverBtnDown_)
+                    {
+                        mouseBtnActionNum += 1;
                         decrementValue();
-                    display.timerExec(mouseBtnRepeat_, this);
+                    }
+                    display.timerExec((mouseBtnActionNum < mouseBtnAccelNeed_ ? mouseBtnRepeat_ : mouseBtnAccelRepeat_), this);
                 }
             }
         };
@@ -259,6 +268,8 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
         updateValue();
     }
     private void startIncrementTimer(){
+        mouseBtnActionNum = 0;
+
         Display display = text_.getDisplay();
         if (!display.isDisposed())
         {
@@ -266,6 +277,8 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
         }
     }
     private void stopIncrementTimer(){
+        mouseBtnActionNum = 0;
+
         Display display = text_.getDisplay();
         if (!display.isDisposed())
         {
@@ -273,6 +286,8 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
         }
     }
     private void startDecrementTimer(){
+        mouseBtnActionNum = 0;
+
         Display display = text_.getDisplay();
         if (!display.isDisposed())
         {
@@ -280,6 +295,8 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
         }
     }
     private void stopDecrementTimer(){
+        mouseBtnActionNum = 0;
+
         Display display = text_.getDisplay();
         if (!display.isDisposed())
         {
