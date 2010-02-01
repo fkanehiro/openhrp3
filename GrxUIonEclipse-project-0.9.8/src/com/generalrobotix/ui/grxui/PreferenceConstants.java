@@ -28,6 +28,7 @@ public class PreferenceConstants {
 	public static final String MODELLOADER= "ModelLoader";
 	public static final String COLLISIONDETECTORFACTORY= "CollisionDetectorFactory";
 	public static final String DYNAMICSSIMULATORFACTORY= "DynamicsSimulatorFactory";
+	public static final String SEPARATOR="::";
 	
 	
 }

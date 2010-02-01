@@ -16,7 +16,6 @@ import java.util.Vector;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.w3c.dom.Element;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -89,7 +88,7 @@ public class GrxServerManager extends GrxBaseItem{
     public String getNameserverLogDir(){
         return nameServerLogDir.get(); 
     }
-    
+      
     public String setNewHostPort(String host, String port,StringBuffer refHost, StringBuffer refPort){
         String retHost = checkHostFormat(host);
         String retPort = checkPortFormat(port);
@@ -118,7 +117,6 @@ public class GrxServerManager extends GrxBaseItem{
      *          false:停止状態へ遷移
      */
     public boolean toggleProcess(ProcessInfo pInfo){
-        boolean ret = true;
         GrxProcessManager pm = GrxProcessManager.getInstance();
         AProcess process = pm.get(pInfo.id);
         StringBuffer nsHost = new StringBuffer("");
@@ -127,65 +125,36 @@ public class GrxServerManager extends GrxBaseItem{
         String nsOpt = "-ORBInitRef NameService=corbaloc:iiop:" + nsHost +
             ":" + nsPort + "/NameService";
 
-        if (process == null) {
-            // 新規登録と開始処理
-            updatedParam(pInfo);
-            pInfo.args = GrxXmlUtil.expandEnvVal(pInfo.args);
-            String serverDir = Activator.getDefault().getPreferenceStore().getString("SERVER_DIR");
-            for (int i = 0; i < pInfo.com.size(); ++i) {
-                String _com = null;
-            	if( !serverDir.equals("") && !new File(pInfo.com.get(i)).isAbsolute()){
-                	_com = serverDir + "/" + pInfo.com.get(i);
-                }else
-                	_com = pInfo.com.get(i);
-            	pInfo.com.set(i, GrxXmlUtil.expandEnvVal(_com));
-            }
-            if (pInfo.useORB) {
-                pInfo.com.add(nsOpt);
-            }
-            pm.register(pInfo);
-            if (!pm.get(pInfo.id).start(null)) {
-                // start 失敗
-                pm.unregister(pInfo.id);
-                ret = false;
-            }
-        } else {
-            if (process.isRunning()) {
+        if (process!=null){
+        	if (process.isRunning()) {
                 // 停止処理
                 process.stop();
-                ret = false;
-            } else {
-                // 開始処理
-                updatedParam(pInfo);
-                process.pi_.autoStart = pInfo.autoStart;
-                process.pi_.useORB = pInfo.useORB;
-                process.pi_.args = GrxXmlUtil.expandEnvVal(pInfo.args);
-                process.pi_.com.clear();
-                String serverDir = Activator.getDefault().getPreferenceStore().getString("SERVER_DIR");
-                if(pInfo.com.size() > 0){
-                	String _com = null;
-                	if( !serverDir.equals("") && !new File(pInfo.com.get(0)).isAbsolute()){
-                		_com = serverDir + "/" + pInfo.com.get(0);
-                	}else
-                		_com = pInfo.com.get(0);
-                	process.pi_.com.add(GrxXmlUtil.expandEnvVal(_com) + " " + process.pi_.args);
-                        
-                	for (int i = 1; i < pInfo.com.size(); ++i) {
-                		process.pi_.com.add(GrxXmlUtil.expandEnvVal(pInfo.com.get(i)));
-                	}
-                }
-                if (process.pi_.useORB) {
-                	process.pi_.com.add(nsOpt);
-                }
-                process.updateCom();
-
-	            if (!process.start(null)) {
-	            	// start 失敗
-	            	ret = false;
-	            }
-            }
+                return false;
+        	}else
+        		pm.unregister(pInfo.id);
         }
-        return ret;
+        // 新規登録と開始処理
+        String s = pInfo.com.get(0);
+        if(!(new File(s)).isAbsolute()){
+        	pInfo.com.clear();
+        	String ss = comToAbsolutePath(s);
+        	if(ss!=null)
+        		pInfo.com.add(ss);
+        	pInfo.com.add(s);
+        }
+        if (pInfo.useORB) {
+        	for(int i=0; i<pInfo.com.size(); i++)
+        		pInfo.com.set(i, pInfo.com.get(i) + " " + nsOpt);
+        }
+        updatedParam(pInfo);
+        pm.register(pInfo);
+        if (!pm.get(pInfo.id).start(null)) {
+        	// start 失敗
+        	pm.unregister(pInfo.id);
+        	return false;
+        }
+        
+        return true;
     }
     
     /**
@@ -298,10 +267,19 @@ public class GrxServerManager extends GrxBaseItem{
         
         nameServerInfo.args = "-ORBendPointPublish giop:tcp:"+ NAME_SERVER_HOST_ + ": -start " + 
                     Integer.toString(NAME_SERVER_PORT_) + " -logdir " + NAME_SERVER_LOG_DIR_;
-        String _com = store.getString(
+        
+        String s = store.getString(
     			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM);
-        _com = GrxXmlUtil.expandEnvVal(_com).trim();
-        nameServerInfo.com.add(_com + " " + nameServerInfo.args);
+        //      優先度　SERVER_DIRの下, Pathの通っているところ, AbsolutePath　//
+        String ss=comToAbsolutePath(s);
+        if(ss!=null)
+        	nameServerInfo.com.add(ss);
+        nameServerInfo.com.add(s);
+        s = store.getString(
+    			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM+0);
+        if(!s.equals(""))
+        	nameServerInfo.com.add(s);
+        
         nameServerInfo.autoStart = true;
         nameServerInfo.waitCount = store.getInt(
         			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.WAITCOUNT);
@@ -314,31 +292,55 @@ public class GrxServerManager extends GrxBaseItem{
         nameServerInfo.autoStop = true;
     }
     
+    private String[] parse(String string){
+    	String[] ret = string.split("\""+PreferenceConstants.SEPARATOR+"\"",-1);
+    	if(ret.length!=0){
+    		if(ret[0].charAt(0)=='\"')
+    			ret[0] = ret[0].substring(1,ret[0].length());
+    		String s=ret[ret.length-1];
+    		if(s.charAt(s.length()-1)=='\"')
+    			ret[ret.length-1] = s.substring(0,s.length()-1);
+    	}
+    	return ret;
+    }
+    
     private void getServerInfoFromPerferenceStore(){
     	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
     	String idList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.ID);
-    	String[] id = idList.split(":",-1);
+    	String[] id = idList.split(PreferenceConstants.SEPARATOR,-1);
     	String dirList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.DIR);
-    	String[] dir = dirList.split(":",-1);
+    	String[] dir = parse(dirList);
     	String waitCountList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.WAITCOUNT);
-    	String[] waitCount = waitCountList.split(":",-1);
+    	String[] waitCount = waitCountList.split(PreferenceConstants.SEPARATOR,-1);
     	String comList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.COM);
-    	String[] com = comList.split(":",-1);
+    	String[] com = parse(comList);
     	String argsList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.ARGS);
-    	String[] args = argsList.split(":",-1);
+    	String[] args = parse(argsList);
     	String autoStartList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.AUTOSTART);
-    	String[] autoStart = autoStartList.split(":",-1);
+    	String[] autoStart = autoStartList.split(PreferenceConstants.SEPARATOR,-1);
     	String useORBList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB);
-    	String[] useORB = useORBList.split(":",-1);
+    	String[] useORB = useORBList.split(PreferenceConstants.SEPARATOR,-1);
     	String hasShutDownList = store.getString(PreferenceConstants.PROCESS+"."+PreferenceConstants.HASSHUTDOWN);
-    	String[] hasShutDown = hasShutDownList.split(":",-1);
+    	String[] hasShutDown = hasShutDownList.split(PreferenceConstants.SEPARATOR,-1);
     	for(int i=1; i<id.length; i++){
     		ProcessInfo processInfo = new ProcessInfo();
     		processInfo.id = id[i];
+    		String s=null;
     		if(i<com.length && !com[i].equals(""))
-    			processInfo.com.add(com[i].trim());
+    			s = com[i].trim();
     		else
-    			processInfo.com.add(com[0].trim());
+    			s = com[0].trim();
+    		//  優先度　AbsolutePath, SERVER_DIRの下, Pathの通っているところ　//
+    		if((new File(s)).isAbsolute())
+    			processInfo.com.add(s);
+    		else{
+    			String ss=comToAbsolutePath(s);
+    			if(ss!=null){
+    				processInfo.com.add(ss);
+    				processInfo.editComIndex = 1;
+    			}
+    			processInfo.com.add(s);
+    		}
     		if(i<args.length && !args[i].equals(""))
     			processInfo.args = args[i].trim();
     		else
@@ -377,20 +379,41 @@ public class GrxServerManager extends GrxBaseItem{
         	nameServerInfo.dir = serverInfoDefaultDir_;
     }
     
+    private String comToAbsolutePath(String com){
+    	if((new File(com)).isAbsolute())
+    		return null;
+    	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+    	String serverDir = store.getString("SERVER_DIR");
+        if(!serverDir.equals("")){
+        	File file = new File(serverDir);
+        	String[] list = file.list();
+        	for(int i=0; i<list.length; i++){
+        		int endIndex = list[i].lastIndexOf(".");
+        		if(endIndex<0)
+        			endIndex = list[i].length();
+        		String s=list[i].substring(0, endIndex);
+        		if(s.equals(com)){
+        			return serverDir+"/"+com;
+        		}
+        	}
+        }
+        return null;
+    }
+    
     public static void setServerInfoToPreferenceStore(){
     	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
     	String id = PreferenceConstants.ALLSERVER;
-    	String com = "";
-    	String args = "";
+    	String com = "\"\"";
+    	String args = "\"\"";
     	String autoStart= "false";
     	String useORB= "false";
     	for(int i=0; i<vecServerInfo.size(); i++){
     		ProcessInfo processInfo =vecServerInfo.elementAt(i);
-    		id += ":" + processInfo.id;
-    		com += ":" + processInfo.com.get(0);
-    		args += ":" + processInfo.args;
-    		autoStart += ":" + (processInfo.autoStart? "true" : "false");
-    		useORB += ":" + (processInfo.useORB? "true" : "false");
+    		id += PreferenceConstants.SEPARATOR + processInfo.id;
+    		com += PreferenceConstants.SEPARATOR + "\""+processInfo.com.get(processInfo.editComIndex)+"\"";
+    		args += PreferenceConstants.SEPARATOR + "\""+processInfo.args+"\"";
+    		autoStart += PreferenceConstants.SEPARATOR + (processInfo.autoStart? "true" : "false");
+    		useORB += PreferenceConstants.SEPARATOR + (processInfo.useORB? "true" : "false");
     	}
     	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.ID, id);
     	store.setValue(PreferenceConstants.PROCESS+"."+PreferenceConstants.COM, com);

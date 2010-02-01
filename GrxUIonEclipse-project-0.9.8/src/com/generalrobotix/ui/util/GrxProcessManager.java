@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,20 +126,14 @@ public class GrxProcessManager {
             }
         }
         for(ProcessInfo pi : serverManager_.getServerInfo()){
-            ProcessInfo localPi = pi.expandEnv();
-            String serverDir = Activator.getDefault().getPreferenceStore().getString("SERVER_DIR");
-            String _com = null;
-            if( !serverDir.equals("") && !new File(localPi.com.get(0)).isAbsolute()){
-            	_com = serverDir + "/" + localPi.com.get(0);
-            }else
-            	_com = localPi.com.get(0);
-            if (localPi.useORB) {
-                localPi.com.set(0, _com + " " + localPi.args + nsOpt);
-            } else {
-                localPi.com.set(0, _com + " " + localPi.args);
-            }
-            
-            
+            ProcessInfo localPi = pi.clone();
+        	for(int i=0; i<localPi.com.size(); i++){
+        		if (localPi.useORB) {
+        			localPi.com.set(i, localPi.com.get(i) + " " + nsOpt);
+        		} else {
+        			localPi.com.set(i, localPi.com.get(i));
+        		}      
+        	}    
             if ( isRegistered(localPi) ) {
                 if( !isRunning(localPi) ){
                     unregister(localPi.id);
@@ -171,6 +166,7 @@ public class GrxProcessManager {
         if (get(pi.id) != null) {
             return false;
         }
+        pi=pi.expandEnv();
         process_.add(new AProcess(pi));
         pi.print();
         return true;
@@ -354,8 +350,9 @@ public class GrxProcessManager {
         public boolean      doKillall     = false;
         public boolean      autoStart     = true;
         public boolean      autoStop      = true;
-        public String       args          = null;
+        public String       args           = null;
         public boolean      useORB        = false;
+        public int 		 editComIndex   = 0;        // for ServerManagerPanel
 
         public void print() {
             GrxDebugUtil.println("\nID: " + id); //$NON-NLS-1$
@@ -369,6 +366,7 @@ public class GrxProcessManager {
                 GrxDebugUtil.println("ENV: use parent process environment"); //$NON-NLS-1$
             }
             GrxDebugUtil.println("DIR: " + dir); //$NON-NLS-1$
+            GrxDebugUtil.println("ARGS: " + args); //$NON-NLS-1$
         }
         
         public ProcessInfo expandEnv(){
@@ -584,7 +582,7 @@ public class GrxProcessManager {
 
         public AProcess(ProcessInfo pi) {
             pi_ = pi;
-            updateCom();
+            updateCom(0);
             if (pi_.env.size() > 0) {
                 env_ = new String[pi_.env.size()];
                 for (int i = 0; i < pi_.env.size(); i++)
@@ -604,15 +602,25 @@ public class GrxProcessManager {
             com_ = new StringBuffer(com);
         }
         
-        public void updateCom(){
-            if (pi_.com.size() > 0) {
-                com_ = new StringBuffer();
-                for (int i = 0; i < pi_.com.size(); i++)
-                    com_.append(pi_.com.get(i) + " "); //$NON-NLS-1$
+        public void updateCom(int i){
+            com_ = new StringBuffer();
+            if (pi_.com.size() > i) {
+                com_.append(pi_.com.get(i)); //$NON-NLS-1$
+            if(pi_.args!=null && !pi_.args.equals(""))
+            	com_.append(" "+pi_.args);
             }
         }
         
-        public boolean start(String opt) {
+        public boolean start(String opt){
+        	for(int i=0; i<pi_.com.size(); i++){
+        		updateCom(i);
+        		if(start0(opt))
+        			return true;
+        	}
+        	return false;
+        }
+        	       
+        private boolean start0(String opt) {
             // StatusOut.append("\nStarting "+pi_.id+" ... ");
             if (isRunning()) {
                 // StatusOut.append("already running.\n");
@@ -669,7 +677,7 @@ public class GrxProcessManager {
                     return true;
                 } catch (Exception e) {
                     process_ = null;
-                    GrxDebugUtil.printErr("start:NG(" + pi_.id + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
+                    //GrxDebugUtil.printErr("start:NG(" + pi_.id + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
                     return false;
                 }
             }

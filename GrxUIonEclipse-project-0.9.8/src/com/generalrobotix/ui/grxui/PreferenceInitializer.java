@@ -25,38 +25,43 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			store.setDefault(PreferenceConstants.BIN_SFX, ".sh");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
 					"$(HOME)/.OpenHRP-3.1/omninames-log");
-			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM,
-					"omniNames");
 		}else if(System.getProperty("os.name").contains("Windows")){
 			store.setDefault(PreferenceConstants.BIN_SFX, ".bat");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
 					"\"$(APPDATA)/OpenHRP-3.1/omninames-log\"");
-			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM,
+			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM+0,
 					"\"$(OMNI_ROOT)/bin/x86_win32/omniNames\"");
 		}else{
 			store.setDefault(PreferenceConstants.BIN_SFX, "");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
 					"");
-			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM,
-					"");
 		}
+		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM,
+				"omniNames");
 		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.HOST,
 				"localhost");
 		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.PORT,
 				2809);
 		
 		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.ID, 
-				PreferenceConstants.ALLSERVER+":"+PreferenceConstants.MODELLOADER+":"+
-				PreferenceConstants.COLLISIONDETECTORFACTORY+":"+PreferenceConstants.DYNAMICSSIMULATORFACTORY);
+				PreferenceConstants.ALLSERVER+PreferenceConstants.SEPARATOR+PreferenceConstants.MODELLOADER+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.COLLISIONDETECTORFACTORY+PreferenceConstants.SEPARATOR+PreferenceConstants.DYNAMICSSIMULATORFACTORY);
 		
-		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.DIR, "");
+		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.DIR, "\"\"");
 		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.WAITCOUNT,	"500");
-		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.ARGS, "");
+		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.ARGS, "\"\"");
 		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.COM,
-				":openhrp-model-loader:openhrp-collision-detector:openhrp-aist-dynamics-simulator");
-		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.AUTOSTART,	"false:true:true:true");		
-		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.HASSHUTDOWN, "false:true:true:true");
-		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB, "false:true:true:true");
+				"\"\""+PreferenceConstants.SEPARATOR+"\"openhrp-model-loader\""+PreferenceConstants.SEPARATOR+
+				"\"openhrp-collision-detector\""+PreferenceConstants.SEPARATOR+"\"openhrp-aist-dynamics-simulator\"");
+		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.AUTOSTART,	
+				"false"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+"true");		
+		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.HASSHUTDOWN, 
+				"false"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+"true");
+		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB, 
+				"false"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+"true");
 	}
 
 }
