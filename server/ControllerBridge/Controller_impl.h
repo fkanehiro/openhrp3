@@ -73,7 +73,7 @@ public:
     virtual void shutdown();
     virtual omniObjRef* _do_get_interface(){return _this();}
     virtual void setModelName(const char* localModelName){ modelName = localModelName;}
-    virtual void initilize();
+    virtual void initialize();
     double controlTime;
 
 private:
