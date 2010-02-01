@@ -139,7 +139,7 @@ public class GrxServerManagerView extends GrxBaseView
             public void widgetDefaultSelected(SelectionEvent e) {}
 
             public void widgetSelected(SelectionEvent e) {
-                restoreDefault();
+            	restoreDefault();
             }
         }
         );

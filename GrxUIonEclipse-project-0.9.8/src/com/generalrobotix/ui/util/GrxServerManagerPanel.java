@@ -82,8 +82,8 @@ public class GrxServerManagerPanel extends Composite {
         pathText_ = new Text(localPanel, SWT.BORDER);
         GridData pathGridData = new GridData(GridData.FILL_HORIZONTAL);
         pathGridData.widthHint = TEXT_LENGTH_;
-        pathText_.setText(processInfo_.com.get(0));
-        pathStr_ = processInfo_.com.get(0);
+        pathText_.setText(processInfo_.com.get(processInfo_.editComIndex));
+        pathStr_ = processInfo_.com.get(processInfo_.editComIndex);
         pathText_.addModifyListener( new ModifyListener() {
             public void modifyText(ModifyEvent e){
                 pathStr_ = new String( pathText_.getText().trim());
@@ -197,8 +197,8 @@ public class GrxServerManagerPanel extends Composite {
         processInfo_.args = argsStr_;
         
         // comに関してはupdateBtn(int localDim)を参照
-        processInfo_.com.clear();
-        processInfo_.com.add( pathStr_ );
+        processInfo_.com.remove(processInfo_.editComIndex);
+        processInfo_.com.add( processInfo_.editComIndex, pathStr_ );
     }
     
     //ファイル参照用のモーダルダイアログを開く
