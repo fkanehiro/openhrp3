@@ -450,15 +450,18 @@ void Controller_impl::initialize()
         } else {
             virtualRobotRTC->isOwnedByController = true;
             try{
+	      std::cout << 1 << std::endl;
                 detectRtcs();
+	      std::cout << 2 << std::endl;
                 setupRtcConnections();
+	      std::cout << 3 << std::endl;
             } catch(CORBA_SystemException& ex){
                 cerr << ex._rep_id() << endl;
-                cerr << "exception in initilizeController" << endl;
+                cerr << "exception in initializeController" << endl;
             } catch(std::invalid_argument& ex){
                 cerr << "invalid argument : " << ex.what() << endl;
             } catch(...){
-                cerr << "unknown exception in Controller_impl::initilize()" <<  endl;
+                cerr << "unknown exception in Controller_impl::initialize()" <<  endl;
             }
         }
     }
@@ -513,7 +516,7 @@ void Controller_impl::deactiveComponents()
                 cerr << ex._rep_id() << endl;
                 cerr << "exception in Controller_impl::deactiveComponents" << endl;
             } catch (...) {
-                cerr << "unknown exception in Controller_impl::initilize()" <<  endl;
+                cerr << "unknown exception in Controller_impl::initialize()" <<  endl;
             }
         }
     }

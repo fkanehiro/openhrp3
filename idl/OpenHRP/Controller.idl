@@ -27,7 +27,7 @@ module OpenHRP {
 	 *
 	 * -# コンストラクタでサーバ起動時の初期化
      * -# setModelName( modelName )で名前をセット
-     * -# initilize() でRTC部分の初期化
+     * -# initialize() でRTC部分の初期化
 	 * -# start() でシミュレーション開始時の初期化
 	 * -# input() でシミュレータからセンサ情報を得る
 	 * -# control() センサ情報から制御計算を行う
@@ -45,7 +45,7 @@ module OpenHRP {
 		/**
 		   @if jp
 		   コントローラの処理においてエラーが生じたときに生成される例外。
-		   initilize排他制御において使用する予定です。
+		   initialize排他制御において使用する予定です。
 		   @endif
 		 */
 		exception ControllerException
@@ -110,7 +110,7 @@ module OpenHRP {
 		 * start以前end以降のコントローラのリセットに使用します。start～end 中のコントローラでは排他制御を行う予定です。
 		 * @endif
 		 */
-		void initilize() raises (ControllerException);
+		void initialize() raises (ControllerException);
 
 		/**
 		 * @if jp
