@@ -516,7 +516,7 @@ public class GrxOpenHRPView extends GrxBaseView {
         }
         private void active() {
             try {
-            	controller_.initilize();
+            	controller_.initialize();
             } catch (Exception e) {
                 GrxDebugUtil.printErr("Exception in active", e);  //$NON-NLS-1$
             }
@@ -952,7 +952,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 					Controller controller = ControllerHelper.narrow(cobj);
                     controller.setModelName(model.getName());
                     controller.setDynamicsSimulator(currentDynamics_);
-                    controller.initilize();
+                    controller.initialize();
 
                     if (simParamPane_.isSimulatingView()) {
                         cobj = GrxCorbaUtil.getReference("ViewSimulator"); //$NON-NLS-1$
