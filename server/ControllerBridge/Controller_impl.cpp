@@ -441,7 +441,7 @@ void Controller_impl::destroy()
 
 // TAWARA INSERT CODE 2009/01/14 START
 
-void Controller_impl::initilize()
+void Controller_impl::initialize()
 {
     if( virtualRobotRTC)
     {
