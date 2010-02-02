@@ -45,7 +45,6 @@ Controller_impl::Controller_impl(RTC::Manager* rtcManager, BridgeConf* bridgeCon
 
     RTC::RtcBase* rtc = rtcManager->createComponent(bridgeConf->getVirtualRobotRtcTypeName());
     virtualRobotRTC = dynamic_cast<VirtualRobotRTC*>(rtc);
-
 }
 
 
@@ -125,7 +124,10 @@ void Controller_impl::makePortMap(RtcInfoPtr& rtcInfo)
 	Port_Service_List_Var_Type ports = rtcInfo->rtcRef->get_ports();
     for(CORBA::ULong i=0; i < ports->length(); ++i){
         RTC::PortProfile_var profile = ports[i]->get_port_profile();
-        rtcInfo->portMap[string(profile->name)] = ports[i];
+	std::string portName(profile->name);
+	string::size_type index = portName.rfind(".");
+	if (index != string::npos) portName = portName.substr(index+1);
+        rtcInfo->portMap[portName] = ports[i];
     }
 }
 
@@ -450,11 +452,8 @@ void Controller_impl::initialize()
         } else {
             virtualRobotRTC->isOwnedByController = true;
             try{
-	      std::cout << 1 << std::endl;
                 detectRtcs();
-	      std::cout << 2 << std::endl;
                 setupRtcConnections();
-	      std::cout << 3 << std::endl;
             } catch(CORBA_SystemException& ex){
                 cerr << ex._rep_id() << endl;
                 cerr << "exception in initializeController" << endl;

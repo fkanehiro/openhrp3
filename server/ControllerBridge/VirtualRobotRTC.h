@@ -59,18 +59,18 @@ private:
 
     template <class TOutPortHandler>
     void registerOutPortHandler(TOutPortHandler* handler) {
-	const char* name = handler->outPort.name();
+        const std::string& name = handler->portName;
 	if(!getPortHandler(name)){
-            registerOutPort(name, handler->outPort);
+	    registerOutPort(name.c_str(), handler->outPort);
             outPortHandlers.insert(std::make_pair(name, OutPortHandlerPtr(handler)));
 	}
     }
 
     template <class TInPortHandler>
     void registerInPortHandler(TInPortHandler* handler) {
-	const char* name = handler->inPort.name();
+        const std::string& name = handler->portName;
 	if(!getPortHandler(name)){
-            registerInPort(name, handler->inPort);
+	    registerInPort(name.c_str(), handler->inPort);
             inPortHandlers.insert(std::make_pair(name, InPortHandlerPtr(handler)));
 	}
     }

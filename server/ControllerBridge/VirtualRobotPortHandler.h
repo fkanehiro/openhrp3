@@ -37,8 +37,10 @@ class Controller_impl;
 class PortHandler
 {
 public:
+    PortHandler(PortInfo& info) : portName(info.portName){} 
     virtual ~PortHandler();
     Port_Service_Var_Type portRef;
+    std::string portName;
 };
 
 typedef boost::shared_ptr<PortHandler> PortHandlerPtr;
@@ -47,6 +49,7 @@ typedef boost::shared_ptr<PortHandler> PortHandlerPtr;
 class OutPortHandler : public PortHandler
 {
 public:
+    OutPortHandler(PortInfo& info) : PortHandler(info){}
     virtual void inputDataFromSimulator(Controller_impl* controller) = 0;
     virtual void writeDataToPort() = 0;
     template<class T> void setTime(T& value, double _time)
@@ -67,6 +70,7 @@ typedef boost::shared_ptr<OutPortHandler> OutPortHandlerPtr;
 class InPortHandler : public PortHandler
 {
 public:
+    InPortHandler(PortInfo& info) : PortHandler(info){} 
     virtual void outputDataToSimulator(Controller_impl* controller) = 0;
     virtual void readDataFromPort(Controller_impl* controller) = 0;
 };

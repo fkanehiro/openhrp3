@@ -61,8 +61,9 @@ PortHandler::~PortHandler()
 }
 
 
-SensorStateOutPortHandler::SensorStateOutPortHandler(PortInfo& info)
-  : outPort(info.portName.c_str(), values)
+SensorStateOutPortHandler::SensorStateOutPortHandler(PortInfo& info) : 
+  OutPortHandler(info), 
+  outPort(info.portName.c_str(), values)
 {
   dataTypeId = info.dataTypeId;
   stepTime = info.stepTime;
@@ -106,6 +107,7 @@ void SensorStateOutPortHandler::writeDataToPort()
 
 
 LinkDataOutPortHandler::LinkDataOutPortHandler(PortInfo& info) :
+  OutPortHandler(info),
   outPort(info.portName.c_str(), value),
   linkName(info.dataOwnerName)
 {
@@ -139,6 +141,7 @@ void LinkDataOutPortHandler::writeDataToPort()
 
 
 SensorDataOutPortHandler::SensorDataOutPortHandler(PortInfo& info) :
+  OutPortHandler(info),
   outPort(info.portName.c_str(), value),
   sensorName(info.dataOwnerName)
 {
@@ -171,6 +174,7 @@ void SensorDataOutPortHandler::writeDataToPort()
 
 
 ColorImageOutPortHandler::ColorImageOutPortHandler(PortInfo& info) :
+  OutPortHandler(info),
   outPort(info.portName.c_str(), image),
   cameraId(info.dataOwnerId)
 {
@@ -192,9 +196,10 @@ void ColorImageOutPortHandler::writeDataToPort()
 }
 
 
-GrayScaleImageOutPortHandler::GrayScaleImageOutPortHandler(PortInfo& info)
-  : outPort(info.portName.c_str(), image),
-    cameraId(info.dataOwnerId)
+GrayScaleImageOutPortHandler::GrayScaleImageOutPortHandler(PortInfo& info) : 
+  OutPortHandler(info),
+  outPort(info.portName.c_str(), image),
+  cameraId(info.dataOwnerId)
 {
     stepTime = info.stepTime;
 }
@@ -215,6 +220,7 @@ void GrayScaleImageOutPortHandler::writeDataToPort()
 
 
 DepthImageOutPortHandler::DepthImageOutPortHandler(PortInfo& info) :
+  OutPortHandler(info),
   outPort(info.portName.c_str(), image),
   cameraId(info.dataOwnerId)
 {
@@ -237,6 +243,7 @@ void DepthImageOutPortHandler::writeDataToPort()
 
 
 JointDataSeqInPortHandler::JointDataSeqInPortHandler(PortInfo& info) :
+  InPortHandler(info),
   inPort(info.portName.c_str(), values)
 {
   linkDataType = toDynamicsSimulatorLinkDataType(info.dataTypeId);
@@ -266,6 +273,7 @@ void JointDataSeqInPortHandler::readDataFromPort(Controller_impl* controller)
 }
 
 LinkDataInPortHandler::LinkDataInPortHandler(PortInfo& info) :
+  InPortHandler(info),
   inPort(info.portName.c_str(), values),
   linkName(info.dataOwnerName)
 {
