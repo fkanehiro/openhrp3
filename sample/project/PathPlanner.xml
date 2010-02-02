@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<grxui>
+    <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(PROJECT_DIR)/../model/box.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="name" value="box"/>
+            <property name="url" value="$(PROJECT_DIR)/../model/box.wrl"/>
+            <property name="WAIST.rotation" value="0.0 0.0 1.0 0"/>
+            <property name="WAIST.translation" value="1.0 0.0 0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="sample" select="true" url="$(PROJECT_DIR)/../model/sample.wrl">
+            <property name="RLEG_HIP_R.angle" value="0.0 "/>
+            <property name="RARM_SHOULDER_R.mode" value="Torque"/>
+            <property name="LLEG_KNEE.mode" value="Torque"/>
+            <property name="RARM_ELBOW.angle" value="0.0 "/>
+            <property name="LLEG_ANKLE_P.mode" value="Torque"/>
+            <property name="RLEG_ANKLE_P.angle" value="0.0 "/>
+            <property name="LLEG_ANKLE_R.mode" value="Torque"/>
+            <property name="RLEG_ANKLE_R.angle" value="0.0 "/>
+            <property name="url" value="$(PROJECT_DIR)/../model/sample.wrl"/>
+            <property name="LLEG_HIP_Y.mode" value="Torque"/>
+            <property name="RLEG_HIP_P.mode" value="Torque"/>
+            <property name="RARM_WRIST_P.angle" value="0.0 "/>
+            <property name="CHEST.mode" value="Torque"/>
+            <property name="RARM_WRIST_R.angle" value="0.0 "/>
+            <property name="RARM_WRIST_Y.angle" value="0.0 "/>
+            <property name="RLEG_KNEE.angle" value="0.0 "/>
+            <property name="RLEG_HIP_R.mode" value="Torque"/>
+            <property name="LARM_SHOULDER_P.angle" value="0.0 "/>
+            <property name="LARM_SHOULDER_R.angle" value="0.0 "/>
+            <property name="LARM_WRIST_P.mode" value="Torque"/>
+            <property name="LARM_SHOULDER_Y.angle" value="0.0 "/>
+            <property name="LLEG_HIP_P.angle" value="0.0 "/>
+            <property name="LARM_WRIST_R.mode" value="Torque"/>
+            <property name="LLEG_HIP_R.angle" value="0.0 "/>
+            <property name="WAIST.rotation" value="0.0 0.0 1.0 0.0"/>
+            <property name="LLEG_HIP_Y.angle" value="0.0 "/>
+            <property name="LARM_ELBOW.angle" value="0.0 "/>
+            <property name="name" value="sample"/>
+            <property name="LARM_SHOULDER_Y.mode" value="Torque"/>
+            <property name="RLEG_KNEE.mode" value="Torque"/>
+            <property name="CHEST.angle" value="0.0 "/>
+            <property name="WAIST_P.mode" value="Torque"/>
+            <property name="LLEG_HIP_P.mode" value="Torque"/>
+            <property name="LLEG_ANKLE_P.angle" value="0.0 "/>
+            <property name="LLEG_ANKLE_R.angle" value="0.0 "/>
+            <property name="RARM_SHOULDER_P.angle" value="0.0 "/>
+            <property name="RARM_SHOULDER_R.angle" value="0.0 "/>
+            <property name="WAIST_R.mode" value="Torque"/>
+            <property name="LLEG_KNEE.angle" value="0.0 "/>
+            <property name="LLEG_HIP_R.mode" value="Torque"/>
+            <property name="RARM_SHOULDER_Y.angle" value="0.0 "/>
+            <property name="LARM_WRIST_P.angle" value="0.0 "/>
+            <property name="LARM_WRIST_R.angle" value="0.0 "/>
+            <property name="LARM_WRIST_Y.angle" value="0.0 "/>
+            <property name="RARM_WRIST_Y.mode" value="Torque"/>
+            <property name="RARM_ELBOW.mode" value="Torque"/>
+            <property name="RARM_SHOULDER_Y.mode" value="Torque"/>
+            <property name="WAIST_P.angle" value="0.0 "/>
+            <property name="WAIST.mode" value="Torque"/>
+            <property name="WAIST_R.angle" value="0.0 "/>
+            <property name="LARM_SHOULDER_P.mode" value="Torque"/>
+            <property name="LARM_SHOULDER_R.mode" value="Torque"/>
+            <property name="WAIST.translation" value="0.0 0.0 0.7135"/>
+            <property name="RLEG_HIP_Y.mode" value="Torque"/>
+            <property name="RLEG_ANKLE_P.mode" value="Torque"/>
+            <property name="LARM_WRIST_Y.mode" value="Torque"/>
+            <property name="RLEG_ANKLE_R.mode" value="Torque"/>
+            <property name="RARM_WRIST_P.mode" value="Torque"/>
+            <property name="isRobot" value="true"/>
+            <property name="LARM_ELBOW.mode" value="Torque"/>
+            <property name="RARM_WRIST_R.mode" value="Torque"/>
+            <property name="RLEG_HIP_Y.angle" value="0.0 "/>
+            <property name="RLEG_HIP_P.angle" value="0.0 "/>
+            <property name="RARM_SHOULDER_P.mode" value="Torque"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="newworldstate0" select="true">
+            <property name="logTimeStep" value="0.3333333333333333 "/>
+            <property name="name" value="newworldstate0"/>
+            <property name="totalTime" value="20.0 "/>
+            <property name="timeStep" value="0.0010 "/>
+            <property name="gravity" value="9.8 "/>
+            <property name="method" value="RUNGE_KUTTA"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#box_#sample_" select="true">
+            <property name="name" value="CP#box_#sample_"/>
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="cullingThresh" value="0.01"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="sample"/>
+            <property name="objectName1" value="box"/>
+            <property name="springDamperModel" value="false"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem" name="newppalgorithm0" select="true">
+            <property name="optimizer" value="Shortcut"/>
+            <property name="goalTheta" value="0.0 "/>
+            <property name="model" value="sample"/>
+            <property name="weight-y" value="1.0"/>
+            <property name="rebuildRoadmap" value="true"/>
+            <property name="weight-x" value="1.0"/>
+            <property name="startTheta" value="0.0 "/>
+            <property name="carpetZ" value="0.01"/>
+            <property name="interpolation-distance" value="0.1"/>
+            <property name="min-y" value="-2"/>
+            <property name="min-x" value="-2"/>
+            <property name="eps" value="0.1"/>
+            <property name="goalY" value="0.0 "/>
+            <property name="mobility" value="TurnGoTurn"/>
+            <property name="goalX" value="1.5 "/>
+            <property name="algorithm" value="RRT"/>
+            <property name="tolerance" value="0.0"/>
+            <property name="startY" value="0.0 "/>
+            <property name="max-y" value="2"/>
+            <property name="startX" value="0.0 "/>
+            <property name="max-x" value="2"/>
+            <property name="weight-theta" value="0.1"/>
+            <property name="name" value="newppalgorithm0"/>
+            <property name="max-trials" value="10000"/>
+        </item>
+        <view class="com.generalrobotix.ui.view.GrxLoggerView" name="Logger View" select="true">
+            <property name="name" value="Logger View"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxGraphView" name="Graph" select="true">
+            <property name="name" value="Graph"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxPropertyView" name="Property View" select="true">
+            <property name="name" value="Property View"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxRobotStatView" name="Robot State" select="true">
+            <property name="name" value="Robot State"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxPathPlanningView" name="Path Planning" select="true">
+            <property name="name" value="Path Planning"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.Grx3DView" name="3DView" select="true">
+            <property name="name" value="3DView"/>
+            <property name="showScale" value="true"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxOpenHRPView" name="OpenHRP" select="true">
+            <property name="name" value="OpenHRP"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxTextEditorView" name="Text Editor" select="true">
+            <property name="name" value="Text Editor"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxItemView" name="Item View" select="true">
+            <property name="name" value="Item View"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxORBMonitorView" name="NameService Monitor" select="true">
+            <property name="name" value="NameService Monitor"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxProcessManagerView" name="Process Manager" select="true">
+            <property name="name" value="Process Manager"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.GrxServerManagerView" name="Server Manager" select="true">
+            <property name="name" value="Server Manager"/>
+        </view>
+    </mode>
+</grxui>
