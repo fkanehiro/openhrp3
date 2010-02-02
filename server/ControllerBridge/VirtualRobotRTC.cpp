@@ -190,8 +190,12 @@ void VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
 }
 
 
-PortHandlerPtr VirtualRobotRTC::getPortHandler(const std::string& name)
+PortHandlerPtr VirtualRobotRTC::getPortHandler(const std::string& name_)
 {
+  string name(name_);
+  string::size_type index = name.rfind(".");
+  if (index != string::npos) name = name.substr(index+1);
+
   PortHandlerPtr portHandler;
 
   OutPortHandlerMap::iterator p = outPortHandlers.find(name);
