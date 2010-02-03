@@ -56,7 +56,6 @@ if(UNIX)
     boost_filesystem-mt boost_regex-mt
     #${Boost_LIBRARIES}
     dl)
-
 elseif(WIN32)
   add_definitions(-DHRPMODEL_MAKE_DLL)
   target_link_libraries(${target}

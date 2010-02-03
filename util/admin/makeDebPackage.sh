@@ -2,6 +2,7 @@
 CURRENT_DIR=${PWD}
 cd ${0%/*}
 WORK_DIR=${PWD}
+PACKAGES_DIR='util/admin/deb'
 
 # Set dsitribution code name
 if [ -z $1 ]; then 
@@ -11,16 +12,18 @@ else
 fi
 
 cd ../../
-# Generate deb files
-rm -f openhrp-aist*.deb
-#   Generate development deb file
+
+# Generate development deb file
 #cmake -D DEBIANPACKAGE_DEVELOP:BOOL=ON -D GENERATE_DEBIANPACKAGE:BOOL=ON .
 cmake -D GENERATE_DEBIANPACKAGE:BOOL=ON .
 sudo cpack -G DEB
 #   Generate runtime deb file
 #cmake -D DEBIANPACKAGE_DEVELOP:BOOL=OFF -D GENERATE_DEBIANPACKAGE:BOOL=ON .
 #sudo cpack -G DEB
-DEB_FILES=`ls openhrp-aist*.deb`
+
+sudo mv -f openhrp-aist*.deb ${PACKAGES_DIR}
+
+DEB_FILES=`ls ${PACKAGES_DIR}/*.deb`
 
 cd ${WORK_DIR}
 DEST_DIR="ubuntu/dists/${DISTRIB_CODENAME}/main/binary-i386/"

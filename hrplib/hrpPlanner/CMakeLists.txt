@@ -43,7 +43,6 @@ if(UNIX)
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     hrpModel-${OPENHRP_LIBRARY_VERSION}
     hrpCollision-${OPENHRP_LIBRARY_VERSION})
-
 elseif(WIN32)
   add_definitions(-DHRPPLANNER_MAKE_DLL)
   target_link_libraries(${target}

@@ -64,7 +64,6 @@ if(UNIX)
     ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
     ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
     )
-
 elseif(WIN32)
   add_definitions(-DHRP_UTIL_MAKE_DLL)
   set_target_properties(${target} PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT)

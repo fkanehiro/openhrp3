@@ -6,6 +6,7 @@ set(DEPENDENT_BASENAMES
   java-common
   g++
   gfortran-4.3
+  pkg-config
   libcos4-dev 
   libomnievents-dev 
   libomniorb4-dev
@@ -50,4 +51,3 @@ set(DEPENDENT_BASENAMES
   openrtm-aist-example
   python-yaml
 )
-

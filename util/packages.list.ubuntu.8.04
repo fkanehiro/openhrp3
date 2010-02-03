@@ -13,6 +13,7 @@ g77
 
 # build tools
 cmake
+pkg-config
 
 # omniORB
 libcos4-dev
