@@ -17,7 +17,7 @@ project(OpenHRP)
 set(OPENHRP_VERSION_MAJOR 3)
 set(OPENHRP_VERSION_MINOR 1)
 set(OPENHRP_VERSION_MICRO 0)
-set(OPENHRP_VERSION_ADD_TAIL beta3)
+set(OPENHRP_VERSION_ADD_TAIL beta4)
 
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules/)
@@ -74,6 +74,7 @@ if(UNIX)
   option(GENERATE_DEBIANPACKAGE "When generate debian package you set ON." OFF)
 endif()
 
+
 # check "dlfcn.h" for using dlopen() and dlclose()
 if(UNIX)
   check_include_files(dlfcn.h HAVE_DLFCN_H)
@@ -104,8 +105,6 @@ endif()
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
-
-
 # check blas and lapack
 find_package(Lapack REQUIRED)
 
@@ -117,7 +116,6 @@ link_directories(${LAPACK_LIBRARY_DIRS})
 find_package(Tvmet REQUIRED)
 include_directories(${TVMET_INCLUDE_DIR})
 add_definitions(-DTVMET_OPTIMIZE)
-
 
 # build flag of jpeg and png library
 if(UNIX)
@@ -301,6 +299,7 @@ if(JYTHON_JAR)
   set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JYTHON_JAR}")
 endif()
 
+# JMF
 if( NOT $ENV{JMFHOME} )
   set(JMFHOME $ENV{JMFHOME} CACHE PATH "Set the location of Java Media Framework when it is not in the class path")
 else()
@@ -376,6 +375,7 @@ set(OPENHRP_SHARE_DIR ${OPENHRP_DIR}/${RELATIVE_SHARE_INSTALL_PATH})
 
 
 # package
+set(OPENHRP_SHORT_DESCRIPTION "Platform software development of robots and simulations.")
 option(ENABLE_CPACK "Enable CPack settings" OFF)
 
 if(ENABLE_CPACK)
@@ -386,7 +386,7 @@ if(ENABLE_CPACK)
   set(CPACK_PACKAGE_CONTACT "Shin'ichiro Nakaoka <s.nakaoka@aist.go.jp>")
   set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README-en.txt")
   set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE-en.txt")
-  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Platform software development of robots and simulations.
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${OPENHRP_SHORT_DESCRIPTION}
  OpenHRP (Open Architecture Humanoid Robotics Platform) is an integrated 
  simulation platform for mainly a robot and consists of main dynamics 
  algorithm developed by Nakamura Lab, Graduate School of Information 
@@ -463,6 +463,104 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/PatternGenerator)
   add_subdirectory(PatternGenerator)
 endif()
 
+# pkg-config
+if(PKG_CONFIG_FOUND)
+  set(PACKAGE_NAME "OpenHRP-aist")
+  set(OPENHRP_URL "http://www.openrtp.jp/openhrp3/")
+  set(PKG_CONF_REQUIRES "")
+  set(PKG_CONF_LINK_DEPEND_OPTS "''")
+  if(OPENRTM_PKG_CONFIG_FOUND)
+    set(PKG_CONF_REQUIRES "openrtm-aist")
+  endif(OPENRTM_PKG_CONFIG_FOUND)
+  set(PKG_CONF_LINK_SHARED_FILES "-lhrpCollision-${OPENHRP_LIBRARY_VERSION} " 
+      "-lhrpModel-${OPENHRP_LIBRARY_VERSION} " "-lhrpPlanner-${OPENHRP_LIBRARY_VERSION} " 
+      "-lhrpRTM-${OPENHRP_LIBRARY_VERSION} " "-lhrpUtil-${OPENHRP_LIBRARY_VERSION} " 
+      "-lsDIMS")
+  string(REGEX REPLACE ";" ""
+     PKG_CONF_LINK_SHARED_FILES ${PKG_CONF_LINK_SHARED_FILES})
+
+  set(PKG_CONF_LINK_STATIC_FILES "-lhrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}" )
+
+  set(PKG_CONF_LINK_DEPEND_DIRS)
+  if(LAPACK_LIBRARY_DIRS)
+    list(APPEND PKG_CONF_LINK_DEPEND_DIRS "-L${LAPACK_LIBRARY_DIRS} ")
+  endif()
+  if(Boost_LIBRARY_DIRS)
+    list(APPEND PKG_CONF_LINK_DEPEND_DIRS "-L${Boost_LIBRARY_DIRS} ")
+  endif()
+  if(NOT OPENRTM_PKG_CONFIG_FOUND)
+    foreach(localDir ${OPENRTM_LIBRARY_DIRS})
+      list(APPEND PKG_CONF_LINK_DEPEND_DIRS "-L${localDir} ")
+    endforeach()
+  endif()
+  string(REGEX REPLACE ";" ""
+     PKG_CONF_LINK_DEPEND_DIRS ${PKG_CONF_LINK_DEPEND_DIRS})
+
+  set(PKG_CONF_LINK_DEPEND_FILES_TEMP)
+  set(PKG_CONF_LINK_DEPEND_FILES)
+  foreach(libName ${LAPACK_LIBRARIES})
+    list(APPEND PKG_CONF_LINK_DEPEND_FILES_TEMP ${libName})
+  endforeach()
+  list(APPEND PKG_CONF_LINK_DEPEND_FILES_TEMP boost_filesystem-mt boost_signals-mt boost_program_options-mt boost_regex-mt)
+  if(JPEG_LIBRARY)
+    list(APPEND PKG_CONF_LINK_DEPEND_FILES_TEMP ${JPEG_LIBRARY})
+  endif()
+  if(PNG_LIBRARY)
+    list(APPEND PKG_CONF_LINK_DEPEND_FILES_TEMP ${PNG_LIBRARY})
+  endif(PNG_LIBRARY)
+  if(PNG_JPEG_BUILD)
+    if(ZLIB_LIBRARY)
+      list(APPEND PKG_CONF_LINK_DEPEND_FILES_TEMP ${ZLIB_LIBRARY})
+    endif(ZLIB_LIBRARY)
+  else()
+    list(APPEND PKG_CONF_LINK_DEPEND_FILES_TEMP z) 
+  endif(PNG_JPEG_BUILD)
+  foreach(name ${PKG_CONF_LINK_DEPEND_FILES_TEMP})
+    GET_FILENAME_COMPONENT(localVal ${name} NAME_WE)
+    string(REGEX REPLACE "^lib" "" localVal ${localVal})
+    list(APPEND PKG_CONF_LINK_DEPEND_FILES "-l${localVal} ")
+  endforeach()
+  if(NOT OPENRTM_PKG_CONFIG_FOUND)
+    set(PKG_CONF_LINK_DEPEND_OPTS "")
+    foreach(localFile ${OPENRTM_LIBRARIES})
+      if("${localFile}" MATCHES "^-l.+")
+        list(APPEND PKG_CONF_LINK_DEPEND_FILES "${localFile} ")
+      else()
+        list(APPEND PKG_CONF_LINK_DEPEND_OPTS "${localFile} ")
+      endif()
+    endforeach()
+    if("${PKG_CONF_LINK_DEPEND_OPTS}" STREQUAL "")
+      set(PKG_CONF_LINK_DEPEND_OPTS "''")
+    else()
+      string(REGEX REPLACE ";" ""
+         PKG_CONF_LINK_DEPEND_OPTS ${PKG_CONF_LINK_DEPEND_OPTS})
+    endif()  
+  endif()
+  string(REGEX REPLACE ";" ""
+     PKG_CONF_LINK_DEPEND_FILES ${PKG_CONF_LINK_DEPEND_FILES})
+    
+  set(PKG_CONF_DEFS "-DTVMET_OPTIMIZE ")
+
+  if( CMAKE_BUILD_TYPE STREQUAL MinSizeRel)
+    set(PKG_CONF_CXXFLAG_OPTIONS "${CMAKE_CXX_FLAGS_MINSIZEREL}")
+  elseif(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(PKG_CONF_CXXFLAG_OPTIONS "${CMAKE_CXX_FLAGS_DEBUG}")
+  elseif(CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
+    set(PKG_CONF_CXXFLAG_OPTIONS "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+  else()
+    set(PKG_CONF_CXXFLAG_OPTIONS "${CMAKE_CXX_FLAGS_RELEASE}")
+  endif()
+  if(NOT OPENRTM_PKG_CONFIG_FOUND)
+    set(PKG_CONF_CXXFLAG_OPTIONS "${OPENRTM_CXX_FLAGS} ${PKG_CONF_CXXFLAG_OPTIONS}")
+    string(REGEX REPLACE "\n" ""
+       PKG_CONF_CXXFLAG_OPTIONS ${PKG_CONF_CXXFLAG_OPTIONS})
+  endif()
+  
+  configure_file(openhrp-aist.pc.in openhrp-aist.pc @ONLY)
+  install( FILES openhrp-aist.pc DESTINATION /usr/lib/pkgconfig )
+endif(PKG_CONFIG_FOUND)
+
+
 # Documents
 if(UNIX)
   option(ENABLE_DOCUMENTS_GENERATE "Allow generate documents by doxygen." OFF)
@@ -480,3 +578,4 @@ if(ENABLE_CPACK)
       DESTINATION ${RELATIVE_DOC_INSTALL_PATH} )
   endif(GENERATE_DEBIANPACKAGE)
 endif(ENABLE_CPACK)
+
