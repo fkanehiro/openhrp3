@@ -62,6 +62,27 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB, 
 				"false"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
 				"true"+PreferenceConstants.SEPARATOR+"true");
+		
+		store.setDefault(PreferenceConstants.MODE, "Simulation");
+		store.setDefault(PreferenceConstants.MODE+"."+PreferenceConstants.ITEMINDEX, "0,1,2,3,4,5,6,7,8,9");
+		//   複数のモードを設定する場合		//
+		//	 mode="Simulation::Robot"		//
+		//	 itemIndex="0,1,2,3,4,5,6,7,8,9::0,2,4"		//
+		//	のようにする。		//
+		store.setDefault(PreferenceConstants.ITEM+"."+PreferenceConstants.CLASS,
+				PreferenceConstants.MODELITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.LINKITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.SHAPEITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.SENSORITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.HWCITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.WORLDSTATEITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.COLLISIONPAIRITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.GRAPHITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.PYTHONSCRIPTITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.PATHPLANNINGALGORITHMITEM);
+		store.setDefault(PreferenceConstants.ITEM+"."+PreferenceConstants.VISIBLE,
+				"true"+PreferenceConstants.SEPARATOR+"false"+PreferenceConstants.SEPARATOR+
+				"false"+PreferenceConstants.SEPARATOR+"false"+PreferenceConstants.SEPARATOR+
+				"false"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+"true");
+		
+		store.setDefault(PreferenceConstants.VERSION, "");
 	}
 
 }

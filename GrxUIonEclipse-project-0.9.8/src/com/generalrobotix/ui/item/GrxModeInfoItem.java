@@ -24,6 +24,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -44,6 +45,11 @@ public class GrxModeInfoItem extends GrxBaseItem {
 		setExclusive(true);
 	}
 
+	public void addItemClassList(Class<? extends GrxBasePlugin> item){
+		if ( GrxBaseItem.class.isAssignableFrom(item) && !activeItemClassList_.contains(item)) {
+			activeItemClassList_.add((Class<? extends GrxBaseItem>)item);
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	public void restoreProperties() {

@@ -1,5 +1,4 @@
 bin.includes = plugin.xml,\
-               grxuirc.xml,\
                default_rtc.conf,\
                jython.jar,\
                icons/,\
