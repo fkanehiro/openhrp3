@@ -13,8 +13,6 @@ macro(configure_grxui_on_eclipse)
     CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/META-INF/MANIFEST.MF.in ${GrxUI_ON_ECLIPSE_DIR}/META-INF/MANIFEST.MF)
     CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/classpath.in ${GrxUI_ON_ECLIPSE_DIR}/.classpath)
     CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/plugin.xml.in ${GrxUI_ON_ECLIPSE_DIR}/plugin.xml)
-    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/grxuirc.xml.in ${GrxUI_ON_ECLIPSE_DIR}/grxuirc.xml)
-    CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/grxuirc_win.xml.in ${GrxUI_ON_ECLIPSE_DIR}/grxuirc_win.xml)
     CONFIGURE_FILE( ${GrxUI_ON_ECLIPSE_DIR}/build.properties.in ${GrxUI_ON_ECLIPSE_DIR}/build.properties)
 endmacro()
 

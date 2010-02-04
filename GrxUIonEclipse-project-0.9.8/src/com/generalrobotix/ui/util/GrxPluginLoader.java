@@ -77,6 +77,15 @@ public class GrxPluginLoader extends URLClassLoader {
 		}
 		return null;
 	}
+	
+	public boolean existClass(String cname) {
+		try{
+			super.loadClass(cname, true);
+			return true;
+		}catch(ClassNotFoundException e){
+			return false;
+		}
+	}
 
 	// ビューの作成。クラスの作成はGrxUIでは行わず、パースペクティブに任せることにしたので消した。
 	/*

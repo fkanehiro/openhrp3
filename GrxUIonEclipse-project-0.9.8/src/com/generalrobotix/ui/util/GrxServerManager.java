@@ -45,12 +45,6 @@ public class GrxServerManager extends GrxBaseItem{
     public synchronized void SaveServerInfo() {
     	setServerInfoToPreferenceStore();
     	setNameServerInfoToPreferenceStore();
-    	ScopedPreferenceStore store = (ScopedPreferenceStore)Activator.getDefault().getPreferenceStore();
-    	try {
-			store.save();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
     }
     
     /**

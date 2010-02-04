@@ -350,7 +350,7 @@ public class GrxProcessManager {
         public boolean      doKillall     = false;
         public boolean      autoStart     = true;
         public boolean      autoStop      = true;
-        public String       args           = null;
+        public String       args           = "";
         public boolean      useORB        = false;
         public int 		 editComIndex   = 0;        // for ServerManagerPanel
 

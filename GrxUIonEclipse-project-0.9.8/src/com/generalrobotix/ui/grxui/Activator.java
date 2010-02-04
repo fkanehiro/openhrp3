@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.IViewReference;
 
 
@@ -464,6 +465,12 @@ public class Activator extends AbstractUIPlugin{
         manager_.shutdown();
         manager_ = null;
         releaseLockFile();
+        ScopedPreferenceStore store = (ScopedPreferenceStore)plugin.getPreferenceStore();
+    	try {
+			store.save();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         // eclipseプラグイン上での実行を想定した処理
         for( IWorkbenchWindow localWindow : eventInnerClass.getWorkbench().getWorkbenchWindows() ){
             for( IWorkbenchPage localPage : localWindow.getPages() ){

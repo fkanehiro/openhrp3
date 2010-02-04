@@ -30,19 +30,20 @@ import java.util.*;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.omg.PortableServer.POA;
 
 import org.w3c.dom.Element;
 
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
+import com.generalrobotix.ui.grxui.PreferenceConstants;
 
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxPluginLoader;
 import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.GrxXmlUtil;
-import com.generalrobotix.ui.util.GrxServerManagerConfigXml;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.OrderedHashMap;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
@@ -73,7 +74,6 @@ import org.eclipse.ui.PlatformUI;
  */
 public class GrxPluginManager {
     // project
-    private GrxProjectItem rcProject_;
     private GrxProjectItem currentProject_;
     private GrxModeInfoItem currentMode_;
     private GrxBaseItem focusedItem_ = null;
@@ -102,12 +102,10 @@ public class GrxPluginManager {
      * @brief GrxPluginManagerのコンストラクタ.
      *        まず、プラグインローダ（GrxPluginLoader）のインスタンス#pluginLoader_を作成する。<br>
      *        そして最初に、GrxModeInfoItemをロードする。これは「モード」を管理するアイテムプラグインである。<br>
-     *        モードの読み込みは#start()関数内で行われるのでそちらを参照。<br>
-     *        次にプロジェクトを司るアイテム（GrxProjectItem）を作成する。その際、設定ファイルとしてgrxuirc.xmlを指定する。
-     * <br>
+     *        モードの設定はsetInitialMode関数内で行われるのでそちらを参照。<br>
+     *        次にプロジェクトを司るアイテム（GrxProjectItem）を作成する。
      *        Javaのプロパティ「PROJECT」によりデフォルトのプロジェクトが指定されている場合、それをロードする。（なければ生成する。）<br>
-     *        最後に、アイテムの更新を行うためタイマーを生成し、定期的に#_updateItemSelection()を実行する。<br>
-     *        その結果アイテムに変更があると、現在のプロジェクトから作ったツリー(#treeModel_)に対してreload() を実行する。
+     *		  各CORBAサーバーを起動する。<br>
      * @see GrxPluginLoader
      * @see GrxModeInfoItem
      * @see GrxPluginManager#start()
@@ -131,46 +129,7 @@ public class GrxPluginManager {
         pluginLoader_ = new GrxPluginLoader("plugin", GrxPluginManager.class.getClassLoader()); //$NON-NLS-1$
         registerPlugin(GrxModeInfoItem.class);
 
-        // load default plugin settings
-        // 移植前はhomePath_においてある事を期待していたが、プラグインに含めるようにした。
-        // homePath_にgrxuirc.xmlがあるかチェックし、なければプラグインフォルダからデフォルトをコピーする。
-        rcProject_ = new GrxProjectItem("grxuirc", this); //$NON-NLS-1$
-        // Windows と Linuxで使い分ける。
-        System.out.println("os.name = " + System.getProperty("os.name")); //$NON-NLS-1$ //$NON-NLS-2$
-        
-        File rcFile = new File( Activator.getDefault().getTempDir(),"grxuirc.xml");
         File rtcFile = new File( Activator.getDefault().getTempDir(),"rtc.conf");
-        
-        System.out.println("rcFile=" + rcFile); //$NON-NLS-1$
-        String resourceRcPath;
-        if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-        	resourceRcPath = "/grxuirc.xml";
-        } else {
-        	resourceRcPath = "/grxuirc_win.xml";
-        }
-        // File copy from resource file
-        if (!rcFile.exists()) {
-            try{
-                FileUtil.resourceToFile(getClass(),resourceRcPath, rcFile);
-            }catch(Exception ex){
-                ex.printStackTrace();
-            }
-        }else{
-            // Version check "grxuirc.xml" file
-            try {
-                File tmpFile = File.createTempFile("grxuirc", ".xml");
-                FileUtil.resourceToFile(getClass(), resourceRcPath, tmpFile);
-                if( GrxServerManagerConfigXml.isUpdatedVersion(rcFile, tmpFile) ){
-                    // Back up rcFile
-                    FileUtil.copyTransfer(rcFile.getPath(), rcFile.getPath() + "~");
-                    // Update rcFile
-                    FileUtil.copyTransfer(tmpFile.getPath(), rcFile.getPath());
-                }
-                tmpFile.delete();
-            }catch (Exception ex){
-                ex.printStackTrace();
-            }
-        }
         if (!rtcFile.exists()){
         	try{
         		FileUtil.resourceToFile(getClass(), "/default_rtc.conf", rtcFile);
@@ -179,19 +138,12 @@ public class GrxPluginManager {
         	}
         }
         
-        if (!rcProject_.load(rcFile)) {
-            MessageDialog.openError(null, MessageBundle.get("GrxPluginManager.dialog.tittle..openerror"), MessageBundle.get("GrxPluginManager.dialog.message.openerror") + rcFile); //$NON-NLS-1$ //$NON-NLS-2$
-            // TODO: プラグインを閉じる方法があればそれを採用する?
-            // System.exit(0);
-            return;
-        }
+        versionCheck();
+        setInitialMode();
         currentProject_ = new GrxProjectItem("newproject", this); //$NON-NLS-1$
-
-        // load default project
         String defaultProject = System.getProperty("PROJECT", null); //$NON-NLS-1$
         if (defaultProject == null || !currentProject_.load(new File(GrxXmlUtil.expandEnvVal(defaultProject))))
             currentProject_.create();
-        // root_.setUserObject(currentProject_);
         
         // サーバの起動　　//
         GrxServerManager serverManager = (GrxServerManager)createItem(GrxServerManager.class, "serverManager");
@@ -287,6 +239,7 @@ public class GrxPluginManager {
 
     /**
      * 全体の処理の開始. 最初に、CORBAのスレッドを開始する。<br>
+     * 今のところMODEは”Simulation”のみとし、以下の機能は使っていない。<br>
      * 次にデフォルトのモードをJavaのプロパティ「MODE」から決めてsetMode()を実行する。<br>
      * 「モード」はロードすべきプラグインとその配置のプリセットであり、設定ファイルgrxuirc.xmlにて指定されている。<br>
      * デフォルトのモードが指定されていない場合、最初に現れたモードをデフォルトとして、ダイアログを出してユーザに選択を求める。
@@ -310,8 +263,7 @@ public class GrxPluginManager {
             }
         }.start();
 
-        // frame_.setVisible(true);
-
+/*	　　モードの選択は、現在使用していない。
         String defaultMode = System.getProperty("MODE", ""); //$NON-NLS-1$ //$NON-NLS-2$
         GrxModeInfoItem mode = (GrxModeInfoItem) getItem(GrxModeInfoItem.class, defaultMode);
         GrxDebugUtil.println("[PM] current mode=" + mode); //$NON-NLS-1$
@@ -339,11 +291,14 @@ public class GrxPluginManager {
         } catch (Exception e) {
             GrxDebugUtil.printErr("GrxPluginManager:", e); //$NON-NLS-1$
         }
+*/
+        
     }
 
     /**
      * モードを設定する. アクティブなプラグインのリストの更新と、画面の更新を行う。
      */
+    /*
     void setMode(GrxModeInfoItem mode) {
         System.out.println("[PM] setMode to " + mode); //$NON-NLS-1$
 
@@ -359,7 +314,7 @@ public class GrxPluginManager {
         currentMode_.restoreProperties();
         currentProject_.restoreProject();
     }
-
+	*/
     /**
      * @brief get current mode
      * @return current mode
@@ -415,7 +370,6 @@ public class GrxPluginManager {
 
             return cls;
         }
-        GrxDebugUtil.println("[PM] 該当クラスなし。" + cls.toString() + " register fault."); //$NON-NLS-1$ //$NON-NLS-2$
         return null;
     }
 
@@ -1173,4 +1127,54 @@ public class GrxPluginManager {
     	}
     }
     
+    @SuppressWarnings("unchecked")
+	private void setInitialMode(){
+        IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+        String modes = store.getString(PreferenceConstants.MODE);
+        String[] mode = modes.split(PreferenceConstants.SEPARATOR, -1);
+        String itemIndexs = store.getString(PreferenceConstants.MODE+"."+PreferenceConstants.ITEMINDEX);
+        String[] itemIndex = itemIndexs.split(PreferenceConstants.SEPARATOR,-1);
+        String itemClassList=store.getString(PreferenceConstants.ITEM+"."+PreferenceConstants.CLASS);
+        String[] itemClass=itemClassList.split(PreferenceConstants.SEPARATOR, -1);
+        String itemVisibleList=store.getString(PreferenceConstants.ITEM+"."+PreferenceConstants.VISIBLE);
+        String[] itemVisible=itemVisibleList.split(PreferenceConstants.SEPARATOR, -1);
+        for(int i=0; i<mode.length; i++){
+        	GrxModeInfoItem item = (GrxModeInfoItem)createItem(GrxModeInfoItem.class, mode[i]);
+        	String[] index=itemIndex[i].split(",",-1);
+	        for(int j=0; j<index.length; j++){
+	        	int k=Integer.valueOf(index[j]);
+	        	if(k<itemClass.length){
+		        	if(pluginLoader_.existClass(itemClass[k])){
+			        	Class<? extends GrxBasePlugin> plugin=registerPlugin(itemClass[k]);
+			        	if (plugin != null) {
+			        		PluginInfo pi = pinfoMap_.get(plugin);
+			        		pi.visible = itemVisible[k].equals("true")? true : false;
+			        		pinfoMap_.put(plugin, pi);
+			        		item.addItemClassList(plugin);
+			        	}
+		        	}
+	        	}
+	        }
+        }
+        //	最初のモードを選択		//
+        GrxModeInfoItem item = (GrxModeInfoItem)getItem(mode[0]);
+        setSelectedItem(item, true);
+        currentMode_ = item;
+    }
+    
+    private void versionCheck(){
+        IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+        String version = store.getString(PreferenceConstants.VERSION);
+        if(version.equals("") || !version.equals(PreferenceConstants.CURRENT_VERSION)){
+        	//  ヴァージョンが変わった場合の処理を必要に応じて実装する
+        	if(version.equals("")){
+        		store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.ID);
+            	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.COM);
+            	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.ARGS);
+            	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.AUTOSTART);
+            	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB);
+        	}
+    		store.setValue(PreferenceConstants.VERSION, PreferenceConstants.CURRENT_VERSION);
+        }
+    }
 }
