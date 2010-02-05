@@ -144,7 +144,7 @@ namespace {
         Link* createLink(int index, const Matrix33& parentRs);
         void createSensors(Link* link, const SensorInfoSequence& sensorInfoSeq, const Matrix33& Rs);
         void createColdetModel(Link* link, const LinkInfo& linkInfo);
-        void addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const LinkInfo& linkInfo);
+        void addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const LinkInfo& linkInfo, const Matrix33& Rs);
     };
 }
 
@@ -424,14 +424,14 @@ void ModelLoaderHelper::createColdetModel(Link* link, const LinkInfo& linkInfo)
     if(totalNumTriangles > 0){
         coldetModel->setNumVertices(totalNumVertices);
         coldetModel->setNumTriangles(totalNumTriangles);
-        addLinkVerticesAndTriangles(coldetModel, linkInfo);
+        addLinkVerticesAndTriangles(coldetModel, linkInfo, link->Rs);
         coldetModel->build();
     }
     link->coldetModel = coldetModel;
 }
 
 
-void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const LinkInfo& linkInfo)
+void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const LinkInfo& linkInfo, const Matrix33& Rs)
 {
     int vertexIndex = 0;
     int triangleIndex = 0;
@@ -442,11 +442,17 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel,
         const TransformedShapeIndex& tsi = shapeIndices[i];
         short shapeIndex = tsi.shapeIndex;
         const DblArray12& M = tsi.transformMatrix;;
-        Matrix44 T;
-        T = M[0], M[1], M[2],  M[3],
-            M[4], M[5], M[6],  M[7],
-            M[8], M[9], M[10], M[11],
-            0.0,  0.0,  0.0,   1.0;
+        Matrix44 T0;
+        T0 = M[0], M[1], M[2],  M[3],
+             M[4], M[5], M[6],  M[7],
+             M[8], M[9], M[10], M[11],
+             0.0,  0.0,  0.0,   1.0;
+        Matrix44 Rs44;
+        Rs44 = Rs(0,0), Rs(0,1), Rs(0,2), 0.0,
+               Rs(1,0), Rs(1,1), Rs(1,2), 0.0,
+               Rs(2,0), Rs(2,1), Rs(2,2), 0.0,
+               0.0,     0.0,     0.0,     1.0;
+        Matrix44 T(Rs44 * T0);
 
         const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
 
