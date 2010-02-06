@@ -557,7 +557,7 @@ if(PKG_CONFIG_FOUND)
   endif()
   
   configure_file(openhrp-aist.pc.in openhrp-aist.pc @ONLY)
-  install( FILES openhrp-aist.pc DESTINATION /usr/lib/pkgconfig )
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openhrp-aist.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
 endif(PKG_CONFIG_FOUND)
 
 
