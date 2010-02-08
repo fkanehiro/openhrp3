@@ -21,6 +21,7 @@ import java.util.List;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -44,12 +45,6 @@ import com.generalrobotix.ui.util.MessageBundle;
 @SuppressWarnings("serial") //$NON-NLS-1$
 public class GraphPanel extends Composite implements PaintListener{
     //--------------------------------------------------------------------
-    private static final int INITIAL_GRAPH_HEIGHT = 200;
-
-    private static final int MAX_GRAPH_HEIGHT = 500;
-    private static final int MIN_GRAPH_HEIGHT = 150;
-
-    //--------------------------------------------------------------------
     private GraphElement[] graphElement_;
     public GraphElement currentGraph_;
     private TrendGraphManager trendGraphMgr_;
@@ -58,16 +53,14 @@ public class GraphPanel extends Composite implements PaintListener{
     private static final Color normalColor_ = Activator.getDefault().getColor("black");
     private static final Color focusedColor_ = Activator.getDefault().getColor( "focusedColor" ); //$NON-NLS-1$
 
-    private Composite graphElementBase_;
+    private SashForm graphElementBase_;
     
-    private Scale heightSlider_;
     private Button hRangeButton_;
     private Button vRangeButton_;
     private Button seriesButton_;
     private Button epsButton_;
     
     public void setEnabled(boolean b) {
-    	heightSlider_.setEnabled(b);
     	hRangeButton_.setEnabled(b);
     	vRangeButton_.setEnabled(b);
     	seriesButton_.setEnabled(b);
@@ -106,8 +99,8 @@ public class GraphPanel extends Composite implements PaintListener{
  		gridData1.grabExcessHorizontalSpace = true;
         graphControlPanel.setLayoutData(gridData1);
         graphControlPanel.setLayout(new RowLayout());
-        graphElementBase_ = new Composite(graphScrollPane_, SWT.NONE);
-        graphElementBase_.setLayout(new GridLayout(1,true));
+        graphElementBase_ = new SashForm(graphScrollPane_, SWT.VERTICAL);
+        graphElementBase_.SASH_WIDTH = 6;
         graphScrollPane_.setContent(graphElementBase_);
 
         numGraph_ = trendGraphMgr_.getNumGraph();
@@ -117,28 +110,12 @@ public class GraphPanel extends Composite implements PaintListener{
                 new GraphElement(
                 	this,
                 	graphElementBase_,
-                    trendGraphMgr_.getTrendGraph(i),INITIAL_GRAPH_HEIGHT
-                );
+                    trendGraphMgr_.getTrendGraph(i) );
         }
         graphScrollPane_.setMinSize(graphElementBase_.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
         currentGraph_ = graphElement_[0];
         graphElement_[0].setBorderColor(focusedColor_);
-
-        Label lb = new Label( graphControlPanel, SWT.NONE);
-		lb.setText(MessageBundle.get("GraphPanel.label.height")); //$NON-NLS-1$
-        heightSlider_ = new Scale(graphControlPanel, SWT.HORIZONTAL);
-        heightSlider_.setMaximum(MAX_GRAPH_HEIGHT);
-        heightSlider_.setMinimum(MIN_GRAPH_HEIGHT);
-        heightSlider_.setSelection(INITIAL_GRAPH_HEIGHT);
-        heightSlider_.addSelectionListener(new SelectionAdapter(){
-            public void widgetSelected(SelectionEvent e){
-             	GridData gridData = (GridData)currentGraph_.getLayoutData();
-            	gridData.heightHint = heightSlider_.getSelection();
-            	graphScrollPane_.setMinSize(graphElementBase_.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-            	graphElementBase_.layout(true);
-            }
-		} );
 
         hRangeButton_ = new Button(graphControlPanel,  SWT.PUSH);
         hRangeButton_.setText(MessageBundle.get("GraphPanel.button.hrange")); //$NON-NLS-1$
@@ -355,7 +332,6 @@ public class GraphPanel extends Composite implements PaintListener{
 		currentGraph_.setBorderColor(focusedColor_);
 		currentGraph_.redraw();
         seriesDialog_.setCurrentGraph(currentGraph_);
-        heightSlider_.setSelection(currentGraph_.getSize().y); 
         updateButtons();
     }
     //--------------------------------------------------------------------

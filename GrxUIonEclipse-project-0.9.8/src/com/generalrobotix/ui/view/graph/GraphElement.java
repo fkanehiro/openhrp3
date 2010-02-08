@@ -44,7 +44,6 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
     GraphPanel gp_;
 
     SelectionListener actionListener_; // アクションリスナ列
-    private static final String CMD_CLICKED = "clicked";    // アクションコマンド名
 
     private static final int GRAPH_LEFT_MARGIN = 50;
     private static final int GRAPH_RIGHT_MARGIN = 50;
@@ -52,7 +51,6 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
     private static final int GRAPH_BOTTOM_MARGIN = 30;
 
     private static final Color normalColor_ = Activator.getDefault().getColor("black");
-    private static final Color focusedColor_ = Activator.getDefault().getColor( "focusedColor" );
     private static final Font GRAPH_LEGEND_FONT = Activator.getDefault().getFont( "dialog12" );
     // -----------------------------------------------------------------
     // コンストラクタ
@@ -66,8 +64,7 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
     public GraphElement(
     	GraphPanel gp,
     	Composite parent,
-        TrendGraph tg,
-        int height
+        TrendGraph tg
     ) {
         super(parent, SWT.NONE);
 
@@ -75,13 +72,15 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
         tg_ = tg;   // トレンドグラフ
         gp_ = gp;
         
-        GridData gridData0 = new GridData(0,height);
+        GridData gridData0 = new GridData();
  		gridData0.horizontalAlignment = GridData.FILL;
  		gridData0.grabExcessHorizontalSpace = true;
  		setLayoutData(gridData0);
         
- 		setLayout(new GridLayout(1,true));
-        
+ 		GridLayout layout=new GridLayout(1,true);
+  		layout.marginHeight=0;
+ 		setLayout(layout);
+         
         // スプリットペイン
         graphPane_ = new SashForm( this, SWT.HORIZONTAL  );
         GridData gridData = new GridData();
