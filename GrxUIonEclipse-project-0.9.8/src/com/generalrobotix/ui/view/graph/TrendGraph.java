@@ -10,12 +10,7 @@
 package com.generalrobotix.ui.view.graph;
 
 import java.util.*;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.widgets.Display;
-
+import org.eclipse.swt.graphics.RGB;
 import com.generalrobotix.ui.grxui.Activator;
 
 
@@ -34,50 +29,19 @@ public class TrendGraph {
     public static final int NOT_MATCHED = 1;
     public static final int NOT_SUPPORTED = 2;
     
-    public static final Color GREEN = Display.getDefault().getSystemColor(SWT.COLOR_GREEN);
-    public static final Color YELLOW = Display.getDefault().getSystemColor(SWT.COLOR_YELLOW);
-    public static final Color CYAN = Display.getDefault().getSystemColor(SWT.COLOR_CYAN);
-    public static final Color MAGENTA = Display.getDefault().getSystemColor(SWT.COLOR_MAGENTA);
-    public static final Color RED = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-    public static final Color BLUE = Display.getDefault().getSystemColor(SWT.COLOR_BLUE);
-
-    private static final Color[] colorTable_ = {
-        GREEN,
-        YELLOW,
-        CYAN,
-        MAGENTA,
-        RED,
-        BLUE
-    };
+    private static final String[] colorTable_ = {"green", "yellow", "cyan", "magenta", "red", "blue" };
+      
     private static final int numColors_;
     static {
         numColors_ = colorTable_.length;
     }
-    public Color getGraphColor(int index) {
+    public RGB getGraphColor(int index) {
     	int tmpcolorCounter_ = colorCounter_;
     	tmpcolorCounter_ = tmpcolorCounter_ + index;
     	if (tmpcolorCounter_ >= numColors_) {
             tmpcolorCounter_ = 0;
         }
-    	return colorTable_[tmpcolorCounter_];
-    }
-
-    private static final HashMap<String, Color> colorMap_ = new HashMap<String, Color>();
-    static final HashMap<Color, String> revColorMap_ = new HashMap<Color, String>();
-    static {
-        colorMap_.put("green",   GREEN);
-        colorMap_.put("yellow",  YELLOW);
-        colorMap_.put("cyan",    CYAN);
-        colorMap_.put("magenta", MAGENTA);
-        colorMap_.put("red",     RED);
-        colorMap_.put("blue",    BLUE);
-
-        revColorMap_.put(GREEN,   "green");
-        revColorMap_.put(YELLOW,  "yellow");
-        revColorMap_.put(CYAN,    "cyan");
-        revColorMap_.put(MAGENTA, "magenta");
-        revColorMap_.put(RED,     "red");
-        revColorMap_.put(BLUE,    "blue");
+    	return Activator.getDefault().getColor(colorTable_[tmpcolorCounter_]).getRGB();
     }
 
     // -----------------------------------------------------------------
@@ -224,9 +188,9 @@ public class TrendGraph {
 //            world_.updateAttribute(nodeName_ + "." + GraphNode.V_RANGE + "=" + vr.toString());
         }
         if(di.color==null)
-        	di.color = colorTable_[colorCounter_];
+        	di.color = Activator.getDefault().getColor(colorTable_[colorCounter_]).getRGB();
         if(di.legend==null)
-            di.legend = di.toString();
+            di.legend = di.dataItem.toString();
         if(_addDataItem(di))
         	if (++colorCounter_ >= numColors_)
             colorCounter_ = 0;

@@ -57,6 +57,7 @@ import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
@@ -112,10 +113,10 @@ public class GrxRobotStatView extends GrxBaseView {
         super(name, manager,vp,parent);
         osName_ = System.getProperty("os.name");
         
-        white_ = parent.getDisplay().getSystemColor(SWT.COLOR_WHITE);
-        black_ = parent.getDisplay().getSystemColor(SWT.COLOR_BLACK);
-        red_ = parent.getDisplay().getSystemColor(SWT.COLOR_RED);
-        yellow_ = parent.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
+        white_ = Activator.getDefault().getColor("white");
+        black_ = Activator.getDefault().getColor("black");
+        red_ = Activator.getDefault().getColor("red");
+        yellow_ = Activator.getDefault().getColor("yellow");
         
         FontData[] data = parent.getFont().getFontData();
         if (osName_ == "Linux") {

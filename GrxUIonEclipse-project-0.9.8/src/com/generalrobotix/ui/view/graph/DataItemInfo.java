@@ -9,7 +9,7 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 
 
 /**
@@ -21,7 +21,7 @@ import org.eclipse.swt.graphics.Color;
 public class DataItemInfo {
 
     public final DataItem dataItem; // データアイテム
-    public Color    color;      // 色
+    public RGB    color;      // 色
     public String   legend;     // 凡例文字列
 
     // -----------------------------------------------------------------
@@ -35,7 +35,7 @@ public class DataItemInfo {
      */
     public DataItemInfo(
         DataItem dataItem,
-        Color    color,
+        RGB    color,
         String   legend
     ) {
         this.dataItem = dataItem;

@@ -21,7 +21,9 @@ package com.generalrobotix.ui.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 
 import com.generalrobotix.ui.GrxBaseItem;
@@ -181,8 +183,6 @@ public class GrxGraphView extends GrxBaseView {
 				continue;
 
 			TrendGraph tgraph = graphManager_.getTrendGraph(i);
-
-			//String kind = getProperty(header + "dataKind", "");
 			List<String> addedList = new ArrayList<String>();
 			String[] str = ditems.split(",");
 			for (int j = 0; j < str.length; j++) {
@@ -191,50 +191,29 @@ public class GrxGraphView extends GrxBaseView {
 				String object= p.getStr(header + str[j] + ".object");
 				String node  = p.getStr(header + str[j] + ".node");
 				String attr  = p.getStr(header + str[j] + ".attr");
-				int index    = p.getInt(header + str[j] + ".index", 0);
-				DataItem ditem = new DataItem(object, node, attr, index, null);
-				if (!addedList.contains(ditem.toString()))
-					addedList.add(ditem.toString());
-
-				boolean isContains = false;
-				DataItemInfo[] info = graphManager_.getTrendGraph(i).getDataItemInfoList();
-				for (int k = 0; k < info.length; k++) {
-					DataItem d = info[k].dataItem;
-					if (d.toString().equals(ditem.toString())) {
-						isContains = true;
-						break;
-					}
-				}
-
-				if (isContains)
-					continue;
-
-				String type = "Joint";
-				int length = 1;
-				if (attr.equals("force")) {
+				int index    = p.getInt(header + str[j] + ".index", -1);
+				String sColor= p.getStr(header + str[j] + ".color");
+				RGB color=null;
+				if(sColor!=null)
+					color=StringConverter.asRGB(sColor);
+				String legend= p.getStr(header + str[j] + ".legend");
+				String type = "";
+				if(attr.equals("angle"))
+					type = "Joint";
+				else if (attr.equals("force")) 
 					type = "ForceSensor";
-					length = 3;
-				} else if (attr.equals("torque")) {
+				else if (attr.equals("torque"))	
 					type = "ForceSensor";
-					length = 3;
-				} else if (attr.equals("acceleration")) {
+				else if (attr.equals("acceleration"))
 					type = "AccelerationSensor";
-					length = 3;
-				} else if (attr.equals("angularVelocity")) {
+				else if (attr.equals("angularVelocity"))
 					type = "Gyro";
-					length = 3;
+
+				DataItem ditem = new  DataItem(object, node, attr, index, type);
+				if (!addedList.contains(ditem.toString())){
+					addedList.add(ditem.toString());
+					tgraph.addDataItem(new DataItemInfo(ditem, color, legend));
 				}
-
-				for(int k=0; k<length; k++)	
-					tgraph.addDataItem(new DataItemInfo(new DataItem(object, node, attr, k, type),
-							null, null));
-			}
-
-			DataItemInfo[] info = tgraph.getDataItemInfoList();
-			for (int k = info.length - 1; k >= 0; k--) {
-				DataItem d = info[k].dataItem;
-				if (!addedList.contains(d.toString()))
-					tgraph.removeDataItem(d);
 			}
 
 			double[] timeRange = p.getDblAry(header + "timeRange", null);

@@ -19,8 +19,11 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -29,7 +32,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 
@@ -40,7 +42,7 @@ import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.MessageBundle;
 
 @SuppressWarnings("serial") //$NON-NLS-1$
-public class GraphPanel extends Composite {
+public class GraphPanel extends Composite implements PaintListener{
     //--------------------------------------------------------------------
     private static final int INITIAL_GRAPH_HEIGHT = 200;
 
@@ -53,11 +55,10 @@ public class GraphPanel extends Composite {
     private TrendGraphManager trendGraphMgr_;
     private List<GrxModelItem> currentModels_ = null;
 
-    private static final Color normalColor_ = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
+    private static final Color normalColor_ = Activator.getDefault().getColor("black");
     private static final Color focusedColor_ = Activator.getDefault().getColor( "focusedColor" ); //$NON-NLS-1$
 
     private Composite graphElementBase_;
-    private Composite comp_;
     
     private Scale heightSlider_;
     private Button hRangeButton_;
@@ -87,7 +88,6 @@ public class GraphPanel extends Composite {
      public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr, Composite comp) {
         super(comp, SWT.NONE);
         manager_ = manager;
-        comp_ = comp;
         trendGraphMgr_ = trendGraphMgr;
       
         setLayout(new GridLayout(1,true));
@@ -145,7 +145,7 @@ public class GraphPanel extends Composite {
         hRangeDialog_ = new HRangeDialog(graphControlPanel.getShell());
         hRangeButton_.addSelectionListener(new SelectionAdapter(){
         	public void widgetSelected(SelectionEvent e) {
-        		final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+        		GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
         		if (graphItem == null)
         			return;
         		hRangeDialog_.setMaxHRange(trendGraphMgr_.getTotalTime());
@@ -158,8 +158,8 @@ public class GraphPanel extends Composite {
         			int flag = hRangeDialog_.getUpdateFlag();
                     if (flag != 0) {
                         TrendGraph tg = currentGraph_.getTrendGraph();
-                        final double hRange = hRangeDialog_.getHRange();
-                        final double mpos =   hRangeDialog_.getMarkerPos();
+                        double hRange = hRangeDialog_.getHRange();
+                        double mpos =   hRangeDialog_.getMarkerPos();
                         if ((flag & HRangeDialog.RANGE_UPDATED) != 0
                             && (flag & HRangeDialog.POS_UPDATED) != 0) {
                             tg.setTimeRangeAndPos(hRange, mpos);
@@ -168,11 +168,7 @@ public class GraphPanel extends Composite {
                         } else {
                             tg.setMarkerPos(mpos);
                         }
-                        syncExec( new Runnable(){
-							public void run() {
-								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos}); //$NON-NLS-1$
-							}
-                        });
+                        graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos}); //$NON-NLS-1$
                         for (int i = 0; i < numGraph_; i ++) {
                             graphElement_[i].redraw();
                         }
@@ -191,17 +187,13 @@ public class GraphPanel extends Composite {
                     vRangeDialog_.setBase(tg.getBase());
                     vRangeDialog_.setExtent(tg.getExtent());
                     if(vRangeDialog_.open() == IDialogConstants.OK_ID){
-                    	final double base = vRangeDialog_.getBase();
-                        final double extent = vRangeDialog_.getExtent();
+                    	double base = vRangeDialog_.getBase();
+                        double extent = vRangeDialog_.getExtent();
                         tg.setRange(base, extent);
-                        final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+                        GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                         if (graphItem == null)
                         	return;
-                        syncExec( new Runnable(){
-							public void run() {
-								graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent}); //$NON-NLS-1$
-							}
-                        });
+                        graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent}); //$NON-NLS-1$
                         currentGraph_.redraw();
                     }
                 }
@@ -235,7 +227,7 @@ public class GraphPanel extends Composite {
                         	tg.addDataItem(addedArray_[i]);
                         }
                         
-                        final String graphName = tg.getNodeName();
+                        String graphName = tg.getNodeName();
                         Enumeration enume = graphItem.propertyNames();
                         while (enume.hasMoreElements()) {
                         	String key = (String)enume.nextElement();
@@ -245,28 +237,21 @@ public class GraphPanel extends Composite {
                         String dataItems = ""; //$NON-NLS-1$
                         DataItemInfo[] list = tg.getDataItemInfoList();
                         for (int i = 0; i<list.length;i++) {
-                        	final DataItem di = list[i].dataItem;
-                        	final String header = tg._getDataItemNodeName(di);
+                        	DataItem di = list[i].dataItem;
+                        	String header = tg._getDataItemNodeName(di);
                         	if (i > 0)
                         		dataItems += ","; //$NON-NLS-1$
                         	dataItems += graphName+"_"+di.object+"_"+di.node+"_"+di.attribute; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         	if (di.index >= 0)
                         		dataItems += "_"+di.index; //$NON-NLS-1$
-                        	syncExec( new Runnable(){
-								public void run() {
-									graphItem.setProperty(header+".object",di.object); //$NON-NLS-1$
-									graphItem.setProperty(header+".node",di.node); //$NON-NLS-1$
-									graphItem.setProperty(header+".attr",di.attribute); //$NON-NLS-1$
-									graphItem.setProperty(header+".index", String.valueOf(di.index)); //$NON-NLS-1$
-								}
-                        	});
+                        	graphItem.setProperty(header+".object",di.object); //$NON-NLS-1$
+                        	graphItem.setProperty(header+".node",di.node); //$NON-NLS-1$
+                        	graphItem.setProperty(header+".attr",di.attribute); //$NON-NLS-1$
+                        	graphItem.setProperty(header+".index", String.valueOf(di.index)); //$NON-NLS-1$
+                        	graphItem.setProperty(header+".legend", list[i].legend); //$NON-NLS-1$
+                        	graphItem.setProperty(header+".color", StringConverter.asString(list[i].color)); //$NON-NLS-1$
                         }
-                        final String value = dataItems;
-                        syncExec( new Runnable(){
-							public void run() {
-								graphItem.setProperty(graphName+".dataItems",value); //$NON-NLS-1$
-							}
-                        });
+                        graphItem.setProperty(graphName+".dataItems",dataItems); //$NON-NLS-1$
                         updateButtons();
                         currentGraph_.redraw();
                     }
@@ -360,7 +345,7 @@ public class GraphPanel extends Composite {
         );
 	*/
         setEnabled(false);
-
+        addPaintListener(this);
     }
 
     public void setFocuse(GraphElement ge){
@@ -484,21 +469,13 @@ public class GraphPanel extends Composite {
     }*/
 
     //--------------------------------------------------------------------
-/*
-    public void timeChanged(Time time) {
-        repaint();
-    }
-*/
-    private boolean syncExec(Runnable r){
-		Display display = comp_.getDisplay();
-        if ( display!=null && !display.isDisposed()){
-            display.syncExec( r );
-            return true;
-        }else
-        	return false;
-	}
-    
+
     public void setModelList(List<GrxModelItem> list){
     	currentModels_ = list;
     }
+    
+    public void paintControl(PaintEvent e) {
+    	for (int i = 0; i < numGraph_; i++)
+            graphElement_[i].redraw();
+	}
 }
