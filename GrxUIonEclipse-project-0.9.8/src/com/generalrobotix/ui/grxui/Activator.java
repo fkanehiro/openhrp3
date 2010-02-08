@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.OverlappingFileLockException;
 import java.net.URL;
-import java.util.jar.*;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
@@ -14,6 +13,7 @@ import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -27,14 +27,11 @@ import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.eclipse.ui.IViewReference;
-
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -48,7 +45,6 @@ import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
-import com.generalrobotix.ui.util.GrxServerManager;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -337,9 +333,29 @@ public class Activator extends AbstractUIPlugin{
     public void registryColor(){
     	creg_ = new ColorRegistry();
     	RGB focusedColor = new RGB(0,0,100);
-    	creg_.put("focusedColor", focusedColor);
+    	setColor("focusedColor", focusedColor);
     	RGB markerColor = new RGB(255,128,128);
-    	creg_.put("markerColor", markerColor);
+    	setColor("markerColor", markerColor);
+    	RGB green = Display.getDefault().getSystemColor(SWT.COLOR_GREEN).getRGB();
+    	setColor("green", green);
+    	RGB yellow = Display.getDefault().getSystemColor(SWT.COLOR_YELLOW).getRGB();
+     	setColor("yellow", yellow);
+    	RGB cyan = Display.getDefault().getSystemColor(SWT.COLOR_CYAN).getRGB();
+    	creg_.put("cyan", cyan);
+    	RGB magenta = Display.getDefault().getSystemColor(SWT.COLOR_MAGENTA).getRGB();
+    	setColor("magenta", magenta);
+    	RGB red = Display.getDefault().getSystemColor(SWT.COLOR_RED).getRGB();
+    	setColor("red", red);
+    	RGB blue = Display.getDefault().getSystemColor(SWT.COLOR_BLUE).getRGB();
+    	setColor("blue", blue);
+    	RGB black = Display.getDefault().getSystemColor(SWT.COLOR_BLACK).getRGB();
+    	setColor("black", black);
+    	RGB gray = Display.getDefault().getSystemColor(SWT.COLOR_GRAY).getRGB();
+    	setColor("gray", gray);
+    	RGB darkGray = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY).getRGB();
+    	setColor("darkGray", darkGray);
+    	RGB white = Display.getDefault().getSystemColor(SWT.COLOR_WHITE).getRGB();
+    	setColor("white", white);
     }
     
     
@@ -426,8 +442,19 @@ public class Activator extends AbstractUIPlugin{
     	return freg_.get(fontName);
     }
     
+    public Color getColor(RGB rgb){
+    	String s=StringConverter.asString(rgb);
+    	Color color = creg_.get(s);
+    	if(color==null)
+    		creg_.put(s, rgb);
+    	return creg_.get(s);
+    }
+    
     public Color getColor(String colorName){
-    	return creg_.get(colorName);
+    	Color color = creg_.get(colorName);
+    	if(color==null)
+    		color = creg_.get("white");
+    	return color;
     }
     
     public void setColor(String colorName, RGB rgb){

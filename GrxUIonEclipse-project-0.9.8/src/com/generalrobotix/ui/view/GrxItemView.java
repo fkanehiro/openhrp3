@@ -37,10 +37,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerLabel;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
@@ -52,6 +50,7 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxHwcItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
@@ -292,10 +291,10 @@ public class GrxItemView extends GrxBaseView {
 			if( GrxBaseItem.class.isAssignableFrom( element.getClass() ) ) {
 				//選択
 				if( ((GrxBaseItem)element).isSelected() ) {
-					label.setForeground( Display.getDefault().getSystemColor(SWT.COLOR_BLACK) );
+					label.setForeground( Activator.getDefault().getColor("black") );
 				//非選択
 				} else{
-					label.setForeground( Display.getDefault().getSystemColor(SWT.COLOR_GRAY) );
+					label.setForeground( Activator.getDefault().getColor("gray") );
 					label.setText( "("+getText(element)+")" );
 				}
 			}

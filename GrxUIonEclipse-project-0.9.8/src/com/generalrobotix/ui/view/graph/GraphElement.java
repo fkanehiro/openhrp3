@@ -24,8 +24,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.view.graph.LegendPanel;
 
@@ -53,7 +51,7 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
     private static final int GRAPH_TOP_MARGIN = 20;
     private static final int GRAPH_BOTTOM_MARGIN = 30;
 
-    private static final Color normalColor_ = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
+    private static final Color normalColor_ = Activator.getDefault().getColor("black");
     private static final Color focusedColor_ = Activator.getDefault().getColor( "focusedColor" );
     private static final Font GRAPH_LEGEND_FONT = Activator.getDefault().getFont( "dialog12" );
     // -----------------------------------------------------------------
@@ -103,8 +101,8 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
         legend_ = new LegendPanel(
         		graphPane_,
         		Activator.getDefault().getFont( "dialog10" ),
-                parent.getDisplay().getSystemColor(SWT.COLOR_BLACK),
-            	parent.getDisplay().getSystemColor(SWT.COLOR_WHITE)
+        		Activator.getDefault().getColor("black"),
+        		Activator.getDefault().getColor("white")
             );
         graphPane_.setWeights(new int[] { 4,1});
         graphPane_.SASH_WIDTH = 6;

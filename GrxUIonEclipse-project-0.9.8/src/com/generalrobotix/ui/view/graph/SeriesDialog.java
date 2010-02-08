@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
@@ -383,7 +382,7 @@ public class SeriesDialog extends Dialog {
                 while(it.hasNext()){
                 	DataItemInfo info = it.next();
                 	if(fullName.equals(info.dataItem.toString())){
-                		info.color = (Color)tableModel_.getValueAt(i, 3);
+                		info.color = (RGB)tableModel_.getValueAt(i, 3);
             			info.legend = (String)tableModel_.getValueAt(i, 4);
             			newDataItemInfoList.add(info);
             			dataItemInfoList_.remove(info);
@@ -609,7 +608,7 @@ public class SeriesDialog extends Dialog {
 		public Color getBackground(Object element, int columnIndex) {
 			DataItemInfo item = (DataItemInfo) element;
     		if(columnIndex == 3)
-    			return item.color;
+    			return Activator.getDefault().getColor(item.color);
     		else
     			return null;
 		}
@@ -636,7 +635,7 @@ public class SeriesDialog extends Dialog {
 		public Object getValue(Object element, String property) {
 			DataItemInfo item = (DataItemInfo) element;
 			if(property == "color") //$NON-NLS-1$
-				return item.color.getRGB();
+				return item.color;
 			else if(property == "legend") //$NON-NLS-1$
 				return item.legend;
 			return null;
@@ -648,8 +647,7 @@ public class SeriesDialog extends Dialog {
 			}
 			DataItemInfo item = (DataItemInfo) element;
 			if(property == "color"){ //$NON-NLS-1$
-				Activator.getDefault().setColor(((RGB)value).toString(), (RGB)value);
-				item.color =Activator.getDefault().getColor(((RGB)value).toString());
+				item.color =(RGB)value;
 			}else if(property == "legend") //$NON-NLS-1$
 				item.legend = (String)value;
 				

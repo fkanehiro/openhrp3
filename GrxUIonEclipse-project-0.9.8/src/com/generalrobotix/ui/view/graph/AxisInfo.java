@@ -9,11 +9,8 @@
  */
 package com.generalrobotix.ui.view.graph;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.widgets.Display;
-
 import com.generalrobotix.ui.grxui.Activator;
 
 /**
@@ -69,23 +66,23 @@ public class AxisInfo {
         min = 0.0;
         maxLimitEnabled = false;
         minLimitEnabled = false;
-        color = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
+        color = Activator.getDefault().getColor("white");
         factor = 1.0;
         tickEvery = 0.0;
         tickLength = 3;
         labelEvery = 0.0;
         labelFormat = "0";
         labelFont = Activator.getDefault().getFont( "monospaced" );
-        labelColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
+        labelColor = Activator.getDefault().getColor("white");
         unitFont = Activator.getDefault().getFont( "monospaced" );
         unitLabel = "";
-        unitColor = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
+        unitColor = Activator.getDefault().getColor("white");
         unitXOfs = 0;
         unitYOfs = 0;
         gridEvery = 0.0;
-        gridColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
+        gridColor = Activator.getDefault().getColor("darkGray");
         markerVisible = false;
         markerPos = 0.0;
-        markerColor = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
+        markerColor = Activator.getDefault().getColor("gray");
     }
 }

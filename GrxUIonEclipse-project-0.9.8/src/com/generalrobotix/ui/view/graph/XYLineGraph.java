@@ -15,8 +15,11 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+
+import com.generalrobotix.ui.grxui.Activator;
 
 import java.util.*;
 import java.text.*;
@@ -103,8 +106,8 @@ public class XYLineGraph extends Canvas implements PaintListener {
         
 
         // デフォルト色設定
-        backColor_ = parent.getDisplay().getSystemColor(SWT.COLOR_BLACK);
-        borderColor_ = parent.getDisplay().getSystemColor(SWT.COLOR_BLACK);
+        backColor_ = Activator.getDefault().getColor("black");
+        borderColor_ = Activator.getDefault().getColor("black");
 //        nullAxisColor_ = Color.darkGray;
 
         // 軸情報クリア
@@ -172,13 +175,11 @@ public class XYLineGraph extends Canvas implements PaintListener {
         DataSeries ds,
         AxisInfo xai,
         AxisInfo yai,
-        Color color, 
+        RGB rgb, 
         String legend
     ) {
-        DataSeriesInfo dsi = new DataSeriesInfo(
-            xai, yai, color,
-            new LegendInfo(color, legend)
-        );
+    	Color color=Activator.getDefault().getColor(rgb);
+        DataSeriesInfo dsi = new DataSeriesInfo( xai, yai, color, new LegendInfo(color, legend));
         legendPanel_.addLegend(dsi.legend);
         dsList_.add(ds);
         dsInfoMap_.put(ds, dsi);
@@ -242,10 +243,10 @@ public class XYLineGraph extends Canvas implements PaintListener {
      * @param   ds      DataSeries  データ系列
      * @param   color   Color       色
      */
-    public void setStyle(DataSeries ds, Color color) {
+    public void setStyle(DataSeries ds, RGB rgb) {
         DataSeriesInfo dsi = (DataSeriesInfo)dsInfoMap_.get(ds);
-        dsi.color = color;
-        dsi.legend.color = color;
+        dsi.color = Activator.getDefault().getColor(rgb);
+        dsi.legend.color = Activator.getDefault().getColor(rgb);
     }
 
     /**
@@ -254,9 +255,9 @@ public class XYLineGraph extends Canvas implements PaintListener {
      * @param   ds  データ系列
      * @return  色
      */
-    public Color getStyle(DataSeries ds) {
+    public RGB getStyle(DataSeries ds) {
         DataSeriesInfo dsi = (DataSeriesInfo)dsInfoMap_.get(ds);
-        return dsi.color;
+        return dsi.color.getRGB();
     }
 
     /**
@@ -690,7 +691,6 @@ public class XYLineGraph extends Canvas implements PaintListener {
             if (ai.markerVisible
                 //&& ai.markerPos >= min && ai.markerPos <= max
                 && ((flag & DRAW_MARKER) != 0)) {
-                //gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
                 gc.setForeground(ai.markerColor);
                 int pos;
                 switch (axis) {
@@ -764,7 +764,7 @@ public class XYLineGraph extends Canvas implements PaintListener {
         public DataSeriesInfo(
             AxisInfo xAxisInfo,
             AxisInfo yAxisInfo,
-            Color    color,
+            Color	 color,
             LegendInfo   legend
         ) {
             this.xAxisInfo = xAxisInfo;
