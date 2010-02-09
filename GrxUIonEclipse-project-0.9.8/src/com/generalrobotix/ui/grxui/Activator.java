@@ -151,7 +151,11 @@ public class Activator extends AbstractUIPlugin{
         public void windowDeactivated(IWorkbenchWindow window) {}
 
         public void windowOpened(IWorkbenchWindow window) {
-            window.addPerspectiveListener(this);
+        	if( lockFile_ == null ){
+        		breakStart(null, null );
+        	} else {
+        		window.addPerspectiveListener(this);
+        	}
         }
 
         public void postShutdown(IWorkbench workbench) {
@@ -195,16 +199,7 @@ public class Activator extends AbstractUIPlugin{
                     //ワークスペースを起動して初めてパースペクティブを開く場合
                     IWorkbench localWorkbench = PlatformUI.getWorkbench();
                     IWorkbenchWindow wnd = localWorkbench.getActiveWorkbenchWindow();
-                    if( wnd.getActivePage() == null ){
-                        //キャッシュから開く場合
-                        try{
-                            tryLockFile();
-                        } catch (Exception ex) {
-                            breakStart( ex, null );
-                            break;
-                        }
-                        startGrxUI();
-                    } else {
+                    if( wnd.getActivePage() != null ){
                         if (localWorkbench != null) {
                             IWorkbenchWindow localWindow = localWorkbench.getActiveWorkbenchWindow();
                             if (localWindow != null) {
@@ -473,8 +468,7 @@ public class Activator extends AbstractUIPlugin{
     }
 
     // GrxUIパースペクティブが有効になったときの動作
-    public boolean startGrxUI() {
-        boolean ret = true;
+    public void startGrxUI() {
         if( !bStartedGrxUI_ ) {
             //暫定処置 Grx3DViewがGUIのみの機能に分離できたらstopGrxUIか
             //manager_.shutdownで処理できるように変更
@@ -484,9 +478,21 @@ public class Activator extends AbstractUIPlugin{
             manager_ = new GrxPluginManager();
             manager_.start();
         }
-        return ret;
     }
 
+    //
+    public boolean tryStartGrxUI(){
+		if( lockFile_ == null && !bStartedGrxUI_){
+		    try{
+		        tryLockFile();
+			    startGrxUI();
+		    } catch (Exception ex) {
+		        ex.printStackTrace();
+		    }
+		}
+		return bStartedGrxUI_;
+    }
+    
     // GrxUIパースペクティブが無効になったときの動作
     public void stopGrxUI() {
         manager_.shutdown();
@@ -573,17 +579,15 @@ public class Activator extends AbstractUIPlugin{
             System.exit( PlatformUI.RETURN_UNSTARTABLE );
         } else {
             IWorkbenchPage page = wnd.getActivePage();
-            if(page == null){
+            if(closeDesc == null){
                 //パースペクティブが既に開いているワークスペースを開始する時
-                wnd.close();
-                System.exit( PlatformUI.RETURN_UNSTARTABLE );
-            } else {
-                page.closePerspective(closeDesc, false, false);
-                for( IPerspectiveDescriptor local : page.getOpenPerspectives()){
-                    if( !local.getId().equals(GrxUIPerspectiveFactory.ID)){
-                        page.setPerspective(local);
-                        break;
-                    }
+            	closeDesc = page.getPerspective();
+            }
+            page.closePerspective(closeDesc, false, false);
+            for( IPerspectiveDescriptor local : page.getOpenPerspectives()){
+                if( !local.getId().equals(GrxUIPerspectiveFactory.ID)){
+                    page.setPerspective(local);
+                    break;
                 }
             }
         }
