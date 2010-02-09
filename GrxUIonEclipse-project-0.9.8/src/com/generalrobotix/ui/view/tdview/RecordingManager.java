@@ -82,8 +82,9 @@ public class RecordingManager{
         return frameRate_;
     }
 
-    public String[] getSuportedFormat(){
+    public Object[] getSuportedFormat(){
         htFormat_=new Hashtable<String, Format>();
+        Vector<String> ret = new Vector<String>();
         //テンポラリを作ってフォーマットを得る
         String fileName =
             "file:" +
@@ -99,17 +100,20 @@ public class RecordingManager{
                 ImageToMovie.QUICKTIME
             );
         Format[] formats=tempMovie.getSupportedFormats();
-        String[] ret=new String[formats.length];
         for(int i=0;i<formats.length;i++){
-            ret[i]=formats[i].toString();
-            htFormat_.put(ret[i],formats[i]);
+            String keyStr = formats[i].toString();
+            if(htFormat_.get(keyStr) != null){
+            	continue;
+            }
+            ret.add(keyStr);
+            htFormat_.put(keyStr,formats[i]);
         }
         tempMovie.setFormat(formats[0]);
         //テンポラリを消す
         File file=new File(fileName);
         file.delete();
         
-        return ret;
+        return ret.toArray();
     }
 
     private String _getUniqueName() {
@@ -117,9 +121,9 @@ public class RecordingManager{
         String str="`~$" + cal.getTime().hashCode() +".TMP";
         return str;
     }
-    public String[] preRecord(String fileName, String fileType)
+    public Object[] preRecord(String fileName, String fileType)
 	{
-        
+        Vector<String> ret = new Vector<String>();
         movie_=
             new ImageToMovie(
                 width_,
@@ -131,12 +135,15 @@ public class RecordingManager{
         htFormat_=new Hashtable<String, Format>();
         
         Format[] formats = movie_.getSupportedFormats();
-        String[] ret=new String[formats.length];
         for(int i=0;i<formats.length;i++){
-            ret[i]=formats[i].toString();
-            htFormat_.put(ret[i],formats[i]);
+            String keyStr = formats[i].toString();
+            if(htFormat_.get(keyStr) != null){
+            	continue;
+            }
+            ret.add(keyStr);
+            htFormat_.put(keyStr,formats[i]);
         }
-        return ret;
+        return ret.toArray();
     }
 
     public boolean startRecord(String formatStr){
