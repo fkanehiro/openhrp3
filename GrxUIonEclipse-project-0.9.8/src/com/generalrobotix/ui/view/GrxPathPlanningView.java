@@ -1217,6 +1217,7 @@ public class GrxPathPlanningView extends GrxBaseView {
     			}
     			break;
     		case GrxPluginManager.REMOVE_ITEM:
+                removeCarpet();
     		case GrxPluginManager.NOTSELECTED_ITEM:
     			if(ppaItem_==ppa){
     				ppaItem_.deleteObserver(this);
