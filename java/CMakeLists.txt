@@ -29,6 +29,13 @@ if( ECLIPSE_VERISON STREQUAL "3.4")
   set( ORG_ECLIPSE_CORE_RESOURCES_VERSION ";bundle-version=\"3.4.2\"")
 endif()
 
+# Set OS_NAME
+if(UNIX)
+  set(OS_NAME linux)
+endif(UNIX)
+if(WIN32)
+  set(OS_NAME windows)
+endif(WIN32)
 
 # Specific OpenRTM version
 
