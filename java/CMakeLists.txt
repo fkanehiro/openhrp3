@@ -1,3 +1,4 @@
+set(ECLIPSE_VERISON "3.4" CACHE STRING "Set ECLIPSE_VERISON either of 3.2(Callisto) or 3.4(Ganymede)." )
 set(GrxUI_ON_ECLIPSE_DIR ${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8)
 set(DEFAULT_GRXUIRC_XML_VERSION "1.1")
 
@@ -17,6 +18,19 @@ macro(configure_grxui_on_eclipse)
 endmacro()
 
 
+# Specific Eclipse version
+set( ORG_ECLIPSE_UI_VERSION "")
+set( ORG_ECLIPSE_CORE_RUNTIME_VERSION "")
+set( ORG_ECLIPSE_CORE_RESOURCES_VERSION "")
+
+if( ECLIPSE_VERISON STREQUAL "3.4")
+  set( ORG_ECLIPSE_UI_VERSION ";bundle-version=\"3.4.2\"")
+  set( ORG_ECLIPSE_CORE_RUNTIME_VERSION ";bundle-version=\"3.4.0\"")
+  set( ORG_ECLIPSE_CORE_RESOURCES_VERSION ";bundle-version=\"3.4.2\"")
+endif()
+
+
+# Specific OpenRTM version
 
 if( ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION042} )
   set(rtm_stub_jar OpenRTM-aist-0.4.1.jar)
@@ -80,7 +94,6 @@ else()
 
   configure_grxui_on_eclipse()
 endif()
-
 
 ADD_SUBDIRECTORY(corba)
 

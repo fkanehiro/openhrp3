@@ -152,9 +152,7 @@
       <perspectiveExtension
             targetID="com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory">
          <actionSet
-               id="com.generalrobotix.ui.actionSet"
-               label="GrxUI Actions"
-               visible="true">
+               id="com.generalrobotix.ui.actionSet">
          </actionSet>
       </perspectiveExtension>
    </extension>
