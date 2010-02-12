@@ -8,7 +8,12 @@ import com.generalrobotix.ui.grxui.Activator;
 public class GrxOpenHRPViewPart extends GrxBaseViewPart {
 
     public void createPartControl(Composite parent) {
-        v = new GrxOpenHRPView("OpenHRP",Activator.getDefault().manager_,this,parent);
+		Activator act = Activator.getDefault();
+		if(act != null){
+			if(act.tryStartGrxUI()){
+                v = new GrxOpenHRPView("OpenHRP",Activator.getDefault().manager_,this,parent);
+			}
+		}
     }
 
 }
