@@ -203,24 +203,28 @@ bool JointPath::calcInverseKinematics
 }
 
 
-bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_R0)
+bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_R)
 {
     static const int MAX_IK_ITERATION = 50;
     static const double LAMBDA = 0.9;
     
     if(joints.empty()){
-        return false;
+        if(linkPath.empty()){
+            return false;
+        }
+        if(baseLink() == endLink()){
+            baseLink()->p = end_p;
+            baseLink()->R = end_R;
+            return true;
+        } else {
+            // \todo implement here
+            return false;
+        }
     }
     
     const int n = numJoints();
 
-    if(n < 1){
-        return false;
-    }
-
     Link* target = linkPath.endLink();
-    //Matrix33 end_R(end_R0 * trans(target->Rs));
-    Matrix33 end_R(end_R0);
 
     std::vector<double> qorg(n);
     for(int i=0; i < n; ++i){
