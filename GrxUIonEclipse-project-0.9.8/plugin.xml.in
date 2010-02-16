@@ -91,6 +91,16 @@
             id="com.generalrobotix.ui.view.GrxServerManagerViewPart"
             category="com.generalrobotix.ui.view"
             name="%ServeManager.name"/>
+      <view
+            class="com.generalrobotix.ui.view.GrxCollisionPairViewPart"
+            id="com.generalrobotix.ui.view.GrxCollisionPairViewPart"
+            category="com.generalrobotix.ui.view"
+            name="%CollisionPair.name"/>
+      <view
+            class="com.generalrobotix.ui.view.GrxControllerViewPart"
+            id="com.generalrobotix.ui.view.GrxControllerViewPart"
+            category="com.generalrobotix.ui.view"
+            name="%Controller.name"/>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">

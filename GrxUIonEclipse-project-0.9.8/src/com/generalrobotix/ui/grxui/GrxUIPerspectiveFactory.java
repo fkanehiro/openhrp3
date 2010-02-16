@@ -30,7 +30,9 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
             "com.generalrobotix.ui.view.GrxRobotStatViewPart",
             "com.generalrobotix.ui.view.Grx3DViewPart",
             "com.generalrobotix.ui.view.GrxOpenHRPViewPart",
-            "com.generalrobotix.ui.view.GrxTextEditorViewPart" };
+            "com.generalrobotix.ui.view.GrxCollisionPairViewPart",
+            "com.generalrobotix.ui.view.GrxControllerViewPart",
+            "com.generalrobotix.ui.view.GrxTextEditorViewPart"};
 
     
     public static Shell getCurrentShell(){
@@ -87,6 +89,8 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
 
         middle.addView("com.generalrobotix.ui.view.Grx3DViewPart");
         middle.addView("com.generalrobotix.ui.view.GrxOpenHRPViewPart");
+        middle.addView("com.generalrobotix.ui.view.GrxControllerViewPart");
+        middle.addView("com.generalrobotix.ui.view.GrxCollisionPairViewPart");
         middle.addView("com.generalrobotix.ui.view.GrxTextEditorViewPart");
 
         // エディタ領域不可視
