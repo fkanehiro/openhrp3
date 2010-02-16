@@ -461,6 +461,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			logger_.openAsRead();
 			logger_.openCollisionLogAsWrite();
 			logger_.openCollisionLogAsRead();
+		} catch (FileOpenFailException e) {
+            e.printStackTrace();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -610,14 +612,13 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
     
 	private void _loadLog(File logFile, IProgressMonitor monitor ) throws InterruptedException{
+        String fname = logFile.getAbsolutePath();
 		try {
 			if (logFile == null) 
 				logFile = new File("log"+File.separator+getName()+".log"); //$NON-NLS-1$ //$NON-NLS-2$
 
 			if (!logFile.isFile())
 				return;
-
-            String fname = logFile.getAbsolutePath();
 
             clearLog();
             tempDir_ = tempDirBase_ + getName();
@@ -761,10 +762,25 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             monitor.worked(1);
         } catch (FileOpenFailException e) {
             e.printStackTrace();
+            MessageDialog.openError(
+                    GrxUIPerspectiveFactory.getCurrentShell(),
+                    MessageBundle.get("GrxWorldStateItem.dialog.title.errorLoadLogMessageDlg"),
+                    MessageBundle.get("GrxWorldStateItem.dialog.message.errorFileOpenFail") + 
+                    System.getProperty("line.separator") + fname);
         } catch (LogFileFormatException e) {
             e.printStackTrace();
+            MessageDialog.openError(
+                    GrxUIPerspectiveFactory.getCurrentShell(),
+                    MessageBundle.get("GrxWorldStateItem.dialog.title.errorLoadLogMessageDlg"),
+                    MessageBundle.get("GrxWorldStateItem.dialog.message.errorLogFileFormat") + 
+                    System.getProperty("line.separator") + fname);
 		} catch (IOException e) {
             e.printStackTrace();
+            MessageDialog.openError(
+                    GrxUIPerspectiveFactory.getCurrentShell(),
+                    MessageBundle.get("GrxWorldStateItem.dialog.title.errorLoadLogMessageDlg"),
+                    MessageBundle.get("GrxWorldStateItem.dialog.message.errorIOException") + 
+                    System.getProperty("line.separator") + fname);
         }
 	}
 
@@ -836,6 +852,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         try {
             logger_.openAsRead();
             logger_.openCollisionLogAsRead();
+        } catch (FileOpenFailException e) {
+            e.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -901,6 +919,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                 temp.openAsRead();
                 temp.openCollisionLogAsWrite();
                 temp.openCollisionLogAsRead();
+            } catch (FileOpenFailException e) {
+                e.printStackTrace();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }

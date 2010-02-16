@@ -259,11 +259,16 @@ public class LogManager {
         return time_.getDouble();
     }
 
-    public void openAsRead() throws IOException {
+    public void openAsRead() throws IOException, FileOpenFailException {
         readFile_ = new Hashtable<String, RandomAccessFile>();
         for (Enumeration elements = header_.elements(); elements.hasMoreElements();) {
             LogHeader header = (LogHeader) elements.nextElement();
-            RandomAccessFile file = new RandomAccessFile(getTempFilePath(header.objectName_), "r");
+            RandomAccessFile file = null;
+            try{
+                file = new RandomAccessFile(getTempFilePath(header.objectName_), "r");
+            }catch (IOException ex){
+                throw new FileOpenFailException(ex.getMessage());
+            }
             readFile_.put(header.objectName_, file);
         }
     }
