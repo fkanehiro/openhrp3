@@ -391,6 +391,8 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     		id(value);
     	}else if(property.equals("type")){ //$NON-NLS-1$
     		type(value);
+        }else if(property.equals("cameraType")){ //$NON-NLS-1$
+    		cameraType(value);
     	}else if(property.equals("alwaysVisible")){ //$NON-NLS-1$
     		if (value.startsWith("true")){ //$NON-NLS-1$
     			setProperty("alwaysVisible", "true"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -681,5 +683,28 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     	else
     		return null;
     }
-    
+
+    private void cameraType(String cameraType){
+        String old = getStr("cameraType", "NONE");
+        if(!type().equals("Vision") || old.equals(cameraType)) return;
+
+        if(cameraType.equals("NONE")){ //$NON-NLS-1$
+            info_.specValues[3] = CameraType._NONE;
+        }else if(cameraType.equals("COLOR")){ //$NON-NLS-1$
+            info_.specValues[3] = CameraType._COLOR;
+        }else if(cameraType.equals("MONO")){ //$NON-NLS-1$
+            info_.specValues[3] = CameraType._MONO;
+        }else if(cameraType.equals("DEPTH")){ //$NON-NLS-1$
+            info_.specValues[3] = CameraType._DEPTH;
+        }else if(cameraType.equals("COLOR_DEPTH")){ //$NON-NLS-1$
+            info_.specValues[3] = CameraType._COLOR_DEPTH;
+        }else if(cameraType.equals("MONO_DEPTH")){ //$NON-NLS-1$
+            info_.specValues[3] = CameraType._MONO_DEPTH;
+        }else{
+            System.out.println("GrxSensorItem.propertyChanged() : unknown camera type : " + cameraType); //$NON-NLS-1$
+            return;
+        }
+        setProperty("cameraType", cameraType); //$NON-NLS-1$
+        if (model_ != null) model_.notifyModified();
+    }
 }
