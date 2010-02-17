@@ -4,9 +4,7 @@ bin.includes = plugin.xml,\
                icons/,\
                @rtm_stub_jar@,\
                commons-cli-1.1.jar,\
-               jmf.jar,\
                grxui.jar,\
-               grxuirc_win.xml,\
                resources/,\
                META-INF/,\
                plugin.properties,\
@@ -17,7 +15,7 @@ bin.includes = plugin.xml,\
                openhrpstubskel.jar
 javacDefaultEncoding.grxui.jar = UTF-8
 jars.compile.order = grxui.jar
-source.grxui.jar = bin/
+source.grxui.jar = src/
 output.grxui.jar = bin/
 bin.excludes = META-INF/.svn/,\
                resources/.svn/,\
