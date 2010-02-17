@@ -5,7 +5,6 @@
 	<classpathentry exported="true" kind="lib" path="jython.jar"/>
 	<classpathentry exported="true" kind="lib" path="openhrpstubskel.jar"/>
 	<classpathentry exported="true" kind="lib" path="commons-cli-1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="jmf.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>

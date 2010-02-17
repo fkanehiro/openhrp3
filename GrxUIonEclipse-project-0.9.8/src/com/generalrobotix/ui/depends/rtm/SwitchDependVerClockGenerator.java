@@ -1,11 +1,8 @@
-/*
-@CONFIGURE_COMMENT@
-*/
 package com.generalrobotix.ui.depends.rtm;
 
-import com.generalrobotix.ui.depends.rtm.ClockGeneratorRtm@OPENRTM_VERSION_NUM@_impl;
+import com.generalrobotix.ui.depends.rtm.ClockGeneratorRtm_impl;
 
-public class SwitchDependVerClockGenerator extends ClockGeneratorRtm@OPENRTM_VERSION_NUM@_impl{
+public class SwitchDependVerClockGenerator extends ClockGeneratorRtm_impl{
     public String getDependencyModuleName()
     {
         return new String("OpenRTM");

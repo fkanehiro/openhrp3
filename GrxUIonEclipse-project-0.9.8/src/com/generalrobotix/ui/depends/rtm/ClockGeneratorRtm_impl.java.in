@@ -1,13 +1,16 @@
+/*
+@CONFIGURE_COMMENT@
+*/
 package com.generalrobotix.ui.depends.rtm;
 
 import java.util.Vector;
 
 import jp.go.aist.hrp.simulator.ClockGeneratorPOA;
-import OpenRTM.ExtTrigExecutionContextService;
+import @EXT_TRIG_EXECUTION_CONTEXT_SERVICE@;
 
 import com.generalrobotix.ui.depends.ISwitchDependVer;
 
-public abstract class ClockGeneratorRtm100_impl extends ClockGeneratorPOA
+public abstract class ClockGeneratorRtm_impl extends ClockGeneratorPOA
     implements ISwitchDependVer
 {
     protected Vector<ExecutionContext> ecs_;
@@ -58,7 +61,7 @@ public abstract class ClockGeneratorRtm100_impl extends ClockGeneratorPOA
     /**
      * @brief constructor
      */
-    ClockGeneratorRtm100_impl(){
+    ClockGeneratorRtm_impl(){
         ecs_ = new Vector<ExecutionContext>();
     }
     
@@ -89,6 +92,6 @@ public abstract class ClockGeneratorRtm100_impl extends ClockGeneratorPOA
     
     public String getDependencyModuleVersion()
     {
-        return new String("1.0.0-RC1");
+        return new String("@OPENRTM_VERSION@");
     }
 }
