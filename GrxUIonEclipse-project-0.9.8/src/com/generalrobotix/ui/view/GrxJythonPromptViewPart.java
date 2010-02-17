@@ -7,7 +7,7 @@ import com.generalrobotix.ui.grxui.Activator;
 public class GrxJythonPromptViewPart extends GrxBaseViewPart {
 
     public void createPartControl(Composite parent) {
-        v = new GrxJythonPromptView("Jython Prompt",Activator.getDefault().manager_,this,parent);
+        createView( GrxJythonPromptView.class, "Jython Prompt", this, parent );
     }
     
 
