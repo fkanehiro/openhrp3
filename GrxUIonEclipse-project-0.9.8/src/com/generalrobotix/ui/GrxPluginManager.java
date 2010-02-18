@@ -48,10 +48,7 @@ import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.OrderedHashMap;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
 import com.generalrobotix.ui.util.FileUtil;
-import com.generalrobotix.ui.item.GrxCollisionPairItem;
-import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
-import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxProjectItem;
 import com.generalrobotix.ui.util.GrxServerManager;
 
@@ -620,13 +617,10 @@ public class GrxPluginManager {
             return false;
         }
         if (m.get(newName) == null) {
-        	String oldName = item.getName();
             if (!newName.equals(item.getName())) {
                 m.remove(item.getName());
                 m.put(newName, item);
                 item.setName(newName);
-
-                renameRelayedCollision(item, oldName, newName);
             }
             return true;
         } else {
@@ -1181,45 +1175,6 @@ public class GrxPluginManager {
             	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB);
         	}
     		store.setValue(PreferenceConstants.VERSION, PreferenceConstants.CURRENT_VERSION);
-        }
-    }
-
-    private void renameRelayedCollision(GrxBasePlugin item, String oldName, String newName)
-    {
-        if(item.getClass() == GrxModelItem.class)
-        {
-            OrderedHashMap mcoll = pluginMap_.get(GrxCollisionPairItem.class);
-            if(mcoll != null)
-            {
-            	Iterator it = mcoll.values().iterator();
-            	while(it.hasNext())
-            	{
-            		GrxCollisionPairItem ci = (GrxCollisionPairItem)it.next();
-            		if(oldName.equals(ci.getProperty("objectName1")))
-            			ci.setProperty("objectName1", newName);
-
-            		if(oldName.equals(ci.getProperty("objectName2")))
-            			ci.setProperty("objectName2", newName);
-            	}
-            }
-        }
-        else if(item.getClass() == GrxLinkItem.class)
-        {
-            OrderedHashMap mcoll = pluginMap_.get(GrxCollisionPairItem.class);
-            if(mcoll != null)
-            {
-            	String modelName = ((GrxLinkItem)item).model().getName();
-            	Iterator it = mcoll.values().iterator();
-            	while(it.hasNext())
-            	{
-            		GrxCollisionPairItem ci = (GrxCollisionPairItem)it.next();
-            		if(modelName.equals(ci.getProperty("objectName1")) && oldName.equals(ci.getProperty("jointName1")))
-            			ci.setProperty("jointName1", newName);
-
-            		if(modelName.equals(ci.getProperty("objectName2")) && oldName.equals(ci.getProperty("jointName2")))
-            			ci.setProperty("jointName2", newName);
-            	}
-            }
         }
     }
 }

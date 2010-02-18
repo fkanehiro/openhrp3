@@ -61,6 +61,7 @@ import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 import com.generalrobotix.ui.util.MessageBundle;
+import com.generalrobotix.ui.util.OrderedHashMap;
 
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.GeometryInfo;
@@ -1298,5 +1299,31 @@ public class GrxLinkItem extends GrxTransformItem{
 	    bg.addChild(tg);
 	    switchAABB_.addChild(bg);		
 
+	}
+
+	/**
+	 * @brief rename this Link
+	 * @param newName new name
+	 */
+	public void rename(String newName) {
+    	String oldName = getName();
+    	
+		super.rename(newName);
+
+        OrderedHashMap mcoll = manager_.pluginMap_.get(GrxCollisionPairItem.class);
+        if(mcoll != null)
+        {
+        	String modelName = model().getName();
+        	Iterator it = mcoll.values().iterator();
+        	while(it.hasNext())
+        	{
+        		GrxCollisionPairItem ci = (GrxCollisionPairItem)it.next();
+        		if(modelName.equals(ci.getProperty("objectName1")) && oldName.equals(ci.getProperty("jointName1")))
+        			ci.setProperty("jointName1", newName);
+
+        		if(modelName.equals(ci.getProperty("objectName2")) && oldName.equals(ci.getProperty("jointName2")))
+        			ci.setProperty("jointName2", newName);
+        	}
+        }
 	}
 }

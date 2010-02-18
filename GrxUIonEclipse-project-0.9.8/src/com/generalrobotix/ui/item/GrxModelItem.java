@@ -1471,4 +1471,29 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			_model.makeAABB(bodyInfo); 
 		}
     }
+
+	/**
+	 * @brief rename this Model
+	 * @param newName new name
+	 */
+	public void rename(String newName) {
+    	String oldName = getName();
+    	
+		super.rename(newName);
+
+        OrderedHashMap mcoll = manager_.pluginMap_.get(GrxCollisionPairItem.class);
+        if(mcoll != null)
+        {
+        	Iterator it = mcoll.values().iterator();
+        	while(it.hasNext())
+        	{
+        		GrxCollisionPairItem ci = (GrxCollisionPairItem)it.next();
+        		if(oldName.equals(ci.getProperty("objectName1")))
+        			ci.setProperty("objectName1", newName);
+
+        		if(oldName.equals(ci.getProperty("objectName2")))
+        			ci.setProperty("objectName2", newName);
+        	}
+        }
+	}
 }
