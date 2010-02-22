@@ -9,6 +9,12 @@ macro( configure_doxygen doc_dir_name doc_project_name
   set(doc_output_language "")
   set(doc_enabled_sections "")
   set(doc_dir_name ${doc_dir_name})
+
+  if(GENERATE_DEBIANPACKAGE)
+    set(doc_short_names "YES")
+  else()
+    set(doc_short_names "NO")
+  endif(GENERATE_DEBIANPACKAGE)
   
   configure_file( ${OpenHRP_SOURCE_DIR}/doc/Doxyfile.in ${OpenHRP_SOURCE_DIR}/doc/${doc_dir_name}${DOXY_SFX} )
   add_custom_command( OUTPUT ${doc_dir_name}
@@ -23,7 +29,6 @@ macro( configure_doxygen doc_dir_name doc_project_name
     COMMAND doxygen ${doc_dir_name}_${doc_enabled_sections}${DOXY_SFX} 
     WORKING_DIRECTORY ${OpenHRP_SOURCE_DIR}/doc)
 endmacro()
-
 
 
 configure_doxygen( "idl" "OpenHRP3 IDL" "../idl/OpenHRP" "*.idl" )
@@ -43,4 +48,3 @@ list( APPEND depends_dirs ut)
 add_custom_target(doc ALL DEPENDS ${depends_dirs} WORKING_DIRECTORY ${OpenHRP_SOURCE_DIR}/doc)
 
 install(DIRECTORY ${depends_dirs} DESTINATION ${RELATIVE_DOC_INSTALL_PATH})
-

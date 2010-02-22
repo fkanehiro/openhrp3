@@ -1,6 +1,6 @@
-libhrpCollision-3.1 0 openhrp-aist
-libhrpModel-3.1 0 openhrp-aist
-libhrpPlanner-3.1 0 openhrp-aist
-libhrpRTM-3.1 0 openhrp-aist
-libhrpUtil-3.1 0 openhrp-aist
-libsDIMS 0 openhrp-aist
+libhrpCollision-3.1 0 openhrp3.1
+libhrpModel-3.1 0 openhrp3.1
+libhrpPlanner-3.1 0 openhrp3.1
+libhrpRTM-3.1 0 openhrp3.1
+libhrpUtil-3.1 0 openhrp3.1
+libsDIMS 0 openhrp3.1
