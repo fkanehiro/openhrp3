@@ -129,7 +129,7 @@ STRIP_FROM_INC_PATH    =
 # (but less readable) file names. This can be useful is your file systems 
 # doesn't support long names like on DOS, Mac, or CD-ROM.
 
-SHORT_NAMES            = NO
+SHORT_NAMES            = @doc_short_names@
 
 # If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen 
 # will interpret the first line (until the first dot) of a JavaDoc-style 
@@ -245,7 +245,7 @@ SIP_SUPPORT            = NO
 # setting a simple type. If this is not the case, or you want to show the 
 # methods anyway, you should set this option to NO.
 
-IDL_PROPERTY_SUPPORT   = YES
+IDL_PROPERTY_SUPPORT   = NO
 
 # If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC 
 # tag is set to YES, then doxygen will reuse the documentation of the first 

@@ -15,16 +15,19 @@ cd ../../
 
 # Generate development deb file
 #cmake -D DEBIANPACKAGE_DEVELOP:BOOL=ON -D GENERATE_DEBIANPACKAGE:BOOL=ON .
-cmake -D GENERATE_DEBIANPACKAGE:BOOL=ON .
+cmake -D GENERATE_DEBIANPACKAGE:BOOL=ON -D CMAKE_INSTALL_PREFIX:STRING=/usr .
 sudo cpack -G DEB
 #   Generate runtime deb file
 #cmake -D DEBIANPACKAGE_DEVELOP:BOOL=OFF -D GENERATE_DEBIANPACKAGE:BOOL=ON .
 #sudo cpack -G DEB
 
-sudo mv -f openhrp-aist*.deb ${PACKAGES_DIR}
+sudo mv -f openhrp*.deb ${PACKAGES_DIR}
 
 DEB_FILES=`ls ${PACKAGES_DIR}/*.deb`
 
+#sudo rm -rf _CPack_Packages
+
+cmake -D GENERATE_DEBIANPACKAGE:BOOL=OFF -D CMAKE_INSTALL_PREFIX:STRING=/usr/local .
 cd ${WORK_DIR}
 DEST_DIR="ubuntu/dists/${DISTRIB_CODENAME}/main/binary-i386/"
 
