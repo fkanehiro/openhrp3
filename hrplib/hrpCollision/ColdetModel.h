@@ -103,7 +103,7 @@ namespace hrp {
          * @param y y position of the vertex
          * @param z z position of the vertex
          */
-        void getVertex(int index, float& x, float& y, float& z) const;
+        void getVertex(int index, float& out_x, float& out_y, float& out_z) const;
 
         /**
          * @brief add a triangle
@@ -118,6 +118,8 @@ namespace hrp {
            add a triangle to the end of the vector
         */
         void addTriangle(int v1, int v2, int v3);
+
+        void getTriangle(int index, int& out_v1, int& out_v2, int& out_v3) const;
 
         /**
          * @brief build tree of bounding boxes to accelerate collision check

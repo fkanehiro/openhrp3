@@ -49,6 +49,12 @@ namespace hrp {
 
         double computeDistance(double *point0, double *point1);
 
+        /**
+           @param out_triangle0, out_triangle1 Indices of the triangle pair that are originally registered by
+           ColdeModel::setTraiangle().
+        */
+        double computeDistance(int& out_triangle0, double* out_point0, int& out_triangle1, double* out_point1);
+
         bool detectIntersection();
 
         double tolerance() const { return tolerance_; }
