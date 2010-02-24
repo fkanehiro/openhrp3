@@ -121,6 +121,14 @@ void ColdetModel::setTriangle(int index, int v1, int v2, int v3)
     mVRef[2] = v3;
 }
 
+void ColdetModel::getTriangle(int index, int& v1, int& v2, int& v3) const
+{
+    udword* mVRef = dataSet->triangles[index].mVRef;
+    v1=mVRef[0];
+    v2=mVRef[1];
+    v3=mVRef[2];
+}
+
 
 void ColdetModel::addTriangle(int v1, int v2, int v3)
 {
