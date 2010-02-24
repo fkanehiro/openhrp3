@@ -234,17 +234,47 @@ double ColdetModelPair::computeDistance(double *point0, double *point1)
         Point p0, p1;
         collider.Distance(colCache, d, p0, p1,
                           models[1]->transform, models[0]->transform);
-        point0[0] = p0.x;
-        point0[1] = p0.y;
-        point0[2] = p0.z;
-        point1[0] = p1.x;
-        point1[1] = p1.y;
-        point1[2] = p1.z;
+        point0[0] = p1.x;
+        point0[1] = p1.y;
+        point0[2] = p1.z;
+        point1[0] = p0.x;
+        point1[1] = p0.y;
+        point1[2] = p0.z;
         return d;
     }
 
     return -1;
 }
+
+double ColdetModelPair::computeDistance(int& triangle0, double* point0, int& triangle1, double* point1)
+{
+    if(models[0]->isValid() && models[1]->isValid()){
+
+        Opcode::BVTCache colCache;
+
+        colCache.Model0 = &models[1]->dataSet->model;
+        colCache.Model1 = &models[0]->dataSet->model;
+        
+        SSVTreeCollider collider;
+        
+        float d;
+        Point p0, p1;
+        collider.Distance(colCache, d, p0, p1,
+                          models[1]->transform, models[0]->transform);
+        point0[0] = p1.x;
+        point0[1] = p1.y;
+        point0[2] = p1.z;
+        point1[0] = p0.x;
+        point1[1] = p0.y;
+        point1[2] = p0.z;
+	triangle1 = colCache.id0;
+	triangle0 = colCache.id1;
+        return d;
+    }
+
+    return -1;
+}
+
 
 bool ColdetModelPair::detectIntersection()
 {
