@@ -173,14 +173,14 @@ public class GrxJythonPromptView extends GrxBaseView {
         	dir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
         if(dir!=null)
         	dir += "/../script"; //$NON-NLS-1$
-        if(new File(dir).exists())
+        if(dir !=null && new File(dir).exists())
         	interpreter_.exec("sys.path.append('"+dir+"')"); //$NON-NLS-1$ //$NON-NLS-2$
         URL[] urls = manager_.pluginLoader_.getURLs();
         for (int i=0; i<urls.length; i++) {
             interpreter_.exec("sys.path.append('"+urls[i].getPath()+"')"); //$NON-NLS-1$ //$NON-NLS-2$
             interpreter_.exec("print \"sys.path.append(\'"+urls[i].getPath()+"\')\""); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        if(new File(dir).exists())
+        if(dir!=null && new File(dir).exists())
         	interpreter_.exec("import rbimporter"); //$NON-NLS-1$
         interpreter_.exec("import __builtin__"); //$NON-NLS-1$
         

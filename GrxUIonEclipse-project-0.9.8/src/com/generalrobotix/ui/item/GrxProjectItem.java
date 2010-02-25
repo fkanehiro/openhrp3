@@ -511,7 +511,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		List<GrxBaseView> vl = manager_.getActiveViewList();
 		for (int i=0; i<vl.size(); i++) 
-			vl.get(i).restoreProperties();
+			if (vl.get(i) != null) vl.get(i).restoreProperties();
 
 		monitor.worked(1);
 		
