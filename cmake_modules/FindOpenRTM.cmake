@@ -104,7 +104,11 @@ if(WIN32)
     if(OPENRTM_VERSION STREQUAL ${OPENRTM_VERSION042})
       set(OPENRTM_LIBRARIES_RELEASE RTC042 ACE )
     else()
-      set(OPENRTM_LIBRARIES_RELEASE RTC100 coil)
+      # 1.0.0-RC
+      #set(OPENRTM_LIBRARIES_RELEASE RTC100 coil)
+
+      # 1.0.0-Release
+      set(OPENRTM_LIBRARIES_RELEASE RTC100 coil ws2_32.lib mswsock.lib)
     endif()
     foreach(library ${OPENRTM_LIBRARIES_RELEASE})
       list(APPEND OPENRTM_LIBRARIES optimized ${library} debug ${library}d )
