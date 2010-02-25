@@ -43,7 +43,7 @@ import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.util.MessageBundle;
 
 @SuppressWarnings("serial") //$NON-NLS-1$
-public class GraphPanel extends Composite implements PaintListener{
+public class GraphPanel extends Composite{
     //--------------------------------------------------------------------
     private GraphElement[] graphElement_;
     public GraphElement currentGraph_;
@@ -322,7 +322,6 @@ public class GraphPanel extends Composite implements PaintListener{
         );
 	*/
         setEnabled(false);
-        addPaintListener(this);
     }
 
     public void setFocuse(GraphElement ge){
@@ -450,8 +449,4 @@ public class GraphPanel extends Composite implements PaintListener{
     	currentModels_ = list;
     }
     
-    public void paintControl(PaintEvent e) {
-    	for (int i = 0; i < numGraph_; i++)
-            graphElement_[i].redraw();
-	}
 }

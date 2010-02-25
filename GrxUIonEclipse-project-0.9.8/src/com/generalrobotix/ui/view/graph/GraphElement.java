@@ -34,7 +34,7 @@ import com.generalrobotix.ui.view.graph.LegendPanel;
  * @author Kernel Inc.
  * @version 1.0 (2001/8/20)
  */
-public class GraphElement extends Composite implements MouseListener,PaintListener
+public class GraphElement extends Composite implements MouseListener
  //   implements MouseListener, ActionListener
 {
 	SashForm graphPane_;  // 分割ペイン
@@ -112,7 +112,6 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
 
         tg.setGraph((XYLineGraph) graph_, legend_);
 
-        addPaintListener(this);
         // リスナ設定
        // ((DroppableXYGraph)graph_).addActionListener(this); // ドロップアクションリスナ
         graph_.addMouseListener(this);
@@ -236,10 +235,4 @@ public class GraphElement extends Composite implements MouseListener,PaintListen
 	public void mouseUp(MouseEvent e) {
 		gp_.setFocuse(this);
 	}
-
-	public void paintControl(PaintEvent e) {
-		graph_.redraw();
-		legend_.redraw();
-	}
-	
 }
