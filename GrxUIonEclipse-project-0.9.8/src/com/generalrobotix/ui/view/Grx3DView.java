@@ -880,7 +880,7 @@ public class Grx3DView
         	return;		
         }
     
-        Dimension imageSize = dialog.getImageSize();		
+        Dimension canvasSize = dialog.getImageSize();		
         int framerate=10;		
         try{		
         	framerate = dialog.getFrameRate();		
@@ -891,10 +891,7 @@ public class Grx3DView
         }		
         double playbackRate = dialog.getPlaybackRate();
         
-        Dimension canvasSize = imageSize;
         GrxDebugUtil.println("ScreenSize: " + canvasSize.width + "x" + canvasSize.height + " (may be)"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        canvasSize.width = canvasSize.width;
-        canvasSize.height = canvasSize.height;
         
         BufferedImage image=new BufferedImage(canvasSize.width,canvasSize.height,BufferedImage.TYPE_INT_ARGB);
 		// 参照型で画像を設定
@@ -905,9 +902,9 @@ public class Grx3DView
 		offscreen_=new Canvas3D(graphicsConfiguration,true);
 		offscreen_.setOffScreenBuffer(buffer);	
 		view_.addCanvas3D(offscreen_);
-		
-		offscreen_.getScreen3D().setSize(canvasSize);
+
 		Screen3D screen = canvas_.getScreen3D();
+		offscreen_.getScreen3D().setSize(screen.getSize());
 		offscreen_.getScreen3D().setPhysicalScreenWidth(screen.getPhysicalScreenWidth());
 		offscreen_.getScreen3D().setPhysicalScreenHeight(screen.getPhysicalScreenHeight());
 				
