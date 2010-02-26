@@ -487,7 +487,6 @@ if(ENABLE_CPACK)
 endif(ENABLE_CPACK)
 
 # GrxUI Preference Default Setting
-
 if(CMAKE_INSTALL_PREFIX AND JYTHON_HOME)
   configure_file(${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/src/com/generalrobotix/ui/grxui/PreferenceInitializer.java.input ${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/src/com/generalrobotix/ui/grxui/PreferenceInitializer.java @ONLY)
 endif()
