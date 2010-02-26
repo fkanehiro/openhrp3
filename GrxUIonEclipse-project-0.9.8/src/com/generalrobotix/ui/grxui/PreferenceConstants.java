@@ -37,6 +37,8 @@ public class PreferenceConstants {
 	public static final String ITEM="Item";
 	public static final String CLASS="Class";
 	public static final String VISIBLE="Visible";
+	public static final String USERITEM="UserItem";
+	public static final String CLASSPATH="ClassPath";
 	
 	public static final String MODELITEM="com.generalrobotix.ui.item.GrxModelItem";
 	public static final String LINKITEM="com.generalrobotix.ui.item.GrxLinkItem";

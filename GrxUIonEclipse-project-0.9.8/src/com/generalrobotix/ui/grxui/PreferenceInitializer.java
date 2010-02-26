@@ -81,7 +81,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 				"false"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
 				"true"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
 				"true"+PreferenceConstants.SEPARATOR+"true");
-		
+		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASS,"");
+		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASSPATH,"");
+		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.VISIBLE,"");
 		store.setDefault(PreferenceConstants.VERSION, "");
 	}
 

@@ -31,6 +31,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.omg.PortableServer.POA;
 
 import org.w3c.dom.Element;
@@ -72,7 +74,7 @@ import org.eclipse.ui.PlatformUI;
  * @see GrxPluginLoader
  * @see GrxProjectItem
  */
-public class GrxPluginManager {
+public class GrxPluginManager implements IPropertyChangeListener {
     // project
     private GrxProjectItem currentProject_;
     private GrxModeInfoItem currentMode_;
@@ -94,6 +96,8 @@ public class GrxPluginManager {
     public static final int SETNAME_ITEM=4;
     public static final int FOCUSED_ITEM=5;
     public static final int NOTFOCUSED_ITEM=6;
+    public static final int CHANGE_MODE=7;
+    
     // for CORBA
     public POA poa_;
     public org.omg.CORBA.ORB orb_;
@@ -126,7 +130,7 @@ public class GrxPluginManager {
         // 1.そもそもプラグイン管理をEclipseでやらせる
         // 2.Eclipseの機能を使ってプラグインのディレクトリを持ってきてもらう
         // 3.とりあえずGrxUIプラグイン自身をロードしたクラスローダを渡しておく <- いまこれ
-        pluginLoader_ = new GrxPluginLoader("plugin", GrxPluginManager.class.getClassLoader()); //$NON-NLS-1$
+        pluginLoader_ = new GrxPluginLoader("", GrxPluginManager.class.getClassLoader()); //$NON-NLS-1$
         registerPlugin(GrxModeInfoItem.class);
 
         File rtcFile = new File( Activator.getDefault().getTempDir(),"rtc.conf");
@@ -1127,7 +1131,6 @@ public class GrxPluginManager {
     	}
     }
     
-    @SuppressWarnings("unchecked")
 	private void setInitialMode(){
         IPreferenceStore store =Activator.getDefault().getPreferenceStore();
         String modes = store.getString(PreferenceConstants.MODE);
@@ -1138,6 +1141,12 @@ public class GrxPluginManager {
         String[] itemClass=itemClassList.split(PreferenceConstants.SEPARATOR, -1);
         String itemVisibleList=store.getString(PreferenceConstants.ITEM+"."+PreferenceConstants.VISIBLE);
         String[] itemVisible=itemVisibleList.split(PreferenceConstants.SEPARATOR, -1);
+        String userItemClassList=store.getString(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASS);
+        String[] userItemClass=userItemClassList.split(PreferenceConstants.SEPARATOR, -1);
+        String userItemPathList=store.getString(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASSPATH);
+        String[] userItemPath=userItemPathList.split(PreferenceConstants.SEPARATOR, -1);
+        String userItemVisibleList=store.getString(PreferenceConstants.USERITEM+"."+PreferenceConstants.VISIBLE);
+        String[] userItemVisible=userItemVisibleList.split(PreferenceConstants.SEPARATOR, -1);
         for(int i=0; i<mode.length; i++){
         	GrxModeInfoItem item = (GrxModeInfoItem)createItem(GrxModeInfoItem.class, mode[i]);
         	String[] index=itemIndex[i].split(",",-1);
@@ -1155,7 +1164,22 @@ public class GrxPluginManager {
 		        	}
 	        	}
 	        }
+	        for(int j=0; j<userItemClass.length; j++){
+	        	if(!userItemClass[j].equals("")){
+		        	pluginLoader_.addURL(userItemPath[j]);
+		        	if(pluginLoader_.existClass(userItemClass[j])){
+		        		Class<? extends GrxBasePlugin> plugin=registerPlugin(userItemClass[j]);
+		        		if (plugin != null) {
+		        			PluginInfo pi = pinfoMap_.get(plugin);
+		        			pi.visible = userItemVisible[j].equals("true")? true : false;
+		        			pinfoMap_.put(plugin, pi);
+		        			item.addItemClassList(plugin);
+		        		}
+		        	}
+	        	}
+	        }
         }
+        store.addPropertyChangeListener(this);
         //	最初のモードを選択		//
         GrxModeInfoItem item = (GrxModeInfoItem)getItem(mode[0]);
         setSelectedItem(item, true);
@@ -1177,4 +1201,84 @@ public class GrxPluginManager {
     		store.setValue(PreferenceConstants.VERSION, PreferenceConstants.CURRENT_VERSION);
         }
     }
+    
+	@SuppressWarnings("unchecked")
+	public void propertyChange(PropertyChangeEvent event) {
+		if(event.getProperty().equals("userItemChange")){
+			String newItemList = (String) event.getNewValue();
+			String[] newItems = newItemList.split(PreferenceConstants.SEPARATOR, -1);
+			String oldItemList = (String) event.getOldValue();
+			String[] oldItems = oldItemList.split(PreferenceConstants.SEPARATOR, -1);
+			IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+			String userItemPathList=store.getString(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASSPATH);
+	        String[] userItemPath=userItemPathList.split(PreferenceConstants.SEPARATOR, -1);
+	        String userItemVisibleList=store.getString(PreferenceConstants.USERITEM+"."+PreferenceConstants.VISIBLE);
+	        String[] userItemVisible=userItemVisibleList.split(PreferenceConstants.SEPARATOR, -1);
+			Vector<Integer> delList = new Vector<Integer>();
+			for(int i=0; i<oldItems.length; i++){
+				boolean flg=false;
+				for(String newItem : newItems){
+					if(newItem.equals(oldItems[i])){
+						flg=true;
+						break;
+					}
+				}
+				if(!flg && !oldItems[i].equals(""))
+					delList.add(new Integer(i));
+				
+			}
+			
+			OrderedHashMap modes=(OrderedHashMap) getItemMap(GrxModeInfoItem.class);
+			for(Integer i : delList){
+				Class<? extends GrxBasePlugin> itemClass=null;
+				try {
+					itemClass = (Class<? extends GrxBasePlugin>) Class.forName(oldItems[i.intValue()], false, pluginLoader_);
+				} catch (ClassNotFoundException e) {
+					continue;
+				}
+				if(currentMode_.activeItemClassList_.contains(itemClass))
+					removeItems((Class<? extends GrxBaseItem>) itemClass);
+				Iterator<GrxModeInfoItem> it = modes.values().iterator();
+		        while (it.hasNext()) {
+		        	GrxModeInfoItem mode = it.next();
+		        	if(mode.activeItemClassList_.contains(itemClass))
+		        		mode.activeItemClassList_.remove(itemClass);
+				}
+			}
+			for(int i=0; i<newItems.length; i++){
+				pluginLoader_.addURL(userItemPath[i]);
+				Class<? extends GrxBasePlugin> itemClass=null;
+				try {
+					itemClass = (Class<? extends GrxBasePlugin>) Class.forName(newItems[i], false, pluginLoader_);
+				} catch (ClassNotFoundException e) {
+					continue;
+				}
+				Iterator<GrxModeInfoItem> it = modes.values().iterator();
+		        while (it.hasNext()) {
+		        	GrxModeInfoItem mode = it.next();
+		        	if(mode.activeItemClassList_.contains(itemClass)){
+		        		PluginInfo pi = pinfoMap_.get(itemClass);
+		        		pi.visible = userItemVisible[i].equals("true")? true : false;
+		        		pinfoMap_.put(itemClass, pi);
+		        	}else{
+		        		if(pluginLoader_.existClass(newItems[i])){
+				        	Class<? extends GrxBasePlugin> plugin=registerPlugin(newItems[i]);
+				        	if (plugin != null) {
+				        		PluginInfo pi = pinfoMap_.get(plugin);
+				        		pi.visible = userItemVisible[i].equals("true")? true : false;
+				        		pinfoMap_.put(plugin, pi);
+				        		mode.addItemClassList(plugin);
+				        	}
+				        }
+					}	
+		        }
+			}
+		}	
+		this.itemChange(currentMode_, CHANGE_MODE);
+	}
+	
+	public void dispose(){
+		IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+		store.removePropertyChangeListener(this);
+	}
 }
