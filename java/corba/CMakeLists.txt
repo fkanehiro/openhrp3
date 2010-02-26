@@ -79,7 +79,7 @@ if(UNIX)
     OUTPUT ${jarfile}
     COMMAND ${JAVAC} ${javac_flags} src/${package_path}/*.java
     COMMAND ${JAR} cf ${jarfile} -C ${CMAKE_CURRENT_BINARY_DIR} jp
-    COMMAND cp -fu ${jarfile} ${GrxUI_ON_ECLIPSE_DIR}/
+    COMMAND cp -f ${jarfile} ${GrxUI_ON_ECLIPSE_DIR}/
     DEPENDS ${idl_compiled_flag_files}
   )
 elseif(WIN32)
