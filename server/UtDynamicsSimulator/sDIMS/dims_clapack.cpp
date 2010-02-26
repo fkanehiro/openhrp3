@@ -14,8 +14,14 @@
  */
 
 #include <dims_common.h>
+#ifdef __darwin__
+typedef int integer;
+typedef double doublereal;
+#include <stdlib.h>
+#else
 #include <f2c.h>
 #include <malloc.h>
+#endif
 #include <stdio.h>
 
 #ifdef USE_CLAPACK_INTERFACE
@@ -23,7 +29,13 @@
 #undef USE_CLAPACK_INTERFACE
 #include <blaswrap.h>
 #else
+#ifdef __darwin__
+extern "C"{
+#endif
 #include <cblas.h>
+#ifdef __darwin__
+}
+#endif
 #endif
 #endif
 
