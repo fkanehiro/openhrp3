@@ -75,12 +75,6 @@ SampleSV::SampleSV(RTC::Manager* manager)
   }
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
-  registerInPort("steer", m_steerIn);
-  registerInPort("vel", m_velIn);
-
-  // Set OutPort buffer
-  registerOutPort("torque", m_torqueOut);
   // Set service provider to Ports
   
   // Set service consumers to Ports
@@ -88,10 +82,6 @@ SampleSV::SampleSV(RTC::Manager* manager)
   // Set CORBA Service Ports
   
   // </rtc-template>
-
-  m_torque.data.length(DOF);
-  m_steer.data.length(2);
-  m_vel.data.length(2);
 }
 
 SampleSV::~SampleSV()
@@ -108,8 +98,18 @@ RTC::ReturnCode_t SampleSV::onInitialize()
   {
     std::cout << "onInitialize" << std::endl;
   }
+  
+  // Set InPort buffers
+  addInPort("steer", m_steerIn);
+  addInPort("vel", m_velIn);
 
+  // Set OutPort buffer
+  addOutPort("torque", m_torqueOut);
   // </rtc-template>
+
+  m_torque.data.length(DOF);
+  m_steer.data.length(2);
+  m_vel.data.length(2);
   return RTC::RTC_OK;
 }
 
@@ -140,9 +140,14 @@ RTC::ReturnCode_t SampleSV::onActivated(RTC::UniqueId ec_id)
 {
 
 	std::cout << "on Activated" << std::endl;
-    openFiles();
-    m_steerIn.update();
-    m_velIn.update();
+  openFiles();
+  if(m_steerIn.isNew()){
+    m_steerIn.read();
+  }
+  //m_steerIn.update();
+  if(m_velIn.isNew()){
+    m_velIn.read();
+  }
 	wheel_ref = 0.0;
 
 	return RTC::RTC_OK;
@@ -160,30 +165,33 @@ RTC::ReturnCode_t SampleSV::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
 {
-  if( CONTROLLER_BRIDGE_DEBUG )
-  {
+    if( CONTROLLER_BRIDGE_DEBUG )
+    {
     std::cout << "SampleSV::onExecute" << std::endl;
-  }
+    }
 
-  m_steerIn.update();
-  m_velIn.update();
+    if(m_steerIn.isNew()){
+        m_steerIn.read();
+    }
+    if( m_velIn.isNew() ){
+        m_velIn.read();
+    }
 
-  double q_ref, dq_ref;
-  double dummy;
-  steer >> dummy; // skip time
-  int i;
+    double q_ref, dq_ref;
+    double dummy;
+    steer >> dummy; // skip time
+    int i;
 
-  double steer_ref;
-  steer >> steer_ref;
+    double steer_ref;
+    steer >> steer_ref;
 
-  for(int i=0; i<DOF; i++) m_torque.data[i] = 0.0;
-  
-  m_torque.data[STEERING_ID] = (steer_ref - m_steer.data[STEERING_ID]) * STEERING_P_GAIN - m_vel.data[STEERING_ID] * STEERING_D_GAIN;
-  m_torque.data[WHEEL_ID] = (wheel_ref - m_steer.data[WHEEL_ID]) * WHEEL_P_GAIN + (WHEEL_REF_VEL - m_vel.data[WHEEL_ID]) * WHEEL_D_GAIN;
-  wheel_ref += WHEEL_REF_VEL * TIMESTEP;
+    for(int i=0; i<DOF; i++) m_torque.data[i] = 0.0;
 
-  m_torqueOut.write();
-  
+    m_torque.data[STEERING_ID] = (steer_ref - m_steer.data[STEERING_ID]) * STEERING_P_GAIN - m_vel.data[STEERING_ID] * STEERING_D_GAIN;
+    m_torque.data[WHEEL_ID] = (wheel_ref - m_steer.data[WHEEL_ID]) * WHEEL_P_GAIN + (WHEEL_REF_VEL - m_vel.data[WHEEL_ID]) * WHEEL_D_GAIN;
+    wheel_ref += WHEEL_REF_VEL * TIMESTEP;
+    m_torqueOut.write();
+
   return RTC::RTC_OK;
 }
 
@@ -245,7 +253,7 @@ extern "C"
 
 	DLL_EXPORT void SampleSVInit(RTC::Manager* manager)
 	{
-		RTC::Properties profile(samplepd_spec);
+    coil::Properties profile(samplepd_spec);
 		manager->registerFactory(profile,
 								 RTC::Create<SampleSV>,
 								 RTC::Delete<SampleSV>);
