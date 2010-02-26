@@ -179,6 +179,12 @@
             class="com.generalrobotix.ui.grxui.GrxuiPreferencePage"
             id="com.generalrobotix.ui.grxui.GrxuiPreferencePage"
             name="GRXUI"/>
+      <page
+            category="com.generalrobotix.ui.grxui.GrxuiPreferencePage"
+            class="com.generalrobotix.ui.grxui.PreferenceItemPage"
+            id="com.generalrobotix.ui.PreferenceItemPage"
+            name="%Preferece.ItemPage.name">
+      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

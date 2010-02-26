@@ -36,18 +36,6 @@ import com.generalrobotix.ui.GrxPluginManager;
 public class GrxPluginLoader extends URLClassLoader {
 	public GrxPluginLoader(String pluginDir, ClassLoader parent) {
 		super(new URL[0], parent);
-		File pluginDir_ = new File(pluginDir);
-		String[] files = pluginDir_.list(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".jar");
-			}
-		});
-		if (files != null) {
-			for (int i=0; i<files.length; i++)
-				addURL(pluginDir_ + "/" + files[i]);
-		}
-		addURL(pluginDir);
-		//addURL("");
 	}
 	
 	public GrxPluginLoader(String pluginDir) {
@@ -57,23 +45,30 @@ public class GrxPluginLoader extends URLClassLoader {
 	/** サーチパスの追加.
 	 * クラスの検索パスを追加する。
 	 */	
+	@SuppressWarnings("deprecation")
 	public void addURL(String path) {
-		try {
-			File f = new File(path);
-			if (f.isFile() || f.isDirectory()) {
+		File f = new File(path);
+		if ( f.isDirectory() || (path.endsWith(".jar")&&f.exists())){
+			URL[] urls=getURLs();
+			for(URL url : urls){
+				if(url.equals(path))
+					return;
+			}	
+			try{
 				super.addURL(f.toURL());
-				System.out.println("classpath added: "+f.toURI().toString());
+					System.out.println("classpath added: "+f.toString());
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
 			}
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
+		}else
+			return;
 	}
 
 	public Class<?> loadClass(String cname){
 		try {
 			return super.loadClass(cname, true);
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			GrxDebugUtil.println("ClassNotFound "+cname);
 		}
 		return null;
 	}
