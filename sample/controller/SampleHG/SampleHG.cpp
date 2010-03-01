@@ -64,12 +64,7 @@ SampleHG::SampleHG(RTC::Manager* manager)
   }
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
 
-  // Set OutPort buffer
-  registerOutPort("angle", m_angleOut);
-  registerOutPort("vel", m_velOut);
-  registerOutPort("acc", m_accOut);
   // Set service provider to Ports
   
   // Set service consumers to Ports
@@ -77,11 +72,6 @@ SampleHG::SampleHG(RTC::Manager* manager)
   // Set CORBA Service Ports
   
   // </rtc-template>
-
-  m_angle.data.length(DOF);
-  m_vel.data.length(DOF);
-  m_acc.data.length(DOF);
-
 }
 
 SampleHG::~SampleHG()
@@ -99,7 +89,18 @@ RTC::ReturnCode_t SampleHG::onInitialize()
     std::cout << "onInitialize" << std::endl;
   }
 
+  // Set InPort buffers
+
+  // Set OutPort buffer
+  addOutPort("angle", m_angleOut);
+  addOutPort("vel", m_velOut);
+  addOutPort("acc", m_accOut);
   // </rtc-template>
+
+  m_angle.data.length(DOF);
+  m_vel.data.length(DOF);
+  m_acc.data.length(DOF);
+
   return RTC::RTC_OK;
 }
 
@@ -129,13 +130,13 @@ RTC::ReturnCode_t SampleHG::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t SampleHG::onActivated(RTC::UniqueId ec_id)
 {
 
-	std::cout << "on Activated" << std::endl;
-    openFiles();
-    for(int i = 0; i < DOF; ++i){
-        angle_ref[i] = vel_ref[i] = acc_ref[i] = 0.0;
-    }
-	
-	return RTC::RTC_OK;
+  std::cout << "on Activated" << std::endl;
+  openFiles();
+  for(int i = 0; i < DOF; ++i){
+    angle_ref[i] = vel_ref[i] = acc_ref[i] = 0.0;
+  }
+
+  return RTC::RTC_OK;
 }
 
 
@@ -238,31 +239,31 @@ void SampleHG::openFiles()
 
 void SampleHG::closeFiles()
 {
-    if( angle.is_open() ){
-        angle.close();
-        angle.clear();
-    }
-    if( vel.is_open() ){
-        vel.close();
-        vel.clear();
-    }
-    if( acc.is_open() ){
-        acc.close();
-        acc.clear();
-    }
+  if( angle.is_open() ){
+    angle.close();
+    angle.clear();
+  }
+  if( vel.is_open() ){
+    vel.close();
+    vel.clear();
+  }
+  if( acc.is_open() ){
+    acc.close();
+    acc.clear();
+  }
 }
 
 
 extern "C"
 {
 
-	DLL_EXPORT void SampleHGInit(RTC::Manager* manager)
-	{
-		RTC::Properties profile(samplepd_spec);
-		manager->registerFactory(profile,
-								 RTC::Create<SampleHG>,
-								 RTC::Delete<SampleHG>);
-	}
+  DLL_EXPORT void SampleHGInit(RTC::Manager* manager)
+  {
+    coil::Properties profile(samplepd_spec);
+    manager->registerFactory(profile,
+                             RTC::Create<SampleHG>,
+                             RTC::Delete<SampleHG>);
+  }
 
 };
 

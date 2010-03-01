@@ -70,11 +70,6 @@ SamplePD::SamplePD(RTC::Manager* manager)
 
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
-  registerInPort("angle", m_angleIn);
-  
-  // Set OutPort buffer
-  registerOutPort("torque", m_torqueOut);
   
   // Set service provider to Ports
   
@@ -83,23 +78,6 @@ SamplePD::SamplePD(RTC::Manager* manager)
   // Set CORBA Service Ports
   
   // </rtc-template>
-
-  Pgain = new double[DOF];
-  Dgain = new double[DOF];
-
-  gain.open(GAIN_FILE);
-  if (gain.is_open()){
-    for (int i=0; i<DOF; i++){
-      gain >> Pgain[i];
-      gain >> Dgain[i];
-    }
-    gain.close();
-  }else{
-    std::cerr << GAIN_FILE << " not found" << std::endl;
-  }
-  m_torque.data.length(DOF);
-  m_angle.data.length(DOF);
-
 }
 
 SamplePD::~SamplePD()
@@ -119,8 +97,29 @@ RTC::ReturnCode_t SamplePD::onInitialize()
     std::cout << "onInitialize" << std::endl;
   }
 
-
+  // Set InPort buffers
+  addInPort("angle", m_angleIn);
+  
+  // Set OutPort buffer
+  addOutPort("torque", m_torqueOut);
   // </rtc-template>
+
+  Pgain = new double[DOF];
+  Dgain = new double[DOF];
+
+  gain.open(GAIN_FILE);
+  if (gain.is_open()){
+    for (int i=0; i<DOF; i++){
+      gain >> Pgain[i];
+      gain >> Dgain[i];
+    }
+    gain.close();
+  }else{
+    std::cerr << GAIN_FILE << " not found" << std::endl;
+  }
+  m_torque.data.length(DOF);
+  m_angle.data.length(DOF);
+
   return RTC::RTC_OK;
 }
 
@@ -149,17 +148,19 @@ RTC::ReturnCode_t SamplePD::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t SamplePD::onActivated(RTC::UniqueId ec_id)
 {
-	std::cout << "on Activated" << std::endl;
-    openFiles();
-	
-	m_angleIn.update();
-	
-	for(int i=0; i < DOF; ++i){
-		qold[i] = m_angle.data[i];
-        q_ref[i] = dq_ref[i] = 0.0;
-	}
-	
-	return RTC::RTC_OK;
+  std::cout << "on Activated" << std::endl;
+  openFiles();
+  
+  if(m_angleIn.isNew()){
+    m_angleIn.read();
+  }
+  
+  for(int i=0; i < DOF; ++i){
+    qold[i] = m_angle.data[i];
+    q_ref[i] = dq_ref[i] = 0.0;
+  }
+  
+  return RTC::RTC_OK;
 }
 
 
@@ -177,18 +178,20 @@ RTC::ReturnCode_t SamplePD::onExecute(RTC::UniqueId ec_id)
   if( CONTROLLER_BRIDGE_DEBUG )
   {
     std::cout << "onExecute" << std::endl;
-		std::string	localStr;
-		std::cin >> localStr; 
+    std::string localStr;
+    std::cin >> localStr; 
   }
 
-  m_angleIn.update();
+  if(m_angleIn.isNew()){
+    m_angleIn.read();
+  }
 
   if(!angle.eof()){
-	angle >> q_ref[0]; vel >> dq_ref[0];// skip time
-	for (int i=0; i<DOF; i++){
-		angle >> q_ref[i];
-		vel >> dq_ref[i];
-	}
+    angle >> q_ref[0]; vel >> dq_ref[0];// skip time
+    for (int i=0; i<DOF; i++){
+      angle >> q_ref[i];
+      vel >> dq_ref[i];
+    }
   }
   for(int i=0; i<DOF; i++){
     double q = m_angle.data[i];
@@ -240,39 +243,39 @@ RTC::ReturnCode_t SamplePD::onRateChanged(RTC::UniqueId ec_id)
 
 void SamplePD::openFiles()
 {
-    angle.open(ANGLE_FILE);
-    if(!angle.is_open()){
-        std::cerr << ANGLE_FILE << " not opened" << std::endl;
-    }
+  angle.open(ANGLE_FILE);
+  if(!angle.is_open()){
+    std::cerr << ANGLE_FILE << " not opened" << std::endl;
+  }
 
-    vel.open(VEL_FILE);
-    if (!vel.is_open()){
-        std::cerr << VEL_FILE << " not opened" << std::endl;
-    }  
+  vel.open(VEL_FILE);
+  if (!vel.is_open()){
+    std::cerr << VEL_FILE << " not opened" << std::endl;
+  }  
 }
 
 void SamplePD::closeFiles()
 {
-    if( angle.is_open() ){
-        angle.close();
-        angle.clear();
-    }
-    if( vel.is_open() ){
-        vel.close();
-        vel.clear();
-    }
+  if( angle.is_open() ){
+    angle.close();
+    angle.clear();
+  }
+  if( vel.is_open() ){
+    vel.close();
+    vel.clear();
+  }
 }
 
 extern "C"
 {
 
-	DLL_EXPORT void SamplePDInit(RTC::Manager* manager)
-	{
-		RTC::Properties profile(samplepd_spec);
-		manager->registerFactory(profile,
-								 RTC::Create<SamplePD>,
-								 RTC::Delete<SamplePD>);
-	}
+  DLL_EXPORT void SamplePDInit(RTC::Manager* manager)
+  {
+    coil::Properties profile(samplepd_spec);
+    manager->registerFactory(profile,
+                             RTC::Create<SamplePD>,
+                             RTC::Delete<SamplePD>);
+  }
 
 };
 
