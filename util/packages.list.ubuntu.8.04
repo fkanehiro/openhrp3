@@ -64,3 +64,6 @@ uuid-dev
 # libncurses5-dev
 # libreadline5-dev
 
+# doxygen
+doxygen
+graphviz
