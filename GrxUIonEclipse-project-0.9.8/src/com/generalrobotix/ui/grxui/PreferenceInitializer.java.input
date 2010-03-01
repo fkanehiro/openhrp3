@@ -18,9 +18,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = Activator.getDefault()
 				.getPreferenceStore();
-		store.setDefault(PreferenceConstants.PROJECT_DIR, "@CMAKE_INSTALL_PREFIX_REPLACE@/share/OpenHRP-3.1/sample/project");
-		store.setDefault(PreferenceConstants.JYTHON_LIB, "@JYTHON_HOME_REPLACE@/lib");
-		store.setDefault(PreferenceConstants.SERVER_DIR, "@CMAKE_INSTALL_PREFIX_REPLACE@/bin");
+		store.setDefault(PreferenceConstants.PROJECT_DIR, "@PREFERENCE_PROJECT_DIR@");
+		store.setDefault(PreferenceConstants.JYTHON_LIB, "@PREFERENCE_JYTHON_LIB@");
+		store.setDefault(PreferenceConstants.SERVER_DIR, "@PREFERENCE_SERVER_DIR@");
 		if (System.getProperty("os.name").equals("Linux")){
 			store.setDefault(PreferenceConstants.BIN_SFX, ".sh");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
