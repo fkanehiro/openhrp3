@@ -18,9 +18,6 @@ agree with each of those software licenses, before you proceed.
 above-mentioned EPL that applied to the source package of OpenHRP3.）
 
 
- - Java Media Framewark
-   Software and license text is available at java/JMF2.1.1e.
-
  - vrml97.jar
    Software and license text is available at ModelLoader/server/vrml97.
 

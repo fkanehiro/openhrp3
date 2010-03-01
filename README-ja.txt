@@ -1,5 +1,5 @@
 
-本ソフトウェアは OpenHRP version 3.1.0β3 です。
+本ソフトウェアは OpenHRP version 3.1.0β4 です。
 
 使用条件等は LICENSE-ja.txt をお読みください。
 
