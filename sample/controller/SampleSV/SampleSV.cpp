@@ -139,18 +139,17 @@ RTC::ReturnCode_t SampleSV::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t SampleSV::onActivated(RTC::UniqueId ec_id)
 {
 
-	std::cout << "on Activated" << std::endl;
+  std::cout << "on Activated" << std::endl;
   openFiles();
   if(m_steerIn.isNew()){
     m_steerIn.read();
   }
-  //m_steerIn.update();
   if(m_velIn.isNew()){
     m_velIn.read();
   }
-	wheel_ref = 0.0;
+  wheel_ref = 0.0;
 
-	return RTC::RTC_OK;
+  return RTC::RTC_OK;
 }
 
 
@@ -165,32 +164,31 @@ RTC::ReturnCode_t SampleSV::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
 {
-    if( CONTROLLER_BRIDGE_DEBUG )
-    {
+  if( CONTROLLER_BRIDGE_DEBUG )
+  {
     std::cout << "SampleSV::onExecute" << std::endl;
-    }
+  }
 
-    if(m_steerIn.isNew()){
-        m_steerIn.read();
-    }
-    if( m_velIn.isNew() ){
-        m_velIn.read();
-    }
+  if(m_steerIn.isNew()){
+    m_steerIn.read();
+  }
+  if( m_velIn.isNew() ){
+    m_velIn.read();
+  }
 
-    double q_ref, dq_ref;
-    double dummy;
-    steer >> dummy; // skip time
-    int i;
+  //double q_ref, dq_ref;
+  double dummy;
+  steer >> dummy; // skip time
 
-    double steer_ref;
-    steer >> steer_ref;
+  double steer_ref;
+  steer >> steer_ref;
 
-    for(int i=0; i<DOF; i++) m_torque.data[i] = 0.0;
+  for(int i=0; i<DOF; i++) m_torque.data[i] = 0.0;
 
-    m_torque.data[STEERING_ID] = (steer_ref - m_steer.data[STEERING_ID]) * STEERING_P_GAIN - m_vel.data[STEERING_ID] * STEERING_D_GAIN;
-    m_torque.data[WHEEL_ID] = (wheel_ref - m_steer.data[WHEEL_ID]) * WHEEL_P_GAIN + (WHEEL_REF_VEL - m_vel.data[WHEEL_ID]) * WHEEL_D_GAIN;
-    wheel_ref += WHEEL_REF_VEL * TIMESTEP;
-    m_torqueOut.write();
+  m_torque.data[STEERING_ID] = (steer_ref - m_steer.data[STEERING_ID]) * STEERING_P_GAIN - m_vel.data[STEERING_ID] * STEERING_D_GAIN;
+  m_torque.data[WHEEL_ID] = (wheel_ref - m_steer.data[WHEEL_ID]) * WHEEL_P_GAIN + (WHEEL_REF_VEL - m_vel.data[WHEEL_ID]) * WHEEL_D_GAIN;
+  wheel_ref += WHEEL_REF_VEL * TIMESTEP;
+  m_torqueOut.write();
 
   return RTC::RTC_OK;
 }
@@ -233,31 +231,31 @@ RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
 
 void SampleSV::openFiles()
 {
-    steer.open( STEERING_FILE );
-    if (!steer.is_open())
-        std::cerr << STEERING_FILE <<" not opened" << std::endl;
+  steer.open( STEERING_FILE );
+  if (!steer.is_open())
+    std::cerr << STEERING_FILE <<" not opened" << std::endl;
 }
 
 void SampleSV::closeFiles()
 {
-    if( steer.is_open() )
-    {
-        steer.close();
-        steer.clear();
-    }
+  if( steer.is_open() )
+  {
+    steer.close();
+    steer.clear();
+  }
 }
 
 
 extern "C"
 {
 
-	DLL_EXPORT void SampleSVInit(RTC::Manager* manager)
-	{
+  DLL_EXPORT void SampleSVInit(RTC::Manager* manager)
+  {
     coil::Properties profile(samplepd_spec);
-		manager->registerFactory(profile,
-								 RTC::Create<SampleSV>,
-								 RTC::Delete<SampleSV>);
-	}
+    manager->registerFactory(profile,
+                             RTC::Create<SampleSV>,
+                             RTC::Delete<SampleSV>);
+  }
 
 };
 

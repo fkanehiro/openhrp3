@@ -67,15 +67,6 @@ PD_HGtest::PD_HGtest(RTC::Manager* manager)
 
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
-  
-  // Set OutPort buffer
-  registerOutPort("torque0", m_torque0Out);
-  registerOutPort("torque1", m_torque1Out);
-  registerOutPort("root_trans", m_root_transOut);
-  registerOutPort("root_vel", m_root_velOut);
-  registerOutPort("root_acc", m_root_accOut);
-
 
   // Set service provider to Ports
   
@@ -84,12 +75,6 @@ PD_HGtest::PD_HGtest(RTC::Manager* manager)
   // Set CORBA Service Ports
   
   // </rtc-template>
-
-  m_torque0.data.length(1);
-  m_torque1.data.length(1);
-  m_root_trans.data.length(12);
-  m_root_vel.data.length(6);
-  m_root_acc.data.length(6);
 }
 
 PD_HGtest::~PD_HGtest()
@@ -106,7 +91,24 @@ RTC::ReturnCode_t PD_HGtest::onInitialize()
   {
     std::cout << "onInitialize" << std::endl;
   }
+
+  // Set InPort buffers
+  
+  // Set OutPort buffer
+  addOutPort("torque0", m_torque0Out);
+  addOutPort("torque1", m_torque1Out);
+  addOutPort("root_trans", m_root_transOut);
+  addOutPort("root_vel", m_root_velOut);
+  addOutPort("root_acc", m_root_accOut);
+
   // </rtc-template>
+
+  m_torque0.data.length(1);
+  m_torque1.data.length(1);
+  m_root_trans.data.length(12);
+  m_root_vel.data.length(6);
+  m_root_acc.data.length(6);
+
   return RTC::RTC_OK;
 }
 
@@ -135,10 +137,10 @@ RTC::ReturnCode_t PD_HGtest::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t PD_HGtest::onActivated(RTC::UniqueId ec_id)
 {
-	std::cout << "on Activated" << std::endl;
-    openFiles();
-	
-	return RTC::RTC_OK;
+  std::cout << "on Activated" << std::endl;
+  openFiles();
+
+  return RTC::RTC_OK;
 }
 
 
@@ -156,8 +158,8 @@ RTC::ReturnCode_t PD_HGtest::onExecute(RTC::UniqueId ec_id)
   if( CONTROLLER_BRIDGE_DEBUG )
   {
     std::cout << "onExecute" << std::endl;
-		std::string	localStr;
-		std::cin >> localStr; 
+    std::string	localStr;
+    std::cin >> localStr; 
   }
 
   static double root_x_p, root_x_v, root_x_a;
@@ -179,10 +181,10 @@ RTC::ReturnCode_t PD_HGtest::onExecute(RTC::UniqueId ec_id)
   m_root_trans.data[7] = 1.0;
   m_root_trans.data[11] = 1.0;
   for(int i=0; i<6; i++)
-      m_root_vel.data[i] = 0.0;
+    m_root_vel.data[i] = 0.0;
   m_root_vel.data[0] = root_x_v;
   for(int i=0; i<6; i++)
-      m_root_acc.data[i] = 0.0;
+    m_root_acc.data[i] = 0.0;
   m_root_acc.data[0] = root_x_a;
 
   m_torque0Out.write();
@@ -241,23 +243,23 @@ void PD_HGtest::openFiles()
 
 void PD_HGtest::closeFiles()
 {
-    if(waist.is_open()){
-        waist.close();
-        waist.clear();
-    }
+  if(waist.is_open()){
+    waist.close();
+    waist.clear();
+  }
 }
 
 
 extern "C"
 {
 
-	DLL_EXPORT void PD_HGtestInit(RTC::Manager* manager)
-	{
-		RTC::Properties profile(PD_HGtest_spec);
-		manager->registerFactory(profile,
-								 RTC::Create<PD_HGtest>,
-								 RTC::Delete<PD_HGtest>);
-	}
+  DLL_EXPORT void PD_HGtestInit(RTC::Manager* manager)
+  {
+    coil::Properties profile(PD_HGtest_spec);
+    manager->registerFactory(profile,
+                             RTC::Create<PD_HGtest>,
+                             RTC::Delete<PD_HGtest>);
+  }
 
 };
 

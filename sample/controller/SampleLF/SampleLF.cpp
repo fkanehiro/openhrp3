@@ -71,19 +71,40 @@ SampleLF::SampleLF(RTC::Manager* manager)
   }
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
-  registerInPort("angle", m_angleIn);
-  registerInPort("r_torque_out", m_torqueInL);
-  registerInPort("l_torque_out", m_torqueInR);
 
-  // Set OutPort buffer
-  registerOutPort("torque", m_torqueOut);
   // Set service provider to Ports
   
   // Set service consumers to Ports
   
   // Set CORBA Service Ports
   
+  // </rtc-template>
+}
+
+SampleLF::~SampleLF()
+{
+  closeFiles();
+  delete [] Pgain;
+  delete [] Dgain;
+}
+
+
+RTC::ReturnCode_t SampleLF::onInitialize()
+{
+  // <rtc-template block="bind_config">
+  // Bind variables and configuration variable
+  if( CONTROLLER_BRIDGE_DEBUG )
+  {
+    std::cout << "onInitialize" << std::endl;
+  }
+
+  // Set InPort buffers
+  addInPort("angle", m_angleIn);
+  addInPort("r_torque_out", m_torqueInL);
+  addInPort("l_torque_out", m_torqueInR);
+
+  // Set OutPort buffer
+  addOutPort("torque", m_torqueOut);
   // </rtc-template>
 
   Pgain = new double[DOF];
@@ -104,26 +125,6 @@ SampleLF::SampleLF(RTC::Manager* manager)
   m_torqueR.data.length(1);
   m_angle.data.length(DOF);
 
-}
-
-SampleLF::~SampleLF()
-{
-  closeFiles();
-  delete [] Pgain;
-  delete [] Dgain;
-}
-
-
-RTC::ReturnCode_t SampleLF::onInitialize()
-{
-  // <rtc-template block="bind_config">
-  // Bind variables and configuration variable
-  if( CONTROLLER_BRIDGE_DEBUG )
-  {
-    std::cout << "onInitialize" << std::endl;
-  }
-
-  // </rtc-template>
   return RTC::RTC_OK;
 }
 
@@ -152,19 +153,22 @@ RTC::ReturnCode_t SampleLF::onShutdown(RTC::UniqueId ec_id)
 RTC::ReturnCode_t SampleLF::onActivated(RTC::UniqueId ec_id)
 {
 
-	std::cout << "on Activated" << std::endl;
-	check = true;
-	file = 1;
-    openFiles();
-	
-	m_angleIn.update();
-	
-	for(int i=0; i < DOF; ++i){
-		qold[i] = m_angle.data[i];
-        qref_old[i] = 0.0;
-	}
-	
-	return RTC::RTC_OK;
+  std::cout << "on Activated" << std::endl;
+  check = true;
+  file = 1;
+
+  openFiles();
+
+  if(m_angleIn.isNew()){
+    m_angleIn.read();
+  }
+
+  for(int i=0; i < DOF; ++i){
+    qold[i] = m_angle.data[i];
+    qref_old[i] = 0.0;
+  }
+
+  return RTC::RTC_OK;
 }
 
 
@@ -185,9 +189,17 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
   }
 
   // この関数の振る舞いはController_impl::controlの派生先仮想関数に対応する //
-  m_angleIn.update();
-  m_torqueInL.update();
-  m_torqueInR.update();
+  if(m_angleIn.isNew()){
+    m_angleIn.read();
+  }
+
+  if(m_torqueInL.isNew()){
+    m_torqueInL.read();
+  }
+
+  if(m_torqueInR.isNew()){
+    m_torqueInR.read();
+  }
 
   double q_ref, dq_ref;
   double threshold = 30.0;
@@ -198,53 +210,53 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
   // 行が存在しなければ次の行を読み込む //
   if(file==1)
   {
-	  if( !(angle1 >> dq_ref &&  vel1 >> dq_ref) )// skip time
+    if( !(angle1 >> dq_ref &&  vel1 >> dq_ref) )// skip time
     {
-		  file=2;
+      file=2;
     }
   }
 
-	if(file==2)
+  if(file==2)
   {
-	  if( !(angle2 >> dq_ref &&  vel2 >> dq_ref) )// skip time
+    if( !(angle2 >> dq_ref &&  vel2 >> dq_ref) )// skip time
     {
-		  file=3;
+      file=3;
     }
 
     if( ( fabs( m_torqueR.data[0] ) < threshold || fabs( m_torqueL.data[0] ) < threshold ) &&  check )
     {
-		  file=3;
+      file=3;
     }
 
-	  check = false;
+    check = false;
   }
 
   // *.dat一行の読み込み//
   for (int i=0; i<DOF; i++)
   {
-	  switch(file)
+    switch(file)
     {
-	     case 1:
-		     angle1 >> q_ref;
-		     vel1 >> dq_ref;
-		     break;
-	     case 2:
-		     angle2 >> q_ref;
-		     vel2 >> dq_ref;
-		     break;
-	     case 3:
-		     q_ref = qref_old[i];
-		     dq_ref=0.0;
-		     break;
+      case 1:
+        angle1 >> q_ref;
+        vel1 >> dq_ref;
+        break;
+      case 2:
+        angle2 >> q_ref;
+        vel2 >> dq_ref;
+        break;
+      case 3:
+        q_ref = qref_old[i];
+        dq_ref=0.0;
+        break;
     }//switch(file)
     double q = m_angle.data[i];
-	  double dq = (q - qold[i]) / TIMESTEP;
+    double dq = (q - qold[i]) / TIMESTEP;
 
-		m_torque.data[i] = -(q - q_ref) * Pgain[i] - (dq - dq_ref) * Dgain[i];
+    m_torque.data[i] = -(q - q_ref) * Pgain[i] - (dq - dq_ref) * Dgain[i];
 
-		qold[i] = q;
-	  if(file !=3)
-		  qref_old[i] = q_ref;
+    qold[i] = q;
+    if(file !=3)
+      qref_old[i] = q_ref;
   }//for (int i=0; i<DOF; i++)
 
   m_torqueOut.write();
@@ -289,45 +301,45 @@ RTC::ReturnCode_t SampleLF::onExecute(RTC::UniqueId ec_id)
 */
 void SampleLF::openFiles()
 {
-    angle1.open("etc/LFangle1.dat");
-    if (!angle1.is_open()){
-        std::cerr << "etc/LFangle1.dat not opened" << std::endl;
-    }
+  angle1.open("etc/LFangle1.dat");
+  if (!angle1.is_open()){
+    std::cerr << "etc/LFangle1.dat not opened" << std::endl;
+  }
 
-    angle2.open("etc/LFangle2.dat");
-    if (!angle2.is_open()){
-	    std::cerr << "etc/LFangle2.dat not opened" << std::endl;
-    }
+  angle2.open("etc/LFangle2.dat");
+  if (!angle2.is_open()){
+    std::cerr << "etc/LFangle2.dat not opened" << std::endl;
+  }
 
-    vel1.open("etc/LFvel1.dat");
-    if (!vel1.is_open()){
-	    std::cerr << "etc/LFvel1.dat not opened" << std::endl;
-    }
+  vel1.open("etc/LFvel1.dat");
+  if (!vel1.is_open()){
+    std::cerr << "etc/LFvel1.dat not opened" << std::endl;
+  }
 
-    vel2.open("etc/LFvel2.dat");
-    if (!vel2.is_open()){
-	    std::cerr << "etc/LFvel2.dat not opened" << std::endl;
-    }
+  vel2.open("etc/LFvel2.dat");
+  if (!vel2.is_open()){
+    std::cerr << "etc/LFvel2.dat not opened" << std::endl;
+  }
 }
 
 void SampleLF::closeFiles()
 {
-    if( angle1.is_open() ){
-        angle1.close();
-        angle1.clear();
-    }
-    if( angle2.is_open() ){
-        angle2.close();
-        angle2.clear();
-    }
-    if( vel1.is_open() ){
-        vel1.close();
-        vel1.clear();
-    }
-    if( vel2.is_open() ){
-        vel2.close();
-        vel2.clear();
-    }
+  if( angle1.is_open() ){
+    angle1.close();
+    angle1.clear();
+  }
+  if( angle2.is_open() ){
+    angle2.close();
+    angle2.clear();
+  }
+  if( vel1.is_open() ){
+    vel1.close();
+    vel1.clear();
+  }
+  if( vel2.is_open() ){
+    vel2.close();
+    vel2.clear();
+  }
 }
 
 
@@ -335,13 +347,13 @@ void SampleLF::closeFiles()
 extern "C"
 {
 
-	DLL_EXPORT void SampleLFInit(RTC::Manager* manager)
-	{
-		RTC::Properties profile(samplepd_spec);
-		manager->registerFactory(profile,
-								 RTC::Create<SampleLF>,
-								 RTC::Delete<SampleLF>);
-	}
+  DLL_EXPORT void SampleLFInit(RTC::Manager* manager)
+  {
+    coil::Properties profile(samplepd_spec);
+    manager->registerFactory(profile,
+                             RTC::Create<SampleLF>,
+                             RTC::Delete<SampleLF>);
+  }
 
 };
 

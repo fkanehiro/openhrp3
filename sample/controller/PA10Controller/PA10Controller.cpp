@@ -58,17 +58,33 @@ PA10Controller::PA10Controller(RTC::Manager* manager)
 {
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
-  registerInPort("angle", m_angleIn);
-  
-  // Set OutPort buffer
-  registerOutPort("torque", m_torqueOut);
-  
   // Set service provider to Ports
   
   // Set service consumers to Ports
   
   // Set CORBA Service Ports
+  
+  // </rtc-template>
+}
+
+PA10Controller::~PA10Controller()
+{
+  closeFiles();
+  delete [] Pgain;
+  delete [] Dgain;
+}
+
+
+RTC::ReturnCode_t PA10Controller::onInitialize()
+{
+  // <rtc-template block="bind_config">
+  // Bind variables and configuration variable
+
+  // Set InPort buffers
+  addInPort("angle", m_angleIn);
+  
+  // Set OutPort buffer
+  addOutPort("torque", m_torqueOut);
   
   // </rtc-template>
 
@@ -88,22 +104,6 @@ PA10Controller::PA10Controller(RTC::Manager* manager)
   m_torque.data.length(DOF);
   m_angle.data.length(DOF);
 
-}
-
-PA10Controller::~PA10Controller()
-{
-  closeFiles();
-  delete [] Pgain;
-  delete [] Dgain;
-}
-
-
-RTC::ReturnCode_t PA10Controller::onInitialize()
-{
-  // <rtc-template block="bind_config">
-  // Bind variables and configuration variable
-
-  // </rtc-template>
   return RTC::RTC_OK;
 }
 
@@ -132,17 +132,19 @@ RTC::ReturnCode_t PA10Controller::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t PA10Controller::onActivated(RTC::UniqueId ec_id)
 {
-	std::cout << "on Activated" << std::endl;
-    openFiles();
-	
-	m_angleIn.update();
-	
-	for(int i=0; i < DOF; ++i){
-		qold[i] = m_angle.data[i];
-        q_ref[i] = dq_ref[i] = 0.0;
-	}
-	
-	return RTC::RTC_OK;
+  std::cout << "on Activated" << std::endl;
+  openFiles();
+
+  if(m_angleIn.isNew()){
+    m_angleIn.read();
+  }
+
+  for(int i=0; i < DOF; ++i){
+    qold[i] = m_angle.data[i];
+    q_ref[i] = dq_ref[i] = 0.0;
+  }
+
+  return RTC::RTC_OK;
 }
 
 RTC::ReturnCode_t PA10Controller::onDeactivated(RTC::UniqueId ec_id)
@@ -155,14 +157,16 @@ RTC::ReturnCode_t PA10Controller::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t PA10Controller::onExecute(RTC::UniqueId ec_id)
 {
-  m_angleIn.update();
+  if(m_angleIn.isNew()){
+    m_angleIn.read();
+  }
 
   if(!angle.eof()){
-	angle >> q_ref[0]; vel >> dq_ref[0];// skip time
-	for (int i=0; i<DOF; i++){
-		angle >> q_ref[i];
-		vel >> dq_ref[i];
-	}
+    angle >> q_ref[0]; vel >> dq_ref[0];// skip time
+    for (int i=0; i<DOF; i++){
+      angle >> q_ref[i];
+      vel >> dq_ref[i];
+    }
   }
 
   for(int i=0; i<DOF; i++){
@@ -216,40 +220,41 @@ RTC::ReturnCode_t PA10Controller::onExecute(RTC::UniqueId ec_id)
 
 void PA10Controller::openFiles()
 {
-    angle.open(ANGLE_FILE);
-    if(!angle.is_open()){
-        std::cerr << ANGLE_FILE << " not opened" << std::endl;
-    }
+  angle.open(ANGLE_FILE);
+  if(!angle.is_open()){
+    std::cerr << ANGLE_FILE << " not opened" << std::endl;
+  }
 
-    vel.open(VEL_FILE);
-    if (!vel.is_open()){
-        std::cerr << VEL_FILE << " not opened" << std::endl;
-    }
+  vel.open(VEL_FILE);
+  if (!vel.is_open()){
+    std::cerr << VEL_FILE << " not opened" << std::endl;
+  }
 }
 
 void PA10Controller::closeFiles()
 {
-    if(angle.is_open()){
-        angle.close();
-        angle.clear();
-    }
+  if(angle.is_open()){
+    angle.close();
+    angle.clear();
+  }
 
-    if(vel.is_open()){
-        vel.close();
-        angle.clear();
-    }
+  if(vel.is_open()){
+    vel.close();
+    angle.clear();
+  }
 }
 
 extern "C"
 {
-	DLL_EXPORT void PA10ControllerInit(RTC::Manager* manager)
-	{
-		RTC::Properties profile(PA10Controller_spec);
-		manager->registerFactory(profile,
-								 RTC::Create<PA10Controller>,
-								 RTC::Delete<PA10Controller>);
-	}
-  
+
+  DLL_EXPORT void PA10ControllerInit(RTC::Manager* manager)
+  {
+    coil::Properties profile(PA10Controller_spec);
+    manager->registerFactory(profile,
+                             RTC::Create<PA10Controller>,
+                             RTC::Delete<PA10Controller>);
+  }
+
 };
 
 

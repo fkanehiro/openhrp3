@@ -105,14 +105,6 @@ SamplePD_HG::SamplePD_HG(RTC::Manager* manager)
 
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
-  registerInPort("angle_in", m_angle_inIn);
-  
-  // Set OutPort buffer
-  registerOutPort("torque", m_torqueOut);
-  registerOutPort("angle_out", m_angle_outOut);
-  registerOutPort("vel", m_velOut);
-  registerOutPort("acc", m_accOut);
   
   // Set service provider to Ports
   
@@ -121,27 +113,6 @@ SamplePD_HG::SamplePD_HG(RTC::Manager* manager)
   // Set CORBA Service Ports
   
   // </rtc-template>
-
-  Pgain = new double[DOF];
-  Dgain = new double[DOF];
-
-  gain.open(GAIN_FILE);
-  if (gain.is_open()){
-    for (int i=0; i<DOF; i++){
-      gain >> Pgain[i];
-      gain >> Dgain[i];
-    }
-    gain.close();
-  }else{
-    std::cerr << GAIN_FILE << " not opened" << std::endl;
-  }
-  
-  m_angle_in.data.length(DOF);
-  m_angle_out.data.length(HG_DOF);
-  m_vel.data.length(HG_DOF);
-  m_acc.data.length(HG_DOF);
-  m_torque.data.length(PD_DOF);
- 
 }
 
 SamplePD_HG::~SamplePD_HG()
@@ -160,7 +131,37 @@ RTC::ReturnCode_t SamplePD_HG::onInitialize()
   {
     std::cout << "onInitialize" << std::endl;
   }
+
+  // Set InPort buffers
+  addInPort("angle_in", m_angle_inIn);
+  
+  // Set OutPort buffer
+  addOutPort("torque", m_torqueOut);
+  addOutPort("angle_out", m_angle_outOut);
+  addOutPort("vel", m_velOut);
+  addOutPort("acc", m_accOut);
+
+  Pgain = new double[DOF];
+  Dgain = new double[DOF];
+
+  gain.open(GAIN_FILE);
+  if (gain.is_open()){
+    for (int i=0; i<DOF; i++){
+      gain >> Pgain[i];
+      gain >> Dgain[i];
+    }
+    gain.close();
+  }else{
+    std::cerr << GAIN_FILE << " not opened" << std::endl;
+  }
   // </rtc-template>
+
+  m_angle_in.data.length(DOF);
+  m_angle_out.data.length(HG_DOF);
+  m_vel.data.length(HG_DOF);
+  m_acc.data.length(HG_DOF);
+  m_torque.data.length(PD_DOF);
+
   return RTC::RTC_OK;
 }
 
@@ -189,17 +190,19 @@ RTC::ReturnCode_t SamplePD_HG::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t SamplePD_HG::onActivated(RTC::UniqueId ec_id)
 {
-	std::cout << "on Activated" << std::endl;
-    openFiles();
-	
-	m_angle_inIn.update();
-	
-	for(int i=0; i < DOF; ++i){
-		qold[i] = m_angle_in.data[i];
-        q_ref[i] = dq_ref[i] = ddq_ref[i] = 0.0;
-	}
-	
-	return RTC::RTC_OK;
+  std::cout << "on Activated" << std::endl;
+  openFiles();
+
+  if(m_angle_inIn.isNew()){
+    m_angle_inIn.read();
+  }
+
+  for(int i=0; i < DOF; ++i){
+    qold[i] = m_angle_in.data[i];
+    q_ref[i] = dq_ref[i] = ddq_ref[i] = 0.0;
+  }
+
+  return RTC::RTC_OK;
 }
 
 
@@ -217,19 +220,21 @@ RTC::ReturnCode_t SamplePD_HG::onExecute(RTC::UniqueId ec_id)
   if( CONTROLLER_BRIDGE_DEBUG )
   {
     std::cout << "onExecute" << std::endl;
-		std::string	localStr;
-		std::cin >> localStr; 
+    std::string	localStr;
+    std::cin >> localStr; 
   }
 
-  m_angle_inIn.update();
+  if(m_angle_inIn.isNew()){
+    m_angle_inIn.read();
+  }
 
   if(!angle.eof()){
-	angle >> q_ref[0]; vel >> dq_ref[0]; acc >> ddq_ref[0];// skip time
-	for (int i=0; i<DOF; i++){
-		angle >> q_ref[i];
-		vel >> dq_ref[i];
-        acc >> ddq_ref[i];
-	}
+    angle >> q_ref[0]; vel >> dq_ref[0]; acc >> ddq_ref[0];// skip time
+    for (int i=0; i<DOF; i++){
+      angle >> q_ref[i];
+      vel >> dq_ref[i];
+      acc >> ddq_ref[i];
+    }
   }
 
   double tor_ref[DOF];
@@ -379,13 +384,13 @@ void SamplePD_HG::closeFiles()
 extern "C"
 {
 
-	DLL_EXPORT void SamplePD_HGInit(RTC::Manager* manager)
-	{
-		RTC::Properties profile(SamplePD_HG_spec);
-		manager->registerFactory(profile,
-								 RTC::Create<SamplePD_HG>,
-								 RTC::Delete<SamplePD_HG>);
-	}
+  DLL_EXPORT void SamplePD_HGInit(RTC::Manager* manager)
+  {
+    coil::Properties profile(SamplePD_HG_spec);
+    manager->registerFactory(profile,
+                             RTC::Create<SamplePD_HG>,
+                             RTC::Delete<SamplePD_HG>);
+  }
 
 };
 

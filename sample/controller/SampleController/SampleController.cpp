@@ -65,19 +65,10 @@ SampleController::SampleController(RTC::Manager* manager)
 //    m_dqOut("dq", m_dq),
 //    m_ddqOut("ddq", m_ddq),
     // </rtc-template>
-	dummy(0)
+    dummy(0)
 {
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
-  registerInPort("angle", m_angleIn);
-  registerInPort("rhsensor", m_rhsensorIn);
-  
-  // Set OutPort buffer
-  registerOutPort("torque", m_torqueOut);
-//  registerOutPort("q", m_qOut);
-//  registerOutPort("dq", m_dqOut);
-//  registerOutPort("ddq", m_ddqOut);
   
   // Set service provider to Ports
   
@@ -86,7 +77,7 @@ SampleController::SampleController(RTC::Manager* manager)
   // Set CORBA Service Ports
   
   // </rtc-template>
-	
+  
 }
 
 SampleController::~SampleController()
@@ -98,54 +89,65 @@ RTC::ReturnCode_t SampleController::onInitialize()
 {
   // <rtc-template block="bind_config">
   // Bind variables and configuration variable
+
+  // Set InPort buffers
+  addInPort("angle", m_angleIn);
+  addInPort("rhsensor", m_rhsensorIn);
+  
+  // Set OutPort buffer
+  addOutPort("torque", m_torqueOut);
+//  addOutPort("q", m_qOut);
+//  addOutPort("dq", m_dqOut);
+//  addOutPort("ddq", m_ddqOut);
   // </rtc-template>
-	Pgain = new double[DOF];
-	Dgain = new double[DOF];
-	std::ifstream gain;
 
-    gain.open(GAIN_FILE);
-    if (gain.is_open()){
-		for (int i=0; i<DOF; i++){
-			gain >> Pgain[i];
-			gain >> Dgain[i];
+  Pgain = new double[DOF];
+  Dgain = new double[DOF];
+  std::ifstream gain;
+
+  gain.open(GAIN_FILE);
+  if (gain.is_open()){
+    for (int i=0; i<DOF; i++){
+      gain >> Pgain[i];
+      gain >> Dgain[i];
 #ifdef SC_DEBUG
-			cout << Pgain[i] << " " << Dgain[i] << " ";
+      cout << Pgain[i] << " " << Dgain[i] << " ";
 #endif
-		}
-		gain.close();
+    }
+    gain.close();
 #ifdef SC_DEBUG
-		cout << endl;
+    cout << endl;
 #endif
-	}else{
-		cerr << GAIN_FILE << " not opened" << endl;
-	}
+  }else{
+    cerr << GAIN_FILE << " not opened" << endl;
+  }
 
-	m_torque.data.length(DOF);
-    m_rhsensor.data.length(6);
-	m_angle.data.length(DOF);
-//	m_q.data.length(DOF);
-//	m_dq.data.length(DOF);
-//	m_ddq.data.length(DOF);
+  m_torque.data.length(DOF);
+  m_rhsensor.data.length(6);
+  m_angle.data.length(DOF);
+//  m_q.data.length(DOF);
+//  m_dq.data.length(DOF);
+//  m_ddq.data.length(DOF);
 
-	qold = new double[DOF];
+  qold = new double[DOF];
 
 #ifdef SC_DEBUG
-	  out.open("debug.log");
+  out.open("debug.log");
 #endif	
 
-	return RTC::RTC_OK;
+  return RTC::RTC_OK;
 }
 
 RTC::ReturnCode_t SampleController::onFinalize()
 {
-    closeFiles();
-    delete [] Pgain;
-	delete [] Dgain;
-	delete[] qold;
+  closeFiles();
+  delete [] Pgain;
+  delete [] Dgain;
+  delete[] qold;
 #ifdef SC_DEBUG
-	  out.close();
+  out.close();
 #endif	
-	return RTC::RTC_OK;
+  return RTC::RTC_OK;
 }
 
 
@@ -165,21 +167,23 @@ RTC::ReturnCode_t SampleController::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t SampleController::onActivated(RTC::UniqueId ec_id)
 {
-	std::cout << "on Activated" << std::endl;
-	goal_set = true;
-	pattern = false;
-    remain_t = 2.0;
-    step = 0;
-    openFiles();
+  std::cout << "on Activated" << std::endl;
+  goal_set = true;
+  pattern = false;
+  remain_t = 2.0;
+  step = 0;
+  openFiles();
 
-    m_angleIn.update();
-	
-	for(int i=0; i < DOF; ++i){
-		qold[i] = m_angle.data[i];
-        q_ref[i] = dq_ref[i] = q_goal[i] = dq_goal[i] = 0.0;
-	}
+  if(m_angleIn.isNew()){
+    m_angleIn.read();
+  }
 
-	return RTC::RTC_OK;
+  for(int i=0; i < DOF; ++i){
+    qold[i] = m_angle.data[i];
+    q_ref[i] = dq_ref[i] = q_goal[i] = dq_goal[i] = 0.0;
+  }
+
+  return RTC::RTC_OK;
 }
 
 
@@ -193,117 +197,121 @@ RTC::ReturnCode_t SampleController::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t SampleController::onExecute(RTC::UniqueId ec_id)
 {
-    m_angleIn.update();
-	m_rhsensorIn.update();
+  if(m_angleIn.isNew()){
+    m_angleIn.read();
+  }
+  if(m_rhsensorIn.isNew()){
+    m_rhsensorIn.read();
+  }
 /*
-	static double q_ref[DOF], dq_ref[DOF];
-	static double remain_t = 2.0;
-	static double q_goal[DOF], dq_goal[DOF];
-	static int step = 0;
+  static double q_ref[DOF], dq_ref[DOF];
+  static double remain_t = 2.0;
+  static double q_goal[DOF], dq_goal[DOF];
+  static int step = 0;
 */
 
-	if( goal_set ){
-		goal_set = false;
-		switch(step){
-			case 0 :
-				remain_t = 2.0;
-				double dumy;
-				angle >> dumy; vel >> dumy;// skip time
-				for (int i=0; i<DOF; i++){
-					angle >> q_goal[i];
-					vel >> dq_goal[i];
-					q_ref[i] = m_angle.data[i];
-				}
-				break;
-			case 1 :
-				pattern = true;
-				break;
-			case 2 : 
-				remain_t = 3.0;
-				for(int i=0; i<DOF; i++){
-					q_goal[i] = q_ref[i] = m_angle.data[i];
-				}
-				q_goal[RARM_SHOULDER_R] = -0.4;
-				q_goal[RARM_SHOULDER_P] = 0.75;
-				q_goal[RARM_ELBOW] = -2.0;
-				break;
-			case 3 : 
-				remain_t = 2.0;
-				q_goal[RARM_ELBOW] = -1.57;
-				q_goal[RARM_SHOULDER_P] = -0.2;
-				q_goal[RARM_WRIST_R] = 1.5;
-				break;
-			case 4 :
-				remain_t =1.0;
-				q_goal[RARM_ELBOW] = -1.3;
-				break;
-			case 5 :
-				remain_t =5.0;
-				q_goal[RARM_SHOULDER_R] = 0.1;
-				break;
-			case 6 :
-				remain_t =2.0;
-				q_goal[RARM_WRIST_R] = -0.3;
-				break;
-			case 7 :
-				remain_t =0.5;
-				break;
-			case 8 :
-				remain_t =1.0;
-				q_goal[RARM_SHOULDER_P] = 0.13;
-				q_goal[RARM_ELBOW] = -1.8;
-				break;
-			case 9 :
-				remain_t = 0.0;
-				step = -2;
-				break;
-		}
-		step++;
-	}
+  if( goal_set ){
+    goal_set = false;
+    switch(step){
+      case 0 :
+        remain_t = 2.0;
+        double dumy;
+        angle >> dumy; vel >> dumy;// skip time
+        for (int i=0; i<DOF; i++){
+          angle >> q_goal[i];
+          vel >> dq_goal[i];
+          q_ref[i] = m_angle.data[i];
+        }
+        break;
+      case 1 :
+        pattern = true;
+        break;
+      case 2 : 
+        remain_t = 3.0;
+        for(int i=0; i<DOF; i++){
+          q_goal[i] = q_ref[i] = m_angle.data[i];
+        }
+        q_goal[RARM_SHOULDER_R] = -0.4;
+        q_goal[RARM_SHOULDER_P] = 0.75;
+        q_goal[RARM_ELBOW] = -2.0;
+        break;
+      case 3 : 
+        remain_t = 2.0;
+        q_goal[RARM_ELBOW] = -1.57;
+        q_goal[RARM_SHOULDER_P] = -0.2;
+        q_goal[RARM_WRIST_R] = 1.5;
+        break;
+      case 4 :
+        remain_t =1.0;
+        q_goal[RARM_ELBOW] = -1.3;
+        break;
+      case 5 :
+        remain_t =5.0;
+        q_goal[RARM_SHOULDER_R] = 0.1;
+        break;
+      case 6 :
+        remain_t =2.0;
+        q_goal[RARM_WRIST_R] = -0.3;
+        break;
+      case 7 :
+        remain_t =0.5;
+        break;
+      case 8 :
+        remain_t =1.0;
+        q_goal[RARM_SHOULDER_P] = 0.13;
+        q_goal[RARM_ELBOW] = -1.8;
+        break;
+      case 9 :
+        remain_t = 0.0;
+        step = -2;
+        break;
+    }
+    step++;
+  }
 
-	if( step==6 && m_rhsensor.data[1] < -2 ) { 
-		remain_t = 0;
-		q_goal[RARM_SHOULDER_R] = m_angle.data[RARM_SHOULDER_R];
-	}
-	
-	if( !pattern ){
-		if (remain_t > TIMESTEP){
-			for(int i=0; i<DOF; i++){
-				dq_ref[i] = (q_goal[i]-q_ref[i])/remain_t;
-				q_ref[i] = q_ref[i] + dq_ref[i]*TIMESTEP;
-			}
-			remain_t -= TIMESTEP;
-		}else{
-			for(int i=0; i<DOF; i++){
-				dq_ref[i]= 0;
-				q_ref[i] = q_goal[i];
-			}
-			if(step >=0 ) goal_set = true;
-		}
-	}else{
-		angle >> dq_ref[0]; vel >> dq_ref[0];// skip time
-		for (int i=0; i<DOF; i++){
-			angle >> q_ref[i];
-			vel >> dq_ref[i];
-		}
-		if( angle.eof() ) { 
-			pattern = false;
-			goal_set = true;
-		}
-	}
+  if( step==6 && m_rhsensor.data[1] < -2 ) { 
+    remain_t = 0;
+    q_goal[RARM_SHOULDER_R] = m_angle.data[RARM_SHOULDER_R];
+  }
 
-	for(int i=0; i<DOF; i++){
-		double dq = (m_angle.data[i] - qold[i]) / TIMESTEP;
-		m_torque.data[i] = -(m_angle.data[i] - q_ref[i]) * Pgain[i] - (dq - dq_ref[i]) * Dgain[i];
-		qold[i] = m_angle.data[i];
+  if( !pattern ){
+    if (remain_t > TIMESTEP){
+      for(int i=0; i<DOF; i++){
+        dq_ref[i] = (q_goal[i]-q_ref[i])/remain_t;
+        q_ref[i] = q_ref[i] + dq_ref[i]*TIMESTEP;
+      }
+      remain_t -= TIMESTEP;
+    }else{
+      for(int i=0; i<DOF; i++){
+        dq_ref[i]= 0;
+        q_ref[i] = q_goal[i];
+      }
+      if(step >=0 ) goal_set = true;
+    }
+  }else{
+    angle >> dq_ref[0]; vel >> dq_ref[0];// skip time
+    for (int i=0; i<DOF; i++){
+      angle >> q_ref[i];
+      vel >> dq_ref[i];
+    }
+    if( angle.eof() ) { 
+      pattern = false;
+      goal_set = true;
+    }
+  }
+
+  for(int i=0; i<DOF; i++){
+    double dq = (m_angle.data[i] - qold[i]) / TIMESTEP;
+    m_torque.data[i] = -(m_angle.data[i] - q_ref[i]) * Pgain[i] - (dq - dq_ref[i]) * Dgain[i];
+    qold[i] = m_angle.data[i];
 #ifdef SC_DEBUG
-		out << m_angle.data[i] << " " <<   q_ref[i] << " " << dq << " " << dq_ref[i] << " " << m_torque.data[i] << " ";	
+    out << m_angle.data[i] << " " <<   q_ref[i] << " " << dq << " " << dq_ref[i] << " " << m_torque.data[i] << " ";
 #endif
-	}
-	 m_torqueOut.write();
+  }
+  m_torqueOut.write();
 
 #ifdef SC_DEBUG
-	out << endl;
+  out << endl;
 #endif
 
   return RTC::RTC_OK;
@@ -359,15 +367,15 @@ void SampleController::openFiles()
 }
 void SampleController::closeFiles()
 {
-    if(angle.is_open())
-    {
-        angle.close();
-        angle.clear();
-    }
-    if(vel.is_open()){
-        vel.close();
-        vel.clear();
-    }
+  if(angle.is_open())
+  {
+    angle.close();
+    angle.clear();
+  }
+  if(vel.is_open()){
+    vel.close();
+    vel.clear();
+  }
 }
 
 
@@ -376,7 +384,7 @@ extern "C"
  
   DLL_EXPORT void SampleControllerInit(RTC::Manager* manager)
   {
-    RTC::Properties profile(samplecontroller_spec);
+    coil::Properties profile(samplecontroller_spec);
     manager->registerFactory(profile,
                              RTC::Create<SampleController>,
                              RTC::Delete<SampleController>);
