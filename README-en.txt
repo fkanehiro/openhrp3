@@ -1,5 +1,5 @@
 
-This software is OpenHRP version 3.1.0(BETA3).
+This software is OpenHRP version 3.1.0(BETA4).
 
 Please see LICENSE-ja.txt for copyright and license conditions.
 

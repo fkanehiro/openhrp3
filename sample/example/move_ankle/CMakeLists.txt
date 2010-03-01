@@ -1,4 +1,3 @@
-
 set(program move_ankle)
 
 set(sources 

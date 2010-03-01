@@ -16,10 +16,6 @@ http://www.eclipse.org/legal/eplfaq.php#EPLVERSION）
 これらのソフトウェアの使用については、それぞれのライセンスに従う必要があります。
 (これらのライセンスは、OpenHRP3本体に適用される上記EPLとは矛盾せずに利用することが可能です.）
 
-- Java Media Framewark
-
-java/JMF2.1.1e 以下に、ソフトウェアおよびライセンス文書を格納してあります。
-
 - vrml97.jar
 
 ModelLoader/server/vrml97 以下に、ソフトウェアおよびライセンス文書を格納してあります。
