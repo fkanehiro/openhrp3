@@ -299,23 +299,6 @@ if(JYTHON_JAR)
   set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JYTHON_JAR}")
 endif()
 
-# JMF
-if( NOT $ENV{JMFHOME} )
-  set(JMFHOME $ENV{JMFHOME} CACHE PATH "Set the location of Java Media Framework when it is not in the class path")
-else()
-  if(UNIX)
-    set(jmfMidPath /java/JMF2.1.1e/unix)
-  elseif(WIN32)
-    set(jmfMidPath /java/JMF2.1.1e/Windows)
-  endif()
-  set(JMFHOME ${PROJECT_SOURCE_DIR}${jmfMidPath} CACHE PATH "Set the location of Java Media Framework when it is not in the class path")
-endif()
-if(JMFHOME)
-  string(REGEX REPLACE "/$" "" JMFHOME ${JMFHOME})
-  set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JMFHOME}/lib/jmf.jar")
-  set(JAVA_LD_LIBRARY_PATH "${JAVA_LD_LIBRARY_PATH}${CPSEP}${JMFHOME}/lib")
-endif()
-
 
 if(SYSTEM_CLASSPATH)
     string(REGEX REPLACE "^${CPSEP}" "" SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}" )
