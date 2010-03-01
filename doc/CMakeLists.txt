@@ -47,4 +47,6 @@ list( APPEND depends_dirs ut)
 
 add_custom_target(doc ALL DEPENDS ${depends_dirs} WORKING_DIRECTORY ${OpenHRP_SOURCE_DIR}/doc)
 
+file(MAKE_DIRECTORY ${depends_dirs})
+
 install(DIRECTORY ${depends_dirs} DESTINATION ${RELATIVE_DOC_INSTALL_PATH})
