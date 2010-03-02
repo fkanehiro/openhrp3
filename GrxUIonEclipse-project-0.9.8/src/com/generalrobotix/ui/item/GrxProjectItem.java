@@ -36,6 +36,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -55,6 +56,8 @@ import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.MessageBundle;
+import com.generalrobotix.ui.util.OrderedHashMap;
+import com.generalrobotix.ui.util.TwoInputDialog;
 
 @SuppressWarnings({ "unchecked", "serial" }) //$NON-NLS-1$ //$NON-NLS-2$
 public class GrxProjectItem extends GrxBaseItem {
@@ -268,10 +271,18 @@ public class GrxProjectItem extends GrxBaseItem {
 				}
 			} );
 			// MENU_IMPORT=3
+			/*
 			menu_.add( new Action(){
 				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.ImportISE"); } //$NON-NLS-1$
 				public void run(){
 					importISEProject();
+				}
+			} );
+			*/
+			menu_.add( new Action(){
+				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.addItem"); } //$NON-NLS-1$
+				public void run(){
+					addItem();
 				}
 			} );
 
@@ -426,29 +437,34 @@ public class GrxProjectItem extends GrxBaseItem {
     	}
 		
 		// register mode
-		GrxModeInfoItem selectedMode = manager_.<GrxModeInfoItem>getSelectedItem(GrxModeInfoItem.class, null);
+    	OrderedHashMap modes=(OrderedHashMap)manager_.getItemMap(GrxModeInfoItem.class);
+		Iterator<GrxModeInfoItem> it = modes.values().iterator();
 		NodeList list = doc_.getElementsByTagName(MODE_TAG);
 		for (int i=0; i<list.getLength(); i++) {
 			Element modeEl = (Element) list.item(i);
 			String modeName = modeEl.getAttribute("name"); //$NON-NLS-1$
 			if (modeName == null) 
 				continue;
-			
-			GrxModeInfoItem item = (GrxModeInfoItem)manager_.createItem(GrxModeInfoItem.class, modeName);
-			if (item != null)  {
-				manager_.itemChange(item, GrxPluginManager.ADD_ITEM);
-				item.setElement(modeEl);
-				if (GrxXmlUtil.getBoolean(modeEl, "select", false)) { //$NON-NLS-1$
-					selectedMode = item;
-				} else {
-					manager_.setSelectedItem(selectedMode, false);
-				}
+			boolean found=false;
+		    while (it.hasNext()) {
+		    	GrxModeInfoItem mode = it.next();
+		    	if(modeName.equals(mode.getName())){
+		    		mode.setElement(modeEl);
+		    		found=true;
+		    		break;
+		    	}
+		    }
+		    if(!found){
+		    	GrxModeInfoItem item = (GrxModeInfoItem)manager_.createItem(GrxModeInfoItem.class, modeName);
+		    	if (item != null)  {
+		    		item.setElement(modeEl);
+		    		if (GrxXmlUtil.getBoolean(modeEl, "select", true)) { //$NON-NLS-1$
+		    			manager_.setSelectedItem(item, true);
+		    		}
+		    	}
+		    	manager_.setCurrentMode(item);
 			}
 		}
-		
-		if (selectedMode != null)
-			manager_.setSelectedItem(selectedMode, true);
-
 		return true;
 	}
 	
@@ -755,6 +771,15 @@ public class GrxProjectItem extends GrxBaseItem {
         	dir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
 		if( dir != null ){
 			setDefaultDirectory( dir );
+		}
+	}
+	
+	private void addItem(){
+		TwoInputDialog dialog = new TwoInputDialog( null, MessageBundle.get("GrxProjectItem.dialog.addItem.title"), MessageBundle.get("GrxProjectItem.dialog.addItem.message0"),
+				"", null, MessageBundle.get("GrxProjectItem.dialog.addItem.message1"),""  );
+		if(dialog.open()==InputDialog.OK){
+			String[] values = dialog.getValues();
+			manager_.addPlugin(values[0], values[1]);
 		}
 	}
 }

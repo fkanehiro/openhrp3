@@ -327,6 +327,10 @@ public class GrxPluginManager implements IPropertyChangeListener {
         return currentMode_;
     }
 
+    public void setCurrentMode(GrxModeInfoItem mode){
+    	currentMode_ = mode;
+    }
+    
     @SuppressWarnings("unchecked") //$NON-NLS-1$
 	public Class<? extends GrxBasePlugin> registerPlugin(String className) {
         Class<?> cls = pluginLoader_.loadClass(className);
@@ -913,6 +917,21 @@ public class GrxPluginManager implements IPropertyChangeListener {
         };
         menu.add(clear);
 
+        // menu item : delete
+        Action delete = new Action() {
+            public String getText() {
+                return MessageBundle.get("GrxPluginManager.menu.delete"); //$NON-NLS-1$
+            }
+
+            public void run() {
+                String mes = MessageBundle.get("GrxPluginManager.dialog.message.deletePlugin"); //$NON-NLS-1$
+                mes = NLS.bind(mes, new String[]{GrxPluginManager.this.getItemTitle(cls)});
+                if (MessageDialog.openConfirm(null, MessageBundle.get("GrxPluginManager.dialog.title.deletePlugin"), mes)) //$NON-NLS-1$
+                   deletePlugin(cls);
+            }
+        };
+        menu.add(delete);
+        
         try {
             Method m = cls.getMethod("create", (Class[]) null); //$NON-NLS-1$
             Class<?> c = m.getDeclaringClass();
@@ -940,7 +959,22 @@ public class GrxPluginManager implements IPropertyChangeListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        
+        // if plugin is user then delete menu is enable
+        IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+        String itemClassList=store.getString(PreferenceConstants.ITEM+"."+PreferenceConstants.CLASS);
+	    String[] itemClass=itemClassList.split(PreferenceConstants.SEPARATOR, -1);
+	    boolean found=false;
+	    for(int i=0; i<itemClass.length; i++){
+	    	if(cls.getName().equals(itemClass[i])){
+	    		found=true;
+	    		break;
+	    	}
+	    }
+	    if(!found)
+	    	delete.setEnabled(true);
+	    else
+	    	delete.setEnabled(false);
         return menu;
     }
     
@@ -1274,7 +1308,50 @@ public class GrxPluginManager implements IPropertyChangeListener {
 		        }
 			}
 		}	
-		this.itemChange(currentMode_, CHANGE_MODE);
+		itemChange(currentMode_, CHANGE_MODE);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void addPlugin(String className, String classPath){
+		pluginLoader_.addURL(classPath);
+		Class<? extends GrxBasePlugin> itemClass=null;
+		try {
+			itemClass = (Class<? extends GrxBasePlugin>) Class.forName(className, false, pluginLoader_);
+		} catch (ClassNotFoundException e) {
+			return;
+		}
+		OrderedHashMap modes=(OrderedHashMap) getItemMap(GrxModeInfoItem.class);
+		Iterator<GrxModeInfoItem> it = modes.values().iterator();
+        while (it.hasNext()) {
+        	GrxModeInfoItem mode = it.next();
+        	if(!mode.activeItemClassList_.contains(itemClass)){
+        		if(pluginLoader_.existClass(className)){
+		        	Class<? extends GrxBasePlugin> plugin=registerPlugin(className);
+		        	if (plugin != null) {
+		        		PluginInfo pi = pinfoMap_.get(plugin);
+		        		pi.visible = true;
+		        		pinfoMap_.put(plugin, pi);
+		        		mode.addItemClassList(plugin);
+		        	}
+		        }
+			}	
+        }
+        itemChange(currentMode_, CHANGE_MODE);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void deletePlugin(Class<? extends GrxBasePlugin> cls){
+		OrderedHashMap modes=(OrderedHashMap) getItemMap(GrxModeInfoItem.class);
+		if(currentMode_.activeItemClassList_.contains(cls)){
+			removeItems((Class<? extends GrxBaseItem>) cls);
+			Iterator<GrxModeInfoItem> it = modes.values().iterator();
+	        while (it.hasNext()) {
+	        	GrxModeInfoItem mode = it.next();
+	        	if(mode.activeItemClassList_.contains(cls))
+	        		mode.activeItemClassList_.remove(cls);
+			}
+		}
+	    itemChange(currentMode_, CHANGE_MODE);
 	}
 	
 	public void dispose(){
