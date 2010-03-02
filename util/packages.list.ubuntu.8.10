@@ -13,7 +13,10 @@ g++
 gfortran-4.3
 
 # build tools
+build-essential
 cmake
+doxygen
+graphviz
 pkg-config
 
 # omniORB
@@ -64,7 +67,3 @@ uuid-dev
 # for hrpsys
 # libncurses5-dev
 # libreadline5-dev
-
-# doxygen
-doxygen
-graphviz

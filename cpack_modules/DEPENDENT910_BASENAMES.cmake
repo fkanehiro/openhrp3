@@ -5,6 +5,7 @@ set(DEPENDENT_BASENAMES
   jython
   libreadline-java
   java-common
+  build-essential
   g++
   gfortran-4.3
   pkg-config
