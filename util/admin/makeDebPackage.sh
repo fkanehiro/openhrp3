@@ -21,7 +21,11 @@ sudo cpack -G DEB
 #cmake -D DEBIANPACKAGE_DEVELOP:BOOL=OFF -D GENERATE_DEBIANPACKAGE:BOOL=ON .
 #sudo cpack -G DEB
 
-sudo mv -f openhrp*.deb ${PACKAGES_DIR}
+if [ ! -d ${PACKAGES_DIR} ]; then
+  mkdir -p ${PACKAGES_DIR}
+fi
+
+sudo mv -f *.deb ${PACKAGES_DIR}
 
 DEB_FILES=`ls ${PACKAGES_DIR}/*.deb`
 
