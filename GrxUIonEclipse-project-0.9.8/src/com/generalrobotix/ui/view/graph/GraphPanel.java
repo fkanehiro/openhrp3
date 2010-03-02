@@ -146,9 +146,7 @@ public class GraphPanel extends Composite{
                             tg.setMarkerPos(mpos);
                         }
                         graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos}); //$NON-NLS-1$
-                        for (int i = 0; i < numGraph_; i ++) {
-                            graphElement_[i].redraw();
-                        }
+                        redraw(getLocation().x,getLocation().y,getSize().x,getSize().y,true);
                     }
                 }
         	}
@@ -171,7 +169,7 @@ public class GraphPanel extends Composite{
                         if (graphItem == null)
                         	return;
                         graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".vRange", new double[]{base, extent}); //$NON-NLS-1$
-                        currentGraph_.redraw();
+                        redraw(getLocation().x,getLocation().y,getSize().x,getSize().y,true);
                     }
                 }
             }
@@ -230,7 +228,7 @@ public class GraphPanel extends Composite{
                         }
                         graphItem.setProperty(graphName+".dataItems",dataItems); //$NON-NLS-1$
                         updateButtons();
-                        currentGraph_.redraw();
+                        redraw(getLocation().x,getLocation().y,getSize().x,getSize().y,true);
                     }
                 }
             }
@@ -326,10 +324,9 @@ public class GraphPanel extends Composite{
 
     public void setFocuse(GraphElement ge){
     	currentGraph_.setBorderColor(normalColor_);
-		currentGraph_.redraw();
 		currentGraph_ = ge;
 		currentGraph_.setBorderColor(focusedColor_);
-		currentGraph_.redraw();
+		redraw(getLocation().x,getLocation().y,getSize().x,getSize().y,true);
         seriesDialog_.setCurrentGraph(currentGraph_);
         updateButtons();
     }
