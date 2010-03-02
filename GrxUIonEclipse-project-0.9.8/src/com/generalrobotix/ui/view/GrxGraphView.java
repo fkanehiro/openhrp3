@@ -169,7 +169,7 @@ public class GrxGraphView extends GrxBaseView {
 		
 		if (p == null) {
 			gpanel_.setEnabled(false);
-			gpanel_.redraw();	
+			composite_.redraw(composite_.getLocation().x,composite_.getLocation().y,composite_.getSize().x,composite_.getSize().y,true);	
 			return;
 		}
 		
@@ -227,7 +227,7 @@ public class GrxGraphView extends GrxBaseView {
 				tgraph.setRange(vRange[0], vRange[1]);
 			}
 		}
-		gpanel_.redraw();	
+		composite_.redraw(composite_.getLocation().x,composite_.getLocation().y,composite_.getSize().x,composite_.getSize().y,true);	
 	}
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
