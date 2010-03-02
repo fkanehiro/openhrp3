@@ -1,5 +1,6 @@
 package com.generalrobotix.ui.grxui;
 
+import java.io.File;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -18,9 +19,18 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = Activator.getDefault()
 				.getPreferenceStore();
-		store.setDefault(PreferenceConstants.PROJECT_DIR, "@PREFERENCE_PROJECT_DIR@");
-		store.setDefault(PreferenceConstants.JYTHON_LIB, "@PREFERENCE_JYTHON_LIB@");
-		store.setDefault(PreferenceConstants.SERVER_DIR, "@PREFERENCE_SERVER_DIR@");
+		String pdir = "@PREFERENCE_PROJECT_DIR@";
+		if(new File(pdir).isDirectory() == false)
+			pdir = "";
+		store.setDefault(PreferenceConstants.PROJECT_DIR, pdir);
+		String jdir = "@PREFERENCE_JYTHON_LIB@";
+		if(new File(jdir).isDirectory() == false)
+			jdir = "";
+		store.setDefault(PreferenceConstants.JYTHON_LIB, jdir);
+		String sdir = "@PREFERENCE_SERVER_DIR@";
+		if(new File(sdir).isDirectory() == false)
+			sdir = "";
+		store.setDefault(PreferenceConstants.SERVER_DIR, sdir);
 		if (System.getProperty("os.name").equals("Linux")){
 			store.setDefault(PreferenceConstants.BIN_SFX, ".sh");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
