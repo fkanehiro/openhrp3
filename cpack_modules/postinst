@@ -2,5 +2,4 @@
 set -e
 if [ "$1" = "configure" ]; then
   ldconfig
-  update-java-alternatives -s java-6-sun
 fi
