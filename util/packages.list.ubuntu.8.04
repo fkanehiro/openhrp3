@@ -45,7 +45,6 @@ f2c
 libf2c2
 libf2c2-dev 
 libg2c0
-libg2c0-dev 
 
 # boost
 libboost-dev

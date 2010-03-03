@@ -6,7 +6,7 @@ set(DEPENDENT_BASENAMES
   java-common
   build-essential
   g++
-  gfortran
+  g77
   pkg-config
   libcos4-dev
   libomnievents-dev
@@ -32,8 +32,6 @@ set(DEPENDENT_BASENAMES
   libf2c2
   libf2c2-dev 
   libg2c0
-  libgfortran2
-  libgfortran2-dbg
   libboost-dev
   libboost-filesystem-dev 
   libboost-program-options-dev 
