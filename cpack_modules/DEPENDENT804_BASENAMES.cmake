@@ -32,8 +32,8 @@ set(DEPENDENT_BASENAMES
   libf2c2
   libf2c2-dev 
   libg2c0
-  libgfortran3
-  libgfortran3-dbg
+  libgfortran2
+  libgfortran2-dbg
   libboost-dev
   libboost-filesystem-dev 
   libboost-program-options-dev 
