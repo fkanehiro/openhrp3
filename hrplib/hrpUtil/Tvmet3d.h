@@ -52,7 +52,7 @@ namespace hrp
 
     HRP_UTIL_EXPORT void calcRodrigues(Matrix33& out_R, const Vector3& axis, double q);
     HRP_UTIL_EXPORT void calcRotFromRpy(Matrix33& out_R, double r, double p, double y);
-    
+
     inline Matrix33 rodrigues(const Vector3& axis, double q){
         Matrix33 R;
         calcRodrigues(R, axis, q);
@@ -68,6 +68,36 @@ namespace hrp
     inline Matrix33 rotFromRpy(double r, double p, double y){
         Matrix33 R;
         calcRotFromRpy(R, r, p, y);
+        return R;
+    }
+
+    inline Matrix33 rotationX(double theta){
+        Matrix33 R;
+        double c = cos(theta);
+        double s = sin(theta);
+        R = 1.0, 0.0, 0.0,
+            0.0,  c,  -s,
+            0.0,  s,   c ;
+        return R;
+    }
+    
+    inline Matrix33 rotationY(double theta){
+        Matrix33 R;
+        double c = cos(theta);
+        double s = sin(theta);
+        R = c,   0.0,  s,
+            0.0, 1.0, 0.0,
+            -s,  0.0,  c ;
+        return R;
+    }
+    
+    inline Matrix33 rotationZ(double theta){
+        Matrix33 R;
+        double c = cos(theta);
+        double s = sin(theta);
+        R =  c,  -s,  0.0,
+             s,   c,  0.0,
+            0.0, 0.0, 1.0;
         return R;
     }
     
