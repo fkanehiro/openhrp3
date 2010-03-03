@@ -34,11 +34,12 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		if(new File(sdir).isDirectory() == false)
 			sdir = "";
 		store.setDefault(PreferenceConstants.SERVER_DIR, sdir);
-		if (System.getProperty("os.name").equals("Linux")){
+		String osname = System.getProperty("os.name");
+		if (osname.equals("Linux") || osname.equals("Mac OS X")){
 			store.setDefault(PreferenceConstants.BIN_SFX, ".sh");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
 					"$(HOME)/.OpenHRP-3.1/omninames-log");
-		}else if(System.getProperty("os.name").contains("Windows")){
+		}else if(osname.contains("Windows")){
 			store.setDefault(PreferenceConstants.BIN_SFX, ".bat");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
 					"\"$(APPDATA)/OpenHRP-3.1/omninames-log\"");
