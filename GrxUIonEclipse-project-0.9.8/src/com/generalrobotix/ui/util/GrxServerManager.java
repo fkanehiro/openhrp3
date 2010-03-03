@@ -259,8 +259,8 @@ public class GrxServerManager extends GrxBaseItem{
         	NAME_SERVER_HOST_ = store.getDefaultString(
             		PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.HOST);
         
-        nameServerInfo.args = "-ORBendPointPublish giop:tcp:"+ NAME_SERVER_HOST_ + ": -start " + 
-                    Integer.toString(NAME_SERVER_PORT_) + " -logdir " + NAME_SERVER_LOG_DIR_;
+        nameServerInfo.args = "-start " + Integer.toString(NAME_SERVER_PORT_) + " -logdir " + NAME_SERVER_LOG_DIR_ +
+        " -ORBendPointPublish giop:tcp:"+ NAME_SERVER_HOST_ + ":";
         
         String s = store.getString(
     			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM);
