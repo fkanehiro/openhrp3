@@ -22,12 +22,13 @@ set(DEPENDENT_BASENAMES
   python-omniorb2
   python-tk
   tvmet\ \(>=1.7.2\)
-  liblapack3gf
-  liblapack-dev
-  libatlas-base-dev
-  libatlas-headers
-  libblas3gf
-  libblas-dev
+  lapack3
+  lapack3-dev
+  atlas3-base
+  atlas3-base-dev
+  atlas3-headers
+  refblas3
+  refblas3-dev
   f2c
   libf2c2
   libf2c2-dev 
