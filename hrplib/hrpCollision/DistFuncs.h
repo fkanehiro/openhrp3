@@ -29,8 +29,8 @@ float SegSegDist(const Point& u0, const Point& u1,
  * @param V0 the first vertex of the second triangle
  * @param V1 the second vertex of the second triangle
  * @param V2 the third vertex of the second triangle
- * @parma cp0 the closest point on the first triangle
- * @parma cp1 the closest point on the second triangle
+ * @param cp0 the closest point on the first triangle
+ * @param cp1 the closest point on the second triangle
  * @return the minimum distance
  */
 float TriTriDist(const Point& U0, const Point& U1, const Point& U2,

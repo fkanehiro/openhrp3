@@ -7,7 +7,7 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 /**
-   @file DynamicsSimulator/server/World.cpp
+   @file hrplib/hrpModel/World.cpp
    \author Shin'ichiro Nakaoka
 */
 

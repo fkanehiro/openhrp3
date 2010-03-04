@@ -52,7 +52,17 @@ namespace hrp
 
 		virtual void initializeSensors();
 		virtual void updateSensorsFinal();
-		
+
+                /**
+                   @brief update position/orientation using spatial velocity
+                   @param out_p p(t+dt)
+                   @param out_R R(t+dt)
+                   @param p0 p(t)
+                   @param R0 R(t)
+                   @param w angular velocity
+                   @param v0 spatial velocity
+                   @param dt time step[s]
+                 */
 		static void SE3exp(Vector3& out_p, Matrix33& out_R,
 						   const Vector3& p0, const Matrix33& R0,
 						   const Vector3& w, const Vector3& vo, double dt);
