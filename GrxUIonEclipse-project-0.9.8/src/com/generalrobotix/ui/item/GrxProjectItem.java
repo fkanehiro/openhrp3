@@ -567,9 +567,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		Class cls = manager_.registerPlugin(e.getAttribute("class")); //$NON-NLS-1$
 		if (cls == null)
 			return null;
-	//TODO: プログレスバーに変更する？いっそいらない？	
-//		manager_.processingWindow_.setMessage(
-//			"restoring plugin ... \n  " +cls.getSimpleName()+" : "+iname);
+		manager_.getMode().addItemClassList(cls);
 		
 		GrxBasePlugin plugin = null;
 		if (GrxBaseItem.class.isAssignableFrom(cls)) {
