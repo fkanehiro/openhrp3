@@ -1,9 +1,7 @@
-start "JoystickController" "JoystickController.exe"
-cd ..\TkJoyStick
-start "TkJoyStickComp" "TkJoyStickComp.py"
-cd ..\Controller
+start "JoystickControllerComp" "components\JoystickControllerComp.exe"
 
-"C:\Program Files\OpenHRP\bin\openhrp-controller-bridge" ^
+set PATH=%PATH%;"C:\Program Files\OpenHRP\bin"
+openhrp-controller-bridge ^
 --server-name JoystickController ^
 --out-port angle:JOINT_VALUE ^
 --out-port velocity:JOINT_VELOCITY ^
