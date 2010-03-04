@@ -36,42 +36,132 @@ namespace hrp {
         WorldBase();
         virtual ~WorldBase();
 
+        /**
+           @brief get the number of bodies in this world
+           @return the number of bodies
+        */ 
         int numBodies() { return bodyInfoArray.size(); }
+
+        /**
+           @brief get body by index
+           @param index of the body
+           @return body
+         */
         BodyPtr body(int index);
+
+        /**
+           @brief get body by name
+           @param name of the body
+           @return body
+         */
         BodyPtr body(const std::string& name);
 
-		ForwardDynamicsPtr forwardDynamics(int index) {
-			return bodyInfoArray[index].forwardDynamics;
-		}
+        /**
+           @brief get forward dynamics computation method for body
+           @param index index of the body
+           @return forward dynamics computation method
+        */
+        ForwardDynamicsPtr forwardDynamics(int index) {
+            return bodyInfoArray[index].forwardDynamics;
+        }
 
-		int bodyIndex(const std::string& name);
+        /**
+           @brief get index of body by name
+           @param name of the body
+           @return index of the body
+        */
+        int bodyIndex(const std::string& name);
 
+        /**
+           @brief add body to this world
+           @param body
+           @return index of the body
+           @note This must be called before initialize() is called.
+        */
         int addBody(BodyPtr body);
 
+        /**
+           @brief clear bodies in this world
+         */
         void clearBodies();
 
-		void clearCollisionPairs();
+        /**
+           @brief clear collision pairs
+         */
+        void clearCollisionPairs();
 
-		void setTimeStep(double);
-		double timeStep(void) const { return timeStep_; }
+        /**
+           @brief set time step
+           @param dt time step[s]
+         */
+        void setTimeStep(double dt);
+
+        /**
+           @brief get time step
+           @return time step[s]
+         */
+        double timeStep(void) const { return timeStep_; }
 	
-		void setCurrentTime(double);
-		double currentTime(void) const { return currentTime_; }
+        /**
+           @brief set current time
+           @param tm current time[s]
+        */
+        void setCurrentTime(double tm);
+
+        /**
+           @brief get current time
+           @return current time[s]
+        */
+        double currentTime(void) const { return currentTime_; }
 	
-		void setGravityAcceleration(const Vector3& g);
-		const Vector3& getGravityAcceleration() { return g; }
+        /**
+           @brief set gravity acceleration
+           @param g gravity acceleration[m/s^2]
+        */
+        void setGravityAcceleration(const Vector3& g);
 
-		void enableSensors(bool on);
-		
-		void setEulerMethod();
-		void setRungeKuttaMethod();
+        /**
+           @brief get gravity acceleration
+           @return gravity accleration
+        */
+        const Vector3& getGravityAcceleration() { return g; }
 
-		virtual void initialize();
-		virtual void calcNextState();
+        /**
+           @brief enable/disable sensor simulation
+           @param on true to enable, false to disable
+           @note This must be called before initialize() is called.
+         */
+        void enableSensors(bool on);
 
-		std::pair<int,bool> getIndexOfLinkPairs(Link* link1, Link* link2);
+        /**
+           @brief choose euler method for integration
+        */
+        void setEulerMethod();
 
-	private:
+        /**
+           @brief choose runge-kutta method for integration
+        */
+        void setRungeKuttaMethod();
+
+        /**
+           @brief initialize this world. This must be called after all bodies are registered.
+         */
+        virtual void initialize();
+
+        /**
+           @brief compute forward dynamics and update current state
+         */
+        virtual void calcNextState();
+
+        /**
+           @brief get index of link pairs
+           @param link1 link1
+           @param link2 link2
+           @return pair of index and flag. The flag is true if the pair was already registered, false othewise.
+         */
+        std::pair<int,bool> getIndexOfLinkPairs(Link* link1, Link* link2);
+
+      private:
 		
         double currentTime_;
         double timeStep_;

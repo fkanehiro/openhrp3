@@ -99,9 +99,9 @@ namespace hrp {
         /**
          * @brief get a vertex
          * @param index index of the vertex
-         * @param x x position of the vertex
-         * @param y y position of the vertex
-         * @param z z position of the vertex
+         * @param out_x x position of the vertex
+         * @param out_y y position of the vertex
+         * @param out_z z position of the vertex
          */
         void getVertex(int index, float& out_x, float& out_y, float& out_z) const;
 
@@ -162,7 +162,7 @@ namespace hrp {
 
         /**
          * @brief set the number of parameters of primitive
-         * @nparam the number of parameters of primitive
+         * @param nparam the number of parameters of primitive
          */
         void setNumPrimitiveParams(unsigned int nparam);
 

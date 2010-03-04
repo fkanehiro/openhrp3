@@ -50,7 +50,7 @@ ForwardDynamicsABM::~ForwardDynamicsABM()
 
 void ForwardDynamicsABM::initialize()
 {
-	initializeSensors();
+    initializeSensors();
     calcABMFirstHalf();
 }
 
@@ -99,20 +99,20 @@ void ForwardDynamicsABM::calcNextState()
 	calcABMFirstHalf();
 
     if(sensorsEnabled){
-		updateSensorsFinal();
-	}
+        updateSensorsFinal();
+    }
 
-	body->setVirtualJointForces();
+    body->setVirtualJointForces();
 }
 
 
 void ForwardDynamicsABM::calcMotionWithEulerMethod()
 {
-	calcABMLastHalf();
+    calcABMLastHalf();
 
-	if(sensorsEnabled){
-		updateForceSensors();
-	}
+    if(sensorsEnabled){
+        updateForceSensors();
+    }
 
     Link* root = body->rootLink();
 
@@ -124,10 +124,10 @@ void ForwardDynamicsABM::calcMotionWithEulerMethod()
         root->R = R;
 
         root->vo += root->dvo * timeStep;
-		root->w  += root->dw  * timeStep;
+        root->w  += root->dw  * timeStep;
     }
 
-	int n = body->numLinks();
+    int n = body->numLinks();
     for(int i=1; i < n; ++i){
         Link* link = body->link(i);
         link->q  += link->dq  * timeStep;
@@ -144,12 +144,12 @@ void ForwardDynamicsABM::integrateRungeKuttaOneStep(double r, double dt)
 
         SE3exp(root->p, root->R, p0, R0, root->w, root->vo, dt);
         root->vo = vo0 + root->dvo * dt;
-		root->w  = w0 + root->dw  * dt;
+        root->w  = w0  + root->dw  * dt;
 
-		vo += r * root->vo;
-		w += r * root->w;
-		dvo += r * root->dvo;
-		dw += r * root->dw;
+        vo  += r * root->vo;
+        w   += r * root->w;
+        dvo += r * root->dvo;
+        dw  += r * root->dw;
     }
 
     int n = body->numLinks();
@@ -157,11 +157,11 @@ void ForwardDynamicsABM::integrateRungeKuttaOneStep(double r, double dt)
 
         Link* link = body->link(i);
 
-		link->q = q0[i] + dt * link->dq;
-		link->dq = dq0[i] + dt * link->ddq;
+        link->q  =  q0[i] + dt * link->dq;
+        link->dq = dq0[i] + dt * link->ddq;
 
-		dq[i] += r * link->dq;
-		ddq[i] += r * link->ddq;
+        dq[i]  += r * link->dq;
+        ddq[i] += r * link->ddq;
     }
 }
 
@@ -171,10 +171,10 @@ void ForwardDynamicsABM::calcMotionWithRungeKuttaMethod()
     Link* root = body->rootLink();
 
     if(root->jointType != Link::FIXED_JOINT){
-		p0  = root->p;
-		R0  = root->R;
-		vo0  = root->vo;
-		w0   = root->w;
+        p0  = root->p;
+        R0  = root->R;
+        vo0 = root->vo;
+        w0  = root->w;
     }
 
     vo = 0;
@@ -184,18 +184,18 @@ void ForwardDynamicsABM::calcMotionWithRungeKuttaMethod()
 
     int n = body->numLinks();
     for(int i=1; i < n; ++i){
-		Link* link = body->link(i);
-        q0[i] = link->q;
-		dq0[i] = link->dq;
-		dq[i] = 0.0;
-		ddq[i] = 0.0;
+        Link* link = body->link(i);
+        q0[i]  = link->q;
+        dq0[i] = link->dq;
+        dq[i]  = 0.0;
+        ddq[i] = 0.0;
     }
 
-	calcABMLastHalf();
+    calcABMLastHalf();
 
-	if(sensorsEnabled){
-		updateForceSensors();
-	}
+    if(sensorsEnabled){
+        updateForceSensors();
+    }
 
     integrateRungeKuttaOneStep(1.0 / 6.0, timeStep / 2.0);
 	calcABMPhase1();
@@ -215,13 +215,13 @@ void ForwardDynamicsABM::calcMotionWithRungeKuttaMethod()
     if(root->jointType != Link::FIXED_JOINT){
         SE3exp(root->p, root->R, p0, R0, w0, vo0, timeStep);
         root->vo = vo0 + (dvo + root->dvo / 6.0) * timeStep;
-		root->w  = w0 + (dw + root->dw / 6.0) * timeStep;
+        root->w  = w0  + (dw  + root->dw  / 6.0) * timeStep;
     }
 
     for(int i=1; i < n; ++i){
-		Link* link = body->link(i);
-		link->q = q0[i] + (dq[i] + link->dq / 6.0) * timeStep;
-		link->dq = dq0[i] + (ddq[i] + link->ddq / 6.0) * timeStep;
+        Link* link = body->link(i);
+        link->q  =  q0[i] + ( dq[i] + link->dq  / 6.0) * timeStep;
+        link->dq = dq0[i] + (ddq[i] + link->ddq / 6.0) * timeStep;
     }
 }
 
@@ -395,7 +395,7 @@ void ForwardDynamicsABM::calcABMPhase2Part1()
 }
 
 
-// A remining part of phase 2 that requires external forces
+// A remaining part of phase 2 that requires external forces
 void ForwardDynamicsABM::calcABMPhase2Part2()
 {
     const LinkTraverse& traverse = body->linkTraverse();
@@ -404,24 +404,24 @@ void ForwardDynamicsABM::calcABMPhase2Part2()
     for(int i = n-1; i >= 0; --i){
         Link* link = traverse[i];
 
-		link->pf   -= link->fext;
-		link->ptau -= link->tauext;
+        link->pf   -= link->fext;
+        link->ptau -= link->tauext;
 
         for(Link* child = link->child; child; child = child->sibling){
-			link->pf   += child->pf;
-			link->ptau += child->ptau;
+            link->pf   += child->pf;
+            link->ptau += child->ptau;
 
-			if(child->jointType != Link::FIXED_JOINT){  
+            if(child->jointType != Link::FIXED_JOINT){  
                 double uu_dd = child->uu / child->dd;
- 			    link->pf   += uu_dd * child->hhv;
-			    link->ptau += uu_dd * child->hhw;
+                link->pf   += uu_dd * child->hhv;
+                link->ptau += uu_dd * child->hhw;
             }
-		}
+        }
 
-		if(i > 0){
+        if(i > 0){
             if(link->jointType != Link::FIXED_JOINT)
-    			link->uu += link->u - (dot(link->sv, link->pf) + dot(link->sw, link->ptau));
-		}
+                link->uu += link->u - (dot(link->sv, link->pf) + dot(link->sw, link->ptau));
+        }
     }
 }
 
@@ -479,10 +479,10 @@ void ForwardDynamicsABM::calcABMPhase3()
 
 void ForwardDynamicsABM::updateForceSensors()
 {
-	int n = body->numSensors(Sensor::FORCE);
+    int n = body->numSensors(Sensor::FORCE);
     for(int i=0; i < n; ++i){
-		updateForceSensor(body->sensor<ForceSensor>(i));
-	}
+        updateForceSensor(body->sensor<ForceSensor>(i));
+    }
 }
 
 

@@ -50,8 +50,8 @@ namespace hrp {
         double computeDistance(double *point0, double *point1);
 
         /**
-           @param out_triangle0, out_triangle1 Indices of the triangle pair that are originally registered by
-           ColdeModel::setTraiangle().
+           @param out_triangle0, out_triangle1 Indices of the triangle pair that are originally registered by ColdeModel::setTraiangle().
+           @param out_point0, out_point1 The closest points 
         */
         double computeDistance(int& out_triangle0, double* out_point0, int& out_triangle1, double* out_point1);
 
