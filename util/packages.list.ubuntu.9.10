@@ -55,7 +55,7 @@ libboost-signals1.40-dev
 libboost-thread1.40-dev
 
 # eclipse3.4.2
-xulrunner-1.9
+xulrunner-1.9.1
 
 # etc
 zlib1g-dev

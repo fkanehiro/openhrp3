@@ -1,7 +1,7 @@
 set(DEPENDENT_BASENAMES
   sun-java6-jdk
   sun-java6-fonts
-  sun-java-plugins
+  sun-java6-plugin
   jython
   libreadline-java
   java-common
@@ -40,7 +40,7 @@ set(DEPENDENT_BASENAMES
   libboost-regex1.40-dev
   libboost-signals1.40-dev
   libboost-thread1.40-dev
-  xulrunner-1.9
+  xulrunner-1.9.1
   libc6-dev
   zlib1g-dev
   libace-dev
