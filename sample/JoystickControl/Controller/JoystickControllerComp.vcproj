@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="JoystickController"
-	ProjectGUID="{AB5FD996-4344-4103-B93D-37DAA570094D}"
-	RootNamespace="JoystickController"
+	Name="JoystickControllerComp"
+	ProjectGUID="{4724E7DC-A264-47AD-B7F6-909F5714D9A0}"
+	RootNamespace="JoystickControllerComp"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="0"
 	>
@@ -18,9 +18,9 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(ProjectDir)JoystickController\$(ConfigurationName)"
-			IntermediateDirectory="JoystickController\$(ConfigurationName)"
-			ConfigurationType="2"
+			OutputDirectory="$(ProjectDir)JoystickControllerComp\$(ConfigurationName)"
+			IntermediateDirectory="JoystickControllerComp\$(ConfigurationName)"
+			ConfigurationType="1"
 			InheritedPropertySheets="$(SolutionDir)rtm_config.vsprops;$(SolutionDir)user_config.vsprops"
 			CharacterSet="0"
 			>
@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="USE_stub_in_nt_dll;WIN32;_DEBUG;_WINDOWS;_USRDLL;__WIN32__;__NT__;__OSVERSION__=4;__x86__;_WIN32_WINNT=0x0500;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="USE_stub_in_nt_dll;WIN32;_DEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0500;__NT__;__OSVERSION__=4;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -64,9 +64,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(rtm_libd) $(coil_libd)"
+				OutputFile="$(OutDir)\JoystickControllerComp.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				SubSystem="2"
+				SubSystem="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -93,9 +94,9 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(ProjectDir)JoystickController\$(ConfigurationName)"
-			IntermediateDirectory="JoystickController\$(ConfigurationName)"
-			ConfigurationType="2"
+			OutputDirectory="$(ProjectDir)JoystickControllerComp\$(ConfigurationName)"
+			IntermediateDirectory="JoystickControllerComp\$(ConfigurationName)"
+			ConfigurationType="1"
 			InheritedPropertySheets="$(SolutionDir)rtm_config.vsprops;$(SolutionDir)user_config.vsprops"
 			CharacterSet="0"
 			>
@@ -117,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="USE_stub_in_nt_dll;WIN32;NDEBUG;_WINDOWS;_USRDLL;__WIN32__;__NT__;__OSVERSION__=4;__x86__;_WIN32_WINNT=0x0500;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="USE_stub_in_nt_dll;WIN32;NDEBUG;_CONSOLE;__WIN32__;__x86__;_WIN32_WINNT=0x0500;__NT__;__OSVERSION__=4;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -136,11 +137,13 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(rtm_lib) $(coil_lib)"
+				OutputFile="$(OutDir)\JoystickControllerComp.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
-				SubSystem="2"
+				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -163,7 +166,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="if NOT EXIST &quot;$(SolutionDir)\\components&quot; mkdir &quot;$(SolutionDir)\\components&quot;&#x0D;&#x0A;copy &quot;$(OutDir)\\JoystickController.dll&quot; &quot;$(SolutionDir)\\components&quot;&#x0D;&#x0A;"
+				CommandLine="if NOT EXIST &quot;$(SolutionDir)\\components&quot; mkdir &quot;$(SolutionDir)\\components&quot;&#x0D;&#x0A;copy &quot;$(OutDir)\\JoystickControllerComp.exe&quot; &quot;$(SolutionDir)\\components&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -173,17 +176,21 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{E81B896D-67B2-475D-ABCC-6606AD1F9D2B}"
+			UniqueIdentifier="{3B0D6E2E-43AA-4CC9-894F-07A330351352}"
 			>
 			<File
 				RelativePath="JoystickController.cpp"
+				>
+			</File>
+			<File
+				RelativePath="JoystickControllerComp.cpp"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{AECBDDF2-4685-48FD-9B98-45B25BE1F820}"
+			UniqueIdentifier="{E85A04EE-43DD-4F16-BA68-94E7BE7D5FDC}"
 			>
 			<File
 				RelativePath="JoystickController.h"
