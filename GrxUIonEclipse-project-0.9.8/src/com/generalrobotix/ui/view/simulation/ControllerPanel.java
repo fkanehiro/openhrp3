@@ -425,13 +425,18 @@ public class ControllerPanel extends Composite{
         
         public void setNode(GrxModelItem node) {
             try {
+            	boolean is_set_boxctrl = false;
                 String attr = node.getProperty(ATTRIBUTE_CONTROLLER, "");
                 for (int i = 0; i < boxController_.getItemCount(); i ++) {
                	    if (attr.equals(boxController_.getItem(i).toString())) {
+               	    	is_set_boxctrl = true;
                         boxController_.select(i);
                         break;
                     }
                 }
+                if(is_set_boxctrl == false)
+                    boxController_.setText(attr);
+
             	spinControlTime_.setValue(node.getProperty(ATTRIBUTE_CONTROL_TIME, "0.001")); //$NON-NLS-1$
             	tfSetupDirectory_.setText(node.getStr(ATTRIBUTE_SETUP_DIRECTORY ,GrxXmlUtil.expandEnvVal("$(PROJECT_DIR)"))); //$NON-NLS-1$
                 
