@@ -10,6 +10,7 @@
 
 package com.generalrobotix.ui.view;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -21,6 +22,7 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
 import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -468,6 +470,17 @@ public class GrxServerManagerView extends GrxBaseView
     public void widgetDisposed(DisposeEvent e)
     {
         storevecServerInfo();
+    }
+    
+    public void update(GrxBasePlugin plugin, Object... arg) {
+    	if(serverManager_==plugin)
+    		if((String)arg[0]=="ProcessEnd"){
+    			for (TabItem i: vecTabItem_){
+    	            if(i.getText().equals((String)arg[1])){
+    	            	((GrxServerManagerPanel)i.getControl()).setStartText();
+    	            }
+    			}
+    		}
     }
     
     public void shutdown() {

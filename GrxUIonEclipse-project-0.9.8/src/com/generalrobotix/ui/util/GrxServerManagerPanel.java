@@ -36,7 +36,6 @@ import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 
-@SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxServerManagerPanel extends Composite {
 
     static private final int    HORIZON_INDENT_ = 4;
@@ -236,5 +235,9 @@ public class GrxServerManagerPanel extends Composite {
                 toggleButton_.setText(START_);
             }
         }
+    }
+    
+    public void setStartText(){
+    	toggleButton_.setText(START_);
     }
 }
