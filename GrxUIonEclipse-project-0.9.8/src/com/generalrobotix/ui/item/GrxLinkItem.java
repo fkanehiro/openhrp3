@@ -355,6 +355,11 @@ public class GrxLinkItem extends GrxTransformItem{
 		if (type.equals("fixed")||type.equals("rotate")||type.equals("free")||type.equals("slide")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	    	info_.jointType = type;
 	    	setProperty("jointType", type); //$NON-NLS-1$
+	    	if(type.equals("fixed")||type.equals("free"))
+	    		setProperty("jointAxis", "---");
+	    	else
+	    		if(getProperty("jointAxis").equals("---"))
+	    			jointAxis("0.0 0.0 1.0");
     		if (model_ != null) model_.notifyModified();
 		}
     }
@@ -363,6 +368,8 @@ public class GrxLinkItem extends GrxTransformItem{
      * @param axis axis of this joint. it must be one of "X", "Y" and "Z"
      */
     void jointAxis(double[] newAxis){
+    	if(info_.jointType.equals("fixed")||info_.jointType.equals("free"))
+    		return;
     	if (newAxis != null && newAxis.length == 3){
     		info_.jointAxis = newAxis;
     		setDblAry("jointAxis", newAxis); //$NON-NLS-1$
@@ -658,7 +665,7 @@ public class GrxLinkItem extends GrxTransformItem{
     	if (parent_ != null){
     		parent_.tg_.getTransform(t3dp);
             v3d.set(translation());
-            if (jointType().equals("rotate") || jointType().equals("fixed")) { //$NON-NLS-1$ //$NON-NLS-2$
+            if (jointType().equals("rotate")) { //$NON-NLS-1$ //$NON-NLS-2$
                 t3d.setTranslation(v3d);
                 m3d.set(new AxisAngle4d(rotation()));
                 a4d.set(jointAxis()[0], jointAxis()[1], jointAxis()[2], jointValue());
@@ -673,6 +680,10 @@ public class GrxLinkItem extends GrxTransformItem{
                 m3d.set(new AxisAngle4d(rotation()));
                 m3d.mul(m3d);
                 t3d.setRotation(m3d);
+            }else if(jointType().equals("free") || jointType().equals("fixed") ){
+            	t3d.setTranslation(v3d);
+            	m3d.set(new AxisAngle4d(rotation()));
+            	t3d.setRotation(m3d);
             }
             t3dp.mul(t3d);
             tg_.setTransform(t3dp);
