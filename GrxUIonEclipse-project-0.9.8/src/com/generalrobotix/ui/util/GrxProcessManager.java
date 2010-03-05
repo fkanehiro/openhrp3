@@ -64,6 +64,7 @@ public class GrxProcessManager {
     private ConcurrentLinkedQueue<String> lineQueue        = null;
     private Thread                        thread_          = null;
     private ProcessInfo 				   nameServerInfo_  = null;
+    private GrxServerManager 			   serverManager_   = null;
 
     private GrxProcessManager() {
         process_ = new java.util.ArrayList<AProcess>();
@@ -108,14 +109,15 @@ public class GrxProcessManager {
         outputArea_.setMenu(manager.createContextMenu(outputArea_));
     }
 
-    public void setProcessList(GrxServerManager serverManager_) {
+    public void setProcessList(GrxServerManager serverManager) {
+    	serverManager_ = serverManager;
         StringBuffer nsHost = new StringBuffer(""); //$NON-NLS-1$
         StringBuffer nsPort = new StringBuffer(""); //$NON-NLS-1$
         Activator.refNSHostPort(nsHost, nsPort);
         String nsOpt = " -ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         if(!GrxCorbaUtil.isAliveNameService()){
-            nameServerInfo_ = serverManager_.getNameServerInfo();
-            FileUtil.deleteNameServerLog(serverManager_.getNameserverLogDir());
+            nameServerInfo_ = serverManager.getNameServerInfo();
+            FileUtil.deleteNameServerLog(serverManager.getNameserverLogDir());
             if ( isRegistered(nameServerInfo_) ) {
                 if( !isRunning(nameServerInfo_) ){
                     unregister(nameServerInfo_.id);
@@ -125,7 +127,7 @@ public class GrxProcessManager {
                 register(nameServerInfo_);
             }
         }
-        for(ProcessInfo pi : serverManager_.getServerInfo()){
+        for(ProcessInfo pi : serverManager.getServerInfo()){
             ProcessInfo localPi = pi.clone();
         	for(int i=0; i<localPi.com.size(); i++){
         		if (localPi.useORB) {
@@ -614,8 +616,31 @@ public class GrxProcessManager {
         public boolean start(String opt){
         	for(int i=0; i<pi_.com.size(); i++){
         		updateCom(i);
-        		if(start0(opt))
+        		if(start0(opt)){
+        			Thread thread = new Thread() {
+                        public void run() {
+                        	try {
+								process_.waitFor();
+				                Display display = Display.getDefault();
+								if (display != null && !display.isDisposed()) {
+				                    display.asyncExec(new Runnable() {
+				                        public void run() {
+				                        	if(!outputArea_.isDisposed()){
+				                        		outputArea_.append("[" + pi_.id + ":O] " + "Process End");
+					                            outputArea_.setTopIndex(outputArea_.getLineCount());
+				                        	}
+				                        	serverManager_.notifyObservers("ProcessEnd", pi_.id);
+				                        }
+				                    });
+				                }
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+                        }
+                    };
+                    thread.start();
         			return true;
+        		}
         	}
         	return false;
         }
