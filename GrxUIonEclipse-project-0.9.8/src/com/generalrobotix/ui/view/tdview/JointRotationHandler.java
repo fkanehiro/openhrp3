@@ -261,10 +261,12 @@ class JointRotationHandler extends OperationHandler {
         try {
             GrxModelItem model = SceneGraphModifier.getModelFromTG(tgTarget_);
             GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tgTarget_);
-            link.jointValue(link.jointValue()+angle_);
-            link.setJointValuesWithinLimit();
-            model.updateInitialJointValue(link);
-            model.calcForwardKinematics();
+            if( link.jointType().equals("rotate") ||  link.jointType().equals("slide") ){
+	            link.jointValue(link.jointValue()+angle_);
+	            link.setJointValuesWithinLimit();
+	            model.updateInitialJointValue(link);
+	            model.calcForwardKinematics();
+            }
         } catch (Exception e) { 
         	e.printStackTrace();
         }
