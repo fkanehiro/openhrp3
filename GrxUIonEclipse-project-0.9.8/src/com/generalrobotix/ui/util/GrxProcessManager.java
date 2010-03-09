@@ -625,7 +625,7 @@ public class GrxProcessManager {
 								if (display != null && !display.isDisposed()) {
 				                    display.asyncExec(new Runnable() {
 				                        public void run() {
-				                        	if(!outputArea_.isDisposed()){
+				                        	if(outputArea_!=null && !outputArea_.isDisposed()){
 				                        		outputArea_.append("[" + pi_.id + ":O] " + "Process End");
 					                            outputArea_.setTopIndex(outputArea_.getLineCount());
 				                        	}
