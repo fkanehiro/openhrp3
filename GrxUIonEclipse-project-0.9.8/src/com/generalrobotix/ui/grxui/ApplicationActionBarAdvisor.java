@@ -18,6 +18,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private IWorkbenchAction exitAction;
 	private IContributionItem showViewItem;
 	private IWorkbenchAction preferencesAction;
+	private IWorkbenchAction resetAction;
 
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
@@ -29,6 +30,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		showViewItem = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
 		preferencesAction = ActionFactory.PREFERENCES.create(window);
 		register(preferencesAction);
+		resetAction = ActionFactory.RESET_PERSPECTIVE.create(window);
+		register(resetAction);
 	}
 
 	protected void fillMenuBar(IMenuManager menuBar) {
@@ -44,6 +47,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	    showViewMenu.add(showViewItem);
 	    windowMenu.add(showViewMenu);
 	    windowMenu.add(preferencesAction);
+	    windowMenu.add(resetAction);
 
 	}
 
