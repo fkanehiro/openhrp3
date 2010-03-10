@@ -12,7 +12,12 @@ bin.includes = plugin.xml,\
                plugin_ja_JP.properties,\
                src/com/generalrobotix/messages_en_US.properties,\
                src/com/generalrobotix/messages_ja_JP.properties,\
-               openhrpstubskel.jar
+               openhrpstubskel.jar,\
+               jmf-2_1_1e-alljava/JMF-2.1.1e/lib/customizer.jar,\
+               jmf-2_1_1e-alljava/JMF-2.1.1e/lib/jmf.jar,\
+               jmf-2_1_1e-alljava/JMF-2.1.1e/lib/mediaplayer.jar,\
+               jmf-2_1_1e-alljava/JMF-2.1.1e/lib/multiplayer.jar,\
+               jmf-2_1_1e-alljava/JMF-2.1.1e/lib/jmf.properties
 javacDefaultEncoding.grxui.jar = UTF-8
 jars.compile.order = grxui.jar
 source.grxui.jar = src/

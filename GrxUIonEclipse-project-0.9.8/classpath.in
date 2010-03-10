@@ -5,6 +5,10 @@
 	<classpathentry exported="true" kind="lib" path="jython.jar"/>
 	<classpathentry exported="true" kind="lib" path="openhrpstubskel.jar"/>
 	<classpathentry exported="true" kind="lib" path="commons-cli-1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="jmf-2_1_1e-alljava/JMF-2.1.1e/lib/customizer.jar"/>
+	<classpathentry exported="true" kind="lib" path="jmf-2_1_1e-alljava/JMF-2.1.1e/lib/jmf.jar"/>
+	<classpathentry exported="true" kind="lib" path="jmf-2_1_1e-alljava/JMF-2.1.1e/lib/mediaplayer.jar"/>
+	<classpathentry exported="true" kind="lib" path="jmf-2_1_1e-alljava/JMF-2.1.1e/lib/multiplayer.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>

@@ -43,7 +43,6 @@ public class RecordingDialog extends ModalDialog {
     private JComboBox imSizeCombo_;
     private JComboBox playbackRateCombo_;
     private JTextField frameRateField_;
-    public final static String EXTEND_ = "mov"; //$NON-NLS-1$
     public RecordingDialog(Frame owner) {
         super(
             owner,
@@ -65,11 +64,11 @@ public class RecordingDialog extends ModalDialog {
 		 setInputAreaWidth(300);
 	 }
 
-	 public String getFileName() {
-		 return fileInput_.getFileName();
-	 }
+    public String getFileName() {
+        return fileInput_.getFileName();
+    }
 
-	 public Dimension getImageSize() {
+    public Dimension getImageSize() {
 	        return new Dimension(imageSize_[imSizeCombo_.getSelectedIndex()]);
 	    }
 

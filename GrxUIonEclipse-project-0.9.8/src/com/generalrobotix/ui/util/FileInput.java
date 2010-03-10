@@ -60,7 +60,7 @@ public class FileInput extends JPanel {
                     chooser.setApproveButtonToolTipText(MessageBundle.get("dialog.fileopen.title"));
                     int result = chooser.showDialog(FileInput.this, MessageBundle.get("dialog.fileopen.title"));
                     if (result == JFileChooser.APPROVE_OPTION) {
-                        text_.setText(chooser.getSelectedFile().getPath());
+                        text_.setText( chkExtension(chooser.getSelectedFile().getPath()) );
                     }
                 }
             }
@@ -73,7 +73,7 @@ public class FileInput extends JPanel {
     }
 
     public String getFileName() {
-        return text_.getText().trim();
+        return chkExtension(text_.getText().trim());
     }
 
     public void setText(String text) {
@@ -112,5 +112,14 @@ public class FileInput extends JPanel {
             }
         };
     }
-
+    
+    private String chkExtension(String localPath){
+        if (fileFilter_.length == 1) {
+            if (!localPath.matches(".+\\." + fileFilter_[0] + "$")) {
+                localPath += ".";
+                localPath += fileFilter_[0];
+            }
+        }
+        return localPath; 
+    }
 }
