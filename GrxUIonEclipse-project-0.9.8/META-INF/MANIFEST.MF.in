@@ -9,8 +9,7 @@ Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui@ORG_ECLIPSE_UI_VERSION@,
  org.eclipse.core.runtime@ORG_ECLIPSE_CORE_RUNTIME_VERSION@,
  org.eclipse.core.resources@ORG_ECLIPSE_CORE_RESOURCES_VERSION@,
- java3d,
- jp.go.aist.hrp.jmf.2_1_1e;bundle-version="1.0.0"
+ java3d
 Eclipse-LazyStart: true
 Export-Package: com.generalrobotix.ui;
   uses:="org.w3c.dom,
@@ -87,4 +86,8 @@ Bundle-ClassPath: .,
  @rtm_stub_jar@,
  openhrpstubskel.jar,
  commons-cli-1.1.jar,
- grxui.jar
+ grxui.jar,
+ jmf-2_1_1e-alljava/JMF-2.1.1e/lib/customizer.jar,
+ jmf-2_1_1e-alljava/JMF-2.1.1e/lib/jmf.jar,
+ jmf-2_1_1e-alljava/JMF-2.1.1e/lib/mediaplayer.jar,
+ jmf-2_1_1e-alljava/JMF-2.1.1e/lib/multiplayer.jar

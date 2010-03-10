@@ -1,8 +1,9 @@
 OpenHRP3 Updates History (Release Notes)
 
 
-Ver.3.1.0(BETA 4) (02-03-2010)
+Ver.3.1.0(BETA 4) (12-03-2010)
 ==============================
+
  * According with the version upgrade of OpenRTM, 
    we now support OpenRTM-aist-1.0.0-Release.
 
