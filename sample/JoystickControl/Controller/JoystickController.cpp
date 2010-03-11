@@ -49,13 +49,6 @@ JoystickController::JoystickController(RTC::Manager* manager)
 {
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
-  // Set InPort buffers
-  registerInPort("angle", m_angleIn);
-  registerInPort("velocity", m_velocityIn);
-  registerInPort("command", m_commandIn);
-  
-  // Set OutPort buffer
-  registerOutPort("torque", m_torqueOut);
   
   // Set service provider to Ports
   
@@ -74,9 +67,22 @@ JoystickController::~JoystickController()
 
 RTC::ReturnCode_t JoystickController::onInitialize()
 {
-  // ポート初期化 //
-  m_torque.data.length(4);
+  // Set InPort buffers
+  addInPort("angle", m_angleIn);
+  addInPort("velocity", m_velocityIn);
+  addInPort("command", m_commandIn);
+  
+  // Set OutPort buffer
+  addOutPort("torque", m_torqueOut);
 
+  // ポート初期化 //
+  m_command.data.length(2);
+  m_command.data[0] = m_command.data[1] = 0.0;
+  m_angle.data.length(1);
+  m_angle.data[0] = 0.0;
+  m_velocity.data.length(2);
+  m_velocity.data[0] = m_velocity.data[1] = 0.0;
+  m_torque.data.length(4);
   return RTC::RTC_OK;
 }
 

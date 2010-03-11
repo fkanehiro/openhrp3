@@ -279,7 +279,7 @@ void Controller_impl::setViewSimulator(ViewSimulator_ptr viewSimulator)
 void Controller_impl::start()
 {
     if(CONTROLLER_BRIDGE_DEBUG){
-        cout << "Controller_impl::onStart" << endl;
+        cout << "Controller_impl::start" << endl;
     }
 
     controlTime = 0.0;
@@ -349,7 +349,7 @@ ImageData* Controller_impl::getCameraImageFromSimulator(int cameraId)
 void Controller_impl::input()
 {
     if(CONTROLLER_BRIDGE_DEBUG){
-        cout << "Controller_impl::onInput" << endl;
+        cout << "Controller_impl::input" << endl;
     }
 
     sensorStateUpdated = false;
@@ -445,6 +445,10 @@ void Controller_impl::destroy()
 
 void Controller_impl::initialize()
 {
+    if(CONTROLLER_BRIDGE_DEBUG){
+        cout << "Controller_impl::initialize()" << endl;
+    }
+
     if( virtualRobotRTC)
     {
         if( virtualRobotRTC->isOwnedByController ){

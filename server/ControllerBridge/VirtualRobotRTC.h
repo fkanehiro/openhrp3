@@ -34,6 +34,8 @@ public:
     VirtualRobotRTC(RTC::Manager* manager);
     ~VirtualRobotRTC();
 
+    RTC::ReturnCode_t onInitialize();
+
     PortHandlerPtr getPortHandler(const std::string& name);
 
     RTC::RTCList* getConnectedRtcs();
@@ -54,25 +56,27 @@ private:
     typedef std::map<std::string, InPortHandlerPtr> InPortHandlerMap;
     InPortHandlerMap inPortHandlers;
 
-    void createOutPortHandler(PortInfo& portInfo);
-    void createInPortHandler(PortInfo& portInfo);
+    bool createOutPortHandler(PortInfo& portInfo);
+    bool createInPortHandler(PortInfo& portInfo);
 
     template <class TOutPortHandler>
-    void registerOutPortHandler(TOutPortHandler* handler) {
+    bool registerOutPortHandler(TOutPortHandler* handler) {
         const std::string& name = handler->portName;
 	if(!getPortHandler(name)){
-	    registerOutPort(name.c_str(), handler->outPort);
+	    if (!addOutPort(name.c_str(), handler->outPort)) return false;
             outPortHandlers.insert(std::make_pair(name, OutPortHandlerPtr(handler)));
 	}
+	return true;
     }
 
     template <class TInPortHandler>
-    void registerInPortHandler(TInPortHandler* handler) {
+    bool registerInPortHandler(TInPortHandler* handler) {
         const std::string& name = handler->portName;
 	if(!getPortHandler(name)){
-	    registerInPort(name.c_str(), handler->inPort);
+	    if (!addInPort(name.c_str(), handler->inPort)) return false;
             inPortHandlers.insert(std::make_pair(name, InPortHandlerPtr(handler)));
 	}
+	return true;
     }
 
     void updatePortObjectRefs();
