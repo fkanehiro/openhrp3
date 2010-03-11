@@ -18,7 +18,7 @@ elseif(WIN32)
     optimized hrpModel-${OPENHRP_LIBRARY_VERSION}
     debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
     debug hrpModel-${OPENHRP_LIBRARY_VERSION}d
-  )  
+    ${OMNIORB_LIBRARIES})
 endif()
 
 if(WIN32)

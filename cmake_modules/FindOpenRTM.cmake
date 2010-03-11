@@ -108,10 +108,14 @@ if(WIN32)
       #set(OPENRTM_LIBRARIES_RELEASE RTC100 coil)
 
       # 1.0.0-Release
-      set(OPENRTM_LIBRARIES_RELEASE RTC100 coil ws2_32.lib mswsock.lib)
+      set(OPENRTM_LIBRARIES_RELEASE RTC100 coil)
+      set(OPENRTM_NODEBUG_LIBRARIES ws2_32 mswsock)
     endif()
     foreach(library ${OPENRTM_LIBRARIES_RELEASE})
       list(APPEND OPENRTM_LIBRARIES optimized ${library} debug ${library}d )
+    endforeach()
+    foreach(library ${OPENRTM_NODEBUG_LIBRARIES})
+      list(APPEND OPENRTM_LIBRARIES optimized ${library} debug ${library} )
     endforeach()
   endif()
 

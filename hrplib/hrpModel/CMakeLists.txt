@@ -67,7 +67,7 @@ elseif(WIN32)
     debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCollision-${OPENHRP_LIBRARY_VERSION}d
-    ${OMNIORB_LIBRARIES})  
+    ${OMNIORB_LIBRARIES})
   set_target_properties(${target} PROPERTIES LINK_FLAGS /NODEFAULTLIB:LIBCMT )
   set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d )
 endif()
