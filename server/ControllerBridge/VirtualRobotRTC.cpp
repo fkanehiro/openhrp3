@@ -49,7 +49,7 @@ void VirtualRobotRTC::registerFactory(RTC::Manager* manager, const char* compone
   }
 
   RTC::Properties profile(spec);
-
+  
   profile.setDefault("implementation_id", componentTypeName);
   profile.setDefault("type_name", componentTypeName);
 
@@ -160,6 +160,7 @@ bool VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
       break;
     }
   }
+  return ret;
 }
 
 
@@ -280,8 +281,8 @@ void VirtualRobotRTC::addConnectedRtcs(Port_Service_Ptr_Type portRef, RTC::RTCLi
         for(CORBA::ULong j=0; j < connectedPorts.length(); ++j){
         	Port_Service_Ptr_Type connectedPortRef = connectedPorts[j];
             RTC::PortProfile_var connectedPortProfile = connectedPortRef->get_port_profile();
-            RTC::RTObject_var connectedRtcRef = connectedPortProfile->owner;
-            RTC::RTObject_var thisRef = getObjRef();
+            RTC::RTObject_var connectedRtcRef = RTC::RTObject::_duplicate(connectedPortProfile->owner);
+            RTC::RTObject_var thisRef = RTC::RTObject::_duplicate(getObjRef());
 
             if(!CORBA::is_nil(connectedRtcRef) && !connectedRtcRef->_is_equivalent(thisRef)){
                 CORBA::ULong ii=0;
