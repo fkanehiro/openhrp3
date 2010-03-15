@@ -13,6 +13,10 @@ fi
 
 cd ../../
 
+# Delete files
+sudo rm -rf _CPack_Packages install_manifest.txt util/admin/ubuntu
+
+
 # Generate development deb file
 #cmake -D DEBIANPACKAGE_DEVELOP:BOOL=ON -D GENERATE_DEBIANPACKAGE:BOOL=ON .
 cmake -D GENERATE_DEBIANPACKAGE:BOOL=ON -D CMAKE_INSTALL_PREFIX:STRING=/usr .
@@ -29,7 +33,6 @@ sudo mv -f *.deb ${PACKAGES_DIR}
 
 DEB_FILES=`ls ${PACKAGES_DIR}/*.deb`
 
-#sudo rm -rf _CPack_Packages
 
 cmake -D GENERATE_DEBIANPACKAGE:BOOL=OFF -D CMAKE_INSTALL_PREFIX:STRING=/usr/local .
 cd ${WORK_DIR}
