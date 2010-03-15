@@ -1,7 +1,7 @@
 OpenHRP3 Updates History (Release Notes)
 
 
-Ver.3.1.0(BETA 4) (12-03-2010)
+Ver.3.1.0(BETA 4) (15-03-2010)
 ==============================
 
  * According with the version upgrade of OpenRTM, 
@@ -51,6 +51,8 @@ Ver.3.1.0(BETA 4) (12-03-2010)
 
  * Each tab in OpenHRP-View are changed to views.
 
+ * To correspond only to RGB form of no compression,
+   the format of the recording image changed. 
 
 Ver.3.1.0(BETA 3) (14-09-2009)
 ==============================
