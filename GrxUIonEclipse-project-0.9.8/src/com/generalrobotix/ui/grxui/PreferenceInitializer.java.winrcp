@@ -1,5 +1,6 @@
 package com.generalrobotix.ui.grxui;
 
+import java.io.File;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -18,9 +19,18 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = Activator.getDefault()
 				.getPreferenceStore();
-		store.setDefault(PreferenceConstants.PROJECT_DIR, new File(System.getenv("OPENHRP_SDK_ROOT"), "share/OpenHRP-3.1/sample/project").getPath());
+		String pdir = new File(System.getenv("OPENHRP_SDK_ROOT"), "share/OpenHRP-3.1/sample/project").getPath();
+		if(new File(pdir).isDirectory() == false)
+			pdir = "";
+		store.setDefault(PreferenceConstants.PROJECT_DIR, pdir);
+
 		store.setDefault(PreferenceConstants.JYTHON_LIB, "");
-		store.setDefault(PreferenceConstants.SERVER_DIR, new File(System.getenv("OPENHRP_SDK_ROOT"), "bin").getPath());
+
+		String sdir = new File(System.getenv("OPENHRP_SDK_ROOT"), "bin").getPath();
+		if(new File(sdir).isDirectory() == false)
+			sdir = "";
+		store.setDefault(PreferenceConstants.SERVER_DIR, sdir);
+
 		if (System.getProperty("os.name").equals("Linux")){
 			store.setDefault(PreferenceConstants.BIN_SFX, ".sh");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
