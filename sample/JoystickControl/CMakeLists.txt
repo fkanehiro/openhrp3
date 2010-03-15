@@ -1,6 +1,10 @@
 install(FILES JoystickContorller.xml JoystickConnection.rtclink SimulationProject.xml
   DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/JoystickControl)
 
+install(DIRECTORY JoystickComponent-project
+  DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/JoystickControl
+  PATTERN ".svn" EXCLUDE)
+
 if(GENERATE_DEBIANPACKAGE)
   install(DIRECTORY Controller
     DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/JoystickControl
