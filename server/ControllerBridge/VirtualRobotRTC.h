@@ -56,29 +56,49 @@ private:
     typedef std::map<std::string, InPortHandlerPtr> InPortHandlerMap;
     InPortHandlerMap inPortHandlers;
 
+
+#ifdef OPENRTM_VERSION_042
+    void createOutPortHandler(PortInfo& portInfo);
+    void createInPortHandler(PortInfo& portInfo);
+    template <class TOutPortHandler>
+    void registerOutPortHandler(TOutPortHandler* handler) {
+        const std::string& name = handler->portName;
+        if(!getPortHandler(name)){
+            registerOutPort(name.c_str(), handler->outPort);
+            outPortHandlers.insert(std::make_pair(name, OutPortHandlerPtr(handler)));
+        }
+    }
+    template <class TInPortHandler>
+    void registerInPortHandler(TInPortHandler* handler) {
+        const std::string& name = handler->portName;
+        if(!getPortHandler(name)){
+            registerInPort(name.c_str(), handler->inPort);
+            inPortHandlers.insert(std::make_pair(name, InPortHandlerPtr(handler)));
+        }
+    }
+#else
     bool createOutPortHandler(PortInfo& portInfo);
     bool createInPortHandler(PortInfo& portInfo);
-
     template <class TOutPortHandler>
     bool registerOutPortHandler(TOutPortHandler* handler) {
         const std::string& name = handler->portName;
-	if(!getPortHandler(name)){
-	    if (!addOutPort(name.c_str(), handler->outPort)) return false;
+        if(!getPortHandler(name)){
+            if (!addOutPort(name.c_str(), handler->outPort)) return false;
             outPortHandlers.insert(std::make_pair(name, OutPortHandlerPtr(handler)));
-	}
-	return true;
+        }
+        return true;
     }
 
     template <class TInPortHandler>
     bool registerInPortHandler(TInPortHandler* handler) {
         const std::string& name = handler->portName;
-	if(!getPortHandler(name)){
-	    if (!addInPort(name.c_str(), handler->inPort)) return false;
+        if(!getPortHandler(name)){
+            if (!addInPort(name.c_str(), handler->inPort)) return false;
             inPortHandlers.insert(std::make_pair(name, InPortHandlerPtr(handler)));
-	}
-	return true;
+        }
+        return true;
     }
-
+#endif
     void updatePortObjectRefs();
 
     void addConnectedRtcs(Port_Service_Ptr_Type portRef, RTC::RTCList& rtcList, std::set<std::string>& foundRtcNames);

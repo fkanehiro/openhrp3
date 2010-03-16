@@ -76,15 +76,23 @@ RTC::ReturnCode_t VirtualRobotRTC::onInitialize()
   PortInfoMap::iterator it;
 
   for(it = bridgeConf->outPortInfos.begin(); it != bridgeConf->outPortInfos.end(); ++it){
+#ifdef OPENRTM_VERSION_042
+      createOutPortHandler(it->second);
+#else
     if (!createOutPortHandler(it->second)){
       cerr << "createOutPortHandler(" << it->second.portName << ") failed" << std::endl;
     }
+#endif
   }
 
   for(it = bridgeConf->inPortInfos.begin(); it != bridgeConf->inPortInfos.end(); ++it){
+#ifdef OPENRTM_VERSION_042
+      createInPortHandler(it->second);
+#else
     if (!createInPortHandler(it->second)){
       cerr << "createInPortHandler(" << it->second.portName << ") failed" << std::endl;
     }
+#endif
   }
 
   updatePortObjectRefs();
@@ -99,6 +107,105 @@ VirtualRobotRTC::~VirtualRobotRTC()
   }
 }
 
+#ifdef OPENRTM_VERSION_042
+
+void VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
+{
+  DataTypeId dataTypeId = portInfo.dataTypeId;
+
+  if(portInfo.dataOwnerName.empty()){
+    switch(dataTypeId) {
+
+    case JOINT_VALUE:
+    case JOINT_VELOCITY:
+    case JOINT_ACCELERATION:
+    case JOINT_TORQUE:
+    case FORCE_SENSOR:
+    case RATE_GYRO_SENSOR:
+    case ACCELERATION_SENSOR:
+      registerOutPortHandler(new SensorStateOutPortHandler(portInfo));
+      break;
+
+    case COLOR_IMAGE:
+      registerOutPortHandler(new ColorImageOutPortHandler(portInfo));
+      break;
+
+    case GRAYSCALE_IMAGE:
+      registerOutPortHandler(new GrayScaleImageOutPortHandler(portInfo));
+      break;
+
+    case DEPTH_IMAGE:
+      registerOutPortHandler(new DepthImageOutPortHandler(portInfo));
+      break;
+
+    default:
+      break;
+    }
+  } else {
+
+    switch(dataTypeId) {
+
+    case JOINT_VALUE:
+    case JOINT_VELOCITY:
+    case JOINT_ACCELERATION:
+    case JOINT_TORQUE:
+    case EXTERNAL_FORCE:
+    case ABS_TRANSFORM:
+    case ABS_VELOCITY:
+    case ABS_ACCELERATION:
+    case CONSTRAINT_FORCE:
+      registerOutPortHandler(new LinkDataOutPortHandler(portInfo));
+      break;
+
+    case FORCE_SENSOR:
+    case RATE_GYRO_SENSOR:
+    case ACCELERATION_SENSOR:
+    case RANGE_SENSOR:
+      registerOutPortHandler(new SensorDataOutPortHandler(portInfo));
+      break;
+
+    default:
+      break;
+    }
+  }
+}
+
+
+void VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
+{
+  DataTypeId dataTypeId = portInfo.dataTypeId;
+  if(portInfo.dataOwnerName.empty()){
+    switch(dataTypeId) {
+    case JOINT_VALUE:
+    case JOINT_VELOCITY:
+    case JOINT_ACCELERATION:
+    case JOINT_TORQUE:
+      registerInPortHandler(new JointDataSeqInPortHandler(portInfo));
+      break;
+    default:
+      break;
+    }
+  }else{
+    switch(dataTypeId){
+    case JOINT_VALUE:
+    case JOINT_VELOCITY:
+    case JOINT_ACCELERATION:
+    case JOINT_TORQUE:
+      registerInPortHandler(new LinkDataInPortHandler(portInfo));
+      break;
+    case ABS_TRANSFORM:
+    case ABS_VELOCITY:
+    case ABS_ACCELERATION:
+      std::cout << "createInPortHandler()" << std::endl;
+      registerInPortHandler(new LinkDataInPortHandler(portInfo));
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+#else
 
 bool VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
 {
@@ -199,7 +306,7 @@ bool VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
   }
   return ret;
 }
-
+#endif
 
 PortHandlerPtr VirtualRobotRTC::getPortHandler(const std::string& name_)
 {
