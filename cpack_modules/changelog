@@ -1,3 +1,9 @@
+openhrp3.1 (3.1.0-1) Ubuntu; urgency=low
+
+  * Corrected the file was not installed in /.
+
+ -- Shinichiro Nakaoka <s.nakaoka@aist.go.jp>  Mon, 18 Mar 2010 9:01:26 +0900
+
 openhrp3.1 (3.1.0-0) Ubuntu; urgency=low
 
   * Initial release. 
