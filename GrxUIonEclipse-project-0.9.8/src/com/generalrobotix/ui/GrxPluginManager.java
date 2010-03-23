@@ -199,7 +199,7 @@ public class GrxPluginManager implements IPropertyChangeListener {
         if (page == null)
             return false;
         IPerspectiveDescriptor pers = page.getPerspective();
-        if (!pers.getId().equals(GrxUIPerspectiveFactory.ID))
+        if (!pers.getId().contains(GrxUIPerspectiveFactory.ID))
             return false;
         return true;
     }
@@ -224,7 +224,7 @@ public class GrxPluginManager implements IPropertyChangeListener {
                 }
                 IPerspectiveDescriptor pers = page.getPerspective();
                 // GrxUIパースペクティブが表示されているか？
-                if (!pers.getId().equals(GrxUIPerspectiveFactory.ID)) {
+                if (!pers.getId().contains(GrxUIPerspectiveFactory.ID)) {
                     return;
                 }
 
