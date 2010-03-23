@@ -1,5 +1,11 @@
 package com.generalrobotix.ui.grxui;
 
+import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IPerspectiveRegistry;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -47,6 +53,29 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			activator.registryColor();
         activator.startGrxUI();
 	}
+	
+	public boolean preShutdown() {
+        try {
+        	IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
+        	for(IWorkbenchWindow window : windows){
+        		IWorkbenchPage[] pages = window.getPages();
+        		for(IWorkbenchPage page : pages){
+        			IPerspectiveDescriptor[] perspectives = page.getOpenPerspectives();
+        			for(IPerspectiveDescriptor perspective : perspectives){
+        				if(perspective.getId().equals(GrxUIPerspectiveFactory.ID+".project"))
+            				page.closePerspective(perspective, false, false);
+        			}
+        		}
+        	}
+        	IPerspectiveRegistry perspectiveRegistry=PlatformUI.getWorkbench().getPerspectiveRegistry();
+        	IPerspectiveDescriptor tempPd=perspectiveRegistry.findPerspectiveWithId(GrxUIPerspectiveFactory.ID + ".project");
+       		if(tempPd!=null)
+       			perspectiveRegistry.deletePerspective(tempPd);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return true;
+    }
 	
 	public void postShutdown(){
 		//window が閉じられたのち実行される　//

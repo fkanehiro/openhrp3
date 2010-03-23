@@ -40,11 +40,21 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IPerspectiveRegistry;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
@@ -69,7 +79,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	private Vector<Action> menu_;
 	
     private static final String MODE_TAG = "mode"; //$NON-NLS-1$
-    private static final String WINCONF_TAG = "windowconfig"; //$NON-NLS-1$
+    private static final String WINCONF_TAG = "perspective"; //$NON-NLS-1$
 
 	private Document doc_;
     private DocumentBuilder builder_;
@@ -81,8 +91,7 @@ public class GrxProjectItem extends GrxBaseItem {
     	Element  root;
     	List     propList;
     	NodeList itemList;
-    	NodeList viewList;
-    	Element  windowConfig;
+     	Element  windowConfig;
     }
     
 	public GrxProjectItem(String name, GrxPluginManager manager) {
@@ -120,6 +129,16 @@ public class GrxProjectItem extends GrxBaseItem {
 		element_.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 		doc_.appendChild(element_);
 		_updateModeInfo();
+		IWorkbenchPage page=null;
+ 		IWorkbench workbench = PlatformUI.getWorkbench();
+        if( workbench != null){
+        	IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+     		if (window != null){
+     			page = window.getActivePage();
+     			if (page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
+     	        	page.closePerspective(page.getPerspective(), false, false);
+     		}
+        }
 		return true;
 	}
 
@@ -144,13 +163,13 @@ public class GrxProjectItem extends GrxBaseItem {
             // item node
 			mi.itemList = mi.root.getElementsByTagName(ITEM_TAG);
 
-            // view node
-			mi.viewList = mi.root.getElementsByTagName(VIEW_TAG);
-			
             // window config element
 			NodeList wconfList = mi.root.getElementsByTagName(WINCONF_TAG);
 			if (wconfList.getLength() > 0)
 				mi.windowConfig =  (Element)wconfList.item(0);
+			else
+				mi.windowConfig = null;
+				
 		}
 	}
 
@@ -181,20 +200,15 @@ public class GrxProjectItem extends GrxBaseItem {
         return mi;
     }
 	
+    public void setWindowConfigElement(String mode, Element element){
+    	_getModeNodeInfo(mode).windowConfig = element;
+    }
+    
 	public Element getWindowConfigElement(String mode) {
         return _getModeNodeInfo(mode).windowConfig; 
 	}
    
-    private Element _createWindowConfigElement(String mode) {
-        ModeNodeInfo mi = _getModeNodeInfo(mode);
-		mi.windowConfig = doc_.createElement("windowconfig"); //$NON-NLS-1$
-		mi.root.appendChild(doc_.createTextNode("\n"+INDENT4+INDENT4)); //$NON-NLS-1$
-		mi.root.appendChild(mi.windowConfig);
-		mi.root.appendChild(doc_.createTextNode("\n"+INDENT4)); //$NON-NLS-1$
-        return mi.windowConfig;
-    }
-
-	private void storeMode(String mode) {
+ 	private void storeMode(String mode) {
 		Element modeEl = _getModeNodeInfo(mode).root;
 		NodeList list = modeEl.getChildNodes();
 		for (int i=list.getLength()-1; i>=0; i--)
@@ -210,21 +224,48 @@ public class GrxProjectItem extends GrxBaseItem {
 			modeEl.appendChild(item.storeProperties());
 			modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 		}
-		
-		List<GrxBaseView> viewList = manager_.getActiveViewList();
-		for (int i=0; i<viewList.size(); i++) {
-			GrxBaseView view = viewList.get(i);
-			if (view.propertyNames().hasMoreElements()) {
-				modeEl.appendChild(doc_.createTextNode(INDENT4+INDENT4));
-				view.setDocument(doc_);
-				modeEl.appendChild(view.storeProperties());
-				modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
-			}
-		}
-		
-		modeEl.appendChild(doc_.createTextNode(INDENT4));
 	}
 	
+ 	@SuppressWarnings("deprecation")
+	private Element storePerspectiveConf(Element element){
+ 		IWorkbenchPage page=null;
+ 		IWorkbench workbench = PlatformUI.getWorkbench();
+        if( workbench != null){
+        	IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+     		if (window != null){
+     			page = window.getActivePage();
+     			if (!page.getPerspective().getId().contains(GrxUIPerspectiveFactory.ID) ){
+     				return null;
+     			}
+     		}
+        }
+ 		
+        IPerspectiveRegistry perspectiveRegistry=workbench.getPerspectiveRegistry();
+        IPerspectiveDescriptor orgPd=perspectiveRegistry.findPerspectiveWithId(GrxUIPerspectiveFactory.ID );
+   		IPerspectiveDescriptor tempPd=perspectiveRegistry.findPerspectiveWithId(GrxUIPerspectiveFactory.ID + ".project");
+   		if(tempPd!=null)
+   			perspectiveRegistry.deletePerspective(tempPd);
+   		tempPd = perspectiveRegistry.clonePerspective(GrxUIPerspectiveFactory.ID + ".project", getName(), orgPd);
+		page.savePerspectiveAs(tempPd);
+		page.setPerspective(orgPd);
+		page.setPerspective(tempPd);
+		IPreferenceStore store = workbench.getPreferenceStore();
+		String confString=store.getString(GrxUIPerspectiveFactory.ID +".project"+"_persp");
+		Document doc=null;
+		try {
+			doc = builder_.parse(new InputSource(new StringReader(confString)));
+			Element confElement =doc.getDocumentElement();
+			Node elementCopy = doc_.importNode(confElement, true);
+			element.appendChild(elementCopy);
+			return (Element) elementCopy;
+		} catch (SAXException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		return null;
+ 	}
+ 	
 	public Vector<Action> getMenu() {
 
 		if( menu_ == null ){
@@ -303,26 +344,13 @@ public class GrxProjectItem extends GrxBaseItem {
 		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
       	setURL(f.getAbsolutePath());
       	
-        // manager_.getFrame().update(manager_.getFrame().getGraphics());
-      	/*
- 		int ans = JOptionPane.showConfirmDialog(
-				manager_.getFrame(), 
-				"Save current Window Configuration ?",
-				"Save Window Config.",
-				JOptionPane.YES_NO_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE, 
-				manager_.ROBOT_ICON);
-		if (ans == JOptionPane.CANCEL_OPTION)
-			return;
+      	if (MessageDialog.openConfirm(null, MessageBundle.get("GrxProjectItem.dialog.savewindow.title"), 
+      			MessageBundle.get("GrxProjectItem.dialog.savewindow.message"))) { //$NON-NLS-1$
+			Element element = _getModeNodeInfo(mode).root;
+			Element windowConfigElement = storePerspectiveConf(element);
+			setWindowConfigElement(mode, windowConfigElement);
+      	}
 		
-		if (ans == JOptionPane.YES_OPTION) {
-			Element we = getWindowConfigElement(mode);
-            if (we == null) 
-               we = _createWindowConfigElement(mode);
-			manager_.getFrame().storeConfig(we);
-		}
-      	*/
-
       	if (f == null)
 			f = new File(getDefaultDir().getAbsolutePath()+"/"+getName()+".xml"); //$NON-NLS-1$ //$NON-NLS-2$
 		
@@ -518,11 +546,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				setProperty(key, val);
 			}
 		}
-		if (minfo.viewList != null) {
-			for (int i = 0; i < minfo.viewList.getLength(); i++)
-				_restorePlugin((Element) minfo.viewList.item(i));
-		}
-
+		
 		monitor.worked(1);
 		
 		List<GrxBaseView> vl = manager_.getActiveViewList();
@@ -556,7 +580,60 @@ public class GrxProjectItem extends GrxBaseItem {
 		}
 
 		monitor.worked(1);
-//		manager_.processingWindow_.setVisible(false);
+		
+		if (minfo.windowConfig != null) {
+			Document doc = builder_.newDocument();
+			Node nodeCopy = doc.importNode(minfo.windowConfig, true);
+			doc.appendChild(nodeCopy);
+			StringWriter sw = new StringWriter();
+			try {
+				DOMSource src = new DOMSource();
+				src.setNode(doc);
+				StreamResult target = new StreamResult(sw);
+				transformer_.transform(src, target);
+			} catch (TransformerConfigurationException e) {
+				e.printStackTrace();
+			} catch (TransformerException e) {
+	     		e.printStackTrace();
+			}
+	   	
+			IWorkbenchPage page=null;
+	 		IWorkbench workbench = PlatformUI.getWorkbench();
+	        if( workbench != null){
+	        	IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+	     		if (window != null){
+	     			page = window.getActivePage();
+	     			if (!page.getPerspective().getId().contains(GrxUIPerspectiveFactory.ID) ){
+	     				return;
+	     			}
+	     		}
+	        }
+	        if (page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
+	        	page.closePerspective(page.getPerspective(), false, false);
+	        IPreferenceStore store = workbench.getPreferenceStore();
+   			IPerspectiveRegistry perspectiveRegistry=workbench.getPerspectiveRegistry();
+   			IPerspectiveDescriptor orgPd=perspectiveRegistry.findPerspectiveWithId(GrxUIPerspectiveFactory.ID );
+	   		IPerspectiveDescriptor tempPd=perspectiveRegistry.findPerspectiveWithId(GrxUIPerspectiveFactory.ID + ".project");
+	   		if(tempPd!=null)
+	   			perspectiveRegistry.deletePerspective(tempPd);
+	   		tempPd = perspectiveRegistry.clonePerspective(GrxUIPerspectiveFactory.ID + ".project", getName(), orgPd);
+	   		store.setValue(GrxUIPerspectiveFactory.ID + ".project"+"_persp", sw.toString());
+	   		page.setPerspective(tempPd);
+		}else{
+			IWorkbenchPage page=null;
+	 		IWorkbench workbench = PlatformUI.getWorkbench();
+	        if( workbench != null){
+	        	IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+	     		if (window != null){
+	     			page = window.getActivePage();
+	     			if (!page.getPerspective().getId().contains(GrxUIPerspectiveFactory.ID) ){
+	     				return;
+	     			}
+	     		}
+	        }
+	        if (page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
+	        	page.closePerspective(page.getPerspective(), false, false);
+		}
 	}
 	
 	private GrxBasePlugin _restorePlugin(Element e) {

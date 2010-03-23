@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IPerspectiveRegistry;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
@@ -135,9 +136,18 @@ public class Activator extends AbstractUIPlugin{
         }
         
         public void perspectiveClosed(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-            if (GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
+            if (perspective.getId().contains(GrxUIPerspectiveFactory.ID)) {
                 if( lockFile_ != null ){
-                    stopGrxUI();
+                	boolean found=false;
+                	IPerspectiveDescriptor[] perspectives = page.getOpenPerspectives();
+                	for(IPerspectiveDescriptor persp : perspectives){
+                		if(persp.getId().contains(GrxUIPerspectiveFactory.ID)){
+                			found=true;
+                			break;
+                		}
+                	}		
+                	if(!found)
+                		stopGrxUI();
                 }
             }
         }
@@ -169,7 +179,23 @@ public class Activator extends AbstractUIPlugin{
 
         public boolean preShutdown(IWorkbench workbench, boolean forced) {
             try {
+            	IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
+            	for(IWorkbenchWindow window : windows){
+            		IWorkbenchPage[] pages = window.getPages();
+            		for(IWorkbenchPage page : pages){
+            			IPerspectiveDescriptor[] perspectives = page.getOpenPerspectives();
+            			for(IPerspectiveDescriptor perspective : perspectives){
+            				if(perspective.getId().equals(GrxUIPerspectiveFactory.ID+".project"))
+                				page.closePerspective(perspective, false, false);
+            			}
+            		}
+            	}
+            	IPerspectiveRegistry perspectiveRegistry=workbench.getPerspectiveRegistry();
+            	IPerspectiveDescriptor tempPd=perspectiveRegistry.findPerspectiveWithId(GrxUIPerspectiveFactory.ID + ".project");
+           		if(tempPd!=null)
+           			perspectiveRegistry.deletePerspective(tempPd);
                 stop(context_);
+                stopGrxUI();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -495,6 +521,8 @@ public class Activator extends AbstractUIPlugin{
     
     // GrxUIパースペクティブが無効になったときの動作
     public void stopGrxUI() {
+    	if(!bStartedGrxUI_)
+    		return;
         manager_.shutdown();
         manager_ = null;
         releaseLockFile();
