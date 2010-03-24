@@ -135,7 +135,8 @@ public class GrxProjectItem extends GrxBaseItem {
         	IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
      		if (window != null){
      			page = window.getActivePage();
-     			if (page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
+     			if (page != null &&
+     			    page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
      	        	page.closePerspective(page.getPerspective(), false, false);
      		}
         }
