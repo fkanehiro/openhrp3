@@ -136,7 +136,9 @@ void BridgeConf::parseCommandLineOptions(int argc, char* argv[])
 {
   isProcessingConfigFile = false;
 
-  program_options::store(program_options::parse_command_line(argc, argv, commandLineOptions), vmap);
+  program_options::parsed_options parsed = 
+      program_options::command_line_parser(argc, argv).options(commandLineOptions).allow_unregistered().run();      
+  program_options::store(parsed, vmap); 
 
   if(vmap.count("help")){
     cout << commandLineOptions << endl;
