@@ -45,6 +45,7 @@ libf2c2
 libf2c2-dev 
 libgfortran3
 libgfortran3-dbg
+tvmet
 
 # boost
 libboost1.40-dev
