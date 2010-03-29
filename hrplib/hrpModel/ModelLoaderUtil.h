@@ -14,7 +14,9 @@
 #ifndef HRPMODEL_MODEL_LOADER_UTIL_H_INCLUDED
 #define HRPMODEL_MODEL_LOADER_UTIL_H_INCLUDED
 
+#ifdef __WIN32__
 #pragma warning(disable:4996)
+#endif
 
 #include "Body.h"
 #include <hrpCorba/ORBwrap.h>

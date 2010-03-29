@@ -541,6 +541,9 @@ Sensor* Body::createSensor(Link* link, int sensorType, int id, const std::string
         }
         sensor = sensors[id];
         if(sensor){
+            std::cerr << "duplicated sensor Id is specified(id = "
+                      << id << ", name = " << name << ")" << std::endl;
+                
             nameToSensorMap.erase(sensor->name);
         } else {
             sensor = Sensor::create(sensorType);
