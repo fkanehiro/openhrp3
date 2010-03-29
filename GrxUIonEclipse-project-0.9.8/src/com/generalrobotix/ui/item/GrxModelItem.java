@@ -1501,9 +1501,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public ValueEditType GetValueEditType(String key) {
         if(key.matches(".+\\.mode"))
         {
-            return new ValueEditCombo(modeItem_);
+            return new ValueEditCombo(modeComboItem_);
         }else if(key.equals("isRobot")){
-            return new ValueEditCombo(booleanItem_);
+            return new ValueEditCombo(booleanComboItem_);
         }
         return super.GetValueEditType(key);
     }

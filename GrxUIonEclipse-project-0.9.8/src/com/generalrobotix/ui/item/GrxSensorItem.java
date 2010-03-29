@@ -56,6 +56,9 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
 	private Camera_impl camera_ = null;
 	private Switch switchVisibleArea_ = null;
 
+    protected static final String[] sensorTypeComboItem_ = new String[] { "Vision",  "RateGyro" , "Acceleration" , "Force" , "Range" };
+    protected static final String[] cameraTypeComboItem_ = new String[] { "NONE",  "COLOR" , "MONO" , "DEPTH" , "COLOR_DEPTH" , "MONO_DEPTH" };
+
 
     /**
      * @brief get type of sensor
@@ -706,5 +709,18 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
         }
         setProperty("cameraType", cameraType); //$NON-NLS-1$
         if (model_ != null) model_.notifyModified();
+    }
+
+    @Override
+    public ValueEditType GetValueEditType(String key) {
+        if(key.matches("type"))        {
+            return new ValueEditCombo(sensorTypeComboItem_);
+        }else if(type().equals("Vision") && key.equals("cameraType")){
+            return new ValueEditCombo(cameraTypeComboItem_);
+        }
+        if(key.matches("alwaysVisible")){
+            return new ValueEditCombo(booleanComboItem_);
+        }
+        return super.GetValueEditType(key);
     }
 }

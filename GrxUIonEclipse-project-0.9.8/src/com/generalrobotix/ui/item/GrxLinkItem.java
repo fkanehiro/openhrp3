@@ -1342,9 +1342,9 @@ public class GrxLinkItem extends GrxTransformItem{
     public ValueEditType GetValueEditType(String key) {
         if(key.equals("jointType"))
         {
-            return new ValueEditCombo(jointTypeItem_);
+            return new ValueEditCombo(jointTypeComboItem_);
         }else if(key.equals("mode")){
-            return new ValueEditCombo(modeItem_);
+            return new ValueEditCombo(modeComboItem_);
         }
         return super.GetValueEditType(key);
     }

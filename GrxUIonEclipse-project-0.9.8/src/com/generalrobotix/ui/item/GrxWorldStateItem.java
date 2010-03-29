@@ -1273,11 +1273,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 
     @Override
     public ValueEditType GetValueEditType(String key) {
-        if(key.equals("method"))
-        {
-            return new ValueEditCombo(methodItem_);
+        if(key.equals("method")){
+            return new ValueEditCombo(methodComboItem_);
         }else if(key.equals("integrate") || key.equals("viewsimulate")){
-            return new ValueEditCombo(booleanItem_);
+            return new ValueEditCombo(booleanComboItem_);
         }
         return super.GetValueEditType(key);
     }
