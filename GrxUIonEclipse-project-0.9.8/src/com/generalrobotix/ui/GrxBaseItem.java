@@ -39,6 +39,11 @@ public class GrxBaseItem extends GrxBasePlugin {
 	private   String ext_;
 	protected String clipValue_ = ""; //$NON-NLS-1$
 
+    protected static final String[] modeItem_ = new String[] { "Torque", "HighGain" };
+    protected static final String[] jointTypeItem_ = new String[] { "fixed", "rotate", "free", "slide" };
+    protected static final String[] booleanItem_ = new String[] {"true", "false" };
+    protected static final String[] methodItem_ = new String[] { "EULER",  "RUNGE_KUTTA" };
+
 	/**
 	 * @brief constructor
 	 * @param name name

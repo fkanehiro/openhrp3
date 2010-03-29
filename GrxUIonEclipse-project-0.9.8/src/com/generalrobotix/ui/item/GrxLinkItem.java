@@ -1337,4 +1337,15 @@ public class GrxLinkItem extends GrxTransformItem{
         	}
         }
 	}
+    
+    @Override
+    public ValueEditType GetValueEditType(String key) {
+        if(key.equals("jointType"))
+        {
+            return new ValueEditCombo(jointTypeItem_);
+        }else if(key.equals("mode")){
+            return new ValueEditCombo(modeItem_);
+        }
+        return super.GetValueEditType(key);
+    }
 }

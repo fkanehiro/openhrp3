@@ -79,10 +79,6 @@ public class GrxPropertyView extends GrxBaseView {
     private Text nameText_ = null;
 
     private final String[] clmName_ = { MessageBundle.get("GrxPropertyView.text.name"), MessageBundle.get("GrxPropertyView.text.value") }; //$NON-NLS-1$ //$NON-NLS-2$
-    private static final	String[] modeItem_ = new String[] { "Torque", "HighGain" };
-    private static final String[] booleanItem_ = new String[] {"true", "false" };
-    private static final String[] jointTypeItem_ = new String[] { "fixed", "rotate", "free", "slide" };
-    private static final String[] methodItem_ = new String[] { "EULER",  "RUNGE_KUTTA" };
     
     private MenuManager menuMgr_= new MenuManager();
 
@@ -292,43 +288,25 @@ public class GrxPropertyView extends GrxBaseView {
     private class PropertyTableCellModifier implements ICellModifier {
 
         public boolean canModify(Object element, String property) {
-        	if(currentPlugin_ instanceof GrxGraphItem || currentPlugin_ instanceof GrxCollisionPairItem )
-        		return false;
-        	if(property.equals(clmName_[1])){
-	        	if (element instanceof Map.Entry) {
+            if(currentPlugin_ instanceof GrxGraphItem || currentPlugin_ instanceof GrxCollisionPairItem )
+                return false;
+            if(property.equals(clmName_[1])){
+                if (element instanceof Map.Entry) {
 	            	Map.Entry<String, String> _element = (Map.Entry)element;
-	            	String key = _element.getKey();
-	            	if(key.contains(".mode") || key.equals("mode")){
+                    GrxBasePlugin.ValueEditType editType = currentPlugin_.GetValueEditType(_element.getKey());
+                    if(editType instanceof ValueEditCombo){
 	            		CellEditor[] editors = new CellEditor[] { 
 	            				new TextCellEditor(table_),
-	            	            new ComboBoxCellEditor(table_, modeItem_) };
+	            	            new ComboBoxCellEditor(table_, ((ValueEditCombo) editType).GetItems()) };
 	            		viewer_.setCellEditors(editors);
-	            		
-	            	}else if(key.equals("isRobot") || key.equals("integrate") || key.equals("viewsimulate")){
-	            		CellEditor[] editors = new CellEditor[] { 
-	            				new TextCellEditor(table_),
-	            	            new ComboBoxCellEditor(table_, booleanItem_) };
-	            		viewer_.setCellEditors(editors);
-	            		
-	            	}else if(key.equals("jointType")){
-	            		CellEditor[] editors = new CellEditor[] { 
-	            				new TextCellEditor(table_),
-	            	            new ComboBoxCellEditor(table_, jointTypeItem_) };
-	            		viewer_.setCellEditors(editors);
-	            		
-	            	}else if(key.equals("method")){
-	            		CellEditor[] editors = new CellEditor[] { 
-	            				new TextCellEditor(table_),
-	            	            new ComboBoxCellEditor(table_, methodItem_) };
-	            		viewer_.setCellEditors(editors);
-	            		
-	            	}else{
+                    }else if(editType instanceof ValueEditText){
 	            		CellEditor[] editors = new CellEditor[] { 
 	            				new TextCellEditor(table_),
 	            				new TextCellEditor(table_) };
 	            		viewer_.setCellEditors(editors);
-	            		
-	            	}
+                    }else{
+                    	return false;
+                    }
 	            }
             	return true;
         	}else 
@@ -336,27 +314,14 @@ public class GrxPropertyView extends GrxBaseView {
         }
 
         public Object getValue(Object element, String property) {
-            if (element instanceof Map.Entry) {
+            if (property.equals(clmName_[1]) &&
+                element instanceof Map.Entry) {
             	Map.Entry<String, String> _element = (Map.Entry)element;
-            	String key = _element.getKey();
-            	if(key.contains(".mode") || key.equals("mode")){
-            		for(int i=0; i<modeItem_.length; i++)
-            			if(_element.getValue().equals(modeItem_[i]))
-            				return new Integer(i);
-            		return new Integer(0);
-            	}else if(key.equals("isRobot") || key.equals("integrate") || key.equals("viewsimulate")){
-            		for(int i=0; i<booleanItem_.length; i++)
-            			if(_element.getValue().equals(booleanItem_[i]))
-            				return new Integer(i);
-            		return new Integer(0);
-            	}else if(key.equals("jointType")){
-            		for(int i=0; i<jointTypeItem_.length; i++)
-            			if(_element.getValue().equals(jointTypeItem_[i]))
-            				return new Integer(i);
-            		return new Integer(0);
-            	}else if(key.equals("method")){
-            		for(int i=0; i<methodItem_.length; i++)
-            			if(_element.getValue().equals(methodItem_[i]))
+            	CellEditor[] ce = viewer_.getCellEditors();
+            	if(2 <= ce.length && ce[1] instanceof ComboBoxCellEditor){
+            		String[] items = ((ComboBoxCellEditor)ce[1]).getItems();
+            		for(int i=0; i<items.length; i++)
+            			if(_element.getValue().equals(items[i]))
             				return new Integer(i);
             		return new Integer(0);
             	}else{
@@ -375,17 +340,17 @@ public class GrxPropertyView extends GrxBaseView {
             	if( value instanceof String) {
             		_value = (String)value;
             	}else if(value instanceof Integer){
-            		if(item.getText().contains(".mode") || item.getText().equals("mode")){
-            			_value = modeItem_[((Integer)value).intValue()];
-            		}else if(item.getText().equals("isRobot") || item.getText().equals("integrate") || item.getText().equals("viewsimulate")){
-            			_value = booleanItem_[((Integer)value).intValue()];
-            		}else if(item.getText().equals("jointType")){
-            			_value = jointTypeItem_[((Integer)value).intValue()];
-            		}else if(item.getText().equals("method")){
-            			_value = methodItem_[((Integer)value).intValue()];
-            		}
+            		int idx = ((Integer)value).intValue();
+                	CellEditor[] ce = viewer_.getCellEditors();
+                	if(2 <= ce.length && ce[1] instanceof ComboBoxCellEditor){
+                		String[] items = ((ComboBoxCellEditor)ce[1]).getItems();
+                		if(0 <= idx && idx < items.length)
+                			_value = items[idx];
+                	}
             	}
-            	if(!currentPlugin_.getProperty(item.getText()).equals(_value)){
+
+            	if(_value != null && 
+                   !currentPlugin_.getProperty(item.getText()).equals(_value)){
 	                if (!currentPlugin_.propertyChanged(item.getText(), _value)){
 	                	// if validity of value is not checked by currentPlugin_, it is set
 	                	currentPlugin_.setProperty(item.getText(), _value);
