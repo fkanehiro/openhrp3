@@ -88,7 +88,7 @@ namespace hrp {
            when all the joint angles of a robot are zero so that multiplication of
            local attitdue matrices can be omitted to simplify the computation.
            If you want to use the original coordinate in the model file,
-           use setSegmentAttitude() and segmentAttitude() to access R.
+           use setAttitude() and attitude() to access.
         */
         Matrix33 R;
 
@@ -139,16 +139,16 @@ namespace hrp {
         Matrix33 Ivv;   ///< top left block of the articulated inertia
         Vector3 pf;     ///< bias force (linear element)
         Vector3 ptau;   ///< bias force (torque element)
-        Vector3 hhv;
-        Vector3 hhw;
+        Vector3 hhv;    ///< top block of Ia*s
+        Vector3 hhw;    ///< bottom bock of Ia*s 
         double uu;
-        double dd;
+        double dd;      ///< Ia*s*s^T  
 		
         double Jm2;    ///< Equivalent rotor inertia: n^2*Jm [kg.m^2]
 
         double ulimit;  ///< the upper limit of joint values
         double llimit;  ///< the lower limit of joint values
-        double uvlimit;  ///< the upper limit of joint velocities
+        double uvlimit; ///< the upper limit of joint velocities
         double lvlimit; ///< the lower limit of joint velocities
 
         double defaultJointValue;
