@@ -480,4 +480,25 @@ public class GrxBasePlugin extends GrxConfigBundle {
         }
     }
 
+    /**
+     * @brief  Return editing type of the key item
+     * @return ValueEditType
+     */
+    public ValueEditType GetValueEditType(String key) {
+        return new ValueEditText();
+    }
+        
+    public class ValueEditType{
+        private ValueEditType(){}
+    }
+    public class ValueEditText extends ValueEditType{
+        public ValueEditText(){}
+    }
+    public class ValueEditCombo extends ValueEditType{
+        private String[] items_;
+        public ValueEditCombo(String[] items){
+            items_ = items;
+        }
+        public String[] GetItems(){ return items_; }
+    }
 }

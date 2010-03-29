@@ -1270,4 +1270,15 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			logger_.closeReads();
 		super.delete();        
 	}
+
+    @Override
+    public ValueEditType GetValueEditType(String key) {
+        if(key.equals("method"))
+        {
+            return new ValueEditCombo(methodItem_);
+        }else if(key.equals("integrate") || key.equals("viewsimulate")){
+            return new ValueEditCombo(booleanItem_);
+        }
+        return super.GetValueEditType(key);
+    }
 } 
