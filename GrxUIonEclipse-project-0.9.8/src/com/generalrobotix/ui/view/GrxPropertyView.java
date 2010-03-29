@@ -185,6 +185,9 @@ public class GrxPropertyView extends GrxBaseView {
                 					_key[i] = selection[i].getText(0);
                 				}
                 				for(int i=0; i<_key.length; i++){
+                					if(isValidChangeValue(_key[i], _value) == false)
+                						continue;
+                					
                 					if(!currentPlugin_.getProperty(_key[i]).equals(_value)){
                 		                if (!currentPlugin_.propertyChanged(_key[i], _value)){
                 		                	currentPlugin_.setProperty(_key[i], _value);
@@ -197,6 +200,22 @@ public class GrxPropertyView extends GrxBaseView {
                 	});
     		}
     	});
+    }
+	
+    private boolean isValidChangeValue(String key, String value){
+    	GrxBasePlugin.ValueEditType editType = currentPlugin_.GetValueEditType(key);
+    	if(editType instanceof ValueEditText){
+			return true;
+    	}else if(editType instanceof ValueEditCombo){
+    		String[] items = ((ValueEditCombo)editType).GetItems();
+    		for(int idx=0; idx<items.length; idx++){
+    			if(items[idx].equals(value)){
+    				return true;
+    			}
+    		}
+    		return false;
+    	}
+    	return false;
     }
 
     public void registerItemChange(GrxBaseItem item, int event){
