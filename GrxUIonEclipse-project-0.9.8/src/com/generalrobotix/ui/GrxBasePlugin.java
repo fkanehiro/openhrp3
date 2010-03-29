@@ -400,6 +400,20 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	}
 	
     /**
+    *
+    */
+	public void unregisterCORBA() {
+
+	}
+
+    /**
+    *
+    */
+    public boolean registerCORBA() {
+        return true;
+    }
+	
+    /**
      * @brief Override clone method
      * @return GrxBasePlugin
      */

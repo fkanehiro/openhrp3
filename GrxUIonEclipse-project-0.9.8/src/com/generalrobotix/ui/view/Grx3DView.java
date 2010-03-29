@@ -1215,11 +1215,9 @@ public class Grx3DView
         OnlineViewer_impl olvImpl = new OnlineViewer_impl();
         OnlineViewer olv = olvImpl._this(manager_.orb_);//GrxCorbaUtil.getORB());
         NameComponent[] path1 = {new NameComponent("OnlineViewer", "")}; //$NON-NLS-1$ //$NON-NLS-2$
-        
         ViewSimulator_impl  viewImpl = new ViewSimulator_impl();
         ViewSimulator view = viewImpl._this(manager_.orb_);//GrxCorbaUtil.getORB());
         NameComponent[] path2 = {new NameComponent("ViewSimulator", "")}; //$NON-NLS-1$ //$NON-NLS-2$
-        
         try {
             rootnc.rebind(path1, olv);
             rootnc.rebind(path2, view);
@@ -1230,6 +1228,20 @@ public class Grx3DView
          
         GrxDebugUtil.println("3DVIEW : successfully bound to localhost NameService"); //$NON-NLS-1$
         return true;
+    }
+    
+    
+    public void unregisterCORBA() {
+        NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+        NameComponent[] path1 = {new NameComponent("OnlineViewer", "")};
+        NameComponent[] path2 = {new NameComponent("ViewSimulator", "")};
+        try{
+            rootnc.unbind(path1);
+            rootnc.unbind(path2);
+            GrxDebugUtil.println("3DVIEW : successfully unbound to localhost NameService");
+        }catch(Exception ex){
+            GrxDebugUtil.println("3DVIEW : failed to unbind to localhost NameService");
+        }
     }
     
     private class ModelEditKeyAdapter extends KeyAdapter {

@@ -134,5 +134,4 @@ public class GrxBaseView extends GrxBasePlugin {
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
 	}
-	
 }

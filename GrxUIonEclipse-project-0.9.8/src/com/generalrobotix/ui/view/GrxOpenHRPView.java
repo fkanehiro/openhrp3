@@ -31,6 +31,7 @@ import jp.go.aist.hrp.simulator.ControllerHelper;
 import jp.go.aist.hrp.simulator.DynamicsSimulator;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorFactory;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorFactoryHelper;
+import jp.go.aist.hrp.simulator.OnlineViewer;
 import jp.go.aist.hrp.simulator.SensorStateHolder;
 import jp.go.aist.hrp.simulator.ViewSimulator;
 import jp.go.aist.hrp.simulator.ViewSimulatorHelper;
@@ -144,7 +145,10 @@ public class GrxOpenHRPView extends GrxBaseView {
                     return false;
                 }
             }
-
+            GrxServerManagerView viewServerManager =  (GrxServerManagerView)manager_.getView( GrxServerManagerView.class );
+            if(viewServerManager != null){
+                viewServerManager.setEditableHostPortText(false);
+            }
             simParamPane_.setEnabled(false);
             
             currentWorld_.clearLog();
@@ -336,6 +340,10 @@ public class GrxOpenHRPView extends GrxBaseView {
             */
             execSWT( new Runnable(){
                     public void run(){
+                        GrxServerManagerView viewServerManager =  (GrxServerManagerView)manager_.getView( GrxServerManagerView.class );
+                        if(viewServerManager != null){
+                            viewServerManager.setEditableHostPortText(true);
+                        }
                         simParamPane_.setEnabled(true);
                         if (action_ != null){
                             action_.setToolTipText(MessageBundle.get("GrxOpenHRPView.text.start")); //$NON-NLS-1$
@@ -526,18 +534,6 @@ public class GrxOpenHRPView extends GrxBaseView {
         
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
         
-        NamingContext rootnc = GrxCorbaUtil.getNamingContext();
-           
-        ClockGenerator cg = clockGenerator_._this(manager_.orb_);
-        NameComponent[] path = {new NameComponent("ClockGenerator", "")}; //$NON-NLS-1$ //$NON-NLS-2$
-           
-        try {
-            rootnc.rebind(path, cg);
-        } catch (Exception ex) {
-            GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService"); //$NON-NLS-1$
-        }
-        GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService"); //$NON-NLS-1$
-
     }
         
     void execSWT( Runnable r, boolean execInCurrentThread ){
@@ -579,6 +575,31 @@ public class GrxOpenHRPView extends GrxBaseView {
         if(currentWorld_==plugin){
             if((String)arg[0]=="PropertyChange") //$NON-NLS-1$
                 simParamPane_.updateItem(currentWorld_);    
+        }
+    }
+    
+    public boolean registerCORBA() {
+        NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+        ClockGenerator cg = clockGenerator_._this(manager_.orb_);
+        NameComponent[] path = {new NameComponent("ClockGenerator", "")};
+           
+        try {
+            rootnc.rebind(path, cg);
+            GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
+        } catch (Exception ex) {
+            GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
+        }
+        return true;
+    }
+    
+    public void unregisterCORBA() {
+        NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+        NameComponent[] path = {new NameComponent("ClockGenerator", "")};
+        try{
+            rootnc.unbind(path);
+            GrxDebugUtil.println("OpenHRPView : successfully ClockGenerator unbound to localhost NameService");
+        }catch(Exception ex){
+            GrxDebugUtil.println("OpenHRPView : failed to unbind ClockGenerator to localhost NameService");
         }
     }
     
