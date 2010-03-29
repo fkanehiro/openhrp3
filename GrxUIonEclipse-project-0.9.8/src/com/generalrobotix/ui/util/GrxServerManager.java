@@ -16,6 +16,7 @@ import java.util.Vector;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -225,7 +226,7 @@ public class GrxServerManager extends GrxBaseItem{
         }
         return ret;
     }
-    
+
     public void initialize(){
     	getNameServerInfoFromPerferenceStore();
         vecServerInfo.clear();
@@ -235,6 +236,20 @@ public class GrxServerManager extends GrxBaseItem{
         nameServerLogDir.set(NAME_SERVER_LOG_DIR_);
     }
     
+    public void restart(IProgressMonitor monitor){
+        NAME_SERVER_PORT_ = newPort_.get();
+        NAME_SERVER_HOST_ = newHost_.get();
+        nameServerInfo.args = generateNameServerArgs();
+        GrxProcessManager pm = GrxProcessManager.getInstance();
+        pm.restart(monitor);
+    }
+    
+    private String generateNameServerArgs(){
+        String ret;
+        ret = "-start " + Integer.toString(NAME_SERVER_PORT_) + " -logdir " + NAME_SERVER_LOG_DIR_ +
+        " -ORBendPointPublish giop:tcp:"+ NAME_SERVER_HOST_ + ":";
+        return ret;
+    }
     private void getNameServerInfoFromPerferenceStore(){
     	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
         nameServerInfo.id = PreferenceConstants.NAMESERVER; 
@@ -259,8 +274,7 @@ public class GrxServerManager extends GrxBaseItem{
         	NAME_SERVER_HOST_ = store.getDefaultString(
             		PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.HOST);
         
-        nameServerInfo.args = "-start " + Integer.toString(NAME_SERVER_PORT_) + " -logdir " + NAME_SERVER_LOG_DIR_ +
-        " -ORBendPointPublish giop:tcp:"+ NAME_SERVER_HOST_ + ":";
+        nameServerInfo.args = generateNameServerArgs();
         
         String s = store.getString(
     			PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM);
@@ -435,5 +449,4 @@ public class GrxServerManager extends GrxBaseItem{
     	store.setToDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.USEORB);
     	initialize();
     }
-    
 }

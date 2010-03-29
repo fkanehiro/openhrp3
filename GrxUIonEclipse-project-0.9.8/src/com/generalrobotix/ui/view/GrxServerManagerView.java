@@ -10,7 +10,7 @@
 
 package com.generalrobotix.ui.view;
 
-import java.util.Iterator;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Vector;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -20,16 +20,23 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.GrxServerManager;
 import com.generalrobotix.ui.util.GrxServerManagerPanel;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
+import com.generalrobotix.ui.view.Grx3DView;
+import com.generalrobotix.ui.view.GrxOpenHRPView;
+
 
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -425,26 +432,72 @@ public class GrxServerManagerView extends GrxBaseView
     private void updateNameServerBtn(){
         StringBuffer refHost = new StringBuffer("");
         StringBuffer refPort = new StringBuffer("");
-        String message = serverManager_.setNewHostPort(textNsHost_.getText(), textNsPort_.getText(), refHost, refPort );
-        if(message.isEmpty()){
-            MessageDialog.openInformation(composite_.getShell(),
-                    MessageBundle.get("GrxServerManagerView.dialog.infomation.tittle.updateNameServer"),
-                    MessageBundle.get("GrxServerManagerView.dialog.infomation.message.updateNameServer"));
-            updateNameServerBtn_.setEnabled(false);
-        }else{
-            MessageDialog.openError(composite_.getShell(),
-                    MessageBundle.get("GrxServerManagerView.dialog.error.tittle.updateNameServer"),
-                    message);
-            
-            if( refHost.length() != 0){
-                textNsHost_.setText(refHost.toString());
-            }
-            if( refPort.length() != 0 ){
-                textNsPort_.setText(refPort.toString());
+        
+        boolean ret = MessageDialog.openQuestion(composite_.getShell(),
+                MessageBundle.get("GrxServerManagerView.dialog.infomation.tittle.updateNameServer"),
+                MessageBundle.get("GrxServerManagerView.dialog.infomation.message.updateNameServer"));
+        
+        if(ret){
+            String message = serverManager_.setNewHostPort(textNsHost_.getText(), textNsPort_.getText(), refHost, refPort );
+            // TODO 
+            if(message.isEmpty()){
+                updateNameServerBtn_.setEnabled(false);
+                restartServers();
+            }else{
+                MessageDialog.openError(composite_.getShell(),
+                        MessageBundle.get("GrxServerManagerView.dialog.error.tittle.updateNameServer"),
+                        message);
+                if( refHost.length() != 0){
+                    textNsHost_.setText(refHost.toString());
+                }
+                if( refPort.length() != 0 ){
+                    textNsPort_.setText(refPort.toString());
+                }
             }
         }
     }
 
+    private void restartServers(){
+        try {
+            IRunnableWithProgress iProgress = new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    int size = 0;
+                    
+                    monitor.beginTask(MessageBundle.get("GrxServerManagerView.dialog.title.progress"),
+                            2 + ( serverManager_.getServerInfo().size() + 1) * 2); //$NON-NLS-1$
+                    restartServers(monitor);
+                    monitor.done();
+                }
+            };
+            new ProgressMonitorDialog(GrxUIPerspectiveFactory.getCurrentShell()).run(false, false, iProgress);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+        }
+        
+        
+    }
+    
+    private void restartServers(IProgressMonitor monitor) throws InterruptedException{
+        GrxOpenHRPView hrp =  (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
+        Grx3DView dview =  (Grx3DView)manager_.getView( Grx3DView.class );
+        if(dview != null){
+            dview.unregisterCORBA();
+        }
+        if(hrp != null){
+            hrp.unregisterCORBA();
+        }
+        monitor.worked(1);
+        serverManager_.restart(monitor);
+        monitor.worked(1);
+        if(hrp != null){
+            hrp.registerCORBA();
+        }
+        if(dview != null){
+            dview.registerCORBA();
+        }
+    }
+    
     private void restoreDefault(){
     	serverManager_.restoreDefault();
     	updateItems();
@@ -490,4 +543,8 @@ public class GrxServerManagerView extends GrxBaseView
         serverManager_.SaveServerInfo();
 	}
 
+    public void setEditableHostPortText(boolean bEnable){
+        textNsHost_.setEditable(bEnable);
+        textNsPort_.setEditable(bEnable);
+    }
 }

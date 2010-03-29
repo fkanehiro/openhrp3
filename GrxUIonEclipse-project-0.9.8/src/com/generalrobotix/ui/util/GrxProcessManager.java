@@ -45,6 +45,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.w3c.dom.Element;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
@@ -111,13 +112,18 @@ public class GrxProcessManager {
 
     public void setProcessList(GrxServerManager serverManager) {
     	serverManager_ = serverManager;
+    	IProgressMonitor monitor = null;
+    	setProcessList(monitor);
+    }
+
+    private void setProcessList(IProgressMonitor monitor){
         StringBuffer nsHost = new StringBuffer(""); //$NON-NLS-1$
         StringBuffer nsPort = new StringBuffer(""); //$NON-NLS-1$
         Activator.refNSHostPort(nsHost, nsPort);
         String nsOpt = " -ORBInitRef NameService=corbaloc:iiop:" + nsHost + ":" + nsPort + "/NameService"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         if(!GrxCorbaUtil.isAliveNameService()){
-            nameServerInfo_ = serverManager.getNameServerInfo();
-            FileUtil.deleteNameServerLog(serverManager.getNameserverLogDir());
+            nameServerInfo_ = serverManager_.getNameServerInfo();
+            FileUtil.deleteNameServerLog(serverManager_.getNameserverLogDir());
             if ( isRegistered(nameServerInfo_) ) {
                 if( !isRunning(nameServerInfo_) ){
                     unregister(nameServerInfo_.id);
@@ -127,15 +133,15 @@ public class GrxProcessManager {
                 register(nameServerInfo_);
             }
         }
-        for(ProcessInfo pi : serverManager.getServerInfo()){
+        for(ProcessInfo pi : serverManager_.getServerInfo()){
             ProcessInfo localPi = pi.clone();
-        	for(int i=0; i<localPi.com.size(); i++){
-        		if (localPi.useORB) {
-        			localPi.com.set(i, localPi.com.get(i) + " " + nsOpt);
-        		} else {
-        			localPi.com.set(i, localPi.com.get(i));
-        		}      
-        	}    
+            for(int i=0; i<localPi.com.size(); i++){
+                if (localPi.useORB) {
+                    localPi.com.set(i, localPi.com.get(i) + " " + nsOpt);
+                } else {
+                    localPi.com.set(i, localPi.com.get(i));
+                }      
+            }    
             if ( isRegistered(localPi) ) {
                 if( !isRunning(localPi) ){
                     unregister(localPi.id);
@@ -145,9 +151,9 @@ public class GrxProcessManager {
                 register(localPi);
             }
         }
-        autoStart();
+        autoStart(monitor);
     }
-
+    
     public boolean isRunning(ProcessInfo pi) {
         AProcess localProcess = get(pi.id);
         if (localProcess != null) {
@@ -216,7 +222,7 @@ public class GrxProcessManager {
         return process_.size();
     }
 
-    public void autoStart() {
+    public void autoStart(IProgressMonitor monitor) {
         for (int i = 0; i < process_.size(); i++) {
             AProcess p = get(i);
             if (p.pi_.autoStart) {
@@ -225,6 +231,9 @@ public class GrxProcessManager {
                 } catch (Exception e) {
                     p.start(null);
                 }
+            }
+            if(monitor != null){
+                monitor.worked(1);
             }
         }
     }
@@ -341,6 +350,32 @@ public class GrxProcessManager {
         return ret;
     }
 
+    public void restart(IProgressMonitor monitor){
+        if(serverManager_ != null){
+            for( ProcessInfo i:serverManager_.getServerInfo()){
+                AProcess server = get(i.id);
+                if( server.isRunning()){
+                    server.stop();
+                }
+                unregister(i.id);
+                monitor.worked(1);
+            }
+            
+            
+            
+            ProcessInfo pi = serverManager_.getNameServerInfo();
+           
+            AProcess nameServer = get(serverManager_.getNameServerInfo().id);
+            if(nameServer != null){
+                if(nameServer.isRunning())
+                    nameServer.stop();
+                unregister(serverManager_.getNameServerInfo().id);
+            }
+            monitor.worked(1);
+            setProcessList(monitor);
+        }
+    }
+    
     public static class ProcessInfo implements Cloneable{
         public String       id            = null;
         public List<String> com           = new ArrayList<String>();
