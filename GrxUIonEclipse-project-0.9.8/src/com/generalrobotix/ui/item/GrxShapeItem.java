@@ -1250,4 +1250,20 @@ public class GrxShapeItem extends GrxTransformItem{
     		break;	 
 		}
 	}
+
+    @Override
+    public ValueEditType GetValueEditType(String key) {
+        
+        if(shapes_.length == 1 && shapes_[0].primitiveType == ShapePrimitiveType.SP_CONE &&
+           (key.equals("side") || key.equals("bottom")))
+        {
+            return new ValueEditCombo(booleanComboItem_);
+        }
+        else if(shapes_.length == 1 && shapes_[0].primitiveType == ShapePrimitiveType.SP_CYLINDER &&
+                (key.equals("side") || key.equals("bottom") || key.equals("top")))
+        {
+            return new ValueEditCombo(booleanComboItem_);
+        }
+        return super.GetValueEditType(key);
+    }
 }
