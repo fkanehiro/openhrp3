@@ -533,7 +533,7 @@ public class GrxOpenHRPView extends GrxBaseView {
             currentWorld_.addObserver(this);
         
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-        
+        registerCORBA();
     }
         
     void execSWT( Runnable r, boolean execInCurrentThread ){
