@@ -1,0 +1,33 @@
+<!--
+ usage : java -jar <eclipse launcher jar> -application org.eclipse.ant.core.antRunner -data <workspace dir> -buildfile plugin.xml
+
+ example : java -jar C:\eclipse\plugins\org.eclipse.equinox.launcher_1.0.101.R34x_v20081125.jar -application org.eclipse.ant.core.antRunner -data "workspace" -buildfile BuildPlugin.xml
+  -->
+
+<project default="main">
+
+    <target name="main">
+        <property name="baseLocation" value="${eclipse.home}"/>
+        <property name="buildspace.dir" value="${basedir}" />
+        <property name="builder" value="${buildspace.dir}" />
+        <property name="buildDirectory" value="${buildspace.dir}/GrxUIonEclipse-project-0.9.8"/>
+
+        <property name="pluginPath" value="${buildspace.dir}" />
+
+        <eclipse.buildScript 
+            elements="plugin@com.generalrobotix.ui.grxui"
+            baseLocation="${baseLocation}"
+            buildDirectory="${buildDirectory}"
+         />
+
+        <ant antfile="${buildDirectory}/build.xml" dir="${buildDirectory}" target="build.update.jar" >
+            <property name="javacTarget" value="1.6"/>
+            <property name="javacSource" value="1.6"/>
+        </ant>
+
+        <copy todir="./">
+            <fileset dir="${buildDirectory}" includes="com.generalrobotix.ui.grxui*.jar"/>
+        </copy>
+
+</target>
+</project>
