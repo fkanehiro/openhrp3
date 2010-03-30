@@ -738,14 +738,19 @@ public class GrxOpenHRPView extends GrxBaseView {
     private boolean initController() {
         boolean ret = true;
         List<String> localStrList = new Vector<String>();
-        for (GrxModelItem model: manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class) ) {
+        List<GrxModelItem> modelList = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        for (GrxModelItem model : modelList ) {
             if( model.isRobot() ){
-                if ( _setupController(model, _getControllerFromControllerName(model.getProperty("controller"))) < 0 ) //$NON-NLS-1$
-                    ret =  false;
                 localStrList.add( model.getProperty("controller") ); //$NON-NLS-1$
             }
         }
         _refreshControllers( localStrList );
+        for (GrxModelItem model: modelList ) {
+            if( model.isRobot() ){
+                if ( _setupController(model, _getControllerFromControllerName(model.getProperty("controller"))) < 0 ) //$NON-NLS-1$
+                    ret =  false;
+            }
+        }
         return ret;
     }
     
