@@ -60,7 +60,7 @@ public class GrxuiPreferencePage
 		GridData label1Data = new GridData();
 		label1Data.horizontalSpan = 3;
 		label1.setLayoutData(label1Data);
-		addField(new DirectoryFieldEditor(PreferenceConstants.JYTHON_LIB, "", group1)); //$NON-NLS-1$
+		addField(new StringFieldEditor(PreferenceConstants.JYTHON_LIB, "", group1)); //$NON-NLS-1$
 		
 	}
 

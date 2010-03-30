@@ -166,8 +166,21 @@ public class GrxJythonPromptView extends GrxBaseView {
         String dir = Activator.getDefault().getPreferenceStore().getString("JYTHON_LIB"); //$NON-NLS-1$
         if(dir.equals("")) //$NON-NLS-1$
         	dir = System.getenv("JYTHON_LIB"); //$NON-NLS-1$
-        if(dir!=null && new File(dir).exists())
-        	interpreter_.exec("sys.path.append('"+dir+"')"); //$NON-NLS-1$ //$NON-NLS-2$
+        if(dir!=null){
+        	String dirs[] = dir.split(":");
+        	for (int i=0; i<dirs.length; i++){
+        		File f = new File(dirs[i]);
+        		if (f.exists()){
+        			interpreter_.exec("sys.path.append('"+dirs[i]+"')"); //$NON-NLS-1$ //$NON-NLS-2$
+           			File[] files = f.listFiles();
+           			for (int j=0; j<files.length; j++){
+           				if (files[j].getName().endsWith(".jar")){
+           	       			interpreter_.exec("sys.path.append('"+files[j].getAbsolutePath()+"')"); //$NON-NLS-1$ //$NON-NLS-2$
+           				}
+           			}
+        		}
+        	}
+        }
         dir = Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR"); //$NON-NLS-1$
         if(dir.equals("")) //$NON-NLS-1$
         	dir = System.getenv("PROJECT_DIR"); //$NON-NLS-1$
@@ -194,6 +207,7 @@ public class GrxJythonPromptView extends GrxBaseView {
         interpreter_.exec("del view\n"); //$NON-NLS-1$
         interpreter_.exec("del __builtin__"); //$NON-NLS-1$
         history_.add(""); //$NON-NLS-1$
+        setNameService();
         
         setMenuItem(new InitPythonAction());
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
@@ -403,8 +417,7 @@ public class GrxJythonPromptView extends GrxBaseView {
         return com.replaceFirst(prompt_, ""); //$NON-NLS-1$
     }
     
-    public void restoreProperties() {
-        super.restoreProperties();
+    public void setNameService(){
         String nsHost = manager_.getProjectProperty("nsHost"); //$NON-NLS-1$
         String nsPort = manager_.getProjectProperty("nsPort"); //$NON-NLS-1$
         if (nsHost == null)
@@ -426,6 +439,11 @@ public class GrxJythonPromptView extends GrxBaseView {
         } catch (Exception e) {
             interpreter_.exec("print 'failed to connect NameService("+nameservice+")'"); //$NON-NLS-1$ //$NON-NLS-2$
         }
+    }
+    
+    public void restoreProperties() {
+        super.restoreProperties();
+        setNameService();
         
         //TODO:UIスレッド以外から呼ばれることはないならはずしてもいい。
         display_.asyncExec(new Thread(){
@@ -571,7 +589,7 @@ public class GrxJythonPromptView extends GrxBaseView {
         }
     }
     
-    public void sutdown(){
+    public void shutdown(){
     	manager_.removeItemChangeListener(this, GrxPythonScriptItem.class);
     }
 //    public void add(JPanel pnl) {
