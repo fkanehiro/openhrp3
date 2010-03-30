@@ -72,6 +72,33 @@ void Controller_impl::detectRtcs()
     nameServer = nameServer.substr(0, comPos);
     naming = new RTC::CorbaNaming(rtcManager.getORB(), nameServer.c_str());
 
+    for (TimeRateMap::iterator it = bridgeConf->timeRateMap.begin(); it != bridgeConf->timeRateMap.end(); ++it){
+        RTC::RTObject_var rtcRef;
+        string rtcName = it->first;
+        if ( rtcName != "" ) {
+            string rtcNamingName = rtcName + ".rtc";
+            try {
+                CORBA::Object_var objRef = naming->resolve(rtcNamingName.c_str());
+                if ( CORBA::is_nil(objRef) ) {
+                    cout << rtcName << " is not found." << endl;
+                } else {
+                    rtcRef = RTC::RTObject::_narrow(objRef);
+                    if(CORBA::is_nil(rtcRef)){
+                        cout << rtcName << " is not an RTC object." << endl;
+                    }
+                }
+            } catch(CORBA_SystemException& ex) {
+                cerr << ex._rep_id() << endl;
+                cerr << "exception in Controller_impl::detectRtcs" << endl;
+            } catch(...){
+                cerr << "unknown exception in Controller_impl::detectRtcs()" <<  endl;
+            }
+        }
+        if (!CORBA::is_nil(rtcRef)) {
+            addRtcVectorWithConnection(rtcRef);
+        }
+    }
+
     cout << "setup RT components" << endl;
 
     for(size_t i=0; i < bridgeConf->portConnections.size(); ++i){
@@ -142,8 +169,21 @@ Controller_impl::RtcInfoPtr Controller_impl::addRtcVectorWithConnection(RTC::RTO
     RtcInfoPtr rtcInfo(new RtcInfo());
     rtcInfo->rtcRef = new_rtcRef;
     makePortMap(rtcInfo);
-    rtcInfo->timeRate = 1.0;
+    string rtcName = (string)rtcInfo->rtcRef->get_component_profile()->instance_name;
 
+    if ( bridgeConf->timeRateMap.size() == 0 ) {
+        rtcInfo->timeRate = 1.0;
+    } else {
+        TimeRateMap::iterator p = bridgeConf->timeRateMap.find(rtcName);
+        if ( p != bridgeConf->timeRateMap.end() ) {
+            rtcInfo->timeRate = (double)p->second;
+            rtcInfo->timeRateCounter = 1.0 - rtcInfo->timeRate;
+        } else {
+            rtcInfo->timeRate = 0.0;
+            rtcInfo->timeRateCounter = 0.0;
+        }
+        cout << "periodic-rate (" << rtcName << ") = " << rtcInfo->timeRate << endl;
+    }
     rtcInfoVector.push_back(rtcInfo);
 
 
@@ -411,8 +451,8 @@ void Controller_impl::control()
     for(RtcInfoVector::iterator p = rtcInfoVector.begin(); p != rtcInfoVector.end(); ++p){
         RtcInfoPtr& rtcInfo = *p;
         if(!CORBA::is_nil(rtcInfo->execContext)){
-            rtcInfo->timeRateCounter += rtcInfo->timeRate;
-            if(rtcInfo->timeRateCounter >= 1.0){
+           	rtcInfo->timeRateCounter += rtcInfo->timeRate;
+            if(rtcInfo->timeRateCounter + rtcInfo->timeRate/2.0 > 1.0){
                 rtcInfo->execContext->tick();
                 rtcInfo->timeRateCounter -= 1.0;
             }
@@ -486,7 +526,6 @@ void Controller_impl::activeComponents()
 {
     for(RtcInfoVector::iterator p = rtcInfoVector.begin(); p != rtcInfoVector.end(); ++p){
         RtcInfoPtr& rtcInfo = *p;
-        rtcInfo->timeRateCounter = 1.0;
         if(!CORBA::is_nil(rtcInfo->execContext)){
             if( RTC::PRECONDITION_NOT_MET == rtcInfo->execContext->activate_component(rtcInfo->rtcRef) )
             {
@@ -502,7 +541,6 @@ void Controller_impl::deactiveComponents()
     std::vector<ExtTrigExecutionContextService_Var_Type> vecExecContext;
     for(RtcInfoVector::iterator p = rtcInfoVector.begin(); p != rtcInfoVector.end(); ++p){
         RtcInfoPtr& rtcInfo = *p;
-        rtcInfo->timeRateCounter = 1.0;
         if(!CORBA::is_nil(rtcInfo->execContext)){
             if ( RTC::RTC_OK == rtcInfo->execContext->deactivate_component(rtcInfo->rtcRef) ){
                 vecExecContext.push_back(rtcInfo->execContext);

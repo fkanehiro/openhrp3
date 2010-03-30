@@ -79,6 +79,7 @@ struct ModuleInfo {
 };
 typedef std::list<ModuleInfo> ModuleInfoList;
     
+typedef std::map<std::string, double> TimeRateMap;
 
 class BridgeConf
 {
@@ -108,6 +109,8 @@ public:
     ModuleInfoList moduleInfoList;
 
     PortConnectionList portConnections;
+	
+	TimeRateMap timeRateMap;
 
 private:
       
@@ -131,6 +134,7 @@ private:
     void addPortConnection(const std::string& value);
       
     void addModuleInfo(const std::string& value);
+    void addTimeRateInfo(const std::string& value);
     
     std::vector<std::string> extractParameters(const std::string& str, const char delimiter=':');
     std::string expandEnvironmentVariables(std::string str);

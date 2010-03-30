@@ -97,7 +97,11 @@ void BridgeConf::initOptionsDescription()
 
     ("connection",
      program_options::value<vector<string> >(),
-     "Port connection setting");
+     "Port connection setting")
+
+    ("periodic-rate",
+     program_options::value<vector<string> >(), 
+     "Periodic rate of execution context (INSTANCE_NAME:TIME_RATE[<=1.0])");
 
   commandLineOptions.add(options).add_options()
 
@@ -200,6 +204,12 @@ void BridgeConf::parseOptions()
 
   virtualRobotRtcTypeName = expandEnvironmentVariables(vmap["robot-name"].as<string>());
 
+  if(vmap.count("periodic-rate")){
+    vector<string> values = vmap["periodic-rate"].as<vector<string> >();
+    for(size_t i=0; i < values.size(); ++i){
+      addTimeRateInfo(values[i]);
+    }
+  }
 }
 
 
@@ -306,6 +316,15 @@ void BridgeConf::addModuleInfo(const std::string& value)
   }
 }
 
+void BridgeConf::addTimeRateInfo(const std::string& value) 
+{
+  vector<string> parameters = extractParameters(value);
+  if (parameters.size() == 0 || parameters.size() > 2) {
+    throw std::invalid_argument(std::string("invalid time rate set"));
+  } else {
+    timeRateMap.insert( std::map<std::string, double>::value_type(parameters[0], atof(parameters[1].c_str())) );
+  }
+}
 
 void BridgeConf::setupModules()
 {
