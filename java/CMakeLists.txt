@@ -27,9 +27,13 @@ else()
   set(PREFERENCE_JYTHON_LIB "")
 endif()
 set(CONFIGURE_COMMENT "${FIXED_CONFIGURE_COMMENT} PreferenceInitializer.java.input.")
-configure_file(${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/src/com/generalrobotix/ui/grxui/PreferenceInitializer.java.input ${OpenHRP_SOURCE_DIR}/GrxUIonEclipse-project-0.9.8/src/com/generalrobotix/ui/grxui/PreferenceInitializer.java @ONLY)
+configure_file(${GrxUI_ON_ECLIPSE_DIR}/src/com/generalrobotix/ui/grxui/PreferenceInitializer.java.input ${GrxUI_ON_ECLIPSE_DIR}/src/com/generalrobotix/ui/grxui/PreferenceInitializer.java @ONLY)
 
 
+# Copy jython.jar
+if(JYTHON_JAR)
+  configure_file(${JYTHON_JAR} ${GrxUI_ON_ECLIPSE_DIR}/jython.jar COPYONLY)
+endif()
 
 macro(configure_grxui_on_eclipse)
   set(depends_rtm_path "src/com/generalrobotix/ui/depends/rtm")
