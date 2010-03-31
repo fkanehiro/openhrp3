@@ -20,7 +20,10 @@ package com.generalrobotix.ui.view;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
@@ -52,7 +55,24 @@ public class GrxTextEditorView extends GrxBaseView {
 					currentItem_.setValue(area_.getText());
 			}	
 		});
-	
+
+		area_.addFocusListener(new FocusListener() { 
+			public void focusGained(FocusEvent e) {
+				if (currentItem_ == null)
+					return;
+				if (currentItem_.isModifiedExternally()) {
+					boolean state = MessageDialog.openQuestion(getParent().getShell(), MessageBundle.get("GrxTextEditorView.dialog.title.reload"), MessageBundle.get("GrxTextEditorView.dialog.message.reload")); //$NON-NLS-1$ //$NON-NLS-2$
+					if (state){
+						currentItem_.reload();
+						area_.setText(currentItem_.getValue());
+					}
+				}
+			}
+
+			public void focusLost(FocusEvent e) {
+			}
+		});
+
 		IToolBarManager toolbar = vp.getViewSite().getActionBars().getToolBarManager();
 	
 		save_ = new Action() {
