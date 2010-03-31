@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 	RTC::Manager* rtcManager;
 
     try {
-		rtcManager = RTC::Manager::init(argc, argv);
+		rtcManager = RTC::Manager::init(1, argv);
 		rtcManager->activateManager();
 	}
 	catch(...) {
