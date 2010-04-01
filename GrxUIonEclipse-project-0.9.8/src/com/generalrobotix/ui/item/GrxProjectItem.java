@@ -91,7 +91,8 @@ public class GrxProjectItem extends GrxBaseItem {
     	Element  root;
     	List     propList;
     	NodeList itemList;
-     	Element  windowConfig;
+    	NodeList viewList;
+    	Element  windowConfig;
     }
     
 	public GrxProjectItem(String name, GrxPluginManager manager) {
@@ -164,6 +165,9 @@ public class GrxProjectItem extends GrxBaseItem {
             // item node
 			mi.itemList = mi.root.getElementsByTagName(ITEM_TAG);
 
+            // view node
+			mi.viewList = mi.root.getElementsByTagName(VIEW_TAG);
+			
             // window config element
 			NodeList wconfList = mi.root.getElementsByTagName(WINCONF_TAG);
 			if (wconfList.getLength() > 0)
@@ -225,6 +229,19 @@ public class GrxProjectItem extends GrxBaseItem {
 			modeEl.appendChild(item.storeProperties());
 			modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 		}
+		
+		List<GrxBaseView> viewList = manager_.getActiveViewList();
+		for (int i=0; i<viewList.size(); i++) {
+			GrxBaseView view = viewList.get(i);
+			if (view.propertyNames().hasMoreElements()) {
+				modeEl.appendChild(doc_.createTextNode(INDENT4+INDENT4));
+				view.setDocument(doc_);
+				modeEl.appendChild(view.storeProperties());
+				modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
+			}
+		}
+		
+		modeEl.appendChild(doc_.createTextNode(INDENT4));
 	}
 	
  	@SuppressWarnings("deprecation")
@@ -513,7 +530,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(null);
 		try {
 			progressMonitorDlg.run(false,false, runnableProgress);
-			//ダイアログの影が残ってしまう問題の対策 //
+			//ダイアログの影が残ってしまぁE��題�E対筁E//
 			Grx3DView view3d =  (Grx3DView)manager_.getView( Grx3DView.class );
 			if(view3d!=null){
 				view3d.repaint();
@@ -547,7 +564,11 @@ public class GrxProjectItem extends GrxBaseItem {
 				setProperty(key, val);
 			}
 		}
-		
+		if (minfo.viewList != null) {
+			for (int i = 0; i < minfo.viewList.getLength(); i++)
+				_restorePlugin((Element) minfo.viewList.item(i));
+		}
+
 		monitor.worked(1);
 		
 		List<GrxBaseView> vl = manager_.getActiveViewList();
