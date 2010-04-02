@@ -29,7 +29,7 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include <rtm/Manager.h>
-
+#include <rtm/RTObject.h>
 
 enum DataTypeId {
     INVALID_DATA_TYPE = 0,
@@ -132,7 +132,8 @@ private:
     void parseOptions();
     void setPortInfos(const char* optionLabel, PortInfoMap& portInfos);
     void addPortConnection(const std::string& value);
-      
+    
+    void setPreLoadModuleInfo();
     void addModuleInfo(const std::string& value);
     void addTimeRateInfo(const std::string& value);
     

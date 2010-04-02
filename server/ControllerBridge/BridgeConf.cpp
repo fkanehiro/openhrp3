@@ -57,6 +57,7 @@ BridgeConf::BridgeConf(int argc, char* argv[]) :
   initOptionsDescription();
   initLabelToDataTypeMap();
 
+  setPreLoadModuleInfo();
   parseCommandLineOptions(argc, argv);
 }
 
@@ -294,6 +295,20 @@ void BridgeConf::addPortConnection(const std::string& value)
   portConnections.push_back(connection);
 }
 
+void BridgeConf::setPreLoadModuleInfo()
+{
+    RTC::Manager& rtcManager = RTC::Manager::instance();
+    std::vector<RTC::RtcBase*> components = rtcManager.getComponents();
+    for(std::vector<RTC::RtcBase*>::iterator it=components.begin(); it != components.end(); ++it){ 
+        ModuleInfo info;
+        info.componentName = (*it)->get_component_profile()->instance_name;
+        info.fileName = "";
+        info.initFuncName = "";
+        info.isLoaded = true;
+        info.rtcServant = *it;
+        moduleInfoList.push_back(info);
+    }
+}
 
 void BridgeConf::addModuleInfo(const std::string& value)
 {

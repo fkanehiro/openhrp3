@@ -5,6 +5,6 @@ openhrp-controller-bridge \
 --out-port steer:JOINT_VALUE \
 --out-port vel:JOINT_VELOCITY \
 --in-port torque:JOINT_TORQUE \
---connection steer:SampleSV0:steer \
---connection vel:SampleSV0:vel \
---connection torque:SampleSV0:torque
+--connection steer:steer \
+--connection vel:vel \
+--connection torque:torque
