@@ -44,7 +44,11 @@ namespace {
     inline void unloadDll(DllHandle handle) { FreeLibrary(handle); }
 #else
 # include <dlfcn.h>
+#ifdef __darwin__
+    const char* DLLSFX = ".dylib";
+#else
     const char* DLLSFX = ".so";
+#endif
     const char* PATH_DELIMITER = ":";
     typedef void* DllHandle;
     inline DllHandle loadDll(const char* filename) { return dlopen(filename, RTLD_LAZY); }

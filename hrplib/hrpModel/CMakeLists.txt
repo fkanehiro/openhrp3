@@ -84,7 +84,7 @@ if(OPENHRP_3_0_CUSTOMIZERS)
   foreach(src ${OPENHRP_3_0_CUSTOMIZERS})
 
     get_filename_component(customizer ${src} NAME_WE)
-    add_library(${customizer} MODULE ${src})
+    add_library(${customizer} SHARED ${src})
     set_target_properties(${customizer} PROPERTIES COMPILE_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}")
     set_target_properties(${customizer} PROPERTIES PREFIX "")
     set_target_properties(${customizer} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/customizer)
