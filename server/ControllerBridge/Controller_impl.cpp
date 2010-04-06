@@ -43,7 +43,7 @@ Controller_impl::Controller_impl(RTC::Manager* rtcManager, BridgeConf* bridgeCon
     }
     VirtualRobotRTC::registerFactory(rtcManager, bridgeConf->getVirtualRobotRtcTypeName());
 
-    RTC::RtcBase* rtc = rtcManager->createComponent(bridgeConf->getVirtualRobotRtcTypeName());
+    RTC::RtcBase* rtc = rtcManager->createComponent("VirtualRobot");
     virtualRobotRTC = dynamic_cast<VirtualRobotRTC*>(rtc);
 }
 

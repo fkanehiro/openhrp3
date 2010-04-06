@@ -49,8 +49,6 @@ void VirtualRobotRTC::registerFactory(RTC::Manager* manager, const char* compone
   }
 
   RTC::Properties profile(spec);
-  
-  profile.setDefault("implementation_id", componentTypeName);
   profile.setDefault("type_name", componentTypeName);
 
   manager->registerFactory(profile,

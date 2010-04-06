@@ -81,7 +81,7 @@ void BridgeConf::initOptionsDescription()
      "Name of the OpenHRP controller factory server")
 
     ("robot-name",
-     program_options::value<string>()->default_value("VirtualRobot"),
+     program_options::value<string>()->default_value(""),
      "Name of the virtual robot RTC type")
 
     ("module",
@@ -204,6 +204,10 @@ void BridgeConf::parseOptions()
   controllerName = expandEnvironmentVariables(vmap["server-name"].as<string>());
 
   virtualRobotRtcTypeName = expandEnvironmentVariables(vmap["robot-name"].as<string>());
+  if(virtualRobotRtcTypeName==""){
+      virtualRobotRtcTypeName=controllerName;
+      virtualRobotRtcTypeName.append("(Robot)");
+  }
 
   if(vmap.count("periodic-rate")){
     vector<string> values = vmap["periodic-rate"].as<vector<string> >();
@@ -301,7 +305,7 @@ void BridgeConf::setPreLoadModuleInfo()
     std::vector<RTC::RtcBase*> components = rtcManager.getComponents();
     for(std::vector<RTC::RtcBase*>::iterator it=components.begin(); it != components.end(); ++it){ 
         ModuleInfo info;
-        info.componentName = (*it)->get_component_profile()->instance_name;
+        info.componentName = (*it)->get_component_profile()->type_name;
         info.fileName = "";
         info.initFuncName = "";
         info.isLoaded = true;
