@@ -244,6 +244,13 @@ namespace hrp {
 
         LinkConnectionArray linkConnections;
 
+        /**
+           @brief compute CoM Jacobian
+           @param base link fixed to the environment
+           @param J CoM Jacobian
+           @note Link::wc must be computed by calcCM() before calling
+        */
+        void calcCMJacobian(Link *base, dmatrix &J);
       private:
 
         bool isStaticModel_;

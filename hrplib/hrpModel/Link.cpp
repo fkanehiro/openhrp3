@@ -286,3 +286,25 @@ void Link::putInformation(std::ostream& out)
     	out << std::endl;
     }
 }
+
+void Link::calcSubMassCM()
+{
+    subm = m;
+    submwc = m*wc;
+    if (child){ 
+        child->calcSubMassCM();
+        subm += child->subm;
+        submwc += child->submwc;
+        Link *l = child->sibling;
+        while (l){
+            l->calcSubMassCM();
+            subm += l->subm;
+            submwc += l->submwc;
+            l = l->sibling;
+        }
+    }
+    /*
+    std::cout << "calcSubMassCM() : " << name << ", subm = " << subm 
+              << ", subCM = " << vector3(submwc/subm) << std::endl;
+    */
+}

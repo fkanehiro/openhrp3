@@ -51,6 +51,12 @@ namespace hrp {
         Matrix33 attitude() { return Matrix33(this->R * Rs); }
 
         /**
+           @brief compute sum of m x wc of subtree
+           @note assuming wc is already computed by Body::calcCM()
+        */
+        void calcSubMassCM();
+
+        /**
            @deprecated use setAttitude().
         */
         void setSegmentAttitude(const Matrix33& R) { this->R = R * trans(Rs); }
@@ -171,6 +177,8 @@ namespace hrp {
         typedef std::vector<ConstraintForce> ConstraintForceArray;
         ConstraintForceArray constraintForces;
 
+        double  subm;			///< mass of subtree
+        Vector3 submwc;			///< sum of m x wc of subtree
       private:
 
         Link& operator=(const Link& link); // no implementation is given to disable the copy operator
