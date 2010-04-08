@@ -184,7 +184,7 @@ namespace hrp {
 
         double calcTotalMass();
 
-        inline double totalMass() {
+        inline double totalMass() const {
             return totalMass_;
         }
 
