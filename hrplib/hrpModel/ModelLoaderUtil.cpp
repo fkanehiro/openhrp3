@@ -551,7 +551,7 @@ bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CORBA_ORB_var o
 }
 
 
-bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, int argc, char* argv[])
+bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, int& argc, char* argv[])
 {
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
     return loadBodyFromModelLoader(body, url,  orb);
