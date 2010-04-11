@@ -16,8 +16,11 @@ macro( configure_doxygen doc_dir_name doc_project_name
     set(doc_short_names "NO")
   endif(GENERATE_DEBIANPACKAGE)
   
+  list( APPEND depends_dirs ${doc_dir_name})
+  file(MAKE_DIRECTORY ${doc_dir_name})
+  list( APPEND output_files ${doc_dir_name}/html/index.html)
   configure_file( ${OpenHRP_SOURCE_DIR}/doc/Doxyfile.in ${OpenHRP_SOURCE_DIR}/doc/${doc_dir_name}${DOXY_SFX} )
-  add_custom_command( OUTPUT ${doc_dir_name}
+  add_custom_command( OUTPUT ${doc_dir_name}/html/index.html
     COMMAND doxygen ${doc_dir_name}${DOXY_SFX} 
     WORKING_DIRECTORY ${OpenHRP_SOURCE_DIR}/doc)
   # japanese section
@@ -25,26 +28,33 @@ macro( configure_doxygen doc_dir_name doc_project_name
   set(doc_enabled_sections "jp")
   set(doc_dir_name ${doc_dir_name}_${doc_enabled_sections})
   configure_file( ${OpenHRP_SOURCE_DIR}/doc/Doxyfile.in ${OpenHRP_SOURCE_DIR}/doc/${doc_dir_name}_${doc_enabled_sections}${DOXY_SFX} )
-  add_custom_command( OUTPUT ${doc_dir_name}_${doc_enabled_sections}
+  list( APPEND depends_dirs ${doc_dir_name})
+  file(MAKE_DIRECTORY ${doc_dir_name}_${doc_enabled_sections})
+  list( APPEND output_files ${doc_dir_name}_${doc_enabled_sections}/html/index.html)
+  add_custom_command( OUTPUT ${doc_dir_name}_${doc_enabled_sections}/html/index.html
     COMMAND doxygen ${doc_dir_name}_${doc_enabled_sections}${DOXY_SFX} 
     WORKING_DIRECTORY ${OpenHRP_SOURCE_DIR}/doc)
 endmacro()
 
 
 configure_doxygen( "idl" "OpenHRP3 IDL" "../idl/OpenHRP" "*.idl" )
-list( APPEND depends_dirs idl idl_jp)
 
 set(lib_doc_input       "../hrplib/hrpModel \\\\
                          ../hrplib/hrpUtil \\\\
                          ../hrplib/hrpCollision")
 
 configure_doxygen( "lib" "OpenHRP3 Library" "${lib_doc_input}" "*.cpp *.h" )
-list( APPEND depends_dirs lib lib_jp)
 
-add_custom_command( OUTPUT ut
+
+add_custom_command( OUTPUT ut/html/index.html
                     COMMAND doxygen ut${DOXY_SFX} WORKING_DIRECTORY ${OpenHRP_SOURCE_DIR}/doc)
 list( APPEND depends_dirs ut)
+file(MAKE_DIRECTORY ut)
+list( APPEND output_files ut/html/index.html)
 
-add_custom_target(doc ALL DEPENDS ${depends_dirs} WORKING_DIRECTORY ${OpenHRP_SOURCE_DIR}/doc)
+file(MAKE_DIRECTORY doxytag)
+list( APPEND depends_dirs doxytag)
+
+add_custom_target(doc ALL DEPENDS ${output_files} WORKING_DIRECTORY ${OpenHRP_SOURCE_DIR}/doc)
 
 install(DIRECTORY ${depends_dirs} DESTINATION ${RELATIVE_DOC_INSTALL_PATH})
