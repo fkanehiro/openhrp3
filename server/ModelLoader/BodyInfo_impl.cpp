@@ -130,6 +130,11 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     
     const string& humanoidName = modelNodeSet.humanoidNode()->defName;
     name_ = CORBA::string_dup(humanoidName.c_str());
+    const MFString& info = modelNodeSet.humanoidNode()->fields["info"].mfString();
+    info_.length(info.size());
+    for (unsigned int i=0; i<info_.length(); i++){
+        info_[i] = CORBA::string_dup(info[i].c_str());
+    }
 
     int numJointNodes = modelNodeSet.numJointNodes();
 
