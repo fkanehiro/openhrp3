@@ -487,8 +487,26 @@ bool hrp::loadBodyFromBodyInfo(BodyPtr body, OpenHRP::BodyInfo_ptr bodyInfo, boo
     return false;
 }
 
+BodyInfo_var hrp::loadBodyInfo(const char* url, int& argc, char* argv[])
+{
+    CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
+    return loadBodyInfo(url, orb);
+}
 
-bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CosNaming::NamingContext_var cxt)
+BodyInfo_var hrp::loadBodyInfo(const char* url, CORBA_ORB_var orb)
+{
+    CosNaming::NamingContext_var cxt;
+    try {
+        CORBA::Object_var nS = orb->resolve_initial_references("NameService");
+        cxt = CosNaming::NamingContext::_narrow(nS);
+    } catch(CORBA::SystemException& ex) {
+        std::cerr << "NameService doesn't exist" << std::endl;
+        return false;
+    }
+    return loadBodyInfo(url, cxt);
+}
+
+BodyInfo_var hrp::loadBodyInfo(const char* url, CosNaming::NamingContext_var cxt)
 {
     CosNaming::Name ncName;
     ncName.length(1);
@@ -526,6 +544,12 @@ bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CosNaming::Nami
     } catch(ModelLoader::ModelLoaderException& ex){
         std::cerr << "ModelLoaderException : " << ex.description << std::endl;
     }
+    return bodyInfo;
+}
+
+bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CosNaming::NamingContext_var cxt)
+{
+    BodyInfo_var bodyInfo = loadBodyInfo(url, cxt);
 
     if(!CORBA::is_nil(bodyInfo)){
         ModelLoaderHelper helper;
