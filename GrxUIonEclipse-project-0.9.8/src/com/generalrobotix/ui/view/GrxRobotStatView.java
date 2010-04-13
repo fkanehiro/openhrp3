@@ -175,10 +175,10 @@ public class GrxRobotStatView extends GrxBaseView {
         sash.setLayout(new FillLayout());
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
         SashForm sashForm = new SashForm(sash, SWT.VERTICAL);
-        jointTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION);
-        forceTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION);    
-        sensorTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION);    
-        powerTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION);  
+        jointTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);
+        forceTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);    
+        sensorTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);    
+        powerTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);  
         
         jointTV_.setContentProvider(new ArrayContentProvider());
         forceTV_.setContentProvider(new ArrayContentProvider());
