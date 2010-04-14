@@ -41,9 +41,15 @@ import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.JointDriveMode;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.LinkDataType;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.SensorOption;
 
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.ICoolBarManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarContributionItem;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -418,12 +424,15 @@ public class GrxOpenHRPView extends GrxBaseView {
         }
         
     }
-       
+
     /**
      * @brief start simulation
      * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation
      */
     public void startSimulation(boolean isInteractive, IAction action){
+        if(action == null)
+            action = getStartSimulationAction();
+
         if (clockGenerator_.startSimulation(isInteractive)){
             action_ = action;
             if (action_ != null){
@@ -432,6 +441,30 @@ public class GrxOpenHRPView extends GrxBaseView {
                 action_.setImageDescriptor(Activator.getDefault().getDescriptor("sim_stop.png")); //$NON-NLS-1$
             }
         }
+    }
+   
+    private IAction getStartSimulationAction()
+    {
+        IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
+        for(IWorkbenchWindow w : windows){
+            if(!(w instanceof ApplicationWindow))
+                continue;
+            ApplicationWindow window = (ApplicationWindow)w;
+            ICoolBarManager coolbar = window.getCoolBarManager2();
+            if(coolbar == null)
+                continue;
+            IContributionItem setitem = coolbar.find("com.generalrobotix.ui.actionSet");
+            if(setitem != null && setitem instanceof ToolBarContributionItem)
+            {
+                IToolBarManager toolbar = ((ToolBarContributionItem)setitem).getToolBarManager();
+                if(toolbar == null)
+                    continue;
+                IContributionItem actitem = toolbar.find("com.generalrobotix.ui.actions.StartSimulate");
+                if(actitem != null && actitem instanceof ActionContributionItem)
+                    return ((ActionContributionItem)actitem).getAction();
+            }
+        }
+        return null;
     }
 
     public void waitStopSimulation() throws InterruptedException {
