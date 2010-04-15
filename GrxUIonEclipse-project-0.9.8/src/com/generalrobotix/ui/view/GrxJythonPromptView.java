@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.util.LinkedList;
@@ -106,6 +107,9 @@ public class GrxJythonPromptView extends GrxBaseView {
   
     private Image simScriptStartIcon_;
     private Image simScriptStopIcon_;
+    private StyledTextWriter stWriter_;
+    
+    private static final int INTERVAL=100;  // StyledText の更新間隔(ms)  //
     
     /**
      * @brief constructor
@@ -158,7 +162,9 @@ public class GrxJythonPromptView extends GrxBaseView {
             
         });
              
-        writer_ = new BufferedWriter(new PrintWriter(new StyledTextWriter(styledText_)));
+        
+        stWriter_ = new StyledTextWriter();
+        writer_ =  new PrintWriter(stWriter_);
         interpreter_.setErr(writer_);
         interpreter_.setOut(writer_);
         interpreter_.set("uimanager", manager_); //$NON-NLS-1$
@@ -215,6 +221,29 @@ public class GrxJythonPromptView extends GrxBaseView {
         currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
         btnExec_.setEnabled(currentItem_ != null);
         manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
+      
+        Runnable stringOutRun_ = new Runnable() {
+			public void  run() {
+				Display display = composite_.getDisplay();
+				if (!display.isDisposed()){
+					display.timerExec(INTERVAL, this);
+					styledText_.append(stWriter_.read());
+					styledText_.setCaretOffset(styledText_.getText().length());
+					styledText_.setTopIndex(styledText_.getLineCount());
+					if(btnExec_.isEnabled() && btnExec_.getSelection()){
+						if( (thread_1_==null || !thread_1_.isAlive()) && (thread_2_==null || !thread_2_.isAlive()) ){
+							btnExec_.setSelection(false);
+							btnExec_.setImage(simScriptStartIcon_);
+							btnExec_.setToolTipText("execute script file"); //$NON-NLS-1$
+						}
+					}
+				}
+			}
+		};
+		Display display = composite_.getDisplay();
+		if (!display.isDisposed())
+			display.timerExec(INTERVAL, stringOutRun_);
+
     }
         
     private class InitPythonAction extends Action{
@@ -277,19 +306,9 @@ public class GrxJythonPromptView extends GrxBaseView {
                         		history_.add(1, com);
                                 if (history_.size() > HISTORY_SIZE)
                                     history_.remove(HISTORY_SIZE-1);
-                        		display_.syncExec(new Thread(){
-                                    public void run(){
-		                        		if (result_ != null){
-		                        			styledText_.append(result_.toString()+"\n"); //$NON-NLS-1$
-		                        		}
-		                        		btnExec_.setSelection(false);
-                                        btnExec_.setImage(simScriptStartIcon_);
-                                        styledText_.setFocus();
-                                        styledText_.append(prompt_);
-                                        styledText_.setCaretOffset(styledText_.getText().length());
-                                        styledText_.setTopIndex(styledText_.getLineCount());
-                                    }
-                        		});
+                                if (result_ != null)
+                                	stWriter_.write(result_.toString()+"\n");
+                                stWriter_.write(prompt_);
                         		hpos_ = 0;
                                 thread_1_ = null;
                         	};
@@ -392,17 +411,7 @@ public class GrxJythonPromptView extends GrxBaseView {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                display_.syncExec(new Thread(){
-                    public void run(){
-                        btnExec_.setSelection(false);
-                        btnExec_.setImage(simScriptStartIcon_);
-                        btnExec_.setToolTipText("execute script file"); //$NON-NLS-1$
-                        styledText_.setFocus();
-                        styledText_.append(prompt_);
-                        styledText_.setCaretOffset(styledText_.getText().length());
-                        styledText_.setTopIndex(styledText_.getLineCount());
-                    }
-                });
+                stWriter_.write(prompt_);
                 hpos_ = 0;
             }
         };
@@ -539,15 +548,14 @@ public class GrxJythonPromptView extends GrxBaseView {
     }
 
     public class StyledTextWriter extends Writer {
-        private StyledText out = null;
-
-        public StyledTextWriter(StyledText out) {
-            this.out = out;
+    	private StringBuffer outString_ = null;
+    	
+        public StyledTextWriter() {
+        	outString_ = new StringBuffer();
         }
 
         public void write(char[] cbuf, int off, int len) throws IOException {
             synchronized (lock) {
-                check();
                 if ((off < 0) || (off > cbuf.length) || (len < 0)
                         || ((off + len) > cbuf.length) || ((off + len) < 0)) {
                     throw new IndexOutOfBoundsException();
@@ -556,37 +564,34 @@ public class GrxJythonPromptView extends GrxBaseView {
 
                 char[] c = new char[len];
                 System.arraycopy(cbuf, off, c, 0, len);
-                final String str = String.valueOf(c);
-                display_.asyncExec(new Thread(){
-                    public void run(){
-                        out.append(str);
-                        out.setCaretOffset(out.getText().length());
-                    }
-                });
+                outString_.append(c);
             }
         }
 
         public void close() throws IOException {
             synchronized (lock) {
-                check();
-                flush();
-                out = null;
             }
         }
 
         public void flush() throws IOException {
             synchronized (lock) {
-                check();
             }
         }
-
-        private void check() throws IOException {
-            synchronized (lock) {
-                if (out == null) {
-                    throw new IOException();
-                }
-            }
+        
+        public String read(){
+        	synchronized(lock){
+        		String str = outString_.toString();
+        		outString_.delete(0, outString_.length());
+        		return str;
+        	}
         }
+        
+        public void write(String str){
+        	synchronized(lock){
+        		outString_.append(str);
+        	}
+        }
+        
     }
     
     public void shutdown(){
