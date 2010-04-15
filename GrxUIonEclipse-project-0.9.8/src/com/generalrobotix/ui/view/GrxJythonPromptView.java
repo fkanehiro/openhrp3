@@ -224,17 +224,19 @@ public class GrxJythonPromptView extends GrxBaseView {
       
         Runnable stringOutRun_ = new Runnable() {
 			public void  run() {
-				Display display = composite_.getDisplay();
-				if (!display.isDisposed()){
-					display.timerExec(INTERVAL, this);
-					styledText_.append(stWriter_.read());
-					styledText_.setCaretOffset(styledText_.getText().length());
-					styledText_.setTopIndex(styledText_.getLineCount());
-					if(btnExec_.isEnabled() && btnExec_.getSelection()){
-						if( (thread_1_==null || !thread_1_.isAlive()) && (thread_2_==null || !thread_2_.isAlive()) ){
-							btnExec_.setSelection(false);
-							btnExec_.setImage(simScriptStartIcon_);
-							btnExec_.setToolTipText("execute script file"); //$NON-NLS-1$
+				if(composite_!=null && composite_.isDisposed()){
+					Display display = composite_.getDisplay();
+					if (!display.isDisposed()){
+						display.timerExec(INTERVAL, this);
+						styledText_.append(stWriter_.read());
+						styledText_.setCaretOffset(styledText_.getText().length());
+						styledText_.setTopIndex(styledText_.getLineCount());
+						if(btnExec_.isEnabled() && btnExec_.getSelection()){
+							if( (thread_1_==null || !thread_1_.isAlive()) && (thread_2_==null || !thread_2_.isAlive()) ){
+								btnExec_.setSelection(false);
+								btnExec_.setImage(simScriptStartIcon_);
+								btnExec_.setToolTipText("execute script file"); //$NON-NLS-1$
+							}
 						}
 					}
 				}
