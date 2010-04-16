@@ -35,6 +35,7 @@ main(int argc, char* argv[])
     OnlineViewer_var olv = getOnlineViewer(argc, argv);
     try {
         olv->load(body->modelName().c_str(), url.c_str());
+        olv->clearLog();
     } catch (CORBA::SystemException& ex) {
         cerr << "Failed to connect GrxUI." << endl;
         return 1;
