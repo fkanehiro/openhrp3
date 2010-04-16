@@ -41,6 +41,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IPerspectiveDescriptor;
@@ -312,7 +313,9 @@ public class GrxProjectItem extends GrxBaseItem {
 			menu_.add( new Action(){
 				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.loadProject"); } //$NON-NLS-1$
 				public void run(){
-					load();
+                    if(!checkModifiedModel())
+                        return;
+                    load();
 				}
 			} );
 			// MENU_SAVE=3
@@ -349,7 +352,46 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		return menu_;
 	}
-	
+
+    private boolean checkModifiedModel()
+    {
+        List<GrxModelItem> modelList = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        for (int i=0; i<modelList.size(); i++) {
+            GrxModelItem model = modelList.get(i);
+            if(model.isModified()){
+                String mes = MessageBundle.get("GrxProjectItem.dialog.message.changeModel.mes"); //$NON-NLS-1$
+                mes = NLS.bind(mes, new String[]{model.getName()});
+                
+                MessageDialog msgDlg =
+                    new MessageDialog(GrxUIPerspectiveFactory.getCurrentShell(),
+                    		          MessageBundle.get("GrxProjectItem.dialog.message.changeModel.title"),
+                                      null,
+                                      mes,
+                                      MessageDialog.INFORMATION, 
+                                      new String[] {MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.save"), 
+                                              MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.reverse"), 
+                                              MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.cancel")},
+                                      2);
+                
+                switch(msgDlg.open())
+                {
+                case 0:
+                    if(!model.saveAndLoad())
+                        return false;
+                    break;
+                case 1:
+                    if(!model.reload())
+                        return false;
+                    break;
+                case 2:
+                default:
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 	public void save(File f) {
 		if (f.exists()) {
 			if (!f.isFile())
