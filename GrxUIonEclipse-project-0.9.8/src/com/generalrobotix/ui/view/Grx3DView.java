@@ -54,6 +54,11 @@ import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 import org.omg.PortableServer.POAPackage.ServantNotActive;
@@ -1422,6 +1427,7 @@ public class Grx3DView
             }
             if (firstTime_) {
                 firstTime_ = false;
+                prevTime = 0.0;
                 String[] chars = statex.characters();
                 for (int i=0; i<chars.length; i++) {
                     GrxModelItem model = (GrxModelItem)manager_.getItem(GrxModelItem.class, chars[i]);
@@ -1429,14 +1435,33 @@ public class Grx3DView
     				if(bodyInfo==null)	return;
     				currentWorld_.registerCharacter(chars[i], bodyInfo);
                 }
+                syncExec(new Runnable(){
+            		public void run(){
+		                GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class );
+		    			if( view == null){
+		    	        	IWorkbench workbench = PlatformUI.getWorkbench();
+		    	    		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+		    	    		IWorkbenchPage page = window.getActivePage();
+		    	    		try {
+		    	    			page.showView("com.generalrobotix.ui.view.GrxLoggerViewPart", null, IWorkbenchPage.VIEW_CREATE);   //$NON-NLS-1$
+		    	    		} catch (PartInitException e1) {
+		    	    			e1.printStackTrace();
+		    	    		}
+		    	        }
+            		}
+                }); 
             }
             final double t = statex.time;
             syncExec(new Runnable(){
         		public void run(){
         			currentWorld_.addValue(t, statex);
-        			currentWorld_.setPosition(currentWorld_.getLogSize()-1);
         			if (t > 0 && prevTime > 0)
         				currentWorld_.setDbl("logTimeStep", t - prevTime); //$NON-NLS-1$
+        			GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class );
+        			if(view != null){
+	        			view.setPlayRate(1.0);
+	       				view.play();
+        			}
         		}
             });
             prevTime = t;

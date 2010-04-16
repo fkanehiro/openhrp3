@@ -413,14 +413,14 @@ public class GrxLoggerView extends GrxBaseView {
     }
 
 	private boolean _isAtTheEndAfterPlayback(){
-		if (current_ == sliderTime_.getMaximum() && playRate_ > 0){
+		if (current_ == currentItem_.getLogSize()-1 && playRate_ > 0){
 			return true;
 		}else{
 			return false;
 		}
 	}
 	
-	private void play() {
+	public void play() {
 		if(currentItem_ == null) return;
 		if (!isPlaying_) {
 			if (_isAtTheEndAfterPlayback()) currentItem_.setPosition(0);
@@ -579,14 +579,18 @@ public class GrxLoggerView extends GrxBaseView {
 			lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.live")); //$NON-NLS-1$
 			if((Boolean)arg[1])
 				disableControl();
-			else
+			else{
+				playRate_ = 1;
 				play();
+			}
 		}else if((String)arg[0]=="StopSimulation"){ //$NON-NLS-1$
 			inSimulation_ = false;
 			lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.pause")); //$NON-NLS-1$
 			enableControl();
 			pause();
 		}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
+			if(isPlaying())
+				pause();
 			_setTimeSeriesItem(currentItem_);
 		}
 	}
@@ -685,5 +689,9 @@ public class GrxLoggerView extends GrxBaseView {
         {
             display.timerExec(-1, forwardPosRun_);
         }
+    }
+    
+    public void setPlayRate(double playRate){
+    	this.playRate_ = playRate;
     }
 }
