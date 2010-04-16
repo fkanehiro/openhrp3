@@ -107,6 +107,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	restoreProperties();
     	return true;
     }
+
+    public boolean reload(){
+    	File f = new File(getURL(true));
+    	load(f);
+    	restoreProperties();
+    	return true;
+    }
     
     /**
      * @brief get BodyInfo
@@ -260,8 +267,11 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		if( fPath != null ) {
 			fPath = fPath.replace('\\','/');
 			if (GrxVrmlExporter.export(GrxModelItem.this, fPath)){
+				boolean btmp = bModified_;
+				bModified_ = false;
 				setURL(fPath);
 				setDefaultDirectory(new File(fPath).getParent());
+				bModified_ = btmp;
 			}
 			return true;
 		}else
