@@ -475,7 +475,7 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnCollision_.isSelected()){
                     btnCollision_.setToolTipText(MessageBundle.get("Grx3DView.text.hideCollision")); //$NON-NLS-1$
-                    if (viewMode_ == SIMULATION)
+                    if (viewMode_ == SIMULATION || ( viewMode_ == VIEW && currentState_ != null))
                     	_showCollision(currentState_.collisions);
                     else
                     	_showCollision(behaviorManager_.getCollision());
@@ -784,7 +784,7 @@ public class Grx3DView
 					updateViewSimulator(currentState_.time);
 				}
 				if(viewMode_ == VIEW)
-					showOption();
+					showOptionWithoutCollision();
 			}
 		}else if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
 			disableButton();
@@ -838,6 +838,18 @@ public class Grx3DView
     	behaviorManager_.setMessageSkip(false);
     }
 	
+    private void showOptionWithoutCollision(){
+    	if(viewMode_==SIMULATION) return;
+    	if (btnDistance_.isSelected()){
+    		_showDistance(behaviorManager_.getDistance());
+    		behaviorManager_.setMessageSkip(true);
+    	}
+    	if (btnIntersection_.isSelected()){
+    		_showIntersection(behaviorManager_.getIntersection());
+    	}
+    	behaviorManager_.setMessageSkip(false);
+    }
+    
 	public void showViewSimulator(boolean b) {
         for (int i=0; i<currentModels_.size(); i++) {
             List<Camera_impl> l = currentModels_.get(i).getCameraSequence();
@@ -1823,10 +1835,11 @@ public class Grx3DView
         	syncExec(new Runnable(){
             	public void run(){
             		updateModels(currentState_);
+            		_showCollision(currentState_.collisions);
             	}
             });
 			updateViewSimulator(currentState_.time);
-			showOption();
+			showOptionWithoutCollision();
         }
     }
 
