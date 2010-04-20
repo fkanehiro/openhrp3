@@ -19,6 +19,7 @@
 
 package com.generalrobotix.ui.view;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -83,6 +84,7 @@ import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 import com.generalrobotix.ui.view.simulation.SimulationParameterPanel;
+import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
 @SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxOpenHRPView extends GrxBaseView {
@@ -105,12 +107,13 @@ public class GrxOpenHRPView extends GrxBaseView {
     private double totalTime_ = 20;
     private double logStepTime_ = 0.05;
     private boolean isSimulatingView_;
+    private double viewSimulationStep_=0;
     private IAction action_ = null;
 
     private SimulationParameterPanel simParamPane_;
 
     private Thread simThread_;
-    private static final int interval_ = 100; //[ms]
+    private static final int interval_ = 10; //[ms]
     private Grx3DView view3D;
     
     private static final String FORMAT1 = "%8.3f"; //$NON-NLS-1$
@@ -128,6 +131,9 @@ public class GrxOpenHRPView extends GrxBaseView {
         private static final int INTERRUPT = 2;
         private int simThreadState_ =  EXEC;
         private Object lock_ = new Object();
+        private Object lock3_ = new Object();
+        private boolean viewSimulationUpdate_ = false;
+        private WorldStateEx wsx_=null;
         
         public boolean startSimulation(boolean isInteractive) {
             
@@ -203,6 +209,7 @@ public class GrxOpenHRPView extends GrxBaseView {
             simulateTime_ = 0;
             currentWorld_.init();
             simThreadState_ =  EXEC;
+            viewSimulationUpdate_ = false;
             simThread_.start();
             
             Runnable run = new Runnable(){
@@ -218,7 +225,16 @@ public class GrxOpenHRPView extends GrxBaseView {
                             }
                         case EXEC:
                             if(isSimulatingView_){
-                                currentWorld_.setPosition(currentWorld_.getLogSize()-1,view3D);
+                            	if(viewSimulationUpdate_){
+	                            	view3D._showCollision(wsx_.collisions);
+	                                view3D.updateModels(wsx_);
+	                                view3D.updateViewSimulator(wsx_.time);
+	                                currentWorld_.setPosition(currentWorld_.getLogSize()-1,view3D);
+	                                synchronized(lock3_){
+		                                viewSimulationUpdate_=false;
+		                                lock3_.notify();
+	                                }
+                            	}
                             }
                             Display display = composite_.getDisplay();
                             if ( display!=null && !display.isDisposed()){
@@ -396,23 +412,43 @@ public class GrxOpenHRPView extends GrxBaseView {
             }
     
             // log
+            wsx_=null;
             if ((simTime_ % logStepTime_) < stepTime_) {
                 currentDynamics_.getWorldState(stateH_);
-                WorldStateEx wsx = new WorldStateEx(stateH_.value);
+                wsx_ = new WorldStateEx(stateH_.value);
                 for (int i=0; i<robotEntry_.size(); i++) {
                     String name = robotEntry_.get(i);
                     currentDynamics_.getCharacterSensorState(name, cStateH_);
-                    wsx.setSensorState(name, cStateH_.value);
+                    wsx_.setSensorState(name, cStateH_.value);
                 }
                 if (!isIntegrate_)
-                    wsx.time = simTime_;
-                currentWorld_.addValue(simTime_, wsx);
-         
-                if (isSimulatingView_){
-                    view3D._showCollision(wsx.collisions);
-                    view3D.updateModels(wsx);
-                    view3D.updateViewSimulator(wsx.time);
-                }
+                    wsx_.time = simTime_;
+                currentWorld_.addValue(simTime_, wsx_);
+            }
+            
+            // viewSimlulation update
+            if(isSimulatingView_){
+            	if ((simTime_ % viewSimulationStep_) < stepTime_) {
+            		if(wsx_==null){
+            			currentDynamics_.getWorldState(stateH_);
+                        wsx_ = new WorldStateEx(stateH_.value);
+                        for (int i=0; i<robotEntry_.size(); i++) {
+                            String name = robotEntry_.get(i);
+                            currentDynamics_.getCharacterSensorState(name, cStateH_);
+                            wsx_.setSensorState(name, cStateH_.value);
+                        }
+                        if (!isIntegrate_)
+                            wsx_.time = simTime_;	
+            		}
+            		synchronized(lock3_){
+            			try {
+            				viewSimulationUpdate_ = true;
+							lock3_.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+            		}
+            	}
             }
             
             // output
@@ -659,6 +695,7 @@ public class GrxOpenHRPView extends GrxBaseView {
         try {
             List<GrxModelItem> modelList = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
             robotEntry_.clear();
+            float cameraFrameRate = 1;
             for (int i=0; i<modelList.size(); i++) {
                 GrxModelItem model = modelList.get(i);
                 if (model.links_ == null)
@@ -675,8 +712,15 @@ public class GrxOpenHRPView extends GrxBaseView {
                 if (model.isRobot()) {
                     robotEntry_.add(model.getName());
                 }
+                List<Camera_impl> cameraList = model.getCameraSequence();
+                for (int j=0; j<cameraList.size(); j++) {
+                    Camera_impl camera = cameraList.get(j);
+                    float frameRate = camera.getCameraParameter().frameRate;
+                    cameraFrameRate = lcm(cameraFrameRate, frameRate);
+                }
             }
-
+            viewSimulationStep_ = 1.0d/cameraFrameRate;
+            
             IntegrateMethod m = IntegrateMethod.RUNGE_KUTTA;
             if (simParamPane_.getMethod().getSelectedIndex() == 1)
                 m = IntegrateMethod.EULER;
@@ -1006,4 +1050,20 @@ public class GrxOpenHRPView extends GrxBaseView {
     public boolean isSimulating(){
         return isExecuting_;
     }
+    
+   
+    public int gcd(int a, int b){
+    	BigInteger bigA = BigInteger.valueOf(a);
+    	BigInteger bigB = BigInteger.valueOf(b);
+    	return bigA.gcd(bigB).intValue();
+    }
+    
+    public int lcm(int a, int b){
+    	return a*b/gcd(a,b);
+    }
+    
+    public float lcm(float a, float b){
+    	return (float)lcm((int)a, (int)b);
+    }
+
 }

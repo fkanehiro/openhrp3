@@ -124,7 +124,7 @@ public class GrxPropertyView extends GrxBaseView {
         });
 
         viewer_ = new TableViewer(composite_, SWT.MULTI | SWT.FULL_SELECTION
-            | SWT.BORDER);
+            | SWT.BORDER | SWT.VIRTUAL);
         
         TableLayout layout = new TableLayout();
         layout.addColumnData(new ColumnWeightData(40, true));

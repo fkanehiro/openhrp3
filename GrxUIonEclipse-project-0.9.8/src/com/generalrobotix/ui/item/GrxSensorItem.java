@@ -404,6 +404,9 @@ public class GrxSensorItem extends GrxTransformItem implements  Comparable {
     			setProperty("alwaysVisible", "false"); //$NON-NLS-1$ //$NON-NLS-2$
     			setVisibleArea(false);
     		}
+    	}else if(property.equals("frameRate")){
+    		setProperty("frameRate", value);
+    		if (model_ != null) model_.notifyModified();
     	}else{
     		return false;
     	}
