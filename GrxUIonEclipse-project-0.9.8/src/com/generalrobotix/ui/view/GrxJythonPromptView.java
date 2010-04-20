@@ -224,7 +224,7 @@ public class GrxJythonPromptView extends GrxBaseView {
       
         Runnable stringOutRun_ = new Runnable() {
 			public void  run() {
-				if(composite_!=null && composite_.isDisposed()){
+				if(composite_!=null && !composite_.isDisposed()){
 					Display display = composite_.getDisplay();
 					if (!display.isDisposed()){
 						display.timerExec(INTERVAL, this);
