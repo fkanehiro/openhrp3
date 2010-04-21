@@ -37,6 +37,7 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -362,9 +363,22 @@ public class GrxPropertyView extends GrxBaseView {
             		int idx = ((Integer)value).intValue();
                 	CellEditor[] ce = viewer_.getCellEditors();
                 	if(2 <= ce.length && ce[1] instanceof ComboBoxCellEditor){
+                		
                 		String[] items = ((ComboBoxCellEditor)ce[1]).getItems();
                 		if(0 <= idx && idx < items.length)
                 			_value = items[idx];
+                		else
+                		{
+                    		String str = ((CCombo)ce[1].getControl()).getText();
+                    		for(int i = 0; i < items.length; i++)
+                    		{
+                    			if(items[i].equals(str))
+                    			{
+                    				_value = str;
+                    				break;
+                    			}
+                    		}
+                		}
                 	}
             	}
 
