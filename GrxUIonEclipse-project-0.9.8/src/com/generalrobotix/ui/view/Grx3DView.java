@@ -54,11 +54,6 @@ import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 import org.omg.PortableServer.POAPackage.ServantNotActive;
@@ -1383,6 +1378,8 @@ public class Grx3DView
     private class OnlineViewer_impl extends OnlineViewerPOA {
         private double prevTime = 0.0;
         private boolean firstTime_ = true;
+        private double logTimeStep_ = 0.0;
+        private boolean updateTimer_ = false;
         
         public void clearLog() {
             if (currentWorld_ != null){
@@ -1440,6 +1437,7 @@ public class Grx3DView
             if (firstTime_) {
                 firstTime_ = false;
                 prevTime = 0.0;
+                logTimeStep_ = 0.0;
                 String[] chars = statex.characters();
                 for (int i=0; i<chars.length; i++) {
                     GrxModelItem model = (GrxModelItem)manager_.getItem(GrxModelItem.class, chars[i]);
@@ -1449,34 +1447,31 @@ public class Grx3DView
                 }
                 syncExec(new Runnable(){
             		public void run(){
-		                GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class );
-		    			if( view == null){
-		    	        	IWorkbench workbench = PlatformUI.getWorkbench();
-		    	    		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		    	    		IWorkbenchPage page = window.getActivePage();
-		    	    		try {
-		    	    			page.showView("com.generalrobotix.ui.view.GrxLoggerViewPart", null, IWorkbenchPage.VIEW_CREATE);   //$NON-NLS-1$
-		    	    		} catch (PartInitException e1) {
-		    	    			e1.printStackTrace();
-		    	    		}
-		    	        }
+	        			if(statex.time > 0){
+	        				logTimeStep_ = statex.time;
+	        				currentWorld_.setDbl("logTimeStep", logTimeStep_); //$NON-NLS-1$
+	        			}
             		}
                 }); 
             }
-            final double t = statex.time;
-            syncExec(new Runnable(){
-        		public void run(){
-        			currentWorld_.addValue(t, statex);
-        			if (t > 0 && prevTime > 0)
-        				currentWorld_.setDbl("logTimeStep", t - prevTime); //$NON-NLS-1$
-        			GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class );
-        			if(view != null){
-	        			view.setPlayRate(1.0);
-	       				view.play();
-        			}
-        		}
-            });
-            prevTime = t;
+            
+            final double stepTime = statex.time - prevTime;
+            if(stepTime > 0 && Math.abs(stepTime-logTimeStep_)>10e-9){
+            	logTimeStep_ = stepTime;
+            	syncExec(new Runnable(){
+            		public void run(){
+            			currentWorld_.setDbl("logTimeStep", logTimeStep_); //$NON-NLS-1$
+            		}
+                });
+            }
+            
+            currentWorld_.addValue(statex.time, statex);
+            if(!updateTimer_){
+	            java.util.Timer timer = new java.util.Timer();
+	            timer.schedule(new updateView(),20);
+	            updateTimer_ = true;
+            }
+            prevTime = statex.time;
         }
         
         public void clearData() {}
@@ -1485,6 +1480,19 @@ public class Grx3DView
          }
         public void setLineScale(float arg0) {}
         public void setLineWidth(float arg0) {}
+    
+	    private class updateView extends java.util.TimerTask {
+			public void run() {
+				updateTimer_ = false;
+				final int pos = currentWorld_.getLogSize()-1;
+				syncExec(new Runnable(){
+	    			public void run(){
+	    				currentWorld_.setPosition(pos);
+	    			}
+	    		});
+			}
+	     }
+    
     }
     
     public void attach(BranchGroup bg) {
