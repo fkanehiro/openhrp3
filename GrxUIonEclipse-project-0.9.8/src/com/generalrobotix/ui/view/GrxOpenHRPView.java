@@ -113,7 +113,7 @@ public class GrxOpenHRPView extends GrxBaseView {
     private SimulationParameterPanel simParamPane_;
 
     private Thread simThread_;
-    private static final int interval_ = 100; //[ms]
+    private static final int interval_ = 10; //[ms]
     private Grx3DView view3D;
     
     private static final String FORMAT1 = "%8.3f"; //$NON-NLS-1$
@@ -131,6 +131,9 @@ public class GrxOpenHRPView extends GrxBaseView {
         private static final int INTERRUPT = 2;
         private int simThreadState_ =  EXEC;
         private Object lock_ = new Object();
+        private Object lock3_ = new Object();
+        private boolean viewSimulationUpdate_ = false;
+        private WorldStateEx wsx_=null;
         
         public boolean startSimulation(boolean isInteractive) {
             
@@ -206,6 +209,7 @@ public class GrxOpenHRPView extends GrxBaseView {
             simulateTime_ = 0;
             currentWorld_.init();
             simThreadState_ =  EXEC;
+            viewSimulationUpdate_ = false;
             simThread_.start();
             
             Runnable run = new Runnable(){
@@ -220,11 +224,18 @@ public class GrxOpenHRPView extends GrxBaseView {
                                 lock_.notifyAll();
                             }
                         case EXEC:
-                            /*
                             if(isSimulatingView_){
-                                currentWorld_.setPosition(currentWorld_.getLogSize()-1,view3D);
+                            	if(viewSimulationUpdate_){
+	                            	view3D._showCollision(wsx_.collisions);
+	                                view3D.updateModels(wsx_);
+	                                view3D.updateViewSimulator(wsx_.time);
+	                                currentWorld_.setPosition(currentWorld_.getLogSize()-1,view3D);
+	                                synchronized(lock3_){
+		                                viewSimulationUpdate_=false;
+		                                lock3_.notify();
+	                                }
+                            	}
                             }
-                            */
                             Display display = composite_.getDisplay();
                             if ( display!=null && !display.isDisposed()){
                                 display.timerExec(interval_, this);
@@ -401,45 +412,43 @@ public class GrxOpenHRPView extends GrxBaseView {
             }
     
             // log
-            WorldStateEx wsx = null;
+            wsx_=null;
             if ((simTime_ % logStepTime_) < stepTime_) {
                 currentDynamics_.getWorldState(stateH_);
-                wsx = new WorldStateEx(stateH_.value);
+                wsx_ = new WorldStateEx(stateH_.value);
                 for (int i=0; i<robotEntry_.size(); i++) {
                     String name = robotEntry_.get(i);
                     currentDynamics_.getCharacterSensorState(name, cStateH_);
-                    wsx.setSensorState(name, cStateH_.value);
+                    wsx_.setSensorState(name, cStateH_.value);
                 }
                 if (!isIntegrate_)
-                    wsx.time = simTime_;
-                currentWorld_.addValue(simTime_, wsx);
+                    wsx_.time = simTime_;
+                currentWorld_.addValue(simTime_, wsx_);
             }
             
             // viewSimlulation update
             if(isSimulatingView_){
-                if ((simTime_ % viewSimulationStep_) < stepTime_) {
-                    if(wsx==null){
-                        currentDynamics_.getWorldState(stateH_);
-                        wsx = new WorldStateEx(stateH_.value);
+            	if ((simTime_ % viewSimulationStep_) < stepTime_) {
+            		if(wsx_==null){
+            			currentDynamics_.getWorldState(stateH_);
+                        wsx_ = new WorldStateEx(stateH_.value);
                         for (int i=0; i<robotEntry_.size(); i++) {
                             String name = robotEntry_.get(i);
                             currentDynamics_.getCharacterSensorState(name, cStateH_);
-                            wsx.setSensorState(name, cStateH_.value);
+                            wsx_.setSensorState(name, cStateH_.value);
                         }
                         if (!isIntegrate_)
-                            wsx.time = simTime_;
-                    }
-
-                    view3D._showCollision(wsx.collisions);
-                    view3D.updateModels(wsx);
-                    view3D.updateViewSimulator(wsx.time);
-
-                    syncExec(new Runnable(){
-                            public void run(){
-                                currentWorld_.setPosition(currentWorld_.getLogSize()-1,view3D);
-                            }
-                        });
-                }
+                            wsx_.time = simTime_;	
+            		}
+            		synchronized(lock3_){
+            			try {
+            				viewSimulationUpdate_ = true;
+							lock3_.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+            		}
+            	}
             }
             
             // output
