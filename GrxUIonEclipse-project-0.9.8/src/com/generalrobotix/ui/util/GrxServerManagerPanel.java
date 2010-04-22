@@ -40,12 +40,15 @@ public class GrxServerManagerPanel extends Composite {
 
     static private final int    HORIZON_INDENT_ = 4;
     static private final int    LABEL_LENGTH_   = 40;
+    static private final int    LOCAL_REF_BUTTON_LENGTH_ = 18;
     static private final int    BUTTON_LENGTH_   = 64;
     static private final int    TEXT_LENGTH_    = 256;
     static private final String START_          = MessageBundle.get("GrxServerManagerPanel.button.start"); //$NON-NLS-1$
     static private final String STOP_           = MessageBundle.get("GrxServerManagerPanel.button.stop"); //$NON-NLS-1$
+    static private final String RESTART_        = MessageBundle.get("GrxServerManagerPanel.button.restart"); //$NON-NLS-1$
     
     private Button  toggleButton_ = null; // Start <-> Stop Button
+    private Button  restartButton_= null; // Restart Button
     private Button  autoChkBox_   = null; // Automatic start process flag
     private Button  useORBChkBox_ = null;
     private Text    pathText_     = null;
@@ -58,7 +61,7 @@ public class GrxServerManagerPanel extends Composite {
     private boolean bAuto_;
     
     private ProcessInfo processInfo_=null;
-    
+    private boolean restartFlag_ = false;
     public GrxServerManagerPanel(GrxServerManager manager, TabFolder parent, int style, int index) {
         super(parent, style);
         serverManager_ = manager;
@@ -67,7 +70,7 @@ public class GrxServerManagerPanel extends Composite {
         localPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL |
                 GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
 
-        GridLayout localGridLayout = new GridLayout(3, false);
+        GridLayout localGridLayout = new GridLayout(4, false);
 
         localGridLayout.marginLeft = 0;
         localGridLayout.horizontalSpacing = 0;
@@ -93,6 +96,13 @@ public class GrxServerManagerPanel extends Composite {
         localRefButton.setText("..."); //$NON-NLS-1$
         GridData refbtnGridData = new GridData();
         refbtnGridData.horizontalIndent = HORIZON_INDENT_;
+        refbtnGridData.widthHint = LOCAL_REF_BUTTON_LENGTH_;
+        
+        restartButton_ = new Button(localPanel, SWT.PUSH);
+        restartButton_.setText(RESTART_);
+        GridData rstbtnGridData = new GridData();
+        rstbtnGridData.horizontalIndent = HORIZON_INDENT_;
+        rstbtnGridData.widthHint = BUTTON_LENGTH_;
 
         Label localLabelArgs = new Label(localPanel, SWT.RIGHT);
         localLabelArgs.setText(MessageBundle.get("GrxServerManagerPanel.label.args")); //$NON-NLS-1$
@@ -115,8 +125,10 @@ public class GrxServerManagerPanel extends Composite {
         AProcess process = pm.get(processInfo_.id);
         if ( process!=null && process.isRunning() ) {
             toggleButton_.setText(STOP_);
+            restartButton_.setVisible(true);
         } else {
             toggleButton_.setText(START_);
+            restartButton_.setVisible(false);
         }
         
         localRefButton.addSelectionListener(new SelectionListener() {
@@ -135,9 +147,19 @@ public class GrxServerManagerPanel extends Composite {
             }
         });
 
+        restartButton_.addSelectionListener(new SelectionListener() {
+            public void widgetDefaultSelected(SelectionEvent e) {}
+
+            public void widgetSelected(SelectionEvent e) {
+                updateRestartBtn();
+            }
+        });
+        
         GridData btnGridData = new GridData();
         btnGridData.horizontalIndent = HORIZON_INDENT_;
         btnGridData.widthHint = BUTTON_LENGTH_;
+        btnGridData.horizontalAlignment = SWT.END;
+        btnGridData.horizontalSpan = 2;
 
         Label localLabelAuto = new Label(localPanel, SWT.RIGHT | SWT.FILL);
         localLabelAuto.setText(MessageBundle.get("GrxServerManagerPanel.label.start")); //$NON-NLS-1$
@@ -180,6 +202,7 @@ public class GrxServerManagerPanel extends Composite {
         localLabelPath.setLayoutData(labelPathGridData);
         pathText_.setLayoutData(pathGridData);
         localRefButton.setLayoutData(refbtnGridData);
+        restartButton_.setLayoutData(rstbtnGridData);
         localLabelArgs.setLayoutData(labelArgsGridData);
         argsText_.setLayoutData(argsGridData);
         toggleButton_.setLayoutData(btnGridData);
@@ -231,13 +254,82 @@ public class GrxServerManagerPanel extends Composite {
             if( serverManager_.toggleProcess(processInfo_) )
             {
                 toggleButton_.setText(STOP_);
+                restartButton_.setVisible(true);
             }else{
                 toggleButton_.setText(START_);
+                restartButton_.setVisible(false);
             }
+        }
+    }
+
+    //プロセス再起動
+    private void updateRestartBtn() {
+        String mes = MessageBundle.get("GrxServerManagerPanel.dialog.message.restart"); //$NON-NLS-1$
+        String title = MessageBundle.get("GrxServerManagerPanel.dialog.title.update") + restartButton_.getText(); //$NON-NLS-1$
+        // 確認ダイアログ表示後 再起動
+        if ( MessageDialog.openConfirm(
+                this.getShell(),
+                title,
+                mes)) //$NON-NLS-1$ //$NON-NLS-2$
+        {
+            updateProcessInfo();
+
+            GrxProcessManager pm = GrxProcessManager.getInstance();
+            AProcess process = pm.get(processInfo_.id);
+            
+            //プロセス停止時は起動のみ行う
+            //(停止時は非表示のためイレギュラーケース)
+            if(process==null || !process.isRunning()){
+                if( serverManager_.toggleProcess(processInfo_) )
+                {
+                    toggleButton_.setText(STOP_);
+                    restartButton_.setVisible(true);
+                }else{
+                    toggleButton_.setText(START_);
+                    restartButton_.setVisible(false);
+                    MessageDialog.openError(
+                            this.getShell(),title,
+                            MessageBundle.get("GrxServerManagerPanel.dialog.message.errorRestart"));
+                }
+                return;
+            }
+
+            // サーバの停止
+            if(serverManager_.toggleProcess(processInfo_))
+            {
+                toggleButton_.setText(STOP_);
+                restartButton_.setVisible(true);
+                MessageDialog.openError(
+                        this.getShell(),title,
+                        MessageBundle.get("GrxServerManagerPanel.dialog.message.errorRestart"));
+                return;
+            }
+            // サーバの起動
+            if(!serverManager_.toggleProcess(processInfo_))
+            {
+                toggleButton_.setText(START_);
+                restartButton_.setVisible(false);
+                MessageDialog.openError(
+                        this.getShell(),title,
+                        MessageBundle.get("GrxServerManagerPanel.dialog.message.errorRestart"));
+                return;
+            }
+
+            toggleButton_.setText(STOP_);
+            restartButton_.setVisible(true);
+            restartFlag_ = true;
         }
     }
     
     public void setStartText(){
-    	toggleButton_.setText(START_);
+        // 再起動時はプロセス停止notifyを一回無視する
+        if(restartFlag_)
+        {
+            restartFlag_ = false;
+            return;
+        }
+
+        toggleButton_.setText(START_);
+        restartButton_.setVisible(false);
     }
 }
