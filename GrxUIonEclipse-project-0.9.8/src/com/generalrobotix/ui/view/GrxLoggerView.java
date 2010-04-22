@@ -420,11 +420,11 @@ public class GrxLoggerView extends GrxBaseView {
 		}
 	}
 	
-	public void play() {
+	private void play() {
 		if(currentItem_ == null) return;
 		if (!isPlaying_) {
 			if (_isAtTheEndAfterPlayback()) currentItem_.setPosition(0);
-			final double stepTime = currentItem_.getDbl("logTimeStep", -1.0)*1000; //$NON-NLS-1$
+			final double stepTime = currentItem_.getDbl("logTimeStep", 0.001)*1000; //$NON-NLS-1$
 			Runnable playRun_ = new Runnable() {
 				public void run() {
 					if(!isPlaying_) return;
@@ -689,9 +689,5 @@ public class GrxLoggerView extends GrxBaseView {
         {
             display.timerExec(-1, forwardPosRun_);
         }
-    }
-    
-    public void setPlayRate(double playRate){
-    	this.playRate_ = playRate;
     }
 }
