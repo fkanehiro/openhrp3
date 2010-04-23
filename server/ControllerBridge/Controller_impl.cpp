@@ -173,6 +173,7 @@ Controller_impl::RtcInfoPtr Controller_impl::addRtcVectorWithConnection(RTC::RTO
 
     if ( bridgeConf->timeRateMap.size() == 0 ) {
         rtcInfo->timeRate = 1.0;
+        rtcInfo->timeRateCounter = 0.0;
     } else {
         TimeRateMap::iterator p = bridgeConf->timeRateMap.find(rtcName);
         if ( p != bridgeConf->timeRateMap.end() ) {
