@@ -116,6 +116,14 @@
             </separator>
          </menu>
          <action
+               class="com.generalrobotix.ui.actions.ExecuteScript"
+               icon="resources/images/sim_script_start.png"
+               id="com.generalrobotix.ui.actions.ExecuteScript"
+               label="%action.ExecuteScript.label"
+               toolbarPath="GrxUIGroup"
+               tooltip="Execute Script File">
+         </action>
+         <action
                class="com.generalrobotix.ui.actions.StartSimulate"
                icon="resources/images/sim_start.png"
                id="com.generalrobotix.ui.actions.StartSimulate"

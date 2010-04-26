@@ -33,8 +33,14 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.ICoolBarManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.ToolBarContributionItem;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.custom.StyledText;
@@ -48,6 +54,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.python.core.PyList;
 import org.python.core.PyString;
 import org.python.util.PythonInterpreter;
@@ -148,16 +156,7 @@ public class GrxJythonPromptView extends GrxBaseView {
             }
 
             public void widgetSelected(SelectionEvent e) {
-                if (btnExec_.getSelection()) {
-                    btnExec_.setImage(simScriptStopIcon_);
-                    btnExec_.setToolTipText(MessageBundle.get("GrxJythonPromptView.text.interrupt")); //$NON-NLS-1$
-                    execFile();
-                } else {
-                    btnExec_.setImage(simScriptStartIcon_);
-                    btnExec_.setToolTipText(MessageBundle.get("GrxJythonPromptView.text.execute")); //$NON-NLS-1$
-                    styledText_.setEnabled(true);
-                    interrupt();
-                }
+                selectedExecBtn();
             }
             
         });
@@ -234,8 +233,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 						if(btnExec_.isEnabled() && btnExec_.getSelection()){
 							if( (thread_1_==null || !thread_1_.isAlive()) && (thread_2_==null || !thread_2_.isAlive()) ){
 								btnExec_.setSelection(false);
-								btnExec_.setImage(simScriptStartIcon_);
-								btnExec_.setToolTipText("execute script file"); //$NON-NLS-1$
+                                styleExecBtn(false);
 							}
 						}
 					}
@@ -286,7 +284,7 @@ public class GrxJythonPromptView extends GrxBaseView {
                 	}else{
                 		styledText_.append("\n"); //$NON-NLS-1$
                         btnExec_.setSelection(true);
-                        btnExec_.setImage(simScriptStopIcon_);
+                        styleExecBtn(true);
                         final String com = com_.trim();
                         thread_1_ = new Thread() {
                         	public void run() {
@@ -599,6 +597,71 @@ public class GrxJythonPromptView extends GrxBaseView {
     public void shutdown(){
     	manager_.removeItemChangeListener(this, GrxPythonScriptItem.class);
     }
+
+    public boolean getEnabledExecBtn(){
+        return btnExec_.getEnabled();
+    }
+
+    public void selectExecBtn(){
+        btnExec_.setSelection(!btnExec_.getSelection());
+        selectedExecBtn();
+    }
+
+    private void selectedExecBtn(){
+        if (btnExec_.getSelection()) {
+            styleExecBtn(true);
+            execFile();
+        } else {
+            styleExecBtn(false);
+            interrupt();
+        }
+    }
+
+    private void styleExecBtn(boolean selected){
+        IAction action = getStartSimulationAction();
+        if(selected){
+            btnExec_.setImage(simScriptStopIcon_);
+            btnExec_.setToolTipText(MessageBundle.get("GrxJythonPromptView.text.interrupt"));
+            if(action != null){
+                action.setText("interrupt python threads");
+                action.setImageDescriptor(Activator.getDefault().getDescriptor("sim_script_stop.png"));
+            }
+        }
+        else{
+            btnExec_.setImage(simScriptStartIcon_);
+            btnExec_.setToolTipText(MessageBundle.get("GrxJythonPromptView.text.execute"));
+            styledText_.setEnabled(true);
+            if(action != null){
+                action.setToolTipText("Execute Script File");
+                action.setImageDescriptor(Activator.getDefault().getDescriptor("sim_script_start.png"));
+            }
+        }
+    }
+
+    private IAction getStartSimulationAction()
+    {
+        IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
+        for(IWorkbenchWindow w : windows){
+            if(!(w instanceof ApplicationWindow))
+                continue;
+            ApplicationWindow window = (ApplicationWindow)w;
+            ICoolBarManager coolbar = window.getCoolBarManager2();
+            if(coolbar == null)
+                continue;
+            IContributionItem setitem = coolbar.find("com.generalrobotix.ui.actionSet");
+            if(setitem != null && setitem instanceof ToolBarContributionItem)
+            {
+                IToolBarManager toolbar = ((ToolBarContributionItem)setitem).getToolBarManager();
+                if(toolbar == null)
+                    continue;
+                IContributionItem actitem = toolbar.find("com.generalrobotix.ui.actions.ExecuteScript");
+                if(actitem != null && actitem instanceof ActionContributionItem)
+                    return ((ActionContributionItem)actitem).getAction();
+            }
+        }
+        return null;
+    }
+
 //    public void add(JPanel pnl) {
 //        getContentPane().add(pnl, BorderLayout.SOUTH);
 //    }
