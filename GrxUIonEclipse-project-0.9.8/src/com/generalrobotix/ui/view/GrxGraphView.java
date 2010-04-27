@@ -168,12 +168,12 @@ public class GrxGraphView extends GrxBaseView {
 		}
 		
 		if (p == null) {
-			gpanel_.setEnabled(false);
+			gpanel_.setEnabledRangeButton(false);
 			composite_.redraw(composite_.getLocation().x,composite_.getLocation().y,composite_.getSize().x,composite_.getSize().y,true);	
 			return;
 		}
 		
-		gpanel_.setEnabled(true);
+		gpanel_.setEnabledRangeButton(true);
 		
 		for (int i = 0; i < graphManager_.getNumGraph(); i++) {
 			String graphName = "Graph" + i;

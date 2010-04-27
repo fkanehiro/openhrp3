@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -58,7 +59,7 @@ public class GraphPanel extends Composite{
     private Button hRangeButton_;
     private Button vRangeButton_;
     private Button seriesButton_;
-    private Button epsButton_;
+    //private Button epsButton_;
     
     public void setEnabled(boolean b) {
     	hRangeButton_.setEnabled(b);
@@ -66,11 +67,16 @@ public class GraphPanel extends Composite{
     	seriesButton_.setEnabled(b);
     	//epsButton_.setEnabled(b);
     }
+
+    public void setEnabledRangeButton(boolean b) {
+        hRangeButton_.setEnabled(b);
+        vRangeButton_.setEnabled(b);
+    }
     
     private HRangeDialog hRangeDialog_;
     private VRangeDialog vRangeDialog_;
     public SeriesDialog seriesDialog_;
-    private EPSDialog epsDialog_;
+    //private EPSDialog epsDialog_;
 
     private ScrolledComposite graphScrollPane_;
 
@@ -175,15 +181,28 @@ public class GraphPanel extends Composite{
             }
         );
 
-        seriesButton_ = new Button(graphControlPanel,  SWT.TOGGLE);
+        seriesButton_ = new Button(graphControlPanel,  SWT.PUSH);
         seriesButton_.setText(MessageBundle.get("GraphPanel.button.series")); //$NON-NLS-1$
         
         seriesDialog_ = new SeriesDialog(currentGraph_, graphControlPanel.getShell());
         seriesButton_.addSelectionListener(new SelectionAdapter(){
             	public void widgetSelected(SelectionEvent e) {
-                    final GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+                    GrxGraphItem graphItem = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
                     if (graphItem == null)
-                    	return;
+                    {
+                        if(MessageDialog.openQuestion(
+                            null,
+                            MessageBundle.get("GraphPanel.dialog.creategraph.title"),
+                            MessageBundle.get("GraphPanel.dialog.creategraph.message")))
+                        {
+                            graphItem = (GrxGraphItem)manager_.createItem(GrxGraphItem.class, null);
+                            manager_.itemChange(graphItem, GrxPluginManager.ADD_ITEM);
+                            manager_.setSelectedItem(graphItem, true);
+                        }
+                        else
+                            return;
+                    }
+
                     TrendGraph tg = currentGraph_.getTrendGraph();
                     seriesDialog_.setModelList(currentModels_);
                     seriesDialog_.setDataItemInfoList(tg.getDataItemInfoList());
@@ -319,7 +338,7 @@ public class GraphPanel extends Composite{
             }
         );
 	*/
-        setEnabled(false);
+        setEnabledRangeButton(false);
     }
 
     public void setFocuse(GraphElement ge){
@@ -369,8 +388,9 @@ public class GraphPanel extends Composite{
         //epsButton_.setEnabled(enabled);
         
         GrxGraphItem p = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
-        setEnabled(p != null);
+        setEnabledRangeButton(p != null);
     }
+    
 
  /*   public void setMode(int mode) {
         mode_ = mode;
