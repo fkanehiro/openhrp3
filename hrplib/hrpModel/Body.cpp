@@ -818,40 +818,48 @@ bool CustomizedJointPath::hasAnalyticalIK()
 void Body::calcCMJacobian(Link *base, dmatrix &J)
 {
     // prepare subm, submwc
-    JointPathPtr jp = getJointPath(rootLink(), base);
-    Link *skip = jp->joint(0);
-    skip->subm = rootLink()->m;
-    skip->submwc = rootLink()->m*rootLink()->wc;
-    Link *l = rootLink()->child;
-    if (l){
-        if (l != skip) {
-            l->calcSubMassCM();
-            skip->subm += l->subm;
-            skip->submwc += l->submwc;
-        }
-        l = l->sibling;
-        while(l){
-            if (l != skip){
+    JointPathPtr jp;
+    if (base){
+        jp = getJointPath(rootLink(), base);
+        Link *skip = jp->joint(0);
+        skip->subm = rootLink()->m;
+        skip->submwc = rootLink()->m*rootLink()->wc;
+        Link *l = rootLink()->child;
+        if (l){
+            if (l != skip) {
                 l->calcSubMassCM();
                 skip->subm += l->subm;
                 skip->submwc += l->submwc;
             }
             l = l->sibling;
+            while(l){
+                if (l != skip){
+                    l->calcSubMassCM();
+                    skip->subm += l->subm;
+                    skip->submwc += l->submwc;
+                }
+                l = l->sibling;
+            }
         }
-    }
-    
-    // assuming there is no branch between base and root
-    for (int i=1; i<jp->numJoints(); i++){
-        l = jp->joint(i);
-        l->subm = l->parent->m + l->parent->subm;
-        l->submwc = l->parent->m*l->parent->wc + l->parent->submwc;
+        
+        // assuming there is no branch between base and root
+        for (int i=1; i<jp->numJoints(); i++){
+            l = jp->joint(i);
+            l->subm = l->parent->m + l->parent->subm;
+            l->submwc = l->parent->m*l->parent->wc + l->parent->submwc;
+        }
+        
+        J.resize(3, numJoints());
+    }else{
+        rootLink()->calcSubMassCM();
+        J.resize(3, numJoints()+6);
     }
     
     // compute Jacobian
-    J.resize(3, numJoints());
-    
     std::vector<int> sgn(numJoints(), 1);
-    for (int i=0; i<jp->numJoints(); i++) sgn[jp->joint(i)->jointId] = -1;
+    if (jp) {
+        for (int i=0; i<jp->numJoints(); i++) sgn[jp->joint(i)->jointId] = -1;
+    }
     
     for (int i=0; i<numJoints(); i++){
         Link *j = joint(i);
@@ -868,5 +876,16 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
             std::cerr << "calcCMJacobian() : unsupported jointType("
                       << j->jointType << std::endl;
         }
+    }
+    if (!base){
+        int c = numJoints();
+        J(0, c  ) = 1.0; J(0, c+1) = 0.0; J(0, c+2) = 0.0;
+        J(1, c  ) = 0.0; J(1, c+1) = 1.0; J(1, c+2) = 0.0;
+        J(2, c  ) = 0.0; J(2, c+1) = 0.0; J(2, c+2) = 1.0;
+
+        Vector3 dp(rootLink()->submwc/totalMass_ - rootLink()->p);
+        J(0, c+3) =    0.0; J(0, c+4) =  dp(2); J(0, c+5) = -dp(1);
+        J(1, c+3) = -dp(2); J(1, c+4) =    0.0; J(1, c+5) =  dp(0);
+        J(2, c+3) =  dp(1); J(2, c+4) = -dp(0); J(2, c+5) =    0.0;
     }
 }
