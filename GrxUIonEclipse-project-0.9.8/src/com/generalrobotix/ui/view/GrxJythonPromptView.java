@@ -227,9 +227,12 @@ public class GrxJythonPromptView extends GrxBaseView {
 					Display display = composite_.getDisplay();
 					if (!display.isDisposed()){
 						display.timerExec(INTERVAL, this);
-						styledText_.append(stWriter_.read());
-						styledText_.setCaretOffset(styledText_.getText().length());
-						styledText_.setTopIndex(styledText_.getLineCount());
+						String string=stWriter_.read();
+						if(!string.equals("")){
+							styledText_.append(string);
+							styledText_.setCaretOffset(styledText_.getText().length());
+							styledText_.setTopIndex(styledText_.getLineCount());
+						}
 						if(btnExec_.isEnabled() && btnExec_.getSelection()){
 							if( (thread_1_==null || !thread_1_.isAlive()) && (thread_2_==null || !thread_2_.isAlive()) ){
 								btnExec_.setSelection(false);
