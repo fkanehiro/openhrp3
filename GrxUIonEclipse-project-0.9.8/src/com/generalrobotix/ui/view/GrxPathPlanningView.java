@@ -69,6 +69,7 @@ import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem;
+import com.generalrobotix.ui.item.GrxSimulationItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -797,16 +798,12 @@ public class GrxPathPlanningView extends GrxBaseView {
 
 	// 経路計画サーバへ渡すためDynamicsSimulatorを取得
 	DynamicsSimulator getDynamicsSimulator(){
-		GrxOpenHRPView hrpView = (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
-		if( hrpView == null ) {
-			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.OpenHRP")); //$NON-NLS-1$ //$NON-NLS-2$
-			return null;
-		}
-		if( ! hrpView.initDynamicsSimulator() ){
+		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		if( ! simItem.initDynamicsSimulator() ){
 			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.Dynamics")); //$NON-NLS-1$ //$NON-NLS-2$
 			return null;
 		}
-		return hrpView.getDynamicsSimulator(false);
+		return simItem.getDynamicsSimulator(false);
 	}
 	
 	/**

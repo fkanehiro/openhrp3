@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.osgi.util.NLS;
 
+import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
@@ -62,8 +63,11 @@ public class GrxServerManagerPanel extends Composite {
     
     private ProcessInfo processInfo_=null;
     private boolean restartFlag_ = false;
-    public GrxServerManagerPanel(GrxServerManager manager, TabFolder parent, int style, int index) {
+    private GrxPluginManager pluginManager_ = null;
+    
+    public GrxServerManagerPanel(GrxServerManager manager, TabFolder parent, int style, int index, GrxPluginManager pluginManager) {
         super(parent, style);
+        pluginManager_ = pluginManager;
         serverManager_ = manager;
         processInfo_ = manager.getServerInfo().elementAt(index);
         Composite localPanel = this;
@@ -121,7 +125,7 @@ public class GrxServerManagerPanel extends Composite {
         });
 
         toggleButton_ = new Button(localPanel, SWT.PUSH);
-        GrxProcessManager pm = GrxProcessManager.getInstance();
+        GrxProcessManager pm = (GrxProcessManager) pluginManager_.getItem("processManager");
         AProcess process = pm.get(processInfo_.id);
         if ( process!=null && process.isRunning() ) {
             toggleButton_.setText(STOP_);
@@ -274,7 +278,7 @@ public class GrxServerManagerPanel extends Composite {
         {
             updateProcessInfo();
 
-            GrxProcessManager pm = GrxProcessManager.getInstance();
+            GrxProcessManager pm = (GrxProcessManager) pluginManager_.getItem("processManager");
             AProcess process = pm.get(processInfo_.id);
             
             //プロセス停止時は起動のみ行う

@@ -112,7 +112,7 @@ public class GrxServerManager extends GrxBaseItem{
      *          false:停止状態へ遷移
      */
     public boolean toggleProcess(ProcessInfo pInfo){
-        GrxProcessManager pm = GrxProcessManager.getInstance();
+        GrxProcessManager pm = (GrxProcessManager) manager_.getItem("processManager");
         AProcess process = pm.get(pInfo.id);
         StringBuffer nsHost = new StringBuffer("");
         StringBuffer nsPort = new StringBuffer("");
@@ -240,7 +240,7 @@ public class GrxServerManager extends GrxBaseItem{
         NAME_SERVER_PORT_ = newPort_.get();
         NAME_SERVER_HOST_ = newHost_.get();
         nameServerInfo.args = generateNameServerArgs();
-        GrxProcessManager pm = GrxProcessManager.getInstance();
+        GrxProcessManager pm = (GrxProcessManager) manager_.getItem("processManager");
         pm.restart(monitor);
     }
     

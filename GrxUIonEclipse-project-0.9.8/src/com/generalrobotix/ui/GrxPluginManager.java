@@ -52,6 +52,7 @@ import com.generalrobotix.ui.util.SynchronizedAccessor;
 import com.generalrobotix.ui.util.FileUtil;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxProjectItem;
+import com.generalrobotix.ui.item.GrxSimulationItem;
 import com.generalrobotix.ui.util.GrxServerManager;
 
 import org.eclipse.osgi.util.NLS;
@@ -155,7 +156,16 @@ public class GrxPluginManager implements IPropertyChangeListener {
 			serverManager.initialize();
 			itemChange(serverManager, GrxPluginManager.ADD_ITEM);
 		}
-        GrxProcessManager.getInstance().setProcessList(serverManager);
+		GrxProcessManager processManager = (GrxProcessManager)createItem(GrxProcessManager.class, "processManager");
+		if (processManager != null){
+			processManager.setProcessList(serverManager);
+			itemChange(processManager, GrxPluginManager.ADD_ITEM);
+		}
+        
+        // SImulationItem 生成　　//
+        GrxSimulationItem simulationItem = (GrxSimulationItem)createItem(GrxSimulationItem.class, "simulation");
+        if(simulationItem != null)
+        	itemChange(simulationItem, GrxPluginManager.ADD_ITEM);
     }
 
     /**

@@ -61,7 +61,6 @@ import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.view.Grx3DView;
-import com.generalrobotix.ui.view.GrxOpenHRPView;
 import com.generalrobotix.ui.util.GrxConfigBundle;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -503,11 +502,10 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		if (f == null || !f.isFile())
 			return false;
-    	GrxOpenHRPView grxView = (GrxOpenHRPView)manager_.getView(GrxOpenHRPView.class);
-		if( grxView != null ){
-			grxView.stopSimulation();
-		}
-
+		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		if(simItem.isSimulating())
+			simItem.stopSimulation();
+		
 		manager_.removeAllItems();
 		manager_.focusedItem(manager_.getProject());
 		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
@@ -572,7 +570,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(null);
 		try {
 			progressMonitorDlg.run(false,false, runnableProgress);
-			//ダイアログの影が残ってしまぁE��題�E対筁E//
+			//ダイアログの影が残ってしまぁE��題�E対筁E//
 			Grx3DView view3d =  (Grx3DView)manager_.getView( Grx3DView.class );
 			if(view3d!=null){
 				view3d.repaint();

@@ -26,60 +26,45 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import jp.go.aist.hrp.simulator.ServerObject;
 import jp.go.aist.hrp.simulator.ServerObjectHelper;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.w3c.dom.Element;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
 import com.generalrobotix.ui.util.GrxXmlUtil;
 import com.generalrobotix.ui.util.GrxServerManager;
 import com.generalrobotix.ui.util.FileUtil;
 
-public class GrxProcessManager {
+@SuppressWarnings("serial")
+public class GrxProcessManager extends GrxBaseItem{
     private static GrxProcessManager      GrxProcessManagerThis_            = null;
     
     private java.util.List<AProcess>      process_         = null;
     private boolean                       isEnd_           = false;
     private SynchronizedAccessor<Boolean> isType_          = new SynchronizedAccessor<Boolean>(true);
-    private Composite                     outputComposite_ = null;
-    private StyledText                    outputArea_      = null;
     private StringBuffer                  outputBuffer_    = null;
     private ConcurrentLinkedQueue<String> lineQueue        = null;
     private Thread                        thread_          = null;
     private ProcessInfo 				   nameServerInfo_  = null;
     private GrxServerManager 			   serverManager_   = null;
 
-    private GrxProcessManager() {
+    public GrxProcessManager(String name, GrxPluginManager manager) {
+		super(name, manager);
         process_ = new java.util.ArrayList<AProcess>();
-        outputComposite_ = null;
-        outputArea_ = null;
         outputBuffer_ = new StringBuffer();
         lineQueue = new ConcurrentLinkedQueue<String>();
-    }
-
-    public static synchronized GrxProcessManager getInstance() {
-        if (GrxProcessManagerThis_ == null) {
-            GrxProcessManagerThis_ = new GrxProcessManager();
-        }
-        return GrxProcessManagerThis_;
+        GrxProcessManagerThis_ = this;
+        createThread();
     }
 
     public static synchronized void shutDown() {
@@ -90,24 +75,6 @@ public class GrxProcessManager {
             GrxProcessManagerThis_.lineQueue.clear();
             GrxProcessManagerThis_ = null;
         }
-    }
-
-    public void initializeComposite(Composite output) {
-        outputComposite_ = output;
-        outputArea_ = new StyledText(outputComposite_, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-        outputArea_.setEditable(false);
-
-        // 右クリックメニューを自動再生成させる
-        MenuManager manager = new MenuManager();
-        manager.setRemoveAllWhenShown(true);
-        manager.addMenuListener(new IMenuListener() {
-            public void menuAboutToShow(IMenuManager menu) {
-                for (Action action : getOutputMenu()) {
-                    menu.add(action);
-                }
-            }
-        });
-        outputArea_.setMenu(manager.createContextMenu(outputArea_));
     }
 
     public void setProcessList(GrxServerManager serverManager) {
@@ -444,9 +411,7 @@ public class GrxProcessManager {
             thread_ = new Thread() {
                 public void run() {
                     while (!isEnd_) {
-                        if (GrxProcessManagerThis_ != null) {
-                            updateIO();
-                        }
+                    	updateIO();
                     }
                 }
             };
@@ -491,9 +456,9 @@ public class GrxProcessManager {
                         public void run() {
                             String newLine = null;
                             while ((newLine = lineQueue.poll()) != null) {
-                                outputArea_.append(newLine);
+                            	notifyObservers("append", newLine); 
                             }
-                            outputArea_.setTopIndex(outputArea_.getLineCount());
+                        	notifyObservers("setTopIndex"); 
                         }
                     });
                 }
@@ -505,76 +470,13 @@ public class GrxProcessManager {
             e.printStackTrace();
         }
     }
-/*
-    public Vector<Action> getRunMenu() {
-        Vector<Action> vector = new Vector<Action>(size());
-        for (int i = 0; i < size(); i++) {
-            final AProcess p = get(i);
-            Action action = new Action(p.pi_.id, Action.AS_CHECK_BOX) {
-                public void run() {
-                    if (p.isRunning())
-                        p.stop();
-                    else
-                        p.start(null);
-                    setChecked(p.isRunning());
-                }
-            };
-            action.setChecked(p.isRunning());
-            vector.add(action);
-        }
 
-        Action actionClearAll = new Action(MessageBundle.get("GrxProcessManager.menu.clearAll0"), Action.AS_PUSH_BUTTON) { //$NON-NLS-1$
-            public void run() {
-                outputArea_.setText(""); //$NON-NLS-1$
-                outputBuffer_ = new StringBuffer();
-            }
-        };
-        vector.add(actionClearAll);
-
-        return vector;
+    public StringBuffer getOutputBuffer(){
+    	return outputBuffer_;
     }
-*/
-    public Composite getOutputComposite() {
-        return outputComposite_;
-    }
-
-    public StyledText getOutputArea() {
-        return outputArea_;
-    }
-
-    private Vector<Action> getOutputMenu() {
-        Vector<Action> vector = new Vector<Action>(size());
-        for (int i = 0; i < size(); i++) {
-            final AProcess p = get(i);
-            Action action = new Action(p.pi_.id, Action.AS_CHECK_BOX) {
-                public void run() {
-                    p.showOutput_ = isChecked();
-                    String[] processed = outputBuffer_.toString().split("\n"); //$NON-NLS-1$
-                    outputArea_.setText(""); //$NON-NLS-1$
-                    for (int i = 0; i < processed.length; i++) {
-                        for (int j = 0; j < size(); j++) {
-                            AProcess p2 = get(j);
-                            if (p2.showOutput_ && processed[i].startsWith("[" + p2.pi_.id)) { //$NON-NLS-1$
-                                outputArea_.append(processed[i] + "\n"); //$NON-NLS-1$
-                            }
-
-                        }
-                    }
-                }
-            };
-            action.setChecked(p.showOutput_);
-            vector.add(action);
-        }
-
-        Action actionClearAll = new Action(MessageBundle.get("GrxProcessManager.menu.clearAll1"), Action.AS_PUSH_BUTTON) { //$NON-NLS-1$
-            public void run() {
-                outputArea_.setText(""); //$NON-NLS-1$
-                outputBuffer_ = new StringBuffer();
-            }
-        };
-        vector.add(actionClearAll);
-        return vector;
-
+    
+    public void setOutputBuffer(StringBuffer sb){
+    	outputBuffer_ = sb;
     }
 
     public void stopType() {
@@ -660,10 +562,8 @@ public class GrxProcessManager {
 								if (display != null && !display.isDisposed()) {
 				                    display.asyncExec(new Runnable() {
 				                        public void run() {
-				                        	if(outputArea_!=null && !outputArea_.isDisposed()){
-				                        		outputArea_.append("[" + pi_.id + ":O] " + "Process End");
-					                            outputArea_.setTopIndex(outputArea_.getLineCount());
-				                        	}
+				                        	notifyObservers("append", "[" + pi_.id + ":O] " + "Process End"); 
+				                        	notifyObservers("setTopIndex");
 				                        	serverManager_.notifyObservers("ProcessEnd", pi_.id);
 				                        }
 				                    });
@@ -936,5 +836,12 @@ public class GrxProcessManager {
             return GrxCorbaUtil.getReference(pi_.id);
         }
 
+        public boolean showOutput(){
+        	return showOutput_;
+        }
+        
+        public void setShowOutput(boolean b){
+        	showOutput_ = b;
+        }
     }
 }

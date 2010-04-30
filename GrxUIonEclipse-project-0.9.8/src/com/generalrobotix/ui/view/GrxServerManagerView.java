@@ -30,13 +30,12 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
+import com.generalrobotix.ui.item.GrxSimulationItem;
 import com.generalrobotix.ui.util.GrxServerManager;
 import com.generalrobotix.ui.util.GrxServerManagerPanel;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 import com.generalrobotix.ui.view.Grx3DView;
-import com.generalrobotix.ui.view.GrxOpenHRPView;
-
 
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -60,6 +59,7 @@ public class GrxServerManagerView extends GrxBaseView
     static private final int    NAME_SERVER_GROUP_COLLUMN_NUM = 3;
     
     private GrxServerManager serverManager_ = null;
+    private GrxSimulationItem simItem_ = null;
     private Vector<TabItem> vecTabItem_      = new Vector<TabItem>();
     private TabFolder folder_;
     private Text       textNsPort_ = null;
@@ -75,6 +75,9 @@ public class GrxServerManagerView extends GrxBaseView
 			serverManager_.addObserver(this);
 		}
 		manager_.registerItemChangeListener(this, GrxServerManager.class);
+		simItem_ = (GrxSimulationItem)manager_.getItem("simulation");
+		if(simItem_ != null)
+			simItem_.addObserver(this);
         //setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 	}
     
@@ -159,7 +162,7 @@ public class GrxServerManagerView extends GrxBaseView
             vecTabItem_.elementAt(i).setText(vecServerInfo.elementAt(i).id);
             
             folder_.setSelection(i);
-            panel = new GrxServerManagerPanel(serverManager_, folder_ , SWT.NONE , i );
+            panel = new GrxServerManagerPanel(serverManager_, folder_ , SWT.NONE , i, manager_ );
             vecTabItem_.elementAt(i).setControl(panel);
         }
         folder_.addDisposeListener(this);
@@ -250,7 +253,7 @@ public class GrxServerManagerView extends GrxBaseView
         for (int i = 0; i < vecServerInfo.size() ; ++i ){
             vecTabItem_.add(new TabItem(folder_,SWT.NONE)) ;
             vecTabItem_.elementAt(i).setText(vecServerInfo.elementAt(i).id);
-            GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_, folder_ , SWT.NONE , i );
+            GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_, folder_ , SWT.NONE , i, manager_ );
             vecTabItem_.elementAt(i).setControl(panel);
         }
         folder_.setSelection(0);
@@ -296,7 +299,7 @@ public class GrxServerManagerView extends GrxBaseView
                     vecTabItem_.add(index , new TabItem(folder,SWT.NONE , index)) ;
                     vecTabItem_.elementAt(index).setText(vecServerInfo.elementAt(index).id);
                     folder.setSelection(index);
-                    GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_,folder , SWT.NONE , index );
+                    GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_,folder , SWT.NONE , index, manager_ );
                     vecTabItem_.elementAt(index).setControl(panel);
                 }
                 shell.close();
@@ -344,7 +347,7 @@ public class GrxServerManagerView extends GrxBaseView
                     vecTabItem_.add(index , new TabItem(folder,SWT.NONE , index)) ;
                     vecTabItem_.elementAt(index).setText(vecServerInfo.elementAt(index).id);
                     folder.setSelection(index);
-                    GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_, folder , SWT.NONE , index );
+                    GrxServerManagerPanel panel = new GrxServerManagerPanel(serverManager_, folder , SWT.NONE , index, manager_ );
                     vecTabItem_.elementAt(index).setControl(panel);
                 }
                 shell.close();
@@ -479,19 +482,19 @@ public class GrxServerManagerView extends GrxBaseView
     }
     
     private void restartServers(IProgressMonitor monitor) throws InterruptedException{
-        GrxOpenHRPView hrp =  (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
+        GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
         Grx3DView dview =  (Grx3DView)manager_.getView( Grx3DView.class );
         if(dview != null){
             dview.unregisterCORBA();
         }
-        if(hrp != null){
-            hrp.unregisterCORBA();
+        if(simItem != null){
+            simItem.unregisterCORBA();
         }
         monitor.worked(1);
         serverManager_.restart(monitor);
         monitor.worked(1);
-        if(hrp != null){
-            hrp.registerCORBA();
+        if(simItem != null){
+            simItem.registerCORBA();
         }
         if(dview != null){
             dview.registerCORBA();
@@ -526,7 +529,7 @@ public class GrxServerManagerView extends GrxBaseView
     }
     
     public void update(GrxBasePlugin plugin, Object... arg) {
-    	if(serverManager_==plugin)
+    	if(serverManager_==plugin){
     		if((String)arg[0]=="ProcessEnd"){
     			for (TabItem i: vecTabItem_){
     	            if(i.getText().equals((String)arg[1])){
@@ -534,6 +537,13 @@ public class GrxServerManagerView extends GrxBaseView
     	            }
     			}
     		}
+    	}else if(simItem_==plugin){
+    		if((String)arg[0]=="StartSimulation"){
+    			setEditableHostPortText(false);
+    		}else if((String)arg[0]=="StopSimulation"){
+    			setEditableHostPortText(true);
+    		}
+    	}
     }
     
     public void shutdown() {
@@ -541,6 +551,8 @@ public class GrxServerManagerView extends GrxBaseView
         if(serverManager_!=null)
         	serverManager_.deleteObserver(this);
         serverManager_.SaveServerInfo();
+        if(simItem_!=null)
+        	simItem_.deleteObserver(this);
 	}
 
     public void setEditableHostPortText(boolean bEnable){
