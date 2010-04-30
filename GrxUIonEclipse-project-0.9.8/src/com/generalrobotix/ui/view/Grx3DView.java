@@ -72,6 +72,7 @@ import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
+import com.generalrobotix.ui.item.GrxSimulationItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
@@ -289,9 +290,9 @@ public class Grx3DView
 
         registerCORBA();
         
-        GrxOpenHRPView hrp =  (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
-		if(hrp!=null)
-			if(hrp.isSimulating())
+        GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		if(simItem!=null)
+			if(simItem.isSimulating())
 				viewMode_ = SIMULATION;
         if(viewMode_!=SIMULATION)
         	showOption();
