@@ -147,6 +147,10 @@ endif()
 set(OPENRTM_DIR ${OPENRTM_DIR} CACHE PATH "The top directory of OpenRTM-aist")
 
 if(OPENRTM_FOUND)
+  if( ${OPENRTM_VERSION} MATCHES "^0\\." )
+      message(FATAL_ERROR "Not support OpenRTM-aist Ver.${OPENRTM_VERSION}, please install OpenRTM-aist Ver.1.0.0 or later and specify it's location.")
+  endif()
+
   if(NOT OpenRTM_FIND_QUIETLY)
     message(STATUS "Found OpenRTM-aist ${OPENRTM_VERSION} in ${OPENRTM_DIR}")
   endif()
