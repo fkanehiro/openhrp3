@@ -629,6 +629,9 @@ public class GrxLinkItem extends GrxTransformItem{
     	}else if( property.equals("mode")){
     		setProperty("mode", value);
     		model_.setProperty(getName()+".mode", value);
+    	}else if( property.equals("jointVelocity")){
+    		setProperty("jointVelocity", value);
+    		model_.setProperty(getName()+".jointVelocity", value);
     	}else {
     		return false;
     	}
@@ -936,6 +939,7 @@ public class GrxLinkItem extends GrxTransformItem{
         setDbl("rotorInertia", info_.rotorInertia); //$NON-NLS-1$
         setDbl("rotorResistor", info_.rotorResistor); //$NON-NLS-1$
         setDbl("encoderPulse", info_.encoderPulse); //$NON-NLS-1$
+        setDbl("jointVelocity", 0.0);
         setProperty("jointId", String.valueOf(info_.jointId)); //$NON-NLS-1$
 
         if (info_.ulimit == null || info_.ulimit.length == 0) {

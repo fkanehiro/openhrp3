@@ -553,6 +553,7 @@ void DynamicsSimulator_impl::initSimulation()
         cout << "DynamicsSimulator_impl::initSimulation()" << endl;
     }
 
+
     world.initialize();
     world.constraintForceSolver.enableConstraintForceOutput(true);
 
@@ -711,6 +712,8 @@ void DynamicsSimulator_impl::setCharacterLinkData
         link->w(0) = wdata[3];
         link->w(1) = wdata[4];
         link->w(2) = wdata[5];
+        // ABS_TRANSFORM‚ªæ‚ÉŽÀs‚³‚ê‚Ä‚¢‚é‚±‚Æ@//
+        link->vo = link->v - cross(link->w, link->p);
     }
     break;
 
