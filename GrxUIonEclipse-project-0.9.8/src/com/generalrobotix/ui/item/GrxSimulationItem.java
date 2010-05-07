@@ -610,7 +610,12 @@ public class GrxSimulationItem extends GrxBaseItem {
     			currentDynamics_.setCharacterLinkData(
     					model.getName(), base.getName(), LinkDataType.ABS_TRANSFORM, 
 	                    	model.getInitialTransformArray(base));
-    					
+    			
+    			//// SET INITIAL ROBOT ABS_VELOCITY
+    			currentDynamics_.setCharacterLinkData(
+    					model.getName(), base.getName(), LinkDataType.ABS_VELOCITY, 
+	                    	model.getInitialVelocity(base));
+    			
     			// SET I/O MODE OF JOINTS
     			if (isIntegrate_) {
     				double[] jms = model.getInitialJointMode();
@@ -627,6 +632,10 @@ public class GrxSimulationItem extends GrxBaseItem {
     			currentDynamics_.setCharacterAllLinkData(
     					model.getName(), LinkDataType.JOINT_VALUE, 
 	                    	model.getInitialJointValues());
+    			//  SET INITIAL JOINT VELOCITY
+    			currentDynamics_.setCharacterAllLinkData(
+    					model.getName(), LinkDataType.JOINT_VELOCITY, 
+	                    	model.getInitialJointVelocity());
     		}
     		currentDynamics_.calcWorldForwardKinematics();
 	            

@@ -377,6 +377,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     			setProperty(rootLink().getName()+".rotation", value); //$NON-NLS-1$
     			calcForwardKinematics();
     		}
+    	}else if(property.equals(rootLink().getName()+".velocity")){ //$NON-NLS-1$
+    		setProperty(rootLink().getName()+".velocity", value); //$NON-NLS-1$
+    		rootLink().setProperty("velocity", value);
+    	}else if(property.equals(rootLink().getName()+".angularVelocity")){ //$NON-NLS-1$
+    		setProperty(rootLink().getName()+".angularVelocity", value); //$NON-NLS-1$
+    		rootLink().setProperty("angulaerVelocity", value);
     	}else{
             for (int j = 0; j < links_.size(); j++){
             	GrxLinkItem link = links_.get(j);
@@ -386,6 +392,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                         setProperty(link.getName()+".angle", value); //$NON-NLS-1$
             		}
                     return true;
+            	}else if(property.equals(link.getName()+".jointVelocity")){ //$NON-NLS-1$
+            		setProperty(link.getName()+".jointVelocity", value); //$NON-NLS-1$
+            		link.setProperty("jointVelocity", value);
+            		return true;
             	}else if(property.equals(link.getName()+".NumOfAABB")){ //$NON-NLS-1$
             		if(link.propertyChanged("NumOfAABB", value)){
             			setProperty(link.getName()+".NumOfAABB", value); //$NON-NLS-1$
@@ -758,6 +768,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
         setDblAry(rootLink().getName()+".translation", rootLink().translation()); //$NON-NLS-1$
         setDblAry(rootLink().getName()+".rotation", rootLink().rotation()); //$NON-NLS-1$
+        setDblAry(rootLink().getName()+".velocity", new double[]{0,0,0} ); //$NON-NLS-1$
+        setDblAry(rootLink().getName()+".angularVelocity", new double[]{0,0,0} ); //$NON-NLS-1$
         
         for (int i=0; i<links_.size(); i++) {
             Node n = links_.get(i).tg_.getChild(0);
@@ -1087,6 +1099,20 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return ret;
     }
 
+    public double[] getInitialVelocity(GrxLinkItem link){
+    	double[] ret = {0,0,0,0,0,0};
+    	double[] v = getDblAry(link.getName()+".velocity", null);
+    	if (v != null && v.length == 3) {
+            System.arraycopy(v, 0, ret, 0, 3);
+        }
+    	double[] w = getDblAry(link.getName()+".angularVelocity", null);
+    	if (w != null && w.length == 3) {
+            System.arraycopy(w, 0, ret, 3, 3);
+        }
+    	
+    	return ret;
+    }
+    
     public int getDOF() {
         if (jointToLink_ == null)
             return 0;
@@ -1117,6 +1143,15 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         return ret;
     }
 
+    public double[] getInitialJointVelocity(){
+    	double[] ret = new double[jointToLink_.length];
+    	for (int i=0; i<ret.length; i++) {
+            GrxLinkItem l = links_.get(jointToLink_[i]);
+            String jname = l.getName();
+            ret[i] = getDbl(jname+".jointVelocity", 0.0); //$NON-NLS-1$
+        }
+    	return ret;
+    }
    /* public double[] getInitialJointMode() {
         double[] ret = new double[jointToLink_.length];
         for (int i=0; i<ret.length; i++) {
