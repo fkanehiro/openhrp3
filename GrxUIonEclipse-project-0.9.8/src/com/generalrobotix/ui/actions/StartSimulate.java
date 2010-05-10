@@ -12,18 +12,23 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 
+import com.generalrobotix.ui.GrxBaseItem;
+import com.generalrobotix.ui.GrxBasePlugin;
+import com.generalrobotix.ui.GrxItemChangeListener;
+import com.generalrobotix.ui.GrxObserver;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxSimulationItem;
+import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.MessageBundle;
 
-public class StartSimulate implements IWorkbenchWindowActionDelegate {
+public class StartSimulate implements IWorkbenchWindowActionDelegate, GrxItemChangeListener, GrxObserver {
 	private IAction action_ = null;
 	
 	public StartSimulate() {
 		GrxPluginManager manager_ = Activator.getDefault().manager_;
 		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
-		simItem.setSimulateAction(this);
+		simItem.addObserver(this);
 	}
 
 	public void run(IAction action) {
@@ -38,10 +43,11 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate {
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {}
-	public void dispose() {}
+	public void dispose() {
+	}
 	public void init(IWorkbenchWindow window) {}
 	
-	public void startSimulation(boolean start){
+	public void setActionImage(boolean start){
 		if(action_==null)
 			action_ = getStartSimulationAction();
 		if(start){
@@ -77,6 +83,18 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate {
 			}
 		}
 		return null;
+	}
+
+	public void registerItemChange(GrxBaseItem item, int event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void update(GrxBasePlugin plugin, Object... arg) {
+		if(arg[0].equals("StartSimulation"))
+			setActionImage(true);
+		else if(arg[0].equals("StopSimulation"))
+			setActionImage(false);	
 	}
 
 }

@@ -63,11 +63,13 @@ import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 import com.generalrobotix.ui.view.Grx3DView;
+import com.generalrobotix.ui.view.GrxLoggerView;
 import com.generalrobotix.ui.view.simulation.SimulationParameterPanel;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
 @SuppressWarnings("serial")
 public class GrxSimulationItem extends GrxBaseItem {
+	public static final String TITLE = "Simulation";
     private static final String FORMAT1 = "%8.3f"; //$NON-NLS-1$
 	private static final int WAIT_COUNT_ = 4;
 	private GrxWorldStateItem currentWorld_;
@@ -88,7 +90,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 	private double logStepTime_ = 0.05;
 	private boolean isSimulatingView_;
 	private double viewSimulationStep_=0;
-	private StartSimulate simulateAction_  = null;
+	//private StartSimulate simulateAction_  = null;
 	
 	private Thread simThread_;
 	private static final int interval_ = 10; //[ms]
@@ -99,9 +101,14 @@ public class GrxSimulationItem extends GrxBaseItem {
 	    
 	public  GrxSimulationItem(String name, GrxPluginManager manager) {
 		super(name, manager);
+		setExclusive(true);
 		registerCORBA();
 	}
 	    
+	public boolean create() {
+		return true;
+	}
+	
 	/**
 	 * @brief implementation of ClockGenerator interface
 	 */
@@ -177,7 +184,19 @@ public class GrxSimulationItem extends GrxBaseItem {
 				}
 			}
 	            
-			currentWorld_.startSimulation(isSimulatingView_);		//TODO
+			if(!isSimulatingView_){
+				GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class );
+				if( view == null){
+		        	IWorkbench workbench = PlatformUI.getWorkbench();
+		    		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+		    		IWorkbenchPage page = window.getActivePage();
+		    		try {
+		    			page.showView("com.generalrobotix.ui.view.GrxLoggerViewPart", null, IWorkbenchPage.VIEW_CREATE);   //$NON-NLS-1$
+		    		} catch (PartInitException e1) {
+		    			e1.printStackTrace();
+		    		}
+		        }
+			}
 			notifyObservers("StartSimulation", isSimulatingView_);
 
 			resetClockReceivers();
@@ -322,18 +341,11 @@ public class GrxSimulationItem extends GrxBaseItem {
 			}
 			syncExec(new Runnable(){
 				public void run() {
-					currentWorld_.stopSimulation();     //TODO
+					currentWorld_.stopSimulation(); 
 					notifyObservers("StopSimulation");
 					currentWorld_.setPosition(0);
 				}
 			} );
-			execSWT( new Runnable(){
-				public void run(){
-					simulateAction_.startSimulation(false);
-				}
-			}, 
-			Thread.currentThread() != simThread_
-			);
 		}
 	        
 		/**
@@ -423,11 +435,9 @@ public class GrxSimulationItem extends GrxBaseItem {
 	 * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation
 	 */
 	public void startSimulation(boolean isInteractive){
-		if (clockGenerator_.startSimulation(isInteractive)){
-			simulateAction_.startSimulation(true);
-		}
+		clockGenerator_.startSimulation(isInteractive);
 	}
-	   
+	
 	public void waitStopSimulation() throws InterruptedException {
 		try {
 			synchronized(lock2_){ 
@@ -926,9 +936,5 @@ public class GrxSimulationItem extends GrxBaseItem {
     public float lcm(float a, float b){
     	return (float)lcm((int)a, (int)b);
     }
-
-	public void setSimulateAction(StartSimulate startSimulate) {
-		simulateAction_ = startSimulate;
-	}
     
 }

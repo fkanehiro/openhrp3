@@ -67,7 +67,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
     protected final static String PROPERTY_TAG = "property"; //$NON-NLS-1$
     protected final static String INDENT4 = "    "; //$NON-NLS-1$
     
-    private ArrayList<GrxBaseView> observers_ = new ArrayList<GrxBaseView>();
+    private ArrayList<GrxObserver> observers_ = new ArrayList<GrxObserver>();
 
     /**
      * @brief constructor
@@ -474,22 +474,22 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	public void setFocused(boolean b){
 	}
 	
-	public void addObserver(GrxBaseView v){
+	public void addObserver(GrxObserver v){
 		observers_.add(v);
 	}
 	
-	public void deleteObserver(GrxBaseView v){
+	public void deleteObserver(GrxObserver v){
 		observers_.remove(v);
 	}
 
-	public ArrayList<GrxBaseView> getObserver(){
+	public ArrayList<GrxObserver> getObserver(){
 		return observers_;
 	}
 	
 	public void notifyObservers(Object... arg) { 
-        ListIterator<GrxBaseView> it = observers_.listIterator();
+        ListIterator<GrxObserver> it = observers_.listIterator();
         while (it.hasNext()) {
-            GrxBaseView observer = it.next();
+            GrxObserver observer = it.next();
             observer.update(this, arg);
         }
     }

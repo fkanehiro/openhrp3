@@ -88,8 +88,8 @@ public class GrxPluginManager implements IPropertyChangeListener {
     private File homePath_;
     private Map<Class<? extends GrxBasePlugin>, PluginInfo> pinfoMap_ = new HashMap<Class<? extends GrxBasePlugin>, PluginInfo>();
     
-    private Map<Class<? extends GrxBaseItem>, List<GrxBaseView>> itemChangeListener_ = 
-    	new HashMap<Class<? extends GrxBaseItem>, List<GrxBaseView>>(); 
+    private Map<Class<? extends GrxBaseItem>, List<GrxItemChangeListener>> itemChangeListener_ = 
+    	new HashMap<Class<? extends GrxBaseItem>, List<GrxItemChangeListener>>(); 
     public static final int ADD_ITEM=0;
     public static final int REMOVE_ITEM=1;
     public static final int SELECTED_ITEM=2;
@@ -162,10 +162,12 @@ public class GrxPluginManager implements IPropertyChangeListener {
 			itemChange(processManager, GrxPluginManager.ADD_ITEM);
 		}
         
+
         // SImulationItem 生成　　//
         GrxSimulationItem simulationItem = (GrxSimulationItem)createItem(GrxSimulationItem.class, "simulation");
         if(simulationItem != null)
         	itemChange(simulationItem, GrxPluginManager.ADD_ITEM);
+
     }
 
     /**
@@ -1149,16 +1151,16 @@ public class GrxPluginManager implements IPropertyChangeListener {
     private static SynchronizedAccessor<String> clipValue_ = new SynchronizedAccessor<String>(""); //$NON-NLS-1$
     
     
-    public void registerItemChangeListener(GrxBaseView view, Class<? extends GrxBaseItem> cls){
+    public void registerItemChangeListener(GrxItemChangeListener view, Class<? extends GrxBaseItem> cls){
     	if(itemChangeListener_.get(cls)==null)
-    		itemChangeListener_.put(cls, new ArrayList<GrxBaseView>());
-    	List<GrxBaseView> list = itemChangeListener_.get(cls);
+    		itemChangeListener_.put(cls, new ArrayList<GrxItemChangeListener>());
+    	List<GrxItemChangeListener> list = itemChangeListener_.get(cls);
     	list.add(view);
     }
     	
-    public void removeItemChangeListener(GrxBaseView view, Class<? extends GrxBaseItem> cls) {
+    public void removeItemChangeListener(GrxItemChangeListener view, Class<? extends GrxBaseItem> cls) {
     	if(itemChangeListener_.get(cls)==null) return;
-    	List<GrxBaseView> list = itemChangeListener_.get(cls);
+    	List<GrxItemChangeListener> list = itemChangeListener_.get(cls);
     	list.remove(view);
     }
     
@@ -1167,8 +1169,8 @@ public class GrxPluginManager implements IPropertyChangeListener {
     	while(it.hasNext()){
     		Class<? extends GrxBaseItem> cls = it.next();
     		if(cls.isAssignableFrom(item.getClass())){
-    			List<GrxBaseView> list = itemChangeListener_.get(cls);
-    			Iterator<GrxBaseView> itView = list.iterator();
+    			List<GrxItemChangeListener> list = itemChangeListener_.get(cls);
+    			Iterator<GrxItemChangeListener> itView = list.iterator();
         		while(itView.hasNext())
         			itView.next().registerItemChange(item, event);
     		}

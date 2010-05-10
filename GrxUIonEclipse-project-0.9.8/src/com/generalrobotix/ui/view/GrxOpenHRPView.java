@@ -53,6 +53,9 @@ public class GrxOpenHRPView extends GrxBaseView {
             currentWorld_.addObserver(this);
         
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+        
+        GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		simItem.addObserver(this);
     }      
    
     public void registerItemChange(GrxBaseItem item, int event){
@@ -81,13 +84,13 @@ public class GrxOpenHRPView extends GrxBaseView {
     }
     
     public void update(GrxBasePlugin plugin, Object... arg) {
+    	if((String)arg[0]=="StartSimulation")
+			simParamPane_.setEnabled(false);
+        else if((String)arg[0]=="StopSimulation")
+			simParamPane_.setEnabled(true);
         if(currentWorld_==plugin){
             if((String)arg[0]=="PropertyChange") //$NON-NLS-1$
                 simParamPane_.updateItem(currentWorld_);  
-            else if((String)arg[0]=="StartSimulation")
-    			simParamPane_.setEnabled(false);
-            else if((String)arg[0]=="StopSimulation")
-				simParamPane_.setEnabled(true);
         }
     }
     
@@ -96,6 +99,9 @@ public class GrxOpenHRPView extends GrxBaseView {
             currentWorld_.deleteObserver(this);
         
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+        
+        GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		simItem.deleteObserver(this);
     }
     
     //  Python scriptからの呼び出しのために　public宣言されていたメソッドを残す　　　//

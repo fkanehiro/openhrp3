@@ -291,9 +291,11 @@ public class Grx3DView
         registerCORBA();
         
         GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
-		if(simItem!=null)
+		if(simItem!=null){
+			simItem.addObserver(this);
 			if(simItem.isSimulating())
 				viewMode_ = SIMULATION;
+		}
         if(viewMode_!=SIMULATION)
         	showOption();
         else{
@@ -759,6 +761,17 @@ public class Grx3DView
     }
     
     public void update(GrxBasePlugin plugin, Object... arg) {
+    	if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
+			disableButton();
+			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
+			if((Boolean)arg[1])
+				showViewSimulator(true);
+			viewMode_ = SIMULATION;
+		}else if((String)arg[0]=="StopSimulation"){ //$NON-NLS-1$
+			objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
+			enableButton();
+			viewMode_ = VIEW;
+		}
     	if(currentModels_.contains(plugin)){
     		if((String)arg[0]=="PropertyChange"){
     			behaviorManager_.setItemChange();
@@ -782,16 +795,6 @@ public class Grx3DView
 				if(viewMode_ == VIEW)
 					showOptionWithoutCollision();
 			}
-		}else if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
-			disableButton();
-			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
-			if((Boolean)arg[1])
-				showViewSimulator(true);
-			viewMode_ = SIMULATION;
-		}else if((String)arg[0]=="StopSimulation"){ //$NON-NLS-1$
-			objectToolBar_.setMode(ObjectToolBar.OBJECT_MODE);
-			enableButton();
-			viewMode_ = VIEW;
 		}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
 			currentState_ = null;
 		}
@@ -2015,6 +2018,9 @@ public class Grx3DView
     	if(currentWorld_!=null)
     		currentWorld_.deleteObserver(this);
     	manager_.removeItemChangeListener(this, GrxCollisionPairItem.class);
+    	GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		if(simItem!=null)
+			simItem.deleteObserver(this);
 	}
 
     public void repaint(){
