@@ -71,9 +71,9 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 	public void setPosition(Integer pos, GrxBaseView view) {
 		if (0 <= pos && pos < log_.size()){
 			currentPos_ = pos;
-			ListIterator<GrxBaseView> it = getObserver().listIterator();
+			ListIterator<GrxObserver> it = getObserver().listIterator();
 	        while (it.hasNext()) {
-	            GrxBaseView observer = it.next();
+	            GrxObserver observer = it.next();
 	            if(observer != view)
 	            	observer.update(this, "PositionChange",pos);
 	        }

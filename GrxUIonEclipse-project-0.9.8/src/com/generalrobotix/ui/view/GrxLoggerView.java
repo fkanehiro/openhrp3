@@ -47,6 +47,7 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
+import com.generalrobotix.ui.item.GrxSimulationItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.MessageBundle;
@@ -409,7 +410,9 @@ public class GrxLoggerView extends GrxBaseView {
 		}else
 			_setTimeSeriesItem(null);
 		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-
+		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		if(simItem!=null)
+			simItem.addObserver(this);
     }
 
 	private boolean _isAtTheEndAfterPlayback(){
@@ -563,18 +566,7 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
-		if(currentItem_!=plugin) return;
-		if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
-			int pos = ((Integer)arg[1]).intValue();
-			int logSize = currentItem_.getLogSize();
-			if ( pos < 0 || logSize < pos){
-				return;
-			}
-			current_ = pos;
-			sliderTimeSetMaximam(logSize-1);
-			sliderTime_.setSelection(pos);
-			_updateTimeField(currentItem_);
-		}else if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
+		if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
 			inSimulation_ = true; 
 			lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.live")); //$NON-NLS-1$
 			if((Boolean)arg[1])
@@ -588,6 +580,18 @@ public class GrxLoggerView extends GrxBaseView {
 			lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.pause")); //$NON-NLS-1$
 			enableControl();
 			pause();
+		}
+		if(currentItem_!=plugin) return;
+		if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
+			int pos = ((Integer)arg[1]).intValue();
+			int logSize = currentItem_.getLogSize();
+			if ( pos < 0 || logSize < pos){
+				return;
+			}
+			current_ = pos;
+			sliderTimeSetMaximam(logSize-1);
+			sliderTime_.setSelection(pos);
+			_updateTimeField(currentItem_);
 		}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
 			if(isPlaying())
 				pause();
@@ -630,6 +634,9 @@ public class GrxLoggerView extends GrxBaseView {
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
         if(currentItem_!=null)
         	currentItem_.deleteObserver(this);
+        GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		if(simItem!=null)
+			simItem.deleteObserver(this);
 	}
     
     private void sliderTimeSetMaximam(int value)

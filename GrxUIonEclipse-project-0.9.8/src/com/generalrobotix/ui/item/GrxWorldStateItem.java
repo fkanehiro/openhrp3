@@ -1026,26 +1026,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		//logger_.initCollisionLog(stime);
 	    logger_.extendTime(stime);
 	}
-	
-	public void startSimulation(boolean isSimulatingView){
-		if(!isSimulatingView){
-			GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class );
-			if( view == null){
-	        	IWorkbench workbench = PlatformUI.getWorkbench();
-	    		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-	    		IWorkbenchPage page = window.getActivePage();
-	    		try {
-	    			page.showView("com.generalrobotix.ui.view.GrxLoggerViewPart", null, IWorkbenchPage.VIEW_CREATE);   //$NON-NLS-1$
-	    		} catch (PartInitException e1) {
-	    			e1.printStackTrace();
-	    		}
-	        }
-		}
-		notifyObservers("StartSimulation", isSimulatingView); //$NON-NLS-1$
-	}
-	
+		
 	public void stopSimulation(){
-		notifyObservers("StopSimulation"); //$NON-NLS-1$
 		if (useDisk_)
 			logger_.closeWrites();
 	}
