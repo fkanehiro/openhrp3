@@ -9,18 +9,21 @@ libreadline-java
 java-common
 
 # compiler & build tools
+gcc
+g++
+make
 build-essential
 cmake
-cmake-gui
-cmake-curses-gui
 doxygen
 graphviz
 pkg-config
+python-yaml
 
 
 # omniORB
-libcos4-dev 
-libomnievents-dev 
+libcos4-dev
+libomnievents-dev
+libomniorb4-1
 libomniorb4-dev
 libomnithread3-dev
 libomnithread3c2
@@ -42,7 +45,7 @@ libblas3gf
 libblas-dev
 f2c
 libf2c2
-libf2c2-dev 
+libf2c2-dev
 libgfortran3
 libgfortran3-dbg
 tvmet
@@ -63,6 +66,12 @@ zlib1g-dev
 libjpeg62-dev
 libpng12-dev
 uuid-dev
+
+# openrtm
+openrtm-aist
+openrtm-aist-doc
+openrtm-aist-dev
+openrtm-aist-example
 
 # for hrpsys
 # libncurses5-dev

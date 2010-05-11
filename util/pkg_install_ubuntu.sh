@@ -1,21 +1,13 @@
 #!/bin/sh
 #
 # @file pkg_install_ubuntu.sh
-# @brief OpenRTM-aist dependent packages install script for Debian-sarge
-# @author Noriaki Ando <n-ando@aist.go.jp>
+# @brief  preprocessing script of OpenHRP3 dependent packages install for Ubuntu
+# @author Keisuke Saeki
+#         Noriaki Ando
 #         Shinji Kurihara
 #         Tetsuo Ando
 #         Harumi Miyamoto
 #
-
-#---------------------------------------
-# パッケージリスト
-#---------------------------------------
-omni="libomniorb4 libomniorb4-dev omniidl4 omniorb4-nameserver"
-openrtm="openrtm-aist openrtm-aist-doc openrtm-aist-dev openrtm-aist-example python-yaml"
-devel="gcc g++ make uuid-dev"
-packages="$devel $omni $openrtm"
-u_packages="$omni $openrtm "
 
 #---------------------------------------
 # ロケールの言語確認
@@ -38,6 +30,8 @@ if test "$lang" = "jp" ;then
     msg9="インストール中です..."
     msg10="完了"
     msg11="アンインストール中です."
+    msg12="Canonical Partner のリポジトリが登録されていません。"
+    msg13="Source.list に Canonical Partner Repository のリポジトリ: "
 else
     msg1="This distribution may not be debian/ubuntu."
     msg2="The code name is : "
@@ -50,6 +44,8 @@ else
     msg9="Now installing: "
     msg10="done."
     msg11="Now uninstalling: "
+    msg12="No repository entry for the Canonical Partner is configured in your system."
+    msg13="repository entry for the Canonical Partner: "
 fi
 
 }
@@ -102,6 +98,27 @@ update_source_list () {
     fi
 }
 
+#---------------------------------------
+# ソースリスト更新関数の定義
+# sun-java6-* インストールのため(10.04以降)
+#---------------------------------------
+update_source_list_partner () {
+    partner_repo="deb http://archive.canonical.com/ $code_name partner"
+    if test "$code_name" = "lucid" ; then
+        partnersite=`grep "^deb http://archive.canonical.com/.* $code_name partner$" /etc/apt/sources.list`
+        if test "x$partnersite" = "x" ; then
+            echo $msg12
+            echo $msg13
+            echo "  " $partner_repo
+            read -p $msg6 kick_shell
+
+            if test "x$kick_shell" != "xn" ; then
+                add-apt-repository "$partner_repo"
+            fi
+        fi
+    fi
+}
+
 #----------------------------------------
 # root かどうかをチェック
 #----------------------------------------
@@ -115,50 +132,12 @@ check_root () {
     fi
 }
 
-#----------------------------------------
-# パッケージインストール関数
-#----------------------------------------
-install_packages () {
-    for p in $*; do
-	echo $msg9 $p
-	apt-get install $p
-	echo $msg10
-	echo ""
-    done
-}
-
-#------------------------------------------------------------
-# リストを逆順にする
-#------------------------------------------------------------
-reverse () {
-    for i in $*; do
-	echo $i
-    done | sed '1!G;h;$!d'
-}
-
-#----------------------------------------
-# パッケージをアンインストールする
-#----------------------------------------
-uninstall_packages () {
-    for p in $*; do
-	echo $msg11 $p
-	aptitude remove $p
-	echo $msg10
-	echo ""
-    done
-}
-
 #---------------------------------------
 # メイン
 #---------------------------------------
 check_lang
 check_root
-if test "x$1" = "x-u" ; then
-    uninstall_packages `reverse $u_packages`
-else
-    create_srclist
-    update_source_list
-    apt-get update
-    install_packages $packages
-fi
-
+create_srclist
+update_source_list
+update_source_list_partner
+apt-get update

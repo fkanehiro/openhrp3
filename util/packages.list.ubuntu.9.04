@@ -1,16 +1,18 @@
-# package list for ubuntu 8.10
+# package list for ubuntu 9.04
 
 
 # java
 sun-java6-jdk
 sun-java6-fonts
+sun-java6-plugin
 jython
 libreadline-java
 java-common
 
 # compiler & lib
+gcc
 g++
-gfortran-4.3
+make
 
 # build tools
 build-essential
@@ -18,10 +20,13 @@ cmake
 doxygen
 graphviz
 pkg-config
+python-yaml
+
 
 # omniORB
-libcos4-dev 
-libomnievents-dev 
+libcos4-dev
+libomnievents-dev
+libomniorb4-1
 libomniorb4-dev
 libomnithread3-dev
 libomnithread3c2
@@ -43,8 +48,7 @@ libblas3gf
 libblas-dev
 f2c
 libf2c2
-libf2c2-dev 
-libg2c0
+libf2c2-dev
 libgfortran3
 libgfortran3-dbg
 tvmet
@@ -58,12 +62,16 @@ libboost-signals-dev
 libboost-thread-dev
 
 # etc
-libc6-dev
 zlib1g-dev
-libace-dev
 libjpeg62-dev
 libpng12-dev
 uuid-dev
+
+# openrtm
+openrtm-aist
+openrtm-aist-doc
+openrtm-aist-dev
+openrtm-aist-example
 
 # for hrpsys
 # libncurses5-dev
