@@ -25,8 +25,14 @@ parser.on("--script script", String) { |script|
   script_file = File.expand_path(script)
 }
 
+svnpath = SRC_REPOSITORY_PATH
 parser.on("--svn-path svnPath", String) { |svnPath|
-  command = String( "svn export " + svnPath + " #{EXPORT_TMP_DIR}" )
+  svnpath = String(svnPath)
+}
+
+svnrev = nil
+parser.on("--svn-rev svnRev", String) { |svnRev|
+  svnrev = String(svnRev)
 }
 
 parser.on("--use-zip") { use_zip = true }
@@ -70,7 +76,11 @@ end
 files = [ ]
 
 
-
+if svnrev then
+  command = String("svn export -r #{svnrev} #{svnpath} #{EXPORT_TMP_DIR}")
+else
+  command = String("svn export #{svnpath} #{EXPORT_TMP_DIR}")
+end
 puts command
 command.insert(0,"|")
 

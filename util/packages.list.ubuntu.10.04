@@ -47,7 +47,7 @@ libblas3gf
 libblas-dev
 f2c
 libf2c2
-libf2c2-dev 
+libf2c2-dev
 libgfortran3
 libgfortran3-dbg
 tvmet

@@ -14,6 +14,8 @@ g++
 make
 build-essential
 cmake
+cmake-gui
+cmake-curses-gui
 doxygen
 graphviz
 pkg-config
