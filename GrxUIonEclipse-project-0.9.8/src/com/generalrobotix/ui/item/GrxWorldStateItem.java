@@ -153,11 +153,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 
 	public boolean create() {
         clearLog();
-        setDbl("totalTime", 20.0); //$NON-NLS-1$
-		setDbl("timeStep", 0.001); //$NON-NLS-1$
 		setDbl("logTimeStep", 0.001); //$NON-NLS-1$
-		setDbl("gravity", 9.8); //$NON-NLS-1$
-		setProperty("method","RUNGE_KUTTA"); //$NON-NLS-1$ //$NON-NLS-2$
 		return true;
 	}
 
@@ -433,8 +429,6 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	public void init(){
 		double val = getDbl("logTimeStep",0.001); //$NON-NLS-1$
 		setDbl("logTimeStep",val); //$NON-NLS-1$
-		val = getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
-		setDbl("totalTime", val); //$NON-NLS-1$
 	}
 	
 	private void _initLog() {
@@ -450,9 +444,13 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		double val = getDbl("logTimeStep",0.001); //$NON-NLS-1$
 		stime.setTimeStep(val);
 			
-		val = getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
+		GrxSimulationItem simItem = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+		if(simItem!=null)
+			val = simItem.getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
+		else
+			val = DEFAULT_TOTAL_TIME;
 		stime.setTotalTime(val);
-
+		
 		logger_.setTempDir(tempDir_);
 		
 		logger_.initCollisionLog(stime);
@@ -630,7 +628,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			logger_.getSimulationTime(sTime);
 			syncExec(new Runnable(){
 	        	public void run(){
-	        		setDbl("totalTime", sTime.getTotalTime()); //$NON-NLS-1$
+	        		GrxSimulationItem simItem = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+	        		if(simItem!=null)
+	        			simItem.setDbl("totalTime", sTime.getTotalTime());
 	    			setDbl("logTimeStep", sTime.getTimeStep()); //$NON-NLS-1$
 	        	}
 	        });
@@ -911,7 +911,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             double localTime = getDbl("logTimeStep",0.001); //$NON-NLS-1$
             stime.setTimeStep(localTime);
                 
-            localTime = getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
+            GrxSimulationItem simItem = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+    		if(simItem!=null)
+    			localTime = simItem.getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
+    		else
+    			localTime = DEFAULT_TOTAL_TIME;
             stime.setTotalTime(localTime);
             temp.initCollisionLog(stime);
             try {
@@ -1021,7 +1025,6 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		setDbl("logTimeStep",val); //$NON-NLS-1$
 		
 	    stime.setTotalTime(time);
-	    setDbl("totalTime", time); //$NON-NLS-1$
 	    
 		//logger_.initCollisionLog(stime);
 	    logger_.extendTime(stime);
@@ -1253,13 +1256,4 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		super.delete();        
 	}
 
-    @Override
-    public ValueEditType GetValueEditType(String key) {
-        if(key.equals("method")){
-            return new ValueEditCombo(methodComboItem_);
-        }else if(key.equals("integrate") || key.equals("viewsimulate")){
-            return new ValueEditCombo(booleanComboItem_);
-        }
-        return super.GetValueEditType(key);
-    }
 } 

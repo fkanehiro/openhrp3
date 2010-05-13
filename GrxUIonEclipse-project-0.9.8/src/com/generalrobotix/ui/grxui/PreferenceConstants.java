@@ -40,6 +40,7 @@ public class PreferenceConstants {
 	public static final String USERITEM="UserItem";
 	public static final String CLASSPATH="ClassPath";
 	
+	public static final String SIMULATIONITEM="com.generalrobotix.ui.item.GrxSimulationItem";
 	public static final String MODELITEM="com.generalrobotix.ui.item.GrxModelItem";
 	public static final String LINKITEM="com.generalrobotix.ui.item.GrxLinkItem";
 	public static final String SHAPEITEM="com.generalrobotix.ui.item.GrxShapeItem";

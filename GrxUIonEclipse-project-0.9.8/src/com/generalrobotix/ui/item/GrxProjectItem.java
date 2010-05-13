@@ -59,6 +59,7 @@ import org.xml.sax.SAXException;
 
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
+import com.generalrobotix.ui.grxui.PreferenceConstants;
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.view.Grx3DView;
 import com.generalrobotix.ui.util.GrxConfigBundle;
@@ -502,8 +503,8 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		if (f == null || !f.isFile())
 			return false;
-		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
-		if(simItem.isSimulating())
+		GrxSimulationItem simItem = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+		if(simItem!=null && simItem.isSimulating())
 			simItem.stopSimulation();
 		
 		manager_.removeAllItems();
@@ -570,7 +571,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(null);
 		try {
 			progressMonitorDlg.run(false,false, runnableProgress);
-			//ダイアログの影が残ってしまぁE��題�E対筁E//
+			//ダイアログの影が残ってしまぁE�E��E�題�E対筁E//
 			Grx3DView view3d =  (Grx3DView)manager_.getView( Grx3DView.class );
 			if(view3d!=null){
 				view3d.repaint();
@@ -616,16 +617,39 @@ public class GrxProjectItem extends GrxBaseItem {
 			if (vl.get(i) != null) vl.get(i).restoreProperties();
 
 		monitor.worked(1);
-		
-		//try {
-		//	Thread.sleep(400);
-		//} catch (InterruptedException e) {
-	    //		e.printStackTrace();
-		//}
 
-		monitor.worked(1);
-		
-		if (minfo.itemList != null) {
+		if (minfo.itemList != null) {	
+			
+		//  古いプロジェクトファイルに対応　　//
+			//  ModeがSimulationでSimulationItemがない場合は自動的に作成し、WorldStateItemのプロパティをSimulationItemに設定　　//
+			if(mode.equals("Simulation") && !containSimulationItem(minfo.itemList)){
+				Element simElement = doc_.createElement(ITEM_TAG);
+				simElement.setAttribute("class", PreferenceConstants.SIMULATIONITEM);
+				simElement.setAttribute("name", "simulationItem");
+				simElement.setAttribute("select", "true");
+				minfo.root.appendChild(simElement);
+				minfo.itemList = minfo.root.getElementsByTagName(ITEM_TAG);
+				for (int i=0; i<minfo.itemList.getLength(); i++) {
+				    Element itemElement = (Element)minfo.itemList.item(i);
+				    if(itemElement.getAttribute("class").equals(PreferenceConstants.WORLDSTATEITEM)){
+				    	NodeList props = itemElement.getElementsByTagName(PROPERTY_TAG);
+						for (int j = 0; j < props.getLength(); ) {
+							Element propEl = (Element) props.item(j);
+							String key = propEl.getAttribute("name"); //$NON-NLS-1$
+							String val = propEl.getAttribute("value"); //$NON-NLS-1$
+							if(!key.equals("logTimeStep")){
+								Element element = doc_.createElement(PROPERTY_TAG);
+								element.setAttribute("name", key);
+								element.setAttribute("value", val);
+								simElement.appendChild(element);
+								itemElement.removeChild(propEl);
+							}else
+								j++;
+						}
+				    }
+				}
+			}
+			
             List<GrxBaseItem> il = new ArrayList<GrxBaseItem>();
 			for (int i = 0; i < minfo.itemList.getLength(); i++) {
 				GrxBaseItem p = (GrxBaseItem)_restorePlugin((Element) minfo.itemList.item(i));
@@ -731,6 +755,14 @@ public class GrxProjectItem extends GrxBaseItem {
         }
 
         return plugin;
+	}
+		
+	private boolean containSimulationItem(NodeList list){
+		for (int i = 0; i < list.getLength(); i++) {
+			if(((Element) list.item(i)).getAttribute("class").equals(PreferenceConstants.SIMULATIONITEM))
+				return true;
+		}
+		return false;
 	}
 	
 	private static final File DEFAULT_ISE_PROJECT_DIR = new File("../ISE/Projects"); //$NON-NLS-1$

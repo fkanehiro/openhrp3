@@ -798,7 +798,12 @@ public class GrxPathPlanningView extends GrxBaseView {
 
 	// 経路計画サーバへ渡すためDynamicsSimulatorを取得
 	DynamicsSimulator getDynamicsSimulator(){
-		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
+		GrxSimulationItem simItem = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+		if(simItem==null){
+			simItem = (GrxSimulationItem)manager_.createItem(GrxSimulationItem.class, null);
+			manager_.itemChange(simItem, GrxPluginManager.ADD_ITEM);
+			manager_.setSelectedItem(simItem, true);
+		}
 		if( ! simItem.initDynamicsSimulator() ){
 			MessageDialog.openInformation(getParent().getShell(),"", MessageBundle.get("GrxPathPlanningView.dialog.message.Dynamics")); //$NON-NLS-1$ //$NON-NLS-2$
 			return null;
