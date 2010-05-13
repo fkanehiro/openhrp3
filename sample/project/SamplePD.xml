@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grxui>
     <mode name="Simulation">
-        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
-            <property name="logTimeStep" value="0.0020 "/>
-            <property name="integrate" value="true"/>
+        <item class="com.generalrobotix.ui.item.GrxSimulationItem" name="SampleSimulation" select="true">
+        	<property name="integrate" value="true"/>
             <property name="viewsimulate" value="false"/>
             <property name="totalTime" value="13.4 "/>
             <property name="timeStep" value="0.0020 "/>
             <property name="method" value="RUNGE_KUTTA"/>
             <property name="gravity" value="9.8 "/>
-            <property name="viewsimulationTimeStep" value="0.033 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
+            <property name="logTimeStep" value="0.0020 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/floor.wrl">
             <property name="isRobot" value="false"/>

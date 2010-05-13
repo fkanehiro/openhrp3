@@ -59,7 +59,8 @@ import com.generalrobotix.ui.util.MessageBundle;
 public class GrxLoggerView extends GrxBaseView {
     public static final String TITLE = "Logger"; //$NON-NLS-1$
 
-	private GrxWorldStateItem currentItem_;
+	private GrxWorldStateItem currentItem_=null;
+	private GrxSimulationItem simItem_=null;
 
 	private int current_ = 0;    // current position
 	private double playRate_ = 1.0; // playback rate
@@ -410,9 +411,12 @@ public class GrxLoggerView extends GrxBaseView {
 		}else
 			_setTimeSeriesItem(null);
 		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
-		if(simItem!=null)
-			simItem.addObserver(this);
+		
+		simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+		if(simItem_!=null){
+			simItem_.addObserver(this);
+		}
+		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
     }
 
 	private boolean _isAtTheEndAfterPlayback(){
@@ -532,7 +536,26 @@ public class GrxLoggerView extends GrxBaseView {
 	    	default:
 	    		break;
 	    	}
-		}
+		}else if(item instanceof GrxSimulationItem){
+    		GrxSimulationItem simItem = (GrxSimulationItem) item;
+    		switch(event){
+    		case GrxPluginManager.SELECTED_ITEM:
+    			if(simItem_!=simItem){
+    				simItem_ = simItem;
+    				simItem_.addObserver(this);
+    			}
+    			break;
+    		case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(simItem_==simItem){
+	    			simItem_.deleteObserver(this);
+	    			simItem_ = null;
+	    		}
+	    		break;
+	    	default:
+	    		break;
+    		}
+    	}
 	}
 	
 	/**
@@ -566,36 +589,38 @@ public class GrxLoggerView extends GrxBaseView {
 	}
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
-		if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
-			inSimulation_ = true; 
-			lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.live")); //$NON-NLS-1$
-			if((Boolean)arg[1])
-				disableControl();
-			else{
-				playRate_ = 1;
-				play();
-			}
-		}else if((String)arg[0]=="StopSimulation"){ //$NON-NLS-1$
-			inSimulation_ = false;
-			lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.pause")); //$NON-NLS-1$
-			enableControl();
-			pause();
-		}
-		if(currentItem_!=plugin) return;
-		if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
-			int pos = ((Integer)arg[1]).intValue();
-			int logSize = currentItem_.getLogSize();
-			if ( pos < 0 || logSize < pos){
-				return;
-			}
-			current_ = pos;
-			sliderTimeSetMaximam(logSize-1);
-			sliderTime_.setSelection(pos);
-			_updateTimeField(currentItem_);
-		}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
-			if(isPlaying())
+		if(simItem_==plugin){
+			if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
+				inSimulation_ = true; 
+				lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.live")); //$NON-NLS-1$
+				if((Boolean)arg[1])
+					disableControl();
+				else{
+					playRate_ = 1;
+					play();
+				}
+			}else if((String)arg[0]=="StopSimulation"){ //$NON-NLS-1$
+				inSimulation_ = false;
+				lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.pause")); //$NON-NLS-1$
+				enableControl();
 				pause();
-			_setTimeSeriesItem(currentItem_);
+			}
+		}else if(currentItem_==plugin) {
+			if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
+				int pos = ((Integer)arg[1]).intValue();
+				int logSize = currentItem_.getLogSize();
+				if ( pos < 0 || logSize < pos){
+					return;
+				}
+				current_ = pos;
+				sliderTimeSetMaximam(logSize-1);
+				sliderTime_.setSelection(pos);
+				_updateTimeField(currentItem_);
+			}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
+				if(isPlaying())
+					pause();
+				_setTimeSeriesItem(currentItem_);
+			}
 		}
 	}
 
@@ -634,9 +659,9 @@ public class GrxLoggerView extends GrxBaseView {
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
         if(currentItem_!=null)
         	currentItem_.deleteObserver(this);
-        GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
-		if(simItem!=null)
-			simItem.deleteObserver(this);
+        if(simItem_!=null)
+			simItem_.deleteObserver(this);
+		manager_.removeItemChangeListener(this, GrxSimulationItem.class);
 	}
     
     private void sliderTimeSetMaximam(int value)

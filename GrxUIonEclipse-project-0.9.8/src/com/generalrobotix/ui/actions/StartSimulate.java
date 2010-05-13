@@ -24,21 +24,30 @@ import com.generalrobotix.ui.util.MessageBundle;
 
 public class StartSimulate implements IWorkbenchWindowActionDelegate, GrxItemChangeListener, GrxObserver {
 	private IAction action_ = null;
+	private GrxSimulationItem simItem_=null;
 	
 	public StartSimulate() {
 		GrxPluginManager manager_ = Activator.getDefault().manager_;
-		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
-		simItem.addObserver(this);
+		simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+		if(simItem_!=null){
+			simItem_.addObserver(this);
+		}
+		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
 	}
 
 	public void run(IAction action) {
 		action_ = action;
 		GrxPluginManager manager_ = Activator.getDefault().manager_;
-		GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
-		if (simItem.isSimulating()){
-			simItem.stopSimulation();
-		}else{
-			simItem.startSimulation(true);
+		if(simItem_==null){
+			simItem_ = (GrxSimulationItem)manager_.createItem(GrxSimulationItem.class, null);
+			simItem_.addObserver(this);
+			manager_.itemChange(simItem_, GrxPluginManager.ADD_ITEM);
+			manager_.setSelectedItem(simItem_, true);
+		}
+		if(simItem_.isSimulating()){
+			simItem_.stopSimulation();
+		}else {
+			simItem_.startSimulation(true);
 		}
 	}
 
@@ -86,15 +95,36 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate, GrxItemCha
 	}
 
 	public void registerItemChange(GrxBaseItem item, int event) {
-		// TODO Auto-generated method stub
+		if(item instanceof GrxSimulationItem){
+    		GrxSimulationItem simItem = (GrxSimulationItem) item;
+    		switch(event){
+    		case GrxPluginManager.SELECTED_ITEM:
+    			if(simItem_!=simItem){
+    				simItem_ = simItem;
+    				simItem_.addObserver(this);
+    			}
+    			break;
+    		case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(simItem_==simItem){
+	    			simItem_.deleteObserver(this);
+	    			simItem_ = null;
+	    		}
+	    		break;
+	    	default:
+	    		break;
+    		}
+    	}
 		
 	}
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
-		if(arg[0].equals("StartSimulation"))
-			setActionImage(true);
-		else if(arg[0].equals("StopSimulation"))
-			setActionImage(false);	
+		if(simItem_==plugin){
+			if(arg[0].equals("StartSimulation"))
+				setActionImage(true);
+			else if(arg[0].equals("StopSimulation"))
+				setActionImage(false);	
+		}
 	}
 
 }

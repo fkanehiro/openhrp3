@@ -52,6 +52,8 @@ import org.omg.CosNaming.NamingContext;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.GrxBasePlugin.ValueEditCombo;
+import com.generalrobotix.ui.GrxBasePlugin.ValueEditType;
 import com.generalrobotix.ui.actions.StartSimulate;
 import com.generalrobotix.ui.depends.rtm.SwitchDependVerClockGenerator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
@@ -102,10 +104,17 @@ public class GrxSimulationItem extends GrxBaseItem {
 	public  GrxSimulationItem(String name, GrxPluginManager manager) {
 		super(name, manager);
 		setExclusive(true);
+		setIcon("grxrobot.png");
 		registerCORBA();
 	}
 	    
 	public boolean create() {
+		setDbl("totalTime", 20.0); //$NON-NLS-1$
+		setDbl("timeStep", 0.001); //$NON-NLS-1$
+		setDbl("gravity", 9.8); //$NON-NLS-1$
+		setProperty("method","RUNGE_KUTTA"); //$NON-NLS-1$ //$NON-NLS-2$
+		setBool("integrate", true);
+		setBool("viewsimulate", false);
 		return true;
 	}
 	
@@ -163,11 +172,11 @@ public class GrxSimulationItem extends GrxBaseItem {
 				return false;
 			}
 
-			isIntegrate_ = currentWorld_.isTrue("integrate", true);
-			totalTime_   = currentWorld_.getDbl("totalTime", 20.0);
-			stepTime_    = currentWorld_.getDbl("timeStep", 0.001);
+			isIntegrate_ = isTrue("integrate", true);
+			totalTime_   = getDbl("totalTime", 20.0);
+			stepTime_    = getDbl("timeStep", 0.001);
 			logStepTime_ = currentWorld_.getDbl("logTimeStep", 0.001);
-			isSimulatingView_ = currentWorld_.isTrue("viewsimulate", false);
+			isSimulatingView_ = isTrue("viewsimulate", false);
 	                
 			if(isSimulatingView_){
 				view3D =  (Grx3DView)manager_.getView( Grx3DView.class );
@@ -567,6 +576,12 @@ public class GrxSimulationItem extends GrxBaseItem {
 			}
 			currentDynamics_ = null;
 		}
+		unregisterCORBA();
+	}
+	
+	public void delete() {
+		shutdown();
+		super.delete();
 	}
 	    
     public boolean initDynamicsSimulator() {
@@ -601,14 +616,14 @@ public class GrxSimulationItem extends GrxBaseItem {
     		}
     		viewSimulationStep_ = 1.0d/cameraFrameRate;
 	        
-    		String smethod = currentWorld_.getStr("method");
+    		String smethod = getStr("method");
     		IntegrateMethod m=null;
     		if(smethod.equals(SimulationParameterPanel.METHOD_NAMES[0]))
     			m=IntegrateMethod.RUNGE_KUTTA;
     		else
     			m=IntegrateMethod.EULER;
-    		currentDynamics_.init(currentWorld_.getDbl("timeStep", 0.001), m, SensorOption.ENABLE_SENSOR);
-    		currentDynamics_.setGVector(new double[] { 0.0, 0.0, currentWorld_.getDbl("gravity", 9.8) });
+    		currentDynamics_.init(getDbl("timeStep", 0.001), m, SensorOption.ENABLE_SENSOR);
+    		currentDynamics_.setGVector(new double[] { 0.0, 0.0, getDbl("gravity", 9.8) });
 
     		for (int i=0; i<modelList.size(); i++) {
     			GrxModelItem model = modelList.get(i);
@@ -770,7 +785,7 @@ public class GrxSimulationItem extends GrxBaseItem {
     	if (controllerName == null || controllerName.equals("")) //$NON-NLS-1$
     		return 0;
     	String optionAdd = null;
-    	if (!currentWorld_.isTrue("integrate", true))
+    	if (!isTrue("integrate", true))
     		optionAdd = " -nosim"; //$NON-NLS-1$
 	        
     	GrxDebugUtil.println("model name = " + model.getName() + " : controller = " + controllerName + " : cycle time[s] = " + step); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -850,7 +865,7 @@ public class GrxSimulationItem extends GrxBaseItem {
     				controller.setDynamicsSimulator(currentDynamics_);
     				controller.initialize();
 
-    				if (currentWorld_.isTrue("viewsimulate")){//simParamPane_.isSimulatingView()) {
+    				if (isTrue("viewsimulate")){//simParamPane_.isSimulatingView()) {
     					cobj = GrxCorbaUtil.getReference("ViewSimulator"); //$NON-NLS-1$
     					ViewSimulator viewsim = ViewSimulatorHelper.narrow(cobj);
     					controller.setViewSimulator(viewsim);
@@ -910,6 +925,7 @@ public class GrxSimulationItem extends GrxBaseItem {
     			if (d > 0) {
     				//simParamPane_.setTotalTime(simParamPane_.getTotalTime() + d);
     				totalTime_ = totalTime_ + d;
+    				setDbl("totalTime", totalTime_);
     				currentWorld_.extendTime(totalTime_);
     				break;
     			}
@@ -921,7 +937,37 @@ public class GrxSimulationItem extends GrxBaseItem {
     public boolean isSimulating(){
     	return isExecuting_;
     }
-	    
+	 
+    public void restoreProperties() {
+		super.restoreProperties();
+		String str = getProperty("totalTime");
+		if(str==null)
+			setDbl("totalTime", 20.0); //$NON-NLS-1$
+		str = getProperty("timeStep");
+		if(str==null)
+			setDbl("timeStep", 0.001); //$NON-NLS-1$
+		str = getProperty("gravity");
+		if(str==null)
+			setDbl("gravity", 9.8); //$NON-NLS-1$
+		str = getProperty("method");
+		if(str==null)
+			setProperty("method","RUNGE_KUTTA"); //$NON-NLS-1$ //$NON-NLS-2$
+		str = getProperty("integrate");
+		if(str==null)
+			setBool("integrate", true);
+		str = getProperty("viewsimulate");
+		if(str==null)
+			setBool("viewsimulate", false);
+    }
+    
+    public ValueEditType GetValueEditType(String key) {
+        if(key.equals("method")){
+            return new ValueEditCombo(methodComboItem_);
+        }else if(key.equals("integrate") || key.equals("viewsimulate")){
+            return new ValueEditCombo(booleanComboItem_);
+        }
+        return super.GetValueEditType(key);
+    }
 	   
     public int gcd(int a, int b){
     	BigInteger bigA = BigInteger.valueOf(a);

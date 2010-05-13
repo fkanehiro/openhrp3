@@ -161,13 +161,6 @@ public class GrxPluginManager implements IPropertyChangeListener {
 			processManager.setProcessList(serverManager);
 			itemChange(processManager, GrxPluginManager.ADD_ITEM);
 		}
-        
-
-        // SImulationItem 生成　　//
-        GrxSimulationItem simulationItem = (GrxSimulationItem)createItem(GrxSimulationItem.class, "simulation");
-        if(simulationItem != null)
-        	itemChange(simulationItem, GrxPluginManager.ADD_ITEM);
-
     }
 
     /**

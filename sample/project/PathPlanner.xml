@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <grxui>
     <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxSimulationItem" name="SampleSimulation" select="true">
+            <property name="totalTime" value="20.0 "/>
+            <property name="timeStep" value="0.0010 "/>
+            <property name="gravity" value="9.8 "/>
+            <property name="method" value="RUNGE_KUTTA"/>
+        </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(PROJECT_DIR)/../model/box.wrl">
             <property name="isRobot" value="false"/>
             <property name="name" value="box"/>
@@ -76,11 +82,6 @@
         </item>
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="newworldstate0" select="true">
             <property name="logTimeStep" value="0.3333333333333333 "/>
-            <property name="name" value="newworldstate0"/>
-            <property name="totalTime" value="20.0 "/>
-            <property name="timeStep" value="0.0010 "/>
-            <property name="gravity" value="9.8 "/>
-            <property name="method" value="RUNGE_KUTTA"/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#box_#sample_" select="true">
             <property name="name" value="CP#box_#sample_"/>

@@ -31,6 +31,7 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.item.GrxSimulationItem;
+import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.util.GrxServerManager;
 import com.generalrobotix.ui.util.GrxServerManagerPanel;
 import com.generalrobotix.ui.util.MessageBundle;
@@ -75,9 +76,11 @@ public class GrxServerManagerView extends GrxBaseView
 			serverManager_.addObserver(this);
 		}
 		manager_.registerItemChangeListener(this, GrxServerManager.class);
-		simItem_ = (GrxSimulationItem)manager_.getItem("simulation");
-		if(simItem_ != null)
+		simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+		if(simItem_!=null){
 			simItem_.addObserver(this);
+		}
+		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
         //setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 	}
     
@@ -482,19 +485,18 @@ public class GrxServerManagerView extends GrxBaseView
     }
     
     private void restartServers(IProgressMonitor monitor) throws InterruptedException{
-        GrxSimulationItem simItem = (GrxSimulationItem)manager_.getItem("simulation");
         Grx3DView dview =  (Grx3DView)manager_.getView( Grx3DView.class );
         if(dview != null){
             dview.unregisterCORBA();
         }
-        if(simItem != null){
-            simItem.unregisterCORBA();
+        if(simItem_ != null){
+            simItem_.unregisterCORBA();
         }
         monitor.worked(1);
         serverManager_.restart(monitor);
         monitor.worked(1);
-        if(simItem != null){
-            simItem.registerCORBA();
+        if(simItem_ != null){
+            simItem_.registerCORBA();
         }
         if(dview != null){
             dview.registerCORBA();
@@ -520,7 +522,26 @@ public class GrxServerManagerView extends GrxBaseView
 	    	default:
 	    		break;
 	    	}
-		}
+		}else if(item instanceof GrxSimulationItem){
+    		GrxSimulationItem simItem = (GrxSimulationItem) item;
+    		switch(event){
+    		case GrxPluginManager.SELECTED_ITEM:
+    			if(simItem_!=simItem){
+    				simItem_ = simItem;
+    				simItem_.addObserver(this);
+    			}
+    			break;
+    		case GrxPluginManager.REMOVE_ITEM:
+	    	case GrxPluginManager.NOTSELECTED_ITEM:
+	    		if(simItem_==simItem){
+	    			simItem_.deleteObserver(this);
+	    			simItem_ = null;
+	    		}
+	    		break;
+	    	default:
+	    		break;
+    		}
+    	}
 	}
     
     public void widgetDisposed(DisposeEvent e)
@@ -552,7 +573,8 @@ public class GrxServerManagerView extends GrxBaseView
         	serverManager_.deleteObserver(this);
         serverManager_.SaveServerInfo();
         if(simItem_!=null)
-        	simItem_.deleteObserver(this);
+			simItem_.deleteObserver(this);
+		manager_.removeItemChangeListener(this, GrxSimulationItem.class);
 	}
 
     public void setEditableHostPortText(boolean bEnable){

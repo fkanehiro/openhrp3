@@ -246,13 +246,11 @@ public class SimulationParameterPanel extends Composite{
       currentItem_ = item;
       spinTotalTime_.setItem(item);
       spinStepTime_.setItem(item);
-  	  spinLogStepTime_.setItem(item);
   	  spinGravity_.setItem(item);
 	  
 	  if (item != null) { 
 		  setTotalTime(item.getDbl("totalTime", 20.0)); //$NON-NLS-1$
 		  setStepTime(item.getDbl("timeStep", 0.001)); //$NON-NLS-1$
-		  setLogStepTime(item.getDbl("logTimeStep", 0.001)); //$NON-NLS-1$
 		  setGravity(item.getDbl("gravity", 9.8)); //$NON-NLS-1$
 		  setMethod(item.getProperty("method",METHOD_NAMES[0])); //$NON-NLS-1$
 		  setIntegrate(item.isTrue("integrate", true)); //$NON-NLS-1$
@@ -260,4 +258,14 @@ public class SimulationParameterPanel extends Composite{
 		  setEnabled(true);
 	  }
   }
+  
+  public void updateLogTime(GrxBaseItem item) {
+      setEnabled(item != null);
+  	  spinLogStepTime_.setItem(item);
+	  if (item != null) { 
+		  setLogStepTime(item.getDbl("logTimeStep", 0.001)); //$NON-NLS-1$
+		  setEnabled(true);
+	  }
+  }
+  
 }
