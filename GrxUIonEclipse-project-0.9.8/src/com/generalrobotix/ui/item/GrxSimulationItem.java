@@ -602,7 +602,9 @@ public class GrxSimulationItem extends GrxBaseItem {
     			}
     			BodyInfo bodyInfo = model.getBodyInfo();
     			if(bodyInfo==null)  return false;
-    			currentWorld_.registerCharacter(model.getName(), bodyInfo);
+    			currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+    			if(currentWorld_!=null)
+    				currentWorld_.registerCharacter(model.getName(), bodyInfo);
     			currentDynamics_.registerCharacter(model.getName(), bodyInfo);
     			if (model.isRobot()) {
     				robotEntry_.add(model.getName());
