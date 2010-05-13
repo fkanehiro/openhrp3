@@ -535,6 +535,23 @@ void Controller_impl::activeComponents()
             }
         }
     }
+
+    RTC::ExecutionContextList_var eclist = virtualRobotRTC->get_owned_contexts();
+    for(CORBA::ULong i=0; i < eclist->length(); ++i){
+        if(!CORBA::is_nil(eclist[i])){
+            ExtTrigExecutionContextService_Var_Type execContext = ExtTrigExecutionContextService_Type::_narrow(eclist[i]);
+            if(!CORBA::is_nil(execContext)){
+                if( RTC::PRECONDITION_NOT_MET == execContext->activate_component(virtualRobotRTC->getObjRef()) )
+                {
+                    execContext->reset_component(virtualRobotRTC->getObjRef());
+                    execContext->tick();
+                    execContext->activate_component(virtualRobotRTC->getObjRef());
+                }
+                execContext->tick();
+            }
+            break;
+        }
+    }
 }
 
 void Controller_impl::deactiveComponents()
@@ -546,6 +563,17 @@ void Controller_impl::deactiveComponents()
             if ( RTC::RTC_OK == rtcInfo->execContext->deactivate_component(rtcInfo->rtcRef) ){
                 vecExecContext.push_back(rtcInfo->execContext);
             }
+        }
+    }
+    RTC::ExecutionContextList_var eclist = virtualRobotRTC->get_owned_contexts();
+    for(CORBA::ULong i=0; i < eclist->length(); ++i){
+        if(!CORBA::is_nil(eclist[i])){
+            ExtTrigExecutionContextService_Var_Type execContext = ExtTrigExecutionContextService_Type::_narrow(eclist[i]);
+            if(!CORBA::is_nil(execContext)){
+                execContext->deactivate_component(virtualRobotRTC->getObjRef());
+                vecExecContext.push_back(execContext);
+            }
+            break;
         }
     }
     for( std::vector<ExtTrigExecutionContextService_Var_Type>::iterator ite = vecExecContext.begin();
