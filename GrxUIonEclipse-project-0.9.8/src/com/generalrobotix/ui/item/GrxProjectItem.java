@@ -511,6 +511,10 @@ public class GrxProjectItem extends GrxBaseItem {
 		manager_.focusedItem(manager_.getProject());
 		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
 		
+		String dir = f.getParent();
+		if(dir != null)
+			System.setProperty("CURRENT_DIR", dir);
+		
     	try {
       		doc_ = builder_.parse(f);
       		element_ = doc_.getDocumentElement();
