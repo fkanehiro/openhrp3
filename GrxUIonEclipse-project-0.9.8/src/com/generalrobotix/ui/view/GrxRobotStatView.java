@@ -232,6 +232,7 @@ public class GrxRobotStatView extends GrxBaseView {
         	currentState_ = currentWorld_.getValue();
         	updateTableViewer();
         	currentWorld_.addObserver(this); 
+        	currentWorld_.addPosObserver(this);
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
         sashForm.setWeights(new int[] {60,20,10,10});
@@ -362,12 +363,14 @@ public class GrxRobotStatView extends GrxBaseView {
 	    			currentState_ = currentWorld_.getValue();
 	    			updateTableViewer();
 	    	        currentWorld_.addObserver(this);
+	    	        currentWorld_.addPosObserver(this);
     			}
     			break;
     		case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
 	    		if(currentWorld_ == worldStateItem){
 	    			currentWorld_.deleteObserver(this);
+	    			currentWorld_.deletePosObserver(this);
 		    		currentWorld_ = null;
 		    		currentState_ = null;
 		    		updateTableViewer();
@@ -381,11 +384,7 @@ public class GrxRobotStatView extends GrxBaseView {
     
     public void update(GrxBasePlugin plugin, Object... arg){
     	if(currentWorld_ == plugin ){
-	    	if( (String)arg[0] == "PositionChange" ) {
-	    		int pos = ((Integer)arg[1]).intValue();
-	    		currentState_ = currentWorld_.getValue(pos);
-	    		_refresh();
-	    	}else if((String)arg[0]=="ClearLog"){
+            if((String)arg[0]=="ClearLog"){
 				currentState_ = null;
 			}
     	}else if(modelList_.contains(plugin)){
@@ -397,7 +396,16 @@ public class GrxRobotStatView extends GrxBaseView {
     		}
     	}
     }
-    
+
+    public void updatePosition(GrxBasePlugin plugin, Integer arg_pos){
+        if(currentWorld_ != plugin)
+            return;
+
+        int pos = arg_pos.intValue();
+        currentState_ = currentWorld_.getValue(pos);
+        _refresh();
+    }
+
     private void updateTableViewer(){
     	if (currentModel_ == null ) return;
     	currentSensor_ = null;
@@ -888,8 +896,10 @@ public class GrxRobotStatView extends GrxBaseView {
     public void shutdown() {
         manager_.removeItemChangeListener(this, GrxModelItem.class);
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
-        if(currentWorld_ != null)
-			currentWorld_.deleteObserver(this);
+        if(currentWorld_ != null){
+            currentWorld_.deleteObserver(this);
+            currentWorld_.deletePosObserver(this);
+        }
         modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
         if(!modelList_.isEmpty()){
 	        Iterator<GrxModelItem> it = modelList_.iterator();

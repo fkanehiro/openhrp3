@@ -143,6 +143,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
         	currentWorld_.addObserver(this);
+        	currentWorld_.addPosObserver(this);
         	updateCanvas(currentWorld_.getValue());
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
@@ -187,14 +188,13 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     	}
     }
     
-    public void update(GrxBasePlugin plugin, Object... arg) {
-		if(currentWorld_!=plugin) return;
-		if((String)arg[0]=="PositionChange"){
-			int pos = ((Integer)arg[1]).intValue();
-			WorldStateEx state = currentWorld_.getValue(pos);
-			updateCanvas(state);
-		}
-	}
+    public void updatePosition(GrxBasePlugin plugin, Integer arg_pos){
+        if(currentWorld_!=plugin) return;
+
+        int pos = arg_pos.intValue();
+        WorldStateEx state = currentWorld_.getValue(pos);
+        updateCanvas(state);
+    }
     
     private void updateCanvas( WorldStateEx state ){
     	if (state != null  && currentModel_ != null) {
@@ -246,6 +246,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     			if(currentWorld_!=worldStateItem){
     				currentWorld_ = worldStateItem;
     				currentWorld_.addObserver(this);
+    				currentWorld_.addPosObserver(this);
     				updateCanvas(currentWorld_.getValue());
     			}
     			break;
@@ -253,6 +254,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
 	    		if(currentWorld_==worldStateItem){
 	    			currentWorld_.deleteObserver(this);
+	    			currentWorld_.deletePosObserver(this);
 	    			currentWorld_ = null;
 	    			updateCanvas(null);
 	    		}
@@ -266,7 +268,9 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     public void shutdown() {
         manager_.removeItemChangeListener(this, GrxModelItem.class);
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
-        if(currentWorld_!=null)
-			 currentWorld_.deleteObserver(this);   
+        if(currentWorld_!=null) {
+			 currentWorld_.deleteObserver(this);
+			 currentWorld_.deletePosObserver(this);
+        }
 	}
 }

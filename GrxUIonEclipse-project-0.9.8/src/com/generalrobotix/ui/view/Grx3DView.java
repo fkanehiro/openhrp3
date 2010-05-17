@@ -272,6 +272,7 @@ public class Grx3DView
         		updateViewSimulator(currentState_.time);
             }           
         	currentWorld_.addObserver(this);
+        	currentWorld_.addPosObserver(this);
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
         currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
@@ -727,6 +728,7 @@ public class Grx3DView
     			if(currentWorld_!=worldStateItem){
     				currentWorld_ = worldStateItem;
     				currentWorld_.addObserver(this);
+                    currentWorld_.addPosObserver(this);
     				currentState_ = currentWorld_.getValue();
     			}
     			break;
@@ -734,6 +736,7 @@ public class Grx3DView
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
 	    		if(currentWorld_==worldStateItem){
 	    			currentWorld_.deleteObserver(this);
+                    currentWorld_.deletePosObserver(this);
 	    			currentWorld_ = null;
 	    			currentState_ = null;
 	    		}
@@ -805,24 +808,29 @@ public class Grx3DView
     			showOption();
     		}
     	}else if(currentWorld_==plugin){
-			if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
-				if(viewMode_ == VIEW || viewMode_ == SIMULATION){
-					int pos = ((Integer)arg[1]).intValue();
-					currentState_ = currentWorld_.getValue(pos);
-					if(currentState_!=null){
-						_showCollision(currentState_.collisions);
-						updateModels(currentState_);
-						updateViewSimulator(currentState_.time);
-					}
-					if(viewMode_ == VIEW)
-						showOptionWithoutCollision();
-				}
-			}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
+            if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
 				currentState_ = null;
 			}
     	}
     }
     
+    public void updatePosition(GrxBasePlugin plugin, Integer arg_pos){
+        if(currentWorld_ != plugin)
+            return;
+
+        if(viewMode_ == VIEW || viewMode_ == SIMULATION){
+            int pos = arg_pos.intValue();
+            currentState_ = currentWorld_.getValue(pos);
+            if(currentState_!=null){
+                _showCollision(currentState_.collisions);
+                updateModels(currentState_);
+                updateViewSimulator(currentState_.time);
+            }
+            if(viewMode_ == VIEW)
+                showOptionWithoutCollision();
+        }
+    }
+
     private void disableButton(){
     	disableOperation();
     	if (btnDistance_.isSelected())
@@ -2039,7 +2047,10 @@ public class Grx3DView
     	manager_.removeItemChangeListener(this, GrxModelItem.class);
     	manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
     	if(currentWorld_!=null)
+        {
     		currentWorld_.deleteObserver(this);
+    		currentWorld_.deletePosObserver(this);
+        }
     	manager_.removeItemChangeListener(this, GrxCollisionPairItem.class);
 		if(simItem_!=null)
 			simItem_.deleteObserver(this);
