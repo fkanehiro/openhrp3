@@ -1024,11 +1024,9 @@ public class GrxPluginManager implements IPropertyChangeListener {
                 ((GrxBasePlugin) it2.next()).shutdown();
         }
         
-        /*
-         * この時点ですでにビューは閉じられている いまはViewPartのdisposeメソッドからViewのshutdownを呼んでいる
-         * updateViewList(); for( GrxBaseView v : selectedViewList_ )
-         * v.shutdown();
-         */
+        GrxProcessManager.shutDown();
+        if(orb_!=null)
+        	orb_.shutdown(false);
     }
 
     /**

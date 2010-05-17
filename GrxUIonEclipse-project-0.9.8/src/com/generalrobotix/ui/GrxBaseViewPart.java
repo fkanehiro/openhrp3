@@ -23,13 +23,11 @@ public class GrxBaseViewPart extends ViewPart {
 		Constructor<? extends GrxBaseView> c = null;
 		Activator act = Activator.getDefault();
 		if(act != null){
-			if(act.tryStartGrxUI()){
-				try {
-					c = cls.getConstructor(new Class[] { String.class, GrxPluginManager.class, GrxBaseViewPart.class, Composite.class });
-					v = (GrxBaseView) c.newInstance(new Object[] { name, act.manager_, vp, p });
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+			try {
+				c = cls.getConstructor(new Class[] { String.class, GrxPluginManager.class, GrxBaseViewPart.class, Composite.class });
+				v = (GrxBaseView) c.newInstance(new Object[] { name, act.manager_, vp, p });
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
