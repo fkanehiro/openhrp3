@@ -79,12 +79,5 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	
 	public void postShutdown(){
 		//window が閉じられたのち実行される　//
-		GrxProcessManager.shutDown();
-        try {
-            GrxCorbaUtil.getORB().shutdown(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-		Activator.getDefault().stopGrxUI();
 	}
 }

@@ -50,7 +50,7 @@ import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin{
+public class Activator extends AbstractUIPlugin implements IWorkbenchListener{
     public static final String PLUGIN_ID = "com.generalrobotix.ui.grxui";
     private static Activator   plugin;
     private static final String  LINUX_HOME_DIR   = System.getenv("HOME") + File.separator ;
@@ -91,191 +91,32 @@ public class Activator extends AbstractUIPlugin{
     private SimpleDateFormat dateFormat_ = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS z Z");
     private RandomAccessFile lockFile_ = null;
     
-    // パースペクティブのイベント初期化、振る舞いを定義するクラス
-    class EventInnerClass extends PerspectiveAdapter
-            implements IWindowListener, IWorkbenchListener, SynchronousBundleListener, FrameworkListener{
-    	
-        private IWorkbench      workbench_                  = null;
-        private BundleContext   context_                    = null;
-        public EventInnerClass(IWorkbench workbench, BundleContext context) {
-    	    super();
-            workbench_ = workbench;
-            context_ = context;
-        }
-        
-        public BundleContext getBundleContext(){ return context_; }
-        public IWorkbench getWorkbench(){ return workbench_; }
-        
-        // Listenerをセット
-        public void setEventListner() {
-            workbench_.addWindowListener(this);
-            workbench_.addWorkbenchListener(this);
-            context_.addBundleListener(this);
-        }
-        
-        public void perspectiveOpened(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-            if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
-                if( lockFile_ == null ){
-                    try{
-                        tryLockFile();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        return;
-                    }
-                    startGrxUI();
-                }
-            }
-        }
+    public void postShutdown(IWorkbench workbench) {
+    }
 
-        public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-            if(GrxUIPerspectiveFactory.ID.equals(perspective.getId())) {
-                if( lockFile_ == null ){
-                    breakStart( null, perspective );
-                }
-            }
-        }
-        
-        public void perspectiveClosed(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-            if (perspective.getId().contains(GrxUIPerspectiveFactory.ID)) {
-                if( lockFile_ != null ){
-                	boolean found=false;
-                	IPerspectiveDescriptor[] perspectives = page.getOpenPerspectives();
-                	for(IPerspectiveDescriptor persp : perspectives){
-                		if(persp.getId().contains(GrxUIPerspectiveFactory.ID)){
-                			found=true;
-                			break;
-                		}
-                	}		
-                	if(!found)
-                		stopGrxUI();
-                }
-            }
-        }
-
-        public void windowActivated(IWorkbenchWindow window) {}
-
-        public void windowClosed(IWorkbenchWindow window) {
-            window.removePerspectiveListener(this);
-        }
-
-        public void windowDeactivated(IWorkbenchWindow window) {}
-
-        public void windowOpened(IWorkbenchWindow window) {
-        	if( lockFile_ == null ){
-        		breakStart(null, null );
-        	} else {
-        		window.addPerspectiveListener(this);
+    public boolean preShutdown(IWorkbench workbench, boolean forced) {
+        try {
+        	IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
+        	for(IWorkbenchWindow window : windows){
+        		IWorkbenchPage[] pages = window.getPages();
+        		for(IWorkbenchPage page : pages){
+        			IPerspectiveDescriptor[] perspectives = page.getOpenPerspectives();
+        			for(IPerspectiveDescriptor perspective : perspectives){
+        				if(perspective.getId().equals(GrxUIPerspectiveFactory.ID+".project"))
+            				page.closePerspective(perspective, false, false);
+        			}
+        		}
         	}
+        	IPerspectiveRegistry perspectiveRegistry=workbench.getPerspectiveRegistry();
+        	IPerspectiveDescriptor tempPd=perspectiveRegistry.findPerspectiveWithId(GrxUIPerspectiveFactory.ID + ".project");
+       		if(tempPd!=null)
+       			perspectiveRegistry.deletePerspective(tempPd);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-
-        public void postShutdown(IWorkbench workbench) {
-            GrxProcessManager.shutDown();
-            try {
-                GrxCorbaUtil.getORB().shutdown(false);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        public boolean preShutdown(IWorkbench workbench, boolean forced) {
-            try {
-            	IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
-            	for(IWorkbenchWindow window : windows){
-            		IWorkbenchPage[] pages = window.getPages();
-            		for(IWorkbenchPage page : pages){
-            			IPerspectiveDescriptor[] perspectives = page.getOpenPerspectives();
-            			for(IPerspectiveDescriptor perspective : perspectives){
-            				if(perspective.getId().equals(GrxUIPerspectiveFactory.ID+".project"))
-                				page.closePerspective(perspective, false, false);
-            			}
-            		}
-            	}
-            	IPerspectiveRegistry perspectiveRegistry=workbench.getPerspectiveRegistry();
-            	IPerspectiveDescriptor tempPd=perspectiveRegistry.findPerspectiveWithId(GrxUIPerspectiveFactory.ID + ".project");
-           		if(tempPd!=null)
-           			perspectiveRegistry.deletePerspective(tempPd);
-                stop(context_);
-                stopGrxUI();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            return true;
-        }
-
-        public void bundleChanged(BundleEvent event) {
-            if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
-                doBundleEvnt(event);
-            }
-        }
-
-        public void frameworkEvent(FrameworkEvent event) {
-            if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
-                //doFrameworkEvnt(event);
-            }
-        }
-
-        private void doBundleEvnt(BundleEvent event) {
-            switch (event.getType()) {
-            case BundleEvent.INSTALLED:
-                break;
-            case BundleEvent.RESOLVED:
-                break;
-            case BundleEvent.STARTED:
-                if (event.getBundle().getSymbolicName().equals(PLUGIN_ID)) {
-                    //ワークスペースを起動して初めてパースペクティブを開く場合
-                    IWorkbench localWorkbench = PlatformUI.getWorkbench();
-                    IWorkbenchWindow wnd = localWorkbench.getActiveWorkbenchWindow();
-                    if( wnd.getActivePage() != null ){
-                        if (localWorkbench != null) {
-                            IWorkbenchWindow localWindow = localWorkbench.getActiveWorkbenchWindow();
-                            if (localWindow != null) {
-                                localWindow.addPerspectiveListener(this);
-                            }
-                        }
-                    }
-                    
-                }
-                break;
-            case BundleEvent.STARTING:
-                break;
-            case BundleEvent.STOPPED:
-                break;
-            case BundleEvent.STOPPING:
-                break;
-            case BundleEvent.UNINSTALLED:
-                break;
-            case BundleEvent.UNRESOLVED:
-                break;
-            case BundleEvent.UPDATED:
-                break;
-            }
-        }
-
-        /*
-        private void doFrameworkEvnt(FrameworkEvent event)
-        {
-            switch( event.getType() )
-            {
-            case FrameworkEvent.ERROR:
-                GrxDebugUtil.println("[ACTIVATOR.EventInnerClass] FrameworkEvent.ERROR in doFrameworkEvnt:" + event.getThrowable().getMessage());
-                break;
-            case FrameworkEvent.INFO:
-                break;
-            case FrameworkEvent.PACKAGES_REFRESHED:
-                break;
-            case FrameworkEvent.STARTED:
-                break;
-            case FrameworkEvent.STARTLEVEL_CHANGED:
-                break;
-            case FrameworkEvent.WARNING:
-                break;
-            }
-        }
-        */
-    };
-
-    private EventInnerClass eventInnerClass = null;
-
+        return true;
+    }
+    
     public Activator() {
         System.out.println("[ACTIVATOR] CONSTRUCT");
     }
@@ -295,44 +136,27 @@ public class Activator extends AbstractUIPlugin{
         URL cur_url = cur.toURI().toURL();
         GrxDebugUtil.println("[ACTIVATOR] START in " + cur_url);
 
+        //  plugin で実行の時　RCPの時はこの時にはまだ、Workbenchが作成されていない　　//
         if(PlatformUI.isWorkbenchRunning()){
-        	//        	 イベントリスナークラスの登録
-            eventInnerClass = new EventInnerClass(PlatformUI.getWorkbench(), context);
-            eventInnerClass.setEventListner();
+            PlatformUI.getWorkbench().addWorkbenchListener(this);
             registryImage();
             registryFont();
             registryColor();
             
+            if( lockFile_ == null ){
+                try{
+                    tryLockFile();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    return;
+                }
+                startGrxUI();
+            }
         }
     }
 
     public void registryImage() throws Exception{
     	ireg_ = new ImageRegistry();
-    	/*
-    	if (getPath().matches(".*\\.jar!.+$")) {
-    		GrxDebugUtil.println("registryImage" + getPath());
-            // Jarファイル化した場合の ireg_ セット
-            URL localUrl = new URL(getPath().substring(0, getPath().length() - 2));
-            JarInputStream in = new JarInputStream(localUrl.openStream());
-            for (JarEntry i = in.getNextJarEntry(); i != null; i = in.getNextJarEntry()) {
-                if (i.getName().matches("resources/images/.*\\.[Pp][Nn][Gg]")) {
-                    URL resourceUrl = getClass().getClassLoader().getResources(i.getName()).nextElement();
-                    ireg_.put(resourceUrl.getFile(), ImageDescriptor.createFromURL(resourceUrl));
-                }
-            }
-        } else {
-            File imgDir = new File(getPath() + "/resources/images");
-            GrxDebugUtil.println("[ACTIVATOR] imgDir " + imgDir.getPath());
-            File[] fs = imgDir.listFiles(new FileFilter() {
-                public boolean accept(File f) {
-                    return f.getName().endsWith(".png");
-                }
-            });
-            for (File f : fs) {
-                ireg_.put(f.getName(), ImageDescriptor.createFromURL(f.toURI().toURL()));
-            }
-        }
-		*/
     	for(int i=0; i<images_.length; i++){
     		URL url = getClass().getResource("/resources/images/"+images_[i]);
     		ireg_.put(images_[i], ImageDescriptor.createFromURL(url));
@@ -491,6 +315,7 @@ public class Activator extends AbstractUIPlugin{
     public void stop(BundleContext context)
             throws Exception {
         super.stop(context);
+        stopGrxUI();
     }
 
     // GrxUIパースペクティブが有効になったときの動作
@@ -506,19 +331,6 @@ public class Activator extends AbstractUIPlugin{
         }
     }
 
-    //
-    public boolean tryStartGrxUI(){
-		if( lockFile_ == null && !bStartedGrxUI_){
-		    try{
-		        tryLockFile();
-			    startGrxUI();
-		    } catch (Exception ex) {
-		        ex.printStackTrace();
-		    }
-		}
-		return bStartedGrxUI_;
-    }
-    
     // GrxUIパースペクティブが無効になったときの動作
     public void stopGrxUI() {
     	if(!bStartedGrxUI_)
@@ -532,16 +344,6 @@ public class Activator extends AbstractUIPlugin{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        // eclipseプラグイン上での実行を想定した処理
-        for( IWorkbenchWindow localWindow : eventInnerClass.getWorkbench().getWorkbenchWindows() ){
-            for( IWorkbenchPage localPage : localWindow.getPages() ){
-                localPage.getLabel();
-                if( GrxUIPerspectiveFactory.ID.equals( localPage.getPerspective().getId()) ){
-                    localPage.getLabel();
-                }
-            }
-        }
-        
         bStartedGrxUI_ = false;
     }
     
