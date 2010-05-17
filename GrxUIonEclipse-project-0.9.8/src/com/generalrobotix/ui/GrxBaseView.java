@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Composite;
  *
  */
 @SuppressWarnings("serial")
-public class GrxBaseView extends GrxBasePlugin implements GrxItemChangeListener, GrxObserver {
+public class GrxBaseView extends GrxBasePlugin implements GrxItemChangeListener, GrxObserver , GrxPositionObserver{
 
 	private static Dimension defaultButtonSize_ = new Dimension(27, 27);
 	public boolean isScrollable_ = true;
@@ -134,4 +134,7 @@ public class GrxBaseView extends GrxBasePlugin implements GrxItemChangeListener,
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
 	}
+    
+    public void updatePosition(GrxBasePlugin plugin, Integer pos){
+    }
 }

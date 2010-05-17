@@ -69,6 +69,7 @@ public class GrxGraphView extends GrxBaseView {
         if(currentWorld_!=null){
             setWorldState(currentWorld_);
         	currentWorld_.addObserver(this);
+        	currentWorld_.addPosObserver(this);
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
         currentGraph_ = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
@@ -108,12 +109,14 @@ public class GrxGraphView extends GrxBaseView {
                     setWorldState(worldStateItem);
 	    			currentWorld_ = worldStateItem;
 	    			currentWorld_.addObserver(this);
+	    			currentWorld_.addPosObserver(this);
 	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
 	    		if(currentWorld_==worldStateItem){
 	    			currentWorld_.deleteObserver(this);
+	    			currentWorld_.deletePosObserver(this);
                     setWorldState(null);
 	    			currentWorld_ = null;
 	    		}
@@ -230,16 +233,15 @@ public class GrxGraphView extends GrxBaseView {
 		composite_.redraw(composite_.getLocation().x,composite_.getLocation().y,composite_.getSize().x,composite_.getSize().y,true);	
 	}
 
-	public void update(GrxBasePlugin plugin, Object... arg) {
-		if(currentWorld_!=plugin) return;
-		if((String)arg[0]=="PositionChange"){
-			int pos = ((Integer)arg[1]).intValue();
-			WorldStateEx state = currentWorld_.getValue(pos);
-			if (state == null)	return;
-			updateGraph(state);
-		}
-	}
-	
+    public void updatePosition(GrxBasePlugin plugin, Integer arg_pos){
+        if(currentWorld_!=plugin) return;
+
+        int pos = arg_pos.intValue();
+        WorldStateEx state = currentWorld_.getValue(pos);
+        if (state == null)	return;
+        updateGraph(state);
+    }
+
 	private void updateGraph(WorldStateEx state){
 		Time time_ = new Time();
 		time_.set(state.time);
@@ -256,6 +258,9 @@ public class GrxGraphView extends GrxBaseView {
 		 manager_.removeItemChangeListener(this, GrxModelItem.class);
 		 manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
 		 if(currentWorld_!=null)
-			 currentWorld_.deleteObserver(this);   
+         {
+			 currentWorld_.deleteObserver(this);
+			 currentWorld_.deletePosObserver(this);
+         }
 	}
 }

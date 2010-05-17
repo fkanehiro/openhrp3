@@ -408,6 +408,7 @@ public class GrxLoggerView extends GrxBaseView {
 		if(currentItem_!=null){
 			_setTimeSeriesItem(currentItem_);
 			currentItem_.addObserver(this);
+			currentItem_.addPosObserver(this);
 		}else
 			_setTimeSeriesItem(null);
 		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
@@ -523,12 +524,14 @@ public class GrxLoggerView extends GrxBaseView {
 	    			_setTimeSeriesItem(worldStateItem);
 	    			currentItem_ = worldStateItem;
 	    			currentItem_.addObserver(this);
+	    			currentItem_.addPosObserver(this);
 	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
 	    	case GrxPluginManager.NOTSELECTED_ITEM:
 	    		if(currentItem_==worldStateItem){
     				currentItem_.deleteObserver(this);
+    				currentItem_.deletePosObserver(this);
 	    			_setTimeSeriesItem(null);
 	    			currentItem_ = null;
 	    		}
@@ -606,23 +609,28 @@ public class GrxLoggerView extends GrxBaseView {
 				pause();
 			}
 		}else if(currentItem_==plugin) {
-			if((String)arg[0]=="PositionChange"){ //$NON-NLS-1$
-				int pos = ((Integer)arg[1]).intValue();
-				int logSize = currentItem_.getLogSize();
-				if ( pos < 0 || logSize < pos){
-					return;
-				}
-				current_ = pos;
-				sliderTimeSetMaximam(logSize-1);
-				sliderTime_.setSelection(pos);
-				_updateTimeField(currentItem_);
-			}else if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
+			if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
 				if(isPlaying())
 					pause();
 				_setTimeSeriesItem(currentItem_);
 			}
 		}
 	}
+
+    public void updatePosition(GrxBasePlugin plugin, Integer arg_pos){
+        if(currentItem_ != plugin)
+            return;
+        
+        int pos = arg_pos.intValue();
+        int logSize = currentItem_.getLogSize();
+        if ( pos < 0 || logSize < pos){
+            return;
+        }
+        current_ = pos;
+        sliderTimeSetMaximam(logSize-1);
+        sliderTime_.setSelection(pos);
+        _updateTimeField(currentItem_);
+    }
 
 	/**
 	 * get playback rate
@@ -658,7 +666,10 @@ public class GrxLoggerView extends GrxBaseView {
     public void shutdown() {
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
         if(currentItem_!=null)
-        	currentItem_.deleteObserver(this);
+        {
+            currentItem_.deleteObserver(this);
+            currentItem_.deletePosObserver(this);
+        }
         if(simItem_!=null)
 			simItem_.deleteObserver(this);
 		manager_.removeItemChangeListener(this, GrxSimulationItem.class);
