@@ -1371,7 +1371,7 @@ VrmlSwitchPtr VrmlParserImpl::readSwitchNode()
     while(scanner->readSymbol()){
         switch(scanner->symbolValue){
         case F_CHOICE:
-            readMFNode(node->choice, SHAPE_NODE);
+            readMFNode(node->choice, CHILD_NODE);
             break;
             
         case F_WHICH_CHOICE:
@@ -1456,7 +1456,7 @@ VrmlAnchorPtr VrmlParserImpl::readAnchorNode()
     while(scanner->readSymbol()){
         switch( scanner->symbolValue){
         case F_CHILDREN:
-            readMFNode(node->children, SHAPE_NODE);
+            readMFNode(node->children, CHILD_NODE);
             break;
             
         case F_DESCRIPTION:
@@ -2696,6 +2696,15 @@ void VrmlParserImpl::setSymbols()
         { F_LENGTH, "length" },
         { F_MAX_EXTENT, "maxExtent" },
 
+        { F_FAMILY, "family" },
+        { F_HORIZONTAL, "horizontal" },
+        { F_JUSTIFY, "justify" },
+        { F_LANGUAGE, "language" },
+        { F_LEFT_TO_RIGHT, "leftToRight" },
+        { F_SPACING, "spacing" },
+        { F_STYLE, "style" },
+        { F_TOP_TO_BOTTOM, "topToBottom" },
+
         { F_COLOR, "color" },
         { F_COORD, "coord" },
         { F_COLOR_INDEX, "colorIndex" },
@@ -2733,6 +2742,9 @@ void VrmlParserImpl::setSymbols()
         { F_SPINE, "spine" },
         { F_BEGIN_CAP, "beginCap" },
         { F_END_CAP, "endCap" },
+
+        { F_CHOICE, "choice" },
+        { F_WHICH_CHOICE, "whichChoice" },
 
         { F_COLLIDE, "collide" },
         { F_PROXY, "proxy" },
