@@ -171,9 +171,8 @@ void ShapeSetInfo_impl::traverseShapeNodes
             pT = &T;
         }
 
-        MFNode& children = groupNode->children;
-        for(size_t i=0; i < children.size(); ++i){
-            traverseShapeNodes(children[i].get(), *pT, io_shapeIndices, inlinedShapeM, &url_);
+        for(size_t i=0; i < groupNode->countChildren(); ++i){
+            traverseShapeNodes(groupNode->getChild(i), *pT, io_shapeIndices, inlinedShapeM, &url_);
         }
         if(inlineNode)
             inline_count--;
