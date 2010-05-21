@@ -452,7 +452,7 @@ bool TMSImpl::setTexCoordIndex(VrmlIndexedFaceSetPtr faseSet)
                     texCoordIndex[i] = -1;
                 } else {
                     int index = orgIndices[indexPositionMap[i]];
-                    if(index < texCoord->point.size()){
+                    if(index < (int)texCoord->point.size()){
                         texCoordIndex[i] = index;
                     } else {
                         putError1("texCoordIndex");
