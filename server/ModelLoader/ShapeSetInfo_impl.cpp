@@ -171,8 +171,15 @@ void ShapeSetInfo_impl::traverseShapeNodes
             pT = &T;
         }
 
-        for(size_t i=0; i < groupNode->countChildren(); ++i){
-            traverseShapeNodes(groupNode->getChild(i), *pT, io_shapeIndices, inlinedShapeM, &url_);
+        VrmlSwitch* switchNode = dynamic_cast<VrmlSwitch*>(node);
+        if(switchNode){
+            int whichChoice = switchNode->whichChoice;
+            if( whichChoice >= 0 && whichChoice < switchNode->countChildren() )
+                traverseShapeNodes(switchNode->getChild(whichChoice), *pT, io_shapeIndices, inlinedShapeM, &url_);
+        }else{
+            for(size_t i=0; i < groupNode->countChildren(); ++i){
+                traverseShapeNodes(groupNode->getChild(i), *pT, io_shapeIndices, inlinedShapeM, &url_);
+            }
         }
         if(inlineNode)
             inline_count--;
