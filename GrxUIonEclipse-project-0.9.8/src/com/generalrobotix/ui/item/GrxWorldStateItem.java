@@ -509,6 +509,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
 	
     private WorldStateEx _getValueFromLog(int pos){
+        if(pos == prePos_)
+            return preStat_;
+
         try {        
             preStat_.collisions = new Collision[]{new Collision()};
             preStat_.collisions[0].points = logger_.getCollisionPointData(pos);
