@@ -220,7 +220,7 @@ namespace hrp {
       public:
 	AbstractVrmlGroup();
         
-        virtual MFNode getChildren() = 0;
+        virtual MFNode& getChildren() = 0;
         virtual int countChildren() = 0;
         virtual VrmlNode* getChild(int index) = 0;
         virtual void replaceChild(int childIndex, VrmlNode* childNode) = 0;
@@ -236,7 +236,7 @@ namespace hrp {
       public:
 	VrmlGroup();
 
-        virtual MFNode getChildren();
+        virtual MFNode& getChildren();
         virtual int countChildren();
         virtual VrmlNode* getChild(int index);
         virtual void replaceChild(int childIndex, VrmlNode* childNode);
@@ -655,7 +655,7 @@ namespace hrp {
       public:
 	VrmlSwitch();
 
-        virtual MFNode getChildren();
+        virtual MFNode& getChildren();
         virtual int countChildren();
         virtual VrmlNode* getChild(int index);
         virtual void replaceChild(int childIndex, VrmlNode* childNode);
@@ -672,7 +672,7 @@ namespace hrp {
       public:
 	VrmlLOD();
 
-        virtual MFNode getChildren();
+        virtual MFNode& getChildren();
         virtual int countChildren();
         virtual VrmlNode* getChild(int index);
         virtual void replaceChild(int childIndex, VrmlNode* childNode);

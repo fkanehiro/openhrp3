@@ -136,7 +136,7 @@ VrmlGroup::VrmlGroup()
     bboxSize[0] = bboxSize[1] = bboxSize[2] = -1;
 }
 
-MFNode VrmlGroup::getChildren()
+MFNode& VrmlGroup::getChildren()
 {
     return children;
 }
@@ -425,7 +425,7 @@ VrmlSwitch::VrmlSwitch()
     whichChoice = -1;
 }
 
-MFNode VrmlSwitch::getChildren()
+MFNode& VrmlSwitch::getChildren()
 {
     return choice;
 }
@@ -462,7 +462,7 @@ VrmlLOD::VrmlLOD()
     center[0] = center[1] = center[2] = 0.0;
 }
 
-MFNode VrmlLOD::getChildren()
+MFNode& VrmlLOD::getChildren()
 {
     return level;
 }
