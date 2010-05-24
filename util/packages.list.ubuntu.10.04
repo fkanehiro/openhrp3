@@ -8,6 +8,12 @@ jython
 libreadline-java
 java-common
 
+# japanese font
+ttf-sazanami-gothic
+ttf-sazanami-mincho
+ttf-kochi-gothic
+ttf-kochi-mincho
+
 # compiler & build tools
 gcc
 g++
