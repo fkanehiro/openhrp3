@@ -425,7 +425,7 @@ void ModelNodeSetImpl::extractChildNodes
 
         if(childNode->isCategoryOf(GROUPING_NODE)){
             VrmlGroup* groupNode = static_cast<VrmlGroup*>(childNode);
-            extractChildNodes(jointNodeSet, groupNode->children, acceptableProtoIds);
+            extractChildNodes(jointNodeSet, groupNode->getChildren(), acceptableProtoIds);
 
         } else if(childNode->isCategoryOf(PROTO_INSTANCE_NODE)){
 
