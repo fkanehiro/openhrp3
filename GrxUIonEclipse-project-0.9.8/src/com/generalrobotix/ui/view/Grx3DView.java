@@ -25,7 +25,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
+import java.awt.GridLayout;
 import java.awt.Panel;
+import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -203,14 +205,53 @@ public class Grx3DView
         lblValue_.setFont(new Font("Monospaced", Font.BOLD, 12)); //$NON-NLS-1$
         lblValue_.setPreferredSize(new Dimension(300, 20));
         
+        JPanel southPanel = new JPanel();
+		southPanel.setLayout(new GridLayout(1,0));
+		southPanel.add( lblMode_ );
+		Box clipPanel = Box.createHorizontalBox();
+		JLabel clipDistLabel0 = new JLabel(MessageBundle.get("Grx3DView.label.clipDistance0"));
+		JLabel clipDistLabel1 = new JLabel(MessageBundle.get("Grx3DView.label.clipDistance1"));
+		final TextField frontText = new TextField(6);
+		final TextField backText = new TextField(6);
+		frontText.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				String str = frontText.getText();
+				try{
+					info_.frontClipDistance=Double.parseDouble(str);
+					view_.setFrontClipDistance(info_.frontClipDistance);
+				}catch(NumberFormatException e){
+					frontText.setText(String.valueOf(info_.frontClipDistance));
+				}	
+			}
+		});
+		backText.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				String str = backText.getText();
+				try{
+					info_.backClipDistance=Double.parseDouble(str);
+					view_.setBackClipDistance(info_.backClipDistance);
+				}catch(NumberFormatException e){
+					backText.setText(String.valueOf(info_.backClipDistance));
+				}
+			}
+		});
+		
+		clipPanel.add(clipDistLabel0);
+		clipPanel.add(frontText);
+		clipPanel.add(clipDistLabel1);
+		clipPanel.add(backText);
+		southPanel.add(clipPanel);
+		
         canvas_ = new Canvas3D(graphicsConfiguration);
         canvas_.setDoubleBufferEnable(true);
         canvas_.addKeyListener(new ModelEditKeyAdapter());  
         _setupSceneGraph();
 
+        frontText.setText(String.valueOf(info_.frontClipDistance));
+		backText.setText(String.valueOf(info_.backClipDistance));
         JPanel mainPane = new JPanel(new BorderLayout());
         mainPane.setBackground(Color.black);
-        contentPane.add(lblMode_, BorderLayout.SOUTH);
+        contentPane.add(southPanel, BorderLayout.SOUTH);
         mainPane.add(canvas_, BorderLayout.CENTER);
         contentPane.add(mainPane, BorderLayout.CENTER);
         
@@ -344,8 +385,8 @@ public class Grx3DView
         view_.setPhysicalEnvironment(new PhysicalEnvironment());
         view_.setFrontClipPolicy(View.VIRTUAL_EYE);
         view_.setBackClipPolicy(View.VIRTUAL_EYE);
-        view_.setFrontClipDistance(0.05);
-        view_.setBackClipDistance(50.0);
+        view_.setFrontClipDistance(info_.frontClipDistance);
+        view_.setBackClipDistance(info_.backClipDistance);
         view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
         view_.setFieldOfView(Math.PI/4);
         view_.addCanvas3D(canvas_);
