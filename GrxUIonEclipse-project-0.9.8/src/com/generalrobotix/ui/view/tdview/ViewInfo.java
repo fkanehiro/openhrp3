@@ -43,8 +43,8 @@ public class ViewInfo {
     protected Transform3D transform_;
 
     public double fieldOfView;
-    public double frontClipDistance;
-    public double backClipDistance;
+    public double frontClipDistance = 0.5;
+    public double backClipDistance = 200;
 
     private ViewModeChangeListener listener_;
 
