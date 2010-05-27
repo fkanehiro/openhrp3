@@ -127,14 +127,12 @@ public class GrxLoggerView extends GrxBaseView {
     private Runnable forwardPosRun_;
 
     //// ログタイマー関連
-    // 描画タイマー間隔
-    int sleep_ = 5;
     // ログ１コマ毎の間隔
     double logTimeStepMs_;
     // 前回描画時刻
     long prevDispNs_;
-    // 次回描画時刻
-    long nextDispNs_;
+    // 次回タイマー起動時刻
+    long nextTimerNs_;
     final long mills2nano = 1000 * 1000;
 
 	/**
@@ -439,6 +437,7 @@ public class GrxLoggerView extends GrxBaseView {
 		}
 	}
 	
+	
     private void play() {
         if(currentItem_ == null) return;
         if (!isPlaying_) {
@@ -459,38 +458,41 @@ public class GrxLoggerView extends GrxBaseView {
             Runnable playRun_ = new Runnable() {
                 public void run() {
                     if(!isPlaying_) return;
-                    
+
                     long nowNs = System.nanoTime();
                     boolean _continue = true;
 
-                    if(nextDispNs_ < nowNs){
-                        int diffpos = (int)((nowNs - prevDispNs_) / (logTimeStepMs_ * mills2nano) * playRate_);
-                        int newpos = current_ + diffpos;
-                        
-                        int sliderMax = currentItem_.getLogSize()-1;
-                        if (sliderMax < newpos) {
-                            newpos = sliderMax; 
-                            if(!inSimulation_)
-                                _continue = false;
-                        } else if (newpos < 0) {
-                            newpos = 0;
+                    int diffpos = (int)((nowNs - prevDispNs_) / (logTimeStepMs_ * mills2nano) * playRate_);
+                    int newpos = current_ + diffpos;
+
+                    int sliderMax = currentItem_.getLogSize()-1;
+                    if (sliderMax < newpos) {
+                        newpos = sliderMax;
+                        if(!inSimulation_)
                             _continue = false;
-                        }
-                        
-                        if(newpos != current_){
-                            //GrxDebugUtil.println(String.format("nanoTime : %15d, next : %15d, pos : %d, logtime : %12.3f",
-                            //                                   nowNs, nextDispNs_, newpos, currentItem_.getTime(newpos)));    
-                            diffpos = newpos - current_;                     
-                            currentItem_.setPosition(newpos);
-                            setNextNs(nowNs);
-                            prevDispNs_ += (long)((logTimeStepMs_ * mills2nano) * diffpos / playRate_);
-                        }
+                    } else if (newpos < 0) {
+                        newpos = 0;
+                        _continue = false;
+                    }
+
+                    if(newpos != current_){
+                        //GrxDebugUtil.println(String.format("nowNs : %15d, pos : %d, logtime : %12.3f",
+                        //        (long)(nowNs/mills2nano), newpos, currentItem_.getTime(newpos)));
+                        diffpos = newpos - current_;
+                        currentItem_.setPosition(newpos);
+                        prevDispNs_ += (long)((logTimeStepMs_ * mills2nano) * diffpos / playRate_);
                     }
 
                     if(_continue){
+                        nowNs = System.nanoTime();
+                        int sleepTime = (int)((1000.0d/frameRate_) - ((nowNs - nextTimerNs_) / mills2nano));
+                        //GrxDebugUtil.println(String.format("nowNs : %15d, next : %15d, sleep: %6d",
+                        //        (long)(nowNs/mills2nano), (long)(nextTimerNs_/mills2nano), sleepTime));
+                        if(sleepTime < 1) sleepTime = 1;
+                        nextTimerNs_ = nowNs + (sleepTime * mills2nano);
                         Display display = composite_.getDisplay();
                         if (!display.isDisposed())
-                            display.timerExec(sleep_, this);
+                            display.timerExec(sleepTime, this);
                     }else{
                         pause();
                     }
@@ -498,32 +500,20 @@ public class GrxLoggerView extends GrxBaseView {
             };
             
             isPlaying_ = true;
-            prevDispNs_ = System.nanoTime();
-            // 初回はnextNsを現在時刻で初期化する。
-            nextDispNs_ = prevDispNs_; 
-            setNextNs(prevDispNs_);
+            long nowNs = System.nanoTime();
+            prevDispNs_ = nowNs;
+            int sleepTime = (int)(1000.0d/frameRate_);
+            nextTimerNs_ = nowNs + (sleepTime * mills2nano);
             Display display = composite_.getDisplay();
             if (!display.isDisposed())
-                display.timerExec(sleep_, playRun_);
+                display.timerExec(sleepTime, playRun_);
         }
         if (Math.abs(playRate_)<1.0)
             lblPlayRate_.setText(FORMAT_SLOW.format(1/playRate_));
         else
             lblPlayRate_.setText(FORMAT_FAST.format(playRate_));
     }
-	
-    // 次回の描画時間の算出
-    private void setNextNs(long nowNs){
-        long logstep = (long)(logTimeStepMs_ * mills2nano / playRate_);
-        long intervalNs_ = (long)((1000.0d/frameRate_) * mills2nano);
-        if(intervalNs_ < logstep){
-            intervalNs_ = logstep;
-        }
-        while(nextDispNs_ <= nowNs)
-            nextDispNs_ += intervalNs_;
-        //GrxDebugUtil.println(String.format("prevNs_ : %15d, next : %15d", prevNs_, nextNs_));
-    }
-    
+
 	/**
 	 * @brief pause playback
 	 */
