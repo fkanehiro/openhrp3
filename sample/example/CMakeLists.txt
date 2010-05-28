@@ -1,3 +1,4 @@
+add_subdirectory(scheduler)
 
 if(WIN32)
   add_subdirectory(move_ankle)
