@@ -605,6 +605,8 @@ public class GrxProcessManager extends GrxBaseItem{
                     	if(_opt[i].trim().length()!=0 )
                     		com.add(_opt[i]);
                     ProcessBuilder pb = new ProcessBuilder(com);
+                    if(dir_ == null && new File(com.get(0)).isAbsolute())
+                    	dir_ = new File(com.get(0)).getParentFile();
                     pb.directory( dir_ );
                     Map<String, String> env = pb.environment();
                     if(env_!=null)
