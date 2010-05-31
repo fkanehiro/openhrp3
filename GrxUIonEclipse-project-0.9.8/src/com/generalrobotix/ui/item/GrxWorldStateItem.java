@@ -296,6 +296,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		
 		logList.add("command"); //$NON-NLS-1$
 		logList.add("float["+jointList.size()+"]"); //$NON-NLS-1$ //$NON-NLS-2$
+		logList.add("servoState");
+		logList.add("float["+jointList.size()+"]");
 		try {
 			logger_.addLogObject(cname, logList.toArray(new String[0]));
 		} catch (LogFileFormatException e) {
@@ -416,6 +418,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             if (cpos.targetState != null){
             	for (int j=0; j<cpos.targetState.length; j++){
             		recDat_[i][k++]	 = (float)cpos.targetState[j];
+            	}
+            }
+            if (cpos.servoState != null){
+            	for (int j=0; j<cpos.servoState.length; j++){
+            		recDat_[i][k++] = (float)cpos.servoState[j];
             	}
             }
             try {
@@ -571,6 +578,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                 if (cpos.targetState != null){
                 	for (int j=0; j<cpos.targetState.length; j++){
                 		cpos.targetState[j]	= (double)f[k++];
+                	}
+                }
+                if (cpos.servoState != null){
+                	for (int j=0; j<cpos.servoState.length; j++){
+                		cpos.servoState[j] = (int)f[k++];
                 	}
                 }
             }
