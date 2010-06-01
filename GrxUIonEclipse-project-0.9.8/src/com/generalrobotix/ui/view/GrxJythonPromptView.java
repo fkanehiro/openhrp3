@@ -395,6 +395,7 @@ public class GrxJythonPromptView extends GrxBaseView {
     }
 
     public void execFile(final String url) {
+    	setNameService();
         File f = new File(url);
         File p = f.getParentFile();
         interpreter_.exec("import sys"); //$NON-NLS-1$
