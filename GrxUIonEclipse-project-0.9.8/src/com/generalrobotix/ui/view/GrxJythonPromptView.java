@@ -541,7 +541,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 //        return new InputDialog(parent_.getShell(),"waitInputMessage",msg,null,null).open();
     }
     public void waitInputMenu(String[][] menuList) {
-        menuDialog = new MenuDialog(menuList, interpreter_, message_);
+        menuDialog = new MenuDialog(menuList, interpreter_, message_, stWriter_);
         menuDialog.showDialog(frame_, currentItem_.getName(), false);
     }
     public void waitInputSetMessage(String msg) {

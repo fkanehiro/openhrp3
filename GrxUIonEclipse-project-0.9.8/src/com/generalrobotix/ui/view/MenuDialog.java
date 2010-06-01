@@ -48,6 +48,7 @@ import org.python.util.PythonInterpreter;
 
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxGuiUtil;
+import com.generalrobotix.ui.view.GrxJythonPromptView.StyledTextWriter;
 /**
  * Dialog with buttons that is be able to set jython funtion 
  * 
@@ -80,11 +81,13 @@ public class MenuDialog extends JPanel {
     private HashMap<String, String> exceptMap = new HashMap<String, String>();
     private String message_;
     private PythonInterpreter interpreter_;
+    private StyledTextWriter writer_;
     
-    public MenuDialog(String[][] src, PythonInterpreter interpreter, String message){
+    public MenuDialog(String[][] src, PythonInterpreter interpreter, String message, StyledTextWriter writer){
         menu_ = src;
         interpreter_ = interpreter;
         message_ = message;
+        writer_ = writer;
         initialize();
     }
     private void initialize() {
@@ -357,6 +360,7 @@ public class MenuDialog extends JPanel {
                         showMessage(message_);                        
                     } catch (NumberFormatException e1){
                         GrxDebugUtil.printErr("MenuDialog: parse error");
+                        writer_.write("MenuDialog: parse error  "+e1+System.getProperty("line.separator"));
                     }
                 }
             }
