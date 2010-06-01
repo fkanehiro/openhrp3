@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IPerspectiveRegistry;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbench;
@@ -50,7 +51,7 @@ import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin implements IWorkbenchListener{
+public class Activator extends AbstractUIPlugin implements IWorkbenchListener, IWindowListener, IPerspectiveListener{
     public static final String PLUGIN_ID = "com.generalrobotix.ui.grxui";
     private static Activator   plugin;
     private static final String  LINUX_HOME_DIR   = System.getenv("HOME") + File.separator ;
@@ -64,6 +65,7 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener{
     private FontRegistry 		freg_ = null;
     private ColorRegistry		creg_ = null;
     private boolean           bStartedGrxUI_ = false; 
+    private boolean			initProjectLoad_ = false;
     private final static String[] images_ = { "save_edit.png",
     											"saveas_edit.png",
     											"sim_start.png",
@@ -117,6 +119,39 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener{
         return true;
     }
     
+
+	public void windowActivated(IWorkbenchWindow window) {
+	}
+
+	public void windowClosed(IWorkbenchWindow window) {
+		window.removePerspectiveListener(this);
+	}
+
+	public void windowDeactivated(IWorkbenchWindow window) {		
+	}
+
+	public void windowOpened(IWorkbenchWindow window) {
+		window.addPerspectiveListener(this);
+	}
+    
+	public void perspectiveActivated(IWorkbenchPage page,
+			IPerspectiveDescriptor perspective) {
+		if(!initProjectLoad_)
+			if(perspective.getId().equals(GrxUIPerspectiveFactory.ID ))
+				loadInitialProject();
+	}
+
+	public void loadInitialProject(){
+		if(!initProjectLoad_){
+			initProjectLoad_ = true;
+			manager_.loadInitialProject();
+		}
+	}
+	
+	public void perspectiveChanged(IWorkbenchPage page,
+			IPerspectiveDescriptor perspective, String changeId) {
+	}
+
     public Activator() {
         System.out.println("[ACTIVATOR] CONSTRUCT");
     }
@@ -138,7 +173,12 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener{
 
         //  plugin で実行の時　RCPの時はこの時にはまだ、Workbenchが作成されていない　　//
         if(PlatformUI.isWorkbenchRunning()){
-            PlatformUI.getWorkbench().addWorkbenchListener(this);
+        	IWorkbench workbench = PlatformUI.getWorkbench();
+        	workbench.addWorkbenchListener(this);
+            workbench.addWindowListener(this);
+            IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+            if(window!=null)
+            	window.addPerspectiveListener(this);
             registryImage();
             registryFont();
             registryColor();
@@ -318,7 +358,6 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener{
         stopGrxUI();
     }
 
-    // GrxUIパースペクティブが有効になったときの動作
     public void startGrxUI() {
         if( !bStartedGrxUI_ ) {
             //暫定処置 Grx3DViewがGUIのみの機能に分離できたらstopGrxUIか
@@ -331,7 +370,6 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener{
         }
     }
 
-    // GrxUIパースペクティブが無効になったときの動作
     public void stopGrxUI() {
     	if(!bStartedGrxUI_)
     		return;
@@ -459,4 +497,5 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener{
         
         return ret;
     }
+
 }

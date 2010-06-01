@@ -488,8 +488,6 @@ public class GrxProjectItem extends GrxBaseItem {
 		if( fPath != null ) {
 			File f = new File(fPath);
 			load(f);
-			setDefaultDirectory(f.getParent());
-			restoreProject();
 		}
 	}
 
@@ -556,6 +554,10 @@ public class GrxProjectItem extends GrxBaseItem {
 		    	manager_.setCurrentMode(item);
 			}
 		}
+		
+		setDefaultDirectory(f.getParent());
+		restoreProject();
+		
 		return true;
 	}
 	
@@ -698,7 +700,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	     			}
 	     		}
 	        }
-	        if (page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
+	        if (page!=null && page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
 	        	page.closePerspective(page.getPerspective(), false, false);
 	        IPreferenceStore store = workbench.getPreferenceStore();
    			IPerspectiveRegistry perspectiveRegistry=workbench.getPerspectiveRegistry();
@@ -708,7 +710,8 @@ public class GrxProjectItem extends GrxBaseItem {
 	   			perspectiveRegistry.deletePerspective(tempPd);
 	   		tempPd = perspectiveRegistry.clonePerspective(GrxUIPerspectiveFactory.ID + ".project", getName(), orgPd);
 	   		store.setValue(GrxUIPerspectiveFactory.ID + ".project"+"_persp", sw.toString());
-	   		page.setPerspective(tempPd);
+	   		if(page!=null)
+	   			page.setPerspective(tempPd);
 		}else{
 			IWorkbenchPage page=null;
 	 		IWorkbench workbench = PlatformUI.getWorkbench();
@@ -721,7 +724,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	     			}
 	     		}
 	        }
-	        if (page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
+	        if (page!=null && page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
 	        	page.closePerspective(page.getPerspective(), false, false);
 		}
 	}
