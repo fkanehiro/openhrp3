@@ -750,6 +750,7 @@ public class GrxPluginManager implements IPropertyChangeListener {
      * @return
      */
     public List<GrxBaseView> getActiveViewList() {
+    	updateViewList();
         return selectedViewList_;
     }
 
@@ -1361,4 +1362,13 @@ public class GrxPluginManager implements IPropertyChangeListener {
 		IPreferenceStore store =Activator.getDefault().getPreferenceStore();
 		store.removePropertyChangeListener(this);
 	}
+	
+	public void loadInitialProject(){
+	   	IPreferenceStore store =Activator.getDefault().getPreferenceStore();
+        String initProjectFile = store.getString(PreferenceConstants.INITIALPROJECT);
+        File f = new File(initProjectFile);
+        if(f.exists() && f.isFile())
+        	currentProject_.load(f);
+	}
+	
 }
