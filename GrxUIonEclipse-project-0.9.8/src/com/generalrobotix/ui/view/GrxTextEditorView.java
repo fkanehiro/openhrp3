@@ -26,8 +26,13 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.custom.StyledText;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
@@ -39,16 +44,25 @@ import com.generalrobotix.ui.util.MessageBundle;
 
 @SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxTextEditorView extends GrxBaseView {
-	private Text area_;
+    private Label status_;
+	private StyledText area_;
 	private Action save_,saveAs_;
+	private int caretPos_ = -1;
 
 	private GrxPythonScriptItem currentItem_ = null;
 	
 	public GrxTextEditorView(String name, GrxPluginManager manager_,
 			GrxBaseViewPart vp, Composite parent) {
 		super(name, manager_, vp, parent);
-		area_ = new Text( composite_, SWT.MULTI|SWT.V_SCROLL|SWT.BORDER );
-		
+		GridLayout layout = new GridLayout(1, true);
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		layout.horizontalSpacing = 0;
+		layout.verticalSpacing = 0;
+		composite_.setLayout(layout);
+        
+		area_ = new StyledText( composite_, SWT.MULTI|SWT.V_SCROLL|SWT.BORDER );
+
 		area_.addModifyListener(new ModifyListener(){
 			public void modifyText(ModifyEvent e) {
 				if(currentItem_!=null)
@@ -73,8 +87,36 @@ public class GrxTextEditorView extends GrxBaseView {
 			}
 		});
 
+        area_.addListener(SWT.Paint, new Listener() {
+            public void handleEvent(Event event) {
+                setPositionLabel();
+            }
+          });
+
+        area_.addListener(SWT.MouseDown, new Listener() {
+            public void handleEvent(Event event) {
+                setPositionLabel();
+            }
+          });
+        
+        area_.addListener(SWT.KeyDown, new Listener() {
+            public void handleEvent(Event event) {
+                setPositionLabel();
+            }
+          });
+
+        status_ = new Label(composite_, SWT.BORDER);
+        
+        GridData textData = new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL);
+        area_.setLayoutData(textData);
+
+        GridData statusData = new GridData(GridData.FILL_HORIZONTAL);
+        statusData.verticalAlignment = SWT.END;
+        status_.setLayoutData(statusData);        
+
+
 		IToolBarManager toolbar = vp.getViewSite().getActionBars().getToolBarManager();
-	
+
 		save_ = new Action() {
 	        public void run() {
 				if (currentItem_ != null) {
@@ -112,13 +154,34 @@ public class GrxTextEditorView extends GrxBaseView {
 			area_.setEnabled(true);
 			save_.setEnabled(true);
 			saveAs_.setEnabled(true);
+			setPositionLabel();
 		}else{
 			area_.setText(""); //$NON-NLS-1$
 			area_.setEnabled(false);
 			save_.setEnabled(false);
 			saveAs_.setEnabled(false);
+			status_.setText("");
 		}
 	}
+
+    private void setPositionLabel(){
+        if(caretPos_ == area_.getCaretOffset())
+            return;
+        caretPos_ = area_.getCaretOffset();
+        int y = area_.getLineAtOffset(caretPos_);
+        String s = area_.getText();
+        int x = 0;
+        int ti = caretPos_;
+        while(0 < ti){
+            --ti;
+            char cha = s.charAt(ti); 
+            if(cha == '\r' || cha == '\n'){
+                break;
+            }
+            ++x;
+        }
+        status_.setText(String.format("%6d:%d", y + 1, x + 1));
+    }
 
 	public void registerItemChange(GrxBaseItem item, int event){
 		GrxPythonScriptItem textItem = (GrxPythonScriptItem)item;
