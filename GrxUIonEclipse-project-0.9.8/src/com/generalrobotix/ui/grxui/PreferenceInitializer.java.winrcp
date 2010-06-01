@@ -97,6 +97,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASSPATH,"");
 		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.VISIBLE,"");
 		store.setDefault(PreferenceConstants.VERSION, "");
+		
+		store.setDefault(PreferenceConstants.INITIALPROJECT, "");
 	}
 
 }
