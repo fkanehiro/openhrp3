@@ -20,11 +20,9 @@ package com.generalrobotix.ui.view;
 
 
 import java.awt.Frame;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.util.LinkedList;
@@ -56,9 +54,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.python.core.Py;
 import org.python.core.PyList;
 import org.python.core.PyString;
-import org.python.util.PythonInterpreter;
+import org.python.util.InteractiveInterpreter;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxBaseView;
@@ -74,7 +73,7 @@ import com.generalrobotix.ui.util.MessageBundle;
  * @brief
  */
 public class GrxJythonPromptView extends GrxBaseView { 
-    private PythonInterpreter interpreter_ = new PythonInterpreter();
+    private InteractiveInterpreter interpreter_ = new InteractiveInterpreter();
     private Thread thread_1_;
     private Thread thread_2_;
     private String prompt_ = ">>> "; //$NON-NLS-1$
@@ -261,9 +260,10 @@ public class GrxJythonPromptView extends GrxBaseView {
     
     public void interrupt() {
         if (thread_1_ != null) 
-            thread_1_.interrupt();
-        if (thread_2_ != null) 
-            thread_2_.interrupt();
+        	interpreter_.interrupt(Py.getThreadState());
+        if (thread_2_ != null) {
+            interpreter_.interrupt(Py.getThreadState());
+        }
     }
     
     private class ConsoleKeyListener implements VerifyKeyListener {
