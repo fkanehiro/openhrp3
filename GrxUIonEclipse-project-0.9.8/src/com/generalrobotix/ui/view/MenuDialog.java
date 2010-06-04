@@ -44,6 +44,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 
+import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
 
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -67,9 +68,9 @@ public class MenuDialog extends JPanel {
     private JTextArea jTextArea = null;
     
     private JCheckBox jCheckBoxContinuous = null;
-    private JButton currentGoNextButton_ = null;
+    //private JButton currentGoNextButton_ = null;
     private List<JTextField> currentFields_ = new ArrayList<JTextField>();
-    private boolean isClickedButtonGoNext_ = false;
+    //private boolean isClickedButtonGoNext_ = false;
     
     private String[][] menu_;
     private int showingStage_ = 0;
@@ -130,16 +131,14 @@ public class MenuDialog extends JPanel {
         if (getJCheckBoxSequential().isSelected()){
             if (currentStage_ < menu_.length){
                 showingStage_ = currentStage_;
-                boolean doClick = (getJCheckBoxContinuous().isSelected()) && 
-                                  isClickedButtonGoNext_;
-                currentGoNextButton_ = showLocalMenu();
-                if (doClick)
-                    currentGoNextButton_.doClick();
-            } else {
-                showingStage_ = menu_.length;
+               // boolean doClick = (getJCheckBoxContinuous().isSelected()) && 
+               //                   isClickedButtonGoNext_;
                 showLocalMenu();
-                _setTabSelected(getGlobalMenuPanel());
-                getGlobalMenuPanel().setVisible(true);
+            } else {
+                showingStage_ = currentStage_ = menu_.length-1;
+                showLocalMenu();
+               // _setTabSelected(getGlobalMenuPanel());
+               // getGlobalMenuPanel().setVisible(true);
             }
         } else {
             showLocalMenu();
@@ -173,11 +172,20 @@ public class MenuDialog extends JPanel {
         jpanel.add(buttonRetry);    
         getGlobalMenuPanel().add(jpanel);
         
-        for (int i=1;i<menu_[0].length;i=i+2){
-            if (!(menu_[0][i-1].trim()).equals(""))
-                addButton(getGlobalMenuPanel(),menu_[0][i-1],menu_[0][i],false);
+        for(int i=1; i<menu_[0].length; i=i+2){
+            String m1 = menu_[0][i-1].trim();
+            String m2 = menu_[0][i].trim();
+            if (m2.equals("#label")){
+            	getGlobalMenuPanel().add(new JLabel(m1));
+            }else if(m2.equals("#monitor")) {
+				PyObject res = interpreter_.eval(m1);
+				getGlobalMenuPanel().add(new JLabel(res.toString()));
+            }else {
+                addButton(getGlobalMenuPanel(),m1,m2,false);
+            }
         }
     }
+    
     private JPanel getGlobalMenuPanel() {
         if (jpanel_globalMenu == null){
             jpanel_globalMenu = new JPanel();
@@ -187,7 +195,7 @@ public class MenuDialog extends JPanel {
     }       
     
     // Local Menu Panel -------------------------
-    private JButton showLocalMenu(){
+    private void showLocalMenu(){
         getLocalMenuPanel().setVisible(false);
         getLocalMenuPanel().removeAll();
         getLocalMenuPanel().setVisible(true);
@@ -205,14 +213,16 @@ public class MenuDialog extends JPanel {
         }
         
         currentFields_.clear();
-        JButton goNextButton = addButton(getLocalMenuPanel(),menu_[showingStage_][0],menu_[showingStage_][1],true);
-        for(int i=3;i<menu_[showingStage_].length;i=i+2){
+        for(int i=1; i<menu_[showingStage_].length; i=i+2){
             String m1 = menu_[showingStage_][i-1].trim();
             String m2 = menu_[showingStage_][i].trim();
-            if (m1.equals("#label")){
-                getLocalMenuPanel().add(new JLabel(m2));
-            } else if (!m1.equals("")){
-                addButton(getLocalMenuPanel(),m1,m2,false);
+            if (m2.equals("#label")){
+                getLocalMenuPanel().add(new JLabel(m1));
+            }else if(m2.equals("#monitor")) {
+				PyObject res = interpreter_.eval(m1);
+				getLocalMenuPanel().add(new JLabel(res.toString()));
+            }else {
+            	addButton(getLocalMenuPanel(),m1,m2,(i<=1));
             }
         }
 
@@ -229,8 +239,8 @@ public class MenuDialog extends JPanel {
         getLocalMenuPanel().add(javax.swing.Box.createVerticalGlue());
         //getLocalMenuPanel().setVisible(true);
         //setVisible(true);
-        return goNextButton;
     }
+    
     private JPanel getLocalMenuPanel() {
         if (jPanel_localMenu == null) {
             jPanel_localMenu = new JPanel();
@@ -306,12 +316,12 @@ public class MenuDialog extends JPanel {
                 fields[i] = new JTextField();
                 fields[i].setPreferredSize(new Dimension(60,20));
                 jpanel.add(fields[i]);
-                currentFields_.add(fields[i]);
+                //currentFields_.add(fields[i]);
             }   
         }
     
         if (goNext){
-            currentGoNextButton_ = button;
+            //currentGoNextButton_ = button;
             if (com.indexOf("#continuous")!=-1){
                 getJCheckBoxContinuous().setSelected(true);
                 jpanel.add(getJCheckBoxContinuous());
@@ -337,6 +347,8 @@ public class MenuDialog extends JPanel {
                                     Double.parseDouble(s);
                                 } else if (c == 'i' || c == 'I'){
                                     Integer.parseInt(s);
+                                } else if (c == 't' || c == 'T'){
+                                	s = "\'"+s+"\'";
                                 }
                                 rcom = rcom.replaceFirst(str[i],s);
                             }
@@ -346,18 +358,18 @@ public class MenuDialog extends JPanel {
                         String comLog = dateFormat_.format(new Date())+" : "+name+" : "+command_+"\n";
                         getJTextArea().append(comLog);
                         
-                        if (getJCheckBoxSequential().isSelected() && goNext){
-                            isClickedButtonGoNext_ = true;
+                        if (getJCheckBoxSequential().isSelected() && goNext ){ // && getJCheckBoxContinuous().isSelected()){
+                           // isClickedButtonGoNext_ = true;
                             currentStage_++;
                         } else {
-                            isClickedButtonGoNext_ = false;
+                           // isClickedButtonGoNext_ = false;
                         }
                         GrxGuiUtil.setEnableRecursive(false,getLocalMenuPanel(),null);
                         GrxGuiUtil.setEnableRecursive(false,getGlobalMenuPanel(),exceptMap);
                         //clearTextComponent((Container)(getJTabbedPane().getSelectedComponent()));
                         interpreter_.exec(command_);
                         setReadyToNext();
-                        showMessage(message_);                        
+                        //showMessage(message_);                        
                     } catch (NumberFormatException e1){
                         GrxDebugUtil.printErr("MenuDialog: parse error");
                         writer_.write("MenuDialog: parse error  "+e1+System.getProperty("line.separator"));
@@ -375,7 +387,8 @@ public class MenuDialog extends JPanel {
         while((idx = com.indexOf("#",idx+1)) != -1){
             char c = com.charAt(idx+1);
             if (c =='d' || c =='D'||
-                c =='i' || c =='I') {
+                c =='i' || c =='I' ||
+               	c =='t' || c =='T'	) {
                 sb.append("#"+c+" ");
             }
         }
