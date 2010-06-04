@@ -501,8 +501,8 @@ public class GrxJythonPromptView extends GrxBaseView {
  
     public void waitInput(final String msg) {
         JOptionPane.showMessageDialog(frame_, msg);
-//        MessageDialog.openInformation(parent_.getShell(), "", msg);
     }
+    
     public void waitInputConfirm(final String msg) {
         int ans = JOptionPane.showConfirmDialog(frame_,
             msg,"waitInputConfirm", //$NON-NLS-1$
@@ -511,11 +511,8 @@ public class GrxJythonPromptView extends GrxBaseView {
             null);
         if (ans != JOptionPane.OK_OPTION)
             interrupt();
-//        boolean ans = MessageDialog.openConfirm(parent_.getShell(), "waitInputConfirm", msg);
-//        if (!ans)
-//            interrupt();
-
     }
+    
     public boolean waitInputSelect(final String msg) {
         int ans = JOptionPane.showConfirmDialog(frame_,
             msg,"waitInputSelect", //$NON-NLS-1$
@@ -527,20 +524,15 @@ public class GrxJythonPromptView extends GrxBaseView {
         else if (ans != JOptionPane.NO_OPTION)
             interrupt();
         return false;
-//        int ans = new MessageDialog(parent_.getShell(),"waitInputSelect",null,msg,MessageDialog.QUESTION,new String[]{"YES","NO","CANCEL"},2).open();
-//        if (ans == 0)//YES
-//            return true;
-//        else if (ans != 1)//CANCEL or dialog close
-//            interrupt();
-//        return false;
     }
+    
     public Object waitInputMessage(String msg) {
         return JOptionPane.showInputDialog(frame_,
             msg, "waitInputMessage", //$NON-NLS-1$
             JOptionPane.INFORMATION_MESSAGE,
             null,null,null);
-//        return new InputDialog(parent_.getShell(),"waitInputMessage",msg,null,null).open();
     }
+    
     public void waitInputMenu(String[][] menuList) {
         menuDialog = new MenuDialog(menuList, interpreter_, message_, stWriter_);
         menuDialog.showDialog(frame_, currentItem_.getName(), false);
@@ -666,7 +658,4 @@ public class GrxJythonPromptView extends GrxBaseView {
         return null;
     }
 
-//    public void add(JPanel pnl) {
-//        getContentPane().add(pnl, BorderLayout.SOUTH);
-//    }
 }
