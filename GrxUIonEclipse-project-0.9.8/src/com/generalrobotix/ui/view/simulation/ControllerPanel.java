@@ -17,7 +17,6 @@
 package com.generalrobotix.ui.view.simulation;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -40,12 +39,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
@@ -185,6 +184,8 @@ public class ControllerPanel extends Composite{
         editorPanelComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
         
         editorPanel_ = new ControllerEditorPanel(editorPanelComposite,SWT.NONE,names);
+        
+        updateTableFont();
     }
     
     
@@ -538,5 +539,8 @@ public class ControllerPanel extends Composite{
   public int getRobotNum() {
     return vecRobot_.size();
   }
-  
+
+  public void updateTableFont(){
+    viewer_.getTable().setFont(Activator.getDefault().getFont("preference_table"));
+  }
 }

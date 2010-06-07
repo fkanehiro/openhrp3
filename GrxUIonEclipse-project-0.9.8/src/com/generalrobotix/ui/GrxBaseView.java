@@ -137,4 +137,10 @@ public class GrxBaseView extends GrxBasePlugin implements GrxItemChangeListener,
     
     public void updatePosition(GrxBasePlugin plugin, Integer pos){
     }
+    
+    public void updateTableFont(){
+    }
+    
+    public void updateEditerFont(){
+    }
 }

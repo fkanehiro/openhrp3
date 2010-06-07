@@ -1311,7 +1311,21 @@ public class GrxPluginManager implements IPropertyChangeListener {
 					}	
 		        }
 			}
-		}	
+		}
+		else if(event.getProperty().equals(PreferenceConstants.FONT_TABLE)){
+	        Activator.getDefault().updateTableFont();
+		    List<GrxBaseView> list = getActiveViewList();
+	        for (GrxBaseView v : list){
+	            v.updateTableFont();
+	        }
+		}
+        else if(event.getProperty().equals(PreferenceConstants.FONT_EDITER)){
+            Activator.getDefault().updateEditerFont();
+            List<GrxBaseView> list = getActiveViewList();
+            for (GrxBaseView v : list){
+                v.updateEditerFont();
+            }
+        }
 		itemChange(currentMode_, CHANGE_MODE);
 	}
 	

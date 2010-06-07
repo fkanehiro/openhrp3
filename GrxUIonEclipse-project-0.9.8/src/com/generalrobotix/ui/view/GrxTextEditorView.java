@@ -146,6 +146,7 @@ public class GrxTextEditorView extends GrxBaseView {
 		currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
 		setTextItem(currentItem_);
 	    manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
+	    updateEditerFont();
 	}
 
 	private void setTextItem(GrxPythonScriptItem item){
@@ -205,4 +206,8 @@ public class GrxTextEditorView extends GrxBaseView {
 	public void shutdown(){
 		manager_.removeItemChangeListener(this, GrxPythonScriptItem.class);
 	}
+	
+    public void updateEditerFont(){
+        area_.setFont(Activator.getDefault().getFont("preference_editer"));
+    }
 }

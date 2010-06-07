@@ -9,6 +9,8 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -212,9 +214,40 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener, I
     	freg_.put("dialog10", dialog10);
     	FontData[] dialog12 = {new FontData("dialog", 12, SWT.NORMAL )};
     	freg_.put("dialog12", dialog12);
- 
+    	updateTableFont();
+    	updateEditerFont();
     }
-    
+
+    public void updateTableFont(){
+        if(freg_ == null)
+            return;
+
+        IPreferenceStore store = getPreferenceStore();
+        FontData[] table = PreferenceConverter.getFontDataArray(store, PreferenceConstants.FONT_TABLE);
+        freg_.put("preference_table", table);
+
+        FontData[] normal = table.clone();
+        for (int i=0; i<table.length; i++) {
+            normal[i] = new FontData(table[i].getName(), table[i].getHeight(), SWT.NORMAL);
+        }
+        freg_.put("robot_state_plain", normal);
+
+        FontData[] bold = table.clone();
+        for (int i=0; i<bold.length; i++) {
+            bold[i] = new FontData(table[i].getName(), table[i].getHeight(), SWT.NORMAL);
+        }
+        freg_.put("robot_state_bold", bold);
+    }
+
+    public void updateEditerFont(){
+        if(freg_ == null)
+            return;
+
+        IPreferenceStore store = getPreferenceStore();
+        FontData[] editer = PreferenceConverter.getFontDataArray(store, PreferenceConstants.FONT_EDITER);
+        freg_.put("preference_editer", editer);
+    }
+
     public void registryColor(){
     	creg_ = new ColorRegistry();
     	RGB focusedColor = new RGB(0,0,100);

@@ -53,4 +53,7 @@ public class PreferenceConstants {
 	public static final String PATHPLANNINGALGORITHMITEM="com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem";
 	
 	public static final String INITIALPROJECT="initialProjectFile";
+
+	public static final String FONT_TABLE="tableFont";
+	public static final String FONT_EDITER="editerFont";
 }

@@ -246,6 +246,7 @@ public class GrxJythonPromptView extends GrxBaseView {
 		if (!display.isDisposed())
 			display.timerExec(INTERVAL, stringOutRun_);
 
+		updateEditerFont();
     }
         
     private class InitPythonAction extends Action{
@@ -658,4 +659,7 @@ public class GrxJythonPromptView extends GrxBaseView {
         return null;
     }
 
+    public void updateEditerFont(){
+        styledText_.setFont(Activator.getDefault().getFont("preference_editer"));
+    }
 }
