@@ -33,6 +33,7 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -40,6 +41,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
@@ -158,6 +160,7 @@ public class MenuDialog extends JPanel {
             }
         }); 
         jpanel.add(buttonQuit);
+        jpanel.setAlignmentX( JComponent.CENTER_ALIGNMENT );
         getGlobalMenuPanel().add(jpanel);
         
         jpanel = new JPanel();
@@ -169,17 +172,22 @@ public class MenuDialog extends JPanel {
                 getLocalMenuPanel().setVisible(true);
             }
         }); 
-        jpanel.add(buttonRetry);    
+        jpanel.add(buttonRetry);  
+        jpanel.setAlignmentX( JComponent.CENTER_ALIGNMENT );
         getGlobalMenuPanel().add(jpanel);
         
         for(int i=1; i<menu_[0].length; i=i+2){
             String m1 = menu_[0][i-1].trim();
             String m2 = menu_[0][i].trim();
             if (m2.equals("#label")){
-            	getGlobalMenuPanel().add(new JLabel(m1));
+            	JLabel label = new JLabel(m1,  SwingConstants.LEFT);
+            	label.setAlignmentX( JComponent.CENTER_ALIGNMENT );
+            	getGlobalMenuPanel().add(label);
             }else if(m2.equals("#monitor")) {
 				PyObject res = interpreter_.eval(m1);
-				getGlobalMenuPanel().add(new JLabel(res.toString()));
+				JLabel label = new JLabel(res.toString(),  SwingConstants.LEFT);
+            	label.setAlignmentX( JComponent.CENTER_ALIGNMENT );
+				getGlobalMenuPanel().add(label);
             }else {
                 addButton(getGlobalMenuPanel(),m1,m2,false);
             }
@@ -217,10 +225,14 @@ public class MenuDialog extends JPanel {
             String m1 = menu_[showingStage_][i-1].trim();
             String m2 = menu_[showingStage_][i].trim();
             if (m2.equals("#label")){
-                getLocalMenuPanel().add(new JLabel(m1));
+            	JLabel label = new JLabel(m1,  SwingConstants.LEFT);
+            	label.setAlignmentX( JComponent.CENTER_ALIGNMENT );
+                getLocalMenuPanel().add(label);
             }else if(m2.equals("#monitor")) {
 				PyObject res = interpreter_.eval(m1);
-				getLocalMenuPanel().add(new JLabel(res.toString()));
+				JLabel label = new JLabel(res.toString(),  SwingConstants.LEFT);
+            	label.setAlignmentX( JComponent.CENTER_ALIGNMENT );
+				getLocalMenuPanel().add(label);
             }else {
             	addButton(getLocalMenuPanel(),m1,m2,(i<=1));
             }
@@ -236,7 +248,7 @@ public class MenuDialog extends JPanel {
                 GrxGuiUtil.setEnableRecursive(false,getLocalMenuPanel(),null);
             GrxGuiUtil.setEnableRecursive(true,getGlobalMenuPanel(),null);
         }
-        getLocalMenuPanel().add(javax.swing.Box.createVerticalGlue());
+      //  getLocalMenuPanel().add(javax.swing.Box.createVerticalGlue());
         //getLocalMenuPanel().setVisible(true);
         //setVisible(true);
     }
@@ -377,6 +389,7 @@ public class MenuDialog extends JPanel {
                 }
             }
         });
+        jpanel.setAlignmentX( JComponent.CENTER_ALIGNMENT );
         pnl.add(jpanel);
         return button;
     }
