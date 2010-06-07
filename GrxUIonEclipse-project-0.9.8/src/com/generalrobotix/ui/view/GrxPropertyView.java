@@ -58,6 +58,7 @@ import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxGraphItem;
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -201,8 +202,10 @@ public class GrxPropertyView extends GrxBaseView {
                 	});
     		}
     	});
+
+        updateTableFont();
     }
-	
+
     private boolean isValidChangeValue(String key, String value){
     	GrxBasePlugin.ValueEditType editType = currentPlugin_.GetValueEditType(key);
     	if(editType instanceof ValueEditText){
@@ -495,4 +498,7 @@ public class GrxPropertyView extends GrxBaseView {
 			currentPlugin_.deleteObserver(this);
     }
 
+    public void updateTableFont(){
+        viewer_.getTable().setFont(Activator.getDefault().getFont("preference_table"));
+    }
 }

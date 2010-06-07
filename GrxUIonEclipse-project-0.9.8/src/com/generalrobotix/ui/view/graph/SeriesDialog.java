@@ -143,6 +143,7 @@ public class SeriesDialog extends Dialog {
     	tableviewer_ = new TableViewer(composite, SWT.FULL_SELECTION | SWT.BORDER);
     	tableviewer_.getControl().setLayoutData(rowdata);
     	Table table = tableviewer_.getTable();
+        table.setFont(Activator.getDefault().getFont("preference_table"));
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
         TableColumn column = new TableColumn(table,SWT.NONE);

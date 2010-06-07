@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.Text;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
@@ -246,6 +247,8 @@ public class CollisionPairPanel extends Composite {
         editorPanelComposite.setLayoutData(editorPanelGridData);
         editorPanelComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
         editorPanel_ = new CollisionPairEditorPanel(editorPanelComposite,SWT.NONE);
+        
+        updateTableFont();
     }
 
     private boolean _checkDialog(String msg) {
@@ -764,4 +767,8 @@ public class CollisionPairPanel extends Composite {
         manager_.setSelectedItem(item, true);
         return item;
 	}
+    
+    public void updateTableFont(){
+        viewer_.getTable().setFont(Activator.getDefault().getFont("preference_table"));
+    }
 }

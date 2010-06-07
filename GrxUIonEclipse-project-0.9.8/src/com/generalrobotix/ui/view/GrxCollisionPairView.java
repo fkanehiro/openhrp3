@@ -118,4 +118,8 @@ public class GrxCollisionPairView extends GrxBaseView {
         manager_.removeItemChangeListener(this, GrxModelItem.class);
         manager_.removeItemChangeListener(this, GrxCollisionPairItem.class);
     }
+
+    public void updateTableFont(){
+        collisionPane_.updateTableFont();
+    }
 }

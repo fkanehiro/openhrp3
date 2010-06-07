@@ -26,7 +26,6 @@ import java.util.Vector;
 
 import jp.go.aist.hrp.simulator.SensorState;
 
-import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -41,7 +40,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -118,22 +116,6 @@ public class GrxRobotStatView extends GrxBaseView {
         red_ = Activator.getDefault().getColor("red");
         yellow_ = Activator.getDefault().getColor("yellow");
         
-        FontData[] data = parent.getFont().getFontData();
-        if (osName_ == "Linux") {
-        	for (int i=0; i<data.length; i++) {
-        		data[i].setHeight(10);
-        	}
-        }
-        FontRegistry registry = new FontRegistry();
-        registry.put("plain",data);
-        plainFont_ = registry.get("plain");
-
-        for (int i=0; i<data.length; i++) {
-            data[i].setStyle(SWT.BOLD);
-        }
-        registry.put("bold",data);
-        boldFont_ = registry.get("bold");
-        
         Composite mainPanel = new Composite(composite_, SWT.NONE);
         mainPanel.setLayout(new GridLayout(1,false));
         modelList_ = new ArrayList<GrxModelItem>();
@@ -178,8 +160,8 @@ public class GrxRobotStatView extends GrxBaseView {
         jointTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);
         forceTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);    
         sensorTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);    
-        powerTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);  
-        
+        powerTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);
+            
         jointTV_.setContentProvider(new ArrayContentProvider());
         forceTV_.setContentProvider(new ArrayContentProvider());
         sensorTV_.setContentProvider(new ArrayContentProvider());
@@ -236,6 +218,7 @@ public class GrxRobotStatView extends GrxBaseView {
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
         sashForm.setWeights(new int[] {60,20,10,10});
+        updateTableFont();
         _resizeTables();
     }
     
@@ -908,4 +891,15 @@ public class GrxRobotStatView extends GrxBaseView {
 	    	
         }
 	}
+    
+    public void updateTableFont(){
+        plainFont_ = Activator.getDefault().getFont("robot_state_plain");
+        boldFont_ = Activator.getDefault().getFont("robot_state_bold");
+
+        for(int i=0;i<viewers_.length;i++){
+            viewers_[i].getTable().setFont(Activator.getDefault().getFont("preference_table"));
+            viewers_[i].refresh();
+        }
+       
+    }
 }

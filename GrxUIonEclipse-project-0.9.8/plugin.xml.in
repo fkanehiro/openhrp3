@@ -193,6 +193,12 @@
             id="com.generalrobotix.ui.PreferenceItemPage"
             name="%Preferece.ItemPage.name">
       </page>
+      <page
+            category="com.generalrobotix.ui.grxui.GrxuiPreferencePage"
+            class="com.generalrobotix.ui.grxui.PreferenceFontPage"
+            id="com.generalrobotix.ui.PreferenceFontPage"
+            name="%Preferece.FontPage.name">
+      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
