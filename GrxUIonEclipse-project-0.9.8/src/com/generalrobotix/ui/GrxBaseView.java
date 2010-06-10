@@ -18,11 +18,17 @@
 package com.generalrobotix.ui;
 
 import java.awt.Dimension;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.Composite;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import com.generalrobotix.ui.item.GrxProjectItem;
 
 /**
  * @brief
@@ -143,4 +149,53 @@ public class GrxBaseView extends GrxBasePlugin implements GrxItemChangeListener,
     
     public void updateEditerFont(){
     }
+    
+    public void restoreProperties() {
+    	Properties properties = manager_.getViewProperties(getName());
+    	if(properties!=null){
+    		for (Enumeration<?> e = properties.propertyNames();  e.hasMoreElements(); ){
+    			String key = (String) e.nextElement();
+    			String val = properties.getProperty(key);
+    			if (!propertyChanged(key, val)){
+    				setProperty(key, val);
+    			}
+    		}
+    	}
+    }
+    
+	public Element storeProperties() {
+		if (doc_ == null)
+			return null;
+
+		String tag = VIEW_TAG;
+		element_ = doc_.createElement(tag);
+
+		element_.setAttribute("class",getClass().getName()); //$NON-NLS-1$
+		element_.setAttribute("name", getName()); //$NON-NLS-1$
+		element_.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
+
+		Enumeration<?> keys = propertyNames();
+		boolean hasProperty=false;
+		while (keys.hasMoreElements()) {
+			String key = (String)keys.nextElement();
+			String val = getProperty(key);
+			if (key == null || val == null || key.equals("name"))
+				continue;
+
+			hasProperty = true;
+			Element propEl = doc_.createElement(GrxProjectItem.PROPERTY_TAG);
+			propEl.setAttribute("name",  key); //$NON-NLS-1$
+			propEl.setAttribute("value", val); //$NON-NLS-1$
+
+			element_.appendChild(doc_.createTextNode(INDENT4+INDENT4+INDENT4));
+			element_.appendChild(propEl);
+			element_.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
+		}
+		element_.appendChild(doc_.createTextNode(INDENT4+INDENT4));
+		
+		if(hasProperty)
+			return element_;
+		else
+			return null;
+	}
 }
