@@ -85,6 +85,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	private Document doc_;
     private DocumentBuilder builder_;
     private Transformer transformer_;
+    private HashMap<String, Properties> viewProperties_ = new HashMap<String, Properties>(); 
     
     private Map<String, ModeNodeInfo> modeInfoMap_ = new HashMap<String, ModeNodeInfo>();
     
@@ -116,6 +117,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	}
 
 	public boolean create() {
+		viewProperties_.clear();
 		clear();
 		setURL("");
 		for (int i=0; ; i++) {
@@ -235,10 +237,13 @@ public class GrxProjectItem extends GrxBaseItem {
 		for (int i=0; i<viewList.size(); i++) {
 			GrxBaseView view = viewList.get(i);
 			if (view.propertyNames().hasMoreElements()) {
-				modeEl.appendChild(doc_.createTextNode(INDENT4+INDENT4));
 				view.setDocument(doc_);
-				modeEl.appendChild(view.storeProperties());
-				modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
+				Element element = view.storeProperties();
+				if(element!=null){
+					modeEl.appendChild(doc_.createTextNode(INDENT4+INDENT4));
+					modeEl.appendChild(element);
+					modeEl.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
+				}
 			}
 		}
 		
@@ -577,7 +582,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(null);
 		try {
 			progressMonitorDlg.run(false,false, runnableProgress);
-			//ダイアログの影が残ってしまぁE�E��E�題�E対筁E//
+			//ダイアログの影が残ってしまう対策　　//
 			Grx3DView view3d =  (Grx3DView)manager_.getView( Grx3DView.class );
 			if(view3d!=null){
 				view3d.repaint();
@@ -611,16 +616,6 @@ public class GrxProjectItem extends GrxBaseItem {
 				setProperty(key, val);
 			}
 		}
-		if (minfo.viewList != null) {
-			for (int i = 0; i < minfo.viewList.getLength(); i++)
-				_restorePlugin((Element) minfo.viewList.item(i));
-		}
-
-		monitor.worked(1);
-		
-		List<GrxBaseView> vl = manager_.getActiveViewList();
-		for (int i=0; i<vl.size(); i++) 
-			if (vl.get(i) != null) vl.get(i).restoreProperties();
 
 		monitor.worked(1);
 
@@ -727,6 +722,27 @@ public class GrxProjectItem extends GrxBaseItem {
 	        if (page!=null && page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
 	        	page.closePerspective(page.getPerspective(), false, false);
 		}
+		
+		viewProperties_.clear();
+		if (minfo.viewList != null) {
+			for (int i = 0; i < minfo.viewList.getLength(); i++){
+				Element element = (Element)minfo.viewList.item(i);
+				NodeList props = element.getElementsByTagName(PROPERTY_TAG);
+				Properties properties = new Properties();
+				for (int j = 0; j < props.getLength(); j++) {
+					Element propEl = (Element) props.item(j);
+					String key = propEl.getAttribute("name"); //$NON-NLS-1$
+					String val = propEl.getAttribute("value"); //$NON-NLS-1$
+					properties.setProperty(key, val);
+				}
+				viewProperties_.put(element.getAttribute("name"), properties);
+			}
+		}
+		
+		List<GrxBaseView> vl = manager_.getActiveViewList();
+		for (int i=0; i<vl.size(); i++) 
+			if (vl.get(i) != null) vl.get(i).restoreProperties();
+		
 	}
 	
 	private GrxBasePlugin _restorePlugin(Element e) {
@@ -748,7 +764,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			else
 				plugin = manager_.createItem(icls, iname);
 			plugin = manager_.getItem(icls, iname);
-		} else {
+		} else if (GrxBaseView.class.isAssignableFrom(cls)){
 			plugin = manager_.getView((Class<? extends GrxBaseView>) cls);
 		}
         
@@ -804,6 +820,10 @@ public class GrxProjectItem extends GrxBaseItem {
 			//t.start();
 		}
 	}
+    
+    public Properties getViewProperties(String viewName){
+    	return viewProperties_.get(viewName);
+    }
 	
 	private static String ENVIRONMENT_NODE = "jp.go.aist.hrp.simulator.EnvironmentNode"; //$NON-NLS-1$
 	private static String ROBOT_NODE = "jp.go.aist.hrp.simulator.RobotNode"; //$NON-NLS-1$

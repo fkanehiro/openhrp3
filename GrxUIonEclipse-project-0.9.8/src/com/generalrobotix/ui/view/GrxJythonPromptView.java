@@ -454,7 +454,7 @@ public class GrxJythonPromptView extends GrxBaseView {
             interpreter_.exec("print 'failed to connect NameService("+nameservice+")'"); //$NON-NLS-1$ //$NON-NLS-2$
         }
     }
-    
+    /*
     public void restoreProperties() {
         super.restoreProperties();
         setNameService();
@@ -480,7 +480,7 @@ public class GrxJythonPromptView extends GrxBaseView {
             execFile();
         }
     }
-   
+   */
     public void registerItemChange(GrxBaseItem item, int event){
     	if(item instanceof GrxPythonScriptItem){
     		GrxPythonScriptItem pythonScriptItem = (GrxPythonScriptItem)item;

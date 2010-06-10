@@ -26,6 +26,8 @@ public class GrxBaseViewPart extends ViewPart {
 			try {
 				c = cls.getConstructor(new Class[] { String.class, GrxPluginManager.class, GrxBaseViewPart.class, Composite.class });
 				v = (GrxBaseView) c.newInstance(new Object[] { name, act.manager_, vp, p });
+				if(v!=null)
+					v.restoreProperties();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

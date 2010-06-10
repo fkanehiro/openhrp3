@@ -59,7 +59,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	private Vector<MenuManager> subMenu_ = new Vector<MenuManager>();
 	private String[] menuPath_;
 
-	private Document doc_;
+	protected Document doc_;
 	protected Element element_;
 
     protected final static String ITEM_TAG = "item"; //$NON-NLS-1$

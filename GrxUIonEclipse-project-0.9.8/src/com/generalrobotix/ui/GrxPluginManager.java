@@ -744,7 +744,7 @@ public class GrxPluginManager implements IPropertyChangeListener {
         }
         return list;
     }
-
+    
     /**
      * @brief
      * @return
@@ -1383,6 +1383,10 @@ public class GrxPluginManager implements IPropertyChangeListener {
         File f = new File(initProjectFile);
         if(f.exists() && f.isFile())
         	currentProject_.load(f);
+	}
+
+	public Properties getViewProperties(String name) {
+		return currentProject_.getViewProperties(name);
 	}
 	
 }
