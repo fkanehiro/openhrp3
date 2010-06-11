@@ -20,6 +20,7 @@ import javax.swing.*;
 
 import com.generalrobotix.ui.util.IconProperties;
 import com.generalrobotix.ui.util.MessageBundle;
+import com.generalrobotix.ui.view.Grx3DView;
 
 
 import java.awt.event.*;
@@ -69,10 +70,12 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
 
     protected ButtonGroup group_;
 
+    private Grx3DView view_=null;
     //--------------------------------------------------------------------
     // Constructor
-    public ViewToolBar() {
+    public ViewToolBar(Grx3DView view) {
         super(MessageBundle.get("tool.view.title"));
+        view_ = view;
         Dimension size = new Dimension(IconProperties.WIDTH, IconProperties.HEIGHT);
         
         group_ = new ButtonGroup();
@@ -244,6 +247,7 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
 
     public void itemStateChanged(ItemEvent evt) {
         if (evt.getStateChange() == ItemEvent.SELECTED) {
+        	view_.setProperty("view.mode", Integer.toString(cmb_.getSelectedIndex()));
             GUIAction action = (GUIAction)evt.getItem();
             action.fireAction();
         }

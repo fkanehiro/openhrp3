@@ -144,6 +144,11 @@ public class GrxProjectItem extends GrxBaseItem {
      	        	page.closePerspective(page.getPerspective(), false, false);
      		}
         }
+        
+        List<GrxBaseView> vl = manager_.getActiveViewList();
+		for (int i=0; i<vl.size(); i++) 
+			if (vl.get(i) != null) vl.get(i).restoreProperties();
+		
 		return true;
 	}
 

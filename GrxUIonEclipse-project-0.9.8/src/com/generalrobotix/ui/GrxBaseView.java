@@ -151,6 +151,7 @@ public class GrxBaseView extends GrxBasePlugin implements GrxItemChangeListener,
     }
     
     public void restoreProperties() {
+    	clear();
     	Properties properties = manager_.getViewProperties(getName());
     	if(properties!=null){
     		for (Enumeration<?> e = properties.propertyNames();  e.hasMoreElements(); ){
