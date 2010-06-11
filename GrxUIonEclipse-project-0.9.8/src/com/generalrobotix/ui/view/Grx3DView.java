@@ -26,12 +26,16 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GridLayout;
+import java.awt.MenuItem;
 import java.awt.Panel;
+import java.awt.PopupMenu;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -131,7 +135,7 @@ public class Grx3DView
     
     // UI objects
     private ObjectToolBar objectToolBar_ = new ObjectToolBar();
-    private ViewToolBar viewToolBar_ = new ViewToolBar();
+    private ViewToolBar viewToolBar_ = new ViewToolBar(this);
     private JButton btnHomePos_ = new JButton(new ImageIcon(getClass().getResource("/resources/images/home.png"))); //$NON-NLS-1$
     private JToggleButton btnFloor_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/floor.png"))); //$NON-NLS-1$
     private JToggleButton btnCollision_ = new JToggleButton(new ImageIcon(getClass().getResource("/resources/images/collision.png"))); //$NON-NLS-1$
@@ -344,10 +348,7 @@ public class Grx3DView
         if(viewMode_==SIMULATION){
         	disableButton();
 			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
-        }
-      
-        btnFloor_.doClick();
-        btnCollision_.doClick();
+        }        
     }
 
     private void _setupSceneGraph() {
@@ -494,10 +495,50 @@ public class Grx3DView
                 tgView_.setTransform(t3dViewHome_);
             }
         });
-
+        btnHomePos_.addMouseListener(new MouseListener(){
+			public void mouseClicked(MouseEvent arg0) {			
+			}
+			public void mouseEntered(MouseEvent arg0) {
+			}
+			public void mouseExited(MouseEvent arg0) {
+			}
+			public void mousePressed(MouseEvent arg0) {
+				if(arg0.getButton()==MouseEvent.BUTTON2 || arg0.getButton()==MouseEvent.BUTTON3){
+					PopupMenu popupMenu = new PopupMenu(); 
+					final MenuItem menu0 = new MenuItem(MessageBundle.get("Grx3DView.popupmenu.setHomeEyePos"));
+					menu0.addActionListener(new ActionListener(){
+						public void actionPerformed(ActionEvent arg0) {
+							if(arg0.getSource()==menu0){
+								tgView_.getTransform(t3dViewHome_);
+								double[] eyeHomePosition = new double[16];
+								t3dViewHome_.get(eyeHomePosition);
+								setDblAry("eyeHomePosition", eyeHomePosition, 5);
+							}
+						}
+					});
+					final MenuItem menu1 = new MenuItem(MessageBundle.get("Grx3DView.popupmenu.restoreDefault"));
+					menu1.addActionListener(new ActionListener(){
+						public void actionPerformed(ActionEvent arg0) {
+							if(arg0.getSource()==menu1){
+								_setViewHomePosition();
+								double[] eyeHomePosition = new double[16];
+								t3dViewHome_.get(eyeHomePosition);
+								setDblAry("eyeHomePosition", eyeHomePosition, 5);
+							}
+						}
+					});
+					popupMenu.add(menu0);
+					popupMenu.add(menu1);
+					btnHomePos_.add(popupMenu);
+					popupMenu.show(btnHomePos_, arg0.getX(), arg0.getY());
+				}
+			}
+			public void mouseReleased(MouseEvent arg0) {
+			}	
+        });
+        
         btnFloor_.setToolTipText(MessageBundle.get("Grx3DView.text,showZPlane")); //$NON-NLS-1$
         btnFloor_.setSelected(false);
-        setProperty("showScale", "false");
         btnFloor_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (btnFloor_.isSelected()) {
@@ -516,7 +557,6 @@ public class Grx3DView
         
         btnCollision_.setToolTipText(MessageBundle.get("Grx3DView.text.showCollision")); //$NON-NLS-1$
         btnCollision_.setSelected(false);
-        setProperty("showCollision", "false");
         btnCollision_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (btnCollision_.isSelected()){
@@ -536,7 +576,6 @@ public class Grx3DView
         
         btnDistance_.setToolTipText(MessageBundle.get("Grx3DView.text.showDistance")); //$NON-NLS-1$
         btnDistance_.setSelected(false);
-        setProperty("showDistance", "false");
         btnDistance_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (btnDistance_.isSelected()){
@@ -554,8 +593,7 @@ public class Grx3DView
          
         btnIntersection_.setToolTipText(MessageBundle.get("Grx3DView.text.checkIntersection")); //$NON-NLS-1$
         btnIntersection_.setSelected(false);
-        setProperty("showIntersection", "false");
-        btnIntersection_.addActionListener(new ActionListener() {
+         btnIntersection_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 if (btnIntersection_.isSelected()){
                     btnIntersection_.setToolTipText(MessageBundle.get("Grx3DView.text.nocheckIntersection")); //$NON-NLS-1$
@@ -572,7 +610,6 @@ public class Grx3DView
         
         btnCoM_.setToolTipText(MessageBundle.get("Grx3DView.text.showCom")); //$NON-NLS-1$
         btnCoM_.setSelected(false);
-        setProperty("showCoM", "false");
         btnCoM_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 boolean b = btnCoM_.isSelected();
@@ -587,7 +624,6 @@ public class Grx3DView
         
         btnCoMonFloor_.setToolTipText(MessageBundle.get("Grx3DView.text.showcomFloor")); //$NON-NLS-1$
         btnCoMonFloor_.setSelected(false);
-        setProperty("showCoMonFloor", "false");
         btnCoMonFloor_.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 boolean b = btnCoMonFloor_.isSelected();
@@ -711,18 +747,7 @@ public class Grx3DView
     public BranchGroup getBranchGroupRoot() {
         return bgRoot_;
     }
-    
-    public void setDefaultProperties() {
-        //TODO
-        //setInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM); //$NON-NLS-1$ //$NON-NLS-2$
-        //default_eye    = getDblAry("view.eye",    default_eye); //$NON-NLS-1$
-    	//default_lookat = getDblAry("view.lookat", default_lookat); //$NON-NLS-1$
-    	//default_upward = getDblAry("view.upward", default_upward); //$NON-NLS-1$      
-        //viewToolBar_.selectViewMode(getInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM)); //$NON-NLS-1$
-        //showActualState_ = isTrue("showActualState", showActualState_);
-        //_setViewHomePosition();
-    }
-    
+        
     private void _setViewHomePosition() {
         t3dViewHome_.lookAt(
             new Point3d(default_eye), 
@@ -730,6 +755,25 @@ public class Grx3DView
             new Vector3d(default_upward));
         t3dViewHome_.invert();
         tgView_.setTransform(t3dViewHome_);
+    }
+    
+    public void restoreProperties(){
+    	super.restoreProperties();
+    	if(getStr("showScale")==null) propertyChanged("showScale", "true"); 
+    	if(getStr("showCollision")==null) propertyChanged("showCollision", "true");
+    	if(getStr("showDistance")==null) propertyChanged("showDistance", "false");
+    	if(getStr("showIntersection")==null) propertyChanged("showIntersection", "false");
+    	if(getStr("showCoM")==null) propertyChanged("showCoM", "false");
+    	if(getStr("showCoMonFloor")==null) propertyChanged("showCoMonFloor", "false");
+    	if(getStr("view.mode")==null) propertyChanged("view.mode", Integer.toString(ViewToolBar.COMBO_SELECT_ROOM));
+        if(getStr("showActualState")==null) propertyChanged("showActualState", "true");   
+        if(getStr("eyeHomePosition")==null){
+        	double[] eyeHomePosition = new double[16];
+        	_setViewHomePosition();
+        	t3dViewHome_.get(eyeHomePosition);
+        	setDblAry("eyeHomePosition", eyeHomePosition, 5);
+        	propertyChanged("eyeHomePosiotion", getProperty("eyeHomePosition"));
+        }
     }
     
     public void registerItemChange(GrxBaseItem item, int event){
@@ -2095,16 +2139,18 @@ public class Grx3DView
     		}else if (key.equals("showCoMonFloor")){ //$NON-NLS-1$	
     			if(xor(btnCoMonFloor_.isSelected(), value.equals("true")))
     				btnCoMonFloor_.doClick();
-    		//TODO
-    			//default_eye    = getDblAry("view.eye",    default_eye); //$NON-NLS-1$
-    	    	//default_lookat = getDblAry("view.lookat", default_lookat); //$NON-NLS-1$
-    	    	//default_upward = getDblAry("view.upward", default_upward); //$NON-NLS-1$   	        
-    	        //viewToolBar_.selectViewMode(getInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM)); //$NON-NLS-1$
-    			//showActualState_ = isTrue("showActualState", showActualState_);
-    			//_setViewHomePosition();
+    		}else if (key.equals("view.mode")){ //$NON-NLS-1$	
+    			viewToolBar_.selectViewMode(Integer.parseInt(value.trim()));
+    		}else if (key.equals("showActualState")){ //$NON-NLS-1$	
+    			showActualState_ = value.equals("true");
+    		}else if (key.equals("eyeHomePosition")){ //$NON-NLS-1$	
+    			double[] eyeHomePosition = getDblAry(value);
+    			t3dViewHome_.set(eyeHomePosition);
+    		    setTransform(t3dViewHome_);
     		}else{
     			return false;
     		}
+    		setProperty(key, value);
     		return true;
     	}
     }
