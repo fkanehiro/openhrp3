@@ -440,9 +440,21 @@ public class GrxPluginManager implements IPropertyChangeListener {
 			e.printStackTrace();
 		}
         
-        if (!f.isFile())
-            return null;
-
+        if (!f.isFile()){
+        	FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
+        	PluginInfo pi = pinfoMap_.get(cls);
+            String[] fe = { pi.filter };
+            fdlg.setText(_url+"  "+MessageBundle.get("GrxPluginManager.fileDialog.notFound"));
+            fdlg.setFilterExtensions(fe);
+            fdlg.setFilterPath(pi.lastDir.getAbsolutePath());
+            String fPath = fdlg.open();
+            if (fPath != null) {
+                f = new File(fPath);
+                _url = fPath;
+            }else
+            	return null;
+        }
+        
         if (name == null){
         	String basename = f.getName().split("[.]")[0]; //$NON-NLS-1$
         	if (getItem(cls, basename) != null){
