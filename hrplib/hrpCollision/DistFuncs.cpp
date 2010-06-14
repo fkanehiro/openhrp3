@@ -180,23 +180,21 @@ float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
                            *vvertices[j], vedges[j],
                            p0, p1);
             n = p0 - p1;
-            if (d <= min_d){
-                min_d = d;
-                cp0 = p0;
-                cp1 = p1;
-                // check overlap
-                vec = *uvertices[(i+2)%3] - cp0;
-                float u = (vec|n)/min_d;
-                vec = *vvertices[(j+2)%3] - cp1;
-                float v = (vec|n)/min_d;
-                // n directs from v -> u
-                if (u>=0 && v<=0) return min_d;
-
-                if (u > 0) u = 0;
-                if (v < 0) v = 0;
-                if ((n.Magnitude() + u - v) > 0){
-                    overlap = false;
-                }
+            if (d <= min_d) min_d = d;
+            cp0 = p0;
+            cp1 = p1;
+            // check overlap
+            vec = *uvertices[(i+2)%3] - cp0;
+            float u = (vec|n)/min_d;
+            vec = *vvertices[(j+2)%3] - cp1;
+            float v = (vec|n)/min_d;
+            // n directs from v -> u
+            if (u>=0 && v<=0) return min_d;
+			
+            if (u > 0) u = 0;
+            if (v < 0) v = 0;
+            if ((n.Magnitude() + u - v) > 0){
+                overlap = false;
             }
         }
     }
