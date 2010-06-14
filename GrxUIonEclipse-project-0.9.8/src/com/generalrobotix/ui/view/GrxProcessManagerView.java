@@ -48,14 +48,28 @@ public class GrxProcessManagerView extends GrxBaseView
     public GrxProcessManagerView(String name, GrxPluginManager manager,
             GrxBaseViewPart vp, Composite parent) {
         super(name, manager, vp, parent);
-        processManager_ = (GrxProcessManager) manager.getItem("processManager");
-        if(processManager_!=null)
-        	processManager_.addObserver(this);
         
         initializeComposite();     
         composite_.addDisposeListener(this);
-    	outputArea_.setText(processManager_.getOutputBuffer().toString());
+        processManager_ = (GrxProcessManager) manager.getItem("processManager");
+        if(processManager_!=null){
+        	outputArea_.setText("");
+        	String[] processed = processManager_.getOutputBuffer().toString().split("\n", -1);
+        	for (int i = 0; i < processed.length; i++) {
+        		if(processed[i].startsWith("[")){
+        			String id=processed[i].substring(1, processed[i].indexOf(":"));
+        			AProcess p =processManager_.get(id);
+        			if(p.showOutput())
+        				outputArea_.append(processed[i] + "\n");
+        		}
+        	}
+        	processManager_.clearBuffer();
+        }
         isScrollable_ = false;
+
+        if(processManager_!=null)
+        	processManager_.addObserver(this);
+        
     }
 
     public String[] getMenuPath() {
