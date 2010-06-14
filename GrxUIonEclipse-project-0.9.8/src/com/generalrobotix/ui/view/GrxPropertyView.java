@@ -117,7 +117,7 @@ public class GrxPropertyView extends GrxBaseView {
                 	if ((p = manager_.getView(nameText_.getText())) != null){
                 		_setInput(p);
                 	}else if ((p = manager_.getItem(nameText_.getText())) != null){
-                		_setInput(p);
+                		manager_.focusedItem((GrxBaseItem) p);
                 	}else{
                 		nameText_.setText(""); //$NON-NLS-1$
                 	}
