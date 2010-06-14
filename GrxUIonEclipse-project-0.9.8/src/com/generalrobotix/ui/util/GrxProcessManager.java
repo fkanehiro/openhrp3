@@ -436,8 +436,7 @@ public class GrxProcessManager extends GrxBaseItem{
                 outputBuffer_.delete(0, newLine.length());
             }
             outputBuffer_.append(newLine);
-            lineQueue.offer(newLine);
-
+            
             //排他処理
             isType_.lock();
             if( isType_.get() ){
@@ -449,20 +448,21 @@ public class GrxProcessManager extends GrxBaseItem{
             }
             
             if (p.showOutput_) {
-                // SWTEDT(イベントディスパッチスレッド)外からの呼び出しなので、SWTEDTに通知してやってもらう
-                Display display = Display.getDefault();
-                if (display != null && !display.isDisposed()) {
-                    display.asyncExec(new Runnable() {
-                        public void run() {
-                            String newLine = null;
-                            while ((newLine = lineQueue.poll()) != null) {
-                            	notifyObservers("append", newLine); 
-                            }
-                        	notifyObservers("setTopIndex"); 
-                        }
-                    });
-                }
+                lineQueue.offer(newLine);
             }
+        }
+        // SWTEDT(イベントディスパッチスレッド)外からの呼び出しなので、SWTEDTに通知してやってもらう
+        Display display = Display.getDefault();
+        if (display != null && !display.isDisposed()) {
+            display.asyncExec(new Runnable() {
+                public void run() {
+                    String newLine = null;
+                    while ((newLine = lineQueue.poll()) != null) {
+                    	notifyObservers("append", newLine); 
+                    	notifyObservers("setTopIndex"); 
+                    }
+                }
+            });
         }
         try {
             Thread.sleep(10);
@@ -471,6 +471,10 @@ public class GrxProcessManager extends GrxBaseItem{
         }
     }
 
+    public void clearBuffer(){
+    	lineQueue.clear();
+    }
+    
     public StringBuffer getOutputBuffer(){
     	return outputBuffer_;
     }
@@ -562,8 +566,10 @@ public class GrxProcessManager extends GrxBaseItem{
 								if (display != null && !display.isDisposed()) {
 				                    display.asyncExec(new Runnable() {
 				                        public void run() {
-				                        	notifyObservers("append", "[" + pi_.id + ":O] " + "Process End"); 
-				                        	notifyObservers("setTopIndex");
+				                        	if (showOutput_){
+					                        	notifyObservers("append", "[" + pi_.id + ":O] " + "Process End"); 
+					                        	notifyObservers("setTopIndex");
+				                        	}
 				                        	serverManager_.notifyObservers("ProcessEnd", pi_.id);
 				                        }
 				                    });
