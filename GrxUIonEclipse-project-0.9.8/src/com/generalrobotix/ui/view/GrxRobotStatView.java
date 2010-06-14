@@ -328,6 +328,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    					}else{
 	    						currentModel_ = null;
 	    						jointList_.clear();
+	    						updateTableViewer();
 	    					}
 	    				}
 	    					
@@ -390,7 +391,13 @@ public class GrxRobotStatView extends GrxBaseView {
     }
 
     private void updateTableViewer(){
-    	if (currentModel_ == null ) return;
+    	if (currentModel_ == null ){
+    		jointTV_.setInput(new Integer[0]);
+    	    forceTV_.setInput(new Integer[0]);
+    	    sensorTV_.setInput(new Integer[0]);	
+    	    powerTV_.setInput(new Integer[0]);
+    		return;
+    	}
     	currentSensor_ = null;
         currentRefAng_ = null;
         currentSvStat_ = null;
@@ -650,8 +657,10 @@ public class GrxRobotStatView extends GrxBaseView {
                     }
                     break;
                 case 2:
+                	if(jointList_.isEmpty())
+                		break;
                     GrxLinkItem info = jointList_.get(rowIndex);
-                    if (info.llimit() != null && info.ulimit() != null && info.llimit()[0] < info.ulimit()[0]
+                    if (info != null && info.llimit() != null && info.ulimit() != null && info.llimit()[0] < info.ulimit()[0]
                         && (info.jointValue() <= info.llimit()[0] || info.ulimit()[0] <= info.jointValue())) {
                         return boldFont_;
                     }
