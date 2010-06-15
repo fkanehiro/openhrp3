@@ -99,6 +99,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	return bModified_;
     }
     
+    public void cancelModified(){
+    	bModified_ = false;
+    }
+    
     public boolean saveAndLoad(){
     	if(!_saveAs())
     		return false;
@@ -260,18 +264,15 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	/**
 	 * @brief save this model as a VRML file
 	 */
-	private boolean _saveAs(){
+	public boolean _saveAs(){
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
 		fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
 		String fPath = fdlg.open();
 		if( fPath != null ) {
 			fPath = fPath.replace('\\','/');
 			if (GrxVrmlExporter.export(GrxModelItem.this, fPath)){
-				boolean btmp = bModified_;
-				bModified_ = false;
 				setURL(fPath);
 				setDefaultDirectory(new File(fPath).getParent());
-				bModified_ = btmp;
 			}
 			return true;
 		}else
