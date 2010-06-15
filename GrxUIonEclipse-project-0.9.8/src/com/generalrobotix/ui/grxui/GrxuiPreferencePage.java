@@ -79,8 +79,10 @@ public class GrxuiPreferencePage
 		GridData label3Data = new GridData();
 		label3Data.horizontalSpan = 3;
 		label3.setLayoutData(label3Data);
-		addField(new FileFieldEditor(PreferenceConstants.INITIALPROJECT, "", group3)); //$NON-NLS-1$
-		
+		FileFieldEditor fileFieldEditor = new FileFieldEditor(PreferenceConstants.INITIALPROJECT, "", group3);
+		String[] extensions = {"*.xml"};
+		fileFieldEditor.setFileExtensions(extensions);
+		addField(fileFieldEditor); //$NON-NLS-1$
 	}
 
 	public void init(IWorkbench workbench) {
