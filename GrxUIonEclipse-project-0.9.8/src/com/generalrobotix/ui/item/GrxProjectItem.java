@@ -305,9 +305,11 @@ public class GrxProjectItem extends GrxBaseItem {
 				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.CreateProject"); } //$NON-NLS-1$
 				public void run(){
 					boolean ans = MessageDialog.openConfirm( null, MessageBundle.get("GrxProjectItem.dialog.title.createProject"), MessageBundle.get("GrxProjectItem.dialog.message.createProject") ); //$NON-NLS-1$ //$NON-NLS-2$
-					if ( ans )
+					if ( ans ){
+						if(!checkModifiedModel())
+	                        return;
 						manager_.removeAllItems();
-					else if ( ans == false )
+					}else if ( ans == false )
 						return;
 					create();
 				}
@@ -386,12 +388,12 @@ public class GrxProjectItem extends GrxBaseItem {
                 switch(msgDlg.open())
                 {
                 case 0:
-                    if(!model.saveAndLoad())
+                    if(!model._saveAs())
                         return false;
+                    model.cancelModified();
                     break;
                 case 1:
-                    if(!model.reload())
-                        return false;
+                    model.cancelModified();
                     break;
                 case 2:
                 default:
