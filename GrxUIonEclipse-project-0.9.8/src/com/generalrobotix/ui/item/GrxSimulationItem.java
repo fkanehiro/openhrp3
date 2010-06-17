@@ -595,11 +595,8 @@ public class GrxSimulationItem extends GrxBaseItem {
     			GrxModelItem model = modelList.get(i);
     			if (model.links_ == null)
     				continue;
-    			if(model.isModified()){
-    				MessageDialog.openInformation(null, "", MessageBundle.get("GrxOpenHRPView.dialog.message.saveModel0")+model.getName()+MessageBundle.get("GrxOpenHRPView.dialog.message.saveModel1")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    				if(!model.saveAndLoad())
-    					return false;
-    			}
+    			if(model.checkModifiedModel(true)==GrxModelItem.MODIFIED_NG)
+    				return false;
     			BodyInfo bodyInfo = model.getBodyInfo();
     			if(bodyInfo==null)  return false;
     			currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);

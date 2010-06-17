@@ -368,37 +368,17 @@ public class GrxProjectItem extends GrxBaseItem {
     private boolean checkModifiedModel()
     {
         List<GrxModelItem> modelList = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        List<GrxModelItem> modifiedModels = new ArrayList<GrxModelItem>();
         for (int i=0; i<modelList.size(); i++) {
             GrxModelItem model = modelList.get(i);
-            if(model.isModified()){
-                String mes = MessageBundle.get("GrxProjectItem.dialog.message.changeModel.mes"); //$NON-NLS-1$
-                mes = NLS.bind(mes, new String[]{model.getName()});
-                
-                MessageDialog msgDlg =
-                    new MessageDialog(GrxUIPerspectiveFactory.getCurrentShell(),
-                    		          MessageBundle.get("GrxProjectItem.dialog.message.changeModel.title"),
-                                      null,
-                                      mes,
-                                      MessageDialog.INFORMATION, 
-                                      new String[] {MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.save"), 
-                                              MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.reverse"), 
-                                              MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.cancel")},
-                                      2);
-                
-                switch(msgDlg.open())
-                {
-                case 0:
-                    if(!model._saveAs())
-                        return false;
-                    model.cancelModified();
-                    break;
-                case 1:
-                    model.cancelModified();
-                    break;
-                case 2:
-                default:
-                    return false;
-                }
+            int ret=model.checkModifiedModel(false);
+            if(ret==GrxModelItem.MODIFIED_NG){
+            	for(GrxModelItem modifiedModel : modifiedModels){
+            		modifiedModel.reload();
+            	}
+            	return false;
+            }else if(ret==GrxModelItem.MODIFIED_OK){
+            	modifiedModels.add(model);
             }
         }
         return true;

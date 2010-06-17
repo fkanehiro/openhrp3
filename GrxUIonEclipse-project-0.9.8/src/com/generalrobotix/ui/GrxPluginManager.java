@@ -51,6 +51,7 @@ import com.generalrobotix.ui.util.OrderedHashMap;
 import com.generalrobotix.ui.util.SynchronizedAccessor;
 import com.generalrobotix.ui.util.FileUtil;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
+import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxProjectItem;
 import com.generalrobotix.ui.item.GrxSimulationItem;
 import com.generalrobotix.ui.util.GrxServerManager;
@@ -612,6 +613,20 @@ public class GrxPluginManager implements IPropertyChangeListener {
     public void removeItems(Class<? extends GrxBaseItem> cls) {
         Map<?, ?> m = pluginMap_.get(cls);
         GrxBaseItem[] items = m.values().toArray(new GrxBaseItem[0]);
+        if(cls.isAssignableFrom(GrxModelItem.class)){
+        	List<GrxModelItem> modifiedModels = new ArrayList<GrxModelItem>();
+        	for (int i = 0; i < items.length; i++){
+        		int ret = ((GrxModelItem)items[i]).checkModifiedModel(false);
+        		if(ret==GrxModelItem.MODIFIED_NG){
+        			for(GrxModelItem modifiedModel : modifiedModels){
+                		modifiedModel.reload();
+                	}
+        			return;
+        		}else if(ret==GrxModelItem.MODIFIED_OK){
+        			modifiedModels.add((GrxModelItem) items[i]);
+        		}
+        	}
+        }
         for (int i = 0; i < items.length; i++)
         	items[i].delete();
     }

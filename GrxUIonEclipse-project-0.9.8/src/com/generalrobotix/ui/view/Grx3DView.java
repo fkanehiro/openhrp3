@@ -791,6 +791,8 @@ public class Grx3DView
 	        			updateViewSimulator(currentState_.time);
 	        		}else
 	        			updateViewSimulator(0);
+	        		if(modelItem.isModified())
+	        			optionButtonEnable(false);
 	        		showOption();
 	        		if(btnBBdisp_.isSelected()){
 	        			btnBBdisp_.doClick();
@@ -804,6 +806,8 @@ public class Grx3DView
 	    			modelItem.bgRoot_.detach();
 	        		currentModels_.remove(modelItem);
 	        		behaviorManager_.setItem(currentModels_, currentCollisionPairs_);
+	        		if(modelItem.isModified())
+	        			optionButtonEnable(true);
 	        		showOption();
 	        		modelItem.deleteObserver(this);
 	    		}
@@ -898,6 +902,10 @@ public class Grx3DView
     		else if((String)arg[0]=="BodyInfoChange"){
     			behaviorManager_.setItemChange();
     			showOption();
+    		}else if((String)arg[0]=="Modified"){
+    			optionButtonEnable(false);
+    		}else if((String)arg[0]=="ClearModified"){
+    			optionButtonEnable(true);
     		}
     	}else if(currentWorld_==plugin){
             if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
@@ -2226,5 +2234,43 @@ public class Grx3DView
 	    	models.remove(model);
     	}
     	return ret;
+    }
+    
+    private boolean btnStateCollision_=true;
+    private boolean btnStateDistance_=false;
+    private boolean btnStateIntersection_=false;
+    private void optionButtonEnable(boolean enable){
+    	if(btnCollision_.isEnabled() && enable )
+    		return;
+    	if(!btnCollision_.isEnabled() && !enable)
+    		return;
+    	if(enable){
+    		for(GrxModelItem model : currentModels_ ){
+    			if(model.isModified())
+    				return;
+    		}
+    	}
+    	if(!enable){
+    		btnStateCollision_ = btnCollision_.isSelected();
+        	btnStateDistance_ = btnDistance_.isSelected();
+        	btnStateIntersection_ = btnIntersection_.isSelected();
+    		if(btnCollision_.isSelected())
+    			btnCollision_.doClick();
+    		if(btnDistance_.isSelected())
+    			btnDistance_.doClick();
+    		if(btnIntersection_.isSelected())
+    			btnIntersection_.doClick();
+    	}
+    	btnCollision_.setEnabled(enable);
+    	btnDistance_.setEnabled(enable);
+    	btnIntersection_.setEnabled(enable);
+    	if(enable){
+    		if(btnStateCollision_)
+    			btnCollision_.doClick();
+    		if(btnStateDistance_)
+    			btnDistance_.doClick();
+    		if(btnStateIntersection_)
+    			btnIntersection_.doClick();
+    	}
     }
 }
