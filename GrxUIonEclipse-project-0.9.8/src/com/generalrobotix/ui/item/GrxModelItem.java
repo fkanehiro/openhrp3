@@ -26,6 +26,7 @@ import javax.vecmath.*;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.w3c.dom.Element;
@@ -92,6 +93,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
      */
     public void notifyModified(){
     	//System.out.println(getName()+" : modification is notified");
+    	notifyObservers("Modified");
     	bModified_ = true;
     }
     
@@ -99,8 +101,60 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	return bModified_;
     }
     
+    public static final int MODIFIED_OK=0;
+    public static final int MODIFIED_NG=1;
+    public static final int MODIFIED_NOT=2;
+    public int checkModifiedModel(boolean reload){
+    	if(bModified_){
+	        String mes = MessageBundle.get("GrxProjectItem.dialog.message.changeModel.mes"); //$NON-NLS-1$
+	        mes = NLS.bind(mes, new String[]{getName()});
+	        
+	        MessageDialog msgDlg =
+	            new MessageDialog(GrxUIPerspectiveFactory.getCurrentShell(),
+	            		          MessageBundle.get("GrxProjectItem.dialog.message.changeModel.title"),
+	                              null,
+	                              mes,
+	                              MessageDialog.INFORMATION, 
+	                              new String[] {MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.save"), 
+	                                      MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.reverse"), 
+	                                      MessageBundle.get("GrxProjectItem.dialog.message.changeModel.btn.cancel")},
+	                              2);
+	        
+	        switch(msgDlg.open())
+	        {
+	        case 0:
+	        	if(reload){
+	        		if(!saveAndLoad())
+	        			return MODIFIED_NG;
+	        		else
+	        			return MODIFIED_OK;
+	        	}else{
+		            if(!_saveAs())
+		                return MODIFIED_NG;
+		            cancelModified();
+		            return MODIFIED_OK;
+	        	}
+	        case 1:
+	        	if(reload){
+	        		 if(!reload())
+	        			 return MODIFIED_NG;
+	        		 else
+	        			 return MODIFIED_OK;
+	        	}else{
+		            cancelModified();
+		            return MODIFIED_OK;
+	        	}
+	        case 2:
+	        default:
+	            return MODIFIED_NG;
+	        }
+	    }
+    	return MODIFIED_NOT;
+    }
+    
     public void cancelModified(){
     	bModified_ = false;
+    	notifyObservers("ClearModified");
     }
     
     public boolean saveAndLoad(){
@@ -594,8 +648,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 }
             }
             
-            bModified_ = false;
             manager_.setSelectedItem(this, true);
+            cancelModified();
 
         } catch(ModelLoaderException me){
             MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
