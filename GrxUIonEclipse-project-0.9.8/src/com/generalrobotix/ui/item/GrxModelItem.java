@@ -160,17 +160,24 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public boolean saveAndLoad(){
     	if(!_saveAs())
     		return false;
-    	File f = new File(getURL(true));
-    	load(f);
-    	restoreProperties();
-    	return true;
+    	reload();
+      	return true;
     }
 
     public boolean reload(){
     	File f = new File(getURL(true));
-    	load(f);
-    	restoreProperties();
+    	load0(f);
+    	sameUrlModelLoad();
     	return true;
+    }
+    
+    private void sameUrlModelLoad(){
+    	File f = new File(getURL(true));
+    	List<GrxModelItem> sameModels = getSameUrlModels();
+		Iterator<GrxModelItem> it = sameModels.iterator();
+		while(it.hasNext()){
+			it.next().load0(f);
+		}
     }
     
     /**
@@ -280,6 +287,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		        }else{
 					GrxVrmlExporter.export(GrxModelItem.this, url);
 				}
+		        if(bModified_)
+		        	reload();
+		        else
+		        	sameUrlModelLoad();
         	}
         });
 
@@ -288,6 +299,10 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         	public String getText() { return MessageBundle.get("GrxModelItem.menu.saveAs"); } //$NON-NLS-1$
         	public void run(){
         		_saveAs();
+        		if(bModified_)
+		        	reload();
+        		else
+        			sameUrlModelLoad();
         	}
         });
 
@@ -318,7 +333,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	/**
 	 * @brief save this model as a VRML file
 	 */
-	public boolean _saveAs(){
+	private boolean _saveAs(){
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
 		fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
 		String fPath = fdlg.open();
