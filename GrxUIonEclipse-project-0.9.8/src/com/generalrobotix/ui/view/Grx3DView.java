@@ -573,7 +573,7 @@ public class Grx3DView
                 }
             }
         });
-        
+
         btnDistance_.setToolTipText(MessageBundle.get("Grx3DView.text.showDistance")); //$NON-NLS-1$
         btnDistance_.setSelected(false);
         btnDistance_.addActionListener(new ActionListener() {
@@ -2239,10 +2239,11 @@ public class Grx3DView
     private boolean btnStateCollision_=true;
     private boolean btnStateDistance_=false;
     private boolean btnStateIntersection_=false;
+    private boolean modelModified_ = false;
     private void optionButtonEnable(boolean enable){
-    	if(btnCollision_.isEnabled() && enable )
+    	if(!modelModified_ && enable )
     		return;
-    	if(!btnCollision_.isEnabled() && !enable)
+    	if(modelModified_ && !enable)
     		return;
     	if(enable){
     		for(GrxModelItem model : currentModels_ ){
@@ -2260,6 +2261,7 @@ public class Grx3DView
     			btnDistance_.doClick();
     		if(btnIntersection_.isSelected())
     			btnIntersection_.doClick();
+    		modelModified_ = true;
     	}
     	btnCollision_.setEnabled(enable);
     	btnDistance_.setEnabled(enable);
@@ -2271,6 +2273,7 @@ public class Grx3DView
     			btnDistance_.doClick();
     		if(btnStateIntersection_)
     			btnIntersection_.doClick();
+    		modelModified_ = false;
     	}
     }
 }
