@@ -316,6 +316,8 @@ public class GrxPropertyView extends GrxBaseView {
             if(property.equals(clmName_[1])){
                 if (element instanceof Map.Entry) {
 	            	Map.Entry<String, String> _element = (Map.Entry)element;
+	            	if(_element.getKey().equals("url"))	
+	            		return false;
                     GrxBasePlugin.ValueEditType editType = currentPlugin_.GetValueEditType(_element.getKey());
                     if(editType instanceof ValueEditCombo){
 	            		CellEditor[] editors = new CellEditor[] { 
