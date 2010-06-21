@@ -895,7 +895,7 @@ public class Grx3DView
 				viewMode_ = VIEW;
 			}
     	}else if(currentModels_.contains(plugin)){
-    		if((String)arg[0]=="PropertyChange" && !((String)arg[1]).equals("url") ){
+    		if((String)arg[0]=="PropertyChange" && ((String)arg[1]).equals("name") ){
     			behaviorManager_.setItemChange();
     			showOption();
     		}
