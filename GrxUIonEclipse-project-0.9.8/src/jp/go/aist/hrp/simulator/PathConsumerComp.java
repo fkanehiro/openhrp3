@@ -21,6 +21,10 @@ public class PathConsumerComp implements ModuleInitProc {
 		return impl.m_PathBase._ptr();
 	}
 	
+	public String getInstanceName(){
+		return impl.getInstanceName();
+	}
+
     public void myModuleInit(Manager mgr) {
       Properties prop = new Properties(PathConsumer.component_conf);
       mgr.registerFactory(prop, new PathConsumer(), new PathConsumer());
