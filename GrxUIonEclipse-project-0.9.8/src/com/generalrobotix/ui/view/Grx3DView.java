@@ -74,6 +74,8 @@ import jp.go.aist.hrp.simulator.*;
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.util.AxisAngle4d;
+import com.generalrobotix.ui.GrxBasePlugin.ValueEditCombo;
+import com.generalrobotix.ui.GrxBasePlugin.ValueEditType;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -510,9 +512,13 @@ public class Grx3DView
 						public void actionPerformed(ActionEvent arg0) {
 							if(arg0.getSource()==menu0){
 								tgView_.getTransform(t3dViewHome_);
-								double[] eyeHomePosition = new double[16];
+								final double[] eyeHomePosition = new double[16];
 								t3dViewHome_.get(eyeHomePosition);
-								setDblAry("eyeHomePosition", eyeHomePosition, 5);
+								syncExec(new Runnable(){
+			                    	public void run(){
+			                    		setDblAry("eyeHomePosition", eyeHomePosition, 5); //$NON-NLS-1$ //$NON-NLS-2$
+			                    	}
+			                    });
 							}
 						}
 					});
@@ -521,9 +527,13 @@ public class Grx3DView
 						public void actionPerformed(ActionEvent arg0) {
 							if(arg0.getSource()==menu1){
 								_setViewHomePosition();
-								double[] eyeHomePosition = new double[16];
+								final double[] eyeHomePosition = new double[16];
 								t3dViewHome_.get(eyeHomePosition);
-								setDblAry("eyeHomePosition", eyeHomePosition, 5);
+								syncExec(new Runnable(){
+			                    	public void run(){
+			                    		setDblAry("eyeHomePosition", eyeHomePosition, 5); //$NON-NLS-1$ //$NON-NLS-2$
+			                    	}
+			                    });
 							}
 						}
 					});
@@ -543,12 +553,20 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnFloor_.isSelected()) {
                     btnFloor_.setToolTipText(MessageBundle.get("Grx3DView.text.hideZPlane")); //$NON-NLS-1$
-                    setProperty("showScale", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showScale", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+                    	}
+                    });
                     if (bgRoot_.indexOfChild(getRuler()) == -1) 
                         bgRoot_.addChild(getRuler());
                 } else {
                     btnFloor_.setToolTipText(MessageBundle.get("Grx3DView.text.showZPlane")); //$NON-NLS-1$
-                    setProperty("showScale", "false"); //$NON-NLS-1$ //$NON-NLS-2$
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showScale", "false"); //$NON-NLS-1$ //$NON-NLS-2$
+                    	}
+                    });
                     if (bgRoot_.indexOfChild(getRuler()) != -1)
                         getRuler().detach();
                 }
@@ -561,14 +579,22 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnCollision_.isSelected()){
                     btnCollision_.setToolTipText(MessageBundle.get("Grx3DView.text.hideCollision")); //$NON-NLS-1$
-                    setProperty("showCollision", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showCollision", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+                    	}
+                    });
                     if (viewMode_ == SIMULATION || ( viewMode_ == VIEW && currentState_ != null))
                     	_showCollision(currentState_.collisions);
                     else
                     	_showCollision(behaviorManager_.getCollision());
                 }else{
                     btnCollision_.setToolTipText(MessageBundle.get("Grx3DView.text.showCollision")); //$NON-NLS-1$
-                    setProperty("showCollision", "false"); //$NON-NLS-1$ //$NON-NLS-2$
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showCollision", "false"); //$NON-NLS-1$ //$NON-NLS-2$
+                    	}
+                    });
                     _showCollision(null);
                 }
             }
@@ -580,12 +606,20 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnDistance_.isSelected()){
                     btnDistance_.setToolTipText(MessageBundle.get("Grx3DView.text.hideDistance")); //$NON-NLS-1$
-                    setProperty("showDistance", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showDistance", "true");
+                    	}
+                    });
                     if (viewMode_ != SIMULATION)
                     	_showDistance(behaviorManager_.getDistance());
                 }else {
                     btnDistance_.setToolTipText(MessageBundle.get("Grx3DView.text.showDistance")); //$NON-NLS-1$
-                    setProperty("showDistance", "false"); //$NON-NLS-1$ //$NON-NLS-2$
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showDistance", "false");
+                    	}
+                    });
                     _showDistance(null);
                 }
             }
@@ -597,12 +631,20 @@ public class Grx3DView
             public void actionPerformed(ActionEvent arg0) {
                 if (btnIntersection_.isSelected()){
                     btnIntersection_.setToolTipText(MessageBundle.get("Grx3DView.text.nocheckIntersection")); //$NON-NLS-1$
-                    setProperty("showIntersection", "true"); //$NON-NLS-1$ //$NON-NLS-2$                    
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showIntersection", "true");
+                    	}
+                    });
                     if (viewMode_ != SIMULATION)
                     	_showIntersection(behaviorManager_.getIntersection());
                 }else{
                     btnIntersection_.setToolTipText(MessageBundle.get("Grx3DView.text.checkIntersection")); //$NON-NLS-1$
-                    setProperty("showIntersection", "false"); //$NON-NLS-1$ //$NON-NLS-2$
+                    syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showIntersection", "false");
+                    	}
+                    });
                     _showIntersection(null);
                 }
             }
@@ -616,9 +658,17 @@ public class Grx3DView
                 for (int i=0; i<currentModels_.size(); i++)
                     currentModels_.get(i).setVisibleCoM(b);
                 if(b)
-                	setProperty("showCoM", "true"); //$NON-NLS-1$ //$NON-NLS-2$    
+                	syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showCoM", "true");
+                    	}
+                    });
                 else
-                	setProperty("showCoM", "false"); //$NON-NLS-1$ //$NON-NLS-2$    
+                	syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showCoM", "false");
+                    	}
+                    });
             };
         });
         
@@ -630,9 +680,17 @@ public class Grx3DView
                 for (int i=0; i<currentModels_.size(); i++)
                     currentModels_.get(i).setVisibleCoMonFloor(b);
                 if(b)
-                	setProperty("showCoMonFloor", "true"); //$NON-NLS-1$ //$NON-NLS-2$    
+                	syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showCoMonFloor", "true");
+                    	}
+                    });
                 else
-                	setProperty("showCoMonFloor", "false"); //$NON-NLS-1$ //$NON-NLS-2$  
+                	syncExec(new Runnable(){
+                    	public void run(){
+                    		setProperty("showCoMonFloor", "false");
+                    	}
+                    }); 
             };
         });
         
@@ -765,13 +823,17 @@ public class Grx3DView
     	if(getStr("showIntersection")==null) propertyChanged("showIntersection", "false");
     	if(getStr("showCoM")==null) propertyChanged("showCoM", "false");
     	if(getStr("showCoMonFloor")==null) propertyChanged("showCoMonFloor", "false");
-    	if(getStr("view.mode")==null) propertyChanged("view.mode", Integer.toString(ViewToolBar.COMBO_SELECT_ROOM));
+    	if(getStr("view.mode")==null) propertyChanged("view.mode", ViewToolBar.COMBO_SELECT_ROOM);
         if(getStr("showActualState")==null) propertyChanged("showActualState", "true");   
         if(getStr("eyeHomePosition")==null){
-        	double[] eyeHomePosition = new double[16];
+        	final double[] eyeHomePosition = new double[16];
         	_setViewHomePosition();
         	t3dViewHome_.get(eyeHomePosition);
-        	setDblAry("eyeHomePosition", eyeHomePosition, 5);
+        	syncExec(new Runnable(){
+            	public void run(){
+            		setDblAry("eyeHomePosition", eyeHomePosition, 5); //$NON-NLS-1$ //$NON-NLS-2$
+            	}
+            });
         	propertyChanged("eyeHomePosiotion", getProperty("eyeHomePosition"));
         }
     }
@@ -1667,7 +1729,11 @@ public class Grx3DView
                 view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
                 behaviorManager_.setViewMode(BehaviorManager.ROOM_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.ROOM_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_ROOM); //$NON-NLS-1$
+                syncExec(new Runnable(){
+                	public void run(){
+                		setProperty("view.mode", ViewToolBar.COMBO_SELECT_ROOM); //$NON-NLS-1$
+                	}
+                });
             }
         });
 
@@ -1677,7 +1743,11 @@ public class Grx3DView
                 view_.setProjectionPolicy(View.PERSPECTIVE_PROJECTION);
                 behaviorManager_.setViewMode(BehaviorManager.WALK_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.WALK_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_WALK); //$NON-NLS-1$
+                syncExec(new Runnable(){
+                	public void run(){
+                		setProperty("view.mode", ViewToolBar.COMBO_SELECT_WALK); //$NON-NLS-1$
+                	}
+                });
             }
         });
 
@@ -1690,7 +1760,11 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_FRONT); //$NON-NLS-1$
+                syncExec(new Runnable(){
+                	public void run(){
+                		setProperty("view.mode", ViewToolBar.COMBO_SELECT_FRONT); //$NON-NLS-1$
+                	}
+                });
             }
         });
 
@@ -1703,7 +1777,11 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_BACK); //$NON-NLS-1$
+                syncExec(new Runnable(){
+                	public void run(){
+                		setProperty("view.mode", ViewToolBar.COMBO_SELECT_BACK); //$NON-NLS-1$
+                	}
+                });
             }
         });
 
@@ -1716,7 +1794,11 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_LEFT); //$NON-NLS-1$
+                syncExec(new Runnable(){
+                	public void run(){
+                		setProperty("view.mode", ViewToolBar.COMBO_SELECT_LEFT); //$NON-NLS-1$
+                	}
+                });
             }
         });
 
@@ -1729,7 +1811,11 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_RIGHT); //$NON-NLS-1$
+                syncExec(new Runnable(){
+                	public void run(){
+                		setProperty("view.mode", ViewToolBar.COMBO_SELECT_RIGHT); //$NON-NLS-1$
+                	}
+                });
             }
         });
 
@@ -1742,7 +1828,11 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_TOP); //$NON-NLS-1$
+                syncExec(new Runnable(){
+                	public void run(){
+                		setProperty("view.mode", ViewToolBar.COMBO_SELECT_TOP); //$NON-NLS-1$
+                	}
+                });
             }
         });
 
@@ -1755,7 +1845,11 @@ public class Grx3DView
                 setTransform(info_.getTransform());
                 behaviorManager_.setViewMode(BehaviorManager.PARALLEL_VIEW_MODE);
                 viewToolBar_.setMode(ViewToolBar.PARALLEL_MODE);
-                setInt("view.mode", ViewToolBar.COMBO_SELECT_BOTTOM); //$NON-NLS-1$
+                syncExec(new Runnable(){
+                	public void run(){
+                		setProperty("view.mode", ViewToolBar.COMBO_SELECT_BOTTOM); //$NON-NLS-1$
+                	}
+                });
             }
         });
         GUIAction.VIEW_ZOOM_MODE.addActionListener(new ActionListener() {
@@ -2148,7 +2242,7 @@ public class Grx3DView
     			if(xor(btnCoMonFloor_.isSelected(), value.equals("true")))
     				btnCoMonFloor_.doClick();
     		}else if (key.equals("view.mode")){ //$NON-NLS-1$	
-    			viewToolBar_.selectViewMode(Integer.parseInt(value.trim()));
+    			value = viewToolBar_.selectViewMode(value);
     		}else if (key.equals("showActualState")){ //$NON-NLS-1$	
     			showActualState_ = value.equals("true");
     		}else if (key.equals("eyeHomePosition")){ //$NON-NLS-1$	
@@ -2158,7 +2252,13 @@ public class Grx3DView
     		}else{
     			return false;
     		}
-    		setProperty(key, value);
+    		final String key_ = key;
+    		final String value_ = value;
+    		syncExec(new Runnable(){
+            	public void run(){
+            		setProperty(key_, value_);
+            	}
+            });
     		return true;
     	}
     }
@@ -2275,5 +2375,17 @@ public class Grx3DView
     			btnIntersection_.doClick();
     		modelModified_ = false;
     	}
+    }
+    
+    public ValueEditType GetValueEditType(String key) {
+        if(key.equals("showCoM") || key.equals("showCoMonFloor") || key.equals("showDistance") ||
+        		key.equals("showIntersection") || key.equals("showCollision") || key.equals("showActualState") ||
+        		key.equals("showScale"))
+        {
+            return new ValueEditCombo(booleanComboItem_);
+        }else if(key.equals("view.mode")){
+        	return new ValueEditCombo(ViewToolBar.VIEW_MODE);
+        }
+        return super.GetValueEditType(key);
     }
 }

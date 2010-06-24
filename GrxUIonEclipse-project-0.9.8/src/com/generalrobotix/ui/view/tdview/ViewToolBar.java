@@ -18,6 +18,8 @@ package com.generalrobotix.ui.view.tdview;
 import java.awt.*;
 import javax.swing.*;
 
+import org.eclipse.swt.widgets.Display;
+
 import com.generalrobotix.ui.util.IconProperties;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.Grx3DView;
@@ -40,14 +42,16 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
     public static final int WALK_MODE     = 2;
     public static final int PARALLEL_MODE = 3;
 
-    public static final int COMBO_SELECT_ROOM   = 0;
-    public static final int COMBO_SELECT_WALK   = 1;
-    public static final int COMBO_SELECT_FRONT  = 2;
-    public static final int COMBO_SELECT_BACK   = 3;
-    public static final int COMBO_SELECT_LEFT   = 4;
-    public static final int COMBO_SELECT_RIGHT  = 5;
-    public static final int COMBO_SELECT_TOP    = 6;
-    public static final int COMBO_SELECT_BOTTOM = 7;
+    public static final String COMBO_SELECT_ROOM   = "Room";
+    public static final String COMBO_SELECT_WALK   = "Walk";
+    public static final String COMBO_SELECT_FRONT  = "Front";
+    public static final String COMBO_SELECT_BACK   = "Back";
+    public static final String COMBO_SELECT_LEFT   = "Left";
+    public static final String COMBO_SELECT_RIGHT  = "Right";
+    public static final String COMBO_SELECT_TOP    = "Top";
+    public static final String COMBO_SELECT_BOTTOM = "Bottom";
+    public static final String[] VIEW_MODE = {COMBO_SELECT_ROOM, COMBO_SELECT_WALK, COMBO_SELECT_FRONT, COMBO_SELECT_BACK, COMBO_SELECT_LEFT,
+    	COMBO_SELECT_RIGHT, COMBO_SELECT_TOP, COMBO_SELECT_BOTTOM};
 
     public static final int PAN    = 1;
     public static final int ZOOM   = 2;
@@ -247,7 +251,13 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
 
     public void itemStateChanged(ItemEvent evt) {
         if (evt.getStateChange() == ItemEvent.SELECTED) {
-        	view_.setProperty("view.mode", Integer.toString(cmb_.getSelectedIndex()));
+        	Display display = Display.getDefault();
+            if (display != null && !display.isDisposed())
+            	display.syncExec(new Runnable(){
+            		public void run(){
+            			view_.setProperty("view.mode", VIEW_MODE[cmb_.getSelectedIndex()]);
+            		}
+            	});
             GUIAction action = (GUIAction)evt.getItem();
             action.fireAction();
         }
@@ -294,7 +304,20 @@ public class ViewToolBar extends JToolBar implements ItemListener, BehaviorHandl
     public boolean processTimerOperation(BehaviorInfo info) {
 		return true;}
     
-    public void selectViewMode(int mode){
-    	cmb_.setSelectedIndex(mode);
+    public String selectViewMode(String mode){
+    	for(int i=0; i<VIEW_MODE.length; i++)
+    		if(VIEW_MODE[i].equals(mode)){
+    			cmb_.setSelectedIndex(i);
+    			return mode;
+    		}
+    	// old version
+    	try{
+    		int i = Integer.valueOf(mode.trim());
+    		cmb_.setSelectedIndex(i);
+    		return VIEW_MODE[i];
+    	}catch(NumberFormatException e){
+    		
+    	}
+		return null;
     }
 }

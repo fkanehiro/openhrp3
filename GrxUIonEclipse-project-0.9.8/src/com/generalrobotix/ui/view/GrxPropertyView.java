@@ -109,17 +109,28 @@ public class GrxPropertyView extends GrxBaseView {
         textGridData.heightHint = 20;
         nameText_.setLayoutData(textGridData);
 		
+        final GrxPropertyView view = this;
         nameText_.addKeyListener(new KeyListener(){
             public void keyPressed(KeyEvent e) {}
             public void keyReleased(KeyEvent e) {
                 if (e.character == SWT.CR) {
                 	GrxBasePlugin p = null;
                 	if ((p = manager_.getView(nameText_.getText())) != null){
-                		_setInput(p);
+                		if(currentPlugin_ != p){
+                			if(currentPlugin_ != null)
+                				currentPlugin_.deleteObserver(view);
+                			_setInput(p);
+                			currentPlugin_ = p;
+                			currentPlugin_.addObserver(view);
+                		}
                 	}else if ((p = manager_.getItem(nameText_.getText())) != null){
                 		manager_.focusedItem((GrxBaseItem) p);
                 	}else{
                 		nameText_.setText(""); //$NON-NLS-1$
+                		if(currentPlugin_ != null)
+            				currentPlugin_.deleteObserver(view);
+            			_setInput(null);
+            			currentPlugin_ = null;
                 	}
                 }
             }
