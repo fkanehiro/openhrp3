@@ -8,6 +8,8 @@
  */
 package jp.go.aist.hrp.simulator;
 
+import com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem;
+
 import jp.go.aist.hrp.simulator.PathPlanner;
 import jp.go.aist.rtm.RTC.Manager;
 import jp.go.aist.rtm.RTC.ModuleInitProc;
@@ -25,6 +27,10 @@ public class PathConsumerComp implements ModuleInitProc {
 		return impl.getInstanceName();
 	}
 
+	public void setConnectedCallback(GrxPathPlanningAlgorithmItem item){
+		impl.setConnectedCallback(item);
+	}
+	
     public void myModuleInit(Manager mgr) {
       Properties prop = new Properties(PathConsumer.component_conf);
       mgr.registerFactory(prop, new PathConsumer(), new PathConsumer());
@@ -105,4 +111,6 @@ public class PathConsumerComp implements ModuleInitProc {
         // manager.runManager(true);
     }
 */
+
+	
 }

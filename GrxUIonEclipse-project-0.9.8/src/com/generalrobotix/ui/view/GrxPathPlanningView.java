@@ -902,7 +902,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 	
 	public void update(GrxBasePlugin plugin, Object... arg) {
 		if(ppaItem_==plugin){
-			if(((String)arg[0]).equals("update")){ //$NON-NLS-1$
+			if(((String)arg[0]).equals("connected")){ //$NON-NLS-1$
 				update();
 			}
 		}

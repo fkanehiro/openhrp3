@@ -11,6 +11,7 @@ package com.generalrobotix.ui.item;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
@@ -50,7 +51,7 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 	
 	// 経路計画コンポーネント
 	private PathPlanner planner_ = null;
-	PathConsumerComp ppcomp_ = null;
+	private static PathConsumerComp ppcomp_ = null;
 
 	public GrxPathPlanningAlgorithmItem(String name, GrxPluginManager manager) {
 		super(name, manager);
@@ -61,39 +62,20 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 		setProperty("carpetZ", "0.01");
 		setProperty("tolerance", "0.0");
 		
-		execPathPlannerConsumer();
+		_pathConsumer();
 
-		Thread thread_ = new Thread(){
-			public void run(){
-				while(true){
-					PathPlanner planner_old = planner_;
-					planner_ = _pathConsumer().getImpl();
-					if ((planner_old == null && planner_ != null) ||
-							(planner_old != null && planner_ == null)	){
-						syncExec(new Runnable(){
-							public void run(){
-								notifyObservers("update");
-							}
-						});
-						System.out.println("[PPView] update() is called."); //$NON-NLS-1$
-					}
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		};
-		thread_.start();
 	}
 
 	public boolean create() {
 		return true;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void delete(){
-		Manager.instance().deleteComponent(ppcomp_.getInstanceName());
+		Collection<GrxPathPlanningAlgorithmItem> col=(Collection<GrxPathPlanningAlgorithmItem>) manager_.getItemMap(GrxPathPlanningAlgorithmItem.class).values();
+		col.remove(this);
+		if(col.isEmpty())
+			Manager.instance().deleteComponent(ppcomp_.getInstanceName());
 		super.delete(); 
 	}
 	
@@ -145,6 +127,8 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 
     	// If you want to run the manager in non-blocking mode, do like this
     	manager.runManager(true);
+    	
+		ppcomp_.setConnectedCallback(this);
 	}
 	
 	/**
@@ -590,5 +574,17 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 		PointArrayHolder path = new PointArrayHolder();
 		planner_.getPath( path );
 		return path.value;
+	}
+
+	public void connectedCallback(boolean b) {
+		if(b)
+			planner_ = _pathConsumer().getImpl();
+		else
+			planner_ = null;
+		syncExec(new Runnable(){
+			public void run(){
+				notifyObservers("connected");
+			}
+		});
 	}
 }
