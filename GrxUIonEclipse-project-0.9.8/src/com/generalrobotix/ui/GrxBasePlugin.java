@@ -67,6 +67,8 @@ public class GrxBasePlugin extends GrxConfigBundle {
     protected final static String PROPERTY_TAG = "property"; //$NON-NLS-1$
     protected final static String INDENT4 = "    "; //$NON-NLS-1$
     
+    protected static final String[] booleanComboItem_ = new String[] {"true", "false" };
+    
     private ArrayList<GrxObserver> observers_ = new ArrayList<GrxObserver>();
 
     /**

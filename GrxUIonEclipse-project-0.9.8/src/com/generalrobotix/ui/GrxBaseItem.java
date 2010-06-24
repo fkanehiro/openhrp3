@@ -41,7 +41,6 @@ public class GrxBaseItem extends GrxBasePlugin {
 
     protected static final String[] modeComboItem_ = new String[] { "Torque", "HighGain" };
     protected static final String[] jointTypeComboItem_ = new String[] { "fixed", "rotate", "free", "slide" };
-    protected static final String[] booleanComboItem_ = new String[] {"true", "false" };
     protected static final String[] methodComboItem_ = new String[] { "EULER",  "RUNGE_KUTTA" };
 
 	/**
