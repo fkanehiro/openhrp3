@@ -9,13 +9,17 @@
 
 package jp.go.aist.hrp.simulator;
 
+import com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem;
+
+import RTC.ConnectorProfileHolder;
 import jp.go.aist.hrp.simulator.PathPlanner;
 import jp.go.aist.rtm.RTC.DataFlowComponentBase;
 import jp.go.aist.rtm.RTC.Manager;
+import jp.go.aist.rtm.RTC.port.ConnectionCallback;
 import jp.go.aist.rtm.RTC.port.CorbaConsumer;
 import jp.go.aist.rtm.RTC.port.CorbaPort;
 
-public class PathConsumerImpl extends DataFlowComponentBase {
+public class PathConsumerImpl extends DataFlowComponentBase{
 
 	public PathConsumerImpl(Manager manager) {  
         super(manager);
@@ -33,6 +37,16 @@ public class PathConsumerImpl extends DataFlowComponentBase {
         
         // Set service consumers to Ports
         m_PathPlannerPort.registerConsumer("Path", "PathPlanner", m_PathBase);
+        m_PathPlannerPort.setOnConnected( new ConnectionCallback() {
+			public void run(ConnectorProfileHolder arg0) {
+				item_.connectedCallback(true);
+			}
+        });
+        m_PathPlannerPort.setOnDisconnected( new ConnectionCallback() {
+			public void run(ConnectorProfileHolder arg0) {
+				item_.connectedCallback(false);
+			}
+        });
         
         // Set CORBA Service Ports
         registerPort(m_PathPlannerPort);
@@ -148,8 +162,10 @@ public class PathConsumerImpl extends DataFlowComponentBase {
     // <rtc-template block="consumer_declare">
     protected CorbaConsumer<PathPlanner> m_PathBase = new CorbaConsumer<PathPlanner>(PathPlanner.class);
     protected PathPlanner m_Path;
-    
-    // </rtc-template>
+  
+    private GrxPathPlanningAlgorithmItem item_ = null;
 
-
+	public void setConnectedCallback(GrxPathPlanningAlgorithmItem item) {
+		item_ = item;
+	}
 }
