@@ -63,7 +63,8 @@ public class TrendGraphModel
     private double fixedMarkerPos_; // 固定マーカ位置
 
     private int mode_;  // モード
-    
+
+    private int prevLogSize_ = -1;    
     
   //  private SimulationWorld world_;
     /**
@@ -478,6 +479,19 @@ public class TrendGraphModel
         return totalTime_;
     }
 
+    public void clearDataSeries() {
+        if(dataModelArray_ == null)
+            return;
+
+        for (int i = 0; i < dataModelArray_.length; i++){
+            double[] data = dataModelArray_[i].dataSeries.getData();
+            for(int j = 0; j < data.length; j++){
+                data[j] = Double.NaN;
+            }
+        }
+        prevLogSize_ = -1;
+    }
+
     /**
      * 現在時刻設定
      *
@@ -522,6 +536,16 @@ public class TrendGraphModel
             return;
         }
         if (diff > 0) {
+            // シミュレーション時のログ補正を行う。
+            int logSize = world_.getLogSize() - 1; 
+            if(prevLogSize_ < logSize)
+            {
+                int yet = (int)(baseCount_ + sampleCount_ - prevLogSize_);
+                if(diff < yet)
+                    diff = yet;
+            }
+            prevLogSize_ = logSize;
+            
             if (diff >= sampleCount_) {
                 //System.out.println("getData(): patern 1 in");
                 _getData(baseCount_, 0, sampleCount_, dataModelArray_);
@@ -545,54 +569,6 @@ public class TrendGraphModel
             }
         }
     }
-
-    public void setDataTermTime(long dataTermTime) {
-        long prevDataTermCount = dataTermCount_;
-        dataTermCount_ = dataTermTime / stepTimeCount_;
-        if (dataModelArray_ == null) {
-            return;
-        }
-        if (prevDataTermCount < baseCount_) {
-            //System.out.println("case1");
-            if (dataTermCount_ < baseCount_ + sampleCount_) {
-                _getData(
-                        baseCount_,
-                        0,
-                        (int)(dataTermCount_ - baseCount_), 
-                        dataModelArray_
-                );
-            } else {
-                _getData(
-                    baseCount_,
-                    0,
-                    sampleCount_,
-                    dataModelArray_
-                );
-                dataTermCount_ = baseCount_ + sampleCount_;
-            }
-        } else if (prevDataTermCount < baseCount_ + sampleCount_) {
-            //System.out.println("case2");
-            if (dataTermCount_ < baseCount_ + sampleCount_) {
-                _getData(
-                    baseCount_,
-                    (int)(prevDataTermCount - baseCount_),
-                    (int)(dataTermCount_ - prevDataTermCount),
-                    dataModelArray_
-                );
-            } else {
-                _getData(
-                    baseCount_,
-                    (int)(prevDataTermCount - baseCount_),
-                    (int)(baseCount_ + sampleCount_ - prevDataTermCount),
-                    dataModelArray_
-                );
-                dataTermCount_ = baseCount_ + sampleCount_;
-            }
-        } else {
-            //System.out.println("case3: prevDataTermCount=" + prevDataTermCount + " baseCount=" + baseCount_ + " sampleCount=" + sampleCount_);
-        }
-    }
-
 
     /**
      * 現在時刻を1ステップ移動

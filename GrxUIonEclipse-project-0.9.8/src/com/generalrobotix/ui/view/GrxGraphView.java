@@ -233,6 +233,15 @@ public class GrxGraphView extends GrxBaseView {
 		composite_.redraw(composite_.getLocation().x,composite_.getLocation().y,composite_.getSize().x,composite_.getSize().y,true);	
 	}
 
+    public void update(GrxBasePlugin plugin, Object... arg) {
+        if(currentWorld_==plugin) {
+            if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
+                graphManager_.clearDataSeries();
+                graphManager_.reread();
+            }
+        }
+    }
+    
     public void updatePosition(GrxBasePlugin plugin, Integer arg_pos){
         if(currentWorld_!=plugin) return;
 
@@ -245,7 +254,6 @@ public class GrxGraphView extends GrxBaseView {
 	private void updateGraph(WorldStateEx state){
 		Time time_ = new Time();
 		time_.set(state.time);
-		graphManager_.simulationTimeChanged(time_);
 		graphManager_.worldTimeChanged(time_);
 		
 		double ti = time_.getDouble() + graphManager_.getTimeRange();

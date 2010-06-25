@@ -741,6 +741,8 @@ public class LogManager {
             return;
         }
 
+        //GrxDebugUtil.println(String.format("getData %d, %d, %d", origin, offset, count));
+
         // 読み出し準備
         int numItems = dataModelArray.length; // アイテム数取得
         ArrayList<String> objList = new ArrayList<String>(); // オブジェクト名のリスト
