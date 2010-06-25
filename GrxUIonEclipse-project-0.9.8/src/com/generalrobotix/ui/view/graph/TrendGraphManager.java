@@ -27,8 +27,7 @@ public class TrendGraphManager {
     //  インスタンス変数
     public TrendGraphModel trendGraphModel_;
     private TrendGraph[] trendGraph_;
-   //private int mode_;
-    private long totalTime_;
+    //private int mode_;
 
     //--------------------------------------------------------------------
     //  コンストラクタ
@@ -89,10 +88,6 @@ public class TrendGraphManager {
         //if (timeRange > (double)totalTime / TrendGraphModel.TIME_SCALE) {
         //    trendGraph_[0].setTimeRange((double)totalTime / TrendGraphModel.TIME_SCALE);
         //}
-    }
-
-    public void setCurrentTime(long currentTime) {
-        trendGraphModel_.setCurrentTime(currentTime);
     }
 
     public void setStepTime(long stepTime) {
@@ -172,7 +167,7 @@ public class TrendGraphManager {
   //      }
 
         //trendGraphModel_.setTotalTime(totalTime_);
-        trendGraphModel_.setDataTermTime(totalTime_);
+        //trendGraphModel_.setDataTermTime(time.getUtime());
         trendGraphModel_.setCurrentTime(time.getUtime());
 
         for (int i = 0; i < trendGraph_.length; i ++) {
@@ -180,18 +175,10 @@ public class TrendGraphManager {
         }
     }
 
-    public void simulationTimeChanged(Time time) {
-        totalTime_ = time.getUtime();
-/*
-        setTotalTime(time.getUtime());
-
-        for (int i = 0; i < trendGraph_.length; i ++) {
-            trendGraph_[i].repaint();
-        }
-*/
-    }
-    
     public void setWorldState(GrxWorldStateItem world) {
     	trendGraphModel_.setWorldState(world);
+    }
+    public void clearDataSeries(){
+        trendGraphModel_.clearDataSeries();
     }
 }
