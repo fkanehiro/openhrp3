@@ -660,8 +660,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                 if (monitor.isCanceled())
                     throw new InterruptedException();
             	String entry = ((ZipEntry)e.nextElement()).getName();
-            	if (entry.indexOf(LogManager.COLLISION_LOG_NAME) > 0 ||
-            	    entry.indexOf(LogManager.COLLISION_LOG_DAT_NAME) > 0) {
+            	if (entry.indexOf(LogManager.COLLISION_LOG_NAME) >= 0 ||
+            	    entry.indexOf(LogManager.COLLISION_LOG_DAT_NAME) >= 0) {
             	    continue;
                 }
                 
