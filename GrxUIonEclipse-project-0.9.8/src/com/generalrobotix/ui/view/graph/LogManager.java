@@ -545,7 +545,8 @@ public class LogManager {
 
             byte[] buffer = new byte[1024 * 1024];
 
-            ZipEntry zipEntry = new ZipEntry(file.getPath());
+            String zipPath = _getRelativePath(file.getPath());
+            ZipEntry zipEntry = new ZipEntry(zipPath);
             zip.putNextEntry(zipEntry);
 
             long leftSize = file.length();
@@ -556,6 +557,22 @@ public class LogManager {
             }
             fileInStream.close();
         }
+    }
+
+    private String _getRelativePath(String path)
+    {
+        if (tmpdir != null) {
+            String abs_path = (new File(path)).getAbsolutePath();
+            String tmp_abs_path = (new File(tmpdir)).getAbsolutePath();
+            if(abs_path.startsWith(tmp_abs_path)){
+                String ret = abs_path.substring(tmp_abs_path.length());
+                if(ret.startsWith(File.separator)){
+                    ret = ret.substring(File.separator.length());
+                }
+                return(ret);
+            }
+        }
+        return path;
     }
     
     public void load(String fileName, String prjFile) throws FileOpenFailException, LogFileFormatException {
@@ -576,6 +593,10 @@ public class LogManager {
             byte[] buffer = new byte[1024];
             for (int i = 0; i < entrySize; i++) {
                 String entry = zip.getNextEntry().getName();
+                if(!(new File(entry)).isAbsolute()){
+                    entry = tmpdir + File.separator + entry;
+                }
+
                 FileOutputStream out = new FileOutputStream(entry);
                 while (zip.available() == 1) {
                     int readSize = zip.read(buffer, 0, 1024);
