@@ -19,6 +19,7 @@ package com.generalrobotix.ui.item;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
@@ -52,9 +53,6 @@ import org.omg.CosNaming.NamingContext;
 
 import com.generalrobotix.ui.GrxBaseItem;
 import com.generalrobotix.ui.GrxPluginManager;
-import com.generalrobotix.ui.GrxBasePlugin.ValueEditCombo;
-import com.generalrobotix.ui.GrxBasePlugin.ValueEditType;
-import com.generalrobotix.ui.actions.StartSimulate;
 import com.generalrobotix.ui.depends.rtm.SwitchDependVerClockGenerator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
@@ -80,7 +78,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 	private WorldStateHolder stateH_ = new WorldStateHolder();
 	private SensorStateHolder cStateH_ = new SensorStateHolder();
 	private List<String> robotEntry_ = new ArrayList<String>();
-	private ClockGenerator_impl clockGenerator_ = new ClockGenerator_impl();
+	private static ClockGenerator_impl clockGenerator_ = null;
 	    
 	private boolean isInteractive_ = true;
 	private boolean isExecuting_ = false;
@@ -543,17 +541,20 @@ public class GrxSimulationItem extends GrxBaseItem {
 	}
 
 	public boolean registerCORBA() {
-		NamingContext rootnc = GrxCorbaUtil.getNamingContext();
-		ClockGenerator cg = clockGenerator_._this(GrxCorbaUtil.getORB());
-		NameComponent[] path = {new NameComponent("ClockGenerator", "")};
-	           
-		try {
-			rootnc.rebind(path, cg);
-			GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
-		} catch (Exception ex) {
-			GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
-		}
-		return true;
+		if(clockGenerator_ == null){
+			clockGenerator_ = new ClockGenerator_impl();
+			NamingContext rootnc = GrxCorbaUtil.getNamingContext();
+			ClockGenerator cg = clockGenerator_._this(GrxCorbaUtil.getORB());
+			NameComponent[] path = {new NameComponent("ClockGenerator", "")};	    
+			try {
+				rootnc.rebind(path, cg);
+				GrxDebugUtil.println("OpenHRPView : ClockGenerator is successfully registered to NamingService");
+			} catch (Exception ex) {
+				GrxDebugUtil.println("OpenHRPView : failed to bind ClockGenerator to NamingService");
+			}
+			return true;
+		}else
+			return false;
 	}
 	    
 	public void unregisterCORBA() {
@@ -565,6 +566,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 		}catch(Exception ex){
 			GrxDebugUtil.println("OpenHRPView : failed to unbind ClockGenerator to localhost NameService");
 		}
+		clockGenerator_ = null;
 	}
 	    
 	public void shutdown() {
@@ -576,7 +578,10 @@ public class GrxSimulationItem extends GrxBaseItem {
 			}
 			currentDynamics_ = null;
 		}
-		unregisterCORBA();
+		Collection<GrxSimulationItem> col=(Collection<GrxSimulationItem>) manager_.getItemMap(GrxSimulationItem.class).values();
+		col.remove(this);
+		if(col.isEmpty())
+			unregisterCORBA();
 	}
 	
 	public void delete() {
