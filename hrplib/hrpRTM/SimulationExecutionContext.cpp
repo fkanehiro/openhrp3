@@ -5,9 +5,12 @@ namespace RTC
 {
   ReturnCode_t SimulationExecutionContext::start() throw (CORBA::SystemException)
   {
+
     ReturnCode_t ret = OpenHRPExecutionContext::start();
     if (ret == RTC_OK){
-      m_cg->subscribe(this->_this(), 1.0/get_rate());
+        OpenRTM::ExtTrigExecutionContextService_var extTrigExecContext =
+                    		OpenRTM::ExtTrigExecutionContextService::_narrow(this->getObjRef());
+        m_cg->subscribe(extTrigExecContext, 1.0/get_rate());
     }
     return ret;
   }
@@ -17,7 +20,9 @@ namespace RTC
   {
     if (!m_running) return RTC::PRECONDITION_NOT_MET;
 
-    m_cg->unsubscribe(this->_this());
+     OpenRTM::ExtTrigExecutionContextService_var extTrigExecContext =
+                    		OpenRTM::ExtTrigExecutionContextService::_narrow(this->getObjRef());
+    m_cg->unsubscribe(extTrigExecContext);
 
     // stop thread
     m_running = false;
