@@ -1,0 +1,82 @@
+#VRML V2.0 utf8
+
+Transform {
+	translation 0 0 0
+	rotation 1 0 0 0
+	children [
+ 		
+ 		## -- センサー窓部 -- ##
+		Transform {
+			translation 0 0 0
+			rotation 1 0 0 1.570796
+			children [
+				Shape {
+					geometry  Cylinder{
+						height 0.017
+						radius 0.019
+					}
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.15 0.1 0.1
+						}
+					}
+				}
+			]
+		}
+
+ 		## -- センサー窓下部 -- ##
+		Transform {
+			translation 0 0 -0.0145
+			rotation 1 0 0 1.570796
+			children [
+				Shape {
+					geometry  Cylinder{
+						height 0.012
+						radius 0.019
+					}
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.15 0.12 0.1
+						}
+					}
+				}
+			]
+		}
+		
+ 		## -- センサー本体 -- ##
+		Transform {
+			translation 0 0 -0.041
+			children [
+				Shape {
+					geometry Box {
+						size 0.05 0.05 0.041
+					}
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.7 0.7 0.7
+						}
+					}
+				}
+			]
+		}
+		
+	]	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

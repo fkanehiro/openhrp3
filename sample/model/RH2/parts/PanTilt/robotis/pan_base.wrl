@@ -1,0 +1,77 @@
+#VRML V2.0 utf8
+
+Transform {
+	translation 0 0 0
+	rotation 1 0 0 0
+	children [
+		
+		## -- サーボ -- ##
+		Transform {
+			translation 0.0 0.0 0.0
+			children [
+				Inline {
+					url "dx117.wrl"
+				}
+			]
+		}
+		
+		## -- サーボベース横 -- ##
+		Transform {
+			#translation -0.0283 0 -0.0068
+			#translation -0.0383 0 -0.0068 # 20mm+
+			translation -0.0288 0 -0.0068 # 10mm+
+			children [
+				Shape {
+					geometry Box {
+						#size 0.083 0.07 0.003 #元	
+						#size 0.103 0.07 0.003 # 20mm+
+						size 0.093 0.07 0.003 # 10mm+
+					}
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.7 0.7 0.7
+						}
+					}
+				}
+			]
+		}
+		
+ 		## -- サーボベース縦 -- ##
+		Transform {
+			#translation -0.0683 0.0 0.025
+			translation -0.0783 0.0 0.025 # 10mm+
+			#translation -0.0883 0.0 0.025 # 20mm+
+			children [
+				Shape {
+					geometry Box {
+						size 0.003 0.07 0.06
+					}
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.7 0.7 0.7
+						}
+					}
+				}
+			]
+		}	
+		
+	]	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

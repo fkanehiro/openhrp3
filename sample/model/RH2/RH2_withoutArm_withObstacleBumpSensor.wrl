@@ -1,0 +1,709 @@
+#VRML V2.0 utf8
+
+PROTO Joint [
+  exposedField     SFVec3f      center              0 0 0
+  exposedField     MFNode       children            []
+  exposedField     MFFloat      llimit              []
+  exposedField     MFFloat      lvlimit             []
+  exposedField     SFRotation   limitOrientation    0 0 1 0
+  exposedField     SFString     name                ""
+  exposedField     SFRotation   rotation            0 0 1 0
+  exposedField     SFVec3f      scale               1 1 1
+  exposedField     SFRotation   scaleOrientation    0 0 1 0
+  exposedField     MFFloat      stiffness           [ 0 0 0 ]
+  exposedField     SFVec3f      translation         0 0 0
+  exposedField     MFFloat      ulimit              []
+  exposedField     MFFloat      uvlimit             []
+  exposedField     SFString     jointType           ""
+  exposedField     SFInt32      jointId             -1
+#  exposedField     SFString     jointAxis           "Z"
+  exposedField     SFVec3f      jointAxis           0 0 1
+
+  exposedField     SFFloat      gearRatio           1
+  exposedField     SFFloat      rotorInertia        0
+  exposedField     SFFloat      rotorResistor       0
+  exposedField     SFFloat      torqueConst         1
+  exposedField     SFFloat      encoderPulse        1
+]
+{
+  Transform {
+    center           IS center
+    children         IS children
+    rotation         IS rotation
+    scale            IS scale
+    scaleOrientation IS scaleOrientation
+    translation      IS translation
+  }
+}
+
+PROTO Segment [
+    field           SFVec3f     bboxCenter        0 0 0
+    field           SFVec3f     bboxSize          -1 -1 -1
+    exposedField    SFVec3f     centerOfMass      0 0 0
+    exposedField    MFNode      children          [ ]
+    exposedField    SFNode      coord             NULL
+    exposedField    MFNode      displacers        [ ]
+    exposedField    SFFloat     mass              0
+    exposedField    MFFloat     momentsOfInertia  [ 0 0 0 0 0 0 0 0 0 ]
+    exposedField    SFString    name              ""
+    eventIn         MFNode      addChildren
+    eventIn         MFNode      removeChildren
+]
+{
+    Group {
+        addChildren    IS addChildren
+        bboxCenter     IS bboxCenter
+        bboxSize       IS bboxSize
+        children       IS children
+        removeChildren IS removeChildren
+    }
+}
+
+PROTO Humanoid [
+    field           SFVec3f    bboxCenter            0 0 0
+    field           SFVec3f    bboxSize              -1 -1 -1
+    exposedField    SFVec3f    center                0 0 0
+    exposedField    MFNode     humanoidBody          [ ]
+    exposedField    MFString   info                  [ ]
+    exposedField    MFNode     joints                [ ]
+    exposedField    SFString   name                  ""
+    exposedField    SFRotation rotation              0 0 1 0
+    exposedField    SFVec3f    scale                 1 1 1
+    exposedField    SFRotation scaleOrientation      0 0 1 0
+    exposedField    MFNode     segments              [ ]
+    exposedField    MFNode     sites                 [ ]
+    exposedField    SFVec3f    translation           0 0 0
+    exposedField    SFString   version               "1.1"
+    exposedField    MFNode     viewpoints            [ ]
+]
+{
+  Transform {
+    bboxCenter       IS bboxCenter
+    bboxSize         IS bboxSize
+    center           IS center
+    rotation         IS rotation
+    scale            IS scale
+    scaleOrientation IS scaleOrientation
+    translation      IS translation
+    children [
+      Group {
+        children IS viewpoints
+      }
+      Group {
+        children IS humanoidBody
+      }
+    ]
+  }
+}
+
+PROTO VisionSensor [
+  exposedField SFVec3f    translation       0 0 0
+  exposedField SFRotation rotation          0 0 1 0
+  exposedField MFNode     children          [ ]
+  exposedField SFFloat    fieldOfView       0.785398
+  exposedField SFString   name              ""
+  exposedField SFFloat    frontClipDistance 0.01
+  exposedField SFFloat    backClipDistance  10.0
+  exposedField SFString   type              "NONE"
+  exposedField SFInt32    sensorId          -1
+  exposedField SFInt32    width             320
+  exposedField SFInt32    height            240
+  exposedField SFFloat    frameRate         30    # add by takekawa 081210
+]
+{
+  Transform {
+    rotation         IS rotation
+    translation      IS translation
+    children         IS children
+  }
+}
+
+PROTO RangeSensor [
+  exposedField SFVec3f    translation       0 0 0
+  exposedField SFRotation rotation          0 0 1 0
+  exposedField MFNode     children          [ ]
+  exposedField SFInt32    sensorId          -1
+  exposedField SFFloat    scanAngle         3.14159 #[rad]
+  exposedField SFFloat    scanStep          0.1     #[rad]
+  exposedField SFFloat    scanRate          10      #[Hz]
+  exposedField SFFloat    maxDistance	    10
+]
+{
+  Transform {
+    rotation         IS rotation
+    translation      IS translation
+    children         IS children
+  }
+}
+
+
+PROTO ForceSensor [  
+  exposedField SFVec3f    maxForce    -1 -1 -1
+  exposedField SFVec3f    maxTorque   -1 -1 -1
+  exposedField SFVec3f    translation 0 0 0
+  exposedField SFRotation rotation    0 0 1 0
+  exposedField SFInt32    sensorId    -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO Gyro [
+  exposedField SFVec3f    maxAngularVelocity -1 -1 -1
+  exposedField SFVec3f    translation        0 0 0
+  exposedField SFRotation rotation           0 0 1 0
+  exposedField SFInt32    sensorId           -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO AccelerationSensor [
+  exposedField SFVec3f    maxAcceleration -1 -1 -1
+  exposedField SFVec3f    translation     0 0 0
+  exposedField SFRotation rotation        0 0 1 0
+  exposedField SFInt32    sensorId        -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO PressureSensor [
+  exposedField SFFloat    maxPressure -1
+  exposedField SFVec3f    translation 0 0 0
+  exposedField SFRotation rotation    0 0 1 0
+  exposedField SFInt32    sensorId    -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO PhotoInterrupter [
+  exposedField SFVec3f transmitter 0 0 0
+  exposedField SFVec3f receiver    0 0 0
+  exposedField SFInt32 sensorId    -1
+]
+{
+  Transform{
+    children [
+      Transform{
+        translation IS transmitter
+      }
+      Transform{
+        translation IS receiver
+      }
+    ]
+  }
+}
+
+PROTO CylinderSensorZ [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 1 0 0 1.5708
+    children [
+      DEF SensorY CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisY Transform{
+        children [
+          Transform{
+            rotation 1 0 0 -1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorY.rotation_changed TO AxisY.set_rotation
+}
+
+PROTO CylinderSensorY [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 0 1 0 1.5708
+    children [
+      DEF SensorX CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisX Transform{
+        children [
+          Transform{
+            rotation 0 1 0 -1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorX.rotation_changed TO AxisX.set_rotation
+}
+
+PROTO CylinderSensorX [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 0 0 1 -1.5708
+    children [
+      DEF SensorZ CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisZ Transform{
+        children [
+          Transform{
+            rotation 0 0 1 1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorZ.rotation_changed TO AxisZ.set_rotation
+}
+
+NavigationInfo {
+  avatarSize    0.5
+  headlight     TRUE
+  type  ["EXAMINE", "ANY"]
+}
+
+Background {
+  skyColor 0.4 0.6 0.4
+}
+
+Viewpoint {
+  position    3 0 0.835
+  orientation 0.5770 0.5775 0.5775 2.0935
+}
+
+
+
+DEF HRP1 Humanoid {
+  humanoidBody [
+    DEF BODY Joint {
+      jointType "free"             # nakajima modify
+      translation 0.0 0.0 0.1     # RH2 駆動輪の中心の高さが地面から0.1m(0.3+0.7)
+      children [
+
+## BODY ##
+
+      DEF BODY_LINK Segment {
+	      mass 32.015703                      # (RH2)
+	      centerOfMass -0.140572 -0.002178 0.025326  # (RH2) 
+#	      momentsOfInertia [0.518323 -0.003263 0.026266 -0.003263 0.728823 0.004207 0.026266 0.004207 0.913941]  #[RH2]重心で計算して、出力座標系と整列
+	      momentsOfInertia [0.539009 0.006538 -0.087712 0.006538 1.382005 0.002441 -0.087712 0.002441 1.546739]  #[RH2]原点で計算して、出力座標系と整列
+          children [
+			Inline {
+				url "parts/body/body.wrl"
+			}
+            #-----------------------------------------#
+          ]
+        }
+
+## LEFT WHEEL ##
+
+        DEF MAIN_WHEEL1 Joint {
+          jointType "rotate"                
+		  jointAxis 0 1 0               # nakajima modify
+          jointId 0                      # nakajima modify
+		  translation 0.0 0.2205 0.0  # [RH2]
+          children [
+            DEF MAIN_WHEEL1_LINK Segment {
+	      	  mass 1.559333        # (RH2)
+		      centerOfMass 0 0.005855 0  # [RH2] 
+#              momentsOfInertia [0.004435 0 0 0 0.008466 0 0 0 0.004435] #[RH2]重心で計算して、出力座標系と整列
+              momentsOfInertia [0.004489 0 0 0 0.008466 0 0 0 0.004489]  #[RH2]重心で計算して、出力座標系と整列
+              children [
+                Inline {
+                  url "parts/body/wheel.wrl"
+                }
+              ]
+            }
+	  	  ]
+		} # end of MAIN_WHEEL1
+
+## RIGHT WHEEL ##
+
+        DEF MAIN_WHEEL2 Joint {
+          jointType "rotate"           
+		  jointAxis 0 -1 0               # nakajima modify  #RH2 左右正の方向が異なるので合わせるため。
+          jointId 1                      # nakajima modify
+		  translation 0.0 -0.2205 0.0  # [RH2]
+          rotation 0 0 1 3.14159265   # [RH2] タイヤの向きを反転させるので、180度回転
+          children [
+            DEF MAIN_WHEEL2_LINK Segment {
+	      	  mass 1.559333        # (RH2)
+		      centerOfMass 0 0.005855 0  # [RH2] 
+#              momentsOfInertia [0.004435 0 0 0 0.008466 0 0 0 0.004435] #[RH2]重心で計算して、出力座標系と整列
+              momentsOfInertia [0.004489 0 0 0 0.008466 0 0 0 0.004489]  #[RH2]重心で計算して、出力座標系と整列
+              children [
+                Inline {
+                  url "parts/body/wheel.wrl"
+                }
+              ]
+            }
+	  	  ]
+		} # end of MAIN_WHEEL2
+
+## LEFT CASTER ##
+
+        DEF CASTER1 Joint {
+          jointType "rotate"
+		  jointAxis 0 0 1               # nakajima modify
+          jointId 2
+          translation  -0.29 0.213 0.044  #RH2 正しい位置
+          children [
+            DEF CASTER1_LINK Segment {
+	      	  mass 0.122573        # (RH2)
+		      centerOfMass -0.004791 -0.000016 -0.030301  # [RH2] 
+#              momentsOfInertia [0.0001 0.0 0.000024 0.0 0.000106 0.0 0.000024 0.0 0.00004] #[RH2]重心で計算して、出力座標系と整列
+              momentsOfInertia [0.000213 0.0 0.000042 0.0 0.000221 0.0 0.000042 0.0 0.000043]  #[RH2]重心で計算して、出力座標系と整列
+              children [
+                Inline {
+                  url "parts/body/casterFrame.wrl"
+                }
+              ]
+            }
+            DEF CASTER_WHEEL1 Joint {
+              jointType "rotate"
+			  jointAxis 0 1 0               # nakajima modify
+              jointId 3
+              translation  -0.031 0.0 -0.094  #RH2 正しい位置
+              children [
+                DEF CASTER_WHEEL1_LINK Segment {
+	      		  mass 0.191348                         # (RH2)
+		      	  centerOfMass 0 0 0  # nakajima add 
+                  momentsOfInertia [ 0.000126 0 0 0 0.000233 0 0 0 0.000126 ]    #nakajima modify
+                  children [
+                    Inline {
+                      url "parts/body/casterWheel.wrl"
+                    }
+                  ]
+                }
+              ]
+            } # end of joint CASTER_WHEEL1
+          ]
+        } # end of joint CASTER1
+
+## RIGHT CASTER ##
+
+        DEF CASTER2 Joint {
+          jointType "rotate"
+		  jointAxis 0 0 1               # nakajima modify
+          jointId 4
+          translation  -0.29 -0.213 0.044  #RH2 正しい位置
+          children [
+            DEF CASTER2_LINK Segment {
+	      	  mass 0.122573        # (RH2)
+		      centerOfMass -0.004791 -0.000016 -0.030301  # [RH2] 
+#              momentsOfInertia [0.0001 0.0 0.000024 0.0 0.000106 0.0 0.000024 0.0 0.00004] #[RH2]重心で計算して、出力座標系と整列
+              momentsOfInertia [0.000213 0.0 0.000042 0.0 0.000221 0.0 0.000042 0.0 0.000043]  #[RH2]重心で計算して、出力座標系と整列
+              children [
+                Inline {
+                  url "parts/body/casterFrame.wrl"
+                }
+              ]
+            }
+            DEF CASTER_WHEEL2 Joint {
+              jointType "rotate"
+			  jointAxis 0 1 0               # nakajima modify
+              jointId 5
+              translation  -0.031 0.0 -0.094  #RH2 正しい位置
+              rotation 0 0 1 0
+              children [
+                DEF CASTER_WHEEL2_LINK Segment {
+	      		  mass 0.191348                         # (RH2)
+		      	  centerOfMass 0 0 0  # nakajima add 
+                  momentsOfInertia [ 0.000126 0 0 0 0.000233 0 0 0 0.000126 ]    #nakajima modify
+                  children [
+                    Inline {
+                      url "parts/body/casterWheel.wrl"
+                    }
+                  ]
+                }
+              ]
+            } # end of joint CASTER_WHEEL2
+          ]
+        } # end of joint CASTER2
+
+
+
+# ------------------------- Obstacle Sensor ------------------------- #
+# MEMO 床面からセンサーまでの高さ : 0.38m
+# MEMO ホイール軸からセンサーまでの距離 : 0.055m
+
+		############# OBSTACLE_SENSOR_BASE ##############
+		DEF OBSTACLE_SENSOR_BASE Joint {
+			jointType "fixed"
+			jointAxis 0 0 0
+			jointId 6
+			translation 0.055 0 0.145
+			rotation 1 0 0 0
+			children [
+				DEF OBSTACLE_SENSOR_BASE_LINK Segment {
+				  mass 0.1
+				  centerOfMass 0.0 0.0 0.0
+				  momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+				  children [
+				    Inline {
+				      url "parts/sensorStand/TopUrgStand.wrl"
+				    }
+				  ]
+				}
+
+		############# OBSTACLE_SENSOR ##############
+		DEF OBSTACLE_SENSOR Joint {
+			jointType "fixed"
+			jointAxis 0 0 0
+			jointId 7
+			translation   0.0 0.0 0.08
+			rotation 1 0 0 0
+			rotation      0 0 -1 1.5707963221
+			children [
+				DEF OBSTACLE_SENSOR_LINK Segment {
+					mass 0.005
+					centerOfMass 0.0 0.0 0.0
+					momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+					children [
+						Inline {
+							url "parts/sensor/TOP-URG_Sensor.wrl"
+						}
+					]
+				}
+				
+		############# RangeSensor ##############
+		DEF URG_SENSOR0 RangeSensor { # For Classic-URG
+			translation   0.0 0.0 0.055
+			rotation      1 0 0 1.5707963221
+			
+			### [URG] ###
+#			scanAngle     4.188790191		#[rad] = 240deg
+#			scanStep      0.006135923		#[rad] = 0.3515625deg
+#			scanRate      10						#[Hz] =100ms
+#			maxDistance   4.0						#[m] max 4m
+					
+			### [UHG] ###
+#			scanAngle     4.712388965		#[rad] = 270deg
+#			scanStep      0.006135923		#[rad] = 0.3515625deg
+#			scanRate      14.925373134	#[Hz] =67ms
+#			maxDistance   8.0						#[m] max 8m
+					
+			### [TOP-URG] ###
+			scanAngle     4.712388965		#[rad] = 270deg
+			scanStep      0.004363323		#[rad] = 0.25deg
+			scanRate      38.461538462	#[Hz] =26ms
+			maxDistance   10.0					#[m] max 30m
+			
+			sensorId      0
+		} # end of sensor
+
+			] # end of children (OBSTACLE_SENSOR)
+		} # end of Joint (OBSTACLE_SENSOR)
+		
+			] # end of children (OBSTACLE_SENSOR_BASE)
+		} # end of Joint (OBSTACLE_SENSOR_BASE)
+# ------------------------- Obstacle Sensor end ------------------------- #
+
+# ------------------------- Bump ------------------------- #
+# MEMO 床面からセンサーまでの高さ : 0.2825m
+# MEMO ホイール軸からセンサーまでの距離 : 0.165m
+
+		############# PANTILT_BASE ##############
+		DEF PANTILT_BASE Joint {
+			jointType "fixed"
+			jointAxis 0 0 0
+			jointId 8
+			#translation 0.155 0 0.1 # 作成したJIG
+			#translation 0.175 0 0.105 # 20mm+
+			translation 0.165 0 0.105 # 10mm+ (PanTiltモディファイ後の搭載位置)
+			rotation 1 0 0 0
+			children [
+				DEF PANTILT_BASE_LINK Segment {
+				  mass 0.005
+				  centerOfMass 0.0 0.0 0.0
+				  momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+				  children [
+				    Inline {
+				      url "parts/PanTilt/robotis/pan_base.wrl"
+				    }
+				  ]
+				}
+
+		############# PAN ##############
+		DEF PAN Joint {
+			jointType "rotate"
+			jointAxis 0 0 1
+			jointId 9
+			translation 0 0 0
+			rotation 1 0 0 0
+			
+			rotorInertia 0.000864 # 0.001 # 0.1 # モータ回転子の慣性モーメント [kgm^2]
+			llimit  [-1.570796322] # 関節回転角度の下限値 [radius]
+			ulimit  [1.570796322] # 関節回転角度の上限値 [radius]
+			lvlimit [-6.283185287] # [-3.1415926435] # 関節回転角速度の下限値 [radius/sec]
+			uvlimit [6.283185287] # [3.1415926435] # 関節回転角速度の上限値 [radius/sec]
+			gearRatio 0.193 # 減速比　[robotis]:1/193
+			
+			children [
+				DEF PAN_LINK Segment {
+				  mass 0.005
+				  centerOfMass 0.0 0.0 0.0
+				  #momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+				  momentsOfInertia [ 0 0 0 0 0 0 0 0 0 ] 
+				  children [
+				    Inline {
+				      url "parts/PanTilt/robotis/pan.wrl"
+				    }
+				  ]
+				}
+						    
+		############# TILT ##############
+		DEF TILT Joint {
+			jointType "rotate"
+			jointAxis 0 -1 0
+			jointId 10
+			translation 0 0 0.0775
+			rotation 1 0 0 0
+			
+			rotorInertia 0.000864 # 0.001 # 0.1 # モータ回転子の慣性モーメント [kgm^2]
+			llimit  [-1.570796322] # 関節回転角度の下限値 [radius]
+			ulimit  [1.570796322] # 関節回転角度の上限値 [radius]
+			lvlimit [-6.283185287] # [-3.1415926435] # 関節回転角速度の下限値 [radius/sec]
+			uvlimit [6.283185287] # [3.1415926435] # 関節回転角速度の上限値 [radius/sec]
+			gearRatio 0.193 # 減速比　[robotis]:1/193
+			
+			children [
+				DEF TILT_LINK Segment {
+					mass 0.005
+					centerOfMass 0.0 0.0 0.0
+				  #momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+				  momentsOfInertia [ 0 0 0 0 0 0 0 0 0 ] 
+					children [
+						Inline {
+							url "parts/PanTilt/robotis/tilt.wrl"
+						}
+					]
+				}
+
+		############# BumpSensor ##############
+		DEF BUMP_SENSOR Joint {
+			jointType "fixed"
+			jointAxis 0 0 0
+			jointId 11
+			translation   0.0 0.0 0.0
+			rotation 0 0 -1 1.5707963221
+			
+	#		rotation 1 1 -15 1.5707963221
+			
+			children [
+				DEF BUMP_SENSOR_LINK Segment {
+					mass 0.005
+					centerOfMass 0.0 0.0 0.0
+					momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+					children [
+						Inline {
+							url "parts/sensor/URG_Sensor.wrl"
+						}
+					]
+				}
+				
+		############# RangeSensor ##############
+		DEF URG_SENSOR1 RangeSensor {
+			translation   0.0 0.0 0.0
+			rotation      1 0 0 1.5707963221
+			
+			### [URG] ###
+			scanAngle     4.188790191		#[rad] = 240deg
+			scanStep      0.006135923		#[rad] = 0.3515625deg
+			scanRate      10						#[Hz] =100ms
+			maxDistance   4.0						#[m] max 4m
+					
+			### [UHG] ###
+#			scanAngle     4.712388965		#[rad] = 270deg
+#			scanStep      0.006135923		#[rad] = 0.3515625deg
+#			scanRate      14.925373134	#[Hz] =67ms
+#			maxDistance   8.0						#[m] max 8m
+					
+			### [TOP-URG] ###
+#			scanAngle     4.712388965		#[rad] = 270deg
+#			scanStep      0.004363323		#[rad] = 0.25deg
+#			scanRate      38.461538462	#[Hz] =26ms
+#			maxDistance   10.0					#[m] max 30m
+			
+			sensorId      1
+		} # end of sensor
+
+			] # end of children (BUMP_SENSOR)
+		} # end of Joint (BUMP_SENSOR)
+
+			] # end of children (TILT)
+		} # end of Joint (TILT)
+
+			] # end of children (PAN)
+		} # end of Joint (PAN)
+
+			] # end of children (PANTILT_BASE)
+		} # end of Joint (PANTILT_BASE)
+# ------------------------- Bump emd ------------------------- #	
+
+
+      ]
+    } # end of joint BODY
+  ]
+  joints [
+    USE BODY,
+    USE MAIN_WHEEL1,
+    USE MAIN_WHEEL2,
+    USE CASTER1,
+    USE CASTER_WHEEL1,
+    USE CASTER2,
+    USE CASTER_WHEEL2,
+    USE OBSTACLE_SENSOR_BASE,
+    USE OBSTACLE_SENSOR,
+    USE PANTILT_BASE,
+    USE PAN,
+    USE TILT,
+    USE BUMP_SENSOR
+  ]
+  segments [
+    USE BODY_LINK,  
+    USE MAIN_WHEEL1_LINK,
+    USE MAIN_WHEEL2_LINK,
+    USE CASTER1_LINK,
+    USE CASTER_WHEEL1_LINK,
+    USE CASTER2_LINK,
+    USE CASTER_WHEEL2_LINK,
+    USE OBSTACLE_SENSOR_BASE_LINK,
+    USE OBSTACLE_SENSOR_LINK,
+    USE PANTILT_BASE_LINK,
+    USE PAN_LINK,
+    USE TILT_LINK,
+    USE BUMP_SENSOR_LINK
+  ]
+}
+

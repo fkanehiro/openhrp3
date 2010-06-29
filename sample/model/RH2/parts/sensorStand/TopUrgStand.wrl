@@ -1,0 +1,133 @@
+#VRML V2.0 utf8
+
+Transform {
+	translation 0 0 0.0
+	rotation 0 0 1 1.570796322
+	children [
+ 		
+		## -- ベース -- ##
+		Transform {
+			translation -0.065 -0.03 0.005
+			rotation 1 0 0 0
+			children Shape {
+				appearance Appearance {
+					material DEF yellow Material {
+						diffuseColor 0.8 0.8 0.85
+						ambientIntensity 0.3
+						specularColor 0.7 0.7 0.0
+						emissiveColor 0 0 0
+						shininess 0.25
+						transparency 0
+					}
+				}
+				geometry IndexedFaceSet {
+					coord Coordinate {   
+						point [
+							# -- 全面 -- #
+							0.000 0.000 0.000
+							0.130 0.000 0.000
+							0.130 0.000 0.010
+							0.000 0.000 0.010
+							# -- 左面 -- #
+							0.130 0.000 0.000
+							0.130 0.040 0.000
+							0.130 0.040 0.010
+							0.130 0.000 0.010
+							# -- 右面 -- #
+							0.000 0.000 0.000
+							0.000 0.040 0.000
+							0.000 0.040 0.010
+							0.000 0.000 0.010
+							# -- 背面 -- #
+							0.030 0.060 0.000
+							0.100 0.060 0.000
+							0.100 0.060 0.010
+							0.030 0.060 0.010
+						]
+					}
+					coordIndex [
+						0, 1, 2, 3, -1, # 全面
+						4, 5, 6, 7, -1, # 左面
+						8, 9, 10, 11, -1, # 右面
+						12, 13, 14, 15, -1, # 背面
+						5, 6, 14, 13, -1, # 左面(斜め)
+						9, 10, 15, 12, -1, # 右面(斜め)
+						3, 2, 6, 14, 15, 10, -1, # 上面
+					]
+					solid           TRUE
+					creaseAngle    0         
+				}
+			}
+		}
+
+ 		## -- 左面 -- ##
+		Transform {
+			translation 0.034 0.0 0.045
+			children [
+				Shape {
+					geometry Box {
+						size 0.002 0.06 0.07
+					}
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.8 0.8 0.85
+						}
+					}
+				}
+			]
+		}
+
+ 		## -- 右面 -- ##
+		Transform {
+			translation -0.034 0.0 0.045
+			children [
+				Shape {
+					geometry Box {
+						size 0.002 0.06 0.07
+					}
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.8 0.8 0.85
+						}
+					}
+				}
+			]
+		}
+
+ 		## -- 上面 -- ##
+		Transform {
+			translation 0.0 0.0 0.079
+			children [
+				Shape {
+					geometry Box {
+						size 0.07 0.06 0.002
+					}
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.8 0.8 0.85
+						}
+					}
+				}
+			]
+		}
+				
+	]	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

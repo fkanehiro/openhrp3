@@ -1,0 +1,456 @@
+#VRML V2.0 utf8
+
+PROTO Joint [
+  exposedField     SFVec3f      center              0 0 0
+  exposedField     MFNode       children            []
+  exposedField     MFFloat      llimit              []
+  exposedField     MFFloat      lvlimit             []
+  exposedField     SFRotation   limitOrientation    0 0 1 0
+  exposedField     SFString     name                ""
+  exposedField     SFRotation   rotation            0 0 1 0
+  exposedField     SFVec3f      scale               1 1 1
+  exposedField     SFRotation   scaleOrientation    0 0 1 0
+  exposedField     MFFloat      stiffness           [ 0 0 0 ]
+  exposedField     SFVec3f      translation         0 0 0
+  exposedField     MFFloat      ulimit              []
+  exposedField     MFFloat      uvlimit             []
+  exposedField     SFString     jointType           ""
+  exposedField     SFInt32      jointId             -1
+#  exposedField     SFString     jointAxis           "Z"
+  exposedField     SFVec3f      jointAxis           0 0 1
+
+  exposedField     SFFloat      gearRatio           1
+  exposedField     SFFloat      rotorInertia        0
+  exposedField     SFFloat      rotorResistor       0
+  exposedField     SFFloat      torqueConst         1
+  exposedField     SFFloat      encoderPulse        1
+]
+{
+  Transform {
+    center           IS center
+    children         IS children
+    rotation         IS rotation
+    scale            IS scale
+    scaleOrientation IS scaleOrientation
+    translation      IS translation
+  }
+}
+
+PROTO Segment [
+    field           SFVec3f     bboxCenter        0 0 0
+    field           SFVec3f     bboxSize          -1 -1 -1
+    exposedField    SFVec3f     centerOfMass      0 0 0
+    exposedField    MFNode      children          [ ]
+    exposedField    SFNode      coord             NULL
+    exposedField    MFNode      displacers        [ ]
+    exposedField    SFFloat     mass              0
+    exposedField    MFFloat     momentsOfInertia  [ 0 0 0 0 0 0 0 0 0 ]
+    exposedField    SFString    name              ""
+    eventIn         MFNode      addChildren
+    eventIn         MFNode      removeChildren
+]
+{
+    Group {
+        addChildren    IS addChildren
+        bboxCenter     IS bboxCenter
+        bboxSize       IS bboxSize
+        children       IS children
+        removeChildren IS removeChildren
+    }
+}
+
+PROTO Humanoid [
+    field           SFVec3f    bboxCenter            0 0 0
+    field           SFVec3f    bboxSize              -1 -1 -1
+    exposedField    SFVec3f    center                0 0 0
+    exposedField    MFNode     humanoidBody          [ ]
+    exposedField    MFString   info                  [ ]
+    exposedField    MFNode     joints                [ ]
+    exposedField    SFString   name                  ""
+    exposedField    SFRotation rotation              0 0 1 0
+    exposedField    SFVec3f    scale                 1 1 1
+    exposedField    SFRotation scaleOrientation      0 0 1 0
+    exposedField    MFNode     segments              [ ]
+    exposedField    MFNode     sites                 [ ]
+    exposedField    SFVec3f    translation           0 0 0
+    exposedField    SFString   version               "1.1"
+    exposedField    MFNode     viewpoints            [ ]
+]
+{
+  Transform {
+    bboxCenter       IS bboxCenter
+    bboxSize         IS bboxSize
+    center           IS center
+    rotation         IS rotation
+    scale            IS scale
+    scaleOrientation IS scaleOrientation
+    translation      IS translation
+    children [
+      Group {
+        children IS viewpoints
+      }
+      Group {
+        children IS humanoidBody
+      }
+    ]
+  }
+}
+
+PROTO VisionSensor [
+  exposedField SFVec3f    translation       0 0 0
+  exposedField SFRotation rotation          0 0 1 0
+  exposedField MFNode     children          [ ]
+  exposedField SFFloat    fieldOfView       0.785398
+  exposedField SFString   name              ""
+  exposedField SFFloat    frontClipDistance 0.01
+  exposedField SFFloat    backClipDistance  10.0
+  exposedField SFString   type              "NONE"
+  exposedField SFInt32    sensorId          -1
+  exposedField SFInt32    width             320
+  exposedField SFInt32    height            240
+  exposedField SFFloat    frameRate         30    # add by takekawa 081210
+]
+{
+  Transform {
+    rotation         IS rotation
+    translation      IS translation
+    children         IS children
+  }
+}
+
+
+PROTO ForceSensor [  
+  exposedField SFVec3f    maxForce    -1 -1 -1
+  exposedField SFVec3f    maxTorque   -1 -1 -1
+  exposedField SFVec3f    translation 0 0 0
+  exposedField SFRotation rotation    0 0 1 0
+  exposedField SFInt32    sensorId    -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO Gyro [
+  exposedField SFVec3f    maxAngularVelocity -1 -1 -1
+  exposedField SFVec3f    translation        0 0 0
+  exposedField SFRotation rotation           0 0 1 0
+  exposedField SFInt32    sensorId           -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO AccelerationSensor [
+  exposedField SFVec3f    maxAcceleration -1 -1 -1
+  exposedField SFVec3f    translation     0 0 0
+  exposedField SFRotation rotation        0 0 1 0
+  exposedField SFInt32    sensorId        -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO PressureSensor [
+  exposedField SFFloat    maxPressure -1
+  exposedField SFVec3f    translation 0 0 0
+  exposedField SFRotation rotation    0 0 1 0
+  exposedField SFInt32    sensorId    -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO PhotoInterrupter [
+  exposedField SFVec3f transmitter 0 0 0
+  exposedField SFVec3f receiver    0 0 0
+  exposedField SFInt32 sensorId    -1
+]
+{
+  Transform{
+    children [
+      Transform{
+        translation IS transmitter
+      }
+      Transform{
+        translation IS receiver
+      }
+    ]
+  }
+}
+
+PROTO CylinderSensorZ [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 1 0 0 1.5708
+    children [
+      DEF SensorY CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisY Transform{
+        children [
+          Transform{
+            rotation 1 0 0 -1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorY.rotation_changed TO AxisY.set_rotation
+}
+
+PROTO CylinderSensorY [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 0 1 0 1.5708
+    children [
+      DEF SensorX CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisX Transform{
+        children [
+          Transform{
+            rotation 0 1 0 -1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorX.rotation_changed TO AxisX.set_rotation
+}
+
+PROTO CylinderSensorX [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 0 0 1 -1.5708
+    children [
+      DEF SensorZ CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisZ Transform{
+        children [
+          Transform{
+            rotation 0 0 1 1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorZ.rotation_changed TO AxisZ.set_rotation
+}
+
+NavigationInfo {
+  avatarSize    0.5
+  headlight     TRUE
+  type  ["EXAMINE", "ANY"]
+}
+
+Background {
+  skyColor 0.4 0.6 0.4
+}
+
+Viewpoint {
+  position    3 0 0.835
+  orientation 0.5770 0.5775 0.5775 2.0935
+}
+
+DEF HRP1 Humanoid {
+	humanoidBody [
+	
+		DEF BASEJOINT Joint {
+			jointType "free"
+			translation 0 0 0
+			children [
+				DEF BASESEGMENT Segment {
+					children [
+						Transform {
+							translation 0 0 0
+							children [
+								Shape {
+									geometry Box {
+										size 1.0 1.0 0.005
+									}
+									appearance Appearance {
+										material Material {
+											diffuseColor 0.7 0.8 0.6
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+				
+				############# PAN BASE ##############
+		    DEF PANBASE Joint {
+		      jointType "fixed"
+		      #jointAxis 0 0 1
+		      jointId 0
+		      translation 0 0 0.1215
+		      rotation 0 0 1 0	
+		      rotorInertia 1.0
+		      llimit [-2.79252]
+		      ulimit [2.79252]
+		      lvlimit [-0.785398163]
+	  			uvlimit [0.785398163]
+		      children [
+		        DEF PANBASE_LINK Segment {
+		          mass 0.005
+		          centerOfMass 0.0 0.0 0.0
+		          momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+		          children [
+		            Inline {
+		              url "parts/PanTilt/futaba/pan_base.wrl"
+		            }
+		          ]
+		        }
+
+						############# PAN ##############
+						DEF PAN Joint {
+						  jointType "rotate"
+						  jointAxis 0 0 1
+						  jointId 1
+						  translation 0 0 0
+						  rotation 0 0 1 0
+						  rotorInertia 1.0
+						  llimit [-2.79252]
+						  ulimit [2.79252]
+						  lvlimit [-0.785398163]
+							uvlimit [0.785398163]
+						  children [
+						    DEF PAN_LINK Segment {
+						      mass 0.005
+						      centerOfMass 0.0 0.0 0.0
+						      momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+						      children [
+						        Inline {
+						          url "parts/PanTilt/futaba/pan.wrl"
+						        }
+						      ]
+						    }
+						    
+								############# TILT ##############
+								DEF TILT Joint {
+									jointType "rotate"
+									jointAxis 0 1 0
+									jointId 2
+									translation 0 0 0
+									rotation 0 0 1 0	
+									rotorInertia 1.0
+									llimit [-2.79252]
+									ulimit [2.79252]
+									lvlimit [-0.785398163]
+									uvlimit [0.785398163]
+									children [
+										DEF TILT_LINK Segment {
+											mass 0.005
+											centerOfMass 0.0 0.0 0.0
+											momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+											children [
+												Inline {
+												  url "parts/PanTilt/futaba/tilt.wrl"
+												}
+											]
+										}
+										############# SENSOR ##############
+										DEF URG_SENSOR2-0 VisionSensor {
+											translation   0.0 -0.05219 0.078
+											rotation  		-0.5797 0.5762 0.5762 4.1923    #change (右90.352°)
+											fieldOfView   1.57081378      # add(90.001degree)
+											name          "URG2-0"
+											frontClipDistance  0.1
+											backClipDistance   5.0
+											type          "DEPTH"
+											sensorId     0 
+											width         256             # add(1width=0.35156degree)
+											height        50              # add
+											frameRate     30
+											children [
+							 					Inline {
+													url "parts/sensor/URG_Sensor.wrl"
+												}
+											]
+										}
+										DEF URG_SENSOR2-1 VisionSensor {
+											translation   0.0 0.0 0.0
+											rotation      1 0 0 1.57081378
+											fieldOfView   1.576939886     # add(90.352degree)
+											name          "URG2-1"
+											frontClipDistance  0.1
+											backClipDistance   5.0
+											type          "DEPTH"
+											sensorId      1
+											width         257             # add(1width=0.35156degree)
+											height        50              # add
+											frameRate     30
+										}
+										DEF URG_SENSOR2-2 VisionSensor {
+											translation   0.0 0.0 0.0
+											rotation      0.5797 0.5762 0.5762 2.0909    #change(左90.352°)
+											fieldOfView   1.57081378      # add(90.001degree)
+											name          "URG2-2"
+											frontClipDistance  0.1
+											backClipDistance   5.0
+											type          "DEPTH"
+											sensorId      2
+											width         256             # add(1width=0.35156degree)
+											height        50              # add
+											frameRate     30
+										}
+						
+									] # end of children (TILT)
+								} # end of Joint (TILT)
+						
+						  ] # end of children (PAN)
+						} # end of Joint (PAN)
+		    
+		      ] # end of children (PANBASE)
+		    } # end of Joint (PANBASE)
+				
+			] # end of children (BASEJOINT)
+		} # end of Joint (BASEJOINT)
+		
+	] # end of humanoidBody
+	
+  joints [
+    USE BASEJOINT
+    USE PANBASE
+    USE PAN
+    USE TILT
+  ]
+  segments [
+    USE BASESEGMENT
+    USE PANBASE_LINK
+    USE PAN_LINK
+    USE TILT_LINK
+  ]
+}

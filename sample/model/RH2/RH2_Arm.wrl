@@ -1,0 +1,605 @@
+#VRML V2.0 utf8
+
+PROTO Joint [
+  exposedField     SFVec3f      center              0 0 0
+  exposedField     MFNode       children            []
+  exposedField     MFFloat      llimit              []
+  exposedField     MFFloat      lvlimit             []
+  exposedField     SFRotation   limitOrientation    0 0 1 0
+  exposedField     SFString     name                ""
+  exposedField     SFRotation   rotation            0 0 1 0
+  exposedField     SFVec3f      scale               1 1 1
+  exposedField     SFRotation   scaleOrientation    0 0 1 0
+  exposedField     MFFloat      stiffness           [ 0 0 0 ]
+  exposedField     SFVec3f      translation         0 0 0
+  exposedField     MFFloat      ulimit              []
+  exposedField     MFFloat      uvlimit             []
+  exposedField     SFString     jointType           ""
+  exposedField     SFInt32      jointId             -1
+  exposedField     SFVec3f      jointAxis           0 0 1
+
+  exposedField     SFFloat      gearRatio           1
+  exposedField     SFFloat      rotorInertia        0
+  exposedField     SFFloat      rotorResistor       0
+  exposedField     SFFloat      torqueConst         1
+  exposedField     SFFloat      encoderPulse        1
+]
+{
+  Transform {
+    center           IS center
+    children         IS children
+    rotation         IS rotation
+    scale            IS scale
+    scaleOrientation IS scaleOrientation
+    translation      IS translation
+  }
+}
+
+PROTO Segment [
+    field           SFVec3f     bboxCenter        0 0 0
+    field           SFVec3f     bboxSize          -1 -1 -1
+    exposedField    SFVec3f     centerOfMass      0 0 0
+    exposedField    MFNode      children          [ ]
+    exposedField    SFNode      coord             NULL
+    exposedField    MFNode      displacers        [ ]
+    exposedField    SFFloat     mass              0
+    exposedField    MFFloat     momentsOfInertia  [ 0 0 0 0 0 0 0 0 0 ]
+    exposedField    SFString    name              ""
+    eventIn         MFNode      addChildren
+    eventIn         MFNode      removeChildren
+]
+{
+    Group {
+        addChildren    IS addChildren
+        bboxCenter     IS bboxCenter
+        bboxSize       IS bboxSize
+        children       IS children
+        removeChildren IS removeChildren
+    }
+}
+
+PROTO Humanoid [
+    field           SFVec3f    bboxCenter            0 0 0
+    field           SFVec3f    bboxSize              -1 -1 -1
+    exposedField    SFVec3f    center                0 0 0
+    exposedField    MFNode     humanoidBody          [ ]
+    exposedField    MFString   info                  [ ]
+    exposedField    MFNode     joints                [ ]
+    exposedField    SFString   name                  ""
+    exposedField    SFRotation rotation              0 0 1 0
+    exposedField    SFVec3f    scale                 1 1 1
+    exposedField    SFRotation scaleOrientation      0 0 1 0
+    exposedField    MFNode     segments              [ ]
+    exposedField    MFNode     sites                 [ ]
+    exposedField    SFVec3f    translation           0 0 0
+    exposedField    SFString   version               "1.1"
+    exposedField    MFNode     viewpoints            [ ]
+]
+{
+  Transform {
+    bboxCenter       IS bboxCenter
+    bboxSize         IS bboxSize
+    center           IS center
+    rotation         IS rotation
+    scale            IS scale
+    scaleOrientation IS scaleOrientation
+    translation      IS translation
+    children [
+      Group {
+        children IS viewpoints
+      }
+      Group {
+        children IS humanoidBody
+      }
+    ]
+  }
+}
+
+PROTO VisionSensor [
+  exposedField SFVec3f    translation       0 0 0
+  exposedField SFRotation rotation          0 0 1 0
+  exposedField MFNode     children          [ ]
+  exposedField SFFloat    fieldOfView       0.785398
+  exposedField SFString   name              ""
+  exposedField SFFloat    frontClipDistance 0.01
+  exposedField SFFloat    backClipDistance  10.0
+  exposedField SFString   type              "NONE"
+  exposedField SFInt32    sensorId          -1
+  exposedField SFInt32    width             320
+  exposedField SFInt32    height            240
+  exposedField SFFloat    frameRate         30    # add 
+]
+{
+  Transform {
+    rotation         IS rotation
+    translation      IS translation
+    children         IS children
+  }
+}
+
+
+PROTO ForceSensor [  
+  exposedField SFVec3f    maxForce    -1 -1 -1
+  exposedField SFVec3f    maxTorque   -1 -1 -1
+  exposedField SFVec3f    translation 0 0 0
+  exposedField SFRotation rotation    0 0 1 0
+  exposedField SFInt32    sensorId    -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO Gyro [
+  exposedField SFVec3f    maxAngularVelocity -1 -1 -1
+  exposedField SFVec3f    translation        0 0 0
+  exposedField SFRotation rotation           0 0 1 0
+  exposedField SFInt32    sensorId           -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO AccelerationSensor [
+  exposedField SFVec3f    maxAcceleration -1 -1 -1
+  exposedField SFVec3f    translation     0 0 0
+  exposedField SFRotation rotation        0 0 1 0
+  exposedField SFInt32    sensorId        -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO PressureSensor [
+  exposedField SFFloat    maxPressure -1
+  exposedField SFVec3f    translation 0 0 0
+  exposedField SFRotation rotation    0 0 1 0
+  exposedField SFInt32    sensorId    -1
+]
+{
+  Transform {
+    translation IS translation
+    rotation    IS rotation
+  }
+}
+
+PROTO PhotoInterrupter [
+  exposedField SFVec3f transmitter 0 0 0
+  exposedField SFVec3f receiver    0 0 0
+  exposedField SFInt32 sensorId    -1
+]
+{
+  Transform{
+    children [
+      Transform{
+        translation IS transmitter
+      }
+      Transform{
+        translation IS receiver
+      }
+    ]
+  }
+}
+
+PROTO CylinderSensorZ [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 1 0 0 1.5708
+    children [
+      DEF SensorY CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisY Transform{
+        children [
+          Transform{
+            rotation 1 0 0 -1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorY.rotation_changed TO AxisY.set_rotation
+}
+
+PROTO CylinderSensorY [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 0 1 0 1.5708
+    children [
+      DEF SensorX CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisX Transform{
+        children [
+          Transform{
+            rotation 0 1 0 -1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorX.rotation_changed TO AxisX.set_rotation
+}
+
+PROTO CylinderSensorX [
+    exposedField    SFFloat    maxAngle       -1
+    exposedField    SFFloat    minAngle        0
+    exposedField    MFNode     children        [ ]
+]
+{
+  Transform{
+    rotation 0 0 1 -1.5708
+    children [
+      DEF SensorZ CylinderSensor{
+        maxAngle IS maxAngle
+        minAngle IS minAngle
+      }
+      DEF AxisZ Transform{
+        children [
+          Transform{
+            rotation 0 0 1 1.5708
+            children IS children
+          }
+        ]
+      }
+    ]
+  }
+  ROUTE SensorZ.rotation_changed TO AxisZ.set_rotation
+}
+
+NavigationInfo {
+  avatarSize    0.5
+  headlight     TRUE
+  type  ["EXAMINE", "ANY"]
+}
+
+Background {
+  skyColor 0.4 0.6 0.4
+}
+
+Viewpoint {
+  position    3 0 0.835
+  orientation 0.5770 0.5775 0.5775 2.0935
+}
+
+
+
+DEF RH2 Humanoid {
+  humanoidBody [
+    DEF BODY Joint {
+      jointType "fixed"           
+      translation 0.0 0.0 0.0    
+      children [
+
+## BODY ##
+
+      DEF BODY_LINK Segment {
+	      mass 1.0                
+          children [
+		  	############# RH2移動台車部の高さと同一となるようなダミーBOX ##############
+			Transform {
+				translation 0.0 0.0 0.075 # アーム取り付け用の台を床面に乗せるためZ方向にシフト  
+				children [
+					Shape {
+						geometry Box {
+							size 0.5 0.5 0.15      
+						}
+						appearance Appearance {
+							material Material {
+								diffuseColor 0.8 0.2 0.0
+							}
+						}
+					}
+				]
+			}
+          ]
+        }
+
+
+# --------------------- arm -------------------- #
+		############# ARM BASE ##############
+		DEF BASE Joint {
+		  jointType "fixed"
+		  jointAxis 0 0 0
+		  jointId 0
+		  translation 0 0 0.15  # アーム取り付け用の台に乗せるためにZ方向に15cm原点移動 
+		  rotation 0 0 1 0
+		  children [
+				DEF BASE_LINK Segment {
+					mass 2.72589
+					centerOfMass -0.00339 -0.00112 0.07310
+					momentsOfInertia [0.00956 0.00011 0.00006	0.00011 0.00995 0.00012	0.00006 0.00012 0.00989]
+					children [
+						Inline {
+							url "parts/arm/joint1.wrl"
+						}
+					]
+				}
+		    
+		############# J1 ##############
+		DEF J1 Joint {
+			jointType "rotate"
+			jointAxis 0 0 1
+			jointId 1
+			translation 0 0 0.125#回転軸の位置
+			rotation 0 0 1 0	#回転軸の方向
+			rotorInertia 1.0 # 3.0E-04 
+			llimit [-2.79252] # -160deg
+			ulimit [2.79252]  # 160deg
+			lvlimit [-0.785398163] # add
+			uvlimit [0.785398163] # add
+			children [
+				DEF J1_LINK Segment {
+				  mass 1.49351
+				  centerOfMass -0.00027 0.00921 0.08514
+				  momentsOfInertia [0.00416 -0.00002 0.00000 -0.00002 0.00399 0.00060 0.00000 0.00060 0.00144]
+				  children [
+				    Inline {
+				      url "parts/arm/joint2.wrl"
+				    }
+				  ]
+				}
+						
+		############# J2 ##############
+		DEF J2 Joint {
+			jointType "rotate"
+			jointAxis 0 1 0
+			jointId 2
+			translation 0 0 0.125
+			rotation 1 0 0 0
+			rotorInertia 1.0 # 3.0E-04
+			llimit [-1.13446] # -65deg
+			ulimit [2.26892]  # 130deg
+			lvlimit [-0.785398163] # add
+			uvlimit [0.785398163] # add
+			children [
+				DEF J2_LINK Segment {
+				  mass 2.05098
+				  centerOfMass -0.00863 -0.00605 0.15646
+				  momentsOfInertia [0.01879 -0.00015 0.00044 -0.00015 0.01865 -0.00017 0.00044 -0.00017 0.00154]
+				  children [
+						Transform {
+							children [
+								Inline {
+									url "parts/arm/joint3.wrl"
+								}
+							]
+						}
+					]
+				}
+
+		############# J3 ##############
+		DEF J3 Joint {
+			jointType "rotate"
+			jointAxis 0 1 0
+			jointId 3
+			translation 0 0 0.25
+			rotation 0 0 1 0
+			rotorInertia 1.0 # 8.5E-5 
+#			llimit [0]
+			llimit [-0.0017]  # for Double type's margin (0.0) 
+			ulimit [2.61799]  # 150deg
+			lvlimit [-0.785398163] # add
+			uvlimit [0.785398163] # add
+			children [
+				DEF J3_LINK Segment {
+					mass 1.29442
+					centerOfMass -0.00194 0.00923 0.06551
+					momentsOfInertia [0.00269 -0.00003 0.00009 -0.00003 0.00269 -0.00042 0.00009 -0.00042 0.00099]
+					children [
+						Transform {
+							children [
+								Inline {
+									url "parts/arm/joint4.wrl"
+								}
+							]                       
+						}
+					]
+				}
+										
+		############# J4 ##############
+		DEF J4 Joint {
+			jointType "rotate"
+			jointAxis 0 0 1
+			jointId 4
+			translation 0 0 0.11
+			rotation 0 0 1 0
+			rotorInertia 1.0 # 2.3E-6 
+			llimit [-2.79252]  # -160deg
+			ulimit [2.79252]   # 160deg
+			lvlimit [-0.785398163] # add 
+			uvlimit [0.785398163] # add 
+			children [
+				DEF J4_LINK Segment {
+				mass 0.64617
+				centerOfMass -0.00742 0.01659 0.05194
+				momentsOfInertia [0.00112 -0.00001 0.00002 -0.00001 0.00082 0.00017 0.00002 0.00017 0.00070]
+				children [
+					Transform {
+						children [
+							Inline {
+								url "parts/arm/joint5.wrl"
+							}
+						]
+					}
+				]
+			}
+										
+		############# J5 ##############
+		DEF J5 Joint {
+			jointType "rotate"
+			jointAxis 0 1 0
+			jointId 5
+			translation 0 0 0.09
+			rotation 0 0 1 0
+			llimit [-1.57079]  # -90deg
+			ulimit [2.26892]   # 130deg
+			lvlimit [-0.785398163] # add 
+			uvlimit [0.785398163] # add 
+			rotorInertia 1.0 # 8.5E-5 
+			children [
+				DEF J5_LINK Segment {
+					mass 0.253701
+					centerOfMass -0.000012 0.000339 0.021799
+					momentsOfInertia [0.000129 0.00000 0.00000	0.00000 0.000125 -0.000001 0.00000 -0.000001 0.000045]
+					children [
+						Transform {
+							children [
+								Inline {
+									url "parts/arm/joint6.wrl"
+								}
+							]
+						}
+					]
+				}
+
+		############# J6(hand) ##############
+		DEF J6 Joint {
+			jointType "rotate"
+			jointAxis 0 0 1
+			jointId 6
+			translation 0 0 0.055
+			rotation 0 0 1 0
+			llimit [-2.87979]  # -165deg
+			ulimit [2.87979]   # 165deg
+			lvlimit [-0.785398163] # add 
+			uvlimit [0.785398163] # add 
+			rotorInertia 1.0 # 8.5E-5 
+			children [
+				DEF J6_LINK Segment {
+					mass 0.43490247
+					centerOfMass -0.00415688 0.00645825 0.04059822
+					momentsOfInertia [0.00113664 0.00001795 0.00000551 0.00001795 0.00056333 0.00019659	0.00000551 0.00019659 0.00075980]
+					children [
+						Transform {
+							children [
+								Inline {
+									url "parts/arm/hand.wrl"
+								}
+							]
+						}
+					]
+				}
+
+		############# J7(gripper) ##############
+		DEF J7 Joint {
+			jointType "slide"
+			jointAxis 0 -1 0
+			jointId 7
+			translation 0.0 0.0535 0.0509
+			rotation 0 0 1 0
+#			llimit [0]
+			llimit [-0.0001]  # for Double type's margin (0.0)  
+			ulimit [0.090]  # 9cm
+			lvlimit [-0.785398163] # add 
+			uvlimit [0.785398163] # add 
+			rotorInertia 1.0 # 3.0E-4 
+			children [
+				DEF J7_LINK Segment {
+					mass 0.04498389
+					centerOfMass -0.00203338 -0.00392388 0.03630990
+					momentsOfInertia [0.00005764 0.00000046 0.00000354 0.00000046 0.00006404 0.00000247 0.00000354 0.00000247 0.00000791]
+					children [
+						Transform {
+							children [
+								Inline {
+									url "parts/arm/gripper.wrl"
+								}
+							]
+						}
+					]
+				}
+				
+			]
+		} # end of joint J7
+
+		############# CAMERA(camera) ##############
+		DEF CAMERA Joint {
+			jointType "fixed"
+			jointAxis 0 0 0
+			jointId 14
+			translation -0.02925 0.0 0.04  # dX=24.5mm(ハンド半分幅)+5mm(ハンド取り付け部幅),  dZ=ハンド底面より大きい取り付け穴まで40mm
+			rotation 0 0 1 0
+			children [
+				DEF CAMERA_LINK Segment {
+					mass 0.1
+					centerOfMass 0.0 0.0 0.0
+					momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
+					children [
+						Transform {
+							children [
+								Inline {
+									url "parts/arm/camera.wrl"
+								}
+							]
+						}
+					]
+				}
+			]
+		} # end of joint CAMERA
+
+			]
+		} # end of joint J6
+			]
+		} # end of joint J5
+			]
+		} # end of joint J4
+			]
+		} # end of joint J3
+			]
+		} # end of joint J2
+			]
+		} # end of joint J1
+			]
+		} # end of joint ARM_BASE
+# --------------------- arm end -------------------- #
+
+      ]
+    } # end of joint BODY
+  ]
+  joints [
+    USE BODY,
+    USE BASE,
+    USE J1,
+    USE J2,
+    USE J3,
+    USE J4,
+    USE J5,
+    USE J6,
+    USE J7,
+    USE CAMERA
+  ]
+  segments [
+    USE BODY_LINK,  
+    USE BASE_LINK,
+    USE J1_LINK,
+    USE J2_LINK,
+    USE J3_LINK,
+    USE J4_LINK,
+    USE J5_LINK,
+    USE J6_LINK,
+    USE J7_LINK,
+    USE CAMERA_LINK
+  ]
+}
+
