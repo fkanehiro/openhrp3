@@ -91,7 +91,7 @@ Body::Body()
     rootLink_->body = this;
 
     defaultRootPosition = 0.0;
-    defaultRootAttitude = identity<Matrix33>();
+    defaultRootAttitude = tvmet::identity<Matrix33>();
 }
 
 
@@ -172,7 +172,7 @@ Link* Body::createEmptyJoint(int jointId)
     empty->body = this;
     empty->jointId = jointId;
     empty->p = 0.0;
-    empty->R = identity<Matrix33>();
+    empty->R = tvmet::identity<Matrix33>();
     empty->v = 0.0;
     empty->w = 0.0;
     empty->dv = 0.0;
@@ -184,7 +184,7 @@ Link* Body::createEmptyJoint(int jointId)
     empty->a = 0.0;
     empty->d = 0.0;
     empty->b = 0.0;
-    empty->Rs = identity<Matrix33>();
+    empty->Rs = tvmet::identity<Matrix33>();
     empty->m = 0.0;
     empty->I = 0.0;
     empty->c = 0.0;
