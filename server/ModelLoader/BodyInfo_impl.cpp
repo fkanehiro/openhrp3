@@ -105,7 +105,7 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     filename = url2;
 
     ModelNodeSet modelNodeSet;
-    modelNodeSet.sigMessage.connect(bind(&putMessage, _1));
+    modelNodeSet.sigMessage.connect(boost::bind(&putMessage, _1));
 
     bool result = false;
 

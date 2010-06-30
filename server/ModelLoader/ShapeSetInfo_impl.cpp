@@ -37,7 +37,7 @@ ShapeSetInfo_impl::ShapeSetInfo_impl(PortableServer::POA_ptr poa) :
     poa(PortableServer::POA::_duplicate(poa))
 {
     triangleMeshShaper.setNormalGenerationMode(true);
-    triangleMeshShaper.sigMessage.connect(bind(&putMessage, _1));
+    triangleMeshShaper.sigMessage.connect(boost::bind(&putMessage, _1));
 }
 
 

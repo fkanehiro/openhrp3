@@ -2524,7 +2524,7 @@ void VrmlParserImpl::init()
     currentProtoInstance = 0;
     protoInstanceActualNodeExtractionMode = true;
 
-    scanner = shared_ptr<EasyScanner>( new EasyScanner() );
+    scanner = boost::shared_ptr<EasyScanner>( new EasyScanner() );
     setSymbols();
 }
 
