@@ -9,6 +9,7 @@ endif()
 set(target SimulationEC )
 
 add_library(${target} SHARED ${sources})
+set_target_properties(${target} PROPERTIES PREFIX "")
 
 # interface version 0.0.0 - version 3.0.0 beta1
 set(HRPRTM_VERSION ${HRPSOVERSION}.0.0 )
