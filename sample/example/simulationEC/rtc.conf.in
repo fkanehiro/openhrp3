@@ -1,0 +1,6 @@
+corba.nameservers: localhost:2809
+naming.formats: %n.rtc
+exec_cxt.periodic.type: SimulationEC
+exec_cxt.periodic.rate:10
+manager.modules.load_path:@LOAD_PATH@
+manager.modules.preload: SimulationEC.@SO_SFX@

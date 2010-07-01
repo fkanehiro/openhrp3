@@ -6,7 +6,7 @@ if( NOT ADDITIONAL_SYMBOL STREQUAL "")
   add_definitions(-D${ADDITIONAL_SYMBOL})
 endif()
 
-set(target hrpRTM-${OPENHRP_LIBRARY_VERSION})
+set(target SimulationEC )
 
 add_library(${target} SHARED ${sources})
 
