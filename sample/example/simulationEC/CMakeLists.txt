@@ -29,7 +29,7 @@ else()
 endif()
 
 if(UNIX)
-Å@set(LOAD_PATH "${CMAKE_INSTALL_PREFIX_TMP}/lib")
+  set(LOAD_PATH "${CMAKE_INSTALL_PREFIX_TMP}/lib")
   set(SO_SFX "so")
 elseif(WIN32)
   set(LOAD_PATH "${CMAKE_INSTALL_PREFIX_TMP}/bin")
