@@ -24,7 +24,7 @@ static const char* samplesimulationec_spec[] =
     "max_instance",      "1",
     "language",          "C++",
     "lang_type",         "compile",
-    "exec_cxt.periodic.rate", "1.0",
+    "exec_cxt.periodic.rate", "10.0",
     ""
   };
 // </rtc-template>
