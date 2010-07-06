@@ -44,5 +44,6 @@ if(OPENRTM_VERSION STREQUAL OPENRTM_VERSION100)
     add_subdirectory(SamplePD_HG)
     add_subdirectory(PD_HGtest)
     add_subdirectory(PA10Controller)
+    add_subdirectory(SampleRH2)
 endif()
 
