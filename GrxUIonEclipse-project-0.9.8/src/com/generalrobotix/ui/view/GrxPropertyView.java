@@ -79,6 +79,7 @@ public class GrxPropertyView extends GrxBaseView {
     private Table table_ = null;
     
     private Text nameText_ = null;
+    private String oldText = "";
 
     private final String[] clmName_ = { MessageBundle.get("GrxPropertyView.text.name"), MessageBundle.get("GrxPropertyView.text.value") }; //$NON-NLS-1$ //$NON-NLS-2$
     
@@ -113,7 +114,7 @@ public class GrxPropertyView extends GrxBaseView {
         nameText_.addKeyListener(new KeyListener(){
             public void keyPressed(KeyEvent e) {}
             public void keyReleased(KeyEvent e) {
-                if (e.character == SWT.CR) {
+                if (e.character == SWT.CR && !nameText_.getText().equals(oldText)) {
                 	GrxBasePlugin p = null;
                 	if ((p = manager_.getView(nameText_.getText())) != null){
                 		if(currentPlugin_ != p){
@@ -418,9 +419,11 @@ public class GrxPropertyView extends GrxBaseView {
     	if(p == null){
     		table_.setVisible(false);
             nameText_.setText(""); //$NON-NLS-1$
+            oldText="";
     	}else if (p != currentPlugin_) {
             table_.setVisible(false);
             nameText_.setText(p.getName());
+            oldText=p.getName();
             viewer_.setInput(p);
             table_.setVisible(true);
         }    	
@@ -431,6 +434,7 @@ public class GrxPropertyView extends GrxBaseView {
     private void _refresh(){
         table_.setVisible(false);
         nameText_.setText(currentPlugin_.getName());
+        oldText=currentPlugin_.getName();
         viewer_.setInput(currentPlugin_);
         table_.setVisible(true);
     }
