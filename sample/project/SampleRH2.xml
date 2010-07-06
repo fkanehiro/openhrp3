@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<grxui>
+    <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxSimulationItem" name="SampleSimulation" select="true">
+            <property name="integrate" value="false"/>
+            <property name="viewsimulate" value="false"/>
+            <property name="totalTime" value="9.0 "/>
+            <property name="timeStep" value="0.0050 "/>
+            <property name="method" value="RUNGE_KUTTA"/>
+            <property name="gravity" value="9.8 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="longfloor" select="true" url="$(PROJECT_DIR)/../model/longfloor.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="name" value="longfloor"/>
+            <property name="url" value="$(PROJECT_DIR)/../model/longfloor.wrl"/>
+            <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
+            <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
+            <property name="WAIST.velocity" value="0.0 0.0 0.0 "/>
+            <property name="markRadius" value="0.05 "/>
+            <property name="WAIST.angularVelocity" value="0.0 0.0 0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="RH2_WithArm_withoutSensor" select="true" url="$(PROJECT_DIR)/../model/RH2/RH2_WithArm_withoutSensor.wrl">
+            <property name="J1.angle" value="0"/>
+            <property name="J3.angle" value="1.2"/>
+            <property name="J2.angle" value="0.8"/>
+            <property name="J5.angle" value="0.0 "/>
+            <property name="J7.angle" value="0.0 "/>
+            <property name="J4.angle" value="0"/>
+            <property name="J6.angle" value="0"/>
+            <property name="CASTER_WHEEL2.angle" value="0.0 "/>
+            <property name="CASTER_WHEEL1.angle" value="0.0 "/>
+            <property name="url" value="$(PROJECT_DIR)/../model/RH2/RH2_WithArm_withoutSensor.wrl"/>
+            <property name="BASE.angle" value="0.0 "/>
+            <property name="BODY.rotation" value="0.0 1.0 0.0 0.0 "/>
+            <property name="name" value="RH2_WithArm_withoutSensor"/>
+            <property name="setupDirectory" value="$(PROJECT_DIR)/../controller/SampleRH2"/>
+            <property name="BODY.translation" value="0 -1 0.1"/>
+            <property name="markRadius" value="0.05 "/>
+            <property name="MAIN_WHEEL2.angle" value="0.0 "/>
+            <property name="MAIN_WHEEL1.angle" value="0.0 "/>
+            <property name="CAMERA.angle" value="1.5"/>
+            <property name="CASTER1.angle" value="0.0 "/>
+            <property name="CASTER2.angle" value="0.0 "/>
+            <property name="BODY.angularVelocity" value="0.0 0.0 0.0 "/>
+            <property name="BODY.velocity" value="0.0 0.0 0.0 "/>
+            <property name="controller" value="SampleRH2Controller"/>
+            <property name="isRobot" value="true"/>
+            <property name="controlTime" value="0.005"/>
+            <property name="setupCommand" value="SampleRH2$(BIN_SFX)"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="SampleRH2" select="true">
+            <property name="logTimeStep" value="0.0050 "/>
+        </item>
+        <view class="com.generalrobotix.ui.view.Grx3DView" name="3DView">
+            <property name="view.mode" value="Room"/>
+            <property name="showCoM" value="false"/>
+            <property name="showCoMonFloor" value="false"/>
+            <property name="showDistance" value="false"/>
+            <property name="showIntersection" value="false"/>
+            <property name="eyeHomePosition" value="-0.70711 -0.30119 0.63976 5.65062 0.70711 -0.30119 0.63976 4.75259 0 0.90475 0.42594 2.89973 0 0 0 1 "/>
+            <property name="showCollision" value="true"/>
+            <property name="showActualState" value="true"/>
+            <property name="showScale" value="true"/>
+        </view>
+    </mode>
+</grxui>
