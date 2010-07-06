@@ -957,9 +957,14 @@ public class Grx3DView
 				viewMode_ = VIEW;
 			}
     	}else if(currentModels_.contains(plugin)){
-    		if((String)arg[0]=="PropertyChange" && ((String)arg[1]).equals("name") ){
-    			behaviorManager_.setItemChange();
-    			showOption();
+    		if((String)arg[0]=="PropertyChange"){
+    			if((String)arg[1]=="name" ){
+    				behaviorManager_.setItemChange();
+    				showOption();
+    			}
+    			if(((String)arg[1]).contains("translation") || ((String)arg[1]).contains("rotation") || 
+    					((String)arg[1]).contains("angle"))
+    				showOption();
     		}
     		else if((String)arg[0]=="BodyInfoChange"){
     			behaviorManager_.setItemChange();
