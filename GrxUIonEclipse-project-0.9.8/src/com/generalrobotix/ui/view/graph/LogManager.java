@@ -169,6 +169,13 @@ public class LogManager {
             return objectName + POSTFIX;
         }
     }
+    
+    public String getIntegrationMethodStr(){
+        Enumeration elements = header_.elements();
+        if (!elements.hasMoreElements()) return "";
+        LogHeader header = (LogHeader)elements.nextElement();
+    	return int2StrIntegrationMethod(header.method_);
+    }
 
     /**
      * ヘッダ情報からSimulationTimeを与える
@@ -212,7 +219,7 @@ public class LogManager {
      * 
      * ログファイルは複数あるので、ストリームをハッシュテーブル(file_)に 保存
      */
-    public void openAsWrite(SimulationTime time, int method) throws IOException {
+    public void openAsWrite(SimulationTime time, String method) throws IOException {
         writeFile_ = new Hashtable<String, DataOutputStream>();
         for (Enumeration elements = header_.elements(); elements.hasMoreElements();) {
             try {
@@ -221,7 +228,7 @@ public class LogManager {
                 header.startTime_ = time.startTime_.getUtime();
                 header.timeStep_ = time.timeStep_.getUtime();
                 header.endTime_ = 0;
-                header.method_ = method;
+                header.method_ = str2IntIntegrationMethod(method);
                 header.numRecords_ = 0;
                 // ヘッダの書込み
                 DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(getTempFilePath(header.objectName_))));
@@ -665,16 +672,12 @@ public class LogManager {
             out.println("Simulation Start Time[s], " + (double) header.startTime_ / 1000000.0);
             out.println("Simulation End Time[s], " + (nLine > 0 ? get(ObjectName, nLine - 1)[0] : 0 ));
             out.println("TimeStep[s], " + (double) header.timeStep_ / 1000000.0);
-            switch (header.method_) {
-            case 0:
-                out.println("Integration Method, EULER");
-                break;
-            case 1:
-                out.println("Integration Method, RUNGE_KUTTA");
-                break;
-            default:
+
+            String methodStr = int2StrIntegrationMethod(header.method_);
+            if(!methodStr.equals("")){
+                out.println("Integration Method, " + methodStr);
+            } else {
                 out.println("Integration Method, " + header.method_);
-                break;
             }
             out.println("Record Size[byte], " + header.recordSize_);
 
@@ -1481,5 +1484,20 @@ public class LogManager {
             time_ = new Time();
             fileName_ = null;
         }
+    }
+
+    private static final String[] INTEGRATION_METHOD_NAMES = { "RUNGE_KUTTA", "EULER" }; //$NON-NLS-1$ //$NON-NLS-2$
+    private int str2IntIntegrationMethod(String methodStr){
+        for(int i= 0; i < INTEGRATION_METHOD_NAMES.length; i++){
+            if(methodStr.equals(INTEGRATION_METHOD_NAMES[i])){
+                return i;
+            }
+        }
+        return -1;
+    }   
+    private String int2StrIntegrationMethod(int methodInt){
+        if(methodInt < 0 || INTEGRATION_METHOD_NAMES.length <= methodInt)
+            return "";
+        return INTEGRATION_METHOD_NAMES[methodInt];
     }
 }

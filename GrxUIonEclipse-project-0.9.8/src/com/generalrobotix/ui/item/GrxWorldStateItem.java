@@ -462,7 +462,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		
 		logger_.initCollisionLog(stime);
 		try {
-			logger_.openAsWrite(stime, 1);
+			logger_.openAsWrite(stime, simItem.getStr("method"));
 			logger_.openAsRead();
 			logger_.openCollisionLogAsWrite();
 			logger_.openCollisionLogAsRead();
@@ -852,7 +852,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         stime.setStartTime(currentTime);
         temp.initCollisionLog(stime);
         try {
-            temp.openAsWrite(stime, 1);
+            temp.openAsWrite(stime, logger_.getIntegrationMethodStr());
             temp.openCollisionLogAsWrite();
             temp.separateLogs(changePos);
             temp.closeAsWrite();
@@ -934,7 +934,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             stime.setTotalTime(localTime);
             temp.initCollisionLog(stime);
             try {
-                temp.openAsWrite(stime, 1);
+                temp.openAsWrite(stime, simItem.getStr("method"));
                 temp.openAsRead();
                 temp.openCollisionLogAsWrite();
                 temp.openCollisionLogAsRead();
