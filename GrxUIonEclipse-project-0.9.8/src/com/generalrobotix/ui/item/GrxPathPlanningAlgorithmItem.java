@@ -73,8 +73,7 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 	@SuppressWarnings("unchecked")
 	public void delete(){
 		Collection<GrxPathPlanningAlgorithmItem> col=(Collection<GrxPathPlanningAlgorithmItem>) manager_.getItemMap(GrxPathPlanningAlgorithmItem.class).values();
-		col.remove(this);
-		if(col.isEmpty())
+		if(col.size()==1 && col.contains(this))
 			Manager.instance().deleteComponent(ppcomp_.getInstanceName());
 		super.delete(); 
 	}

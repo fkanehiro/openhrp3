@@ -579,8 +579,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 			currentDynamics_ = null;
 		}
 		Collection<GrxSimulationItem> col=(Collection<GrxSimulationItem>) manager_.getItemMap(GrxSimulationItem.class).values();
-		col.remove(this);
-		if(col.isEmpty())
+		if(col.size()==1 && col.contains(this))
 			unregisterCORBA();
 	}
 	
