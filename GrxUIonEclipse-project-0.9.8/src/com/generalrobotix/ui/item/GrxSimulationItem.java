@@ -85,6 +85,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 	private boolean isSuspending_ = false;
 	private double simulateTime_ = 0;
 	private boolean isIntegrate_ = true;
+	private boolean isRealTime_ = false;
 	private double stepTime_ = 0.001;
 	private double totalTime_ = 20;
 	private double logStepTime_ = 0.05;
@@ -113,6 +114,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 		setProperty("method","RUNGE_KUTTA"); //$NON-NLS-1$ //$NON-NLS-2$
 		setBool("integrate", true);
 		setBool("viewsimulate", false);
+		setBool("realTime", false);
 		return true;
 	}
 	
@@ -171,6 +173,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 			}
 
 			isIntegrate_ = isTrue("integrate", true);
+			isRealTime_ = isTrue("realTime", false);
 			totalTime_   = getDbl("totalTime", 20.0);
 			stepTime_    = getDbl("timeStep", 0.001);
 			logStepTime_ = currentWorld_.getDbl("logTimeStep", 0.001);
@@ -301,6 +304,13 @@ public class GrxSimulationItem extends GrxBaseItem {
 									suspendT += System.currentTimeMillis() - s;
 									if(simThreadState_==STOP)
 										break;
+								}else{
+									if(isRealTime_){
+										long s = System.currentTimeMillis();
+										long sleep = (long)(simTime_*1000.0) - (s - startT);
+										if(sleep > 0)
+											Thread.sleep(sleep);
+									}
 								}
 							}
 						}
@@ -958,6 +968,9 @@ public class GrxSimulationItem extends GrxBaseItem {
 		str = getProperty("integrate");
 		if(str==null)
 			setBool("integrate", true);
+		str = getProperty("realTime");
+		if(str==null)
+			setBool("realTime", false);
 		str = getProperty("viewsimulate");
 		if(str==null)
 			setBool("viewsimulate", false);
@@ -966,7 +979,7 @@ public class GrxSimulationItem extends GrxBaseItem {
     public ValueEditType GetValueEditType(String key) {
         if(key.equals("method")){
             return new ValueEditCombo(methodComboItem_);
-        }else if(key.equals("integrate") || key.equals("viewsimulate")){
+        }else if(key.equals("integrate") || key.equals("viewsimulate") || key.equals("realTime")){
             return new ValueEditCombo(booleanComboItem_);
         }
         return super.GetValueEditType(key);
