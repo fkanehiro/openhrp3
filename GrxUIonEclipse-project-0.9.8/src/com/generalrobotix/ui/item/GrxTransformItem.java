@@ -21,7 +21,7 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
-import javax.vecmath.AxisAngle4d;
+import com.generalrobotix.ui.util.AxisAngle4d;
 import javax.vecmath.Vector3d;
 
 import jp.go.aist.hrp.simulator.ModelLoader;

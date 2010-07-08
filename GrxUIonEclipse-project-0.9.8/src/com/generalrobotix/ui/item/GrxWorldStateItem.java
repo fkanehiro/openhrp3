@@ -382,7 +382,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                     recDat_[i][k++] = (float)cpos.position[j].p[m];
                 m3d.set(cpos.position[j].R);
                 //m3d.transpose();
-                a4d.set(m3d);
+                a4d.setMatrix(m3d);
                 recDat_[i][k++] = (float) a4d.x;
                 recDat_[i][k++] = (float) a4d.y;
                 recDat_[i][k++] = (float) a4d.z;
