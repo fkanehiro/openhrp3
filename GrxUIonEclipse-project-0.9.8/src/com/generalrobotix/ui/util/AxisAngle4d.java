@@ -17,7 +17,7 @@ import javax.vecmath.Vector3d;
 @SuppressWarnings("serial")
 public class AxisAngle4d extends javax.vecmath.AxisAngle4d {
 	
-	private static double EPS = 0.00001;
+	private static double EPS = 1.0e-6;
 	
 	public AxisAngle4d(AxisAngle4d a1){
 		super(a1);
@@ -45,9 +45,9 @@ public class AxisAngle4d extends javax.vecmath.AxisAngle4d {
 
 	public void setMatrix(Matrix3d m1)
 	{
-		x = (float)(m1.m21 - m1.m12);
-		y = (float)(m1.m02 - m1.m20);
-		z = (float)(m1.m10 - m1.m01);
+		x = m1.m21 - m1.m12;
+		y = m1.m02 - m1.m20;
+		z = m1.m10 - m1.m01;
 		
 		double mag = x*x + y*y + z*z;   //mag=2sin(th)
 		double cos = 0.5*(m1.m00 + m1.m11 + m1.m22 - 1.0);
@@ -55,7 +55,7 @@ public class AxisAngle4d extends javax.vecmath.AxisAngle4d {
 		if (mag > EPS ) {
 			mag = Math.sqrt(mag);    
 		    double sin = 0.5*mag;
-		    angle = (float)Math.atan2(sin, cos);
+		    angle = Math.atan2(sin, cos);
 		    double invMag = 1.0/mag;
 		    x = x*invMag;
 		    y = y*invMag;
@@ -74,22 +74,21 @@ public class AxisAngle4d extends javax.vecmath.AxisAngle4d {
 			    
 			    int[][] sign = {{1,1,1},{1,1,-1},{1,-1,1},{1,-1,-1},{-1,1,1},{-1,1,-1},{-1,-1,1},{-1,-1,-1}};
 			    Matrix3d m2 = new Matrix3d();
-			    int i=0;
-			    for(i=0; i<8; i++){
+			    int j=0;
+			    double min=0.0;
+			    for(int i=0; i<8; i++){
 			    	m2.set(new AxisAngle4d(sign[i][0]*x, sign[i][1]*y, sign[i][2]*z, angle));
-			    	if( Math.abs(m1.m00-m2.m00)<EPS &&
-			    		Math.abs(m1.m01-m2.m01)<EPS &&
-			    		Math.abs(m1.m02-m2.m02)<EPS &&
-			    		Math.abs(m1.m10-m2.m10)<EPS &&
-			    		Math.abs(m1.m11-m2.m11)<EPS &&
-			    		Math.abs(m1.m12-m2.m12)<EPS &&
-			    		Math.abs(m1.m20-m2.m20)<EPS &&
-			    		Math.abs(m1.m21-m2.m21)<EPS &&
-			    		Math.abs(m1.m22-m2.m22)<EPS  ) break;
+			    	double err = (m1.m00-m2.m00)*(m1.m00-m2.m00) + (m1.m01-m2.m01)*(m1.m01-m2.m01) + (m1.m02-m2.m02)*(m1.m02-m2.m02) +
+			    	(m1.m10-m2.m10)*(m1.m10-m2.m10) + (m1.m11-m2.m11)*(m1.m11-m2.m11) + (m1.m12-m2.m12)*(m1.m12-m2.m12) +
+			    	(m1.m20-m2.m20)*(m1.m20-m2.m20) + (m1.m21-m2.m21)*(m1.m21-m2.m21) + (m1.m22-m2.m22)*(m1.m22-m2.m22) ;
+			    	if(i==0 || err < min){
+			    		j = i;
+			    		min = err;
+			    	}
 			    }
-			    x *= sign[i][0];
-			    y *= sign[i][1];
-			    z *= sign[i][2];
+			    x *= sign[j][0];
+			    y *= sign[j][1];
+			    z *= sign[j][2];
 			}
 		}
 	}
