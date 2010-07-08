@@ -46,6 +46,7 @@ public class SimulationParameterPanel extends Composite{
   ItemPropertyDoubleSpinForSWT spinGravity_;
   Button chkIntegrate_;
   Button chkViewSimulate_;
+  Button chkRealTime_;
   Combo cmbMethod_;
   
   public SimulationParameterPanel(Composite parent,int style) {
@@ -150,7 +151,22 @@ public class SimulationParameterPanel extends Composite{
     });
     
     label = new Label(this,SWT.SHADOW_NONE);//dummy
+    
+    chkRealTime_ = new Button(this,SWT.CHECK);
+    chkRealTime_.setText(MessageBundle.get("panel.simulation.start.realTime")); //$NON-NLS-1$
+    chkRealTime_.addSelectionListener(new SelectionListener() {
 
+        public void widgetDefaultSelected(SelectionEvent e) {
+        }
+
+        public void widgetSelected(SelectionEvent e) {
+            if (currentItem_ != null)
+                currentItem_.setProperty("realTime", String.valueOf(chkRealTime_.getSelection())); //$NON-NLS-1$
+        }
+    });
+    
+    label = new Label(this,SWT.SHADOW_NONE);//dummy
+    
     chkViewSimulate_ = new Button(this,SWT.CHECK);
     chkViewSimulate_.setText(MessageBundle.get("panel.simulation.start.viewsimulate")); //$NON-NLS-1$
     chkViewSimulate_.addSelectionListener(new SelectionListener() {
@@ -204,6 +220,10 @@ public class SimulationParameterPanel extends Composite{
     chkIntegrate_.setSelection(f);
   }
 
+  public void setRealTime(boolean f) {
+	    chkRealTime_.setSelection(f);
+	  }
+  
   public void setViewSimulate(boolean f) {
     chkViewSimulate_.setSelection(f);
   }
@@ -254,6 +274,7 @@ public class SimulationParameterPanel extends Composite{
 		  setGravity(item.getDbl("gravity", 9.8)); //$NON-NLS-1$
 		  setMethod(item.getProperty("method",METHOD_NAMES[0])); //$NON-NLS-1$
 		  setIntegrate(item.isTrue("integrate", true)); //$NON-NLS-1$
+		  setRealTime(item.isTrue("realTime", false)); //$NON-NLS-1$
 		  setViewSimulate(item.isTrue("viewsimulate", false)); //$NON-NLS-1$
 		  setEnabled(true);
 	  }
