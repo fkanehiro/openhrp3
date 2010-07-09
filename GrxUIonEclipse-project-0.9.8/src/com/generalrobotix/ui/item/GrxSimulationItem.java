@@ -64,6 +64,7 @@ import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
 import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 import com.generalrobotix.ui.view.Grx3DView;
 import com.generalrobotix.ui.view.GrxLoggerView;
+import com.generalrobotix.ui.view.GrxOpenHRPView;
 import com.generalrobotix.ui.view.simulation.SimulationParameterPanel;
 import com.generalrobotix.ui.view.vsensor.Camera_impl;
 
@@ -171,6 +172,10 @@ public class GrxSimulationItem extends GrxBaseItem {
 				GrxDebugUtil.printErr("SimulationLoop:", e); //$NON-NLS-1$
 				return false;
 			}
+
+			GrxOpenHRPView openHRPView = (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
+			if(openHRPView != null)
+				openHRPView.fixParam();
 
 			isIntegrate_ = isTrue("integrate", true);
 			isRealTime_ = isTrue("realTime", false);

@@ -110,14 +110,14 @@ public class GrxOpenHRPView extends GrxBaseView {
     }
     
     public void update(GrxBasePlugin plugin, Object... arg) {
-    	if(simItem_==plugin){
+        if(simItem_==plugin){
 	    	if((String)arg[0]=="StartSimulation")
-				simParamPane_.setEnabled(false);
+                simParamPane_.setEnabled(false);
 	        else if((String)arg[0]=="StopSimulation")
-				simParamPane_.setEnabled(true);
-	        else if((String)arg[0]=="PropertyChange") //$NON-NLS-1$
+                simParamPane_.setEnabled(true);
+            else if((String)arg[0]=="PropertyChange") //$NON-NLS-1$
                 simParamPane_.updateItem(simItem_); 
-    	}else if(currentWorld_==plugin){
+        }else if(currentWorld_==plugin){
             if((String)arg[0]=="PropertyChange") //$NON-NLS-1$
                 simParamPane_.updateLogTime(currentWorld_);  
         }
@@ -140,6 +140,7 @@ public class GrxOpenHRPView extends GrxBaseView {
      * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation
      */
     public void startSimulation(boolean isInteractive, IAction action){
+		simParamPane_.fixParam();
 		if(simItem_==null){
 			simItem_ = (GrxSimulationItem)manager_.createItem(GrxSimulationItem.class, null);
 			simItem_.addObserver(this);
@@ -201,4 +202,7 @@ public class GrxOpenHRPView extends GrxBaseView {
     		return false;
     }
 
+    public void fixParam(){
+        simParamPane_.fixParam();
+    }
 }

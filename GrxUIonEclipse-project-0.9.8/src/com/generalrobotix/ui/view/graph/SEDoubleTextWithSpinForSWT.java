@@ -304,6 +304,11 @@ public class SEDoubleTextWithSpinForSWT extends Composite{
         }
     }
 
+    public void fixValue(){
+        setValue(text_.getText());
+        updateValue();
+    }
+
     // 値が変更されたときに呼び出される。
     protected void updateValue(){
     }
