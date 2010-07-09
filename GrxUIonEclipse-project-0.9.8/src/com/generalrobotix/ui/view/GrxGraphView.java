@@ -33,6 +33,7 @@ import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxGraphItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxSimulationItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.util.GrxDebugUtil;
@@ -49,6 +50,7 @@ public class GrxGraphView extends GrxBaseView {
     public static final String TITLE = "Graph";
 
 	private GrxWorldStateItem currentWorld_ = null;
+    private GrxSimulationItem simItem_ = null;
 	private GrxGraphItem currentGraph_ = null;
 	private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
 	private TrendGraphManager graphManager_;
@@ -71,6 +73,12 @@ public class GrxGraphView extends GrxBaseView {
         	currentWorld_.addObserver(this);
         	currentWorld_.addPosObserver(this);
         }
+        simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+        if(simItem_!=null){
+            simItem_.addObserver(this);
+        }
+        manager_.registerItemChangeListener(this, GrxSimulationItem.class);
+
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
         currentGraph_ = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
         if(currentGraph_!=null){
@@ -99,67 +107,86 @@ public class GrxGraphView extends GrxBaseView {
 		}else
 			graphManager_.setWorldState(null);
 	}
-	
-	public void registerItemChange(GrxBaseItem item, int event){
-		if(item instanceof GrxWorldStateItem){
-			GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
-	    	switch(event){
-	    	case GrxPluginManager.SELECTED_ITEM:
-	    		if(currentWorld_!=worldStateItem){
+
+    public void registerItemChange(GrxBaseItem item, int event){
+        if(item instanceof GrxWorldStateItem){
+            GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;
+            switch(event){
+            case GrxPluginManager.SELECTED_ITEM:
+                if(currentWorld_!=worldStateItem){
                     setWorldState(worldStateItem);
-	    			currentWorld_ = worldStateItem;
-	    			currentWorld_.addObserver(this);
-	    			currentWorld_.addPosObserver(this);
-	    		}
-	    		break;
-	    	case GrxPluginManager.REMOVE_ITEM:
-	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		if(currentWorld_==worldStateItem){
-	    			currentWorld_.deleteObserver(this);
-	    			currentWorld_.deletePosObserver(this);
+                    currentWorld_ = worldStateItem;
+                    currentWorld_.addObserver(this);
+                    currentWorld_.addPosObserver(this);
+                }
+                break;
+            case GrxPluginManager.REMOVE_ITEM:
+            case GrxPluginManager.NOTSELECTED_ITEM:
+                if(currentWorld_==worldStateItem){
+                    currentWorld_.deleteObserver(this);
+                    currentWorld_.deletePosObserver(this);
                     setWorldState(null);
-	    			currentWorld_ = null;
-	    		}
-	    		break;
-	    	default:
-	    		break;
-	    	}
-		}else if(item instanceof GrxGraphItem){
-			GrxGraphItem graphItem = (GrxGraphItem) item;
-	    	switch(event){
-	    	case GrxPluginManager.SELECTED_ITEM:
-	    		_updateGraph(graphItem);
-	    		currentGraph_ = graphItem;
-	    		break;
-	    	case GrxPluginManager.REMOVE_ITEM:
-	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		_updateGraph(null);
-	    		currentGraph_ = null;
-	    		break;
-	    	default:
-	    		break;
-	    	}
-		}else if(item instanceof GrxModelItem){
-    		GrxModelItem modelItem = (GrxModelItem) item;
-	    	switch(event){
-	    	case GrxPluginManager.SELECTED_ITEM:
-	    		if(!currentModels_.contains(modelItem)){
-	    			currentModels_.add(modelItem);
-	    			gpanel_.setModelList(currentModels_);
-	    		}
-	    		break;
-	    	case GrxPluginManager.REMOVE_ITEM:
-	    	case GrxPluginManager.NOTSELECTED_ITEM:
-	    		if(currentModels_.contains(modelItem)){
-	    			currentModels_.remove(modelItem);
-	    			gpanel_.setModelList(currentModels_);
-	    		}
-	    		break;
-	    	default:
-	    		break;
-	    	}
-		}
-	}
+                    currentWorld_ = null;
+                }
+                break;
+            default:
+                break;
+            }
+        }else if(item instanceof GrxGraphItem){
+            GrxGraphItem graphItem = (GrxGraphItem) item;
+            switch(event){
+            case GrxPluginManager.SELECTED_ITEM:
+                _updateGraph(graphItem);
+                currentGraph_ = graphItem;
+                break;
+            case GrxPluginManager.REMOVE_ITEM:
+            case GrxPluginManager.NOTSELECTED_ITEM:
+                _updateGraph(null);
+                currentGraph_ = null;
+                break;
+            default:
+                break;
+            }
+        }else if(item instanceof GrxModelItem){
+            GrxModelItem modelItem = (GrxModelItem) item;
+            switch(event){
+            case GrxPluginManager.SELECTED_ITEM:
+                if(!currentModels_.contains(modelItem)){
+                    currentModels_.add(modelItem);
+                    gpanel_.setModelList(currentModels_);
+                }
+                break;
+            case GrxPluginManager.REMOVE_ITEM:
+            case GrxPluginManager.NOTSELECTED_ITEM:
+                if(currentModels_.contains(modelItem)){
+                    currentModels_.remove(modelItem);
+                    gpanel_.setModelList(currentModels_);
+                }
+                break;
+            default:
+                break;
+            }
+        }else if(item instanceof GrxSimulationItem){
+            GrxSimulationItem simItem = (GrxSimulationItem) item;
+            switch(event){
+            case GrxPluginManager.SELECTED_ITEM:
+                if(simItem_!=simItem){
+                    simItem_ = simItem;
+                    simItem_.addObserver(this);
+                }
+                break;
+            case GrxPluginManager.REMOVE_ITEM:
+            case GrxPluginManager.NOTSELECTED_ITEM:
+                if(simItem_==simItem){
+                    simItem_.deleteObserver(this);
+                    simItem_ = null;
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }
 	
 	
 	private void _updateGraph(GrxBasePlugin p) {
@@ -234,7 +261,12 @@ public class GrxGraphView extends GrxBaseView {
 	}
 
     public void update(GrxBasePlugin plugin, Object... arg) {
-        if(currentWorld_==plugin) {
+        if(simItem_==plugin){
+            if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
+				double step = currentWorld_.getDbl("logTimeStep", 0.001);
+				graphManager_.trendGraphModel_.setStepTime((long)(1000000*step));
+            }
+        } else if(currentWorld_==plugin) {
             if((String)arg[0]=="ClearLog"){ //$NON-NLS-1$
                 graphManager_.clearDataSeries();
                 graphManager_.reread();
@@ -260,15 +292,18 @@ public class GrxGraphView extends GrxBaseView {
         if (ti > graphManager_.getTotalTime())
             graphManager_.setTotalTime((long)(ti+5)*1000000);
 	}
-	
-	 public void shutdown() {
-		 manager_.removeItemChangeListener(this, GrxGraphItem.class);
-		 manager_.removeItemChangeListener(this, GrxModelItem.class);
-		 manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
-		 if(currentWorld_!=null)
-         {
-			 currentWorld_.deleteObserver(this);
-			 currentWorld_.deletePosObserver(this);
-         }
-	}
+
+    public void shutdown() {
+        manager_.removeItemChangeListener(this, GrxGraphItem.class);
+        manager_.removeItemChangeListener(this, GrxModelItem.class);
+        manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+        if(currentWorld_!=null)
+        {
+            currentWorld_.deleteObserver(this);
+            currentWorld_.deletePosObserver(this);
+        }
+
+        if(simItem_!=null)
+            simItem_.deleteObserver(this);
+    }
 }
