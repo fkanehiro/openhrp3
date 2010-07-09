@@ -17,6 +17,8 @@
  */
 package com.generalrobotix.ui;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -35,6 +37,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.generalrobotix.ui.grxui.Activator;
+import com.generalrobotix.ui.grxui.PreferenceConstants;
 import com.generalrobotix.ui.item.GrxProjectItem;
 import com.generalrobotix.ui.util.GrxConfigBundle;
 import com.generalrobotix.ui.util.GrxXmlUtil;
@@ -145,17 +149,23 @@ public class GrxBasePlugin extends GrxConfigBundle {
 		element_.setAttribute("class",getClass().getName()); //$NON-NLS-1$
 		element_.setAttribute("name", getName()); //$NON-NLS-1$
 		element_.setAttribute("select", String.valueOf(isSelected())); //$NON-NLS-1$
-		if (getURL(false) != null)
-			element_.setAttribute("url", getURL(false)); //$NON-NLS-1$
+		if (url_ != null)
+			element_.setAttribute("url", GrxXmlUtil.replaceEnvVal(new File(url_))); //$NON-NLS-1$
 		element_.appendChild(doc_.createTextNode("\n")); //$NON-NLS-1$
 
 		Enumeration<?> keys = propertyNames();
 		while (keys.hasMoreElements()) {
 			String key = (String)keys.nextElement();
 			String val = getProperty(key);
-			if (key == null || val == null)
+			if (key == null || val == null || key.equals("name") || key.equals("url"))
 				continue;
-
+			
+			if(key.equals("setupDirectory"))
+				val = GrxXmlUtil.replaceEnvVal(new File(val));
+			if(key.equals("setupCommand")){
+				String s = Activator.getDefault().getPreferenceStore().getString(PreferenceConstants.BIN_SFX);
+				val = val.replace(s, "$(BIN_SFX)");
+			}
 			Element propEl = doc_.createElement(GrxProjectItem.PROPERTY_TAG);
 			propEl.setAttribute("name",  key); //$NON-NLS-1$
 			propEl.setAttribute("value", val); //$NON-NLS-1$
