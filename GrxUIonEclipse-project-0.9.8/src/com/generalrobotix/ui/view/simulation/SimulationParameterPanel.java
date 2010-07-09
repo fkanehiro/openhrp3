@@ -288,5 +288,11 @@ public class SimulationParameterPanel extends Composite{
 		  setEnabled(true);
 	  }
   }
-  
+
+  public void fixParam(){
+      spinTotalTime_.fixValue();
+      spinStepTime_.fixValue();
+      spinLogStepTime_.fixValue();
+      spinGravity_.fixValue();
+  }
 }
