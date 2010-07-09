@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.vecmath.Quat4d;
 import javax.vecmath.Vector3d;
@@ -313,6 +315,48 @@ public class GrxXmlUtil {
 			}
 		}
 		return str;
+	}
+	
+	public static String replaceEnvVal(File f) {
+		String file=null;
+		try {
+			file = f.getCanonicalPath();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return f.getAbsolutePath();
+		}
+
+		String dir = System.getProperty("CURRENT_DIR");
+		if(dir!=null){
+			File dirf = new File(dir);
+			try {
+				dir = dirf.getCanonicalPath();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return f.getAbsolutePath();
+			}
+			
+			Pattern localPattern = Pattern.compile("\\\\");
+			Matcher localMatcher = localPattern.matcher(File.separator);
+			String localStr = localMatcher.replaceAll("\\\\\\\\");
+			
+			String[] dirs = dir.split(localStr,-1);
+			String[] files = file.split(localStr,-1);
+			int i=0;
+			for( ; i<dirs.length; i++){
+				if(!dirs[i].equals(files[i]))
+					break;
+			}
+			String ret = "$(CURRENT_DIR)";
+			if(System.getProperty("os.name").equals("Windows") && i==0)
+				return f.getAbsolutePath();
+			for(int j=i ; j<dirs.length; j++)
+				ret += "/..";
+			for(int j=i ; j<files.length; j++)
+				ret += "/" + files[j];
+			return ret;
+		}
+		return f.getAbsolutePath();
 	}
 
 	public static void setString(String[] path, String atr, String str) {

@@ -449,6 +449,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				if (ans == false)
 					return;
 			}
+			System.setProperty("CURRENT_DIR", f.getParent());
 			save( f );
 			setDefaultDirectory(f.getParent());
 		}	
