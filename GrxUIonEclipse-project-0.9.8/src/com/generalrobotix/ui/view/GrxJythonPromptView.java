@@ -340,18 +340,10 @@ public class GrxJythonPromptView extends GrxBaseView {
                 int p = styledText_.getText().lastIndexOf('\n') + prompt_.length() + 1;
                 if (p < cp) {
                     styledText_.replaceTextRange(cp - 1, 1,""); //$NON-NLS-1$
-                    if (hpos_ > 0) {
-                        history_.remove(hpos_);
-                        history_.add(hpos_,getCommand());
-                    }
                 }
             } else if (ks == KS_DELETE) {
                 if (cp < len) {
                     styledText_.replaceTextRange( cp,1,""); //$NON-NLS-1$
-                    if (hpos_ > 0) {
-                        history_.remove(hpos_);
-                        history_.add(hpos_,getCommand());
-                    }
                 }
             } else if (ks == KS_UP || ks == KS_CTRL_P) {
                 if (hpos_ < history_.size() - 1) {
@@ -371,10 +363,6 @@ public class GrxJythonPromptView extends GrxBaseView {
                 if (cp <styledText_.getText().lastIndexOf('\n')) {
                     cp = len;
                     styledText_.setCaretOffset(len);
-                }
-                if (hpos_ > 0) {
-                    history_.remove(hpos_);
-                    history_.add(hpos_,getCommand());
                 }
                 event.doit = true;
             }
