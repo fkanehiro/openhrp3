@@ -1,0 +1,112 @@
+#VRML V2.0 utf8
+
+Shape {
+  geometry Box {
+    size 0.15 0.15 0.15
+  }
+  appearance Appearance {
+    material Material {
+      diffuseColor 1.0 1.0 0.0
+    }
+  }
+}  		  		
+Transform {
+  rotation 0 0 1 1.5708
+  translation 0.35 0 0
+  children [
+    Shape {
+      geometry Cylinder {
+        height 0.7
+        radius 0.05
+      }
+      appearance Appearance {
+        material Material {
+          diffuseColor 1.0 0.0 0.0
+        }
+      }
+	}  		  		
+  ]
+}
+Transform {
+  rotation 0 0 1 -1.5708
+  translation 0.85 0 0
+  children [
+    Shape {
+      geometry Cone {
+        height 0.3
+        bottomRadius 0.1
+      }
+      appearance Appearance {
+        material Material {
+          diffuseColor 1.0 0.0 0.0
+        }
+      }
+	}  		  		
+  ]
+}
+Transform {
+  translation 0 0.35 0
+  children [
+    Shape {
+      geometry Cylinder {
+        height 0.7
+        radius 0.05
+      }
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.0 1.0 0.0
+        }
+      }
+    }
+  ]
+}
+Transform {
+  translation 0 0.85 0
+  children [
+    Shape {
+      geometry Cone {
+        height 0.3
+        bottomRadius 0.1
+      }
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.0 1.0 0.0
+        }
+      }
+	}  		  		
+  ]
+}
+Transform {
+  rotation 1 0 0 1.5708
+  translation 0 0 0.35
+  children [
+    Shape {
+      geometry Cylinder {
+        height 0.7
+        radius 0.05
+      }
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.0 0.0 1.0
+        }
+      }
+    }
+  ]	
+}
+Transform {
+  rotation 1 0 0 1.5708
+  translation 0 0 0.85
+  children [
+    Shape {
+      geometry Cone {
+        height 0.3
+        bottomRadius 0.1
+      }
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.0 0.0 1.0
+        }
+      }
+	}  		  		
+  ]
+}
