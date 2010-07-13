@@ -19,6 +19,7 @@
 #include <vector>
 #include <boost/intrusive_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
+#include <hrpCollision/ColdetModel.h>
 #include "Config.h"
 
 namespace hrp {
@@ -65,6 +66,10 @@ namespace hrp {
            @deprecated use attitude().
         */
         Matrix33 segmentAttitude() { return Matrix33(this->R * Rs); }
+
+        void updateColdetModelPosition() {
+            coldetModel->setPosition(R, p);
+        }
 
         Body* body;
 

@@ -42,7 +42,6 @@
 
 #include "Link.h"
 #include <stack>
-#include <hrpCollision/ColdetModel.h>
 
 using namespace std;
 using namespace hrp;

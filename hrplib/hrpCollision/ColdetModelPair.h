@@ -43,6 +43,10 @@ namespace hrp {
             return collisionPairInserter.cdContact;
         }
 
+        void clearCollisions(){
+            collisionPairInserter.cdContact.clear();
+        }
+
         bool checkCollision() {
             return !detectCollisionsSub(false).empty();
         }
