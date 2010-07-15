@@ -452,9 +452,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		stime.setTimeStep(val);
 			
 		GrxSimulationItem simItem = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
-		if(simItem!=null)
+		String method = "";
+		if(simItem!=null){
 			val = simItem.getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
-		else
+			method = simItem.getStr("method");
+		}else
 			val = DEFAULT_TOTAL_TIME;
 		stime.setTotalTime(val);
 		
@@ -462,7 +464,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		
 		logger_.initCollisionLog(stime);
 		try {
-			logger_.openAsWrite(stime, simItem.getStr("method"));
+			logger_.openAsWrite(stime, method);
 			logger_.openAsRead();
 			logger_.openCollisionLogAsWrite();
 			logger_.openCollisionLogAsRead();
@@ -927,14 +929,16 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             stime.setTimeStep(localTime);
                 
             GrxSimulationItem simItem = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
-    		if(simItem!=null)
+            String method = "";
+    		if(simItem!=null){
     			localTime = simItem.getDbl("totalTime", DEFAULT_TOTAL_TIME); //$NON-NLS-1$
-    		else
+    			method = simItem.getStr("method");
+    		}else
     			localTime = DEFAULT_TOTAL_TIME;
             stime.setTotalTime(localTime);
             temp.initCollisionLog(stime);
             try {
-                temp.openAsWrite(stime, simItem.getStr("method"));
+                temp.openAsWrite(stime, method);
                 temp.openAsRead();
                 temp.openCollisionLogAsWrite();
                 temp.openCollisionLogAsRead();
