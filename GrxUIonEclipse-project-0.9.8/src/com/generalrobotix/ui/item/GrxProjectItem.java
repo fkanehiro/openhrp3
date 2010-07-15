@@ -318,6 +318,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			menu_.add( new Action(){
 				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.restoreProject"); } //$NON-NLS-1$
 				public void run(){
+					manager_.removeAllItems();
 					restoreProject();
 				}
 			} );
