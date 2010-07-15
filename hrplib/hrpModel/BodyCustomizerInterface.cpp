@@ -77,10 +77,10 @@ static bool checkInterface(BodyCustomizerInterface* customizerInterface)
 	&& (customizerInterface->version == BODY_CUSTOMIZER_INTERFACE_VERSION)
 	&& customizerInterface->getTargetModelNames
 	&& customizerInterface->create
-	&& customizerInterface->destroy
-	&& customizerInterface->initializeAnalyticIk
-	&& customizerInterface->calcAnalyticIk
-	&& customizerInterface->setVirtualJointForces;
+	&& customizerInterface->destroy;
+	//&& customizerInterface->initializeAnalyticIk
+	//&& customizerInterface->calcAnalyticIk
+	//&& customizerInterface->setVirtualJointForces;
 
     return qualified;
 }
@@ -212,6 +212,10 @@ int hrp::loadBodyCustomizers(BodyInterface* bodyInterface)
                 filesystem::path(info.dli_fname).branch_path().branch_path() / OPENHRP_RELATIVE_SHARE_DIR / "customizer";
             numLoaded += loadBodyCustomizers(customizerPath.string(), bodyInterface);
         }
+#else
+        string customizerPath(OPENHRP_SHARE_DIR);
+        customizerPath.append("/customizer");
+        numLoaded += loadBodyCustomizers(customizerPath, bodyInterface);
 #endif
 
     }
