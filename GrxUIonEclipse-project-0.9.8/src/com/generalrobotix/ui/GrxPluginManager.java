@@ -522,13 +522,20 @@ public class GrxPluginManager implements IPropertyChangeListener {
      * @param name
      * @return
      */
+    @SuppressWarnings("unchecked") //$NON-NLS-1$
     private GrxBasePlugin createPlugin(Class<? extends GrxBasePlugin> cls, String name) {
         if (registerPlugin(cls) == null) {
             GrxDebugUtil.println("[PM]@createPlugin registerPlugin failed"); //$NON-NLS-1$
             return null;
         }
         try {
-            GrxBasePlugin plugin = pluginLoader_.createPlugin(cls, name, this);
+        	HashMap<String, GrxBasePlugin> map = pluginMap_.get(cls);
+            GrxBasePlugin plugin = map.get(name);
+            if ( plugin != null) {
+                if(plugin instanceof GrxBaseItem)
+                	((GrxBaseItem)plugin).delete();
+            }
+            plugin = pluginLoader_.createPlugin(cls, name, this);
             if (registerPluginInstance(plugin)) {
                 return plugin;
             }
