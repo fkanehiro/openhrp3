@@ -310,7 +310,6 @@ DEF springJoint Humanoid {
 	        translation     0 0 0.05
           jointType "slide"
 	        jointAxis 0 0 1
-          jointId  0
           children [
             DEF LINK1 Segment {
               centerOfMass  0 0 0.045
