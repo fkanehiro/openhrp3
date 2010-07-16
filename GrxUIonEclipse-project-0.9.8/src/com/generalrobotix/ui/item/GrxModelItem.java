@@ -897,37 +897,31 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	if (q != null) {
             for (int i=0; i<jointToLink_.length; i++)
                 links_.get(jointToLink_[i]).jointValue(q[i]);
-            if (lpos[0].p != null && lpos[0].R != null)
-            	_setTransform(0, lpos[0].p, lpos[0].R);
-            else
-            	isAllPosProvided = false;
-        }else{
-	        for (int i=0; i<links_.size(); i++) {
-	            if (lpos[i].p == null || lpos[i].R == null)
-	                isAllPosProvided = false;
-	            else{
-	            	if(i==0){
-	            		links_.get(i).translation(lpos[i].p);
-	            		AxisAngle4d a4d = new AxisAngle4d();
-	            		a4d.setMatrix(new Matrix3d(lpos[i].R));
-	            		double[] newrot = new double[4];
-	            		a4d.get(newrot);
-	            		links_.get(i).rotation(newrot);
-	            	}else{
-		            	Transform3D t3d = new Transform3D();
-		                links_.get(i).tg_.getTransform(t3d);        
-		                t3d.setTranslation(new Vector3d(lpos[i].p));
-		                AxisAngle4d a4d = new AxisAngle4d();
-		        		a4d.setMatrix(new Matrix3d(lpos[i].R));
-		        		double[] newrot = new double[4];
-		        		a4d.get(newrot);
-		                t3d.setRotation(new AxisAngle4d(newrot));
-		                links_.get(i).tg_.setTransform(t3d);
-	            	}
-	            }
-
-	        }    
-        }
+    	}
+        for (int i=0; i<links_.size(); i++) {
+            if (lpos[i].p == null || lpos[i].R == null)
+                isAllPosProvided = false;
+            else{
+            	if(i==0){
+            		links_.get(i).translation(lpos[i].p);
+            		AxisAngle4d a4d = new AxisAngle4d();
+            		a4d.setMatrix(new Matrix3d(lpos[i].R));
+            		double[] newrot = new double[4];
+            		a4d.get(newrot);
+            		links_.get(i).rotation(newrot);
+            	}else{
+	            	Transform3D t3d = new Transform3D();
+	                links_.get(i).tg_.getTransform(t3d);        
+	                t3d.setTranslation(new Vector3d(lpos[i].p));
+	                AxisAngle4d a4d = new AxisAngle4d();
+	        		a4d.setMatrix(new Matrix3d(lpos[i].R));
+	        		double[] newrot = new double[4];
+	        		a4d.get(newrot);
+	                t3d.setRotation(new AxisAngle4d(newrot));
+	                links_.get(i).tg_.setTransform(t3d);
+            	}
+            }
+        }    
         if (isAllPosProvided)
             _updateCoM();
         else
