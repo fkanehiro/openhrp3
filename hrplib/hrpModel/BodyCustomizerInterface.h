@@ -17,7 +17,7 @@
 
 #include "Config.h"
 #include <string>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Tvmet3dTypes.h>
 
 namespace hrp {
 

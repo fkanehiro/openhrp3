@@ -752,13 +752,13 @@ void CustomizedJointPath::onJointPathUpdated()
 }
 
 
-bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_R0)
+bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_R)
 {
     bool solved;
 	
     if(ikTypeId == 0 || isBestEffortIKMode){
 
-        solved = JointPath::calcInverseKinematics(end_p, end_R0);
+        solved = JointPath::calcInverseKinematics(end_p, end_R);
 
     } else {
 
@@ -770,8 +770,6 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
 
         const Link* targetLink = endLink();
         const Link* baseLink_ = baseLink();
-
-        Matrix33 end_R(end_R0 * trans(targetLink->Rs));
 
         Vector3 p_relative;
         Matrix33 R_relative;

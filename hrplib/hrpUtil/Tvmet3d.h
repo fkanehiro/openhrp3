@@ -12,38 +12,10 @@
 #define HRPUTIL_TVMET3D_H_INCLUDED
 
 #include "config.h"
-
-//---- needed for preventing a compile error in VC++ ----
-#include <iostream>
-
-#ifdef _WIN32
-#pragma warning( disable : 4251 4275 4661 )
-#undef min
-#undef max
-#endif
-
-//------------------------------------------------------
-
-#ifdef __QNX__
-#include <cmath>
-using std::size_t;
-using std::sin;
-using std::cos;
-using std::sqrt;
-using std::fabs;
-using std::acos;
-using std::asin;
-using std::atan2;
-#endif
-
-#include <tvmet/Matrix.h>
-#include <tvmet/Vector.h>
+#include "Tvmet3dTypes.h"
 
 namespace hrp
 {
-    typedef tvmet::Matrix<double, 3, 3> Matrix33;
-    typedef tvmet::Vector<double, 3> Vector3;
-
     typedef tvmet::XprVector<tvmet::VectorConstReference<double, 3>, 3> Vector3Ref;
 
     inline Vector3Ref getVector3Ref(const double* data) {
