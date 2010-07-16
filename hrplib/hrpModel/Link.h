@@ -50,6 +50,7 @@ namespace hrp {
 
         void setAttitude(const Matrix33& R) { this->R = R * trans(Rs); }
         Matrix33 attitude() { return Matrix33(this->R * Rs); }
+        Matrix33 calcRfromAttitude(const Matrix33& R) { return Matrix33(R * trans(Rs)); }
 
         /**
            @brief compute sum of m x wc of subtree
