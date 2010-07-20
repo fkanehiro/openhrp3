@@ -1,6 +1,3 @@
-
-#include <cmath>
-#include <cstring>
 #include <hrpModel/BodyCustomizerInterface.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -12,8 +9,6 @@
 #if defined(HRPMODEL_VERSION_MAJOR) && defined(HRPMODEL_VERSION_MINOR)
 #if HRPMODEL_VERSION_MAJOR >= 3 && HRPMODEL_VERSION_MINOR >= 1
 #define NS_HRPMODEL hrp
-typedef hrp::Vector3 vector3;
-typedef hrp::Matrix33 matrix33;
 #endif
 #endif
 
@@ -23,8 +18,6 @@ typedef hrp::Matrix33 matrix33;
 
 using namespace std;
 using namespace NS_HRPMODEL;
-
-static const bool debugMode = false;
 
 static BodyInterface* bodyInterface = 0;
 
@@ -55,19 +48,6 @@ static const char** getTargetModelNames()
     return names;
 }
 
-
-static void getVirtualbushJoints(Customizer* customizer, BodyHandle body)
-{
-    int bushIndex = bodyInterface->getLinkIndexFromName(body, "SPRING_JOINT");
-    if(bushIndex >=0 ){
-        JointValSet& jointValSet = customizer->jointValSet;
-        jointValSet.valuePtr = bodyInterface->getJointValuePtr(body, bushIndex);
-        jointValSet.velocityPtr = bodyInterface->getJointVelocityPtr(body, bushIndex);
-        jointValSet.torqueForcePtr = bodyInterface->getJointForcePtr(body, bushIndex);
-    }
-}
-	
-
 static BodyCustomizerHandle create(BodyHandle bodyHandle, const char* modelName)
 {
     Customizer* customizer = 0;
@@ -78,7 +58,13 @@ static BodyCustomizerHandle create(BodyHandle bodyHandle, const char* modelName)
         customizer->bodyHandle = bodyHandle;
         customizer->springT = 1.0e3;    
         customizer->dampingT = 1.0e1;
-        getVirtualbushJoints(customizer, bodyHandle);
+        int jointIndex = bodyInterface->getLinkIndexFromName(bodyHandle, "SPRING_JOINT");
+        if(jointIndex >=0 ){
+            JointValSet& jointValSet = customizer->jointValSet;
+            jointValSet.valuePtr = bodyInterface->getJointValuePtr(bodyHandle, jointIndex);
+            jointValSet.velocityPtr = bodyInterface->getJointVelocityPtr(bodyHandle, jointIndex);
+            jointValSet.torqueForcePtr = bodyInterface->getJointForcePtr(bodyHandle, jointIndex);
+        }
     }
 
     return static_cast<BodyCustomizerHandle>(customizer);
