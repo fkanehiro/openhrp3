@@ -9,6 +9,7 @@ set(sources
   LinkTraverse.cpp
   LinkPath.cpp
   JointPath.cpp
+  ColdetLinkPair.cpp
   ForwardDynamics.cpp
   ForwardDynamicsABM.cpp
   ForwardDynamicsCBM.cpp

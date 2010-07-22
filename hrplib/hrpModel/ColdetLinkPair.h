@@ -16,26 +16,15 @@ namespace hrp {
     class HRPMODEL_API ColdetLinkPair : public ColdetModelPair
     {
       public:
-        ColdetLinkPair(Link* link1, Link* link2)
-            : ColdetModelPair(link1->coldetModel, link2->coldetModel) {
-            links[0] = link1;
-            links[1] = link2;
-        }
+        ColdetLinkPair(Link* link1, Link* link2);
         
-        ColdetLinkPair(const ColdetLinkPair& org)
-            : ColdetModelPair(org) {
-            links[0] = org.links[0];
-            links[1] = org.links[1];
-        }
+        ColdetLinkPair(const ColdetLinkPair& org);
         
-        virtual ~ColdetLinkPair() { }
+        virtual ~ColdetLinkPair();
         
-        void updatePositions() {
-            model(0)->setPosition(links[0]->R, links[0]->p);
-            model(1)->setPosition(links[1]->R, links[1]->p);
-        }
+        void updatePositions();
         
-        hrp::Link* link(int index) { return links[index]; }
+        hrp::Link* link(int index);
         
       protected:
         hrp::Link* links[2];
