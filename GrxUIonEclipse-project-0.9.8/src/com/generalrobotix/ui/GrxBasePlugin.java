@@ -118,6 +118,10 @@ public class GrxBasePlugin extends GrxConfigBundle {
 			return;
 		}
 		clear();
+		if(url_!=null)	
+			setProperty("url", url_);
+		if(name_!=null)
+			setProperty("name", name_);
 		NodeList props = element_.getElementsByTagName(PROPERTY_TAG);
 		for (int j = 0; j < props.getLength(); j++) {
 			Element propEl = (Element) props.item(j);

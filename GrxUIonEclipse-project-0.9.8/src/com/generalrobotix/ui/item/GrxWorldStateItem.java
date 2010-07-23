@@ -205,6 +205,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		prePos_ = -1;
 		lastCharName_ = null;
         setLogMenus(false);
+        remove("url");
         if(useDisk_)
         	logger_.closeReads();
 		syncExec(new Runnable(){
@@ -835,6 +836,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			};
 			t.start();
 			setDefaultDirectory(new File(fPath).getParent());
+			setURL(fPath);
         }
 	}
     
