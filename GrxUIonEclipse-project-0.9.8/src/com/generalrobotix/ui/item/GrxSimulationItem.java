@@ -123,6 +123,8 @@ public class GrxSimulationItem extends GrxBaseItem {
 	 * @brief implementation of ClockGenerator interface
 	 */
 	private class ClockGenerator_impl extends SwitchDependVerClockGenerator {
+	}
+	
 		private double simTime_ = 0.0;
 		
 		private static final int EXEC = -1;
@@ -214,7 +216,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 			}
 			notifyObservers("StartSimulation", isSimulatingView_);
 
-			resetClockReceivers();
+			clockGenerator_.resetClockReceivers();
 
 			simTime_ = 0.0;
 			simulateTime_ = 0;
@@ -393,7 +395,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 				ControllerAttribute attr = controllers_.get(i);
 				attr.control();
 			}
-			updateExecutionContext(simTime_);           
+			clockGenerator_.updateExecutionContext(simTime_);           
 	            
 			// simulate
 			if (isIntegrate_) {
@@ -450,32 +452,15 @@ public class GrxSimulationItem extends GrxBaseItem {
 			return true;
 		}
 	        
-	}
-
-	/**
-	 * @brief start simulation
-	 * @param isInteractive flag to be interactive. If false is given, any dialog boxes are not displayed during this simulation
-	 */
-	public void startSimulation(boolean isInteractive){
-		clockGenerator_.startSimulation(isInteractive);
-	}
-	
 	public void waitStopSimulation() throws InterruptedException {
 		try {
 			synchronized(lock2_){ 
 				lock2_.wait();
 			}
 		} catch (InterruptedException e) {
-			clockGenerator_.stopSimulation();
+			stopSimulation();
 			throw e;
 		}
-	}
-	    
-	/**
-	 * @brief stop simulation
-	 */
-	public void stopSimulation(){
-		clockGenerator_.stopSimulation();
 	}
 	    
 	private class ControllerAttribute {

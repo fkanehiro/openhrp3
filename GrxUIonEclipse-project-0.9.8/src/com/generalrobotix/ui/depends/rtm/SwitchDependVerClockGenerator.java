@@ -11,7 +11,7 @@ public class SwitchDependVerClockGenerator extends ClockGeneratorRtm_impl{
     /**
      * reset execution contexts(clock receivers)
      */
-    protected void resetClockReceivers(){
+    public void resetClockReceivers(){
         for (int i=0; i<ecs_.size();){
             ExecutionContext ec = ecs_.get(i);
             try{
@@ -24,7 +24,7 @@ public class SwitchDependVerClockGenerator extends ClockGeneratorRtm_impl{
         }
     }
     
-    protected void updateExecutionContext(double simTime)
+    public void updateExecutionContext(double simTime)
     {
         for (int i=0; i<ecs_.size();){
             ExecutionContext ec = ecs_.get(i);
