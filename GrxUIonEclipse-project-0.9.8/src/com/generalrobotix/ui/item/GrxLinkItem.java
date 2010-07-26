@@ -681,7 +681,6 @@ public class GrxLinkItem extends GrxTransformItem{
                 v3d.add(v3d2);
                 t3d.setTranslation(v3d);
                 m3d.set(new AxisAngle4d(rotation()));
-                m3d.mul(m3d);
                 t3d.setRotation(m3d);
             }else if(jointType().equals("free") || jointType().equals("fixed") ){
             	t3d.setTranslation(v3d);
