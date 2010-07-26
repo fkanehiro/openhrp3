@@ -2327,9 +2327,9 @@ void VrmlParserImpl::readSFRotation(SFRotation& out_value)
 
         const double len = sqrt(len2);
 
-        //if(fabs(len - 1.0) > 1.0e-4){
-        //    putMessage("Rotation axis is not normalized");
-        //}
+        if(fabs(len) < 1.0e-6){
+            scanner->throwException("Rotation axis is zero vector");
+        }
 
         // force normalize
         for(int i=0; i < 3; i++){
