@@ -144,13 +144,14 @@ public class GrxRobotStatView extends GrxBaseView {
 	    { "No", "Joint", "Angle", "Target", "Torque", "PWR", "SRV", "ARM", "T", "Pgain", "Dgain" },
                 { "Force", "Fx[N]", "Fy[N]", "Fz[N]", "Mx[Nm]", "My[Nm]", "Mz[Nm]" }, 
 	    { "Sensor", "Xaxis", "Yaxis", "Zaxis" }, 
-				{ "Voltage[V]", "Current[A]"},
-};
+				{ "Voltage[V]", "value", "Current[A]", "value"},
+        };
+        boolean showheader[] = {true, false, false, false};
         int[][] alignment = new int[][] {
 	    { SWT.RIGHT, SWT.LEFT,  SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.CENTER, SWT.CENTER, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
                 { SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
 	    { SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
-	    { SWT.RIGHT, SWT.RIGHT}
+	    { SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT}
 	};
 
         Composite sash = new Composite(mainPanel, SWT.NONE);
@@ -183,7 +184,7 @@ public class GrxRobotStatView extends GrxBaseView {
                 tableLayout.addColumnData(new ColumnWeightData(1,true));
             }
             viewers_[i].getTable().setLayout(tableLayout);
-            viewers_[i].getTable().setHeaderVisible(true);
+            viewers_[i].getTable().setHeaderVisible(showheader[i]);
             viewers_[i].getTable().setLinesVisible(true);
             viewers_[i].getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
             if (osName_ == "Linux") {
@@ -850,10 +851,12 @@ public class GrxRobotStatView extends GrxBaseView {
         }
         
         public String getColumnText(Object element, int columnIndex) {
+        	if(columnIndex == 0) return "Voltage[V]";
+        	if(columnIndex == 2) return "Current[A]"; 
             if(currentPower_ == null)
             	return "---";
             if (columnIndex < powerTV_.getTable().getColumnCount()){
-            	return FORMAT1.format(currentPower_[columnIndex]);
+            	return FORMAT1.format(currentPower_[columnIndex/2]);
             }
             return null;
         }
