@@ -29,7 +29,7 @@ public class SEDouble implements StringExchangeable {
      */
     public SEDouble(double value) {
         value_ = new Double(value);
-        df_ = new DecimalFormat("0.####");
+        df_ = new DecimalFormat("0.######");
     };
 
     public SEDouble(String value) {
@@ -39,7 +39,7 @@ public class SEDouble implements StringExchangeable {
         } else {
             value_ = new Double(value);
         }
-        df_ = new DecimalFormat("0.####");
+        df_ = new DecimalFormat("0.######");
     }
 
     /**

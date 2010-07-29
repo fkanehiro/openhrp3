@@ -38,7 +38,7 @@ public class SimulationParameterPanel extends Composite{
   private static final SEEnumeration seTemp_ = new SEEnumeration(METHOD_NAMES, 0);
   
   private static final int COMBO_WIDTH = 100;
-  private static final double MIN_TIME_STEP = 0.00001;
+  private static final double MIN_TIME_STEP = 0.000001;
   
   ItemPropertyDoubleSpinForSWT spinTotalTime_;
   ItemPropertyDoubleSpinForSWT spinStepTime_;
