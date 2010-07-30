@@ -1669,11 +1669,16 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
 
         for(int j=0; j < globalNumContactNormalVectors; ++j){
 
-            double sum = -M(j, j) * x(j);
-            for(int k=0; k < size; ++k){
-                sum += M(j, k) * x(k);
+             double xx;
+            if(M(j,j)==numeric_limits<double>::max())
+                xx=0.0;
+            else{
+                double sum = -M(j, j) * x(j);
+                for(int k=0; k < size; ++k){
+                    sum += M(j, k) * x(k);
+                }
+                xx = (-b(j) - sum) / M(j, j);
             }
-            const double xx = (-b(j) - sum) / M(j, j);
             if(xx < 0.0){
                 x(j) = 0.0;
             } else {
@@ -1685,11 +1690,15 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
 
         for(int j=globalNumContactNormalVectors; j < globalNumConstraintVectors; ++j){
 
-            double sum = -M(j, j) * x(j);
-            for(int k=0; k < size; ++k){
-                sum += M(j, k) * x(k);
+            if(M(j,j)==numeric_limits<double>::max())
+                x(j) = 0.0;
+            else{
+                double sum = -M(j, j) * x(j);
+                for(int k=0; k < size; ++k){
+                    sum += M(j, k) * x(k);
+                }
+                x(j) = r * (-b(j) - sum) / M(j, j);
             }
-            x(j) = r * (-b(j) - sum) / M(j, j);
             r += rstep;
         }
 
@@ -1698,20 +1707,30 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
             int contactIndex = 0;
             for(int j=globalNumConstraintVectors; j < size; ++j, ++contactIndex){
 
-                double sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
+                double fx0;
+                if(M(j,j)==numeric_limits<double>::max())
+                    fx0 = 0.0;
+                else{
+                    double sum = -M(j, j) * x(j);
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
+                    fx0 = (-b(j) - sum) / M(j, j);
                 }
-                const double fx0 = (-b(j) - sum) / M(j, j);
                 double& fx = x(j);
 
                 ++j;
 
-                sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
+                 double fy0;
+                if(M(j,j)==numeric_limits<double>::max())
+                    fy0 = 0.0;
+                else{
+                    double sum = -M(j, j) * x(j);
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
+                    fy0 = (-b(j) - sum) / M(j, j);
                 }
-                const double fy0 = (-b(j) - sum) / M(j, j);
                 double& fy = x(j);
 
                 const double fmax = mcpHi[contactIndex];
@@ -1734,11 +1753,16 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
             int frictionIndex = 0;
             for(int j=globalNumConstraintVectors; j < size; ++j, ++frictionIndex){
 
-                double sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
+                double xx;
+                if(M(j,j)==numeric_limits<double>::max())
+                    xx = 0.0;
+                else{
+                    double sum = -M(j, j) * x(j);
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
+                    xx = (-b(j) - sum) / M(j, j);
                 }
-                const double xx = (-b(j) - sum) / M(j, j);
 
                 const int contactIndex = frictionIndexToContactIndex[frictionIndex];
                 const double fmax = mcpHi[contactIndex];
@@ -1768,11 +1792,16 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
 
         for(int j=0; j < globalNumContactNormalVectors; ++j){
 
-            double sum = -M(j, j) * x(j);
-            for(int k=0; k < size; ++k){
-                sum += M(j, k) * x(k);
+            double xx;
+            if(M(j,j)==numeric_limits<double>::max())
+                xx=0.0;
+            else{
+                double sum = -M(j, j) * x(j);
+                for(int k=0; k < size; ++k){
+                    sum += M(j, k) * x(k);
+                }
+                xx = (-b(j) - sum) / M(j, j);
             }
-            const double xx = (-b(j) - sum) / M(j, j);
             if(xx < 0.0){
                 x(j) = 0.0;
             } else {
@@ -1783,11 +1812,15 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
 
         for(int j=globalNumContactNormalVectors; j < globalNumConstraintVectors; ++j){
 
-            double sum = -M(j, j) * x(j);
-            for(int k=0; k < size; ++k){
-                sum += M(j, k) * x(k);
+            if(M(j,j)==numeric_limits<double>::max())
+                x(j)=0.0;
+            else{
+                double sum = -M(j, j) * x(j);
+                for(int k=0; k < size; ++k){
+                    sum += M(j, k) * x(k);
+                }
+                x(j) = (-b(j) - sum) / M(j, j);
             }
-            x(j) = (-b(j) - sum) / M(j, j);
         }
 
 
@@ -1796,20 +1829,30 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
             int contactIndex = 0;
             for(int j=globalNumConstraintVectors; j < size; ++j, ++contactIndex){
 
-                double sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
+                double fx0;
+                if(M(j,j)==numeric_limits<double>::max())
+                    fx0=0.0;
+                else{
+                    double sum = -M(j, j) * x(j);
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
+                    fx0 = (-b(j) - sum) / M(j, j);
                 }
-                const double fx0 = (-b(j) - sum) / M(j, j);
                 double& fx = x(j);
 
                 ++j;
 
-                sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
+                double fy0;
+                if(M(j,j)==numeric_limits<double>::max())
+                    fy0=0.0;
+                else{
+                    double sum = -M(j, j) * x(j);
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
+                    fy0 = (-b(j) - sum) / M(j, j);
                 }
-                const double fy0 = (-b(j) - sum) / M(j, j);
                 double& fy = x(j);
 
                 const double fmax = mcpHi[contactIndex];
@@ -1831,11 +1874,16 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
             int frictionIndex = 0;
             for(int j=globalNumConstraintVectors; j < size; ++j, ++frictionIndex){
 
-                double sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
+                double xx;
+                if(M(j,j)==numeric_limits<double>::max())
+                    xx=0.0;
+                else{
+                    double sum = -M(j, j) * x(j);
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
+                    xx = (-b(j) - sum) / M(j, j);
                 }
-                const double xx = (-b(j) - sum) / M(j, j);
 
                 const int contactIndex = frictionIndexToContactIndex[frictionIndex];
                 const double fmax = mcpHi[contactIndex];
