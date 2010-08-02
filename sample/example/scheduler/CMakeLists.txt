@@ -16,8 +16,10 @@ elseif(WIN32)
   target_link_libraries(${program}
     optimized hrpUtil-${OPENHRP_LIBRARY_VERSION}
     optimized hrpModel-${OPENHRP_LIBRARY_VERSION}
+    optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
     debug hrpModel-${OPENHRP_LIBRARY_VERSION}d
+    debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
     ${OMNIORB_LIBRARIES})
 endif()
 
