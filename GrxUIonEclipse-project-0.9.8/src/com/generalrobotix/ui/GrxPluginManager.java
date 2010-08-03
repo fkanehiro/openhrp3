@@ -828,7 +828,7 @@ public class GrxPluginManager implements IPropertyChangeListener {
             for (GrxBaseItem i : (Collection<GrxBaseItem>) getItemMap(item.getClass()).values()) {
                 if (i != item) {
                     i.setSelected(false);
-                    itemChange(item, NOTSELECTED_ITEM);
+                    itemChange(i, NOTSELECTED_ITEM);
                 }
             }
         }
