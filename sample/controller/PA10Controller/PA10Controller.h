@@ -29,6 +29,21 @@
 #include <rtm/idl/BasicDataTypeSkel.h>
 
 #include <vector>
+#include <string>
+#include <time.h>
+#include <sstream>
+
+#include <hrpModel/ModelLoaderUtil.h>
+#include <hrpModel/Body.h>
+#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/uBlasCommonTypes.h>
+#include <hrpUtil/MatrixSolvers.h>
+#include <hrpModel/Link.h>
+#include <hrpModel/Sensor.h>
+#include <hrpModel/JointPath.h>
+#include <hrpCorba/DynamicsSimulator.hh>
+#define vector3 Vector3
+#define matrix33 Matrix33 
 
 // Service implementation headers
 // <rtc-template block="service_impl_h">
@@ -40,6 +55,8 @@
 
 // </rtc-template>
 
+using namespace std;
+using namespace hrp;
 using namespace RTC;
 
 class PA10Controller
@@ -97,7 +114,6 @@ class PA10Controller
   // no corresponding operation exists in OpenRTm-aist-0.2.0
   // virtual RTC::ReturnCode_t onRateChanged(RTC::UniqueId ec_id);
 
-
  protected:
   // Configuration variable declaration
   // <rtc-template block="config_declare">
@@ -108,7 +124,10 @@ class PA10Controller
   // <rtc-template block="inport_declare">
   TimedDoubleSeq m_angle;
   InPort<TimedDoubleSeq> m_angleIn;
-  
+
+  TimedDoubleSeq m_wristForce;
+  InPort<TimedDoubleSeq> m_wristForceIn;
+
   // </rtc-template>
 
   // DataOutPort declaration
@@ -135,13 +154,31 @@ class PA10Controller
 
  private:
   int dummy;
-  std::ifstream angle, vel, gain;
+  std::ifstream angle, vel, gain, jac, cmp;
+  std::ofstream res;
   double *Pgain;
   double *Dgain;
   std::vector<double> qold;
   double q_ref[DOF], dq_ref[DOF];
   void openFiles();
   void closeFiles();
+
+  BodyPtr co;
+  Link *wrist, *base, *lhand, *rhand;
+  JointPathPtr arm_path, fing_path[2];
+  dmatrix Jac, Kp, Kd, Gp, Gd;
+  dvector off;
+  int total_dof;
+
+  double cur_time;
+  vector<double> ex_time, x_pos, y_pos, z_pos, roll_angle, pitch_angle, yaw_angle, r_hand, l_hand;
+  vector3 wrist_p_org, wrist_r_org;
+  double rhand_org, lhand_org, hando[2], angle_o[7];
+
+  void setRobot(BodyPtr _body);
+  void setRobot();
+  bool moveRobot();
+  void calcGravityCompensation(dvector& mg);
 };
 
 extern "C"
