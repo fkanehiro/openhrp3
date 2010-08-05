@@ -57,53 +57,19 @@ public abstract class GrxTimeSeriesItem extends GrxBaseItem {
 	}
 	
 	/**
-	 * set position of pointer
-	 * @param pos position
-	 */
-    public void setPosition(Integer pos) {
-        if (0 <= pos && pos < log_.size()){
-            currentPos_ = pos;
-            notifyPosition(pos);
-        }
-    }
-
-    // viewで指定された以外に通知  //
-    public void setPosition(Integer pos, GrxBaseView view) {
-        if (0 <= pos && pos < log_.size()){
-            currentPos_ = pos;
-            ListIterator<GrxPositionObserver> it = pos_obs_.listIterator();
-            while (it.hasNext()) {
-                GrxPositionObserver pos_ob = it.next();
-                if(pos_ob != view)
-                    pos_ob.updatePosition(this ,pos);
-            }
-        }
-    }
-
-    private ArrayList<GrxPositionObserver> pos_obs_ = new ArrayList<GrxPositionObserver>();
-    
-    public void addPosObserver(GrxPositionObserver v){
-        pos_obs_.add(v);
-    }
-    
-    public void deletePosObserver(GrxPositionObserver v){
-        pos_obs_.remove(v);
-    }
-
-    private void notifyPosition(Integer pos){
-        ListIterator<GrxPositionObserver> it = pos_obs_.listIterator();
-        while (it.hasNext()) {
-            GrxPositionObserver pos_ob = it.next();
-            pos_ob.updatePosition(this, pos);
-        }
-    }
-
-	/**
 	 * get current position of pointer
 	 * @return position
 	 */
 	public int getPosition() {
 		return currentPos_;
+	}
+	
+	protected boolean setPosition(int pos){
+		if (0 <= pos && pos < log_.size()){
+			currentPos_ = pos;
+			return true;
+		}else
+			return false;
 	}
 	
     /**

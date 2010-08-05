@@ -118,6 +118,7 @@ public class GrxGraphView extends GrxBaseView {
                     currentWorld_ = worldStateItem;
                     currentWorld_.addObserver(this);
                     currentWorld_.addPosObserver(this);
+                    updatePosition(currentWorld_, currentWorld_.getPosition());
                 }
                 break;
             case GrxPluginManager.REMOVE_ITEM:

@@ -569,6 +569,7 @@ public class GrxLoggerView extends GrxBaseView {
 	    			currentItem_ = worldStateItem;
 	    			currentItem_.addObserver(this);
 	    			currentItem_.addPosObserver(this);
+	    			updatePosition(currentItem_, currentItem_.getPosition());
 	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
