@@ -324,7 +324,7 @@ public class GrxRobotStatView extends GrxBaseView {
     			if(currentWorld_ != worldStateItem){
 	    			currentWorld_ = worldStateItem;
 	    			currentState_ = currentWorld_.getValue();
-	    			updateTableViewer();
+	    			updatePosition(currentWorld_, currentWorld_.getPosition());
 	    	        currentWorld_.addObserver(this);
 	    	        currentWorld_.addPosObserver(this);
     			}

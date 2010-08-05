@@ -42,7 +42,9 @@ import org.eclipse.ui.PlatformUI;
 
 import jp.go.aist.hrp.simulator.*;
 
+import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.GrxPositionObserver;
 import com.generalrobotix.ui.GrxTimeSeriesItem;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
@@ -70,7 +72,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	private WorldStateEx preStat_ = null;
 	private int prePos_ = -1;
     
-    public  final LogManager logger_ = LogManager.getInstance();
+    public  final LogManager logger_ = new LogManager();
 	private float   recDat_[][];
     private String  lastCharName_ = null;
 	private boolean initLogFlag_ = false;
@@ -845,7 +847,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
         overPos_ = overPos;
 
         // サブディレクトリOVER_HEAP_LOG_DIR_NAMEにuseDiskがfalseの時と同様のログを生成
-        LogManager temp = LogManager.getTempInstance();
+        LogManager temp = new LogManager(logger_);
         if( temp == null){
             return;
         }
@@ -918,7 +920,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             }
             
             // サブディレクトリOVER_HEAP_LOG_DIR_NAMEの親ディレクトリにuseDiskがtrueの時と同様のログを生成
-            LogManager temp = LogManager.getTempInstance();
+            LogManager temp = new LogManager(logger_);
             if( temp == null){
                 return ret;
             }
@@ -1057,6 +1059,45 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	}
     
     public boolean isUseDsik(){ return useDisk_; }
+
+    /**
+	 * set position of pointer
+	 * @param pos position
+	 */
+    public void setPosition(Integer pos) {
+        if (super.setPosition(pos))
+            notifyPosition(pos);
+    }
+
+    // viewで指定された以外に通知  //
+    public void setPosition(Integer pos, GrxBaseView view) {
+        if (super.setPosition(pos)){
+            ListIterator<GrxPositionObserver> it = pos_obs_.listIterator();
+            while (it.hasNext()) {
+                GrxPositionObserver pos_ob = it.next();
+                if(pos_ob != view)
+                    pos_ob.updatePosition(this ,pos);
+            }
+        }
+    }
+
+    private ArrayList<GrxPositionObserver> pos_obs_ = new ArrayList<GrxPositionObserver>();
+    
+    public void addPosObserver(GrxPositionObserver v){
+        pos_obs_.add(v);
+    }
+    
+    public void deletePosObserver(GrxPositionObserver v){
+        pos_obs_.remove(v);
+    }
+
+    private void notifyPosition(Integer pos){
+        ListIterator<GrxPositionObserver> it = pos_obs_.listIterator();
+        while (it.hasNext()) {
+            GrxPositionObserver pos_ob = it.next();
+            pos_ob.updatePosition(this, pos);
+        }
+    }
 
 	public static class WorldStateEx {
 		public double time;

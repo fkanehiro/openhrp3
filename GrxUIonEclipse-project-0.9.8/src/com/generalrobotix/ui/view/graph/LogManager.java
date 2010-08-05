@@ -43,10 +43,6 @@ public class LogManager {
     private static final String POSTFIX = ".tmp";
     private static final int COLLISION_DATA_SIZE = 6 * 4 + 1 * 8;
     private static final String NONAME_OBJECT = "_noname";
-    
-    //--------------------------------------------------------------------
-    // クラス変数
-    private static LogManager this_ = null;   // LogManagerのインスタンス
 
     //--------------------------------------------------------------------
     // インスタンス変数
@@ -63,16 +59,7 @@ public class LogManager {
     private String collisionLogPath_ = new String(COLLISION_LOG_NAME);
     private String collisionLogDatPath_ = new String(COLLISION_LOG_DAT_NAME);
 
-    private String fileName_; // Zipログファイル名
-
 	private String tmpdir;
-    //--------------------------------------------------------------------
-    // コンストラクタ
-
-    /**
-     * Singletonパターン
-     */
-//    private LogManager() {}
 
     //--------------------------------------------------------------------
     // 公開メソッド
@@ -88,37 +75,17 @@ public class LogManager {
         }
     }
 
-    
-    /**
-     * インスタンスの取得（Singletonパターン)
-     */
-    public static LogManager getInstance() {
-        if (this_ == null) {
-            this_ = new LogManager();
-            String tmpdir = System.getProperty("TEMP");
-            if (tmpdir != null) {
-                this_.setTempDir(tmpdir);
-            }
-        }
-        return this_;
+    public LogManager(){
+    	
     }
-
-    // Singletonパターン
-    private LogManager(){}
-
-    /**
-     * Tempインスタンスの取得
-     */
-    public static LogManager getTempInstance() {
-        LogManager ret = null;
+    
+    public LogManager(LogManager logger) {
         String tmpdir = System.getProperty("TEMP");
-        if (this_ != null) {
-            ret = new LogManager();
+        if (logger != null) {
             if(tmpdir != null)
-                ret.setTempDir(tmpdir);
-            ret._initTempInstance();
+                setTempDir(tmpdir);
+            _initTempInstance(logger);
         }
-        return ret;
     }
 
     /**
@@ -129,7 +96,6 @@ public class LogManager {
         indexMapMap_ = new HashMap<String, Map<String, Integer>>();
         time_ = new Time();
         closeReads();
-        fileName_ = null;
     }
 
     /**
@@ -161,7 +127,7 @@ public class LogManager {
     }
 
 
-    public String getTempFilePath(String objectName) {
+    private String getTempFilePath(String objectName) {
         // String tmpdir = System.getProperty("TEMP");
         if (tmpdir != null) {
             return tmpdir + File.separator + objectName + POSTFIX;
@@ -394,12 +360,7 @@ public class LogManager {
     }
 
     public void jointLogs() throws IOException {
-        String srcDir = LogManager.this_.tmpdir;
-        
-        if (tmpdir.equals(srcDir) ){
-            // 作業ディレクトリがLogManager.thisと同じディレクトリなら中止
-            return;
-        }
+        String srcDir = tmpdir;
         
         long leftSize = 0;
         byte[] buffer = new byte[1024 * 1024];
@@ -453,13 +414,8 @@ public class LogManager {
 
     
     public void separateLogs(final int changePos) throws IOException {
-        String srcDir = LogManager.this_.tmpdir;
-        
-        if (tmpdir.equals(srcDir) ){
-            // 作業ディレクトリがLogManager.thisと同じディレクトリなら中止
-            return;
-        }
-        
+        String srcDir = tmpdir;
+                
         long leftSize = 0;
         byte[] buffer = new byte[1024 * 1024];
         
@@ -498,7 +454,7 @@ public class LogManager {
         collisionLog_.separateCollisionLogHeader(localColLog,changePos);
 
         // this_.collisionLogDatの分離
-        final int offset = LogManager.this_.collisionLog_.position_.get(changePos);
+        final int offset = collisionLog_.position_.get(changePos);
         File colData = new File(srcDir + File.separator + COLLISION_LOG_DAT_NAME);
         FileInputStream fileInStream = new FileInputStream(colData);
         fileInStream.skip( offset );
@@ -539,7 +495,6 @@ public class LogManager {
             zip.flush();
             zip.closeEntry();
             zip.close();
-            fileName_ = fileName;
         } catch (IOException ex) {
             throw ex;
         }
@@ -1477,12 +1432,12 @@ public class LogManager {
         return ((Integer) (((Map) indexMapMap_.get(obj)).get(member))).intValue();
     }
     
-    private void _initTempInstance(){
-        if( this != LogManager.this_ ){
-            header_ = this_.header_;
-            indexMapMap_ = this_.indexMapMap_;
+    private void _initTempInstance(LogManager logger){
+        if( this != logger ){
+            header_ = logger.header_;
+            indexMapMap_ = logger.indexMapMap_;
+            collisionLog_ = logger.collisionLog_;
             time_ = new Time();
-            fileName_ = null;
         }
     }
 
