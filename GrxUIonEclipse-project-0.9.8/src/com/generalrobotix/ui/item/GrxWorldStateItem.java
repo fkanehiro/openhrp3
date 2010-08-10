@@ -21,6 +21,7 @@ package com.generalrobotix.ui.item;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.Runtime;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -425,7 +426,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             }
             if (cpos.servoState != null){
             	for (int j=0; j<cpos.servoState.length; j++){
-            		recDat_[i][k++] = (float)cpos.servoState[j];
+            		ByteBuffer buffer = ByteBuffer.allocate(10);
+            		buffer.putInt(cpos.servoState[j]);
+            		float f = buffer.getFloat(0);
+            		recDat_[i][k++] = f;
+            		//recDat_[i][k++] = (float)cpos.servoState[j];
             	}
             }
             try {
@@ -587,7 +592,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                 }
                 if (cpos.servoState != null){
                 	for (int j=0; j<cpos.servoState.length; j++){
-                		cpos.servoState[j] = (int)f[k++];
+                		ByteBuffer buffer = ByteBuffer.allocate(10);
+                		buffer.putFloat(f[k++]);
+                		int ss = buffer.getInt(0);
+                		cpos.servoState[j] = ss;
+                		//cpos.servoState[j] = (int)f[k++];
                 	}
                 }
             }
