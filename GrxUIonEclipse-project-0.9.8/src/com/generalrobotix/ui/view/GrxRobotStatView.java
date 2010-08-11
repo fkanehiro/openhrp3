@@ -100,6 +100,7 @@ public class GrxRobotStatView extends GrxBaseView {
     private Color white_;
     private Color black_;
     private Color red_;
+    private Color blue_;
     private Color yellow_;
     
     private String osName_ = "Windows";
@@ -113,6 +114,7 @@ public class GrxRobotStatView extends GrxBaseView {
         white_ = Activator.getDefault().getColor("white");
         black_ = Activator.getDefault().getColor("black");
         red_ = Activator.getDefault().getColor("red");
+        blue_ = Activator.getDefault().getColor("blue");
         yellow_ = Activator.getDefault().getColor("yellow");
         
         Composite mainPanel = new Composite(composite_, SWT.NONE);
@@ -609,6 +611,10 @@ public class GrxRobotStatView extends GrxBaseView {
                         return red_;
                     }
                     break;
+                case 5:
+                	if (_isPowerOn(currentSvStat_[rowIndex]))
+                		return blue_;
+                	break;
                 case 6:
                     if (_isServoOn(currentSvStat_[rowIndex])) 
                         return red_;
