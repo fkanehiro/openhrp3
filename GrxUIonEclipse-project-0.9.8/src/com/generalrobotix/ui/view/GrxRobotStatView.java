@@ -654,7 +654,17 @@ public class GrxRobotStatView extends GrxBaseView {
                         return boldFont_;
                     }
                     break;
-               case 6:
+                case 3:
+                case 4:
+                    break;
+                case 5:
+                    if (currentSvStat_ == null)
+                        break;
+                    if (_isPowerOn(currentSvStat_[rowIndex])) {
+                        return boldFont_;
+                    }
+                    break;
+                case 6:
                     if (currentSvStat_ == null)
                         break;
                     if (_isServoOn(currentSvStat_[rowIndex])) {
@@ -668,9 +678,6 @@ public class GrxRobotStatView extends GrxBaseView {
                            return boldFont_;                         
                    }
                    break;
-                case 4:
-                case 5:
-                    break;
                 case 8:
                 	if (currentSvStat_ == null)                     
                 		break;                               
