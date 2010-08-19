@@ -23,6 +23,7 @@ public class DataItemInfo {
     public final DataItem dataItem; // データアイテム
     public RGB    color;      // 色
     public String   legend;     // 凡例文字列
+    public DataSeries dataSeries;
 
     // -----------------------------------------------------------------
     // コンストラクタ
@@ -41,5 +42,6 @@ public class DataItemInfo {
         this.dataItem = dataItem;
         this.color = color;
         this.legend = legend;
+        dataSeries = null;
     }
 }

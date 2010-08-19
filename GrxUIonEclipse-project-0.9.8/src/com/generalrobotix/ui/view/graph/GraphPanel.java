@@ -48,7 +48,7 @@ public class GraphPanel extends Composite{
     //--------------------------------------------------------------------
     private GraphElement[] graphElement_;
     public GraphElement currentGraph_;
-    private TrendGraphManager trendGraphMgr_;
+    private TrendGraphModel trendGraphMgr_;
     private List<GrxModelItem> currentModels_ = null;
 
     private static final Color normalColor_ = Activator.getDefault().getColor("black");
@@ -84,7 +84,7 @@ public class GraphPanel extends Composite{
     private GrxPluginManager manager_;
     private DataItemInfo[] addedArray_;
      
-     public GraphPanel(GrxPluginManager manager, TrendGraphManager trendGraphMgr, Composite comp) {
+     public GraphPanel(GrxPluginManager manager, TrendGraphModel trendGraphMgr, Composite comp) {
         super(comp, SWT.NONE);
         manager_ = manager;
         trendGraphMgr_ = trendGraphMgr;
@@ -144,15 +144,11 @@ public class GraphPanel extends Composite{
                         double hRange = hRangeDialog_.getHRange();
                         double mpos =   hRangeDialog_.getMarkerPos();
                         if ((flag & HRangeDialog.RANGE_UPDATED) != 0
-                            && (flag & HRangeDialog.POS_UPDATED) != 0) {
+                            || (flag & HRangeDialog.POS_UPDATED) != 0) {
                             tg.setTimeRangeAndPos(hRange, mpos);
-                        } else if ((flag & HRangeDialog.RANGE_UPDATED) != 0) {
-                            tg.setTimeRange(hRange);
-                        } else {
-                            tg.setMarkerPos(mpos);
                         }
-                        graphItem.setDblAry(currentGraph_.getTrendGraph().getNodeName()+".timeRange", new double[]{hRange, mpos}); //$NON-NLS-1$
-                        redraw(getLocation().x,getLocation().y,getSize().x,getSize().y,true);
+                        graphItem.setDblAry("timeRange", new double[]{hRange, mpos}); //$NON-NLS-1$
+                        trendGraphMgr_.updateGraph();
                     }
                 }
         	}
@@ -213,7 +209,7 @@ public class GraphPanel extends Composite{
                         }
                         dii = seriesDialog_.getRemovedList();
                         for (int i = 0; i < dii.length; i++) {
-                            tg.removeDataItem(dii[i].dataItem);
+                            tg.removeDataItem(dii[i]);
                         }
                         
                         addedArray_ = seriesDialog_.getAddedList();
@@ -222,7 +218,7 @@ public class GraphPanel extends Composite{
                         }
                         
                         String graphName = tg.getNodeName();
-                        Enumeration enume = graphItem.propertyNames();
+                        Enumeration<?> enume = graphItem.propertyNames();
                         while (enume.hasMoreElements()) {
                         	String key = (String)enume.nextElement();
                         	if (key.startsWith(graphName))
@@ -247,7 +243,7 @@ public class GraphPanel extends Composite{
                         }
                         graphItem.setProperty(graphName+".dataItems",dataItems); //$NON-NLS-1$
                         updateButtons();
-                        redraw(getLocation().x,getLocation().y,getSize().x,getSize().y,true);
+                        trendGraphMgr_.updateGraph();
                     }
                 }
             }

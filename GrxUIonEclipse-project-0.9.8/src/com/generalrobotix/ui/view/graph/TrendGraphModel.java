@@ -11,10 +11,12 @@ package com.generalrobotix.ui.view.graph;
 
 import java.util.*;
 
+import com.generalrobotix.ui.GrxTimeSeriesItem;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
+import com.generalrobotix.ui.util.GrxDebugUtil;
 
 /**
  * トレンドグラフモデルクラス
@@ -23,16 +25,14 @@ import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
  * @version 1.0 (2001/8/20)
  */
 public class TrendGraphModel
-  //  implements WorldTimeListener, WorldReplaceListener
 {
+	private TrendGraph[] trendGraph_;
+	
     public  static final double TIME_SCALE = 1000000;   // タイムカウントの倍率(1μsec)
     private static final double MAX_DIV = 10;   // 時間軸の最大分割数
     private static final double LOG10 = Math.log(10);
 
     private long stepTimeCount_;    // 時間刻み幅(カウント)
-    private long totalTimeCount_;   // 総時間(カウント)
-    private long currentTimeCount_; // 現在時刻(カウント)
-    private long dataTermCount_;    // データの終端の時刻(カウント)
 
     private double stepTime_;       // 時間刻み幅(秒)
     private double totalTime_;      // 総時間(秒)
@@ -48,143 +48,76 @@ public class TrendGraphModel
 
     private AxisInfo timeAxisInfo_; // 時間軸情報
 
-    //private HashMap dataSeriesMap_; // データ系列一覧
     private HashMap<String, ArrayList<String> > dataItemCount_; // データアイテムカウンタ
                                     // (どのデータ系列にいくつのデータアイテムが割り当てられているか)
 
     private HashMap<String, DataModel> dataModelMap_;   // データモデル一覧
     private DataModel[] dataModelArray_;    // データモデル一覧
     
-    
-    //private DummyDataSource dumSource_; // ★ダミーデータソース
     private GrxWorldStateItem world_ = null;
 
     private boolean markerFixed_;   // 現在時刻マーカ固定フラグ
     private double fixedMarkerPos_; // 固定マーカ位置
 
-    private int mode_;  // モード
-
-    private int prevLogSize_ = -1;    
+   //private int mode_;  // モード
+    private GraphPanel gPanel_= null;
     
-  //  private SimulationWorld world_;
+    private long prevLogSize_ = -1;    
+    
     /**
      * コンストラクタ
-     *
-     * @param   logManager  ログマネージャ
      */
-    public TrendGraphModel() {
-        stepTimeCount_ = 1000;  // 時間刻み幅   ★初期設定ファイルから読む?
-        totalTimeCount_ = 10000000;  // 総時間   ★初期設定ファイルから読む?
-        currentTimeCount_ = 0;  //1000000;
-        stepTime_ = stepTimeCount_ / TIME_SCALE;
-        totalTime_ = totalTimeCount_ / TIME_SCALE;
-        currentTime_ = currentTimeCount_ / TIME_SCALE;
-
-        timeRange_ = 1;     // 時間レンジ   ★初期設定ファイルから読む?
-
-        fixedMarkerPos_ = 0.8;   // 現在時刻マーカ位置   ★初期設定ファイルから読む?
-        markerFixed_ = (timeRange_ < totalTime_);
-        if (markerFixed_) { // マーカ固定?
-            markerPos_ = fixedMarkerPos_;
-            baseTime_ = currentTime_ - timeRange_ * markerPos_; // グラフ左端位置
-            sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-            baseCount_ = Math.round(baseTime_ / stepTime_); // - 1; // データ開始位置
-        } else {
-            markerPos_ = currentTime_ / timeRange_;
-            baseTime_ = 0;
-            sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-            baseCount_ = 0;
-        }
-
+    public TrendGraphModel(int numGraph) {
+    	
         // 軸情報生成
-        timeAxisInfo_ = new AxisInfo(baseTime_, timeRange_);
-        _updateDiv();    // 軸分割更新
+        timeAxisInfo_ = new AxisInfo(0,0);
         timeAxisInfo_.min = 0;
-        timeAxisInfo_.max = totalTime_;
         timeAxisInfo_.minLimitEnabled = true;
         timeAxisInfo_.maxLimitEnabled = true;
-        //timeAxisInfo_.unitFont = new Font(Display.getDefault(), "dialog", SWT.NORMAL, 12);
         timeAxisInfo_.unitXOfs = 12;
         timeAxisInfo_.unitYOfs = 0;
         timeAxisInfo_.unitLabel = "(sec)";
-        timeAxisInfo_.markerPos = markerPos_;
         timeAxisInfo_.markerColor = Activator.getDefault().getColor( "markerColor" );
         timeAxisInfo_.markerVisible = true;
 
-        //dataSeriesMap_ = new HashMap();
         dataItemCount_ = new HashMap<String, ArrayList<String> >();
         dataModelMap_ = new HashMap<String, DataModel>();
         dataModelArray_ = null;
-
-        mode_ = GUIStatus.EDIT_MODE;
-
-      //  logManager_ = LogManager.getInstance();
-
-        // ★ダミーデータソース
-        /*
-        dumSource_ = new DummyDataSource(10000);
-        dumSource_.addDataItem(
-            new DataItem("rob1", "LARM_JOINT3", "angle", -1),
-            -3.14, 3.14
-        );
-
-        dumSource_.addDataItem(
-            new DataItem("rob1", "LARM_JOINT3", "absPos", 0),
-            -10, 10
-        );
-        dumSource_.addDataItem(
-            new DataItem("rob1", "LARM_JOINT3", "absPos", 1),
-            -10, 10
-        );
-        dumSource_.addDataItem(
-            new DataItem("rob1", "LARM_JOINT3", "absPos", 2),
-            -10, 10
-        );
-
-        dumSource_.addDataItem(
-            new DataItem(null, "VLINK1", "contactForce", 0),
-            0, 1000
-        );
-        dumSource_.addDataItem(
-            new DataItem(null, "VLINK1", "contactForce", 1),
-            0, 1000
-        );
-        dumSource_.addDataItem(
-            new DataItem(null, "VLINK1", "contactForce", 2),
-            0, 1000
-        );
-
-        dumSource_.addDataItem(
-            new DataItem("rob2", "RLEG_JOINT2", "absComPos", 0),
-            -10, 10
-        );
-        dumSource_.addDataItem(
-            new DataItem("rob2", "RLEG_JOINT2", "absComPos", 1),
-            -10, 10
-        );
-        dumSource_.addDataItem(
-            new DataItem("rob2", "RLEG_JOINT2", "absComPos", 2),
-            -10, 10
-        );
-
-        dumSource_.createData();
-        */
+      
+        trendGraph_ = new TrendGraph[numGraph];
+        for (int i = 0; i < trendGraph_.length; i ++) {
+            StringBuffer graphName = new StringBuffer("Graph");
+            graphName.append(i);
+            trendGraph_[i] = new TrendGraph(this, graphName.toString());
+        }
     }
 
+    public int getNumGraph() {
+        return trendGraph_.length;
+    }
+
+    public TrendGraph getTrendGraph(int index) {
+        return trendGraph_[index];
+    }
+
+    public String getTrendGraphName(int index) {
+        if (index < 0 || index >= trendGraph_.length) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        StringBuffer graphName = new StringBuffer("Graph");
+        graphName.append(index);
+        return graphName.toString();
+    }
+    
+    public void worldTimeChanged(Time time) {
+        setCurrentTime(time.getUtime());
+        for (int i = 0; i < trendGraph_.length; i ++) {
+            trendGraph_[i].repaint();
+        }
+    }
+   
     // -----------------------------------------------------------------
     // メソッド
-    /**
-     * モードの設定
-     *   GUIManager.GUI_STATUS_EDIT:   編集モード
-     *   GUIManager.GUI_STATUS_EXEC:   シミュレーション実行モード
-     *   GUIManager.GUI_STATUS_PLAY:   再生モード
-     * 
-     * @param   mode    モード
-     */
-    public void setMode(int mode) {
-        mode_ = mode;
-    }
-
     /**
      * 時間軸情報取得
      *
@@ -207,16 +140,15 @@ public class TrendGraphModel
 
         sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数(前後2サンプルを追加)
         baseCount_ = Math.round(baseTime_ / stepTime_); //- 1; // データ開始位置
-
+        
         // 全データ系列の更新
         Iterator itr = dataModelMap_.values().iterator();
         while (itr.hasNext()) {
             DataModel dm = (DataModel)itr.next();
             dm.dataSeries.setSize(sampleCount_);
             dm.dataSeries.setXStep(stepTime_);
+            dm.dataSeries.setXOffset(baseCount_);
         }
-
-        // データを読み直す必要はない(時間刻み幅が設定されるのは編集モードだから)
     }
 
     /**
@@ -224,79 +156,10 @@ public class TrendGraphModel
      *
      * @param   totalTime   long    総時間(カウント)
      */
-    public void setTotalTime(long totalTime) {
-        totalTimeCount_ = totalTime;
-        totalTime_ = totalTimeCount_ / TIME_SCALE;
-        timeAxisInfo_.max = totalTime_; // 軸最大値の更新
-
-        //System.out.println("totalTime="+totalTime);
-
-        if (markerFixed_) {
-            markerFixed_ = (timeRange_ < totalTime_);
-            if (markerFixed_) { // fixed -> fixed ?
-                return;
-            } else {    // fixed -> not fixed ?
-                markerPos_ = currentTime_ / timeRange_;
-                baseTime_ = 0;
-                sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-                baseCount_ = 0;
-            }
-        } else {
-            markerFixed_ = (timeRange_ < totalTime_);
-            if (markerFixed_) { // non fixed -> fixed ?
-                markerPos_ = fixedMarkerPos_;
-                baseTime_ = currentTime_ - timeRange_ * markerPos_; // グラフ左端位置
-                sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-                baseCount_ = Math.round(baseTime_ / stepTime_); // - 1; // データ開始位置
-            } else {    // not fixed -> not fixed ?
-                markerPos_ = currentTime_ / timeRange_;
-                baseTime_ = 0;
-                sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-                baseCount_ = 0;
-            }
-        }
-
-        timeAxisInfo_.base = baseTime_;
-        timeAxisInfo_.extent = timeRange_;
-        timeAxisInfo_.markerPos = markerPos_;
-        _updateDiv();
-
-        // 全データ系列の更新
-        Iterator itr = dataModelMap_.values().iterator();
-        while (itr.hasNext()) {
-            DataModel dm = (DataModel)itr.next();
-            dm.dataSeries.setSize(sampleCount_);
-            //dm.dataSeries.setXOffset(baseTime_);  ★これではダメ
-            dm.dataSeries.setXOffset(baseCount_ * stepTime_);
-        }
-
-        // データを読み直す
-        //   時間レンジを変更できるのは編集モード、再生モードのみ
-        //   再生モードの場合のみデータを読み直す
-        if (dataModelArray_ == null) {
-            return;
-        }
-        if (mode_ == GUIStatus.EDIT_MODE) {
-            return;
-        }
-        // ★
-        //System.out.println("baseCount_=" + baseCount_);
-        _getData(baseCount_, 0, sampleCount_, dataModelArray_);
+    public void setTotalTime(double totalTime) {
+    	totalTime_ = totalTime;
+        timeAxisInfo_.max = totalTime_; 
     }
-
-    /**
-     * 総時間および時間刻み幅設定
-     *
-     * @param   totalTime   総時間(カウント)
-     * @param   stepTime    時間刻み幅(カウント)
-     */
-    /*
-    public void setTotalAndStepTime(
-        long totalTime,
-        int stepTime
-    ) {
-    }
-    */
 
     /**
      * 時間レンジおよびマーカ位置設定
@@ -308,80 +171,12 @@ public class TrendGraphModel
         double timeRange,
         double markerPos
     ) {
-        if (fixedMarkerPos_ == markerPos
-            && timeRange_ == timeRange) {
-            return;
-        }
-        _setTimeRange(timeRange, markerPos);
-    }
-
-    /**
-     * 時間レンジ設定
-     *
-     * @param   timeRange   double  時間レンジ(秒)
-     */
-    public void setTimeRange(
-        double timeRange
-    ) {
-        if (timeRange_ == timeRange) {
-            return;
-        }
-        _setTimeRange(timeRange, fixedMarkerPos_);
-    }
-
-    /**
-     * 時間レンジ設定
-     *
-     * @param   timeRange   double  時間レンジ(秒)
-     */
-    private void _setTimeRange(
-        double timeRange,
-        double markerPos
-    ) {
         timeRange_ = timeRange;
         fixedMarkerPos_ = markerPos;
-
-        markerFixed_ = (timeRange_ < totalTime_);
-        if (markerFixed_) { // マーカ固定?
-            markerPos_ = fixedMarkerPos_;
-            baseTime_ = currentTime_ - timeRange_ * markerPos_; // グラフ左端位置
-            sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-            baseCount_ = Math.round(baseTime_ / stepTime_); // - 1; // データ開始位置
-        } else {
-            markerPos_ = currentTime_ / timeRange_;
-            baseTime_ = 0;
-            sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-            baseCount_ = 0;
-        }
-        //System.out.println("*** base= " + (baseTime_ / stepTime_));
-        //System.out.println("*** cnt = " + baseCount_);
-
-        timeAxisInfo_.base = baseTime_;
         timeAxisInfo_.extent = timeRange_;
-        timeAxisInfo_.markerPos = markerPos_;
         _updateDiv();
-
-        // 全データ系列の更新
-        Iterator itr = dataModelMap_.values().iterator();
-        while (itr.hasNext()) {
-            DataModel dm = (DataModel)itr.next();
-            dm.dataSeries.setSize(sampleCount_);
-            //dm.dataSeries.setXOffset(baseTime_);  ★これではダメ
-            dm.dataSeries.setXOffset(baseCount_ * stepTime_);
-        }
-
-        // データを読み直す
-        //   時間レンジを変更できるのは編集モード、再生モードのみ
-        //   再生モードの場合のみデータを読み直す
-        if (dataModelArray_ == null) {
-            return;
-        }
-        if (mode_ == GUIStatus.EDIT_MODE) {
-            return;
-        }
-        // ★
-        //System.out.println("baseCount_=" + baseCount_);
-        _getData(baseCount_, 0, sampleCount_, dataModelArray_);
+        
+        init();
     }
 
     /**
@@ -391,65 +186,6 @@ public class TrendGraphModel
      */
     public double getTimeRange() {
         return timeRange_;
-    }
-
-    /**
-     * マーカ位置設定
-     *
-     * @param   markerPos   double  マーカ位置
-     */
-    public void setMarkerPos(double markerPos) {
-        if (markerPos == fixedMarkerPos_) {
-            return;
-        }
-        fixedMarkerPos_ = markerPos;
-
-        if (!markerFixed_) { // マーカ固定でない?
-            return; // なにもしない
-        }
-
-        markerPos_ = fixedMarkerPos_;
-        baseTime_ = currentTime_ - timeRange_ * markerPos_; // グラフ左端位置
-        long oldBaseCount = baseCount_;
-        baseCount_ = Math.round(baseTime_ / stepTime_); // - 1; // データ開始位置
-
-        timeAxisInfo_.base = baseTime_;
-        timeAxisInfo_.markerPos = markerPos_;
-        //_updateDiv();
-
-        int diff = (int)(baseCount_ - oldBaseCount);
-
-        // 全データ系列の移動
-        Iterator itr = dataModelMap_.values().iterator();
-        while (itr.hasNext()) {
-            DataSeries ds = ((DataModel)itr.next()).dataSeries;
-            ds.shift(diff);
-            //System.out.println("shift=" + diff);
-        }
-
-        // データを読み直す
-        //   マーカ位置を変更できるのは編集モード、再生モードのみ
-        //   再生モードの場合のみ差分データを読み出す
-        if (diff == 0 || dataModelArray_ == null) {
-            return;
-        }
-        // ★
-        if (mode_ == GUIStatus.EDIT_MODE) {
-            return;
-        }
-        if (diff > 0) {
-            if (diff >= sampleCount_) {
-                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
-            } else {
-                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
-            }
-        } else {
-            if (-diff >= sampleCount_) {
-                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
-            } else {
-                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
-            }
-        }
     }
 
     /**
@@ -479,41 +215,39 @@ public class TrendGraphModel
         return totalTime_;
     }
 
-    public void clearDataSeries() {
-        if(dataModelArray_ == null)
-            return;
-
-        for (int i = 0; i < dataModelArray_.length; i++){
-            double[] data = dataModelArray_[i].dataSeries.getData();
-            for(int j = 0; j < data.length; j++){
-                data[j] = Double.NaN;
-            }
-        }
-        prevLogSize_ = -1;
-    }
-
     /**
      * 現在時刻設定
      *
      * @param   long    currentTime 現在時刻(カウント)
      */
     public void setCurrentTime(long currentTime) {
-        //System.out.println("setCurrentTime(): crrentTime=" + currentTime);
+        currentTime_ = currentTime / TIME_SCALE;
 
-        currentTimeCount_ = currentTime;
-        currentTime_ = currentTimeCount_ / TIME_SCALE;
-
-        if (!markerFixed_) {    // マーカ固定でない?
+        long oldBaseCount = baseCount_;
+        long totalCount = Math.round(totalTime_ / stepTime_);
+        markerFixed_ = (timeRange_ * fixedMarkerPos_ < totalTime_);
+        if (markerFixed_) { 
+            markerPos_ = fixedMarkerPos_;
+            baseTime_ = currentTime_ - timeRange_ * markerPos_; // グラフ左端位置
+            baseCount_ = Math.round(baseTime_ / stepTime_); // - 1; // データ開始位置
+        } else {
             markerPos_ = currentTime_ / timeRange_;
-            timeAxisInfo_.markerPos = markerPos_;
+            baseTime_ = 0;
+            baseCount_ = 0;
+        }
+        
+        timeAxisInfo_.markerPos = markerPos_;
+        timeAxisInfo_.base = baseTime_;
+               
+        if (dataModelArray_ == null) {
             return;
         }
-
-        baseTime_ = currentTime_ - timeRange_ * markerPos_; // グラフ左端位置
-        long oldBaseCount = baseCount_;
-        baseCount_ = Math.round(baseTime_ / stepTime_); // - 1; // データ開始位置
-        timeAxisInfo_.base = baseTime_;
-
+        
+        if(totalCount==0)
+        	return;
+        
+        // データを読み直す
+        
         int diff = (int)(baseCount_ - oldBaseCount);
 
         // 全データ系列の移動
@@ -522,115 +256,27 @@ public class TrendGraphModel
             DataSeries ds = ((DataModel)itr.next()).dataSeries;
             ds.shift(diff);
         }
+        
+        if(prevLogSize_ < totalCount)
+        {
+            int yet = (int)(baseCount_ + sampleCount_ - prevLogSize_);
+            if(diff < yet)
+                diff = yet;
+        }
+        prevLogSize_ = totalCount;
 
-        // データを読み直す
-        //   マーカ位置を変更できるのは編集モード、再生モードのみ
-        //   再生モードの場合のみ差分データを読み出す
-        if (diff == 0 || dataModelArray_ == null) {
-            //System.out.println("diff=" + diff);
-            return;
-        }
-        // ★
-        if (mode_ == GUIStatus.EDIT_MODE) {
-            System.out.println("GUIMODE_EDIT");
-            return;
-        }
         if (diff > 0) {
-            // シミュレーション時のログ補正を行う。
-            int logSize = world_.getLogSize() - 1; 
-            if(prevLogSize_ < logSize)
-            {
-                int yet = (int)(baseCount_ + sampleCount_ - prevLogSize_);
-                if(diff < yet)
-                    diff = yet;
-            }
-            prevLogSize_ = logSize;
-            
-            if (diff >= sampleCount_) {
-                //System.out.println("getData(): patern 1 in");
-                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
-                //System.out.println("getData(): patern 1 out");
+           if (diff >= sampleCount_) {
+                _getData(baseCount_, 0, sampleCount_);
             } else {
-                //System.out.println("base=" + baseCount_ + ", ofs=" + (sampleCount_ - diff) + ", count=" + diff);
-                //System.out.println("getData(): patern 2 in");
-                _getData(baseCount_, sampleCount_ - diff, diff, dataModelArray_);
-                //System.out.println("getData(): patern 2 out");
+            	_getData(baseCount_, sampleCount_ - diff, diff);
             }
         } else {
             if (-diff >= sampleCount_) {
-                //System.out.println("getData(): patern 3 in");
-                _getData(baseCount_, 0, sampleCount_, dataModelArray_);
-                //System.out.println("getData(): patern 3 out");
+                _getData(baseCount_, 0, sampleCount_);
             } else {
-                //System.out.println("base=" + baseCount_ + ", ofs=0, count=" + (-diff));
-                //System.out.println("getData(): patern 4 in");
-                _getData(baseCount_, 0, -diff, dataModelArray_);
-                //System.out.println("getData(): patern 4 out");
+                _getData(baseCount_, 0, -diff);
             }
-        }
-    }
-
-    /**
-     * 現在時刻を1ステップ移動
-     *
-     */
-    public void shiftCurrentTime() {
-        // 現在時刻の移動
-        //currentTimeCount_ += stepTimeCount_; //★ここで加算するのはおかしい
-        //System.out.println("shiftCurrentTime(): currentTimeCount=" + currentTimeCount_);
-        currentTime_ = currentTimeCount_ / TIME_SCALE;
-//        int setPos;
-        if (markerFixed_) { // マーカ固定?
-            baseTime_ = currentTime_ - timeRange_ * markerPos_; // グラフ左端位置
-            baseCount_ = Math.round(baseTime_ / stepTime_); // データ開始位置
-            timeAxisInfo_.base = baseTime_;
-//            setPos = (int)Math.round(timeRange_ * markerPos_ / stepTime_);  // データ設定位置
-        } else {    // マーカ移動?
-            markerPos_ = currentTime_ / timeRange_;
-            timeAxisInfo_.markerPos = markerPos_;
-//            setPos = (int)(currentTimeCount_ / stepTimeCount_);
-        }
-        // 現在値の取得
-//        Iterator itr = dataModelMap_.values().iterator();
-        //if (!itr.hasNext()) { System.out.println("dataModelMap is empty!!!"); }
- /*       while (itr.hasNext()) { // 全データモデルをループ
-            DataModel dm = (DataModel)itr.next();
-            DataItem di = dm.dataItem;
-            DataSeries ds = dm.dataSeries;
-
-            StringExchangeable se = world_.getAttributeFromPath(    // 現在のアトリビュートを取得
-                di.getAttributePath()
-            );
-            
-            // アトリビュート値取得
-            double val;
-            if (di.isArray()) {
-                if (se instanceof SETranslation) {
-                    SETranslation st = (SETranslation)se;
-                    if (di.index == 0) {
-                        val = st.getX();
-                    } else if (di.index == 1) {
-                        val = st.getY();
-                    } else {
-                        val = st.getZ();
-                    }
-                } else {
-                    val = ((SEDoubleArray)se).doubleValue(di.index);
-                }
-            } else {
-                val = ((SEDouble)se).doubleValue();
-            }
-            //System.out.println("value = " + val);
-            ds.set(setPos, val);
-            if (markerFixed_) {
-                ds.shift(1);
-            }
-            //ds.addLast(val);    // ★データ系列末尾に追加 <--- これは間違い
-        }
-*/
-        if (currentTimeCount_ < totalTimeCount_) {
-            currentTimeCount_ += stepTimeCount_;
-            //System.out.println("currentTimeCount=" + currentTimeCount_);
         }
     }
 
@@ -645,10 +291,6 @@ public class TrendGraphModel
     ) {
         DataSeries ds;
         DataModel dm;
-
-    /*    if (!world_.hasAttributeByPath(dataItem.getAttributePath())) {
-            return null;
-        }*/
 
         String key = dataItem.toString();
         ArrayList<String> l = dataItemCount_.get(key);
@@ -665,28 +307,13 @@ public class TrendGraphModel
             dataModelMap_.put(key, dm);
             dataModelArray_ = new DataModel[dataModelMap_.size()];
             dataModelMap_.values().toArray(dataModelArray_);
-            // データを読み込む
-            //   データアイテムを追加できるのは編集モード、再生モードのみ
-            //   再生モードの場合のみデータを読み出す
-            // ★
-// commented by grx
-//            if (mode_ != GUIStatus.EDIT_MODE) {
-//                logManager_.getData(baseCount_, 0, sampleCount_, new DataModel[]{dm});
-//            }
-
-            // アトリビュートフラグの変更
-            //System.out.println("###### locked (" + dataItem.getAttributePath() + ")");
-       /*     world_.setAttributeFlagFromPath(
-                dataItem.getAttributePath(),
-                Attribute.RECORD_REQUIRED | Attribute.RECORD_FLAG_LOCKED,   // ★MUST_RECORDなものにRECORD_REQUIREDをセットしても大丈夫か?
-                true
-            );*/
-
         } else {
             l.add(key);
             ds = ((DataModel)dataModelMap_.get(key)).dataSeries;
         }
 
+        initGetData();
+        
         return ds;
     }
 
@@ -745,24 +372,6 @@ public class TrendGraphModel
     }
 
     // -----------------------------------------------------------------
-    // WorldTimeListenerの実装
-    /**
-     * 時刻変化
-     * 
-     * @param   time    時刻
-     */
-    public void worldTimeChanged(Time time) {
-        //System.out.println("@@@ TimeChanged @@@ " + time.getUtime());
-        /*
-        if (mode_ == GUIManager.GUI_STATUS_EXEC) {
-            shiftCurrentTime();
-        } else if (mode_ == GUIManager.GUI_STATUS_PLAY) {
-            setCurrentTime(time.getUtime());
-        }
-        */
-    }
-
-    // -----------------------------------------------------------------
     // プライベートメソッド
     /**
      * 軸分割更新
@@ -802,139 +411,48 @@ public class TrendGraphModel
         timeAxisInfo_.labelFormat = format;
     }
 
-    // -----------------------------------------------------------------
-    // WorldReplaceListenerの実装
-    /**
-     * 世界の更新
-     *
-     * @param   world   世界
-     */
-/*    public void replaceWorld(SimulationWorld world) {
-        world_ = world;
-        //world_.addTimeListener(this);
-    }
-*/
-    /**
-     * 全設定
-     *
-     * @param   totalTime   総時間(マイクロ秒)
-     * @param   stepTime    積分時間(マイクロ秒)
-     * @param   currentTime 現在時刻(マイクロ秒)
-     * @param   timeRange   時間レンジ(秒)
-     * @param   markerPos   マーカ位置
-     */
-    public void setup(
-        long    totalTime,
-        long    stepTime,
-        long    currentTime,
-        double  timeRange,
-        double  markerPos
-    ) {
-        /*
-        System.out.println("totalTime=" + totalTime);
-        System.out.println("stepTime=" + stepTime);
-        System.out.println("currentTime=" + currentTime);
-        System.out.println("timeRange=" + timeRange);
-        */
-        totalTimeCount_ = totalTime;
-        stepTimeCount_ = stepTime;
-        currentTimeCount_ = currentTime;
-        timeRange_ = timeRange;
-        fixedMarkerPos_ = markerPos;
-
-        dataTermCount_ = 0L;
-
-        totalTime_ = totalTimeCount_ / TIME_SCALE;
-        stepTime_ = stepTimeCount_ / TIME_SCALE;
-        currentTime_ = currentTimeCount_ / TIME_SCALE;
-
-        markerFixed_ = (timeRange_ < totalTime_);
-        if (markerFixed_) {
-            markerPos_ = fixedMarkerPos_;
-            baseTime_ = currentTime_ - timeRange_ * markerPos_; // グラフ左端位置
-            sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-            baseCount_ = Math.round(baseTime_ / stepTime_); // - 1; // データ開始位置
-            //System.out.println("(fixed) sampleCount=" + sampleCount_);
-            //System.out.println("(fixed) baseCount=" + baseCount_);
-        } else {
-            markerPos_ = currentTime_ / timeRange_;
-            baseTime_ = 0;
-            sampleCount_ = (int)Math.floor(timeRange_ / stepTime_) + 2;  // サンプル数
-            baseCount_ = 0;
-            //System.out.println("(not fixed) sampleCount=" + sampleCount_);
-            //System.out.println("(not fixed) baseCount=" + baseCount_);
-        }
-
-        timeAxisInfo_.max = totalTime_; // 軸最大値の更新
-        timeAxisInfo_.base = baseTime_;
-        timeAxisInfo_.extent = timeRange_;
-        timeAxisInfo_.markerPos = markerPos_;
-        _updateDiv();
-
-        // 全データ系列の更新
-        Iterator itr = dataModelMap_.values().iterator();
-        while (itr.hasNext()) {
-            DataModel dm = (DataModel)itr.next();
-            dm.dataSeries.setSize(sampleCount_);
-            dm.dataSeries.setXOffset(baseCount_ * stepTime_);
-            dm.dataSeries.setXStep(stepTime_);
-        }
-
-//        world_.updateAttribute("Graph0.hRange=" + Double.toString(timeRange_));
-//        world_.updateAttribute("Graph0.markerPos=" + Double.toString(fixedMarkerPos_));
-    }
-
-    public void setup(
-        long    totalTime,
-        long    currentTime
-    ) {
-        setup(
-            totalTime,
-            stepTimeCount_,
-            currentTime,
-            (
-                timeRange_ >= totalTime / TIME_SCALE
-                ? totalTime / TIME_SCALE
-                : timeRange_
-            ),
-            fixedMarkerPos_
-        );
-    }
-
-    public void setup(
-        long    totalTime,
-        long    stepTime,
-        long    currentTime
-    ) {
-        setup(
-            totalTime,
-            stepTime,
-            currentTime,
-            (
-                timeRange_ >= totalTime / TIME_SCALE
-                ? totalTime / TIME_SCALE
-                : timeRange_
-            ),
-            fixedMarkerPos_
-        );
-    }
-
-    public void reread() {
-        if (dataModelArray_ == null) {
-            return;
-        }
-        _getData(baseCount_, 0, sampleCount_, dataModelArray_);
-    }
-    
     public void setWorldState(GrxWorldStateItem world) {
         world_ = world;
+        init();
     }
     
-    private void _getData(long origin, int offset, int count, DataModel[] dataModelArray){
+    //  初期化関数　　//
+    private void init(){
+    	baseTime_ = 0;
+        currentTime_ = 0;
+        baseCount_ = 0;
+        prevLogSize_ = -1;
+        if(world_ != null){
+	        Double time = ((GrxTimeSeriesItem)world_).getTime(world_.getLogSize()-1);
+	        if(time != null)
+	        	setTotalTime(time);
+	        else
+	        	setTotalTime(0);
+	        try {
+				double step = world_.getDbl("logTimeStep", 0.001);
+				setStepTime((long)(1000000*step));
+			} catch (Exception e) {
+				GrxDebugUtil.printErr("Couldn't parse log step time.", e);
+			}
+			initGetData();
+        }else{
+        	setTotalTime(0);
+        	setStepTime(1000);
+        }
+    }
+    
+    public void initGetData(){
+    	if(dataModelArray_ != null && world_ != null)
+	    	if (world_.isUseDsik()){
+	            world_.logger_.initGetData(dataModelArray_);
+	    	}
+    }
+    
+    private void _getData(long origin, int offset, int count){
         if(world_ == null){
             return;
         } else if (world_.isUseDsik()){
-            world_.logger_.getData(origin, offset, count, dataModelArray);
+            world_.logger_.getData(origin, offset, count);
             return;
         }
         int changePos = world_.getChangePosition();
@@ -943,21 +461,21 @@ public class TrendGraphModel
         // ログの記録方式がメモリ方式からファイル方式へスイッチした場合処理
         if( changePos >= 0 ){
             if( counter <= 0 ){
-                world_.logger_.getData(-offset-counter, offset, count, dataModelArray);
+                world_.logger_.getData(-offset-counter, offset, count, dataModelArray_);
                 return;
             }
             //ログの記録方式がファイル方式とメモリ方式で混在する場合の境界処理
             if( counter <= count ){
                 count -= counter;  
-                world_.logger_.getData(-offset-counter, offset + counter, count, dataModelArray);
+                world_.logger_.getData(-offset-counter, offset + counter, count, dataModelArray_);
                 count = counter;  
             }
         }
         
         WorldStateEx refWorld = world_.getValue( (int)origin + offset );
         if(refWorld == null){
-            for(int h = 0; h < dataModelArray.length; ++h){
-                DataSeries ds = dataModelArray[h].dataSeries;
+            for(int h = 0; h < dataModelArray_.length; ++h){
+                DataSeries ds = dataModelArray_[h].dataSeries;
                 double[] dbArray = ds.getData();
                 int localOffset = (ds.getHeadPos() + offset) % dbArray.length;
                 for (int i = 0; i < count; ++i, ++localOffset){
@@ -969,12 +487,12 @@ public class TrendGraphModel
             }            
         } else {
             // メモリーデータから表示したいラインの要素を抽出する処理
-            for(int h = 0; h < dataModelArray.length; ++h){
+            for(int h = 0; h < dataModelArray_.length; ++h){
                 long recNo = origin + offset; // レコード番号
-                DataItem localDataItem = dataModelArray[h].dataItem;
+                DataItem localDataItem = dataModelArray_[h].dataItem;
                 CharacterStateEx refCharacter = refWorld.get(localDataItem.object);
                 CharacterStateEx localCharacter = refCharacter;
-                DataSeries ds = dataModelArray[h].dataSeries;
+                DataSeries ds = dataModelArray_[h].dataSeries;
                 double[] dbArray = ds.getData();
                 int localOffset = (ds.getHeadPos() + offset) % dbArray.length;
                 int index = world_.logger_.getIndex(localDataItem.object,
@@ -1050,4 +568,29 @@ public class TrendGraphModel
             }                    
         }
     }
+    
+    public void updateGraph(){
+    	if(world_!=null){
+	    	Double time = world_.getTime();
+	        if(time!=null)
+	        	setCurrentTime(new Time(time).getUtime());
+	        else
+	        	setCurrentTime(0);
+    	}else
+    		setCurrentTime(0);
+    	gPanel_.redraw(gPanel_.getLocation().x,gPanel_.getLocation().y,gPanel_.getSize().x,gPanel_.getSize().y,true);
+    }
+
+	public void clearDataItem() {		
+		for (int i = 0; i < getNumGraph(); i++) {
+			TrendGraph t = getTrendGraph(i);
+			t.clearDataItem();
+		}
+	}
+
+	public void setPanel(GraphPanel gPanel) {
+		gPanel_ = gPanel;
+		
+	}
+
 }

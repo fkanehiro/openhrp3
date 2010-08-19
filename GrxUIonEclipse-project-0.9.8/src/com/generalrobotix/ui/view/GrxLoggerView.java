@@ -658,6 +658,9 @@ public class GrxLoggerView extends GrxBaseView {
 				if(isPlaying())
 					pause();
 				_setTimeSeriesItem(currentItem_);
+			}else if((String)arg[0]=="LoadLog"){
+				_setTimeSeriesItem(currentItem_ );
+    			updatePosition(currentItem_, currentItem_.getPosition());
 			}
 		}
 	}

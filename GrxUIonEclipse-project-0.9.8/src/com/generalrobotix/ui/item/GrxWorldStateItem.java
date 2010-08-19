@@ -35,11 +35,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 
 import jp.go.aist.hrp.simulator.*;
 
@@ -47,14 +42,12 @@ import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.GrxPositionObserver;
 import com.generalrobotix.ui.GrxTimeSeriesItem;
-import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.view.graph.*;
 import com.generalrobotix.ui.util.GrxCopyUtil;
-import com.generalrobotix.ui.view.GrxLoggerView;
 
 @SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxWorldStateItem extends GrxTimeSeriesItem {
@@ -639,6 +632,7 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 					monitor.beginTask("Loading log as a file:"+logFile.getName(), size + LOAD_LOG_MODITOR_DIM + 2); //$NON-NLS-1$
 					_loadLog(logFile,monitor);
 					monitor.done();
+					notifyObservers("LoadLog");
 				}
 	        };
 	        new ProgressMonitorDialog(GrxUIPerspectiveFactory.getCurrentShell()).run(false, true, op);
