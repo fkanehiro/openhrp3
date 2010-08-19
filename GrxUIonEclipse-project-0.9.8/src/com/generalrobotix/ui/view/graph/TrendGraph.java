@@ -53,11 +53,7 @@ public class TrendGraph {
     private AxisInfo yAxisInfo_;
     private AxisInfo xAxisInfo_;
 
-    private ArrayList<DataItem> dataItemList_;
     private HashMap<String, DataItemInfo> dataItemInfoMap_;
-    private HashMap<String, DataSeries> dataSeriesMap_;
-
-//   private DataItemListenerList dataItemListenerList_;
 
     private String nodeName_;
     //private boolean projectRead_;
@@ -86,17 +82,8 @@ public class TrendGraph {
 
         colorCounter_ = 0;
 
-        dataItemList_ = new ArrayList<DataItem>();
         dataItemInfoMap_ = new HashMap<String, DataItemInfo>();
-        dataSeriesMap_ = new HashMap<String, DataSeries>();
-
- //       dataItemListenerList_ = new DataItemListenerList();
-
-        //projectRead_= false;
-
-//      dataItemNodeArray_ = null;
-//      dataItemNodeCount_ = 0;
-    }
+   }
 
     // -----------------------------------------------------------------
 
@@ -203,17 +190,15 @@ public class TrendGraph {
      * @param   dataItem    DataItem 
      */
     public void removeDataItem(
-        DataItem dataItem
+        DataItemInfo dataItemInfo
     ) {
-        model_.removeDataItem(dataItem, true);
-        String key = dataItem.toString();
-        DataSeries ds = (DataSeries)dataSeriesMap_.get(key);
-        graph_.removeDataSeries(ds);
-        dataSeriesMap_.remove(key);
+        model_.removeDataItem(dataItemInfo.dataItem, true);
+        String key = dataItemInfo.dataItem.toString();
+
+        graph_.removeDataSeries(dataItemInfo.dataSeries);
+
         dataItemInfoMap_.remove(key);
-        int ind = dataItemList_.indexOf(dataItem);
-        dataItemList_.remove(ind);
-        if (dataItemList_.size() < 1) {
+        if (dataItemInfoMap_.isEmpty()) {
             dataKind_ = null;
             //yAxisInfo_ = null; 
             graph_.setAxisInfo(
@@ -236,7 +221,7 @@ public class TrendGraph {
      * @return  int 
      */
     public int getNumDataItems() {
-        return dataItemList_.size();
+    	return dataItemInfoMap_.size();
     }
 
     /**
@@ -244,14 +229,7 @@ public class TrendGraph {
      * @return  DataItemInfo[] 
      */
     public DataItemInfo[] getDataItemInfoList() {
-        int size = dataItemList_.size();
-        DataItemInfo[] infoArray = new DataItemInfo[size];
-        for (int i = 0; i < size; i++) {
-            Object key = dataItemList_.get(i);
-            infoArray[i] = (DataItemInfo)dataItemInfoMap_.get(key.toString());
-        }
-
-        return infoArray;
+        return dataItemInfoMap_.values().toArray(new DataItemInfo[0]);
     }
 
     /**
@@ -281,9 +259,8 @@ public class TrendGraph {
     private void _setDataItemInfo(
         DataItemInfo dii
     ) {
-        DataSeries ds = (DataSeries)dataSeriesMap_.get(dii.dataItem.toString());
-        graph_.setStyle(ds, dii.color);
-        graph_.setLegendLabel(ds, dii.legend);
+        graph_.setStyle(dii.dataSeries, dii.color);
+        graph_.setLegendLabel(dii.dataSeries, dii.legend);
     }
 
     /**
@@ -338,28 +315,6 @@ public class TrendGraph {
         //SEDouble hr = new SEDouble(timeRange);
         //SEDouble mp = new SEDouble(markerPos);
 //        world_.updateAttribute(nodeName_ + "." + GraphNode.TIME_RANGE + "=" + tr.toString());
-    }
-
-    /**
-     *
-     * @param   timeRange   double
-     */
-    public void setTimeRange(
-        double timeRange
-    ) {
-        _setTimeRange(timeRange);
-//        SEDouble hr = new SEDouble(timeRange);
-//        world_.updateAttribute(nodeName_ + "." + GraphNode.H_RANGE + "=" + hr.toString());
-    }
-
-    /**
-     *
-     * @param   markerPos   double 
-     */
-    public void setMarkerPos(double markerPos) {
-        _setMarkerPos(markerPos);
-//        SEDouble mp = new SEDouble(markerPos);
- //       world_.updateAttribute(nodeName_ + "." + GraphNode.MARKER_POS + "=" + mp.toString());
     }
 
     /**
@@ -503,8 +458,7 @@ public class TrendGraph {
         if (ds == null) {
             return false;
         }
-
-        dataSeriesMap_.put(key, ds);
+        dataItemInfo.dataSeries = ds;
 
         if (dataItemInfoMap_.containsKey(key)) {
             return false;
@@ -512,8 +466,7 @@ public class TrendGraph {
 
         dataItemInfoMap_.put(key, dataItemInfo);
 
-        dataItemList_.add(dataItem);
-
+ 
         graph_.addDataSeries(
             ds, xAxisInfo_, yAxisInfo_,
             dataItemInfo.color,
@@ -604,24 +557,6 @@ public class TrendGraph {
 
     /**
      *
-     * @param   timeRange   double
-     */
-    private void _setTimeRange(
-        double timeRange
-    ) {
-        model_.setTimeRange(timeRange);
-    }
-
-    /**
-     *
-     * @param   markerPos   double
-     */
-    private void _setMarkerPos(double markerPos) {
-        model_.setMarkerPos(markerPos);
-    }
-
-    /**
-     *
      */
     private void _updateDiv() {
         double sMin = yAxisInfo_.extent / MAX_DIV;
@@ -656,4 +591,10 @@ public class TrendGraph {
         yAxisInfo_.gridEvery = step;
         yAxisInfo_.labelFormat = format;
     }
+
+	public void clearDataItem() {
+		DataItemInfo[] info = getDataItemInfoList();
+		for (int j = 0; j < info.length; j++)
+			removeDataItem(info[j]);
+	}
 }

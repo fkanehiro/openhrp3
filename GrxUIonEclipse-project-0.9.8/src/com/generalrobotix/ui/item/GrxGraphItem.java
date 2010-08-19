@@ -28,11 +28,17 @@ public class GrxGraphItem extends GrxBaseItem {
 	public GrxGraphItem(String name, GrxPluginManager manager) {
 		super(name, manager);
 		setExclusive(true);
-		//setIcon(new ImageIcon(getClass().getResource("/resources/images/graph.png")));
 		setIcon("graph.png");
 	}
 	
 	public boolean create() {
+		setDblAry("timeRange", new double[]{1.0, 0.8});
 		return true;
+	}
+	
+	public void restoreProperties() {
+		super.restoreProperties();
+		if(getDblAry("timeRange", null)==null)
+			setDblAry("timeRange", new double[]{1.0, 0.8});
 	}
 }

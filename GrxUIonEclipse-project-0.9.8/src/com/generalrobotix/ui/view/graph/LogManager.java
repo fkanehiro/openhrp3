@@ -720,8 +720,6 @@ public class LogManager {
             return;
         }
 
-        //GrxDebugUtil.println(String.format("getData %d, %d, %d", origin, offset, count));
-
         // 読み出し準備
         int numItems = dataModelArray.length; // アイテム数取得
         ArrayList<String> objList = new ArrayList<String>(); // オブジェクト名のリスト
@@ -773,7 +771,7 @@ public class LogManager {
         for (int i = 0; i < numObjs; i++) { // 全オブジェクトループ
             String obj = (String) objList.get(i); // オブジェクト名
             LogHeader header = (LogHeader) header_.get(obj); // ヘッダ
-            int itemsPerRec = header.recordSize_ / 4; // レコードあたりのアイテム数
+            int itemsPerRec = header.recordSize_ / LogHeader.FLOAT_DATA_SIZE; // レコードあたりのアイテム数
             double[] record = new double[itemsPerRec]; // レコードバッファ
             double[] data; // データバッファ
             long recNo = origin + offset; // レコード番号
@@ -839,7 +837,117 @@ public class LogManager {
             }
         }
     }
+    
+    private HashMap<String, ArrayList<DataSeries>> dsListMap_ = new HashMap<String, ArrayList<DataSeries>>(); // データ系列リストのマップ
+    private HashMap<String, ArrayList<Integer>> indexListMap_ = new HashMap<String, ArrayList<Integer>>();
+    private int[] dataPos_ = null;
+	private double[][] data_ = null;
+	private int[] dsSize_ = null;
+    public  void initGetData(DataModel[] dataModelArray){
+    	if(indexMapMap_ == null || indexMapMap_.isEmpty())
+    		return;
+    	dsListMap_.clear();
+    	indexListMap_.clear();
+    	for (int i = 0; i < dataModelArray.length; i++) { // アイテム数分ループ
+	        DataItem di = dataModelArray[i].dataItem; // データアイテム
+	        DataSeries ds = dataModelArray[i].dataSeries; // データ系列
+	        String obj = di.object; // オブジェクト名
+	        if (obj == null || obj.equals("")) { // オブジェクト名なし?
+	            obj = NONAME_OBJECT; // 無名オブジェクト
+	        }
+	        Integer ind = ((Map<String, Integer>) indexMapMap_.get(obj)).get(di.node + "." + di.attribute + (di.index >= 0 ? "." + di.index : ""));
 
+	        ArrayList<DataSeries> dsList = dsListMap_.get(obj);
+	        ArrayList<Integer> indexList = indexListMap_.get(obj);
+	        if(dsList==null){
+	        	dsList = new ArrayList<DataSeries>(); // データ系列リスト生成
+	        	dsListMap_.put(obj, dsList); // データ系列リストマップに追加
+	        	indexList = new ArrayList<Integer>();
+	        	indexListMap_.put(obj, indexList);
+	        }
+	        dsList.add(ds);
+	        indexList.add(ind);
+    	}
+    	
+    	Iterator<String> it = dsListMap_.keySet().iterator();
+    	while (it.hasNext()) {
+        	String obj = it.next();
+        	ArrayList<DataSeries> dsList = dsListMap_.get(obj);
+        	int dsNum = dsList.size();
+        	dataPos_ = new int[dsNum];
+        	data_ = new double[dsNum][];
+        	dsSize_ = new int[dsNum];
+        	for(int i=0; i<dsNum; i++){
+        		DataSeries ds = dsList.get(i);
+        		int size = ds.getSize(); // データ系列サイズ取得
+        		data_[i] = ds.getData();
+        		dsSize_[i] = size;
+        	}
+    	}
+    }
+    
+    public void getData(long origin, int offset, int count){
+    	Iterator<String> it = dsListMap_.keySet().iterator();
+        while (it.hasNext()) {
+        	String obj = it.next();
+        	ArrayList<DataSeries> dsList = dsListMap_.get(obj);
+        	int dsNum = dsList.size();
+        	for(int i=0; i<dsNum; i++){
+        		DataSeries ds = dsList.get(i);
+        		int pos = (ds.getHeadPos() + offset) % dsSize_[i]; // 初期書込位置決定
+        		dataPos_[i] = pos;
+        	}
+        	_getData(obj, origin+offset, count, indexListMap_.get(obj).toArray(new Integer[0]), data_, dataPos_, dsSize_);
+        }
+    }
+    
+    private void _getData(String obj, long recNo, int count, Integer[] itemIndex, double[][] data, int[] dataPos, int[] dsSize){
+    	LogHeader header = (LogHeader) header_.get(obj); // ヘッダ
+        int itemsPerRec = header.recordSize_ / LogHeader.FLOAT_DATA_SIZE; // レコードあたりのアイテム数
+        double[] record = new double[itemsPerRec]; // レコードバッファ
+        RandomAccessFile file = (RandomAccessFile) readFile_.get(obj);
+	    synchronized (file) {
+	        try {
+	            // 開始レコードが先頭レコードより前か後ろか
+	            if (recNo < 0) {
+	                // 先頭レコードまでシーク
+	                file.seek((long) header.headerSize_);
+	            } else if (recNo < header.numRecords_) {
+	                // 当該レコードまでシーク
+	                file.seek((long) header.headerSize_ + header.recordSize_ * recNo);
+	            }
+
+	            // レコード数分ループ
+	            for (int rec = 0; rec < count; rec++) {
+	                // レコード読み出し
+	
+	                // レコード範囲外?
+	                if (recNo >= 0 && recNo < header.numRecords_) {
+	                    for (int k = 0; k < itemsPerRec; k++) {
+	                        record[k] = file.readFloat();
+	                    }
+	                }
+
+	                // アイテム数分ループ
+	                for (int item = 0; item < itemIndex.length; item++) {
+	                	if (recNo < 0 || recNo >= header.numRecords_)
+	                		data[item][dataPos[item]] = Double.NaN;
+	                	else
+	                		data[item][dataPos[item]] = record[itemIndex[item]];
+	                	if (dataPos[item] < dsSize[item]-1) {
+	                		dataPos[item]++;
+                        } else {
+                        	dataPos[item] = 0;
+                        }
+	                }
+	                recNo++;
+                }
+            }catch (IOException ex) {
+            	ex.printStackTrace();
+            }
+	    }
+    }
+    
     private void _makeIndexMapMap(LogHeader header) {
         String[] format = header.dataFormat_;
         Map<String, Integer> indexMap = new HashMap<String, Integer>();
@@ -1330,7 +1438,7 @@ public class LogManager {
 
         RandomAccessFile file = (RandomAccessFile)readFile_.get(objectName);
 
-        float[] data = new float[header.recordSize_ / 4];
+        float[] data = new float[header.recordSize_ / LogHeader.FLOAT_DATA_SIZE];
 
         try {
             synchronized (file) {
