@@ -302,6 +302,8 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		logList.add("float["+jointList.size()+"]"); //$NON-NLS-1$ //$NON-NLS-2$
 		logList.add("servoState");
 		logList.add("float["+jointList.size()+"]");
+		logList.add("powerState");
+		logList.add("float[2]");
 		try {
 			logger_.addLogObject(cname, logList.toArray(new String[0]));
 		} catch (LogFileFormatException e) {
@@ -431,6 +433,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             		float f = buffer.getFloat(0);
             		recDat_[i][k++] = f;
             		//recDat_[i][k++] = (float)cpos.servoState[j];
+            	}
+            }
+            if (cpos.powerState != null){
+            	for (int j=0; j<cpos.powerState.length; j++){
+            		recDat_[i][k++] = (float)cpos.powerState[j];
             	}
             }
             try {
@@ -597,6 +604,11 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
                 		int ss = buffer.getInt(0);
                 		cpos.servoState[j] = ss;
                 		//cpos.servoState[j] = (int)f[k++];
+                	}
+                }
+                if (cpos.powerState != null){
+                	for (int j=0; j<cpos.powerState.length; j++){
+                		cpos.powerState[j] = (double)f[k++];
                 	}
                 }
             }
@@ -1251,6 +1263,10 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
             if(servoState != null){
                 ret.servoState = new int[servoState.length];
                 GrxCopyUtil.copyDim(servoState, ret.servoState, servoState.length);
+            }
+            if(powerState != null){
+            	ret.powerState = new double[powerState.length];
+            	GrxCopyUtil.copyDim(powerState, ret.powerState, powerState.length);
             }
             return ret;
         }
