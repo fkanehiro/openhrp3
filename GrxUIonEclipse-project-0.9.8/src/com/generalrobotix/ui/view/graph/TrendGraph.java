@@ -192,7 +192,7 @@ public class TrendGraph {
     public void removeDataItem(
         DataItemInfo dataItemInfo
     ) {
-        model_.removeDataItem(dataItemInfo.dataItem, true);
+        model_.removeDataItem(dataItemInfo.dataItem);
         String key = dataItemInfo.dataItem.toString();
 
         graph_.removeDataSeries(dataItemInfo.dataSeries);
