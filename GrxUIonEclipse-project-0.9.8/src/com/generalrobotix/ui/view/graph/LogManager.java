@@ -908,32 +908,16 @@ public class LogManager {
         RandomAccessFile file = (RandomAccessFile) readFile_.get(obj);
 	    synchronized (file) {
 	        try {
-	            // 開始レコードが先頭レコードより前か後ろか
-	            if (recNo < 0) {
-	                // 先頭レコードまでシーク
-	                file.seek((long) header.headerSize_);
-	            } else if (recNo < header.numRecords_) {
-	                // 当該レコードまでシーク
-	                file.seek((long) header.headerSize_ + header.recordSize_ * recNo);
-	            }
-
 	            // レコード数分ループ
 	            for (int rec = 0; rec < count; rec++) {
-	                // レコード読み出し
-	
-	                // レコード範囲外?
-	                if (recNo >= 0 && recNo < header.numRecords_) {
-	                    for (int k = 0; k < itemsPerRec; k++) {
-	                        record[k] = file.readFloat();
-	                    }
-	                }
-
 	                // アイテム数分ループ
 	                for (int item = 0; item < itemIndex.length; item++) {
 	                	if (recNo < 0 || recNo >= header.numRecords_)
 	                		data[item][dataPos[item]] = Double.NaN;
-	                	else
-	                		data[item][dataPos[item]] = record[itemIndex[item]];
+	                	else{
+	                		file.seek((long) header.headerSize_ + header.recordSize_ * recNo + LogHeader.FLOAT_DATA_SIZE * itemIndex[item]);
+	                		data[item][dataPos[item]] = file.readFloat();
+	                	}
 	                	if (dataPos[item] < dsSize[item]-1) {
 	                		dataPos[item]++;
                         } else {

@@ -48,7 +48,7 @@ public class TrendGraphModel
 
     private AxisInfo timeAxisInfo_; // 時間軸情報
 
-    private HashMap<String, ArrayList<String> > dataItemCount_; // データアイテムカウンタ
+    private HashMap<String, Integer > dataItemCount_; // データアイテムカウンタ
                                     // (どのデータ系列にいくつのデータアイテムが割り当てられているか)
 
     private HashMap<String, DataModel> dataModelMap_;   // データモデル一覧
@@ -80,7 +80,7 @@ public class TrendGraphModel
         timeAxisInfo_.markerColor = Activator.getDefault().getColor( "markerColor" );
         timeAxisInfo_.markerVisible = true;
 
-        dataItemCount_ = new HashMap<String, ArrayList<String> >();
+        dataItemCount_ = new HashMap<String, Integer >();
         dataModelMap_ = new HashMap<String, DataModel>();
         dataModelArray_ = null;
       
@@ -293,11 +293,9 @@ public class TrendGraphModel
         DataModel dm;
 
         String key = dataItem.toString();
-        ArrayList<String> l = dataItemCount_.get(key);
+        Integer l = dataItemCount_.get(key);
         if (l == null) {    // 初めてのデータアイテム?
-            l = new ArrayList<String>();
-            l.add(key);
-            dataItemCount_.put(key, l);
+            dataItemCount_.put(key, new Integer(1));
             ds = new DataSeries(
                 sampleCount_,
                 baseCount_ * stepTime_, // baseTime_, ★これではダメ
@@ -308,12 +306,12 @@ public class TrendGraphModel
             dataModelArray_ = new DataModel[dataModelMap_.size()];
             dataModelMap_.values().toArray(dataModelArray_);
         } else {
-            l.add(key);
+        	dataItemCount_.put(key, ++l);
             ds = ((DataModel)dataModelMap_.get(key)).dataSeries;
         }
 
         initGetData();
-        
+        prevLogSize_ = -1;
         return ds;
     }
 
@@ -321,16 +319,14 @@ public class TrendGraphModel
      * データアイテム削除
      *
      * @param   dataItem    データアイテム
-     * @param   setFlag     フラグ設定をするか否か
      */
     public void removeDataItem(
-        DataItem dataItem,
-        boolean setFlag
+        DataItem dataItem
     ) {
         String key = dataItem.toString();
-        ArrayList l = (ArrayList)dataItemCount_.get(key);   // カウント取得
-        l.remove(0);    // カウントを減らす
-        if (l.size() <= 0) {    // データ系列に対応するデータアイテムがなくなった?
+        Integer l = dataItemCount_.get(key);   // カウント取得
+        dataItemCount_.put(key, --l);    // カウントを減らす
+        if (l <= 0) {    // データ系列に対応するデータアイテムがなくなった?
             dataItemCount_.remove(key); // カウント除去
             dataModelMap_.remove(key); // データ系列除去
             int size = dataModelMap_.size();
@@ -340,35 +336,9 @@ public class TrendGraphModel
                 dataModelArray_ = new DataModel[size];
                 dataModelMap_.values().toArray(dataModelArray_);
             }
-
-            // アトリビュートフラグの変更
-            if (!setFlag) { // フラグ変更をしない?
-                return; // なにもしない
-            }
-            String apath = dataItem.getAttributePath(); // アトリビュートパス名の取得
-            //if (world_.checkAttributeFlagFromPath(apath, Attribute.MUST_RECORD)) { // 記録必須?
-            //    return; // フラグ変更はしない
-            //}
-            Iterator itr = dataItemCount_.keySet().iterator();  // すべてのデータアイテム名の列挙
-//           boolean found = false;  // 発見フラグリセット
-            while (itr.hasNext()) { // すべてのデータアイテム名について
-                String k = (String)itr.next();
-                if (k.startsWith(apath)) {  // 同じアトリビュート?
-//                  found = true;   // 発見フラグON
-                    break;  // ループ脱出
-                }
-            }
-            //System.out.println("###### unlocked?");
- /*           if (!found) {   // このアトリビュートはもうない?
-                //System.out.println("###### unlocked (" + apath + ")");
-                world_.setAttributeFlagFromPath(
-                    apath,
-                    Attribute.RECORD_FLAG_LOCKED,
-                    false
-                );
-            }
-*/
         }
+        initGetData();
+        prevLogSize_ = -1;
     }
 
     // -----------------------------------------------------------------
