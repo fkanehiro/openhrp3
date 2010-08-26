@@ -208,11 +208,14 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
 
     links_[index] = linkInfo;
     try	{
-        Matrix44 unit4d(tvmet::identity<Matrix44>());
-        if(jointNodeSet->segmentNode)
-            traverseShapeNodes(jointNodeSet->segmentNode.get(), unit4d, links_[index].shapeIndices, links_[index].inlinedShapeTransformMatrices, &topUrl());
+        vector<VrmlProtoInstancePtr>& segmentNodes = jointNodeSet->segmentNodes;
+        int numSegment = segmentNodes.size();
+        for(int i = 0 ; i < numSegment ; ++i){
+            Matrix44 T = jointNodeSet->transforms.at(i);
+            traverseShapeNodes(segmentNodes[i].get(), T, links_[index].shapeIndices, links_[index].inlinedShapeTransformMatrices, &topUrl());
+        }
         setJointParameters(index, jointNodeSet->jointNode);
-        setSegmentParameters(index, jointNodeSet->segmentNode);
+        setSegmentParameters(index, jointNodeSet);
         setSensors(index, jointNodeSet);
         setHwcs(index, jointNodeSet);
     }
@@ -285,25 +288,75 @@ void BodyInfo_impl::setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr j
     copyVrmlField( fmap, "jointValue",    linkInfo.jointValue );
 }
 
-
-void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, VrmlProtoInstancePtr segmentNode)
+void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr jointNodeSet)
 {
     LinkInfo& linkInfo = links_[linkInfoIndex];
 
-    if(segmentNode) {
-        TProtoFieldMap& fmap = segmentNode->fields;
-        copyVrmlField( fmap, "centerOfMass",     linkInfo.centerOfMass );
-        copyVrmlField( fmap, "mass",             linkInfo.mass );
-        copyVrmlField( fmap, "momentsOfInertia", linkInfo.inertia );
-    } else {
-        linkInfo.mass = 0.0;
-        // set zero to centerOfMass and inertia
-        for( int i = 0 ; i < 3 ; ++i ) {
-            linkInfo.centerOfMass[i] = 0.0;
-            for( int j = 0 ; j < 3 ; ++j ) {
-                linkInfo.inertia[i*3 + j] = 0.0;
-            }
+    vector<VrmlProtoInstancePtr>& segmentNodes = jointNodeSet->segmentNodes;
+    int numSegment = segmentNodes.size();
+    linkInfo.mass = 0.0;
+    for( int i = 0 ; i < 3 ; ++i ) {
+        linkInfo.centerOfMass[i] = 0.0;
+        for( int j = 0 ; j < 3 ; ++j ) {
+            linkInfo.inertia[i*3 + j] = 0.0;
         }
+    }
+
+    //  Mass = Σmass                 //
+    //  C = (Σmass * T * c) / Mass   //
+    //  I = Σ(R * I * Rt + G)       //
+    //  R = Tの回転行列               //
+    //  G = y*y+z*z, -x*y, -x*z, -y*x, z*z+x*x, -y*z, -z*x, -z*y, x*x+y*y    //
+    //  (x, y, z ) = T * c - C        //
+    std::vector<Vector4> centerOfMassArray;
+    std::vector<double> massArray;
+    for(int i = 0 ; i < numSegment ; ++i){
+        Matrix44 T = jointNodeSet->transforms.at(i);
+        DblArray3 centerOfMass;
+        CORBA::Double mass;
+        DblArray9 inertia;
+        TProtoFieldMap& fmap = segmentNodes[i]->fields;
+        copyVrmlField( fmap, "centerOfMass",     centerOfMass );
+        copyVrmlField( fmap, "mass",             mass );
+        copyVrmlField( fmap, "momentsOfInertia", inertia );
+        Vector4 c0(centerOfMass[0], centerOfMass[1], centerOfMass[2], 1.0);
+        Vector4 c1(T * c0);
+        centerOfMassArray.push_back(c1);
+        massArray.push_back(mass);
+        for(int j=0; j<3; j++){
+            linkInfo.centerOfMass[j] = c1(j) * mass + linkInfo.centerOfMass[j] * linkInfo.mass;
+        }
+        linkInfo.mass += mass;
+        for(int j=0; j<3; j++){
+            linkInfo.centerOfMass[j] /= linkInfo.mass;
+        }
+        Matrix33 I;
+        I = inertia[0], inertia[1], inertia[2], inertia[3], inertia[4], inertia[5], inertia[6], inertia[7], inertia[8];
+        Matrix33 R;
+        R = T(0,0), T(0,1), T(0,2), T(1,0), T(1,1), T(1,2), T(2,0), T(2,1), T(2,2);
+        Matrix33 I1(R * I * trans(R));
+        for(int j=0; j<3; j++){
+            for(int k=0; k<3; k++)
+                linkInfo.inertia[j*3+k] = I1(j,k);    
+        }
+    }
+
+    for(int i = 0 ; i < numSegment ; ++i){
+        Vector4 c( centerOfMassArray.at(i) );
+        double x = c(0) - linkInfo.centerOfMass[0];
+        double y = c(1) - linkInfo.centerOfMass[1];
+        double z = c(2) - linkInfo.centerOfMass[2];
+        double m = massArray.at(i);
+
+        linkInfo.inertia[0] += m * (y*y + z*z);
+        linkInfo.inertia[1] += -m * x * y;
+        linkInfo.inertia[2] += -m * x * z;
+        linkInfo.inertia[3] += -m * y * x;
+        linkInfo.inertia[4] += m * (z*z + x*x);
+        linkInfo.inertia[5] += -m * y * z;
+        linkInfo.inertia[6] += -m * z * x;
+        linkInfo.inertia[7] += -m * z * y;
+        linkInfo.inertia[8] += m * (x*x + y*y);
     }
 }
 
@@ -480,7 +533,7 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
     }
 }
 
-void BodyInfo_impl::readHwcNode(int linkInfoIndex, HwcInfo& hwcInfo, VrmlProtoInstancePtr hwcNode)
+void BodyInfo_impl::readHwcNode(int linkInfoIndex, HwcInfo& hwcInfo, VrmlProtoInstancePtr hwcNode )
 {
     try	{
         hwcInfo.name = CORBA::string_dup( hwcNode->defName.c_str() );

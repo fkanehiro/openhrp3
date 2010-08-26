@@ -88,7 +88,7 @@ namespace hrp {
         void extractJointNodes();
         JointNodeSetPtr addJointNodeSet(VrmlProtoInstancePtr jointNode);
         void extractChildNodes
-            (JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds);
+            (JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds, const Matrix44& T);
 
         void putMessage(const std::string& message);
     };
@@ -411,21 +411,31 @@ JointNodeSetPtr ModelNodeSetImpl::addJointNodeSet(VrmlProtoInstancePtr jointNode
     acceptableProtoIds.set(PROTO_SENSOR);
     acceptableProtoIds.set(PROTO_HARDWARECOMPONENT);
     
-    extractChildNodes(jointNodeSet, childNodes, acceptableProtoIds);
+    Matrix44 T(tvmet::identity<Matrix44>());
+    extractChildNodes(jointNodeSet, childNodes, acceptableProtoIds, T);
 
     return jointNodeSet;
 }
 
-
 void ModelNodeSetImpl::extractChildNodes
-(JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds)
+(JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds, const Matrix44& T)
 {
     for(size_t i = 0; i < childNodes.size(); i++){
         VrmlNode* childNode = childNodes[i].get();
-
+        const Matrix44* pT;
         if(childNode->isCategoryOf(GROUPING_NODE)){
             VrmlGroup* groupNode = static_cast<VrmlGroup*>(childNode);
-            extractChildNodes(jointNodeSet, groupNode->getChildren(), acceptableProtoIds);
+            VrmlTransform* transformNode = dynamic_cast<VrmlTransform*>(groupNode);
+            Matrix44 T2;
+            if( transformNode ){
+                Matrix44 Tlocal;
+                calcTransformMatrix(transformNode, Tlocal);
+                T2 = T * Tlocal;
+                pT = &T2;
+            } else {
+                pT = &T;
+            }
+            extractChildNodes(jointNodeSet, groupNode->getChildren(), acceptableProtoIds, *pT);
 
         } else if(childNode->isCategoryOf(PROTO_INSTANCE_NODE)){
 
@@ -451,28 +461,29 @@ void ModelNodeSetImpl::extractChildNodes
             switch(id){
                 
             case PROTO_JOINT:
+                if(any_elements(T != tvmet::identity<Matrix44>() ))
+                    throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
                 jointNodeSet->childJointNodeSets.push_back(addJointNodeSet(protoInstance));
                 break;
                 
             case PROTO_SENSOR:
+                if(any_elements(T != tvmet::identity<Matrix44>() ))
+                    throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
                 jointNodeSet->sensorNodes.push_back(protoInstance);
                 putMessage(protoName + protoInstance->defName);
                 break;
                 
             case PROTO_HARDWARECOMPONENT:
+                if(any_elements(T != tvmet::identity<Matrix44>() ))
+                    throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
                 jointNodeSet->hwcNodes.push_back(protoInstance);
                 putMessage(protoName + protoInstance->defName);
                 break;
                 
             case PROTO_SEGMENT:
                 {
-                    if(jointNodeSet->segmentNode){
-                        const string& jointName = jointNodeSet->jointNode->defName;
-                        throw ModelNodeSet::Exception
-                            ((string("Joint node ") + jointName +
-                              "includes multipe segment nodes, which is not supported."));
-                    }
-                    jointNodeSet->segmentNode = protoInstance;
+                    jointNodeSet->segmentNodes.push_back(protoInstance);
+                    jointNodeSet->transforms.push_back(T);
                     putMessage(string("Segment node ") + protoInstance->defName);
 
                     doTraverseChildren = true;
@@ -487,7 +498,7 @@ void ModelNodeSetImpl::extractChildNodes
 
             if(doTraverseChildren){
                 MFNode& childNodes = protoInstance->fields["children"].mfNode();
-                extractChildNodes(jointNodeSet, childNodes, acceptableChildProtoIds);
+                extractChildNodes(jointNodeSet, childNodes, acceptableChildProtoIds, T);
             }
 
             messageIndent -= 2;

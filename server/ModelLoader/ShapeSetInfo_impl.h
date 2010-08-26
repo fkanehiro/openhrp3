@@ -76,7 +76,6 @@ private:
 
     std::map<std::string, time_t> fileTimeMap;
 
-    void calcTransformMatrix(VrmlTransform* transform, Matrix44& out_T);
     int createShapeInfo(VrmlShape* shapeNode, const SFString* url);
     void setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet* triangleMesh);
     void setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* shapeNode);
@@ -91,6 +90,4 @@ private:
     void setColdetModelTriangles(ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, int& vertexIndex, int& triangleIndex);
 
 };
-
-
 #endif
