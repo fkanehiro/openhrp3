@@ -397,7 +397,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
       	setURL(f.getAbsolutePath());
       	
-      	if (MessageDialog.openConfirm(null, MessageBundle.get("GrxProjectItem.dialog.savewindow.title"), 
+      	if (MessageDialog.openQuestion(null, MessageBundle.get("GrxProjectItem.dialog.savewindow.title"), 
       			MessageBundle.get("GrxProjectItem.dialog.savewindow.message"))) { //$NON-NLS-1$
 			Element element = _getModeNodeInfo(mode).root;
 			Element windowConfigElement = storePerspectiveConf(element);
@@ -416,6 +416,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	  		StreamResult target = new StreamResult();
 	  		target.setOutputStream(new FileOutputStream(f));
 	  		transformer_.transform(src, target);
+	  		return ;
 	   	} catch (TransformerConfigurationException e) {
 	     		e.printStackTrace();
 	   	} catch (FileNotFoundException e) {
@@ -423,6 +424,7 @@ public class GrxProjectItem extends GrxBaseItem {
 	   	} catch (TransformerException e) {
 	     		e.printStackTrace();
 	   	}
+	   	MessageDialog.openError(null, MessageBundle.get("GrxProjectItem.dialog.saveError.title"), MessageBundle.get("GrxProjectItem.dialog.saveError.message"));
 	}
 	
 	public void saveAs() {
