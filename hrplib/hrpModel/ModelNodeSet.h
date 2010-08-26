@@ -18,6 +18,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/signals.hpp>
 #include <hrpUtil/VrmlNodes.h>
+#include <hrpUtil/Tvmet4d.h>
 #include "Config.h"
 
 
@@ -32,8 +33,9 @@ namespace hrp {
     {
     public:
         VrmlProtoInstancePtr jointNode;
-        VrmlProtoInstancePtr segmentNode;
         std::vector<JointNodeSetPtr> childJointNodeSets;
+        std::vector<Matrix44> transforms;
+        std::vector<VrmlProtoInstancePtr> segmentNodes;
         std::vector<VrmlProtoInstancePtr> sensorNodes;
         std::vector<VrmlProtoInstancePtr> hwcNodes;
     };

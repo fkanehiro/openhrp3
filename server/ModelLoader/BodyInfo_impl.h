@@ -74,7 +74,7 @@ private:
 
     int readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIndex, int motherIndex);
     void setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr jointNode );
-    void setSegmentParameters(int linkInfoIndex, VrmlProtoInstancePtr segmentNode);
+    void setSegmentParameters(int linkInfoIndex, JointNodeSetPtr jointNodeSet);
     void setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet);
     void setHwcs(int linkInfoIndex, JointNodeSetPtr jointNodeSet);
     void readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode);
