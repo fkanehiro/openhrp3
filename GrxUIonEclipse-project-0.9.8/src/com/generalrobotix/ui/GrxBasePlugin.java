@@ -165,7 +165,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 				continue;
 			
 			if(key.equals("setupDirectory"))
-				val = GrxXmlUtil.replaceEnvVal(new File(val));
+				val = GrxXmlUtil.replaceEnvVal(new File(GrxXmlUtil.expandEnvVal(val)));
 			if(key.equals("setupCommand")){
 				String s = Activator.getDefault().getPreferenceStore().getString(PreferenceConstants.BIN_SFX);
 				val = val.replace(s, "$(BIN_SFX)");
