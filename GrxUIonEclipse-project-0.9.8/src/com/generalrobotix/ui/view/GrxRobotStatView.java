@@ -27,28 +27,26 @@ import java.util.Vector;
 import jp.go.aist.hrp.simulator.SensorState;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
 import com.generalrobotix.ui.GrxBaseItem;
@@ -106,7 +104,12 @@ public class GrxRobotStatView extends GrxBaseView {
     private String osName_ = "Windows";
     
     private static final int COMBO_WIDTH = 100;
-
+    private int [][] columnWidth_ = new int[][]{
+    		{30,90,60,60,60,40,40,40,40,50,50},
+    		{110,75,75,75,75,75,75}
+    };
+    private Composite viewPanel_;
+    
     public GrxRobotStatView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
         super(name, manager,vp,parent);
         osName_ = System.getProperty("os.name");
@@ -118,7 +121,10 @@ public class GrxRobotStatView extends GrxBaseView {
         yellow_ = Activator.getDefault().getColor("yellow");
         
         Composite mainPanel = new Composite(composite_, SWT.NONE);
-        mainPanel.setLayout(new GridLayout(1,false));
+        GridLayout gridLayout = new GridLayout(1,false);
+        gridLayout.marginHeight = 0;
+        gridLayout.verticalSpacing = 0;
+        mainPanel.setLayout(gridLayout);
         modelList_ = new ArrayList<GrxModelItem>();
 
         comboModelName_ = new Combo(mainPanel,SWT.READ_ONLY);
@@ -135,7 +141,6 @@ public class GrxRobotStatView extends GrxBaseView {
 
                 currentModel_ = item;
                 setJointList();
-                _resizeTables();
                 updateTableViewer();
             }
             
@@ -150,18 +155,18 @@ public class GrxRobotStatView extends GrxBaseView {
         		{ SWT.RIGHT, SWT.LEFT,  SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.CENTER, SWT.CENTER, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
         		{ SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
         };
-        int [][] weight = new int[][]{
-        		{25,90,60,60,60,40,40,30,30,50,50},
-        		{85,85,85,85,85,85,85}
-        };
 
-        Composite sash = new Composite(mainPanel, SWT.NONE);
-        sash.setLayout(new FillLayout());
-        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
-        SashForm sashForm = new SashForm(sash, SWT.VERTICAL);
-        jointTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);
-        sensorTV_ = new TableViewer(sashForm,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);    
-            
+        viewPanel_ = new Composite(mainPanel, SWT.NONE);
+        viewPanel_.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridLayout gridLayout1 = new GridLayout();
+        gridLayout1.marginHeight = 0;
+        gridLayout1.marginWidth = 0;
+        gridLayout1.horizontalSpacing = 0;
+        gridLayout1.verticalSpacing = 0;
+        viewPanel_.setLayout(gridLayout1);
+        jointTV_ = new TableViewer(viewPanel_,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);
+        sensorTV_ = new TableViewer(viewPanel_,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);    
+
         jointTV_.setContentProvider(new ArrayContentProvider());
         sensorTV_.setContentProvider(new ArrayContentProvider());
         
@@ -170,15 +175,23 @@ public class GrxRobotStatView extends GrxBaseView {
         
         viewers_ = new TableViewer[]{jointTV_,sensorTV_};
         for(int i=0;i<viewers_.length;i++){
-            TableLayout tableLayout = new TableLayout();
             for(int j=0;j<header[i].length;j++){
-                TableColumn column = new TableColumn(viewers_[i].getTable(),j);
+                TableColumn column = new TableColumn(viewers_[i].getTable(),SWT.NULL);
                 column.setText(header[i][j]);
                 column.setAlignment(alignment[i][j]);
-                column.setWidth(weight[i][j]);
-                tableLayout.addColumnData(new ColumnWeightData(weight[i][j],true));
+                column.setWidth(columnWidth_[i][j]);
+                if(i==0)
+	                column.addControlListener(new ControlListener(){
+						public void controlMoved(ControlEvent e) {
+						}
+						public void controlResized(ControlEvent e) {
+							TableColumn column = (TableColumn)e.getSource();
+							int i = jointTV_.getTable().indexOf(column);
+							int width = column.getWidth();
+							setInt("jcolumnWidth"+i, width);
+						}
+	                });
             }
-            //viewers_[i].getTable().setLayout(tableLayout);
             viewers_[i].getTable().setHeaderVisible(showheader[i]);
             viewers_[i].getTable().setLinesVisible(true);
             viewers_[i].getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -208,14 +221,13 @@ public class GrxRobotStatView extends GrxBaseView {
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
         	currentState_ = currentWorld_.getValue();
-        	updateTableViewer();
         	currentWorld_.addObserver(this); 
         	currentWorld_.addPosObserver(this);
         }
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-        sashForm.setWeights(new int[] {85,15});
         updateTableFont();
-        _resizeTables();
+        updateTableViewer();
+        
     }
     
     
@@ -255,9 +267,44 @@ public class GrxRobotStatView extends GrxBaseView {
     
     public void restoreProperties() {
         super.restoreProperties();
-        _resizeTables();
+        for(int i=0; i<columnWidth_[0].length; i++)
+        	if(getStr("jcolumnWidth"+i)==null) propertyChanged("jcolumnWidth"+i, Integer.toString(columnWidth_[0][i])); 
+        for(int i=0; i<columnWidth_[1].length; i++)
+        	if(getStr("scolumnWidth"+i)==null) propertyChanged("scolumnWidth"+i, Integer.toString(columnWidth_[1][i])); 
     }
 
+    public boolean propertyChanged(String key, String value){
+    	if (super.propertyChanged(key, value)){
+    		return true;
+    	}else {
+    		if (key.startsWith("jcolumnWidth")){
+    			int i = Integer.parseInt(key.replace("jcolumnWidth", ""));
+    			jointTV_.getTable().getColumn(i).setWidth(Integer.parseInt(value.trim()));
+    			final String key_ = key;
+        		final String value_ = value;
+    			syncExec(new Runnable(){
+                	public void run(){
+                		setProperty(key_, value_);
+                	}
+                });
+    			return true;
+    		}else if (key.startsWith("scolumnWidth")){
+    			int i = Integer.parseInt(key.replace("scolumnWidth", ""));
+    			sensorTV_.getTable().getColumn(i).setWidth(Integer.parseInt(value.trim()));
+    			final String key_ = key;
+        		final String value_ = value;
+    			syncExec(new Runnable(){
+                	public void run(){
+                		setProperty(key_, value_);
+                	}
+                });
+    			return true;
+    		}
+    	}
+		return false;
+    }
+    
+    
     private void setJointList(){
     	jointList_.clear();
         Vector<GrxLinkItem> lInfo = currentModel_.links_;
@@ -397,6 +444,13 @@ public class GrxRobotStatView extends GrxBaseView {
         }
 	    jointTV_.setInput(_createJointTVInput());
 	    sensorTV_.setInput(_createSensorTVInput());	
+
+	    Point point = jointTV_.getTable().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+	    jointTV_.getTable().setSize(point);
+	    Point point1 = sensorTV_.getTable().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+	    sensorTV_.getTable().setSize(point1);
+	    setScrollMinSize(point.x+point1.x, point.y+point1.y);
+        viewPanel_.layout(true);
     }
     
     private void _refresh(){
@@ -417,77 +471,6 @@ public class GrxRobotStatView extends GrxBaseView {
 	    jointTV_.refresh();
 	    sensorTV_.refresh();	
     }
-    
-    private void _resizeTables() {
-//    	for(int i=0;i<viewers_.length;i++){
-//            viewers_[i].getTable().pack();
-//        }
-    }
-    
-    
-//    class MyCellRenderer extends JLabel implements TableCellRenderer {
-//        private int[] columnAlignment_ = null;
-//
-//        public MyCellRenderer(int[] columnAlignment) {
-//            super();
-//            columnAlignment_ = columnAlignment;
-//            setOpaque(true);
-//            setBackground(Color.white);
-//            setForeground(Color.black);
-//            setFont(MONO_PLAIN_12);
-//        }
-//
-//        public Component getTableCellRendererComponent(JTable table,
-//                Object data, boolean isSelected, boolean hasFocus, int row,
-//                int column) {
-//            setHorizontalAlignment(columnAlignment_[column]);
-//            if (data == null) {
-//                setText("---");
-//                setForeground(Color.black);
-//                setBackground(Color.white);
-//                setFont(MONO_PLAIN_12);
-//            } else if (data instanceof String) {
-//                setText((String) data);
-//                setForeground(Color.black);
-//                setBackground(Color.white);
-//                setFont(MONO_PLAIN_12);
-//            } else if (data instanceof CellState) {
-//                CellState state = (CellState) data;
-//                setText(state.value);
-//                setForeground(state.fgColor);
-//                setBackground(state.bgColor);
-//                setFont(state.font);
-//            }
-//            return this;
-//        }
-//    }
-
-//    class UpdatableTableModel extends DefaultTableModel {
-//        public UpdatableTableModel(String[] columnName, int rowNum) {
-//            super(columnName, rowNum);
-//        }
-//
-//        public void updateCell(int row, int col) {
-//            if (getValueAt(row, col) != null)
-//                fireTableCellUpdated(row, col);
-//        }
-//
-//        public void updateRow(int firstRow, int lastRow) {
-//            fireTableRowsUpdated(firstRow, lastRow);
-//        }
-//
-//        public void updateAll() {
-//            updateRow(0, getRowCount());
-//        }
-//
-//        public void updateAsNeeded() {
-//            for (int i = 0; i < getRowCount(); i++) {
-//                for (int j = 0; j < getColumnCount(); j++) {
-//                    updateCell(i, j);
-//                }
-//            }
-//        }
-//    }
 
     class JointTableLabelProvider implements ITableLabelProvider,ITableColorProvider,ITableFontProvider {
     	final int CALIB_STATE_MASK = 0x00000001;
