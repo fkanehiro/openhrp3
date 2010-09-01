@@ -1,6 +1,38 @@
 OpenHRP3 Updates History (Release Notes)
 
 
+Ver.3.1.00-Release (xx-09-2010)
+==============================
+
+ * OpenHRP3 now officially supports Ubuntu 10.04 LTS.
+
+ * Revised creating view process of the GrxUI start.
+
+ * improved a parsing VRML function.
+
+ * Revised it to leave out frames when processing was not possible for fps, at replay.
+
+ * Revised it to synchronize the update time of ViewSimulation with the frame rate of the camera
+
+ * Revised it to be update contents of RobotState View, at replay after the simulation too.
+
+ * Fixed bug that exception is raised when plural ControllerBridge works..
+
+ * Supports plural WorldItem.
+
+ * Revised it to lower display load of Property View.
+
+ * Fixed the issue of cross axle of the graph.
+
+ * Resolved miscellaneous problems of JythonPromptView.
+
+ * Resolved miscellaneous problems of OnlineViewer.
+
+ * Resolved miscellaneous problems of 3DView.
+
+ * resolved some miscellaneous problems in OpenHRP
+
+
 Ver.3.1.0(BETA 4) (15-03-2010)
 ==============================
 
