@@ -54,8 +54,6 @@ X_ptr PathPlanner::checkCorbaServer(const std::string &n, CosNaming::NamingConte
     return srv;
 }
 
-
-
 // ----------------------------------------------
 // コンストラクタ
 // ----------------------------------------------
@@ -88,7 +86,6 @@ PathPlanner::PathPlanner(bool isDebugMode)
     dt_ = 0.01;
 }
 
-
 // ----------------------------------------------
 // デストラクタ
 // ----------------------------------------------
@@ -104,7 +101,6 @@ PathPlanner::~PathPlanner() {
         mobilityFactory_[mobilityName_].second(mobility_);
     }
 }
-
 
 void PathPlanner::getOptimizerNames(std::vector<std::string> &optimizers) {
     optimizers.clear();
@@ -290,7 +286,6 @@ void PathPlanner::registerCharacterByURL(const char* name, const char* url){
     }
 }
 
-
 // ----------------------------------------------
 // 位置の設定
 // ----------------------------------------------
@@ -319,14 +314,14 @@ void computeBoundingBox(BodyPtr body, double min[3], double max[3])
     bool firsttime = true;
     Vector3 v, p;
     Link *l, *root=body->rootLink();
-	Matrix33 Rt = (Matrix33)trans(root->segmentAttitude());
+	Matrix33 Rt = (Matrix33)trans(root->R);
     float x, y, z;
     for (int i=0; i<body->numLinks(); i++){
         l = body->link(i);
         for (int j=0; j<l->coldetModel->getNumVertices(); j++){
             l->coldetModel->getVertex(j, x, y, z);
             v[0] = x; v[1] = y; v[2] = z;
-            p = Rt*(l->segmentAttitude()*v+l->p-root->p);
+            p = Rt*(l->R*v+l->p-root->p);
             if (firsttime){
                 for (int k=0; k<3; k++) min[k] = max[k] = p[k];
                 firsttime = false;
@@ -526,9 +521,6 @@ void PathPlanner::registerIntersectionCheckPair(const char* charName1,
         }
     }
 }
-
-
-
 // ----------------------------------------------
 // 初期化
 // ----------------------------------------------
@@ -616,7 +608,7 @@ bool PathPlanner::checkIntersection()
         Link *l;
             for (int j=0; j<model_->numLinks(); j++){
                 l = model_->link(j);
-                l->coldetModel->setPosition(l->segmentAttitude(), l->p);
+                l->coldetModel->setPosition(l->R, l->p);
             }
     }else{
         _updateCharacterPositions();
@@ -646,15 +638,12 @@ void PathPlanner::registerAlgorithm(const std::string &algorithmName, AlgorithmN
     algorithmFactory_.insert(AlgorithmFactoryValueType(algorithmName, std::make_pair(newFunc, deleteFunc)));
 }
 
-
 void PathPlanner::registerMobility(const std::string &mobilityName, MobilityNewFunc newFunc, MobilityDeleteFunc deleteFunc) {
     mobilityFactory_.insert(MobilityFactoryValueType(mobilityName, std::make_pair(newFunc, deleteFunc)));
 }
-
 void PathPlanner::registerOptimizer(const std::string &optimizerName, OptimizerNewFunc newFunc, OptimizerDeleteFunc deleteFunc) {
     optimizerFactory_.insert(OptimizerFactoryValueType(optimizerName, std::make_pair(newFunc, deleteFunc)));
 }
-
 bool PathPlanner::checkCollision(const std::vector<Position> &path) {
     unsigned int checked = 0;
     unsigned int div = 2;
@@ -678,16 +667,13 @@ bool PathPlanner::checkCollision(const std::vector<Position> &path) {
         }
         div++;
     }
-
     if (checked != path.size()-1) {
         std::cout << "checkCollision() : there are unchecked configurations."
                   << " path.size() = " << path.size() << ", checked = " 
                   << checked << std::endl;
     }
-
     return checkCollision(path[0]);
 }
-
 bool PathPlanner::calcPath()
 {
     path_.clear();
@@ -698,7 +684,7 @@ bool PathPlanner::calcPath()
         body->calcForwardKinematics();
         for (int j=0; j<body->numLinks(); j++){
             l = body->link(j);
-            l->coldetModel->setPosition(l->segmentAttitude(), l->p);
+            l->coldetModel->setPosition(l->R, l->p);
         }
     }
     std::cout << "The number of collision check pairs = " << checkPairs_.size() << std::endl;
