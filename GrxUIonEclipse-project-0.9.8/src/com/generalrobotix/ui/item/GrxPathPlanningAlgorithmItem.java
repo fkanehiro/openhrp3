@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.widgets.Display;
 
 import jp.go.aist.hrp.simulator.BodyInfo;
 import jp.go.aist.hrp.simulator.DynamicsSimulator;
@@ -52,6 +53,7 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 	// 経路計画コンポーネント
 	private PathPlanner planner_ = null;
 	private static PathConsumerComp ppcomp_ = null;
+	private boolean connectChange_ = false;
 
 	public GrxPathPlanningAlgorithmItem(String name, GrxPluginManager manager) {
 		super(name, manager);
@@ -63,7 +65,23 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 		setProperty("tolerance", "0.0");
 		
 		_pathConsumer();
-
+		
+		Runnable run = new Runnable(){
+			public void run() {	
+				if(connectChange_){
+					notifyObservers("connected");
+					connectChange_ = false;
+				}
+				Display display = Display.getCurrent();
+				if ( display!=null && !display.isDisposed()){
+					display.timerExec(100, this);
+				}
+			}
+		};
+		Display display = Display.getCurrent();
+		if ( display!=null && !display.isDisposed()){
+			display.timerExec(100, run);
+		}
 	}
 
 	public boolean create() {
@@ -75,6 +93,7 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 		Collection<GrxPathPlanningAlgorithmItem> col=(Collection<GrxPathPlanningAlgorithmItem>) manager_.getItemMap(GrxPathPlanningAlgorithmItem.class).values();
 		if(col.size()==1 && col.contains(this))
 			Manager.instance().deleteComponent(ppcomp_.getInstanceName());
+		ppcomp_ = null;
 		super.delete(); 
 	}
 	
@@ -580,10 +599,6 @@ public class GrxPathPlanningAlgorithmItem extends GrxBaseItem {
 			planner_ = _pathConsumer().getImpl();
 		else
 			planner_ = null;
-		syncExec(new Runnable(){
-			public void run(){
-				notifyObservers("connected");
-			}
-		});
+		connectChange_ = true;
 	}
 }

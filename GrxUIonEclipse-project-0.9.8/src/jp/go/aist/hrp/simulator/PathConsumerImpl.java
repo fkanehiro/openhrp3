@@ -11,7 +11,14 @@ package jp.go.aist.hrp.simulator;
 
 import com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem;
 
+import RTC.ComponentProfile;
+import RTC.ConnectorProfile;
 import RTC.ConnectorProfileHolder;
+import RTC.ExecutionContext;
+import RTC.LifeCycleState;
+import RTC.PortService;
+import RTC.RTObject;
+import RTC.ReturnCode_t;
 import jp.go.aist.hrp.simulator.PathPlanner;
 import jp.go.aist.rtm.RTC.DataFlowComponentBase;
 import jp.go.aist.rtm.RTC.Manager;
@@ -39,7 +46,29 @@ public class PathConsumerImpl extends DataFlowComponentBase{
         m_PathPlannerPort.registerConsumer("Path", "PathPlanner", m_PathBase);
         m_PathPlannerPort.setOnConnected( new ConnectionCallback() {
 			public void run(ConnectorProfileHolder arg0) {
-				item_.connectedCallback(true);
+				ConnectorProfile[] connectorProfiles = m_PathPlannerPort.get_connector_profiles();
+				for(ConnectorProfile connectorProfile : connectorProfiles){
+					PortService[] portServices = connectorProfile.ports;
+					for(PortService portService : portServices){
+						RTObject rtObject = portService.get_port_profile().owner;
+						String typeName = rtObject.get_component_profile().type_name;
+						if(typeName.equals("Path")){
+							ExecutionContext[] executionContexts = rtObject.get_owned_contexts();
+							for(ExecutionContext executionContext : executionContexts){
+								if(executionContext.get_component_state(rtObject) != LifeCycleState.ACTIVE_STATE){
+									if(executionContext.activate_component(rtObject) == ReturnCode_t.RTC_OK)
+										;
+									else
+										item_.connectedCallback(false);
+								}
+								item_.connectedCallback(true);
+								return;
+							}
+
+						}
+					}
+				}
+				item_.connectedCallback(false);
 			}
         });
         m_PathPlannerPort.setOnDisconnected( new ConnectionCallback() {
