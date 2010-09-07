@@ -116,7 +116,7 @@ public class GrxPropertyView extends GrxBaseView {
             public void keyReleased(KeyEvent e) {
                 if (e.character == SWT.CR && !nameText_.getText().equals(oldText)) {
                 	GrxBasePlugin p = null;
-                	if ((p = manager_.getView(nameText_.getText())) != null){
+                	if ((p = manager_.getView(nameText_.getText(), true)) != null){
                 		if(currentPlugin_ != p){
                 			if(currentPlugin_ != null)
                 				currentPlugin_.deleteObserver(view);

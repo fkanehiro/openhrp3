@@ -85,7 +85,8 @@ public class GrxPluginManager implements IPropertyChangeListener {
     // for managing items
     public GrxPluginLoader pluginLoader_;
     public HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap> pluginMap_ = new HashMap<Class<? extends GrxBasePlugin>, OrderedHashMap>(); // プラグインとその生成したアイテムのマップ
-    private List<GrxBaseView> selectedViewList_ = new ArrayList<GrxBaseView>();
+    private List<GrxBaseView> viewList_ = new ArrayList<GrxBaseView>();
+    private List<GrxBaseView> activeViewList_ = new ArrayList<GrxBaseView>();
     private File homePath_;
     private Map<Class<? extends GrxBasePlugin>, PluginInfo> pinfoMap_ = new HashMap<Class<? extends GrxBasePlugin>, PluginInfo>();
     
@@ -214,8 +215,8 @@ public class GrxPluginManager implements IPropertyChangeListener {
      * @brief update list of views
      * python script から呼ばれた場合、UIスレッド外からの呼び出しとなって、NGなのでsyncexecを使用する。
      */
-    private void updateViewList() {
-        selectedViewList_.clear();
+    private void updateActiveViewList() {
+        activeViewList_.clear();
         
         Display display = Display.getDefault();
         display.syncExec(new Runnable(){
@@ -239,7 +240,8 @@ public class GrxPluginManager implements IPropertyChangeListener {
                     IViewPart v = i.getView(true);
                     if (v != null && GrxBaseViewPart.class.isAssignableFrom(v.getClass())) {
                         GrxBaseView view = ((GrxBaseViewPart) v).getGrxBaseView();
-                        selectedViewList_.add(view);
+                        if(view != null)
+                        	activeViewList_.add(view);
                     }
                 }
         	}
@@ -247,6 +249,37 @@ public class GrxPluginManager implements IPropertyChangeListener {
        
     }
 
+    private void updateViewList() {
+        viewList_.clear();
+        
+        Display display = Display.getDefault();
+        display.syncExec(new Runnable(){
+        	public void run(){
+        		IWorkbench workbench = PlatformUI.getWorkbench();
+                IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
+                if (windows.length == 0)
+                    return;
+                for(IWorkbenchWindow window : windows){
+                	IWorkbenchPage page = window.getActivePage();
+                	if (page != null) {
+                		IPerspectiveDescriptor pers = page.getPerspective();
+                        if (pers.getId().contains(GrxUIPerspectiveFactory.ID)) {
+                        	for (IViewReference i : page.getViewReferences()) {
+                                // 未初期化のビューは初期化する
+                                IViewPart v = i.getView(true);
+                                if (v != null && GrxBaseViewPart.class.isAssignableFrom(v.getClass())) {
+                                    GrxBaseView view = ((GrxBaseViewPart) v).getGrxBaseView();
+                                    if(view != null)
+                                    	viewList_.add(view);
+                                }
+                            }
+                        }
+                	}
+                }
+        	}
+        });
+    }
+    
     /**
      * 全体の処理の開始. 最初に、CORBAのスレッドを開始する。<br>
      * 今のところMODEは”Simulation”のみとし、以下の機能は使っていない。<br>
@@ -783,9 +816,18 @@ public class GrxPluginManager implements IPropertyChangeListener {
      * @brief
      * @return
      */
-    public List<GrxBaseView> getActiveViewList() {
+    public List<GrxBaseView> getViewList() {
     	updateViewList();
-        return selectedViewList_;
+        return viewList_;
+    }
+    
+    /**
+     * @brief
+     * @return
+     */
+    public List<GrxBaseView> getActiveViewList() {
+    	updateActiveViewList();
+        return activeViewList_;
     }
 
     /**
@@ -793,22 +835,37 @@ public class GrxPluginManager implements IPropertyChangeListener {
      * @param cls
      * @return
      */
-    public GrxBaseView getView(Class<? extends GrxBaseView> cls) {
-        updateViewList();
-        for (GrxBaseView v : selectedViewList_)
-            if (v.getClass() == cls)
-                return v;
-
+    public GrxBaseView getView(Class<? extends GrxBaseView> cls, boolean active) {
+    	if(active){
+	        updateActiveViewList();
+	        for (GrxBaseView v : activeViewList_)
+	            if (v.getClass() == cls)
+	                return v;
+    	}else{
+    		updateViewList();
+	        for (GrxBaseView v : viewList_)
+	            if (v.getClass() == cls)
+	                return v;
+    	}
         return null;
     }
 
-    public synchronized GrxBaseView getView(String name) {
-        updateViewList();
-        for (GrxBaseView v : selectedViewList_) {
-            if (v.getName().equals(name)) {
-                return v;
-            }
-        }
+    public synchronized GrxBaseView getView(String name, boolean active) {
+    	if(active){
+	        updateActiveViewList();
+	        for (GrxBaseView v : activeViewList_) {
+	            if (v.getName().equals(name)) {
+	                return v;
+	            }
+	        }
+    	}else{
+    		updateViewList();
+    		for (GrxBaseView v : viewList_) {
+	            if (v.getName().equals(name)) {
+	                return v;
+	            }
+	        }
+    	}
         return null;
     }
 
@@ -1188,6 +1245,7 @@ public class GrxPluginManager implements IPropertyChangeListener {
     	if(itemChangeListener_.get(cls)==null) return;
     	List<GrxItemChangeListener> list = itemChangeListener_.get(cls);
     	list.remove(view);
+    	//TODO
     }
     
     public void itemChange(GrxBaseItem item, int event){
@@ -1348,14 +1406,14 @@ public class GrxPluginManager implements IPropertyChangeListener {
 		}
 		else if(event.getProperty().equals(PreferenceConstants.FONT_TABLE)){
 	        Activator.getDefault().updateTableFont();
-		    List<GrxBaseView> list = getActiveViewList();
+		    List<GrxBaseView> list = getViewList();
 	        for (GrxBaseView v : list){
 	            v.updateTableFont();
 	        }
 		}
         else if(event.getProperty().equals(PreferenceConstants.FONT_EDITER)){
             Activator.getDefault().updateEditerFont();
-            List<GrxBaseView> list = getActiveViewList();
+            List<GrxBaseView> list = getViewList();
             for (GrxBaseView v : list){
                 v.updateEditerFont();
             }

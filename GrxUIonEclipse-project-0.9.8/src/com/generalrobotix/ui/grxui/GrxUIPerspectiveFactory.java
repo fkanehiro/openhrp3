@@ -39,6 +39,16 @@ public class GrxUIPerspectiveFactory implements IPerspectiveFactory {
         Shell   ret = null;
         IWorkbench workbench = PlatformUI.getWorkbench();
         if( workbench != null){
+        	IWorkbenchWindow activeWindow = workbench.getActiveWorkbenchWindow();
+        	if(activeWindow != null){
+        		IWorkbenchPage activePage = activeWindow.getActivePage();
+        		if(activePage != null){
+        			if ( activePage.getPerspective().getId().contains(GrxUIPerspectiveFactory.ID) ){
+                        ret = activeWindow.getShell();
+                        return ret;
+                    }
+        		}
+        	}
             for( IWorkbenchWindow window : workbench.getWorkbenchWindows() ){
                 for(IWorkbenchPage page:window.getPages()){
                     if ( page.getPerspective().getId().contains(GrxUIPerspectiveFactory.ID) ){

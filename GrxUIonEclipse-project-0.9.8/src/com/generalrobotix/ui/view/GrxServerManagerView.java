@@ -467,8 +467,6 @@ public class GrxServerManagerView extends GrxBaseView
         try {
             IRunnableWithProgress iProgress = new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    int size = 0;
-                    
                     monitor.beginTask(MessageBundle.get("GrxServerManagerView.dialog.title.progress"),
                             2 + ( serverManager_.getServerInfo().size() + 1) * 2); //$NON-NLS-1$
                     restartServers(monitor);
@@ -483,9 +481,9 @@ public class GrxServerManagerView extends GrxBaseView
         
         
     }
-    
+
     private void restartServers(IProgressMonitor monitor) throws InterruptedException{
-        Grx3DView dview =  (Grx3DView)manager_.getView( Grx3DView.class );
+        Grx3DView dview =  (Grx3DView)manager_.getView( Grx3DView.class, false );
         if(dview != null){
             dview.unregisterCORBA();
         }

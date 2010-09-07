@@ -136,8 +136,8 @@ public class GrxProjectItem extends GrxBaseItem {
 		IWorkbenchPage page=null;
  		IWorkbench workbench = PlatformUI.getWorkbench();
         if( workbench != null){
-        	IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-     		if (window != null){
+        	IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
+        	for(IWorkbenchWindow window : windows){
      			page = window.getActivePage();
      			if (page != null &&
      			    page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
@@ -145,7 +145,7 @@ public class GrxProjectItem extends GrxBaseItem {
      		}
         }
         
-        List<GrxBaseView> vl = manager_.getActiveViewList();
+        List<GrxBaseView> vl = manager_.getViewList();
 		for (int i=0; i<vl.size(); i++) 
 			if (vl.get(i) != null) vl.get(i).restoreProperties();
 		
@@ -570,11 +570,11 @@ public class GrxProjectItem extends GrxBaseItem {
 				monitor.done();
 			}
 		};
-		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(null);
+		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(GrxUIPerspectiveFactory.getCurrentShell());
 		try {
 			progressMonitorDlg.run(false,false, runnableProgress);
 			//ダイアログの影が残ってしまう対策　　//
-			Grx3DView view3d =  (Grx3DView)manager_.getView( Grx3DView.class );
+			Grx3DView view3d =  (Grx3DView)manager_.getView( Grx3DView.class, true );
 			if(view3d!=null){
 				view3d.repaint();
 			}
@@ -699,19 +699,16 @@ public class GrxProjectItem extends GrxBaseItem {
 	   		if(page!=null)
 	   			page.setPerspective(tempPd);
 		}else{
-			IWorkbenchPage page=null;
-	 		IWorkbench workbench = PlatformUI.getWorkbench();
+	        IWorkbench workbench = PlatformUI.getWorkbench();
 	        if( workbench != null){
-	        	IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-	     		if (window != null){
-	     			page = window.getActivePage();
-	     			if (!page.getPerspective().getId().contains(GrxUIPerspectiveFactory.ID) ){
-	     				return;
-	     			}
+	        	IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
+	        	for(IWorkbenchWindow window : windows){
+	        		IWorkbenchPage page = window.getActivePage();
+	     			if (page != null &&
+	     			    page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
+	     	        	page.closePerspective(page.getPerspective(), false, false);
 	     		}
 	        }
-	        if (page!=null && page.getPerspective().getId().equals(GrxUIPerspectiveFactory.ID+ ".project") )
-	        	page.closePerspective(page.getPerspective(), false, false);
 		}
 		
 		viewProperties_.clear();
@@ -730,7 +727,7 @@ public class GrxProjectItem extends GrxBaseItem {
 			}
 		}
 		
-		List<GrxBaseView> vl = manager_.getActiveViewList();
+		List<GrxBaseView> vl = manager_.getViewList();
 		for (int i=0; i<vl.size(); i++) 
 			if (vl.get(i) != null) vl.get(i).restoreProperties();
 		
@@ -755,8 +752,6 @@ public class GrxProjectItem extends GrxBaseItem {
 			else
 				plugin = manager_.createItem(icls, iname);
 			plugin = manager_.getItem(icls, iname);
-		} else if (GrxBaseView.class.isAssignableFrom(cls)){
-			plugin = manager_.getView((Class<? extends GrxBaseView>) cls);
 		}
         
         if (plugin != null) {

@@ -327,17 +327,6 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener, I
      * 
      */
     public static void refNSHostPort(StringBuffer nsHost, StringBuffer nsPort) {
-        /*
-        if (plugin != null) {
-            if (plugin.manager_ != null) {
-                GrxORBMonitorView omView = (GrxORBMonitorView) plugin.manager_.getView("GrxORBMonitorView");
-                if (omView != null) {
-                    nsHost.append(omView.getNSHost());
-                    nsPort.append(omView.getNSPort());
-                }
-            }
-        }
-        */
         if (nsHost.length() == 0){
             nsHost.append(GrxCorbaUtil.nsHost());
         }
