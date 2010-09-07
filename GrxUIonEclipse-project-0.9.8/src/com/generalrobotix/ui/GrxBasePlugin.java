@@ -357,8 +357,7 @@ public class GrxBasePlugin extends GrxConfigBundle {
 	 */
 	public boolean equals(Object obj) {
 
-		return obj != null && this.hashCode() == obj.hashCode()
-				&& this.toString().equals(obj.toString());
+		return this == obj;
 	}
 
 	/**

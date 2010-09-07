@@ -175,7 +175,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 				return false;
 			}
 
-			GrxOpenHRPView openHRPView = (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class );
+			GrxOpenHRPView openHRPView = (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class, true );
 			if(openHRPView != null)
 				openHRPView.fixParam();
 
@@ -187,7 +187,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 			isSimulatingView_ = isTrue("viewsimulate", false);
 	                
 			if(isSimulatingView_){
-				view3D =  (Grx3DView)manager_.getView( Grx3DView.class );
+				view3D =  (Grx3DView)manager_.getView( Grx3DView.class, false );
 				if(view3D==null){
 					IWorkbench workbench = PlatformUI.getWorkbench();
 					IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
@@ -197,12 +197,12 @@ public class GrxSimulationItem extends GrxBaseItem {
 					} catch (PartInitException e1) {
 						e1.printStackTrace();
 					}
-					view3D =  (Grx3DView)manager_.getView( Grx3DView.class );
+					view3D =  (Grx3DView)manager_.getView( Grx3DView.class, true );
 				}
 			}
 	            
 			if(!isSimulatingView_){
-				GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class );
+				GrxLoggerView view =  (GrxLoggerView)manager_.getView( GrxLoggerView.class, false );
 				if( view == null){
 		        	IWorkbench workbench = PlatformUI.getWorkbench();
 		    		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();

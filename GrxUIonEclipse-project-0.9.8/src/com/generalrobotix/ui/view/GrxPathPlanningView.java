@@ -633,12 +633,10 @@ public class GrxPathPlanningView extends GrxBaseView {
 		}
 	}
 
-	
-
 	Grx3DView get3DView()
 	{
 		if( view_ == null )
-			view_ = (Grx3DView)manager_.getView(Grx3DView.class);
+			view_ = (Grx3DView)manager_.getView(Grx3DView.class, false);
 		return view_;
 	}
 

@@ -18,7 +18,7 @@ public class ExecuteScript implements IWorkbenchWindowActionDelegate {
 
     public void run(IAction action) {
         GrxPluginManager manager_ = Activator.getDefault().manager_;
-        GrxJythonPromptView jythonView =  (GrxJythonPromptView)manager_.getView( GrxJythonPromptView.class );
+        GrxJythonPromptView jythonView =  (GrxJythonPromptView)manager_.getView( GrxJythonPromptView.class, false );
         if(jythonView==null){
             IWorkbench workbench = PlatformUI.getWorkbench();
             IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
@@ -28,7 +28,7 @@ public class ExecuteScript implements IWorkbenchWindowActionDelegate {
             } catch (PartInitException e1) {
                 e1.printStackTrace();
             }
-            jythonView =  (GrxJythonPromptView)manager_.getView( GrxJythonPromptView.class );
+            jythonView =  (GrxJythonPromptView)manager_.getView( GrxJythonPromptView.class, true );
         }
         if(jythonView.getEnabledExecBtn())
             jythonView.selectExecBtn();

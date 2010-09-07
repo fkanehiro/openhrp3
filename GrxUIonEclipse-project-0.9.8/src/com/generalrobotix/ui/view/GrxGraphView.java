@@ -284,6 +284,7 @@ public class GrxGraphView extends GrxBaseView {
         manager_.removeItemChangeListener(this, GrxGraphItem.class);
         manager_.removeItemChangeListener(this, GrxModelItem.class);
         manager_.removeItemChangeListener(this, GrxWorldStateItem.class);
+        manager_.removeItemChangeListener(this, GrxSimulationItem.class);
         if(currentWorld_!=null)
         {
             currentWorld_.deleteObserver(this);
