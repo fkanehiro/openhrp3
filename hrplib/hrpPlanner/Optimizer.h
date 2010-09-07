@@ -4,7 +4,7 @@
 #define __OPTIMIZER_H
 
 #include <vector>
-#include "Position.h"
+#include "Configuration.h"
 
 namespace PathEngine {
   class Optimizer;
@@ -53,7 +53,7 @@ namespace PathEngine {
      * @param path 元の経路
      * @return 最適化された経路。
      */
-    virtual std::vector<Position> optimize(const std::vector<Position> &path)=0;
+    virtual std::vector<Configuration> optimize(const std::vector<Configuration> &path)=0;
   protected:
     PathPlanner *planner_;
   };

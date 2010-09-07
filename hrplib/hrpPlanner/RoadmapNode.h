@@ -3,7 +3,7 @@
 #define __ROADMAP_NODE_H__
 
 #include <vector>
-#include "Position.h"
+#include "Configuration.h"
 #include "exportdef.h"
 
 namespace PathEngine {
@@ -16,7 +16,7 @@ namespace PathEngine {
      * @brief コンストラクタ
      * @param pos このノードの座標
      */
-    RoadmapNode(const Position& pos) : pos_(pos) {}
+    RoadmapNode(const Configuration& pos) : pos_(pos) {}
 
     /**
      * @brief デストラクタ
@@ -39,7 +39,7 @@ namespace PathEngine {
      * @brief 位置の取得
      * @return 位置
      */
-    const Position& position() const { return pos_; }
+    const Configuration& position() const { return pos_; }
 
     /**
      * @brief 親ノードの取得
@@ -92,7 +92,7 @@ namespace PathEngine {
     /**
      * @brief このノードの座標
      */
-    Position pos_;
+    Configuration pos_;
 
     /**
      * @brief 探索アルゴリズム用フラグ

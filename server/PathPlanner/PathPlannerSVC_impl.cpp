@@ -17,6 +17,10 @@
 OpenHRP_PathPlannerSVC_impl::OpenHRP_PathPlannerSVC_impl()
 {
     path_ = new PathEngine::PathPlanner(false);
+    PathEngine::Configuration::size(3);
+    PathEngine::Configuration::unboundedRotation(2, true);
+    PathEngine::Configuration::bounds(0,-2,2);
+    PathEngine::Configuration::bounds(1,-2,2);
 }
 
 
@@ -45,10 +49,10 @@ void OpenHRP_PathPlannerSVC_impl::getRoadmap(OpenHRP::PathPlanner::Roadmap_out g
   
     for (unsigned int i=0; i<roadmap->nNodes(); i++) {
         PathEngine::RoadmapNode *node = roadmap->node(i);
-        const PathEngine::Position& pos = node->position(); 
-        graph[i].cfg[0] = pos.getX();
-        graph[i].cfg[1] = pos.getY();
-        graph[i].cfg[2] = pos.getTheta();
+        const PathEngine::Configuration& pos = node->position(); 
+        graph[i].cfg[0] = pos.value(0);
+        graph[i].cfg[1] = pos.value(1);
+        graph[i].cfg[2] = pos.value(2);
 
         graph[i].neighbors.length(node->nChildren());
         for (unsigned int j=0; j<node->nChildren(); j++) {
@@ -123,6 +127,22 @@ bool OpenHRP_PathPlannerSVC_impl::getProperties(const char* alg, OpenHRP::String
     std::vector<std::string> propNames;
     std::vector<std::string> defaultValues;
 
+    propNames.push_back("weight-x");
+    defaultValues.push_back("1.0");
+    propNames.push_back("weight-y");
+    defaultValues.push_back("1.0");
+    propNames.push_back("weight-theta");
+    defaultValues.push_back("1.0");
+    
+    propNames.push_back("min-x");
+    defaultValues.push_back("-2");
+    propNames.push_back("min-y");
+    defaultValues.push_back("-2");
+    propNames.push_back("max-x");
+    defaultValues.push_back("2");
+    propNames.push_back("max-y");
+    defaultValues.push_back("2");
+    
     if (!path_->getProperties(alg, propNames, defaultValues)) return false;
 
     props->length(propNames.size());
@@ -145,16 +165,22 @@ void OpenHRP_PathPlannerSVC_impl::initPlanner()
 void OpenHRP_PathPlannerSVC_impl::setStartPosition(CORBA::Double x, CORBA::Double y, CORBA::Double theta)
 {
     std::cout << "setStartPosition(" << x << ", " << y << ", " << theta << ")" << std::endl;
-    PathEngine::Position pos(x, y, theta);
-    path_->setStartPosition(pos);
+    PathEngine::Configuration pos;
+    pos.value(0) = x;
+    pos.value(1) = y;
+    pos.value(2) = theta;
+    path_->setStartConfiguration(pos);
     std::cout << "fin. " << std::endl;
 }
 
 void OpenHRP_PathPlannerSVC_impl::setGoalPosition(CORBA::Double x, CORBA::Double y, CORBA::Double theta)
 {
     std::cout << "setGoalPosition(" << x << ", " << y << ", " << theta << ")" << std::endl;
-    PathEngine::Position pos(x, y, theta);
-    path_->setGoalPosition(pos);
+    PathEngine::Configuration pos;
+    pos.value(0) = x;
+    pos.value(1) = y;
+    pos.value(2) = theta;
+    path_->setGoalConfiguration(pos);
     std::cout << "fin. " << std::endl;
 }
 
@@ -165,14 +191,27 @@ void OpenHRP_PathPlannerSVC_impl::setProperties(const OpenHRP::PathPlanner::Prop
     for (unsigned int i=0; i<properites.length(); i++) {
         std::string name(properites[i][0]);
         std::string value(properites[i][1]);
-        std::cout << name << ": " << value << std::endl;
-        prop.insert(std::map<std::string, std::string>::value_type(name, value));
+        //std::cout << name << ": " << value << std::endl;
+        if (name == "min-x"){
+            PathEngine::Configuration::lbound(0, atof(value.c_str()));
+        }else if (name == "max-x"){
+            PathEngine::Configuration::ubound(0, atof(value.c_str()));
+        }else if (name == "min-y"){
+            PathEngine::Configuration::lbound(1, atof(value.c_str()));
+        }else if (name == "max-y"){
+            PathEngine::Configuration::ubound(1, atof(value.c_str()));
+        }else if (name == "weight-x"){
+            PathEngine::Configuration::weight(0, atof(value.c_str()));
+        }else if (name == "weight-y"){
+            PathEngine::Configuration::weight(1, atof(value.c_str()));
+        }else if (name == "weight-theta"){
+            PathEngine::Configuration::weight(2, atof(value.c_str()));
+        }else{
+            prop.insert(std::map<std::string, std::string>::value_type(name, value));
+        }
     }
     path_->setProperties(prop);
 
-    if (prop.count("z-pos") > 0) {
-        path_->setZPos(atof(prop["z-pos"].c_str()));
-    }
     std::cout << "fin. " << std::endl;
 }
 
@@ -197,7 +236,7 @@ CORBA::Boolean OpenHRP_PathPlannerSVC_impl::calcPath()
 void OpenHRP_PathPlannerSVC_impl::getPath(OpenHRP::PathPlanner::PointArray_out path)
 {
     std::cerr << "OpenHRP_PathPlannerSVC_impl::getPath()" << std::endl;
-    const std::vector<PathEngine::Position>& p = path_->getPath();
+    const std::vector<PathEngine::Configuration>& p = path_->getPath();
 
     path = new OpenHRP::PathPlanner::PointArray;
     path->length(p.size());
@@ -205,9 +244,9 @@ void OpenHRP_PathPlannerSVC_impl::getPath(OpenHRP::PathPlanner::PointArray_out p
     for (unsigned int i=0; i<p.size(); i++) {
         //std::cerr << i << " : " << p[i] << std::endl;
         path[i].length(3);
-        path[i][0] = p[i].getX();
-        path[i][1] = p[i].getY();
-        path[i][2] = p[i].getTheta();
+        path[i][0] = p[i].value(0);
+        path[i][1] = p[i].value(1);
+        path[i][2] = p[i].value(2);
     }
     std::cerr << "OpenHRP_PathPlannerSVC_impl::fin. length of path = " 
               << p.size() << std::endl;

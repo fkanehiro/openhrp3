@@ -30,7 +30,7 @@ bool PRM::buildRoadmap()
     }
     
     // ランダムに与えた点
-    Position pos = Position::random();
+    Configuration pos = Configuration::random();
     numTotalPoints++;
     
     // 干渉する位置でなければ追加
@@ -65,6 +65,7 @@ bool PRM::buildRoadmap()
 
 bool PRM::calcPath() 
 {
+    std::cout << "PRM::calcPath()" << std::endl;
   // Max Dists
   maxDist_  = atof(properties_["max-dist"].c_str());
 
@@ -86,7 +87,7 @@ bool PRM::calcPath()
   RoadmapNode* node;
   for (unsigned long i=0; i<roadmap_->nNodes(); i++) {
     node = roadmap_->node(i);
-    const Position& pos = node->position();
+    const Configuration& pos = node->position();
     if (mobility->distance(start_, pos) < maxDist_) {
       roadmap_->tryConnection(startNode, node);
     }

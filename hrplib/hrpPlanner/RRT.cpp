@@ -26,7 +26,7 @@ RRT::~RRT()
     delete Tb_;
 }
 
-int RRT::extend(Roadmap *tree, Position& qRand, bool reverse) {
+int RRT::extend(Roadmap *tree, Configuration& qRand, bool reverse) {
     if (debug) std::cout << "RRT::extend("<< qRand << ", " << reverse << ")" 
                          << std::endl;
 
@@ -40,7 +40,7 @@ int RRT::extend(Roadmap *tree, Position& qRand, bool reverse) {
         Mobility* mobility = planner_->getMobility();
 
         if (min > eps_){
-            Position qRandOrg = qRand;
+            Configuration qRandOrg = qRand;
             qRand = mobility->interpolate(minNode->position(), qRand, eps_/min);
             if (debug) std::cout << "qRand = (" << qRand << ")" << std::endl;
             if (mobility->distance(minNode->position(), qRand) > min){
@@ -94,11 +94,11 @@ int RRT::extend(Roadmap *tree, Position& qRand, bool reverse) {
     return Trapped;
 }
 
-int RRT::connect(Roadmap *tree,const Position &qNew, bool reverse) {
+int RRT::connect(Roadmap *tree,const Configuration &qNew, bool reverse) {
     if (debug) std::cout << "RRT::connect(" << qNew << ")" << std::endl;
 
     int ret = Reached;
-    Position q = qNew;
+    Configuration q = qNew;
 
     do {
         ret = extend(tree, q, reverse);
@@ -158,7 +158,7 @@ bool RRT::calcPath()
         if (!isRunning_) break;
         printf("%5d/%5d\r", i+1, times_); fflush(stdout);
     
-        Position qNew = Position::random();
+        Configuration qNew = Configuration::random();
         if (extendFromStart_ && extendFromGoal_){
             
             if (isTaStart){
@@ -179,7 +179,7 @@ bool RRT::calcPath()
             isTaStart = !isTaStart;
         }else if (extendFromStart_ && !extendFromGoal_){
             if (extend(Ta_, qNew) != Trapped) {
-                Position p = goal_;
+                Configuration p = goal_;
                 int ret;
                 do {
                     ret = extend(Ta_, p);

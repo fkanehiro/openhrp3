@@ -3,7 +3,7 @@
 #define __ROADMAP_H__
 
 #include <vector>
-#include "Position.h"
+#include "Configuration.h"
 #include "exportdef.h"
 
 namespace PathEngine{
@@ -63,11 +63,11 @@ namespace PathEngine{
 
         /**
          * @brief 最も距離の小さいノードを返す
-         * @param pos 距離計算を行う対象となる位置
+         * @param cfg 距離計算を行う対象となる位置
          * @param node 最も近いノード。ノードが一つもない場合はNULL
          * @param distance 最も近いノードまでの距離
          */
-        void findNearestNode(const Position& pos, RoadmapNode *&node, double &distance); 
+        void findNearestNode(const Configuration& cfg, RoadmapNode *&node, double &distance); 
 
         /**
          * @brief 最後に追加されたノードを取得する

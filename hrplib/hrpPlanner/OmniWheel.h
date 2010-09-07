@@ -3,7 +3,7 @@
 #define __OMNI_WHEEL_H__
 
 #include "Mobility.h"
-#include "Position.h"
+#include "Configuration.h"
 
 namespace PathEngine {
     class PathPlanner;
@@ -22,12 +22,12 @@ namespace PathEngine {
         /**
          * @brief 親クラスのドキュメントを参照
          */
-        Position interpolate(const Position& from, const Position& to, double ratio) const;
+        Configuration interpolate(const Configuration& from, const Configuration& to, double ratio) const;
       
         /**
          * @brief 親クラスのドキュメントを参照
          */
-        double distance(const Position& from, const Position& to) const;
+        double distance(const Configuration& from, const Configuration& to) const;
 
         /**
          * @brief 親クラスのドキュメントを参照
