@@ -155,6 +155,7 @@ bool ModelLoaderHelper::createBody(BodyPtr& body, BodyInfo_ptr bodyInfo)
 
     const char* name = bodyInfo->name();
     body->setModelName(name);
+    body->setName(name);
 
     int n = bodyInfo->links()->length();
     linkInfoSeq = bodyInfo->links();
