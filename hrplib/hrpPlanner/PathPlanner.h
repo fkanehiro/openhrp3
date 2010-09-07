@@ -10,7 +10,7 @@
 
 #include "exportdef.h"
 #include "Algorithm.h"
-#include "Position.h"
+#include "Configuration.h"
 #include "Mobility.h"
 #include "Optimizer.h"
 
@@ -31,7 +31,9 @@
 namespace PathEngine {
     class Algorithm;
     class Mobility;
+    class PathPlanner;
 
+    typedef void applyConfigFunc(PathPlanner *, const Configuration &);
     /**
      * @brief 計画経路エンジン
      *
@@ -40,6 +42,7 @@ namespace PathEngine {
     class HRPPLANNER_API PathPlanner {
 
     private:
+        applyConfigFunc *m_applyConfigFunc;
         typedef std::map<const std::string, std::pair<AlgorithmNewFunc, AlgorithmDeleteFunc> > AlgorithmFactory;
         typedef AlgorithmFactory::value_type AlgorithmFactoryValueType;
         /**
@@ -70,11 +73,6 @@ namespace PathEngine {
          * @brief デバッグモード時に使用する OnlineViewer への参照
          */
         OpenHRP::OnlineViewer_var onlineViewer_;
-
-        /**
-         * @brief 移動ロボットの Z 座標
-         */
-        double zPos_;
 
         /**
          * @brief 使用する経路計画アルゴリズム名
@@ -131,7 +129,7 @@ namespace PathEngine {
         /**
          * @brief 経路
          */
-        std::vector<Position> path_;
+        std::vector<Configuration> path_;
 
         /**
          * @brief 干渉チェック呼び出し回数
@@ -153,7 +151,6 @@ namespace PathEngine {
         OpenHRP::CharacterPositionSequence_var allCharacterPositions_;
 
         bool checkIntersection();
-        void getWorldState(OpenHRP::WorldState_out wstate);
         void _setupCharacterData();
         void _updateCharacterPositions();
 
@@ -161,6 +158,10 @@ namespace PathEngine {
 
         std::vector<hrp::ColdetModelPair> checkPairs_;
     public:
+        hrp::BodyPtr robot();
+        void setApplyConfigFunc(applyConfigFunc i_func);
+        void setConfiguration(const Configuration &pos);
+        void getWorldState(OpenHRP::WorldState_out wstate);
         /**
          * @brief コンストラクタ
          * @param isDebugMode デバッグモードにするか否か
@@ -207,14 +208,14 @@ namespace PathEngine {
          * @param name モデル名
          * @param cInfo モデルデータ
          */
-        void registerCharacter(const char* name,OpenHRP::BodyInfo_ptr cInfo);
+        hrp::BodyPtr registerCharacter(const char* name,OpenHRP::BodyInfo_ptr cInfo);
 
         /**
          * @brief キャラクタを動力学シミュレータに登録する。
          * @param name モデル名
          * @param url モデルURL
          */
-        void registerCharacterByURL(const char* name, const char* url);
+        hrp::BodyPtr registerCharacterByURL(const char* name, const char* url);
 
         /**
          * @brief 位置を設定する
@@ -303,25 +304,17 @@ namespace PathEngine {
          * @param properties name-valueの組
          */
         void setProperties(const std::map<std::string, std::string> &properties) {algorithm_->setProperties(properties);}
-
         /**
          * @brief スタート位置を設定する
          * @param pos 初期位置
          */
-        void setStartPosition(const Position &pos) {algorithm_->setStartPosition(pos);}
+        void setStartConfiguration(const Configuration &pos) {algorithm_->setStartConfiguration(pos);}
 
         /**
          * @brief ゴール位置を設定する
          * @param pos 終了位置
          */
-        void setGoalPosition(const Position &pos) {algorithm_->setGoalPosition(pos);}
-
-        /**
-         * @brief Z座標を設定する
-         *
-         * @param zPos Z座標
-         */
-        void setZPos(double zPos) {zPos_ = zPos;}
+        void setGoalConfiguration(const Configuration &pos) {algorithm_->setGoalConfiguration(pos);}
 
         /**
          * @brief 経路計画を行う
@@ -344,7 +337,7 @@ namespace PathEngine {
          * @brief 計画された経路の補間されたものを取得する
          * @return 補間された経路
          */
-        std::vector<Position>  getPath();
+        std::vector<Configuration>  getPath();
 
         /**
          * @brief 移動能力を取得する
@@ -357,14 +350,14 @@ namespace PathEngine {
          * @param pos ロボットの位置
          * @return 干渉している場合true, それ以外false
          */
-        bool checkCollision(const Position &pos);
+        bool checkCollision(const Configuration &pos);
 
         /**
          * @brief パスの干渉検出を行う
          * @param path パス
          * @return 一点でも干渉しているとtrue
          */
-        bool checkCollision(const std::vector<Position> &path);
+        bool checkCollision(const std::vector<Configuration> &path);
 
         /**
          * @brief デバッグモードの変更

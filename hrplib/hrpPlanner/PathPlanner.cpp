@@ -54,11 +54,27 @@ X_ptr PathPlanner::checkCorbaServer(const std::string &n, CosNaming::NamingConte
     return srv;
 }
 
+void setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cfg)
+{
+    Link *baseLink = planner->robot()->rootLink();
+    // 目標値設定  
+    baseLink->p(0) = cfg.value(0);
+    baseLink->p(1) = cfg.value(1);
+    Matrix33 R;
+
+    double c = cos(cfg.value(2)), s = sin(cfg.value(2));
+    R(0,0) = c; R(0,1) = -s; R(0,2) = 0;
+    R(1,0) = s; R(1,1) =  c; R(1,2) = 0;
+    R(2,0) = 0; R(2,1) =  0; R(2,2) = 1;
+    baseLink->setSegmentAttitude(R);
+    planner->robot()->calcForwardKinematics();
+}
+
 // ----------------------------------------------
 // コンストラクタ
 // ----------------------------------------------
 PathPlanner::PathPlanner(bool isDebugMode) 
-    : algorithm_(NULL), mobility_(NULL), debug_(isDebugMode)
+    : m_applyConfigFunc(&setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), debug_(isDebugMode)
 {
     if (isDebugMode) {
         std::cerr << "PathPlanner::PathPlanner() : debug mode" << std::endl;
@@ -158,6 +174,7 @@ bool PathPlanner::getProperties(const std::string &algorithm,
 // 初期化
 // ----------------------------------------------
 void PathPlanner::initPlanner(const std::string &nameServer) {
+
     if (debug_) {
         std::cerr << "PathPlanner::initPlanner(" << nameServer << ")" << std::endl;
     }
@@ -236,9 +253,6 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
         return;
     }
 
-    // 初期 z 座標は 0
-    zPos_ = 0;
-
     world_.clearBodies();
     countCollisionCheck_ = 0;
     tickCollisionCheck_ = 0;
@@ -265,18 +279,18 @@ void PathPlanner::setAlgorithmName(const std::string &algorithmName)
 // ----------------------------------------------
 // キャラクタをURLから登録
 // ----------------------------------------------
-void PathPlanner::registerCharacterByURL(const char* name, const char* url){
+BodyPtr PathPlanner::registerCharacterByURL(const char* name, const char* url){
     if (debug_) {
         std::cerr << "PathPlanner::registerCharacterByURL(" << name << ", " << url << ")" << std::endl;
     }
 
     if (CORBA::is_nil(modelLoader_)) {
         std::cerr << "nil reference to servers" << std::endl;
-        return;
+        return BodyPtr();
     }
 
     OpenHRP::BodyInfo_ptr cInfo = modelLoader_->getBodyInfo(url);
-    registerCharacter(name, cInfo);
+    BodyPtr body = registerCharacter(name, cInfo);
 
     if (debug_) {
         if (CORBA::is_nil(onlineViewer_)) {
@@ -284,6 +298,7 @@ void PathPlanner::registerCharacterByURL(const char* name, const char* url){
         }
         onlineViewer_->load(name, url);
     }
+    return body;
 }
 
 // ----------------------------------------------
@@ -383,7 +398,7 @@ BodyPtr createBoundingBoxBody(BodyPtr body)
 // ----------------------------------------------
 // キャラクタをBodyInfoから登録
 // ----------------------------------------------
-void PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr cInfo) {
+BodyPtr PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr cInfo) {
     if (debug_) {
         std::cerr << "PathPlanner::registerCharacter(" << name << ", " << cInfo << ")" << std::endl;
     }
@@ -406,6 +421,7 @@ void PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr cInf
         }
         world_.addBody(body);
     }
+    return body;
 }
 
 
@@ -413,20 +429,14 @@ void PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr cInf
 // ----------------------------------------------
 // ロボット名を設定
 // ----------------------------------------------
-void PathPlanner::setRobotName(const std::string &model) {
+void PathPlanner::setRobotName(const std::string &name) {
     if (debug_) {
-        std::cerr << "PathPlanner::setRobotName(" << model << ")" << std::endl;
+        std::cerr << "PathPlanner::setRobotName(" << name << ")" << std::endl;
     }
 
-    model_ = world_.body(model);
+    model_ = world_.body(name);
     if (!model_) {
-        std::cerr << "robot(" << model << ") not found" << std::endl;
-        return;
-    }
-
-    baseLink_ = model_->rootLink();
-    if (!baseLink_) {
-        std::cerr << "rootLink() of " << model << " is NULL" << std::endl;
+        std::cerr << "PathPlanner::setRobotName() : robot(" << name << ") not found" << std::endl;
         return;
     }
 }
@@ -448,7 +458,7 @@ bool PathPlanner::setMobilityName(const std::string &mobility)
         mobility_ = mobilityFactory_[mobilityName_].first(this);
     }
     else {
-        std::cerr << "mobility(" << mobility << ") not found" << std::endl;
+        std::cerr << "PathPlanner::setMobilityName() : mobility(" << mobility << ") not found" << std::endl;
         return false;
     }
     return true;
@@ -465,7 +475,7 @@ void PathPlanner::registerIntersectionCheckPair(const char* charName1,
                                                 const char* linkName2,
                                                 CORBA::Double tolerance) {
     if (debug_){
-        std::cout << "OpenHRP_PathPlannerSVC_impl::registerIntersectionCheckPair("
+        std::cout << "PathPlanner::registerIntersectionCheckPair("
                   << charName1 << ", " << linkName1 << ", " << charName2 
                   << ", " << linkName2
                   << ", " << tolerance << ")" << std::endl;
@@ -544,23 +554,18 @@ void PathPlanner::initSimulation () {
     world_.initialize();
 }
 
-bool PathPlanner::checkCollision (const Position &pos) {
+void PathPlanner::setConfiguration(const Configuration &pos)
+{
+    (*m_applyConfigFunc)(this, pos);
+}
+
+bool PathPlanner::checkCollision (const Configuration &pos) {
 #if 0
     if (debug_) {
         std::cerr << "checkCollision(" << pos << ")" << std::endl;
     }
 #endif
-    // 目標値設定  
-    baseLink_->p(0) = pos.getX();
-    baseLink_->p(1) = pos.getY();
-    baseLink_->p(2) = zPos_;
-    Matrix33 R;
-
-    double c = cos(pos.getTheta()), s = sin(pos.getTheta());
-    R(0,0) = c; R(0,1) = -s; R(0,2) = 0;
-    R(1,0) = s; R(1,1) =  c; R(1,2) = 0;
-    R(2,0) = 0; R(2,1) =  0; R(2,2) = 1;
-    baseLink_->setSegmentAttitude(R);
+    setConfiguration(pos);
 
     // 干渉チェック
     tick_t t1 = get_tick();
@@ -603,7 +608,6 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
 bool PathPlanner::checkIntersection()
 {
     tick_t t1 = get_tick();
-    model_->calcForwardKinematics();
     if (USE_INTERNAL_COLLISION_DETECTOR){
         Link *l;
             for (int j=0; j<model_->numLinks(); j++){
@@ -644,7 +648,7 @@ void PathPlanner::registerMobility(const std::string &mobilityName, MobilityNewF
 void PathPlanner::registerOptimizer(const std::string &optimizerName, OptimizerNewFunc newFunc, OptimizerDeleteFunc deleteFunc) {
     optimizerFactory_.insert(OptimizerFactoryValueType(optimizerName, std::make_pair(newFunc, deleteFunc)));
 }
-bool PathPlanner::checkCollision(const std::vector<Position> &path) {
+bool PathPlanner::checkCollision(const std::vector<Configuration> &path) {
     unsigned int checked = 0;
     unsigned int div = 2;
 
@@ -688,12 +692,17 @@ bool PathPlanner::calcPath()
         }
     }
     std::cout << "The number of collision check pairs = " << checkPairs_.size() << std::endl;
-    if (!algorithm_->preparePlanning()) return false;
+    if (!algorithm_->preparePlanning()){
+        std::cout << "preparePlanning() failed" << std::endl;
+        return false;
+    }
 
     if (algorithm_->tryDirectConnection()){
         path_ = algorithm_->getPath();
+        std::cout << "connected directly" << std::endl;
         return true;
     }
+    std::cout << "failed direct connection" << std::endl;
 
     if (algorithm_->calcPath()){
         path_ = algorithm_->getPath();
@@ -715,13 +724,13 @@ bool PathPlanner::optimize(const std::string& optimizer)
     }
 }
 
-std::vector<Position> PathPlanner::getPath()
+std::vector<Configuration> PathPlanner::getPath()
 {
-    std::vector<Position> finalPath;
+    std::vector<Configuration> finalPath;
     if (path_.size() == 0) return finalPath;
 
     for (unsigned int i=0; i<path_.size()-1; i++) {
-        std::vector<Position> localPath = mobility_->getPath(path_[i], path_[i+1]);
+        std::vector<Configuration> localPath = mobility_->getPath(path_[i], path_[i+1]);
         finalPath.insert(finalPath.end(), localPath.begin(), localPath.end()-1);
     }
     finalPath.push_back(path_[path_.size()-1]);
@@ -801,4 +810,14 @@ double PathPlanner::timeCollisionCheck() const
 double PathPlanner::timeForwardKinematics() const
 {
     return tickForwardKinematics_/get_cpu_frequency();
+}
+
+void PathPlanner::setApplyConfigFunc(applyConfigFunc i_func)
+{
+    m_applyConfigFunc = i_func;
+}
+
+BodyPtr PathPlanner::robot()
+{
+    return model_;
 }

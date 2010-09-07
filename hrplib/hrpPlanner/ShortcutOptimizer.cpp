@@ -4,9 +4,9 @@
 
 using namespace PathEngine;
 
-std::vector<Position> ShortcutOptimizer::optimize(const std::vector<Position> &path)
+std::vector<Configuration> ShortcutOptimizer::optimize(const std::vector<Configuration> &path)
 {
-  std::vector<Position> optimized = path;
+  std::vector<Configuration> optimized = path;
   if (path.size() < 3) return optimized;
 
   Mobility *mobility = planner_->getMobility(); 

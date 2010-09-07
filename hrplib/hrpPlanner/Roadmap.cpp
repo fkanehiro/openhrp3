@@ -40,7 +40,7 @@ RoadmapNode *Roadmap::node(unsigned int index)
     return nodes_[index];
 }
 
-void Roadmap::findNearestNode(const Position& pos,
+void Roadmap::findNearestNode(const Configuration& pos,
                               RoadmapNode *& node, double &distance)
 {
     if (nodes_.size() == 0){

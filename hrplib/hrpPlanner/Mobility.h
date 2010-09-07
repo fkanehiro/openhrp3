@@ -4,7 +4,7 @@
 #define __MOBILITY_H__
 
 #include <vector>
-#include "Position.h"
+#include "Configuration.h"
 
 namespace PathEngine {
 
@@ -74,7 +74,7 @@ namespace PathEngine {
      * @param to 目標位置
      * @return 姿勢列
      */
-    virtual std::vector<Position> getPath(const Position &from, const Position &to) const; 
+    virtual std::vector<Configuration> getPath(const Configuration &from, const Configuration &to) const; 
 
     /**
      * @brief この移動アルゴリズムでA→Bへ移動可能である時に、B→Aが同じ経路で移動可能であるかどうか
@@ -86,7 +86,7 @@ namespace PathEngine {
      * @brief fromからtoへ干渉なしに移動可能であるかどうか
      * @return 移動可能であればtrue、そうでなければfalse
      */
-    bool isReachable(const Position& from, const Position& to) const;
+    bool isReachable(const Configuration& from, const Configuration& to) const;
 
     /**
      * @brief 
@@ -95,7 +95,7 @@ namespace PathEngine {
      * @param ratio 
      * @return 
      */
-    virtual Position interpolate(const Position& from, const Position& to, double ratio) const = 0;
+    virtual Configuration interpolate(const Configuration& from, const Configuration& to, double ratio) const = 0;
 
     /**
      * @brief
@@ -103,7 +103,7 @@ namespace PathEngine {
      * @param to
      * @return
      */
-    virtual double distance(const Position& from, const Position& to) const = 0;
+    virtual double distance(const Configuration& from, const Configuration& to) const = 0;
     /**
      * @brief 補間時の隣接する2点間の最大距離を設定する
      * @param d 隣接する2点間の最大距離

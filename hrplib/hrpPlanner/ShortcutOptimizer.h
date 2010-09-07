@@ -24,7 +24,7 @@ namespace PathEngine{
     /**
      * @brief 親クラスのドキュメントを参照
      */
-    std::vector<Position> optimize(const std::vector<Position> &path);
+    std::vector<Configuration> optimize(const std::vector<Configuration> &path);
   };
 };
 

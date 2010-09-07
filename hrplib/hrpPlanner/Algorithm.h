@@ -7,7 +7,7 @@
 #include <vector>
 #include <iostream>
 
-#include "Position.h"
+#include "Configuration.h"
 
 namespace PathEngine {
     class PathPlanner;
@@ -46,16 +46,16 @@ namespace PathEngine {
         /**
          * @brief 開始位置
          *
-         * setStartPosition()によってセットされる。
+         * setStartConfiguration()によってセットされる。
          */
-        Position start_;
+        Configuration start_;
 
         /**
          * @brief 終了位置
          *
-         * setGoalPosition()によってセットされる。
+         * setGoalConfiguration()によってセットされる。
          */
-        Position goal_;
+        Configuration goal_;
 
         /**
          * @brief プロパティ
@@ -76,7 +76,7 @@ namespace PathEngine {
          *
          * 姿勢を並べたベクトルで表される列。ここにセットしたものがgetPath()で読み出される。
          */
-        std::vector<Position> path_;
+        std::vector<Configuration> path_;
 
         /**
          * @brief 計画経路エンジン
@@ -101,7 +101,7 @@ namespace PathEngine {
          * @brief デストラクタ
          */
         virtual ~Algorithm();
-  
+
         /**
          * @brief アルゴリズムに対して各種情報を設定する
          * @param properties name-valueの組
@@ -120,13 +120,13 @@ namespace PathEngine {
          * @brief 初期位置を設定する
          * @param pos 初期位置
          */
-        void setStartPosition(const Position &pos) {start_ = pos;}
+        void setStartConfiguration(const Configuration &pos) {start_ = pos;}
 
         /**
          * @brief 終了位置を設定する
          * @param pos 終了位置
          */
-        void setGoalPosition(const Position &pos) {goal_ = pos;}
+        void setGoalConfiguration(const Configuration &pos) {goal_ = pos;}
 
         /**
          * @brief 初期位置と終了位置を直接結べないか検査する
@@ -153,7 +153,7 @@ namespace PathEngine {
          * @brief 結果を取得する
          * @return 結果の姿勢列
          */
-        const std::vector<Position>& getPath() {return path_;}
+        const std::vector<Configuration>& getPath() {return path_;}
 
         /**
          * @brief ロードマップを取得する

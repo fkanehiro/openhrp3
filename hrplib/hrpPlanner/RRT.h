@@ -44,7 +44,7 @@ namespace PathEngine {
      * @param reverse ツリーから点に向かって移動を試みる場合false、点からツリーへ移動を試みる場合はtrue
      * @return 伸ばせなかった場合Trapped, eps_だけ伸ばせた場合Advanced, qRandに到達できた場合Readchedを返す。qRandは伸ばした先の点に書き換えられる
      */
-    int extend(Roadmap *tree, Position& qRand, bool reverse=false);
+    int extend(Roadmap *tree, Configuration& qRand, bool reverse=false);
 
     /**
      * @brief RRT-connect の connect 関数。伸ばせなくなるまで extend する
@@ -53,7 +53,7 @@ namespace PathEngine {
      * @param ツリーから点に向かって伸ばす場合はfalse、逆はtrue
      * @return qNewにまで到達できなかった場合はTrapped, できた場合はReachedを返す
      */
-    int connect(Roadmap *tree, const Position& qNew, bool reverse=false);
+    int connect(Roadmap *tree, const Configuration& qNew, bool reverse=false);
 
     /**
      * @brief 計画した経路を抽出し、path_にセットする

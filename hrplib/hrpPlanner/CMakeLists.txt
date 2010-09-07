@@ -10,7 +10,7 @@ set(sources
   RoadmapNode.cpp
   ShortcutOptimizer.cpp 
   OmniWheel.cpp
-  Position.cpp
+  Configuration.cpp
   )
 
 set(headers
@@ -25,7 +25,7 @@ set(headers
   RoadmapNode.h
   ShortcutOptimizer.h 
   OmniWheel.h
-  Position.h
+  Configuration.h
   Optimizer.h
   exportdef.h
   )
