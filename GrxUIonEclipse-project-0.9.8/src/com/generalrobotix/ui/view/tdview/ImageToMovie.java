@@ -20,6 +20,12 @@ import javax.media.datasink.*;
 import javax.media.format.*;
 import javax.media.util.ImageToBuffer;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
+import com.generalrobotix.ui.util.MessageBundle;
+
 
 //======================================================================
 //ImageToMovie
@@ -243,6 +249,14 @@ public class ImageToMovie implements ControllerListener, DataSinkListener {
             dsink.open();
         } catch (Exception e) {
             System.err.println("Cannot create the DataSink: " + e);
+            Display display = Display.getDefault();
+            if (display != null && !display.isDisposed()) {
+                display.syncExec(new Runnable(){
+    				public void run(){
+    					MessageDialog.openError( GrxUIPerspectiveFactory.getCurrentShell(), MessageBundle.get("Grx3DView.dialog.title.error"), MessageBundle.get("Grx3DView.dialog.message.recFileError")); //$NON-NLS-1$ //$NON-NLS-2$
+    				}
+    			});
+            }
             return null;
         }
 
