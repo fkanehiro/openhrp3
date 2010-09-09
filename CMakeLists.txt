@@ -26,6 +26,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules/)
 include(FindPkgConfig)
 include(CheckIncludeFiles)
 include(${CMAKE_MODULE_PATH}GetUbuntuVer.cmake)
+include(${CMAKE_MODULE_PATH}FindSSEArchitecture.cmake)
 
 if( CMAKE_VERBOSE_MAKEFILE )
   set(VERBOSE_FLAG -v)
@@ -321,7 +322,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(ADDITIONAL_CXX_FLAGS_RELEASE ${ADDITIONAL_CXX_FLAGS_RELEASE} CACHE STRING "Additional c++ compiler optimization flags")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${EXTRA_CXX_FLAGS_RELEASE} ${ADDITIONAL_CXX_FLAGS_RELEASE}")
 
 option(CHECK_UNRESOLVED_SYMBOLS "check unresolved symbols in the object files when creating shared libraries" OFF)
 mark_as_advanced(CHECK_UNRESOLVED_SYMBOLS)
