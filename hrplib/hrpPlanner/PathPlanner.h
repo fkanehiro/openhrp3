@@ -33,7 +33,7 @@ namespace PathEngine {
     class Mobility;
     class PathPlanner;
 
-    typedef void applyConfigFunc(PathPlanner *, const Configuration &);
+    typedef bool applyConfigFunc(PathPlanner *, const Configuration &);
     /**
      * @brief 計画経路エンジン
      *
@@ -160,7 +160,7 @@ namespace PathEngine {
     public:
         hrp::BodyPtr robot();
         void setApplyConfigFunc(applyConfigFunc i_func);
-        void setConfiguration(const Configuration &pos);
+        bool setConfiguration(const Configuration &pos);
         void getWorldState(OpenHRP::WorldState_out wstate);
         /**
          * @brief コンストラクタ
