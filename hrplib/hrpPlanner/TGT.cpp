@@ -1,5 +1,6 @@
 // -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 #include "TGT.h"
+#define _USE_MATH_DEFINES // for MSVC
 #include <math.h>
 
 using namespace PathEngine;

@@ -5,7 +5,6 @@
 #include <vector>
 #include <stack>
 #include <queue>
-#define _USE_MATH_DEFINES
 #include <math.h>
 
 #include "Algorithm.h"

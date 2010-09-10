@@ -1,9 +1,7 @@
 // -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 #include "OmniWheel.h"
+#define _USE_MATH_DEFINES // for MSVC
 #include <math.h>
-#ifndef M_PI
-#define M_PI 3.14159
-#endif
 
 using namespace PathEngine;
 
