@@ -2,11 +2,12 @@
 #ifndef __CONFIGURATION_H__
 #define __CONFIGURATION_H__
 
+#include "exportdef.h"
 #include <vector>
 #include <iostream>
 
 namespace PathEngine {
-    class Configuration
+    class HRPPLANNER_API Configuration
     {
     public:
         /**
@@ -112,12 +113,14 @@ namespace PathEngine {
     private:    
         std::vector<double> m_values;
         static unsigned int m_size;
-        static std::vector<double> m_ubounds, m_lbounds, m_weights;
+        static std::vector<double> m_ubounds;
+        static std::vector<double> m_lbounds;
+        static std::vector<double> m_weights;
         static std::vector<bool> m_isUnboundedRotation;
     };
 
-};
 std::ostream& operator<< (std::ostream& out, const PathEngine::Configuration& cfg);
+};
 
 
 #endif

@@ -1,7 +1,18 @@
 // -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 #include "Configuration.h"
+#define _USE_MATH_DEFINES // for MSVC
 #include <math.h>
 #include <stdlib.h>
+
+namespace PathEngine{
+    std::ostream& operator<< (std::ostream& out, const Configuration& cfg)
+    {
+        for (unsigned int i=0; i<cfg.size(); i++){
+            out << cfg.value(i) << " ";
+        }
+        return out;
+    }
+}
 
 using namespace PathEngine;
 
@@ -22,15 +33,6 @@ Configuration::Configuration()
         m_values[i] = 0.0;
     }
 }
-
-std::ostream& operator<< (std::ostream& out, const Configuration& cfg)
-{
-    for (unsigned int i=0; i<cfg.size(); i++){
-        out << cfg.value(i) << " ";
-    }
-    return out;
-}
-
 bool Configuration::isValid() const
 {
     for (unsigned int i=0; i<size(); i++){
