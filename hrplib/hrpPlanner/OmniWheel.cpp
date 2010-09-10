@@ -25,8 +25,7 @@ Configuration OmniWheel::interpolate(const Configuration& from,
             if (fabs(dth) > M_PI){
                 dth = dth > 0 ? -(2*M_PI-dth) : 2*M_PI+dth;
             }
-            cfg.value(i) = theta_limit(from.value(2) + ratio*dth);
-            
+            cfg.value(i) = theta_limit(from.value(i) + ratio*dth);
         }else{
             cfg.value(i) = (1-ratio)*from.value(i) + ratio*to.value(i);
         }
