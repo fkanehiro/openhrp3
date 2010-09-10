@@ -114,18 +114,23 @@ void RRT::path() {
 
     path_.clear();
 
-    RoadmapNode* node = startMidNode;
-    do {
-        path_.insert(path_.begin(), node->position());
-        node = node->parent(0);
-    } while (node != NULL);
+    RoadmapNode* node;
 
-    node = goalMidNode;
-    do {
-        path_.push_back(node->position());
-        node = node->child(0);
-    } while (node != NULL);
+    if (extendFromStart_){
+        node = startMidNode;
+        do {
+            path_.insert(path_.begin(), node->position());
+            node = node->parent(0);
+        } while (node != NULL);
+    }
 
+    if (extendFromGoal_){
+        node = goalMidNode;
+        do {
+            path_.push_back(node->position());
+            node = node->child(0);
+        } while (node != NULL);
+    }
 #if 0
     startMidNode->children_.push_back(goalMidNode);
     goalMidNode->parent_ = startMidNode;
@@ -191,6 +196,7 @@ bool RRT::calcPath()
                 }
             }
         }else if (!extendFromStart_ && extendFromGoal_){
+            std::cout << "this case is not implemented" << std::endl;
         }
     }
   
