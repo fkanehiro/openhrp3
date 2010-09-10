@@ -39,7 +39,7 @@ namespace PathEngine {
      * @brief 位置の取得
      * @return 位置
      */
-    const Configuration& position() const { return pos_; }
+    Configuration& position() { return pos_; }
 
     /**
      * @brief 親ノードの取得

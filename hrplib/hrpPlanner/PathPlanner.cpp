@@ -734,7 +734,8 @@ std::vector<Configuration> PathPlanner::getPath(bool i_interpolate)
     if (path_.size() == 0) return finalPath;
 
     for (unsigned int i=0; i<path_.size()-1; i++) {
-        std::vector<Configuration> localPath = mobility_->getPath(path_[i], path_[i+1]);
+        std::vector<Configuration> localPath;
+        mobility_->getPath(path_[i], path_[i+1],localPath);
         finalPath.insert(finalPath.end(), localPath.begin(), localPath.end()-1);
     }
     finalPath.push_back(path_[path_.size()-1]);

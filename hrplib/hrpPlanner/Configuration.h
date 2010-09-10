@@ -22,16 +22,10 @@ namespace PathEngine {
         bool isValid() const;
 
         /**
-         * @brief get weight for X element
-         * @return weight
-         */
-        static double weight(unsigned int i_rank);
-
-        /**
          * @brief set weight for X element
          * @param w weight
          */
-        static void weight(unsigned int i_rank, double w);
+        static double &weight(unsigned int i_rank);
 
         /**
          * @brief set bounds for Y element
@@ -41,28 +35,16 @@ namespace PathEngine {
         static void bounds(unsigned int i_rank, double min, double max);
 
         /**
-         * @brief set bounds for Y element
-         * @param max maximum value
-         */
-        static void ubound(unsigned int i_rank, double max);
-
-        /**
          * @brief get bounds for Y element
          * @return maximum value
          */
-        static double ubound(unsigned int i_rank);
-
-        /**
-         * @brief set bounds for Y element
-         * @param min minimum value
-         */
-        static void lbound(unsigned int i_rank, double min);
+        static double& ubound(unsigned int i_rank);
 
         /**
          * @brief get lower bound of \e i_rank the value
          * @return lower bound
          */
-        static double lbound(unsigned int i_rank);
+        static double& lbound(unsigned int i_rank);
 
         /**
            @brief specify \e i th degree of freedom is unbounded rotaion or not. default is false

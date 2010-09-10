@@ -193,19 +193,19 @@ void OpenHRP_PathPlannerSVC_impl::setProperties(const OpenHRP::PathPlanner::Prop
         std::string value(properites[i][1]);
         //std::cout << name << ": " << value << std::endl;
         if (name == "min-x"){
-            PathEngine::Configuration::lbound(0, atof(value.c_str()));
+            PathEngine::Configuration::lbound(0) = atof(value.c_str());
         }else if (name == "max-x"){
-            PathEngine::Configuration::ubound(0, atof(value.c_str()));
+            PathEngine::Configuration::ubound(0) = atof(value.c_str());
         }else if (name == "min-y"){
-            PathEngine::Configuration::lbound(1, atof(value.c_str()));
+            PathEngine::Configuration::lbound(1) = atof(value.c_str());
         }else if (name == "max-y"){
-            PathEngine::Configuration::ubound(1, atof(value.c_str()));
+            PathEngine::Configuration::ubound(1) = atof(value.c_str());
         }else if (name == "weight-x"){
-            PathEngine::Configuration::weight(0, atof(value.c_str()));
+            PathEngine::Configuration::weight(0) = atof(value.c_str());
         }else if (name == "weight-y"){
-            PathEngine::Configuration::weight(1, atof(value.c_str()));
+            PathEngine::Configuration::weight(1) = atof(value.c_str());
         }else if (name == "weight-theta"){
-            PathEngine::Configuration::weight(2, atof(value.c_str()));
+            PathEngine::Configuration::weight(2) = atof(value.c_str());
         }else{
             prop.insert(std::map<std::string, std::string>::value_type(name, value));
         }

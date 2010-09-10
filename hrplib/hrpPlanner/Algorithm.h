@@ -102,6 +102,8 @@ namespace PathEngine {
          */
         virtual ~Algorithm();
 
+        void setProperty(const std::string& key, const std::string& value); 
+
         /**
          * @brief アルゴリズムに対して各種情報を設定する
          * @param properties name-valueの組

@@ -74,7 +74,8 @@ namespace PathEngine {
      * @param to 目標位置
      * @return 姿勢列
      */
-    virtual std::vector<Configuration> getPath(const Configuration &from, const Configuration &to) const; 
+    virtual bool getPath(Configuration &from, Configuration &to,
+                         std::vector<Configuration> &o_path) const; 
 
     /**
      * @brief この移動アルゴリズムでA→Bへ移動可能である時に、B→Aが同じ経路で移動可能であるかどうか
@@ -86,7 +87,7 @@ namespace PathEngine {
      * @brief fromからtoへ干渉なしに移動可能であるかどうか
      * @return 移動可能であればtrue、そうでなければfalse
      */
-    bool isReachable(const Configuration& from, const Configuration& to) const;
+    bool isReachable(Configuration& from, Configuration& to) const;
 
     /**
      * @brief 
