@@ -41,7 +41,7 @@ double OmniWheel::distance(const Configuration& from, const Configuration& to) c
         if (Configuration::unboundedRotation(i)){
             double dth = fabs(to.value(i) - from.value(i));
             if (dth > M_PI) dth = 2*M_PI - dth;
-            d *= Configuration::weight(i);
+            d = Configuration::weight(i)*dth;
         }else{
             d = Configuration::weight(i)*(to.value(i) - from.value(i));
         }
