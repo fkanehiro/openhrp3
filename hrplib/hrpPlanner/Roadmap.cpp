@@ -12,6 +12,7 @@ void Roadmap::clear()
         delete nodes_[i];
     }
     nodes_.clear();
+    m_nEdges = 0;
 }
 
 Roadmap::~Roadmap()
@@ -23,6 +24,7 @@ void Roadmap::addEdge(RoadmapNode *from, RoadmapNode *to)
 {
     from->addChild(to);
     to->addParent(from); 
+    m_nEdges++;
 }
 
 void Roadmap::integrate(Roadmap *rdmp)
