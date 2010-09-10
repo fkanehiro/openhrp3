@@ -18,7 +18,7 @@ namespace PathEngine{
         /**
          * @brief コンストラクタ
          */
-        Roadmap(PathPlanner *planner) : planner_(planner){}
+        Roadmap(PathPlanner *planner) : planner_(planner), m_nEdges(0) {}
 
         /**
          * @brief デストラクタ
@@ -53,6 +53,8 @@ namespace PathEngine{
          * @return ノード数
          */
         unsigned int nNodes() const { return nodes_.size(); }
+
+        unsigned int nEdges() const { return m_nEdges; }
 
         /**
          * @brief ノードを取得する
@@ -108,6 +110,7 @@ namespace PathEngine{
          */
         std::vector<RoadmapNode *> nodes_;
         PathPlanner *planner_;
+        unsigned int m_nEdges;
     };
 };
 
