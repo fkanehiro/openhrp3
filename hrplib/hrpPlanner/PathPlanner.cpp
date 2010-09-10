@@ -54,7 +54,7 @@ X_ptr PathPlanner::checkCorbaServer(const std::string &n, CosNaming::NamingConte
     return srv;
 }
 
-void setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cfg)
+bool setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cfg)
 {
     Link *baseLink = planner->robot()->rootLink();
     // 目標値設定  
@@ -68,6 +68,8 @@ void setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cf
     R(2,0) = 0; R(2,1) =  0; R(2,2) = 1;
     baseLink->setSegmentAttitude(R);
     planner->robot()->calcForwardKinematics();
+
+    return true;
 }
 
 // ----------------------------------------------
@@ -554,9 +556,9 @@ void PathPlanner::initSimulation () {
     world_.initialize();
 }
 
-void PathPlanner::setConfiguration(const Configuration &pos)
+bool PathPlanner::setConfiguration(const Configuration &pos)
 {
-    (*m_applyConfigFunc)(this, pos);
+    return (*m_applyConfigFunc)(this, pos);
 }
 
 bool PathPlanner::checkCollision (const Configuration &pos) {
@@ -565,7 +567,7 @@ bool PathPlanner::checkCollision (const Configuration &pos) {
         std::cerr << "checkCollision(" << pos << ")" << std::endl;
     }
 #endif
-    setConfiguration(pos);
+    if (!setConfiguration(pos)) return false;
 
     // 干渉チェック
     tick_t t1 = get_tick();
