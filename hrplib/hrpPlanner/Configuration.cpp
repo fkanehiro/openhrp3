@@ -36,6 +36,7 @@ Configuration::Configuration()
 bool Configuration::isValid() const
 {
     for (unsigned int i=0; i<size(); i++){
+        if (!weight(i)) continue;
         double v = m_values[i];
         if (m_isUnboundedRotation[i]){
             if (v >= 2*M_PI || v < 0) return false;
@@ -46,14 +47,9 @@ bool Configuration::isValid() const
     return true;
 }
 
-double Configuration::weight(unsigned int i_rank)
+double &Configuration::weight(unsigned int i_rank)
 {
     return m_weights[i_rank];
-}
-
-void Configuration::weight(unsigned int i_rank, double w)
-{
-    m_weights[i_rank] = w;
 }
 
 void Configuration::bounds(unsigned int i_rank, double min, double max)
@@ -62,22 +58,12 @@ void Configuration::bounds(unsigned int i_rank, double min, double max)
     m_lbounds[i_rank] = min;
 }
 
-void Configuration::lbound(unsigned int i_rank, double min)
-{
-    m_lbounds[i_rank] = min;
-}
-
-void Configuration::ubound(unsigned int i_rank, double max)
-{
-    m_ubounds[i_rank] = max;
-}
-
-double Configuration::lbound(unsigned int i_rank)
+double& Configuration::lbound(unsigned int i_rank)
 {
     return m_lbounds[i_rank];
 }
 
-double Configuration::ubound(unsigned int i_rank)
+double& Configuration::ubound(unsigned int i_rank)
 {
     return m_ubounds[i_rank];
 }

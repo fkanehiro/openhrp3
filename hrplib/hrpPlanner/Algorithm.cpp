@@ -16,6 +16,11 @@ Algorithm::~Algorithm()
 {
 }
 
+void Algorithm::setProperty(const std::string& key, const std::string& value)
+{
+    properties_[key] = value;
+}
+
 void Algorithm::setProperties(const std::map<std::string, std::string> &properties) 
 {
   std::map<std::string, std::string>::const_iterator it;

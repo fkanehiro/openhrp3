@@ -345,6 +345,8 @@ namespace PathEngine {
          */
         Mobility* getMobility() {return mobility_;}
 
+        Algorithm* getAlgorithm() {return algorithm_;}
+
         /**
          * @brief 干渉検出を行う
          * @param pos ロボットの位置
