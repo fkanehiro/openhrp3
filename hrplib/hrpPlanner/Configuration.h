@@ -72,6 +72,7 @@ namespace PathEngine {
            @return value of \e i_rank th dof
         */
         const double value(unsigned int i_rank) const;
+        const double operator[](unsigned int i_rank) const { return value(i_rank); }
 
         /**
            @breif set value of \e i_rank th dof
@@ -79,6 +80,7 @@ namespace PathEngine {
            @param i_value value of dof
         */
         double& value(unsigned int i_rank);
+        double& operator[](unsigned int i_rank) { return value(i_rank); }
     
         /**
            @brief get the number of degrees of freedom
