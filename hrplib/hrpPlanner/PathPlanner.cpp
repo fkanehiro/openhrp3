@@ -567,7 +567,7 @@ bool PathPlanner::checkCollision (const Configuration &pos) {
         std::cerr << "checkCollision(" << pos << ")" << std::endl;
     }
 #endif
-    if (!setConfiguration(pos)) return false;
+    if (!setConfiguration(pos)) return true;
 
     // 干渉チェック
     tick_t t1 = get_tick();
