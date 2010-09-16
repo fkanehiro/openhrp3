@@ -1,0 +1,21 @@
+#!/bin/bash
+
+case "$1" in
+  install|upgrade)
+    if ! grep -E 'flags[[:space:]]*:.*[[:space:]]+(sse)[[:space:]]+' /proc/cpuinfo >/dev/null 2>/dev/null ; then
+      echo 'Error : This processor does not support the SSE instruction set' >&2
+      exit 1
+    fi
+  ;;
+
+  abort-upgrade)
+  ;;
+
+  *)
+    echo "preinst called with unknown argument \`$1'" >&2
+    exit 1
+  ;;
+esac
+
+exit 0
+
