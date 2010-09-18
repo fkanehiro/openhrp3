@@ -20,10 +20,11 @@ Configuration OmniWheel::interpolate(const Configuration& from,
     for (unsigned int i=0; i<Configuration::size(); i++){
         if (Configuration::unboundedRotation(i)){
             double dth = to.value(i) - from.value(i);
-            if (fabs(dth) > M_PI){
-                dth = dth > 0 ? -(2*M_PI-dth) : 2*M_PI+dth;
+            dth = theta_limit(dth);
+            if (dth > M_PI){
+                dth = dth - 2*M_PI;
             }
-            cfg.value(i) = theta_limit(from.value(i) + ratio*dth);
+            cfg.value(i) = from.value(i) + ratio*dth;
         }else{
             cfg.value(i) = (1-ratio)*from.value(i) + ratio*to.value(i);
         }
@@ -37,7 +38,7 @@ double OmniWheel::distance(const Configuration& from, const Configuration& to) c
     double v=0, d;
     for (unsigned int i=0; i<Configuration::size(); i++){
         if (Configuration::unboundedRotation(i)){
-            double dth = fabs(to.value(i) - from.value(i));
+            double dth = theta_limit(to.value(i) - from.value(i));
             if (dth > M_PI) dth = 2*M_PI - dth;
             d = Configuration::weight(i)*dth;
         }else{
