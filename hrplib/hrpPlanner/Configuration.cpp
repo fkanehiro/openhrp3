@@ -38,9 +38,7 @@ bool Configuration::isValid() const
     for (unsigned int i=0; i<size(); i++){
         if (!weight(i)) continue;
         double v = m_values[i];
-        if (m_isUnboundedRotation[i]){
-            if (v >= 2*M_PI || v < 0) return false;
-        }else{
+        if (!m_isUnboundedRotation[i]){
             if (v > m_ubounds[i] || v < m_lbounds[i]) return false;
         }
     }
