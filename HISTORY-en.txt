@@ -1,7 +1,7 @@
 OpenHRP3 Updates History (Release Notes)
 
 
-Ver.3.1.00-Release (xx-09-2010)
+Ver.3.1.00-Release (21-09-2010)
 ==============================
 
  * OpenHRP3 now officially supports Ubuntu 10.04 LTS.
