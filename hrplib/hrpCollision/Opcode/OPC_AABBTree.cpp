@@ -191,9 +191,9 @@ bool AABBTreeNode::Subdivide(AABBTreeBuilder* builder)
 		for(udword i=0;i<mNbPrimitives;i++)
 		{
 			udword Index = mNodePrimitives[i];
-			float Cx = builder->GetSplittingValue(Index, 0);
-			float Cy = builder->GetSplittingValue(Index, 1);
-			float Cz = builder->GetSplittingValue(Index, 2);
+			volatile float Cx = builder->GetSplittingValue(Index, 0);
+			volatile float Cy = builder->GetSplittingValue(Index, 1);
+			volatile float Cz = builder->GetSplittingValue(Index, 2);
 			Vars.x += (Cx - Means.x)*(Cx - Means.x);
 			Vars.y += (Cy - Means.y)*(Cy - Means.y);
 			Vars.z += (Cz - Means.z)*(Cz - Means.z);
