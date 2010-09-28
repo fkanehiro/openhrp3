@@ -37,7 +37,7 @@ inline float SegSegDist(const Point& u0, const Point& u,
 
     // compute the line parameters of the two closest points
 #define EPS 1e-8
-    if (D < EPS) { // the lines are almost parallel
+    if (D < EPS*a*c) { // the lines are almost parallel
         sN = 0.0;        // force using point P0 on segment S1
         sD = 1.0;        // to prevent possible division by 0.0 later
         tN = e;
