@@ -11,12 +11,16 @@ package com.generalrobotix.ui.view.graph;
 
 import java.util.*;
 
+import javax.vecmath.AxisAngle4d;
+import javax.vecmath.Matrix3d;
+
 import com.generalrobotix.ui.GrxTimeSeriesItem;
 import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.item.GrxWorldStateItem.CharacterStateEx;
 import com.generalrobotix.ui.util.GrxDebugUtil;
+import com.generalrobotix.ui.view.graph.LogManager.LogHeader;
 
 /**
  * トレンドグラフモデルクラス
@@ -53,6 +57,7 @@ public class TrendGraphModel
 
     private HashMap<String, DataModel> dataModelMap_;   // データモデル一覧
     private DataModel[] dataModelArray_;    // データモデル一覧
+    private HashMap<String, AttitudeDataModel> attitudeDataModelMap_;   
     
     private GrxWorldStateItem world_ = null;
 
@@ -82,6 +87,7 @@ public class TrendGraphModel
 
         dataItemCount_ = new HashMap<String, Integer >();
         dataModelMap_ = new HashMap<String, DataModel>();
+        attitudeDataModelMap_ = new HashMap<String, AttitudeDataModel>();
         dataModelArray_ = null;
       
         trendGraph_ = new TrendGraph[numGraph];
@@ -142,12 +148,23 @@ public class TrendGraphModel
         baseCount_ = Math.round(baseTime_ / stepTime_); //- 1; // データ開始位置
         
         // 全データ系列の更新
-        Iterator itr = dataModelMap_.values().iterator();
+        Iterator<DataModel> itr = dataModelMap_.values().iterator();
         while (itr.hasNext()) {
             DataModel dm = (DataModel)itr.next();
             dm.dataSeries.setSize(sampleCount_);
             dm.dataSeries.setXStep(stepTime_);
             dm.dataSeries.setXOffset(baseCount_);
+        }
+        Iterator<AttitudeDataModel> itr0 = attitudeDataModelMap_.values().iterator();
+        while (itr0.hasNext()) {
+        	AttitudeDataModel ad = itr0.next();
+        	for(int i=0; i<3; i++){
+        		if(ad.rpySeries[i]!=null){
+	        		ad.rpySeries[i].setSize(sampleCount_);
+	        		ad.rpySeries[i].setXStep(stepTime_);
+	        		ad.rpySeries[i].setXOffset(baseCount_);
+        		}
+        	}
         }
     }
 
@@ -251,10 +268,19 @@ public class TrendGraphModel
         int diff = (int)(baseCount_ - oldBaseCount);
 
         // 全データ系列の移動
-        Iterator itr = dataModelMap_.values().iterator();
+        Iterator<DataModel> itr = dataModelMap_.values().iterator();
         while (itr.hasNext()) {
             DataSeries ds = ((DataModel)itr.next()).dataSeries;
             ds.shift(diff);
+        }
+        Iterator<AttitudeDataModel> itr0 = attitudeDataModelMap_.values().iterator();
+        while (itr0.hasNext()) {
+        	AttitudeDataModel ad = itr0.next();
+        	for(int i=0; i<3; i++){
+        		if(ad.rpySeries[i]!=null){
+	        		ad.rpySeries[i].shift(diff);
+        		}
+        	}
         }
         
         if(prevLogSize_ < totalCount)
@@ -295,19 +321,42 @@ public class TrendGraphModel
         String key = dataItem.toString();
         Integer l = dataItemCount_.get(key);
         if (l == null) {    // 初めてのデータアイテム?
-            dataItemCount_.put(key, new Integer(1));
-            ds = new DataSeries(
-                sampleCount_,
-                baseCount_ * stepTime_, // baseTime_, ★これではダメ
-                stepTime_
-            );
-            dm = new DataModel(dataItem, ds);
-            dataModelMap_.put(key, dm);
+            if(key.contains("attitude")){
+            	AttitudeDataModel attitudeDataModel = attitudeDataModelMap_.get(dataItem.getAttributePath());
+            	if(attitudeDataModel==null){
+            		attitudeDataModel = new AttitudeDataModel();
+                    attitudeDataModelMap_.put(dataItem.getAttributePath(),attitudeDataModel);
+            	}
+            	ds = new DataSeries(sampleCount_, baseCount_ * stepTime_, stepTime_ );
+            	attitudeDataModel.setRPYSeries(dataItem.index, ds);
+            	for(int i=0; i<4; i++){
+            		DataItem di = new DataItem(dataItem.object, dataItem.node, dataItem.attribute, i, "");
+            		if(dataModelMap_.get(di.toString())==null){
+            			DataSeries dataSeries = new DataSeries(sampleCount_, baseCount_ * stepTime_, stepTime_ );
+	            		dm = new DataModel(di, dataSeries);
+	            		dataModelMap_.put(di.toString(), dm);
+	            		attitudeDataModel.setAxisAngleSeries(i,dataSeries);
+            		}
+            	}
+            	dataItemCount_.put(key, new Integer(1));  
+            }else{
+	            dataItemCount_.put(key, new Integer(1));
+	            ds = new DataSeries(
+	                sampleCount_,
+	                baseCount_ * stepTime_, // baseTime_, ★これではダメ
+	                stepTime_
+	            );
+	            dm = new DataModel(dataItem, ds);
+	            dataModelMap_.put(key, dm);
+            }
             dataModelArray_ = new DataModel[dataModelMap_.size()];
             dataModelMap_.values().toArray(dataModelArray_);
         } else {
         	dataItemCount_.put(key, ++l);
-            ds = ((DataModel)dataModelMap_.get(key)).dataSeries;
+        	if(key.contains("attitude"))
+        		ds = attitudeDataModelMap_.get(dataItem.getAttributePath()).rpySeries[dataItem.index];
+        	else
+        		ds = ((DataModel)dataModelMap_.get(key)).dataSeries;
         }
 
         initGetData();
@@ -326,16 +375,36 @@ public class TrendGraphModel
         String key = dataItem.toString();
         Integer l = dataItemCount_.get(key);   // カウント取得
         dataItemCount_.put(key, --l);    // カウントを減らす
-        if (l <= 0) {    // データ系列に対応するデータアイテムがなくなった?
-            dataItemCount_.remove(key); // カウント除去
-            dataModelMap_.remove(key); // データ系列除去
-            int size = dataModelMap_.size();
-            if (size <= 0) {
-                dataModelArray_ = null;
-            } else {
-                dataModelArray_ = new DataModel[size];
-                dataModelMap_.values().toArray(dataModelArray_);
-            }
+        if(key.contains("attitude")){
+        	if( l<= 0 ){
+        		dataItemCount_.remove(key);
+        		attitudeDataModelMap_.get(dataItem.getAttributePath()).setRPYSeries(dataItem.index, null);
+        	}
+        	AttitudeDataModel attitudeDataModel = attitudeDataModelMap_.get(dataItem.getAttributePath());
+        	if(attitudeDataModel.isDisused()){
+        		attitudeDataModelMap_.remove(dataItem.getAttributePath());
+        		for(int i=0; i<4; i++)
+        			dataModelMap_.remove(dataItem.getAttributePath()+"."+i);
+        		int size = dataModelMap_.size();
+	            if (size <= 0) {
+	                dataModelArray_ = null;
+	            } else {
+	                dataModelArray_ = new DataModel[size];
+	                dataModelMap_.values().toArray(dataModelArray_);
+	            }
+        	}
+        }else{
+	        if (l <= 0) {    // データ系列に対応するデータアイテムがなくなった?
+	            dataItemCount_.remove(key); // カウント除去
+	            dataModelMap_.remove(key); // データ系列除去
+	            int size = dataModelMap_.size();
+	            if (size <= 0) {
+	                dataModelArray_ = null;
+	            } else {
+	                dataModelArray_ = new DataModel[size];
+	                dataModelMap_.values().toArray(dataModelArray_);
+	            }
+	        }
         }
         initGetData();
         prevLogSize_ = -1;
@@ -423,119 +492,165 @@ public class TrendGraphModel
             return;
         } else if (world_.isUseDsik()){
             world_.logger_.getData(origin, offset, count);
-            return;
-        }
-        int changePos = world_.getChangePosition();
-        int counter = changePos - ((int)origin + offset);
-
-        // ログの記録方式がメモリ方式からファイル方式へスイッチした場合処理
-        if( changePos >= 0 ){
-            if( counter <= 0 ){
-                world_.logger_.getData(-offset-counter, offset, count, dataModelArray_);
-                return;
-            }
-            //ログの記録方式がファイル方式とメモリ方式で混在する場合の境界処理
-            if( counter <= count ){
-                count -= counter;  
-                world_.logger_.getData(-offset-counter, offset + counter, count, dataModelArray_);
-                count = counter;  
-            }
+        }else{
+	        int changePos = world_.getChangePosition();
+	        int counter = changePos - ((int)origin + offset);
+	
+	        // ログの記録方式がメモリ方式からファイル方式へスイッチした場合処理
+	        if( changePos >= 0 ){
+	            if( counter <= 0 ){
+	                world_.logger_.getData(-offset-counter, offset, count, dataModelArray_);
+	                return;
+	            }
+	            //ログの記録方式がファイル方式とメモリ方式で混在する場合の境界処理
+	            if( counter <= count ){
+	                count -= counter;  
+	                world_.logger_.getData(-offset-counter, offset + counter, count, dataModelArray_);
+	                count = counter;  
+	            }
+	        }
+	        
+	        WorldStateEx refWorld = world_.getValue( (int)origin + offset );
+	        if(refWorld == null){
+	            for(int h = 0; h < dataModelArray_.length; ++h){
+	                DataSeries ds = dataModelArray_[h].dataSeries;
+	                double[] dbArray = ds.getData();
+	                int localOffset = (ds.getHeadPos() + offset) % dbArray.length;
+	                for (int i = 0; i < count; ++i, ++localOffset){
+	                    if(localOffset +i >= dbArray.length){
+	                            localOffset = 0;
+	                    }
+	                    dbArray[localOffset] = Double.NaN;
+	                }                
+	            }            
+	        } else {
+	            // メモリーデータから表示したいラインの要素を抽出する処理
+	            for(int h = 0; h < dataModelArray_.length; ++h){
+	                long recNo = origin + offset; // レコード番号
+	                DataItem localDataItem = dataModelArray_[h].dataItem;
+	                CharacterStateEx refCharacter = refWorld.get(localDataItem.object);
+	                CharacterStateEx localCharacter = refCharacter;
+	                DataSeries ds = dataModelArray_[h].dataSeries;
+	                double[] dbArray = ds.getData();
+	                int localOffset = (ds.getHeadPos() + offset) % dbArray.length;
+	                int index = world_.logger_.getIndex(localDataItem.object,
+	                        localDataItem.node + "." + localDataItem.attribute + (localDataItem.index >= 0 ? "." + localDataItem.index : "") );
+	                ArrayList<Integer> arryLength = new ArrayList<Integer>();
+	                arryLength.add(refCharacter.position.length * 7);
+	                arryLength.add(arryLength.get(0) + refCharacter.sensorState.q.length);
+	                arryLength.add(arryLength.get(1) + refCharacter.sensorState.u.length);
+	                if(refCharacter.sensorState.force.length == 0){
+	                    arryLength.add( arryLength.get(2));
+	                } else {
+	                    arryLength.add( arryLength.get(2) +
+	                                    refCharacter.sensorState.force.length * refCharacter.sensorState.force[0].length);
+	                }
+	
+	                if(refCharacter.sensorState.rateGyro.length == 0){
+	                    arryLength.add( arryLength.get(3));
+	                } else {
+	                    arryLength.add( arryLength.get(3) +
+	                                    refCharacter.sensorState.rateGyro.length * refCharacter.sensorState.rateGyro[0].length);
+	                }
+	                
+	                if(refCharacter.sensorState.accel.length == 0){
+	                    arryLength.add( arryLength.get(4));
+	                } else {
+	                    arryLength.add( arryLength.get(4) +
+	                                    refCharacter.sensorState.accel.length * refCharacter.sensorState.accel[0].length);
+	                }
+	                if(refCharacter.sensorState.range.length == 0){
+	                    arryLength.add( arryLength.get(5));
+	                } else {
+	                    arryLength.add( arryLength.get(5) +
+	                                    refCharacter.sensorState.range.length * refCharacter.sensorState.range[0].length);
+	                }
+	
+	                for (int i = 0; i < count; ++i, ++recNo, ++localOffset){
+	                    if(localOffset >= dbArray.length){
+	                            localOffset = 0;
+	                    }
+	                    if(recNo < 0 || recNo >= world_.getLogSize() || localCharacter == null){
+	                        dbArray[localOffset] = Double.NaN;
+	                        continue;
+	                    }
+	                    if (index <= arryLength.get(0)){
+	                        
+	                        
+	                    } else if  (index <= arryLength.get(2)){
+	                        if( (index - 1) % 2 == 0 ){
+	                            dbArray[localOffset] = localCharacter.sensorState.q[(index - arryLength.get(0) - 1)/2];
+	                        } else {
+	                            dbArray[localOffset] = localCharacter.sensorState.u[(index - arryLength.get(0) - 2)/2];
+	                        }
+	                    } else if  (index <= arryLength.get(3) && localCharacter.sensorState.force.length > 0){
+	                        int dim1 = (index - arryLength.get(2) - 1) / localCharacter.sensorState.force[0].length ;
+	                        int dim2 = (index - arryLength.get(2) - 1) % localCharacter.sensorState.force[0].length ;
+	                        dbArray[localOffset] = localCharacter.sensorState.force[dim1][dim2];  
+	            
+	                    } else if  (index <= arryLength.get(4) && localCharacter.sensorState.rateGyro.length > 0){
+	                        int dim1 = (index - arryLength.get(3) - 1) / localCharacter.sensorState.rateGyro[0].length ;
+	                        int dim2 = (index - arryLength.get(3) - 1) % localCharacter.sensorState.rateGyro[0].length ;
+	                        dbArray[localOffset] = localCharacter.sensorState.rateGyro[dim1][dim2];     
+	                    } else if  (index <= arryLength.get(5) && localCharacter.sensorState.accel.length > 0){
+	                        int dim1 = (index - arryLength.get(4) - 1) / localCharacter.sensorState.accel[0].length ;
+	                        int dim2 = (index - arryLength.get(4) - 1) % localCharacter.sensorState.accel[0].length ;
+	                        dbArray[localOffset] = localCharacter.sensorState.accel[dim1][dim2];     
+	                    } else if(localCharacter.sensorState.range.length > 0) {
+	                        int dim1 = (index - arryLength.get(5) - 1) / localCharacter.sensorState.range[0].length ;
+	                        int dim2 = (index - arryLength.get(5) - 1) % localCharacter.sensorState.range[0].length ;
+	                        dbArray[localOffset] = localCharacter.sensorState.range[dim1][dim2];     
+	                    }
+	                    localCharacter = world_.getValue( (int)recNo ).get(localDataItem.object);
+	                }
+	            }                    
+	        }
         }
         
-        WorldStateEx refWorld = world_.getValue( (int)origin + offset );
-        if(refWorld == null){
-            for(int h = 0; h < dataModelArray_.length; ++h){
-                DataSeries ds = dataModelArray_[h].dataSeries;
-                double[] dbArray = ds.getData();
-                int localOffset = (ds.getHeadPos() + offset) % dbArray.length;
-                for (int i = 0; i < count; ++i, ++localOffset){
-                    if(localOffset +i >= dbArray.length){
-                            localOffset = 0;
-                    }
-                    dbArray[localOffset] = Double.NaN;
-                }                
-            }            
-        } else {
-            // メモリーデータから表示したいラインの要素を抽出する処理
-            for(int h = 0; h < dataModelArray_.length; ++h){
-                long recNo = origin + offset; // レコード番号
-                DataItem localDataItem = dataModelArray_[h].dataItem;
-                CharacterStateEx refCharacter = refWorld.get(localDataItem.object);
-                CharacterStateEx localCharacter = refCharacter;
-                DataSeries ds = dataModelArray_[h].dataSeries;
-                double[] dbArray = ds.getData();
-                int localOffset = (ds.getHeadPos() + offset) % dbArray.length;
-                int index = world_.logger_.getIndex(localDataItem.object,
-                        localDataItem.node + "." + localDataItem.attribute + (localDataItem.index >= 0 ? "." + localDataItem.index : "") );
-                ArrayList<Integer> arryLength = new ArrayList<Integer>();
-                arryLength.add(refCharacter.position.length * 7);
-                arryLength.add(arryLength.get(0) + refCharacter.sensorState.q.length);
-                arryLength.add(arryLength.get(1) + refCharacter.sensorState.u.length);
-                if(refCharacter.sensorState.force.length == 0){
-                    arryLength.add( arryLength.get(2));
-                } else {
-                    arryLength.add( arryLength.get(2) +
-                                    refCharacter.sensorState.force.length * refCharacter.sensorState.force[0].length);
+        //姿勢データをロール、ピッチ、ヨーに変換  //
+        Iterator<AttitudeDataModel> it = attitudeDataModelMap_.values().iterator();
+        while(it.hasNext()){
+        	AttitudeDataModel attitudeDataModel = it.next();
+        	double[][] aa = new double[4][];
+        	int[] aapos = new int[4];
+        	int[] aaSize = new int[4];
+        	for(int i=0; i<4; i++){
+        		DataSeries ds = attitudeDataModel.axisAngleSeries[i];
+        		aaSize[i] = ds.getSize();
+        		aapos[i] = (ds.getHeadPos() + offset) % aaSize[i];
+        		aa[i] = attitudeDataModel.axisAngleSeries[i].getData();
+        	}
+        	double[][] rpy = {null, null, null};
+        	int[] rpypos = new int[3];
+        	int[] rpySize = new int[3];
+        	for(int i=0; i<3; i++){
+        		DataSeries ds = attitudeDataModel.rpySeries[i];
+        		if(ds!=null){
+	        		rpySize[i] = ds.getSize();
+	        		rpypos[i] = (ds.getHeadPos() + offset) % rpySize[i];
+	        		rpy[i] = attitudeDataModel.rpySeries[i].getData();
+        		}
+        	}
+        	for (int i = 0; i < count; i++) {
+                if(aa[0][aapos[0]] == Double.NaN || aa[1][aapos[1]] == Double.NaN || aa[2][aapos[2]] == Double.NaN || aa[3][aapos[3]] == Double.NaN){
+                	if(rpy[0]!=null) rpy[0][rpypos[0]] = Double.NaN;
+                	if(rpy[1]!=null) rpy[1][rpypos[1]] = Double.NaN;
+                	if(rpy[2]!=null) rpy[2][rpypos[2]] = Double.NaN;
+                }else
+                	AxisAngleToRPY(aa, rpy, aapos, rpypos);    
+                for(int j=0; j<4; j++){
+                	if(aapos[j] < aaSize[j]-1)
+                    	aapos[j]++;
+                    else
+                    	aapos[j]=0;
                 }
-
-                if(refCharacter.sensorState.rateGyro.length == 0){
-                    arryLength.add( arryLength.get(3));
-                } else {
-                    arryLength.add( arryLength.get(3) +
-                                    refCharacter.sensorState.rateGyro.length * refCharacter.sensorState.rateGyro[0].length);
+                for(int j=0; j<3; j++){
+                	if(rpypos[j] < rpySize[j]-1)
+                    	rpypos[j]++;
+                    else
+                    	rpypos[j]=0;
                 }
-                
-                if(refCharacter.sensorState.accel.length == 0){
-                    arryLength.add( arryLength.get(4));
-                } else {
-                    arryLength.add( arryLength.get(4) +
-                                    refCharacter.sensorState.accel.length * refCharacter.sensorState.accel[0].length);
-                }
-                if(refCharacter.sensorState.range.length == 0){
-                    arryLength.add( arryLength.get(5));
-                } else {
-                    arryLength.add( arryLength.get(5) +
-                                    refCharacter.sensorState.range.length * refCharacter.sensorState.range[0].length);
-                }
-
-                for (int i = 0; i < count; ++i, ++recNo, ++localOffset){
-                    if(localOffset >= dbArray.length){
-                            localOffset = 0;
-                    }
-                    if(recNo < 0 || recNo >= world_.getLogSize() || localCharacter == null){
-                        dbArray[localOffset] = Double.NaN;
-                        continue;
-                    }
-                    if (index <= arryLength.get(0)){
-                        
-                        
-                    } else if  (index <= arryLength.get(2)){
-                        if( (index - 1) % 2 == 0 ){
-                            dbArray[localOffset] = localCharacter.sensorState.q[(index - arryLength.get(0) - 1)/2];
-                        } else {
-                            dbArray[localOffset] = localCharacter.sensorState.u[(index - arryLength.get(0) - 2)/2];
-                        }
-                    } else if  (index <= arryLength.get(3) && localCharacter.sensorState.force.length > 0){
-                        int dim1 = (index - arryLength.get(2) - 1) / localCharacter.sensorState.force[0].length ;
-                        int dim2 = (index - arryLength.get(2) - 1) % localCharacter.sensorState.force[0].length ;
-                        dbArray[localOffset] = localCharacter.sensorState.force[dim1][dim2];  
-            
-                    } else if  (index <= arryLength.get(4) && localCharacter.sensorState.rateGyro.length > 0){
-                        int dim1 = (index - arryLength.get(3) - 1) / localCharacter.sensorState.rateGyro[0].length ;
-                        int dim2 = (index - arryLength.get(3) - 1) % localCharacter.sensorState.rateGyro[0].length ;
-                        dbArray[localOffset] = localCharacter.sensorState.rateGyro[dim1][dim2];     
-                    } else if  (index <= arryLength.get(5) && localCharacter.sensorState.accel.length > 0){
-                        int dim1 = (index - arryLength.get(4) - 1) / localCharacter.sensorState.accel[0].length ;
-                        int dim2 = (index - arryLength.get(4) - 1) % localCharacter.sensorState.accel[0].length ;
-                        dbArray[localOffset] = localCharacter.sensorState.accel[dim1][dim2];     
-                    } else if(localCharacter.sensorState.range.length > 0) {
-                        int dim1 = (index - arryLength.get(5) - 1) / localCharacter.sensorState.range[0].length ;
-                        int dim2 = (index - arryLength.get(5) - 1) % localCharacter.sensorState.range[0].length ;
-                        dbArray[localOffset] = localCharacter.sensorState.range[dim1][dim2];     
-                    }
-                    localCharacter = world_.getValue( (int)recNo ).get(localDataItem.object);
-                }
-            }                    
+        	}
         }
     }
     
@@ -563,4 +678,68 @@ public class TrendGraphModel
 		
 	}
 
+	private void AxisAngleToRPY(double[][] aa, double[][] rpy, int[] aapos, int[] rpypos){
+		Matrix3d m = new Matrix3d();
+		m.set(new AxisAngle4d(aa[0][aapos[0]], aa[1][aapos[1]], aa[2][aapos[2]], aa[3][aapos[3]]));
+		
+		// hrpUtil/TVmet3d.cpp   からコピー  //
+		double roll, pitch, yaw;    
+	   	if ((Math.abs(m.m00)<Math.abs(m.m20)) && (Math.abs(m.m10)<Math.abs(m.m20))) {
+	   	double sp = -m.m20;
+		if (sp < -1.0) {
+		    sp = -1;
+		} else if (sp > 1.0) {
+		    sp = 1;
+		}
+		pitch = Math.asin(sp); // -pi/2< p < pi/2
+		
+		roll = Math.atan2(sp*m.m01+m.m12,  // -cp*cp*sr*cy
+			     sp*m.m02-m.m11); // -cp*cp*cr*cy
+		
+		if (m.m00>0.0) { // cy > 0
+		    if(roll < 0.0)
+		    	roll += Math.PI;
+		    else
+		    	roll -= Math.PI;
+		}
+		double sr=Math.sin(roll), cr=Math.cos(roll);
+		if (sp > 0.0) {
+		    yaw = Math.atan2(sr*m.m11+cr*m.m12, //sy*sp
+				sr*m.m01+cr*m.m02);//cy*sp
+		} else {
+		    yaw = Math.atan2(-sr*m.m11-cr*m.m12,
+				-sr*m.m01-cr*m.m02);
+		}
+	    } else {
+		yaw = Math.atan2(m.m10, m.m00);
+		double sa = Math.sin(yaw);
+		double ca = Math.cos(yaw);
+		pitch = Math.atan2(-m.m20, ca*m.m00+sa*m.m10);
+		roll = Math.atan2(sa*m.m02-ca*m.m12, -sa*m.m01+ca*m.m11);
+	    }
+	   	
+	   	if(rpy[0]!=null) rpy[0][rpypos[0]] = roll;
+	   	if(rpy[1]!=null) rpy[1][rpypos[1]] = pitch;
+	   	if(rpy[2]!=null) rpy[2][rpypos[2]] = yaw;
+	}
+
+	private class AttitudeDataModel{
+		private DataSeries[] rpySeries = {null, null, null};
+		private DataSeries[] axisAngleSeries = {null, null, null, null};
+		
+		public AttitudeDataModel(){
+		}
+		
+		private void setAxisAngleSeries(int i, DataSeries dataSeries){
+			axisAngleSeries[i] = dataSeries;
+		}
+		
+		private void setRPYSeries(int i, DataSeries dataSeries){
+			rpySeries[i] = dataSeries;
+		}
+		
+		private boolean isDisused(){
+			return rpySeries[0]==null && rpySeries[1]==null && rpySeries[2]==null ;
+		}
+	}
 }

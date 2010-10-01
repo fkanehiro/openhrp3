@@ -855,7 +855,10 @@ public class LogManager {
 	        if (obj == null || obj.equals("")) { // オブジェクト名なし?
 	            obj = NONAME_OBJECT; // 無名オブジェクト
 	        }
-	        Integer ind = ((Map<String, Integer>) indexMapMap_.get(obj)).get(di.node + "." + di.attribute + (di.index >= 0 ? "." + di.index : ""));
+	        String attribute = di.attribute;
+	        if(attribute.equals("attitude"))
+	        	attribute = "rotation";
+	        Integer ind = ((Map<String, Integer>) indexMapMap_.get(obj)).get(di.node + "." + attribute + (di.index >= 0 ? "." + di.index : ""));
 
 	        ArrayList<DataSeries> dsList = dsListMap_.get(obj);
 	        ArrayList<Integer> indexList = indexListMap_.get(obj);

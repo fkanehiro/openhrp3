@@ -239,8 +239,7 @@ public class SeriesDialog extends Dialog {
 				if (type.equals("Joint")) { //$NON-NLS-1$
 					Vector<GrxLinkItem> li = model.links_;
 					for (int i = 0; i < li.size(); i++) 
-						if(li.get(i).jointType().equals("rotate")) //$NON-NLS-1$
-							comboLink_.add(li.get(i).getName());
+						comboLink_.add(li.get(i).getName());
 				} else {
 					String t = null;
 					if (type.equals("ForceSensor")) //$NON-NLS-1$
@@ -281,21 +280,58 @@ public class SeriesDialog extends Dialog {
 				
    				comboAttr_.removeAll();
    				
-				List<String> l = nodeMap.get(comboType_.getItem(comboType_.getSelectionIndex()));
-					/*if (currentGraph_.getTrendGraph().getDataItemInfoList().length > 0) {
-						String curAttr = currentGraph_.getTrendGraph().getDataItemInfoList()[0].dataItem.attribute;
-						if (l.contains(curAttr))
-							comboAttr_.addItem(curAttr);
-					} else */
-				if (tableModel_.getRowCount() > 0) {
-					String curAttr = (String)tableModel_.getValueAt(0, 1);
-					if (l.contains(curAttr))
-						comboAttr_.add(curAttr);
-				} else {
-					Iterator<String> it = l.iterator();
+   				String type = comboType_.getItem(comboType_.getSelectionIndex());
+				List<String> l = nodeMap.get(type);
+				if(type.equals("Joint")){
+					String modelName = comboModel_.getItem(comboModel_.getSelectionIndex());
+					Iterator<GrxModelItem> it = currentModels_.iterator();
+					GrxModelItem model=null;
 					while (it.hasNext()) {
-						comboAttr_.add(it.next());
-                 	}
+						model = it.next();
+						if(model.getName().equals(modelName))
+							break;
+					}
+					String linkName = comboLink_.getItem(comboLink_.getSelectionIndex());
+					boolean isControlJoint = false;
+					if(model!=null){
+						GrxLinkItem link = model.getLink(linkName);
+						if(link!=null)
+							if(link.jointType().equals("rotate") || link.jointType().equals("slide") )
+							isControlJoint = true;
+					}
+					if (tableModel_.getRowCount() > 0) {
+						String curAttr = (String)tableModel_.getValueAt(0, 1);
+						if(!isControlJoint)
+							if(curAttr.equals("translation") || curAttr.equals("attitude"))
+								comboAttr_.add(curAttr);
+							else
+								;
+						else
+							if (l.contains(curAttr))
+								comboAttr_.add(curAttr);
+							else
+								;
+					} else {
+						if(!isControlJoint){
+							comboAttr_.add("translation");
+							comboAttr_.add("attitude");
+						}else {
+							Iterator<String> it0 = l.iterator();
+							while (it0.hasNext()) {
+								comboAttr_.add(it0.next());
+		                 	}
+						}
+					}
+				}else{
+					if (tableModel_.getRowCount() > 0) {
+						String curAttr = (String)tableModel_.getValueAt(0, 1);
+						if (l.contains(curAttr))
+							comboAttr_.add(curAttr);
+					}else {
+						Iterator<String> it0 = l.iterator();
+						while (it0.hasNext()) 
+							comboAttr_.add(it0.next());
+					}
 				}
 				comboAttr_.setEnabled(true);
 				
@@ -349,10 +385,12 @@ public class SeriesDialog extends Dialog {
 					combo1.equals("AccelerationSensor") || //$NON-NLS-1$
 					combo1.equals("Gyro"))  //$NON-NLS-1$
 					length = 3;
-				for (int i=0; i<length; i++) {
-					String model = comboModel_.getItem(comboModel_.getSelectionIndex());
-					String link = comboLink_.getItem(comboLink_.getSelectionIndex());
-					String attr = comboAttr_.getItem(comboAttr_.getSelectionIndex());
+				String model = comboModel_.getItem(comboModel_.getSelectionIndex());
+				String link = comboLink_.getItem(comboLink_.getSelectionIndex());
+				String attr = comboAttr_.getItem(comboAttr_.getSelectionIndex());
+				if(combo1.equals("Joint") && (attr.equals("translation") || attr.equals("attitude")))
+					length = 3;
+				for (int i=0; i<length; i++) {	
 					String legend = model + "." + link + "." + attr + (length > 1 ? "." + i : ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 					if(!tableModel_.contains(legend)){
 						DataItemInfo newDataItemInfo = new DataItemInfo(new DataItem(model,link,attr,
