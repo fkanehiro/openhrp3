@@ -89,9 +89,13 @@ if(OPENHRP_3_0_CUSTOMIZERS)
     set_target_properties(${customizer} PROPERTIES PREFIX "")
     set_target_properties(${customizer} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/customizer)
 
-    install(TARGETS ${customizer}
-      LIBRARY DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug)
-
+    if(WIN32)
+      install(TARGETS ${customizer}
+        DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug)
+    else()
+      install(TARGETS ${customizer}
+        LIBRARY DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug)
+    endif()
   endforeach()
 endif()
 
