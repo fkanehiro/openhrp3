@@ -157,11 +157,15 @@ namespace PathEngine {
         bool bboxMode_;
 
         std::vector<hrp::ColdetModelPair> checkPairs_;
+        //< point cloud created by vision or range sensor
+        std::vector<hrp::Vector3> pointCloud_; 
+        double radius_; ///< radius of spheres assigned to points
     public:
         hrp::BodyPtr robot();
         void setApplyConfigFunc(applyConfigFunc i_func);
         bool setConfiguration(const Configuration &pos);
         void getWorldState(OpenHRP::WorldState_out wstate);
+        void setPointCloud(const std::vector<hrp::Vector3>& i_cloud, double i_radius);
         /**
          * @brief コンストラクタ
          * @param isDebugMode デバッグモードにするか否か
