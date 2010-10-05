@@ -628,6 +628,15 @@ bool PathPlanner::checkIntersection()
                 if (checkPairs_[i].detectIntersection()) return true;
             } 
         } 
+        if (pointCloud_.size() > 0){
+            for (int i=0; i<model_->numLinks(); i++){
+                Link *l = model_->link(i);
+                if (l->coldetModel->checkCollisionWithPointCloud(pointCloud_,
+                                                                 radius_)){
+                    return true;
+                }
+            }
+        }
         return false;
     }else{
         OpenHRP::LinkPairSequence_var pairs = new OpenHRP::LinkPairSequence;
@@ -825,4 +834,11 @@ void PathPlanner::setApplyConfigFunc(applyConfigFunc i_func)
 BodyPtr PathPlanner::robot()
 {
     return model_;
+}
+
+void PathPlanner::setPointCloud(const std::vector<Vector3>& i_cloud, 
+                                double i_radius)
+{
+    pointCloud_ = i_cloud;
+    radius_ = i_radius;
 }
