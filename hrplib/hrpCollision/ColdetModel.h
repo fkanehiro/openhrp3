@@ -197,6 +197,15 @@ namespace hrp {
          */
         double computeDistanceWithRay(const double *point, const double *dir);
 
+        /**
+         * @brief check collision between this triangle mesh and a point cloud
+         * @param i_cloud points
+         * @param i_radius radius of spheres assigned to the points
+         * @return true if colliding, false otherwise
+         */
+        bool checkCollisionWithPointCloud(const std::vector<Vector3> &i_cloud,
+                                          double i_radius);
+
         void getBoundingBoxData(const int depth, std::vector<Vector3>& out_boxes);
         
         int getAABBTreeDepth();

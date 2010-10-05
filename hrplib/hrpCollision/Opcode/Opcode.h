@@ -92,13 +92,13 @@ namespace hrp {
 		// Models
 		#include "OPC_BaseModel.h"
 		#include "OPC_Model.h"
-	  //		#include "OPC_HybridModel.h"
+	  	#include "OPC_HybridModel.h"
 		// Colliders
 		#include "OPC_Collider.h"
 		#include "OPC_VolumeCollider.h"
 		#include "OPC_TreeCollider.h"
 	        #include "OPC_RayCollider.h"
-	  //#include "OPC_SphereCollider.h"
+                #include "OPC_SphereCollider.h"
 	  //#include "OPC_OBBCollider.h"
 	  //#include "OPC_AABBCollider.h"
 	  //#include "OPC_LSSCollider.h"
