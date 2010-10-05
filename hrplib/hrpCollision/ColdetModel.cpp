@@ -324,3 +324,22 @@ double ColdetModel::computeDistanceWithRay(const double *point,
     }
 }
 
+bool ColdetModel::checkCollisionWithPointCloud(const std::vector<Vector3> &i_cloud, double i_radius)
+{
+    Opcode::SphereCollider SC;
+    SC.SetFirstContact(true);
+    Opcode::SphereCache Cache;
+    IceMaths::Point p(0,0,0);
+    IceMaths::Sphere sphere(p, i_radius);
+    IceMaths::Matrix4x4 sphereTrans(1,0,0,0, 0,1,0,0, 0,0,1,0,  0,0,0,1);
+    for (unsigned int i=0; i<i_cloud.size(); i++){
+        const Vector3& p = i_cloud[i];
+        sphereTrans.m[3][0] = p[0];
+        sphereTrans.m[3][1] = p[1];
+        sphereTrans.m[3][2] = p[2];
+        bool isOk = SC.Collide(Cache, sphere, dataSet->model, &sphereTrans, transform); 
+        if (!isOk) std::cerr << "SphereCollider::Collide() failed" << std::endl;
+        if (SC.GetContactStatus()) return true;
+    }
+    return false;
+}

@@ -36,6 +36,7 @@ set(sources
   Opcode/OPC_TreeCollider.cpp
   Opcode/OPC_VolumeCollider.cpp 
   Opcode/OPC_RayCollider.cpp
+  Opcode/OPC_SphereCollider.cpp
   Opcode/OPC_Picking.cpp
   )
 
