@@ -426,6 +426,14 @@ BodyPtr PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr c
     return body;
 }
 
+BodyPtr PathPlanner::registerCharacter(const char *name, BodyPtr i_body)
+{
+    i_body->setName(name);
+    world_.addBody(i_body);
+    return i_body;
+}
+
+
 
 
 // ----------------------------------------------
