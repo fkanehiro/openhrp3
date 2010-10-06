@@ -217,6 +217,13 @@ namespace PathEngine {
         /**
          * @brief キャラクタを動力学シミュレータに登録する。
          * @param name モデル名
+         * @param i_body モデルデータ
+         */
+        hrp::BodyPtr registerCharacter(const char *name, hrp::BodyPtr i_body);
+
+        /**
+         * @brief キャラクタを動力学シミュレータに登録する。
+         * @param name モデル名
          * @param url モデルURL
          */
         hrp::BodyPtr registerCharacterByURL(const char* name, const char* url);
