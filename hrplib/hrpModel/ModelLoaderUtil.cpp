@@ -548,12 +548,15 @@ BodyInfo_var hrp::loadBodyInfo(const char* url, CosNaming::NamingContext_var cxt
     return bodyInfo;
 }
 
-bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CosNaming::NamingContext_var cxt)
+bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CosNaming::NamingContext_var cxt,  bool loadGeometryForCollisionDetection)
 {
     BodyInfo_var bodyInfo = loadBodyInfo(url, cxt);
 
     if(!CORBA::is_nil(bodyInfo)){
         ModelLoaderHelper helper;
+        if(loadGeometryForCollisionDetection){
+            helper.enableCollisionDetectionModelLoading(true);
+        }
         return helper.createBody(body, bodyInfo);
     }
 
@@ -561,7 +564,7 @@ bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CosNaming::Nami
 }
 
 
-bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CORBA_ORB_var orb)
+bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CORBA_ORB_var orb, bool loadGeometryForCollisionDetection)
 {
     CosNaming::NamingContext_var cxt;
     try {
@@ -572,12 +575,12 @@ bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, CORBA_ORB_var o
         return false;
     }
 
-    return loadBodyFromModelLoader(body, url, cxt);
+    return loadBodyFromModelLoader(body, url, cxt, loadGeometryForCollisionDetection);
 }
 
 
-bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, int& argc, char* argv[])
+bool hrp::loadBodyFromModelLoader(BodyPtr body, const char* url, int& argc, char* argv[], bool loadGeometryForCollisionDetection)
 {
     CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
-    return loadBodyFromModelLoader(body, url,  orb);
+    return loadBodyFromModelLoader(body, url,  orb, loadGeometryForCollisionDetection);
 }
