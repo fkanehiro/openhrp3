@@ -348,7 +348,9 @@ namespace PathEngine {
          * @brief 計画された経路の補間されたものを取得する
          * @return 補間された経路
          */
-        std::vector<Configuration>  getPath(bool i_interpolate=true);
+        std::vector<Configuration> getPath();
+
+        std::vector<Configuration>& getWayPoints();
 
         /**
          * @brief 移動能力を取得する
