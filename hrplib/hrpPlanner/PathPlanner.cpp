@@ -743,10 +743,12 @@ bool PathPlanner::optimize(const std::string& optimizer)
     }
 }
 
-std::vector<Configuration> PathPlanner::getPath(bool i_interpolate)
+std::vector<Configuration>& PathPlanner::getWayPoints()
 {
-    if (!i_interpolate) return path_;
-
+    return path_;
+}
+std::vector<Configuration> PathPlanner::getPath()
+{
     std::vector<Configuration> finalPath;
     if (path_.size() == 0) return finalPath;
 
