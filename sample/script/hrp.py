@@ -138,9 +138,9 @@ def findOnlineViewer(rnc=None):
 	except:
 		return None
 
-def findIntegratorFactory(rnc=None):
+def findDynamicsSimulatorFactory(rnc=None):
 	try:
-		return IntegratorFactoryHelper.narrow(findObject("IntegratorFactory", rnc))
+		return DynamicsSimulatorFactoryHelper.narrow(findObject("DynamicsSimulatorFactory", rnc))
 	except:
 		return None
 
