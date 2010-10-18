@@ -67,9 +67,18 @@ public class AxisAngle4d extends javax.vecmath.AxisAngle4d {
 			    z = 0.0f;
 			    angle = 0.0f;
 			}else{
-			    x = Math.sqrt((m1.m00+1)*0.5);
-			    y = Math.sqrt((m1.m11+1)*0.5);
-			    z = Math.sqrt((m1.m22+1)*0.5);
+				double x0 = m1.m00+1;
+				double y0 = m1.m11+1;
+				double z0 = m1.m22+1;
+				if( x0 < 0 && x0 > -EPS )
+					x0 = 0;
+				if( y0 < 0 && y0 > -EPS )
+					y0 = 0;
+				if( z0 < 0 && z0 > -EPS )
+					z0 = 0;
+			    x = Math.sqrt(x0*0.5);
+			    y = Math.sqrt(y0*0.5);
+			    z = Math.sqrt(z0*0.5);
 			    angle = Math.PI;
 			    
 			    int[][] sign = {{1,1,1},{1,1,-1},{1,-1,1},{1,-1,-1},{-1,1,1},{-1,1,-1},{-1,-1,1},{-1,-1,-1}};
