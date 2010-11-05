@@ -129,7 +129,7 @@ public class GrxServerManager extends GrxBaseItem{
         		pm.unregister(pInfo.id);
         }
         // 新規登録と開始処理
-        String s = pInfo.com.get(0);
+        String s = pInfo.com.get(pInfo.editComIndex);
         if(!(new File(s)).isAbsolute()){
         	pInfo.com.clear();
         	String ss = comToAbsolutePath(s);
