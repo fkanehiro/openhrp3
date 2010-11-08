@@ -560,6 +560,25 @@ Sensor* Body::createSensor(Link* link, int sensorType, int id, const std::string
     return sensor;
 }
 
+void Body::addSensor(Sensor* sensor, int sensorType, int id ){
+    if(sensorType < Sensor::NUM_SENSOR_TYPES && id >= 0){
+        SensorArray& sensors = allSensors[sensorType];
+        int n = sensors.size();
+        if(id >= n){
+            sensors.resize(id + 1, 0);
+        }
+        Sensor* sameId = sensors[id];
+        if(sameId){
+            std::cerr << "duplicated sensor Id is specified(id = "
+                      << id << ", name = " << sensor->name << ")" << std::endl;
+                
+            nameToSensorMap.erase(sameId->name);
+        }
+        sensors[id] = sensor;
+        nameToSensorMap[sensor->name] = sensor;
+    }
+}
+
 
 void Body::clearSensorValues()
 {

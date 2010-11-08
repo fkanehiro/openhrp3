@@ -266,6 +266,16 @@ endif()
 
 add_definitions(${OMNIORB_CFLAGS})
 
+# check ODE
+set(ODE_DIR ${ODE_DIR} CACHE PATH "The root directory of ODE")
+if(ODE_DIR)
+  include_directories(${ODE_DIR}/include)
+  if(UNIX)
+    link_directories(${ODE_DIR}/lib)
+  elseif(WIN32)
+    link_directories(${ODE_DIR}/lib/ReleaseSingleLib, ${ODE_DIR}/lib/DebugSingleLib)
+  endif()
+endif()
 
 # check Java
 if(NOT JDK_DIR)

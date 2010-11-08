@@ -148,6 +148,8 @@ namespace hrp {
         // sensor access methods
         Sensor* createSensor(Link* link, int sensorType, int id, const std::string& name);
 
+        void addSensor(Sensor* sensor, int sensorType, int id );
+
         inline Sensor* sensor(int sensorType, int sensorId) const {
             return allSensors[sensorType][sensorId];
         }
