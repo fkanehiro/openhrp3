@@ -161,17 +161,20 @@ namespace hrp {
          */
         std::pair<int,bool> getIndexOfLinkPairs(Link* link1, Link* link2);
 
-      private:
-		
+    protected:
+
         double currentTime_;
         double timeStep_;
 
-		struct BodyInfo {
+        struct BodyInfo {
             BodyPtr body;
             ForwardDynamicsPtr forwardDynamics;
         };
         std::vector<BodyInfo> bodyInfoArray;
 
+        bool sensorsAreEnabled;
+
+    private:
         typedef std::map<std::string, int> NameToIndexMap;
         NameToIndexMap nameToBodyIndexMap;
 
@@ -192,9 +195,7 @@ namespace hrp {
 
         bool isEulerMethod; // Euler or Runge Kutta ?
 
-		bool sensorsAreEnabled;
-		
-	};
+    };
 
 
 	template <class TConstraintForceSolver> class World : public WorldBase

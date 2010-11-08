@@ -9,7 +9,7 @@
  */
 
 
-#include "DynamicsSimulator_impl.h"
+#include "ODE_DynamicsSimulator_impl.h"
 
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpModel/Body.h>
@@ -26,8 +26,8 @@
 using namespace std;
 using namespace hrp;
 
-
 static const bool USE_INTERNAL_COLLISION_DETECTOR = false;
+static const bool USE_ODE_COLLISION_DETECTOR = true;
 static const int debugMode = false;
 static const bool enableTimeMeasure = false;
 
@@ -108,16 +108,17 @@ X_ptr checkCorbaServer(std::string n, CosNaming::NamingContext_var &cxt)
 }
 
 
-DynamicsSimulator_impl::DynamicsSimulator_impl(CORBA::ORB_ptr orb)
+ODE_DynamicsSimulator_impl::ODE_DynamicsSimulator_impl(CORBA::ORB_ptr orb)
     : orb_(CORBA::ORB::_duplicate(orb))
 {
     if(debugMode){
-        cout << "DynamicsSimulator_impl::DynamicsSimulator_impl()" << endl;
+        cout << "ODE_DynamicsSimulator_impl::ODE_DynamicsSimulator_impl()" << endl;
     }
 
     // default integration method
     world.setRungeKuttaMethod();
 
+    world.useInternalCollisionDetector(USE_ODE_COLLISION_DETECTOR);
     if(!USE_INTERNAL_COLLISION_DETECTOR){
         // resolve collisionchecker object
         CollisionDetectorFactory_var collisionDetectorFactory;
@@ -149,20 +150,20 @@ DynamicsSimulator_impl::DynamicsSimulator_impl(CORBA::ORB_ptr orb)
 }
 
 
-DynamicsSimulator_impl::~DynamicsSimulator_impl()
+ODE_DynamicsSimulator_impl::~ODE_DynamicsSimulator_impl()
 {
     if(debugMode){
-        cout << "DynamicsSimulator_impl::~DynamicsSimulator_impl()" << endl;
+        cout << "ODE_DynamicsSimulator_impl::~ODE_DynamicsSimulator_impl()" << endl;
     }
     if(!USE_INTERNAL_COLLISION_DETECTOR)
         collisionDetector->destroy();
 }
 
 
-void DynamicsSimulator_impl::destroy()
+void ODE_DynamicsSimulator_impl::destroy()
 {
     if(debugMode){
-        cout << "DynamicsSimulator_impl::destroy()" << endl;
+        cout << "ODE_DynamicsSimulator_impl::destroy()" << endl;
     }
 
     PortableServer::POA_var poa_ = _default_POA();
@@ -171,33 +172,26 @@ void DynamicsSimulator_impl::destroy()
 }
 
 
-void DynamicsSimulator_impl::registerCharacter
+void ODE_DynamicsSimulator_impl::registerCharacter
 (
     const char *name,
     BodyInfo_ptr bodyInfo
     )
 {
     if(debugMode){
-        cout << "DynamicsSimulator_impl::registerCharacter("
+        cout << "ODE_DynamicsSimulator_impl::registerCharacter("
              << name << ", " << bodyInfo << " )" << std::endl;
     }
 
-    BodyPtr body = new Body();
+    world.addBody(bodyInfo, name);
 
-    if(loadBodyFromBodyInfo(body, bodyInfo, USE_INTERNAL_COLLISION_DETECTOR)){
-        body->setName(name);
-        if(debugMode){
-            std::cout << "Loaded Model:\n" << *body << std::endl;
-        }
-        if(!USE_INTERNAL_COLLISION_DETECTOR){
-            collisionDetector->registerCharacter(name, bodyInfo);
-        }
-        world.addBody(body);
+    if(!USE_INTERNAL_COLLISION_DETECTOR){
+        collisionDetector->registerCharacter(name, bodyInfo);
     }
 }
 
 
-void DynamicsSimulator_impl::init
+void ODE_DynamicsSimulator_impl::init
 (
     CORBA::Double timeStep,
     OpenHRP::DynamicsSimulator::IntegrateMethod integrateOpt,
@@ -205,7 +199,7 @@ void DynamicsSimulator_impl::init
     )
 {
     if(debugMode){
-        cout << "DynamicsSimulator_impl::init(" << timeStep << ", ";
+        cout << "ODE_DynamicsSimulator_impl::init(" << timeStep << ", ";
         cout << (integrateOpt == OpenHRP::DynamicsSimulator::EULER ? "EULER, " : "RUNGE_KUTTA, ");
         cout << (sensorOpt == OpenHRP::DynamicsSimulator::DISABLE_SENSOR ? "DISABLE_SENSOR" : "ENABLE_SENSOR");
         std::cout << ")" << std::endl;
@@ -235,7 +229,7 @@ void DynamicsSimulator_impl::init
 }
 
 
-void DynamicsSimulator_impl::registerCollisionCheckPair
+void ODE_DynamicsSimulator_impl::registerCollisionCheckPair
 (
     const char *charName1,
     const char *linkName1,
@@ -313,26 +307,25 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
                 Link* link2 = links2[j];
 
                 if(link1 && link2 && link1 != link2){
-                    bool ok = world.constraintForceSolver.addCollisionCheckLinkPair
-                        (bodyIndex1, link1, bodyIndex2, link2, staticFriction, slipFriction, culling_thresh, epsilon);
-
-                    if(ok && !USE_INTERNAL_COLLISION_DETECTOR){
-                        LinkPair_var linkPair = new LinkPair();
-                        linkPair->charName1  = CORBA::string_dup(charName1);
-                        linkPair->linkName1 = CORBA::string_dup(link1->name.c_str());
-                        linkPair->charName2  = CORBA::string_dup(charName2);
-                        linkPair->linkName2 = CORBA::string_dup(link2->name.c_str());
-                        linkPair->tolerance = 0;
+                    LinkPair_var linkPair = new LinkPair();
+                    linkPair->charName1  = CORBA::string_dup(charName1);
+                    linkPair->linkName1 = CORBA::string_dup(link1->name.c_str());
+                    linkPair->charName2  = CORBA::string_dup(charName2);
+                    linkPair->linkName2 = CORBA::string_dup(link2->name.c_str());
+                    linkPair->tolerance = 0;
+                    if(!USE_INTERNAL_COLLISION_DETECTOR)
                         collisionDetector->addCollisionPair(linkPair);
-                    }
+                    if(USE_ODE_COLLISION_DETECTOR)
+                        world.addCollisionPair(linkPair);
                 }
             }
         }
     }
+
 }
 
 
-void DynamicsSimulator_impl::registerIntersectionCheckPair
+void ODE_DynamicsSimulator_impl::registerIntersectionCheckPair
 (
     const char *charName1,
     const char *linkName1,
@@ -383,15 +376,16 @@ void DynamicsSimulator_impl::registerIntersectionCheckPair
                 Link* link2 = links2[j];
 
                 if(link1 && link2 && link1 != link2){
-                    if(!USE_INTERNAL_COLLISION_DETECTOR){
-                        LinkPair_var linkPair = new LinkPair();
-                        linkPair->charName1  = CORBA::string_dup(charName1);
-                        linkPair->linkName1 = CORBA::string_dup(link1->name.c_str());
-                        linkPair->charName2  = CORBA::string_dup(charName2);
-                        linkPair->linkName2 = CORBA::string_dup(link2->name.c_str());
-                        linkPair->tolerance = tolerance;
+                    LinkPair_var linkPair = new LinkPair();
+                    linkPair->charName1  = CORBA::string_dup(charName1);
+                    linkPair->linkName1 = CORBA::string_dup(link1->name.c_str());
+                    linkPair->charName2  = CORBA::string_dup(charName2);
+                    linkPair->linkName2 = CORBA::string_dup(link2->name.c_str());
+                    linkPair->tolerance = 0;
+                    if(!USE_INTERNAL_COLLISION_DETECTOR)
                         collisionDetector->addCollisionPair(linkPair);
-                    }
+                    if(USE_ODE_COLLISION_DETECTOR)
+                        world.addCollisionPair(linkPair);
                 }
             }
         }
@@ -400,7 +394,7 @@ void DynamicsSimulator_impl::registerIntersectionCheckPair
 
 
 //! \todo implement this method
-void DynamicsSimulator_impl::registerVirtualLink
+void ODE_DynamicsSimulator_impl::registerVirtualLink
 (
     const char*			char1,
     const char*			link1,
@@ -439,7 +433,7 @@ void DynamicsSimulator_impl::registerVirtualLink
 
 
 //! \todo implement this method
-void DynamicsSimulator_impl::getConnectionConstraintForce
+void ODE_DynamicsSimulator_impl::getConnectionConstraintForce
 (
     const char * characterName,
     const char * connectionName,
@@ -453,7 +447,7 @@ void DynamicsSimulator_impl::getConnectionConstraintForce
 }
 
 
-void DynamicsSimulator_impl::getCharacterSensorValues
+void ODE_DynamicsSimulator_impl::getCharacterSensorValues
 (
     const char *characterName,
     const char *sensorName,
@@ -545,22 +539,21 @@ void DynamicsSimulator_impl::getCharacterSensorValues
 
         cout << ")" << endl;
     }
+
 }
 
 
-void DynamicsSimulator_impl::initSimulation()
+void ODE_DynamicsSimulator_impl::initSimulation()
 {
     if(debugMode){
         cout << "DynamicsSimulator_impl::initSimulation()" << endl;
     }
 
-
     world.initialize();
-    world.constraintForceSolver.enableConstraintForceOutput(true);
 
     _updateCharacterPositions();
 
-    if(!USE_INTERNAL_COLLISION_DETECTOR){
+    if(!USE_ODE_COLLISION_DETECTOR){
         collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
     }
 
@@ -568,10 +561,11 @@ void DynamicsSimulator_impl::initSimulation()
         timeMeasureFinished = false;
         timeMeasureStarted = false;
     }
+
 }
 
 
-void DynamicsSimulator_impl::stepSimulation()
+void ODE_DynamicsSimulator_impl::stepSimulation()
 {
     if(enableTimeMeasure){
         if(!timeMeasureStarted){
@@ -584,7 +578,7 @@ void DynamicsSimulator_impl::stepSimulation()
         cout << "DynamicsSimulator_impl::stepSimulation()" << endl;
     }
 
-    world.constraintForceSolver.clearExternalForces();
+    world.clearExternalForces();
 
     if(enableTimeMeasure) timeMeasure2.begin();
     world.calcNextState(collisions);
@@ -595,7 +589,7 @@ void DynamicsSimulator_impl::stepSimulation()
     if(enableTimeMeasure) timeMeasure2.end();
 
     if(enableTimeMeasure) timeMeasure3.begin();
-    if(!USE_INTERNAL_COLLISION_DETECTOR){
+    if(!USE_ODE_COLLISION_DETECTOR){
         collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
     }
     if(enableTimeMeasure) timeMeasure3.end();
@@ -610,10 +604,11 @@ void DynamicsSimulator_impl::stepSimulation()
             cout << "Collision check time = " << timeMeasure3.totalTime() << endl;
         }
     }
+
 }
 
 
-void DynamicsSimulator_impl::setCharacterLinkData
+void ODE_DynamicsSimulator_impl::setCharacterLinkData
 (
     const char* characterName,
     const char* linkName,
@@ -663,13 +658,16 @@ void DynamicsSimulator_impl::setCharacterLinkData
         std::cerr << "not found! :" << characterName << std::endl;
         return;
     }
-    Link* link = body->link(linkName);
+    ODE_Link* link = (ODE_Link*)(body->link(linkName));
     assert(link);
 
     switch(type) {
 
     case OpenHRP::DynamicsSimulator::POSITION_GIVEN:
         link->isHighGainMode = (wdata[0] > 0.0);
+        if(link->isHighGainMode){
+            std::cerr << " HighGainMode is unsupported. " << std::endl;
+        }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_VALUE:
@@ -688,8 +686,10 @@ void DynamicsSimulator_impl::setCharacterLinkData
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_TORQUE:
-        if(link->jointType != Link::FIXED_JOINT)
+        if(link->jointType != Link::FIXED_JOINT){
             link->u = wdata[0];
+            link->setTorque(wdata[0]);
+        }
         break;
 
     case OpenHRP::DynamicsSimulator::ABS_TRANSFORM:
@@ -700,41 +700,28 @@ void DynamicsSimulator_impl::setCharacterLinkData
         Matrix33 R;
         getMatrix33FromRowMajorArray(R, wdata.get_buffer(), 3);
         link->setSegmentAttitude(R);
+        link->setTransform(link->p, R);
      }
     break;
 	
     case OpenHRP::DynamicsSimulator::ABS_VELOCITY:
     {
-        link->v(0) = wdata[0];
-        link->v(1) = wdata[1];
-        link->v(2) = wdata[2];
-        link->w(0) = wdata[3];
-        link->w(1) = wdata[4];
-        link->w(2) = wdata[5];
-        // ABS_TRANSFORM‚ªæ‚ÉŽÀs‚³‚ê‚Ä‚¢‚é‚±‚Æ@//
-        link->vo = link->v - cross(link->w, link->p);
+        hrp::Vector3 v(wdata[0], wdata[1], wdata[2]);
+        hrp::Vector3 w(wdata[3], wdata[4], wdata[5]);
+        link->setAbsVelocity(v, w);
     }
     break;
 
     case OpenHRP::DynamicsSimulator::ABS_ACCELERATION:
     {
-        link->dv(0) = wdata[0];
-        link->dv(1) = wdata[1];
-        link->dv(2) = wdata[2];
-        link->dw(0) = wdata[3];
-        link->dw(1) = wdata[4];
-        link->dw(2) = wdata[5];
+        std::cerr << "ERROR - Invalid type: " << getLabelOfLinkDataType(type) << endl;
     }
     break;
 
-    case OpenHRP::DynamicsSimulator::EXTERNAL_FORCE:
+    case OpenHRP::DynamicsSimulator::EXTERNAL_FORCE:  
     {
-        link->fext(0)   = wdata[0];
-        link->fext(1)   = wdata[1];
-        link->fext(2)   = wdata[2];
-        link->tauext(0) = wdata[3];
-        link->tauext(1) = wdata[4];
-        link->tauext(2) = wdata[5];
+        link->setForce(wdata[0], wdata[1], wdata[2] );
+        link->setTorque(wdata[3], wdata[4], wdata[5] );
         break;
     }
 	
@@ -744,10 +731,11 @@ void DynamicsSimulator_impl::setCharacterLinkData
 
     needToUpdatePositions = true;
     needToUpdateSensorStates = true;
+
 }
 
 
-void DynamicsSimulator_impl::getCharacterLinkData
+void ODE_DynamicsSimulator_impl::getCharacterLinkData
 (
     const char * characterName,
     const char * linkName,
@@ -767,7 +755,7 @@ void DynamicsSimulator_impl::getCharacterLinkData
         std::cerr << "not found! :" << characterName << std::endl;
         return;
     }
-    Link* link = body->link(linkName);
+    ODE_Link* link = (ODE_Link*)body->link(linkName);
     assert(link);
 
     DblSequence_var rdata = new DblSequence;
@@ -785,8 +773,9 @@ void DynamicsSimulator_impl::getCharacterLinkData
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_ACCELERATION:
+        std::cerr << "ERROR - Invalid type: " << getLabelOfLinkDataType(type) << endl;
         rdata->length(1);
-        rdata[0] = link->ddq;
+        rdata[0] = 0;
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_TORQUE:
@@ -797,46 +786,49 @@ void DynamicsSimulator_impl::getCharacterLinkData
     case OpenHRP::DynamicsSimulator::ABS_TRANSFORM:
     {
         rdata->length(12);
-        rdata[0] = link->p(0);
-        rdata[1] = link->p(1);
-        rdata[2] = link->p(2);
+        hrp::Vector3 p;
+        hrp::Matrix33 R;
+        link->getTransform(p, R);
+        rdata[0] = p(0);
+        rdata[1] = p(1);
+        rdata[2] = p(2);
         double* buf = rdata->get_buffer();
-        setMatrix33ToRowMajorArray(link->segmentAttitude(), buf, 3);
+        setMatrix33ToRowMajorArray(R, buf, 3);
     }
     break;
 
     case OpenHRP::DynamicsSimulator::ABS_VELOCITY:
+        {
         rdata->length(6);
-        rdata[0] = link->v(0);
-        rdata[1] = link->v(1);
-        rdata[2] = link->v(2);
-        rdata[3] = link->w(0);
-        rdata[4] = link->w(1);
-        rdata[5] = link->w(2);
+        const dReal* w = link->getAngularVel();
+        hrp::Vector3 v;
+        link->getLinearVel(v);
+        rdata[0] = v(0);
+        rdata[1] = v(1);
+        rdata[2] = v(2);
+        rdata[3] = w[0];
+        rdata[4] = w[1];
+        rdata[5] = w[2];
+        }
         break;
 
     case OpenHRP::DynamicsSimulator::EXTERNAL_FORCE:
+        {
         rdata->length(6);
-        rdata[0] = link->fext(0);
-        rdata[1] = link->fext(1);
-        rdata[2] = link->fext(2);
-        rdata[3] = link->tauext(0);
-        rdata[4] = link->tauext(1);
-        rdata[5] = link->tauext(2);
-        break;
-    
-    case OpenHRP::DynamicsSimulator::CONSTRAINT_FORCE: {
-        Link::ConstraintForceArray& constraintForces = link->constraintForces;
-        int n = constraintForces.size();
-        rdata->length(6*n);
-        for(int i=0; i<n; i++){
-            rdata[i*6  ] = constraintForces[i].point(0);
-            rdata[i*6+1] = constraintForces[i].point(1);
-            rdata[i*6+2] = constraintForces[i].point(2);
-            rdata[i*6+3] = constraintForces[i].force(0);
-            rdata[i*6+4] = constraintForces[i].force(1);
-            rdata[i*6+5] = constraintForces[i].force(2);
+        const dReal* f = link->getForce();
+        const dReal* tau = link->getTorque();
+        rdata[0] = f[0];
+        rdata[1] = f[1];
+        rdata[2] = f[2];
+        rdata[3] = tau[0];
+        rdata[4] = tau[1];
+        rdata[5] = tau[2];
         }
+        break;
+
+    case OpenHRP::DynamicsSimulator::CONSTRAINT_FORCE: {
+        std::cerr << "ERROR - Invalid type: " << getLabelOfLinkDataType(type) << endl;
+        rdata->length(0);
     }
         break;
 
@@ -845,10 +837,11 @@ void DynamicsSimulator_impl::getCharacterLinkData
     }
 
     out_rdata = rdata._retn();
+
 }
 
 
-void DynamicsSimulator_impl::getCharacterAllLinkData
+void ODE_DynamicsSimulator_impl::getCharacterAllLinkData
 (
     const char * characterName,
     OpenHRP::DynamicsSimulator::LinkDataType type,
@@ -875,19 +868,20 @@ void DynamicsSimulator_impl::getCharacterAllLinkData
 
     case OpenHRP::DynamicsSimulator::JOINT_VALUE:
         for(int i=0; i < n; ++i){
-            (*rdata)[i] = body->joint(i)->q;
+            (*rdata)[i] =  body->joint(i)->q;
         }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_VELOCITY:
         for(int i=0; i < n; ++i){
-            (*rdata)[i] = body->joint(i)->dq;
+            (*rdata)[i] =  body->joint(i)->dq;
         }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_ACCELERATION:
+        std::cerr << "ERROR - Invalid type: " << getLabelOfLinkDataType(type) << endl;
         for(int i=0; i < n; ++i){
-            (*rdata)[i] = body->joint(i)->ddq;
+            (*rdata)[i] = 0;
         }
         break;
 
@@ -901,10 +895,11 @@ void DynamicsSimulator_impl::getCharacterAllLinkData
         cerr << "ERROR - Invalid type: " << getLabelOfLinkDataType(type) << endl;
         break;
     }
+
 }
 
 
-void DynamicsSimulator_impl::setCharacterAllLinkData
+void ODE_DynamicsSimulator_impl::setCharacterAllLinkData
 (
     const char * characterName,
     OpenHRP::DynamicsSimulator::LinkDataType type,
@@ -959,8 +954,10 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
 
     case OpenHRP::DynamicsSimulator::JOINT_TORQUE:
         for(int i=0; i < n; ++i){
-            if(body->joint(i)->jointType != Link::FIXED_JOINT)
+            if(body->joint(i)->jointType != Link::FIXED_JOINT){
                 body->joint(i)->u = wdata[i];
+                ((ODE_Link*)body->joint(i))->setTorque(wdata[i]);
+            }
         }
         break;
 
@@ -970,22 +967,24 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
 
     needToUpdatePositions = true;
     needToUpdateSensorStates = true;
+
 }
 
-
-void DynamicsSimulator_impl::setGVector
+void ODE_DynamicsSimulator_impl::setGVector
 (
     const DblSequence3& wdata
     )
 {
     assert(wdata.length() == 3);
 
-    Vector3 g;
-    getVector3(g, wdata);
+    dVector3 g;
+    g[0] = wdata[CORBA::ULong(0)];
+    g[1] = wdata[CORBA::ULong(1)];
+    g[2] = -wdata[CORBA::ULong(2)];
     world.setGravityAcceleration(g);
 
     if(debugMode){
-        cout << "DynamicsSimulator_impl::setGVector("
+        cout << "ODE_DynamicsSimulator_impl::setGVector("
              << wdata[CORBA::ULong(0)] << ", "
              << wdata[CORBA::ULong(1)] << ", "
              << wdata[CORBA::ULong(2)] << ")" << endl;
@@ -993,13 +992,14 @@ void DynamicsSimulator_impl::setGVector
 }
 
 
-void DynamicsSimulator_impl::getGVector
+void ODE_DynamicsSimulator_impl::getGVector
 (
     DblSequence3_out wdata
     )
 {
     wdata->length(3);
-    Vector3 g = world.getGravityAcceleration();
+    dVector3 g;
+    world.getGravityAcceleration(g);
     (*wdata)[0] = g[0];
     (*wdata)[1] = g[1];
     (*wdata)[2] = g[2];
@@ -1013,7 +1013,7 @@ void DynamicsSimulator_impl::getGVector
 }
 
 
-void DynamicsSimulator_impl::setCharacterAllJointModes
+void ODE_DynamicsSimulator_impl::setCharacterAllJointModes
 (
     const char * characterName,
     OpenHRP::DynamicsSimulator::JointDriveMode jointMode
@@ -1031,6 +1031,10 @@ void DynamicsSimulator_impl::setCharacterAllJointModes
     for(int i=1; i < body->numLinks(); ++i){
         body->link(i)->isHighGainMode = isHighGainMode;
     }
+    
+    if(isHighGainMode){
+        std::cerr << " HighGainMode is unsupported. " << std::endl;
+    }
 
     if(debugMode){
         cout << "DynamicsSimulator_impl::setCharacterAllJointModes(";
@@ -1038,10 +1042,11 @@ void DynamicsSimulator_impl::setCharacterAllJointModes
         cout << (isHighGainMode ? "HIGH_GAIN_MODE" : "TORQUE_MODE");
         cout << ")" << endl;
     }
+
 }
 
 
-CORBA::Boolean DynamicsSimulator_impl::calcCharacterInverseKinematics
+CORBA::Boolean ODE_DynamicsSimulator_impl::calcCharacterInverseKinematics
 (
     const char * characterName,
     const char * fromLink, const char * toLink,
@@ -1087,10 +1092,12 @@ CORBA::Boolean DynamicsSimulator_impl::calcCharacterInverseKinematics
     }
 
     return solved;
+
+    return 0;
 }
 
 
-void DynamicsSimulator_impl::calcCharacterForwardKinematics
+void ODE_DynamicsSimulator_impl::calcCharacterForwardKinematics
 (
     const char * characterName
     )
@@ -1107,63 +1114,83 @@ void DynamicsSimulator_impl::calcCharacterForwardKinematics
         return;
     }
     body->calcForwardKinematics(true, true);
-
-    needToUpdatePositions = true;
-    needToUpdateSensorStates = true;
-}
-
-
-void DynamicsSimulator_impl::calcWorldForwardKinematics()
-{
-    for(int i=0; i < world.numBodies(); ++i){
-        world.body(i)->calcForwardKinematics(true, true);
+    
+    for(int j=0; j<body->numLinks(); j++){
+        ODE_Link* link = (ODE_Link*)body->link(j);
+        link->setTransform(link->p, link->segmentAttitude());
+        link->setAbsVelocity(link->v, link->w);
     }
 
     needToUpdatePositions = true;
     needToUpdateSensorStates = true;
+
 }
 
 
-bool DynamicsSimulator_impl::checkCollision(bool checkAll) 
+void ODE_DynamicsSimulator_impl::calcWorldForwardKinematics()
 {
-    calcWorldForwardKinematics();
-    _updateCharacterPositions();
-    if(!USE_INTERNAL_COLLISION_DETECTOR){
-        if (checkAll){
-            return collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
-        }else{
-            return collisionDetector->queryIntersectionForDefinedPairs(checkAll, allCharacterPositions.in(), collidingLinkPairs.out());
+
+    for(int i=0; i < world.numBodies(); ++i){
+        hrp::BodyPtr b = world.body(i);
+        b->calcForwardKinematics(true, true);
+        for(int j=0; j<b->numLinks(); j++){
+            ODE_Link* link = (ODE_Link*)b->link(j);
+            link->setTransform(link->p, link->segmentAttitude());
+            link->setAbsVelocity(link->v, link->w);
         }
     }
+
+    needToUpdatePositions = true;
+    needToUpdateSensorStates = true;
+
 }
 
 
-DistanceSequence *DynamicsSimulator_impl::checkDistance()
+bool ODE_DynamicsSimulator_impl::checkCollision(bool checkAll) 
 {
+
     calcWorldForwardKinematics();
     _updateCharacterPositions();
-    if(!USE_INTERNAL_COLLISION_DETECTOR){
-        DistanceSequence_var distances = new DistanceSequence;
-        collisionDetector->queryDistanceForDefinedPairs(allCharacterPositions.in(), distances);
-        return distances._retn();
+
+    if (checkAll){
+       return collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
+    }else{
+       return collisionDetector->queryIntersectionForDefinedPairs(checkAll, allCharacterPositions.in(), collidingLinkPairs.out());
     }
+
+    return 0;
+
+}
+
+
+DistanceSequence *ODE_DynamicsSimulator_impl::checkDistance()
+{
+
+    calcWorldForwardKinematics();
+    _updateCharacterPositions();
+
+    DistanceSequence_var distances = new DistanceSequence;
+    collisionDetector->queryDistanceForDefinedPairs(allCharacterPositions.in(), distances);
+    return distances._retn();
+
     return NULL;
 }
 
 
-LinkPairSequence *DynamicsSimulator_impl::checkIntersection(CORBA::Boolean checkAll)
+LinkPairSequence *ODE_DynamicsSimulator_impl::checkIntersection(CORBA::Boolean checkAll)
 {
+
     calcWorldForwardKinematics();
     _updateCharacterPositions();
-    if(!USE_INTERNAL_COLLISION_DETECTOR){
-        LinkPairSequence_var pairs = new LinkPairSequence;
-        collisionDetector->queryIntersectionForDefinedPairs(checkAll, allCharacterPositions.in(), pairs);
-        return pairs._retn();
-    }
+
+    LinkPairSequence_var pairs = new LinkPairSequence;
+    collisionDetector->queryIntersectionForDefinedPairs(checkAll, allCharacterPositions.in(), pairs);
+    return pairs._retn();
+
     return NULL;
 }
 
-void DynamicsSimulator_impl::getWorldState(WorldState_out wstate)
+void ODE_DynamicsSimulator_impl::getWorldState(WorldState_out wstate)
 {
     if(debugMode){
         cout << "DynamicsSimulator_impl::getWorldState()\n";
@@ -1180,11 +1207,13 @@ void DynamicsSimulator_impl::getWorldState(WorldState_out wstate)
     if(debugMode){
         cout << "getWorldState - exit" << endl;
     }
+    
 }
 
 
-void DynamicsSimulator_impl::getCharacterSensorState(const char* characterName, SensorState_out sstate)
+void ODE_DynamicsSimulator_impl::getCharacterSensorState(const char* characterName, SensorState_out sstate)
 {
+
     int bodyIndex = world.bodyIndex(characterName);
 
     if(bodyIndex >= 0){
@@ -1195,10 +1224,11 @@ void DynamicsSimulator_impl::getCharacterSensorState(const char* characterName, 
     } else {
         sstate = new SensorState;
     }
+
 }
 
 
-void DynamicsSimulator_impl::_setupCharacterData()
+void ODE_DynamicsSimulator_impl::_setupCharacterData()
 {
     if(debugMode){
         cout << "DynamicsSimulator_impl::_setupCharacterData()\n";
@@ -1235,10 +1265,11 @@ void DynamicsSimulator_impl::_setupCharacterData()
     if(debugMode){
         cout << "_setupCharacterData() - exit" << endl;;
     }
+
 }
 
 
-void DynamicsSimulator_impl::_updateCharacterPositions()
+void ODE_DynamicsSimulator_impl::_updateCharacterPositions()
 {
     if(debugMode){
         cout << "DynamicsSimulator_impl::_updateCharacterPositions()\n";
@@ -1271,11 +1302,13 @@ void DynamicsSimulator_impl::_updateCharacterPositions()
     if(debugMode){
         cout << "_updateCharacterData() - exit" << endl;
     }
+
 }
 
 
-void DynamicsSimulator_impl::_updateSensorStates()
+void ODE_DynamicsSimulator_impl::_updateSensorStates()
 {
+
     if(debugMode){
         cout << "DynamicsSimulator_impl::_updateSensorStates()\n";
     }
@@ -1289,7 +1322,7 @@ void DynamicsSimulator_impl::_updateSensorStates()
         int numJoints = body->numJoints();
 
         for(int j=0; j < numJoints; j++){
-            Link* joint = body->joint(j);
+            ODE_Link* joint = (ODE_Link*)body->joint(j);
             state.q [j] = joint->q;
             state.dq[j] = joint->dq;
             state.u [j] = joint->u;
@@ -1343,12 +1376,14 @@ void DynamicsSimulator_impl::_updateSensorStates()
                 state.range[id] = data;
             }
         }
+
     }
     needToUpdateSensorStates = false;
 
     if(debugMode){
         cout << "_updateCharacterData() - exit" << endl;
     }
+
 }
 
 
@@ -1357,7 +1392,7 @@ void DynamicsSimulator_impl::_updateSensorStates()
    \note S L O W. If CORBA sequence resize does not fiddle with the memory
    allocation one loop will do. Two to be on the safe side.
 */
-CORBA::Boolean DynamicsSimulator_impl::getCharacterCollidingPairs
+CORBA::Boolean ODE_DynamicsSimulator_impl::getCharacterCollidingPairs
 (
     const char *characterName,
     LinkPairSequence_out pairs
@@ -1395,7 +1430,7 @@ CORBA::Boolean DynamicsSimulator_impl::getCharacterCollidingPairs
 }
 
 
-void DynamicsSimulator_impl::calcCharacterJacobian
+void ODE_DynamicsSimulator_impl::calcCharacterJacobian
 (
     const char *characterName,
     const char *baseLink,
@@ -1430,6 +1465,7 @@ void DynamicsSimulator_impl::calcCharacterJacobian
             (*jacobian)[i++] = J(r, c);
         }
     }
+
 }
 
 
@@ -1466,7 +1502,7 @@ DynamicsSimulator_ptr DynamicsSimulatorFactory_impl::create()
         cout << "DynamicsSimulatorFactory_impl::create()" << endl;
     }
 
-    DynamicsSimulator_impl* integratorImpl = new DynamicsSimulator_impl(orb_);
+    ODE_DynamicsSimulator_impl* integratorImpl = new ODE_DynamicsSimulator_impl(orb_);
 
     PortableServer::ServantBase_var integratorrServant = integratorImpl;
     PortableServer::POA_var poa_ = _default_POA();
