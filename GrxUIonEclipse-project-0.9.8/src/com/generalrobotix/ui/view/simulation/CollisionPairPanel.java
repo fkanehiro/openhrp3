@@ -428,30 +428,19 @@ public class CollisionPairPanel extends Composite {
         
         private boolean _setAttribute(GrxCollisionPairItem node) {
             try{
-                node.setProperty(
-                    ATTR_NAME_SD,
-                    new SEBoolean(chkDamper_.getSelection()).toString()
-                );
-                node.setProperty( 
-                    ATTR_NAME_SPRING,
-                    txtSpring_.getText()
-                );
-                node.setProperty( 
-                    ATTR_NAME_DAMPER,
-                    txtDamper_.getText()
-                );
-                node.setProperty( 
-                    ATTR_NAME_STATIC_FRICTION,
-                    txtStaticFric_.getText()
-                );
-                node.setProperty( 
-                    ATTR_NAME_SLIDING_FRICTION,
-                    txtSlidingFric_.getText()
-                );
-                node.setProperty( 
-                	ATTR_NAME_CULLING_THRESH,
-                    txtCullingThresh_.getText()
-                );
+            	String sChkDamper_ = new SEBoolean(chkDamper_.getSelection()).toString();
+            	String sTxtSpring_ = txtSpring_.getText();
+            	String sTxtDamper_ = txtDamper_.getText();
+            	String sTxtStaticFric_ = txtStaticFric_.getText();
+            	String sTxtSlidingFric_ = txtSlidingFric_.getText();
+            	String sTxtCullingThresh_ = txtCullingThresh_.getText();
+            	
+            	node.setProperty( ATTR_NAME_SD, sChkDamper_ );
+                node.setProperty( ATTR_NAME_SPRING, sTxtSpring_ );
+                node.setProperty( ATTR_NAME_DAMPER, sTxtDamper_ );
+                node.setProperty( ATTR_NAME_STATIC_FRICTION, sTxtStaticFric_ );
+                node.setProperty( ATTR_NAME_SLIDING_FRICTION, sTxtSlidingFric_ );
+                node.setProperty( ATTR_NAME_CULLING_THRESH, sTxtCullingThresh_ );
             } catch (Exception ex) {
                 MessageDialog.openWarning(getShell(), "", MessageBundle.get("message.attributeerror")); //$NON-NLS-1$ //$NON-NLS-2$
                 return false;
