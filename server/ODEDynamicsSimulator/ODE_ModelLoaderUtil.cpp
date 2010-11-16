@@ -223,28 +223,71 @@ void ModelLoaderHelper::createGeometry(ODE_Link* link, const LinkInfo& linkInfo)
 {
     int totalNumTriangles = 0;
     const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
+    int numofGeom = 0;
     for(unsigned int i=0; i < shapeIndices.length(); i++){
+        const TransformedShapeIndex& tsi = shapeIndices[i];
+        const DblArray12& M = tsi.transformMatrix;
+        dMatrix3 R = {  M[0], M[1], M[2],  0,
+                        M[4], M[5], M[6],  0,
+                        M[8], M[9], M[10], 0 };
         short shapeIndex = shapeIndices[i].shapeIndex;
         const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
-        totalNumTriangles += shapeInfo.triangles.length() / 3;
+        Matrix33 R0;
+        R0 = M[0],M[1],M[2],
+             M[4],M[5],M[6],
+             M[8],M[9],M[10];
+        if(isOrthogonalMatrix(R0)){
+            switch(shapeInfo.primitiveType){
+                case OpenHRP::ShapePrimitiveType::SP_BOX :{
+                        dReal x = shapeInfo.primitiveParameters[0];
+                        dReal y = shapeInfo.primitiveParameters[1];
+                        dReal z = shapeInfo.primitiveParameters[2];
+                        link->geomIds.push_back(dCreateBox( spaceId, x, y, z));
+                        dGeomSetBody(link->geomIds.at(numofGeom), link->bodyId);
+                        dGeomSetOffsetRotation(link->geomIds.at(numofGeom), R);
+                        dGeomSetOffsetPosition(link->geomIds.at(numofGeom), M[3]-link->C(0), M[7]-link->C(1), M[11]-link->C(2));
+                        numofGeom++;
+                    }
+                    break;
+                case OpenHRP::ShapePrimitiveType::SP_CYLINDER :{
+                        dReal radius = shapeInfo.primitiveParameters[0];
+                        dReal height = shapeInfo.primitiveParameters[1];
+                        link->geomIds.push_back(dCreateCylinder( spaceId, radius, height));
+                        dGeomSetBody(link->geomIds.at(numofGeom), link->bodyId);
+                        dGeomSetOffsetRotation(link->geomIds.at(numofGeom), R);
+                        dGeomSetOffsetPosition(link->geomIds.at(numofGeom), M[3]-link->C(0), M[7]-link->C(1), M[11]-link->C(2));
+                        numofGeom++;
+                                                           }
+                    break;
+                case OpenHRP::ShapePrimitiveType::SP_SPHERE :{
+                        dReal radius = shapeInfo.primitiveParameters[0];
+                        link->geomIds.push_back(dCreateSphere( spaceId, radius ));
+                        dGeomSetBody(link->geomIds.at(numofGeom), link->bodyId);
+                        dGeomSetOffsetRotation(link->geomIds.at(numofGeom), R);
+                        dGeomSetOffsetPosition(link->geomIds.at(numofGeom), M[3]-link->C(0), M[7]-link->C(1), M[11]-link->C(2));
+                        numofGeom++;
+                                                           }
+                    break;
+                default :
+                    totalNumTriangles += shapeInfo.triangles.length() / 3;
+            }
+        }else
+            totalNumTriangles += shapeInfo.triangles.length() / 3;
     }
     int totalNumVertices = totalNumTriangles * 3;
-    //TODO primitive 
+
     link->vertices.resize(totalNumVertices*3);
     link->indices.resize(totalNumTriangles*3);
     addLinkVerticesAndTriangles( link, linkInfo );
-
     if(totalNumTriangles){
         link->triMeshDataId = dGeomTriMeshDataCreate();
         dGeomTriMeshDataBuildSingle(link->triMeshDataId, &link->vertices[0], 3 * sizeof(dReal), 
             totalNumVertices, &link->indices[0], totalNumTriangles*3, 3*sizeof(int));
-        link->geomId = dCreateTriMesh( spaceId, link->triMeshDataId, 0, 0, 0);
-        dGeomSetBody(link->geomId, link->bodyId);
-
-        dGeomSetOffsetPosition (link->geomId, -link->C(0), -link->C(1), -link->C(2));
+        link->geomIds.push_back( dCreateTriMesh( spaceId, link->triMeshDataId, 0, 0, 0) );
+        dGeomSetBody(link->geomIds.at(numofGeom), link->bodyId);
+        dGeomSetOffsetPosition (link->geomIds.at(numofGeom), -link->C(0), -link->C(1), -link->C(2));
     }else{
-        link->geomId = 0;
-        link->triMeshDataId = 0;
+       link->triMeshDataId = 0;
     }
 }
 
@@ -258,21 +301,30 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ODE_Link* link, const LinkIn
     for(unsigned int i=0; i < shapeIndices.length(); i++){
         const TransformedShapeIndex& tsi = shapeIndices[i];
         short shapeIndex = tsi.shapeIndex;
-        const DblArray12& M = tsi.transformMatrix;;
+        const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
+        const DblArray12& M = tsi.transformMatrix;
+        Matrix33 R0;
+        R0 = M[0],M[1],M[2],
+             M[4],M[5],M[6],
+             M[8],M[9],M[10];
+        if(isOrthogonalMatrix(R0) && 
+            (shapeInfo.primitiveType == OpenHRP::ShapePrimitiveType::SP_BOX ||
+            shapeInfo.primitiveType == OpenHRP::ShapePrimitiveType::SP_CYLINDER ||
+            shapeInfo.primitiveType == OpenHRP::ShapePrimitiveType::SP_SPHERE ) )
+            continue;
+
         Matrix44 T;
         T = M[0], M[1], M[2],  M[3],
-             M[4], M[5], M[6],  M[7],
-             M[8], M[9], M[10], M[11],
-             0.0,  0.0,  0.0,   1.0;
-
-        const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
+            M[4], M[5], M[6],  M[7],
+            M[8], M[9], M[10], M[11],
+            0.0,  0.0,  0.0,   1.0;
         const FloatSequence& vertices = shapeInfo.vertices;
         const LongSequence& triangles = shapeInfo.triangles;
         const int numTriangles = triangles.length() / 3;
 
         for(int j=0; j < numTriangles; ++j){
-            int vertexIndexTop = vertexIndex;
-            for(int k=0; k < 3; ++k){
+           int vertexIndexTop = vertexIndex;
+           for(int k=0; k < 3; ++k){
                 long orgVertexIndex = shapeInfo.triangles[j * 3 + k];
                 int p = orgVertexIndex * 3;
                 Vector4 v(T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0));

@@ -94,8 +94,8 @@ void ODE_Link::destroy()
 {
     if(jointType!=FREE_JOINT)
         dJointDestroy(odeJointId);
-    if(geomId)
-        dGeomDestroy(geomId);
+    for(int i=0; i<geomIds.size(); i++)
+        dGeomDestroy(geomIds.at(i));
     if(triMeshDataId)
         dGeomTriMeshDataDestroy(triMeshDataId);
     dBodyDestroy(bodyId);

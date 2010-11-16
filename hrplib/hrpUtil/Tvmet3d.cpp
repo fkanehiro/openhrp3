@@ -152,3 +152,7 @@ void hrp::calcInverse(Matrix33& inv, const Matrix33& m)
        (m(1,0)*m(2,1)-m(1,1)*m(2,0)) / det, (m(0,1)*m(2,0)-m(0,0)*m(2,1)) / det, (m(0,0)*m(1,1)-m(0,1)*m(1,0)) / det;
   }
 }
+
+bool hrp::isOrthogonalMatrix(Matrix33& m){
+    return all_elements( m * trans(m) == tvmet::identity<Matrix33>() );
+}

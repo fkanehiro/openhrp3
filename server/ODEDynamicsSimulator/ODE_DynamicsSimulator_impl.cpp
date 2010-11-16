@@ -595,7 +595,7 @@ void ODE_DynamicsSimulator_impl::stepSimulation()
     if(enableTimeMeasure) timeMeasure3.end();
 
     if(enableTimeMeasure){
-        if(world.currentTime() > 10.0 && !timeMeasureFinished){
+        if(world.currentTime() > 5.0 && !timeMeasureFinished){
             timeMeasureFinished = true;
             timeMeasure1.end();
             cout << "Total elapsed time = " << timeMeasure1.totalTime() << "\n"
@@ -706,9 +706,13 @@ void ODE_DynamicsSimulator_impl::setCharacterLinkData
 	
     case OpenHRP::DynamicsSimulator::ABS_VELOCITY:
     {
-        hrp::Vector3 v(wdata[0], wdata[1], wdata[2]);
-        hrp::Vector3 w(wdata[3], wdata[4], wdata[5]);
-        link->setAbsVelocity(v, w);
+        link->v(0) = wdata[0];
+        link->v(1) = wdata[1];
+        link->v(2) = wdata[2];
+        link->w(0) = wdata[3];
+        link->w(1) = wdata[4];
+        link->w(2) = wdata[5];
+        link->setAbsVelocity(link->v, link->w);
     }
     break;
 
