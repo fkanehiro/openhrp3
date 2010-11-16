@@ -78,6 +78,8 @@ namespace hrp
     
     HRP_UTIL_EXPORT void calcInverse(Matrix33& inv, const Matrix33& m);
 
+    HRP_UTIL_EXPORT bool isOrthogonalMatrix(Matrix33& m);
+
     inline Matrix33 inverse(const Matrix33& m){
         Matrix33 inv;
         calcInverse(inv, m);

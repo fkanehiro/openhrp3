@@ -94,18 +94,16 @@ void ODE_World::addCollisionPair(OpenHRP::LinkPair& linkPair){
         std::cout << linkName[1] << " is not found." << std::endl;
         return;
     }
-    dGeomID geomId1 = link1->geomId;
-    dGeomID geomId2 = link2->geomId;
 
-    GeomPair geomPair;
-    geomPair.geomId1 = geomId1;
-    geomPair.geomId2 = geomId2;
-    geomPairs.push_back(geomPair);
+    LinkPair _linkPair;
+    _linkPair.bodyId1 = link1->bodyId;
+    _linkPair.bodyId2 = link2->bodyId;
+    linkPairs.push_back(_linkPair);
 }
 
 void ODE_World::calcNextState(OpenHRP::CollisionSequence& corbaCollisionSequence){
     if(useInternalCollisionDetector_){
-        int n = geomPairs.size();
+        int n = linkPairs.size();
         collisions.length(n);
         for(int i=0; i<n; i++)
             collisions[i].points.length(0);
@@ -132,8 +130,10 @@ void ODE_World::calcNextState(OpenHRP::CollisionSequence& corbaCollisionSequence
                 contact.geom.normal[1] = -points[j].normal[1];
                 contact.geom.normal[2] = -points[j].normal[2];
                 contact.geom.depth = points[j].idepth;
-                contact.geom.g1 = link1->geomId;
-                contact.geom.g2 = link2->geomId;
+                //TODO
+
+ //               contact.geom.g1 = link1->geomId;
+ //               contact.geom.g2 = link2->geomId;
                 //std::cout << "out pos " << contact.geom.pos[0] << "  " << contact.geom.pos[1]  << "  " <<contact.geom.pos[2]  << std::endl;
                 //std::cout << "out normal " << contact.geom.normal[0] << "  " << contact.geom.normal[1]  << "  " <<contact.geom.normal[2]  << std::endl;
                 //std::cout << "out depth " << contact.geom.depth << std::endl;
@@ -159,6 +159,7 @@ void ODE_World::calcNextState(OpenHRP::CollisionSequence& corbaCollisionSequence
             //std::cout << std::endl;
         }
     }
+
     if(USE_QUICKSTEP)
         dWorldQuickStep(worldId, timeStep_);
     else
@@ -207,11 +208,14 @@ void ODE_collideCallback(void *data, dGeomID o1, dGeomID o2){
     ODE_World* world = (ODE_World*)data;
     OpenHRP::CollisionSequence& collisions = world->collisions;
     
-    ODE_World::GeomPairArray& geomPairs = world->geomPairs;
+    ODE_World::LinkPairArray& linkPairs = world->linkPairs;
     int collisionIndex = -1;
-    for(int i=0; i<geomPairs.size(); i++){
-        if( (geomPairs[i].geomId1 == o1 && geomPairs[i].geomId2 == o2) ||
-            (geomPairs[i].geomId1 == o2 && geomPairs[i].geomId2 == o1) ){
+    dBodyID body1 = dGeomGetBody(o1);
+    dBodyID body2 = dGeomGetBody(o2);
+
+    for(int i=0; i<linkPairs.size(); i++){
+        if( (linkPairs[i].bodyId1 == body1 && linkPairs[i].bodyId2 == body2) ||
+            (linkPairs[i].bodyId1 == body2 && linkPairs[i].bodyId2 == body1) ){
             collisionIndex = i;
             break;
         }

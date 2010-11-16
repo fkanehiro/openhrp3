@@ -115,12 +115,12 @@ class  ODE_World : public hrp::WorldBase
 
         OpenHRP::CollisionSequence    collisions;
 
-        struct GeomPair{
-            dGeomID geomId1;
-            dGeomID geomId2;
+        struct LinkPair{
+            dBodyID bodyId1;
+            dBodyID bodyId2;
         };
-        typedef std::vector<GeomPair> GeomPairArray;
-        GeomPairArray geomPairs;
+        typedef std::vector<LinkPair> LinkPairArray;
+        LinkPairArray linkPairs;
 
     private:
         dWorldID worldId;

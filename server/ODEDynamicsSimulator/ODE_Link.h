@@ -39,7 +39,7 @@ class ODE_Link : public hrp::Link{
         dBodyID bodyId;
         dJointID odeJointId;
         
-        dGeomID geomId;
+        std::vector<dGeomID> geomIds;
         dTriMeshDataID triMeshDataId;
         std::vector<dReal> vertices;
         std::vector<int> indices;
