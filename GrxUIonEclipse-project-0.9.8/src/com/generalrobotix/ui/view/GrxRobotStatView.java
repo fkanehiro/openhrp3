@@ -828,13 +828,13 @@ public class GrxRobotStatView extends GrxBaseView {
 	            }
             }else if (rowIndex < numForce + numAccel){
 	            if (bitem instanceof GrxSensorItem) {
-	                if (accName_[rowIndex].equals(((GrxSensorItem)bitem).getName())) {
+	                if (accName_[rowIndex-numForce].equals(((GrxSensorItem)bitem).getName())) {
 	                    return yellow_;
 	                }
 	            }
             }else if (rowIndex < numForce + numAccel + numGyro){
             	if (bitem instanceof GrxSensorItem) {
-	                if (gyroName_[rowIndex-numAccel].equals(((GrxSensorItem)bitem).getName())) {
+	                if (gyroName_[rowIndex-numForce-numAccel].equals(((GrxSensorItem)bitem).getName())) {
 	                    return yellow_;
 	                }
 	            }
