@@ -68,9 +68,6 @@ public class CollisionPairPanel extends Composite {
     private String defaultSlidingFriction_;
     private String defaultCullingThresh_;
     
-    private static final String ATTR_NAME_SPRING = "springConstant"; //$NON-NLS-1$
-    private static final String ATTR_NAME_DAMPER = "damperConstant"; //$NON-NLS-1$
-    private static final String ATTR_NAME_SD = "springDamperModel"; //$NON-NLS-1$
     private static final String ATTR_NAME_STATIC_FRICTION = "staticFriction"; //$NON-NLS-1$
     private static final String ATTR_NAME_SLIDING_FRICTION = "slidingFriction"; //$NON-NLS-1$
     private static final String ATTR_NAME_CULLING_THRESH = "cullingThresh"; //$NON-NLS-1$
@@ -80,13 +77,15 @@ public class CollisionPairPanel extends Composite {
         MessageBundle.get("panel.collision.table.link1"), //$NON-NLS-1$
         MessageBundle.get("panel.collision.table.obj2"), //$NON-NLS-1$
         MessageBundle.get("panel.collision.table.link2"), //$NON-NLS-1$
-        MessageBundle.get("panel.collision.table.sd") //$NON-NLS-1$
+        MessageBundle.get("panel.collision.staticFriction"), //$NON-NLS-1$
+        MessageBundle.get("panel.collision.slidingFriction"),
+        MessageBundle.get("panel.collision.cullingThresh")
     };
 
     private final String[] attrName_ ={
         "objectName1","jointName1", //$NON-NLS-1$ //$NON-NLS-2$
         "objectName2","jointName2", //$NON-NLS-1$ //$NON-NLS-2$
-        ATTR_NAME_SD
+        ATTR_NAME_STATIC_FRICTION, ATTR_NAME_SLIDING_FRICTION, ATTR_NAME_CULLING_THRESH
     };
     
     private static final int BUTTONS_HEIGHT = 26;
@@ -226,9 +225,6 @@ public class CollisionPairPanel extends Composite {
                         	if(i==j) l=k;
                             for (; l<m2.links_.size(); l++) {
                                 if (i != j || k != l){
-                                	editorPanel_.chkDamper_.setSelection(false);
-                                	editorPanel_.txtSpring_.setText("0 0 0 0 0 0"); //$NON-NLS-1$
-                                	editorPanel_.txtDamper_.setText("0 0 0 0 0 0"); //$NON-NLS-1$
                                 	editorPanel_.txtStaticFric_.setText(defaultStaticFriction_);
                                 	editorPanel_.txtSlidingFric_.setText(defaultSlidingFriction_);
                                 	editorPanel_.txtCullingThresh_.setText(defaultCullingThresh_);
@@ -281,14 +277,10 @@ public class CollisionPairPanel extends Composite {
         private JointSelectPanel pnlJoint1_;
         private JointSelectPanel pnlJoint2_;
         private Button btnOk_, btnCancel_;
-        private Text txtSpring_,txtDamper_;
-        private Label lblSpring_,lblDamper_;
         
         private Text txtStaticFric_,txtSlidingFric_,txtCullingThresh_;
         private Label lblFriction_,lblStaticFric_,lblSlidingFric_,lblCullingThresh_;
         
-        private Button chkDamper_;
-
         public CollisionPairEditorPanel(Composite parent,int style) {
             super(parent,style);
             setLayout(new GridLayout(2,false));
@@ -300,42 +292,7 @@ public class CollisionPairPanel extends Composite {
             pnlJoint2_ = new JointSelectPanel(this,SWT.NONE,"2"); //$NON-NLS-1$
             pnlJoint2_.setLayoutData(new GridData(GridData.FILL_BOTH));
             //pnlJoint2_.setBounds(0 + 180,0,180,60);
-            
-            chkDamper_ = new Button(this,SWT.CHECK);
-            chkDamper_.setText(MessageBundle.get("panel.collision.sd")); //$NON-NLS-1$
-            chkDamper_.setSelection(false);
-            chkDamper_.addSelectionListener(new SelectionListener(){
-
-                public void widgetDefaultSelected(SelectionEvent e) {
-                }
-
-                public void widgetSelected(SelectionEvent e) {
-                    setEnabled(isEnabled());
-                }
-                
-            });
-            //chkDamper_.setBounds(12,60,180,24);
-            
-            new Label(this,SWT.SHADOW_NONE);//dummy
-            
-            lblSpring_ = new Label(this,SWT.SHADOW_NONE);
-            lblSpring_.setText(MessageBundle.get("panel.collision.springConst")); //$NON-NLS-1$
-            lblSpring_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            //lblSpring_.setBounds(0,60+24,144,24);
-            
-            txtSpring_ = new Text(this,SWT.SINGLE | SWT.BORDER);
-            txtSpring_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            //txtSpring_.setBounds(150,60+24,180,24);
-            
-            lblDamper_ = new Label(this,SWT.SHADOW_NONE);
-            lblDamper_.setText(MessageBundle.get("panel.collision.dumperConst")); //$NON-NLS-1$
-            lblDamper_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            //lblDamper_.setBounds(0,60+24+24,144,24);
-            
-            txtDamper_ = new Text(this,SWT.SINGLE | SWT.BORDER);
-            txtDamper_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            //txtDamper_.setBounds(150,60+24+24,180,24);
-            
+    
             lblFriction_ = new Label(this,SWT.SHADOW_NONE);
             lblFriction_.setText(MessageBundle.get("panel.collision.friction")); //$NON-NLS-1$
             //lblFriction_.setBounds(20,60+24+24+ 24,144,24);
@@ -428,16 +385,10 @@ public class CollisionPairPanel extends Composite {
         
         private boolean _setAttribute(GrxCollisionPairItem node) {
             try{
-            	String sChkDamper_ = new SEBoolean(chkDamper_.getSelection()).toString();
-            	String sTxtSpring_ = txtSpring_.getText();
-            	String sTxtDamper_ = txtDamper_.getText();
             	String sTxtStaticFric_ = txtStaticFric_.getText();
             	String sTxtSlidingFric_ = txtSlidingFric_.getText();
             	String sTxtCullingThresh_ = txtCullingThresh_.getText();
             	
-            	node.setProperty( ATTR_NAME_SD, sChkDamper_ );
-                node.setProperty( ATTR_NAME_SPRING, sTxtSpring_ );
-                node.setProperty( ATTR_NAME_DAMPER, sTxtDamper_ );
                 node.setProperty( ATTR_NAME_STATIC_FRICTION, sTxtStaticFric_ );
                 node.setProperty( ATTR_NAME_SLIDING_FRICTION, sTxtSlidingFric_ );
                 node.setProperty( ATTR_NAME_CULLING_THRESH, sTxtCullingThresh_ );
@@ -453,8 +404,6 @@ public class CollisionPairPanel extends Composite {
             setEnabled(true);
             if (pnlJoint1_.entry()){
                 pnlJoint2_.entry();
-                txtSpring_.setText("0 0 0 0 0 0"); //$NON-NLS-1$
-                txtDamper_.setText("0 0 0 0 0 0"); //$NON-NLS-1$
                 txtStaticFric_.setText(defaultStaticFriction_);
                 txtSlidingFric_.setText(defaultSlidingFriction_);
                 txtCullingThresh_.setText(defaultCullingThresh_);
@@ -472,8 +421,6 @@ public class CollisionPairPanel extends Composite {
 
         public void doCancel() {
             setEnabled(false);
-            txtSpring_.setText(""); //$NON-NLS-1$
-            txtDamper_.setText(""); //$NON-NLS-1$
             txtStaticFric_.setText(""); //$NON-NLS-1$
             txtSlidingFric_.setText(""); //$NON-NLS-1$
             txtCullingThresh_.setText(""); //$NON-NLS-1$
@@ -489,9 +436,6 @@ public class CollisionPairPanel extends Composite {
                     node.getStr("objectName2", ""),  //$NON-NLS-1$ //$NON-NLS-2$
                     node.getStr("jointName2", "") //$NON-NLS-1$ //$NON-NLS-2$
                 );
-                chkDamper_.setSelection(node.isTrue(ATTR_NAME_SD,false));
-                txtSpring_.setText(node.getStr(ATTR_NAME_SPRING, "")); //$NON-NLS-1$
-                txtDamper_.setText(node.getStr(ATTR_NAME_DAMPER, "")); //$NON-NLS-1$
                 txtStaticFric_.setText(node.getStr(ATTR_NAME_STATIC_FRICTION, "")); //$NON-NLS-1$
                 txtSlidingFric_.setText(node.getStr(ATTR_NAME_SLIDING_FRICTION, "")); //$NON-NLS-1$
                 txtCullingThresh_.setText(node.getStr(ATTR_NAME_CULLING_THRESH, "")); //$NON-NLS-1$
@@ -513,12 +457,6 @@ public class CollisionPairPanel extends Composite {
                 pnlJoint2_.setEnabled(false);
             }
             _setButtonEnabled(!flag);
-            lblSpring_.setEnabled(flag && chkDamper_.getSelection());
-            lblDamper_.setEnabled(flag && chkDamper_.getSelection());
-            txtSpring_.setEnabled(true);
-            txtSpring_.setEditable(flag && chkDamper_.getSelection());
-            txtDamper_.setEnabled(true);
-            txtDamper_.setEditable(flag && chkDamper_.getSelection());
             
             lblStaticFric_.setEnabled(flag);
             lblSlidingFric_.setEnabled(flag);
