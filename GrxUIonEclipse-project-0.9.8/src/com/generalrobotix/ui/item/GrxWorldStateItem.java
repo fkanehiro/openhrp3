@@ -1298,16 +1298,15 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		public int compareTo(Object o) {
 			if (o instanceof SensorInfoLocal) {
 				SensorInfoLocal s = (SensorInfoLocal) o;
-				//#####[Changed] int -> string
-				//if (type != s.type)
-				//    return -1;
-				//else 
-				if (getOrder(type) < getOrder(s.type)) 
+				int _this = getOrder(type);
+				int _s  = getOrder(s.type);
+				if (_this < _s) 
 				    return -1;
-				else {
+				else if (_this == _s){
 					if (id < s.id)
 					return -1;
-				}
+				}else
+					return 1;
 			}
 			return 1;
 		}

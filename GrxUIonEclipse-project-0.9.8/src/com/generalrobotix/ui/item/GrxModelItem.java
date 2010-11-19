@@ -1114,7 +1114,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         String[] ret = new String[l.size()];
         for (int i=0; i<ret.length; i++)
-            ret[i] = l.get(i).getName();
+        	ret[l.get(i).id()] = l.get(i).getName();
         return ret;
     }
 
