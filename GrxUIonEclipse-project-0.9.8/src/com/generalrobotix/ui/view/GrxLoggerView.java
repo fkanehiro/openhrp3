@@ -413,22 +413,32 @@ public class GrxLoggerView extends GrxBaseView {
 
 		setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 		
+		setUp();
+		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
+    }
+
+	public void setUp(){
+		if(currentItem_ != null){
+			currentItem_.deleteObserver(this);
+			currentItem_.deletePosObserver(this);
+		}
 		currentItem_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
 		if(currentItem_!=null){
 			_setTimeSeriesItem(currentItem_);
 			currentItem_.addObserver(this);
 			currentItem_.addPosObserver(this);
+			updatePosition(currentItem_, currentItem_.getPosition());
 		}else
 			_setTimeSeriesItem(null);
-		manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-		
+		if(simItem_ != null)
+			simItem_.deleteObserver(this);
 		simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
 		if(simItem_!=null){
 			simItem_.addObserver(this);
 		}
-		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
-    }
-
+	}
+	
 	private boolean _isAtTheEndAfterPlayback(){
 		if (current_ == currentItem_.getLogSize()-1 && playRate_ > 0){
 			return true;

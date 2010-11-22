@@ -216,8 +216,7 @@ public class GrxJythonPromptView extends GrxBaseView {
         setMenuItem(new InitPythonAction());
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
-        currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
-        btnExec_.setEnabled(currentItem_ != null);
+        setUp();
         manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
       
         Runnable stringOutRun_ = new Runnable() {
@@ -248,7 +247,12 @@ public class GrxJythonPromptView extends GrxBaseView {
 
 		updateEditerFont();
     }
-        
+     
+    public void setUp(){
+    	currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
+        btnExec_.setEnabled(currentItem_ != null);
+    }
+    
     private class InitPythonAction extends Action{
         public InitPythonAction(){
             super("cleanup python",IAction.AS_PUSH_BUTTON); //$NON-NLS-1$

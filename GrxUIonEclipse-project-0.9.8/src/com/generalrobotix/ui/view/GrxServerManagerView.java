@@ -70,19 +70,26 @@ public class GrxServerManagerView extends GrxBaseView
     public GrxServerManagerView(String name, GrxPluginManager manager_,
             GrxBaseViewPart vp, Composite parent) {
         super(name, manager_, vp, parent);
-        serverManager_ = (GrxServerManager)manager_.getItem(GrxServerManager.class, null);
-		if(serverManager_ != null){
-			InitItems();
-			serverManager_.addObserver(this);
-		}
+        
+    	serverManager_ = (GrxServerManager)manager_.getItem(GrxServerManager.class, null);
+ 		if(serverManager_ != null){
+ 			InitItems();
+ 			serverManager_.addObserver(this);
+ 		}
+        setUp();
 		manager_.registerItemChangeListener(this, GrxServerManager.class);
-		simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
-		if(simItem_!=null){
-			simItem_.addObserver(this);
-		}
 		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
         //setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 	}
+    
+    public void setUp(){
+    	if(simItem_ != null)
+    		simItem_.deleteObserver(this);
+ 		simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+ 		if(simItem_!=null){
+ 			simItem_.addObserver(this);
+ 		}
+    }
     
     // GUIの配置、イベントの設定
     private void InitItems(){

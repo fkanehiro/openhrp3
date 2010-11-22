@@ -16,6 +16,7 @@
  */
 package com.generalrobotix.ui.view;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,8 +35,8 @@ import com.generalrobotix.ui.view.simulation.ControllerPanel;
 @SuppressWarnings("serial")
 public class GrxControllerView extends GrxBaseView {
     private ControllerPanel controllerPane_;
-    private List<GrxModelItem> currentModels_;
-    private List<GrxCollisionPairItem> currentCollisionPairs_;
+    private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
+    private List<GrxCollisionPairItem> currentCollisionPairs_ = new ArrayList<GrxCollisionPairItem>();
 
     public GrxControllerView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
         super(name, manager, vp, parent);
@@ -53,6 +54,19 @@ public class GrxControllerView extends GrxBaseView {
         }
         manager_.registerItemChangeListener(this, GrxModelItem.class);
         manager_.registerItemChangeListener(this, GrxCollisionPairItem.class);
+    }
+    
+    public void setUp(){
+    	Iterator<GrxModelItem> it = currentModels_.iterator();
+        while(it.hasNext())	
+        	it.next().deleteObserver(this);
+        currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
+        controllerPane_.updateRobots(currentModels_);
+        it = currentModels_.iterator();
+        while(it.hasNext())	
+        	it.next().addObserver(this);
+        
     }
     
     public void registerItemChange(GrxBaseItem item, int event){

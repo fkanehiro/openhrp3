@@ -149,6 +149,13 @@ public class GrxPathPlanningView extends GrxBaseView {
 	    initGUI();
 		initJava3D();
 		
+		setUp();
+		manager_.registerItemChangeListener(this, GrxPathPlanningAlgorithmItem.class);
+	}
+
+	public void setUp(){
+		if(ppaItem_ != null)
+			ppaItem_.deleteObserver(this);
 		ppaItem_ = manager_.<GrxPathPlanningAlgorithmItem>getSelectedItem(GrxPathPlanningAlgorithmItem.class, null);
 		if(ppaItem_!=null){
 			update();
@@ -156,9 +163,8 @@ public class GrxPathPlanningView extends GrxBaseView {
 			ppaItem_.addObserver(this);
 		}else
 			setEnabled(false);
-		manager_.registerItemChangeListener(this, GrxPathPlanningAlgorithmItem.class);
 	}
-
+	
 	/**
 	 * @brief
 	 * @param grid

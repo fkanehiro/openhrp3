@@ -101,6 +101,8 @@ public class GrxPluginManager implements IPropertyChangeListener {
     public static final int NOTFOCUSED_ITEM=6;
     public static final int CHANGE_MODE=7;
     
+    private boolean acceptItemChange_ = true;
+    
     // for CORBA
     public POA poa_;
     public org.omg.CORBA.ORB orb_;
@@ -1008,8 +1010,11 @@ public class GrxPluginManager implements IPropertyChangeListener {
             public void run() {
                 String mes = MessageBundle.get("GrxPluginManager.dialog.message.removeItem"); //$NON-NLS-1$
                 mes = NLS.bind(mes, new String[]{GrxPluginManager.this.getItemTitle(cls)});
-                if (MessageDialog.openConfirm(null, MessageBundle.get("GrxPluginManager.dialog.title.removeItem"), mes)) //$NON-NLS-1$
+                if (MessageDialog.openConfirm(null, MessageBundle.get("GrxPluginManager.dialog.title.removeItem"), mes)){ //$NON-NLS-1$
+                    refuseItemChange();
                     removeItems(cls);
+                    acceptItemChange();
+                }
             }
         };
         menu.add(clear);
@@ -1248,16 +1253,40 @@ public class GrxPluginManager implements IPropertyChangeListener {
     	//TODO
     }
     
-    public void itemChange(GrxBaseItem item, int event){
+    public void refuseItemChange(){
+    	acceptItemChange_ = false;
+    }
+    
+    public void acceptItemChange(){
+    	List<GrxItemChangeListener> listenerList = new ArrayList<GrxItemChangeListener>();
     	Iterator<Class<? extends GrxBaseItem>> it = itemChangeListener_.keySet().iterator();
     	while(it.hasNext()){
-    		Class<? extends GrxBaseItem> cls = it.next();
-    		if(cls.isAssignableFrom(item.getClass())){
-    			List<GrxItemChangeListener> list = itemChangeListener_.get(cls);
-    			Iterator<GrxItemChangeListener> itView = list.iterator();
-        		while(itView.hasNext())
-        			itView.next().registerItemChange(item, event);
+    		List<GrxItemChangeListener> list = itemChangeListener_.get(it.next());
+    		Iterator<GrxItemChangeListener> itl = list.iterator();
+    		while(itl.hasNext()){
+    			GrxItemChangeListener listener = itl.next();
+    			if(!listenerList.contains(listener)){
+    				listener.setUp();
+    				listenerList.add(listener);
+    			}
     		}
+
+    	}
+    	acceptItemChange_ = true;
+    }
+    
+    public void itemChange(GrxBaseItem item, int event){
+    	if(acceptItemChange_){
+	    	Iterator<Class<? extends GrxBaseItem>> it = itemChangeListener_.keySet().iterator();
+	    	while(it.hasNext()){
+	    		Class<? extends GrxBaseItem> cls = it.next();
+	    		if(cls.isAssignableFrom(item.getClass())){
+	    			List<GrxItemChangeListener> list = itemChangeListener_.get(cls);
+	    			Iterator<GrxItemChangeListener> itView = list.iterator();
+	        		while(itView.hasNext())
+	        			itView.next().registerItemChange(item, event);
+	    		}
+	    	}
     	}
     }
     

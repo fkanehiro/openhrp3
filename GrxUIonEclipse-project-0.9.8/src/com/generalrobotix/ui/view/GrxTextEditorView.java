@@ -143,10 +143,14 @@ public class GrxTextEditorView extends GrxBaseView {
 	    toolbar.add( saveAs_ );
 	    setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
 	    
-		currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
-		setTextItem(currentItem_);
+	    setUp();
 	    manager_.registerItemChangeListener(this, GrxPythonScriptItem.class);
 	    updateEditerFont();
+	}
+	
+	public void setUp(){
+		currentItem_ = manager_.<GrxPythonScriptItem>getSelectedItem(GrxPythonScriptItem.class, null);
+		setTextItem(currentItem_);
 	}
 
 	private void setTextItem(GrxPythonScriptItem item){

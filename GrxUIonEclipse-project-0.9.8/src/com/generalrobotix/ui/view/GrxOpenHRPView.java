@@ -47,21 +47,27 @@ public class GrxOpenHRPView extends GrxBaseView {
         simParamPane_.setEnabled(true);//false
         
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
-        
-        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+ 
+        setUp();
+        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
+    }    
+    
+    public void setUp(){
+    	if(currentWorld_ != null)
+    		currentWorld_.deleteObserver(this);
+    	currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         simParamPane_.updateLogTime(currentWorld_);
         if(currentWorld_!=null)
             currentWorld_.addObserver(this);
-        
-        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-        
-		simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+        if(simItem_ != null)
+        	simItem_.deleteObserver(this);
+        simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
 		simParamPane_.updateItem(simItem_);
 		if(simItem_!=null){
 			simItem_.addObserver(this);
 		}
-		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
-    }      
+    }
    
     public void registerItemChange(GrxBaseItem item, int event){
         if(item instanceof GrxWorldStateItem){
