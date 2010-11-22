@@ -131,24 +131,38 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
         canvas_.addPaintListener(this);
         canvas_.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        setUp();
         manager_.registerItemChangeListener(this, GrxModelItem.class);
-        if(!modelList_.isEmpty()){
-	        Iterator<GrxModelItem> it = modelList_.iterator();
-	    	while(it.hasNext())
-	    		comboModelName_.add(it.next().getName());
-	    	comboModelName_.select(0);
-	    	comboModelName_.notifyListeners(SWT.Selection, null);
-        }
+        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+   }
+
+    public void setUp(){
+    	Iterator<GrxModelItem> it = modelList_.iterator();
+    	while(it.hasNext())
+    		comboModelName_.remove(it.next().getName());
+    	modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        it = modelList_.iterator();
+	    while(it.hasNext())
+	    	comboModelName_.add(it.next().getName());
+	    if(comboModelName_.getItemCount()>0){
+		   	comboModelName_.select(0);
+		   	comboModelName_.notifyListeners(SWT.Selection, null);
+	    }
+	    	
+	   	if(currentWorld_ != null){
+	   		currentWorld_.deleteObserver(this);
+	   		currentWorld_.deletePosObserver(this);
+	   	}
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
         	currentWorld_.addObserver(this);
         	currentWorld_.addPosObserver(this);
         	updateCanvas(currentWorld_.getValue());
-        }
-        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-   }
+        }else
+        	updateCanvas(null);
 
+    }
+    
     /**
      * @brief draw range sensor output if sensor is choosed
      * @param e paint event

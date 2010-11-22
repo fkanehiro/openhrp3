@@ -215,6 +215,7 @@ public class CollisionPairPanel extends Composite {
             }
 
             public void widgetSelected(SelectionEvent e) {
+            	manager_.refuseItemChange();
                 List<GrxModelItem> list = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
                 for (int i=0; i<list.size(); i++) {
                     GrxModelItem m1 = list.get(i);
@@ -234,6 +235,7 @@ public class CollisionPairPanel extends Composite {
                         }
                     }
                 }
+                manager_.acceptItemChange();
             }
             
         });

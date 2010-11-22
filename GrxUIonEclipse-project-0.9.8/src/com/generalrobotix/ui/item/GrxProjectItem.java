@@ -308,7 +308,9 @@ public class GrxProjectItem extends GrxBaseItem {
 					if ( ans ){
 						if(!checkModifiedModel())
 	                        return;
+						manager_.refuseItemChange();
 						manager_.removeAllItems();
+						manager_.acceptItemChange();
 					}else if ( ans == false )
 						return;
 					create();
@@ -318,8 +320,10 @@ public class GrxProjectItem extends GrxBaseItem {
 			menu_.add( new Action(){
 				public String getText(){ return MessageBundle.get("GrxProjectItem.menu.restoreProject"); } //$NON-NLS-1$
 				public void run(){
+					manager_.refuseItemChange();
 					manager_.removeAllItems();
 					restoreProject();
+					manager_.acceptItemChange();
 				}
 			} );
 			// MENU_LOAD=2
@@ -501,6 +505,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		if(simItem!=null && simItem.isSimulating())
 			simItem.stopSimulation();
 		
+		manager_.refuseItemChange();
 		manager_.removeAllItems();
 		manager_.focusedItem(manager_.getProject());
 		setName(f.getName().split("[.]")[0]); //$NON-NLS-1$
@@ -553,7 +558,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		
 		setDefaultDirectory(f.getParent());
 		restoreProject();
-		
+		manager_.acceptItemChange();
 		return true;
 	}
 	

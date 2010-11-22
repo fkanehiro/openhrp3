@@ -74,8 +74,6 @@ import jp.go.aist.hrp.simulator.*;
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
 import com.generalrobotix.ui.util.AxisAngle4d;
-import com.generalrobotix.ui.GrxBasePlugin.ValueEditCombo;
-import com.generalrobotix.ui.GrxBasePlugin.ValueEditType;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
@@ -300,31 +298,7 @@ public class Grx3DView
         intersectingLinks_ = new Vector<GrxLinkItem>();
         
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
-    
-        // View が開いたときモデルとWorldStateを取得　変化があればマネジャーに教えてもらう
-        currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
-        Iterator<GrxModelItem> it = currentModels_.iterator();
-        while(it.hasNext())	{
-        	GrxModelItem model = it.next();
-        	bgRoot_.addChild(model.bgRoot_);
-        	model.addObserver(this);
-        }
-        updateViewSimulator(0);
-        manager_.registerItemChangeListener(this, GrxModelItem.class);
-        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
-        if(currentWorld_!=null){
-        	currentState_ = currentWorld_.getValue();
-        	if (currentState_!=null){
-        		updateModels(currentState_);
-        		updateViewSimulator(currentState_.time);
-            }           
-        	currentWorld_.addObserver(this);
-        	currentWorld_.addPosObserver(this);
-        }
-        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-        currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
-        manager_.registerItemChangeListener(this, GrxCollisionPairItem.class);
-        
+
         //setup
         behaviorManager_.setThreeDViewer(this);
         behaviorManager_.setViewIndicator(viewToolBar_);
@@ -339,20 +313,70 @@ public class Grx3DView
         
         registerCORBA();
         
+        setUp();
+        manager_.registerItemChangeListener(this, GrxModelItem.class);
+        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+        manager_.registerItemChangeListener(this, GrxCollisionPairItem.class);
+		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
+      
+    }
+    
+    public void setUp(){
+    	Iterator<GrxModelItem> it = currentModels_.iterator();
+        while(it.hasNext())	{
+        	GrxModelItem model = it.next();
+        	if(model.bgRoot_.isLive())
+    			model.bgRoot_.detach();
+        	model.deleteObserver(this);
+        }
+        currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        it = currentModels_.iterator();
+        while(it.hasNext())	{
+        	GrxModelItem model = it.next();
+        	bgRoot_.addChild(model.bgRoot_);
+        	model.setWireFrame(viewToolBar_.isWireFrameSelected());
+        	if(model.isModified())
+    			optionButtonEnable(false);
+        	model.addObserver(this);
+        }
+		if(btnBBdisp_.isSelected()){
+			btnBBdisp_.doClick();
+		}
+        
+        currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
+        behaviorManager_.setItem(currentModels_, currentCollisionPairs_);
+ 
+		if(currentWorld_ != null){
+			currentWorld_.deleteObserver(this);
+            currentWorld_.deletePosObserver(this);
+		}
+        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+        if(currentWorld_!=null){
+        	currentState_ = currentWorld_.getValue(currentWorld_.getPosition());         
+        	currentWorld_.addObserver(this);
+        	currentWorld_.addPosObserver(this);
+        }else
+        	currentState_ = null;
+        if(currentState_ == null)
+        	updateViewSimulator(0);
+        else
+        	updatePosition(currentWorld_, currentWorld_.getPosition());
+        showOption();
+         
+        if(simItem_ != null)
+        	simItem_.deleteObserver(this);
         simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
 		if(simItem_!=null){
 			simItem_.addObserver(this);
 			if(simItem_.isSimulating())
 				viewMode_ = SIMULATION;
-		}
-		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
-		
+		}	
         if(viewMode_==SIMULATION){
         	disableButton();
 			objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
-        }        
+        }
     }
-
+    
     private void _setupSceneGraph() {
         universe_ = new VirtualUniverse();
         locale_ = new javax.media.j3d.Locale(universe_);

@@ -69,6 +69,7 @@ public class GrxItemView extends GrxBaseView {
 	TreeViewer tv;
 	MenuManager menuMgr= new MenuManager();
 
+	private List<GrxBasePlugin> baseItems_ = new ArrayList<GrxBasePlugin>();
 	/**
 	 * @brief constructor
 	 * @param name name of this view
@@ -158,24 +159,33 @@ public class GrxItemView extends GrxBaseView {
 		// ツリーの構築
 		tv.setInput( manager_ );
 
-        updateTree();
-        
         manager_.registerItemChangeListener(this, GrxBaseItem.class);
-   
-        GrxModeInfoItem mode = manager_.getMode();
+        setUp();
+        manager_.getProject().addObserver(this);
+	}
+
+	public void setUp(){
+		Iterator<GrxBasePlugin> it0 = baseItems_.iterator();
+		while(it0.hasNext())
+			it0.next().deleteObserver(this);
+		GrxModeInfoItem mode = manager_.getMode();
         Iterator<Class<? extends GrxBaseItem>> it = mode.activeItemClassList_.listIterator();
         while (it.hasNext()){
         	Class<? extends GrxBaseItem> local = (Class<? extends GrxBaseItem>)it.next();
         	if ( manager_.isItemVisible( local ) ){
         		Map<String, ?> map = (Map<String, ?>) manager_.getItemMap(local);
         		Iterator itI = map.values().iterator();
-                while(itI.hasNext())
-                	((GrxBaseItem)itI.next()).addObserver(this);
+                while(itI.hasNext()){
+                	GrxBaseItem baseItem = (GrxBaseItem) itI.next();
+                	baseItems_.add(baseItem);
+                	baseItem.addObserver(this);
+                }
         	}
         }
-        manager_.getProject().addObserver(this);
-	}
 
+        updateTree();
+	}
+	
 	/**
 	 * @brief
 	 */

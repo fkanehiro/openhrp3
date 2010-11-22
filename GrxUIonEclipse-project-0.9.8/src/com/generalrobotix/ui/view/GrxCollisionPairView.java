@@ -16,6 +16,7 @@
  */
 package com.generalrobotix.ui.view;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,25 +36,32 @@ import com.generalrobotix.ui.view.simulation.CollisionPairPanel;
 public class GrxCollisionPairView extends GrxBaseView {
 
     private CollisionPairPanel collisionPane_;
-    private List<GrxModelItem> currentModels_;
-    private List<GrxCollisionPairItem> currentCollisionPairs_;
+    private List<GrxModelItem> currentModels_ = new ArrayList<GrxModelItem>();
+    private List<GrxCollisionPairItem> currentCollisionPairs_ = new ArrayList<GrxCollisionPairItem>();;
 
     public GrxCollisionPairView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
         super(name, manager, vp, parent);
         collisionPane_ = new CollisionPairPanel(composite_, SWT.NONE, manager_);
 
+        setUp();
+        collisionPane_.setEnabled(true);
+        
+        manager_.registerItemChangeListener(this, GrxModelItem.class);
+        manager_.registerItemChangeListener(this, GrxCollisionPairItem.class);
+    }
+    
+    public void setUp(){
+    	Iterator<GrxCollisionPairItem> it = currentCollisionPairs_.iterator();
+        while(it.hasNext()) {
+            it.next().deleteObserver(this);
+        }
         currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
         currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
         collisionPane_.updateCollisionPairs(currentCollisionPairs_, currentModels_);
-        
-        collisionPane_.setEnabled(true);
-        
-        Iterator<GrxCollisionPairItem> it = currentCollisionPairs_.iterator();
+        it = currentCollisionPairs_.iterator();
         while(it.hasNext()) {
             it.next().addObserver(this);
         }
-        manager_.registerItemChangeListener(this, GrxModelItem.class);
-        manager_.registerItemChangeListener(this, GrxCollisionPairItem.class);
     }
     
     public void registerItemChange(GrxBaseItem item, int event){

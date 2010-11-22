@@ -65,31 +65,44 @@ public class GrxGraphView extends GrxBaseView {
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         graphManager_.setPanel(gpanel_);
         
-        currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
-        if(currentWorld_!=null){
-        	currentWorld_.addObserver(this);
-        	currentWorld_.addPosObserver(this);
-        }
-        simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
-        if(simItem_!=null){
-            simItem_.addObserver(this);
-        }
+        setUp();
         manager_.registerItemChangeListener(this, GrxSimulationItem.class);
         manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
-        currentGraph_ = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
-        if(currentGraph_!=null){
-        	_updateGraph(currentGraph_);
-        	if(currentWorld_!=null){
-            	graphManager_.setWorldState(currentWorld_);
-            	graphManager_.updateGraph();
-        	}
-        }
-        manager_.registerItemChangeListener(this, GrxGraphItem.class);
-        currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
-        gpanel_.setModelList(currentModels_);
+        manager_.registerItemChangeListener(this, GrxGraphItem.class);   
         manager_.registerItemChangeListener(this, GrxModelItem.class);
 	}
 
+	public void setUp(){
+		if(currentGraph_!=null){
+        	_updateGraph(null);
+        }
+        currentGraph_ = manager_.<GrxGraphItem>getSelectedItem(GrxGraphItem.class, null);
+        if(currentGraph_!=null){
+        	_updateGraph(currentGraph_);
+        }
+		if(currentWorld_!=null){
+			currentWorld_.deleteObserver(this);
+            currentWorld_.deletePosObserver(this);
+		}
+		currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
+        if(currentWorld_!=null){
+        	currentWorld_.addObserver(this);
+        	currentWorld_.addPosObserver(this);
+        	graphManager_.setWorldState(currentWorld_);
+        }else
+        	graphManager_.setWorldState(null);
+        graphManager_.updateGraph();
+        
+        if(simItem_!=null)
+        	simItem_.deleteObserver(this);
+        simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
+        if(simItem_!=null)
+            simItem_.addObserver(this);
+        
+        currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        gpanel_.setModelList(currentModels_);
+	}
+	
     public void registerItemChange(GrxBaseItem item, int event){
         if(item instanceof GrxWorldStateItem){
             GrxWorldStateItem worldStateItem = (GrxWorldStateItem) item;

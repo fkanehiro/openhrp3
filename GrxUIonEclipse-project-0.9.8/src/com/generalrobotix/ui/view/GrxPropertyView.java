@@ -173,12 +173,8 @@ public class GrxPropertyView extends GrxBaseView {
 
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
-        GrxBaseItem item = manager_.focusedItem();
+        setUp();
         manager_.registerItemChangeListener(this, GrxBaseItem.class);
-        viewer_.setInput(item);
-        currentPlugin_ = item;
-        if(currentPlugin_ != null)
-        	currentPlugin_.addObserver(this);
         
         //      右クリックメニュー
         table_.setMenu(menuMgr_.createContextMenu( table_ ));
@@ -218,6 +214,15 @@ public class GrxPropertyView extends GrxBaseView {
         updateTableFont();
     }
 
+    public void setUp(){
+    	if(currentPlugin_!=null)
+    		currentPlugin_.deleteObserver(this);
+    	currentPlugin_ = manager_.focusedItem();
+        _setInput(currentPlugin_);
+        if(currentPlugin_ != null)
+        	currentPlugin_.addObserver(this);
+    }
+    
     private boolean isValidChangeValue(String key, String value){
     	GrxBasePlugin.ValueEditType editType = currentPlugin_.GetValueEditType(key);
     	if(editType instanceof ValueEditText){

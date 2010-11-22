@@ -199,4 +199,9 @@ public class GrxBaseView extends GrxBasePlugin implements GrxItemChangeListener,
 		else
 			return null;
 	}
+
+	public void setUp() {
+		
+	}
+
 }

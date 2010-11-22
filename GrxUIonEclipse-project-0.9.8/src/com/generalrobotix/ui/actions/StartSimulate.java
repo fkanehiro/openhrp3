@@ -27,14 +27,21 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate, GrxItemCha
 	private GrxSimulationItem simItem_=null;
 	
 	public StartSimulate() {
+		setUp();
+		GrxPluginManager manager_ = Activator.getDefault().manager_;
+		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
+	}
+
+	public void setUp(){
+		if(simItem_ != null)
+			simItem_.deleteObserver(this);
 		GrxPluginManager manager_ = Activator.getDefault().manager_;
 		simItem_ = manager_.<GrxSimulationItem>getSelectedItem(GrxSimulationItem.class, null);
 		if(simItem_!=null){
 			simItem_.addObserver(this);
 		}
-		manager_.registerItemChangeListener(this, GrxSimulationItem.class);
 	}
-
+	
 	public void run(IAction action) {
 		action_ = action;
 		GrxPluginManager manager_ = Activator.getDefault().manager_;

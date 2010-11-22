@@ -205,10 +205,22 @@ public class GrxRobotStatView extends GrxBaseView {
         }
         setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
-        modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        setUp();
         manager_.registerItemChangeListener(this, GrxModelItem.class);
+        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
+        
+    }
+    
+    public void setUp(){
+    	Iterator<GrxModelItem> it = modelList_.iterator();
+    	while(it.hasNext()){
+    		GrxModelItem modelItem = it.next();
+			modelItem.deleteObserver(this);
+			comboModelName_.remove(modelItem.getName());
+    	}
+    	modelList_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
         if(!modelList_.isEmpty()){
-	        Iterator<GrxModelItem> it = modelList_.iterator();
+	        it = modelList_.iterator();
 	    	while(it.hasNext()){
 	    		GrxModelItem model = it.next();
 	    		comboModelName_.add(model.getName());
@@ -217,17 +229,21 @@ public class GrxRobotStatView extends GrxBaseView {
 	    	comboModelName_.select(0);
 	    	currentModel_ = modelList_.get(0);
 			setJointList();
+        }else
+        	currentModel_ = null;
+        if(currentWorld_ != null ){
+        	currentWorld_.deleteObserver(this);
+        	currentWorld_.deletePosObserver(this);
         }
         currentWorld_ = manager_.<GrxWorldStateItem>getSelectedItem(GrxWorldStateItem.class, null);
         if(currentWorld_!=null){
         	currentState_ = currentWorld_.getValue();
         	currentWorld_.addObserver(this); 
         	currentWorld_.addPosObserver(this);
+			updatePosition(currentWorld_, currentWorld_.getPosition());
         }
-        manager_.registerItemChangeListener(this, GrxWorldStateItem.class);
         updateTableFont();
         updateTableViewer();
-        
     }
     
     
