@@ -1191,21 +1191,19 @@ public class Grx3DView
         viewMode_ = VIEW;
 		objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
                
-        int step = (int)(1000.0/framerate*playbackRate);
-        final int recordingStep = Math.max((int)(1000.0/framerate*playbackRate), step);
+        final double stepTime = 1.0/framerate*playbackRate;
         
         Thread recThread_ = new Thread() {
 			public void run() {
 				try {
 					int startPosition =0;
 					int endPosition = currentWorld_.getLogSize();  
-					double playRateLogTime_ = (double)recordingStep/1000.0;
-					double prevTime = -recordingStep;
+					double playRateLogTime_ = currentWorld_.getTime(startPosition);					
 					for (int position=startPosition; position < endPosition; position++) {
 						if(!btnRec_.isSelected())break;
 						double time = currentWorld_.getTime(position);
-						if (time - prevTime >= playRateLogTime_) {
-							prevTime = time;
+						if (time >= playRateLogTime_) {
+							 playRateLogTime_ += stepTime;
 							final int _position = position;
 							syncExec(new Runnable(){
 								public void run() {
