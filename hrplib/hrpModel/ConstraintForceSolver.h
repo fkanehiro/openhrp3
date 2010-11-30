@@ -42,6 +42,7 @@ namespace hrp
 		bool enableVelocityOverwriting(bool isEnabled);
                 void enableConstraintForceOutput(bool on);
 		void useBuiltinCollisionDetector(bool on);
+                void setNegativeVelocityRatioForPenetration(double ratio);
 
 		void initialize(void);
         void solve(OpenHRP::CollisionSequence& corbaCollisionSequence);
