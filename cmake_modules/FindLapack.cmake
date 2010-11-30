@@ -8,7 +8,7 @@ if(UNIX)
 
       find_library(
         LAPACK_LIBRARY lapack
-        PATHS /usr/lib/atlas
+        PATHS /usr/lib/atlas /usr/lib/atlas-base/atlas
         NO_DEFAULT_PATH)
 
       if(NOT LAPACK_LIBRARY)
