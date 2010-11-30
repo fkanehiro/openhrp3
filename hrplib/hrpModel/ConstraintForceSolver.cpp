@@ -81,14 +81,14 @@ static const bool ALLOW_SUBTLE_PENETRATION_FOR_STABILITY = true;
 static const double ALLOWED_PENETRATION_DEPTH = 0.0001;
 //static const double PENETRATION_A = 500.0;
 //static const double PENETRATION_B = 80.0;
-static const double NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION = 10.0;
+static const double DEFAULT_NEGATIVE_VELOCITY_RATIO_FOR_PENETRATION = 10.0;
 
 
 // test for mobile robots with wheels
 //static const double ALLOWED_PENETRATION_DEPTH = 0.005;
 //static const double PENETRATION_A = 500.0;
 //static const double PENETRATION_B = 80.0;
-//static const double NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION = 10.0;
+//static const double NEGATIVE_VELOCITY_RATIO_FOR_PENETRATION = 10.0;
 //static const bool ENABLE_CONTACT_POINT_THINNING = false;
 
 // experimental options
@@ -264,6 +264,7 @@ namespace hrp
         int  maxNumGaussSeidelIteration;
         int  numGaussSeidelInitialIteration;
         double gaussSeidelMaxRelError;
+        double negativeVelocityRatioForPenetration;
 
         int numGaussSeidelTotalLoops;
         int numGaussSeidelTotalCalls;
@@ -375,6 +376,8 @@ CFSImpl::CFSImpl(WorldBase& world) :
     maxNumGaussSeidelIteration = DEFAULT_MAX_NUM_GAUSS_SEIDEL_ITERATION;
     numGaussSeidelInitialIteration = DEFAULT_NUM_GAUSS_SEIDEL_INITIAL_ITERATION;
     gaussSeidelMaxRelError = DEFAULT_GAUSS_SEIDEL_MAX_REL_ERROR;
+    negativeVelocityRatioForPenetration = DEFAULT_NEGATIVE_VELOCITY_RATIO_FOR_PENETRATION; 
+
     isConstraintForceOutputMode = false;
     useBuiltinCollisionDetector = false;
 }
@@ -1527,7 +1530,7 @@ void CFSImpl::setConstantVectorAndMuBlock()
                 if(ALLOW_SUBTLE_PENETRATION_FOR_STABILITY){
                     double extraNegativeVel;
                     double newDepth = ALLOWED_PENETRATION_DEPTH - constraint.depth;
-                    extraNegativeVel = NEGATIVE_VELOCITY_RATIO_FOR_PENETRTION * newDepth;
+                    extraNegativeVel = negativeVelocityRatioForPenetration * newDepth;
                     b(globalIndex) = an0(globalIndex) + (constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
                 } else {
                     b(globalIndex) = an0(globalIndex) + constraint.normalProjectionOfRelVelocityOn0 * dtinv;
@@ -2182,6 +2185,12 @@ void ConstraintForceSolver::useBuiltinCollisionDetector(bool on)
 {
     impl->useBuiltinCollisionDetector = on;
 }
+
+void ConstraintForceSolver::setNegativeVelocityRatioForPenetration(double ratio)
+{
+    impl->negativeVelocityRatioForPenetration = ratio;
+}
+
 
 
 void ConstraintForceSolver::initialize(void)
