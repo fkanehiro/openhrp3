@@ -91,7 +91,6 @@ update_source_list () {
 
 	if test "x$kick_shell" = "xn" ; then
 	    echo $msg7
-	    exit 0
 	else
 	    echo $openrtm_repo >> /etc/apt/sources.list
 	fi
