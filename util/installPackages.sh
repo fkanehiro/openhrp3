@@ -29,12 +29,14 @@ do
 done
 
 sudo apt-get --force-yes install $ok_pkgs
-sudo update-java-alternatives -s java-6-sun
+if [ $? -eq 0 ]; then
+  sudo update-java-alternatives -s java-6-sun
 
-if [ -n ng_pkgs ]; then
-  echo "Packge installation is incomplete."
-  echo "Please download and install these packages:"
-  echo $ng_pkgs
-  echo
-  exit 1
+  if [ -n ng_pkgs ]; then
+    echo "Packge installation is incomplete."
+    echo "Please download and install these packages:"
+    echo $ng_pkgs
+    echo
+    exit 1
+  fi
 fi
