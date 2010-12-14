@@ -14,6 +14,7 @@ import jp.go.aist.hrp.simulator.TextureInfo;
 
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxSegmentItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.item.GrxShapeItem;
 
@@ -236,7 +237,12 @@ public class GrxVrmlExporter {
 	        writer.write("  ]\n");
 	        writer.write("  segments [\n");
 	        for (int i=0; i<links.size(); i++){
-	        	writer.write("    USE "+links.get(i).getName()+"_Link,\n");
+	        	GrxLinkItem link = links.get(i);
+	        	for (int j=0; j<link.children_.size(); j++){
+					if (link.children_.get(j) instanceof GrxSegmentItem){
+						writer.write("    USE "+link.children_.get(j).getName()+",\n");
+					}
+				}
 	        }
 	        writer.write("  ]\n");
 	        writer.write("}\n");
@@ -270,46 +276,37 @@ public class GrxVrmlExporter {
 		links.add(link);
 		try{
 			writer.write(indent+"DEF "+link.getName()+" Joint {\n");
-			writer.write(indent+"  jointType \""+link.jointType()+"\"\n");
-			if (link.jointId() != -1) writer.write(indent+"  jointId "+link.jointId()+"\n");
-			if (link.jointType().equals("rotate") || link.jointType().equals("slide")){
+			writer.write(indent+"  jointType \""+link.jointType_+"\"\n");
+			if (link.jointId_ != -1) writer.write(indent+"  jointId "+link.jointId_+"\n");
+			if (link.jointType_.equals("rotate") || link.jointType_.equals("slide")){
 				writer.write(indent+"  jointAxis "+link.getProperty("jointAxis")+"\n");
 			}
 			if (!valueEquals(link.getProperty("translation"),"0.0 0.0 0.0 ")){
 				writer.write(indent+"  translation "+link.getProperty("translation")+"\n");
 			}
-			if (!valueEquals(link.getProperty("rotation"),"0.0 0.0 1.0 0.0")){
+			if (!isZero(link.getProperty("rotation"),3)){
 				writer.write(indent+"  rotation "+link.getProperty("rotation")+"\n");
 			}
 			if (!link.getProperty("ulimit").equals("")) writer.write(indent+"  ulimit ["+link.getProperty("ulimit")+"]\n");
 			if (!link.getProperty("llimit").equals("")) writer.write(indent+"  llimit ["+link.getProperty("llimit")+"]\n");
 			if (!link.getProperty("uvlimit").equals("")) writer.write(indent+"  uvlimit ["+link.getProperty("uvlimit")+"]\n");
 			if (!link.getProperty("lvlimit").equals("")) writer.write(indent+"  lvlimit ["+link.getProperty("lvlimit")+"]\n");
-			if (link.gearRatio() != 1.0) writer.write(indent+"  gearRatio "+link.gearRatio()+"\n");
-			if (link.rotorInertia() != 0.0) writer.write(indent+"  rotorInertia "+link.rotorInertia()+"\n");
-			if (link.rotorResistor() != 0.0) writer.write(indent+"  rotorResistor "+link.rotorResistor()+"\n");
-			if (link.torqueConst() != 1.0) writer.write(indent+"  torqueConst "+link.torqueConst()+"\n");
-			if (link.encoderPulse() != 1.0) writer.write(indent+"  encoderPulse "+link.encoderPulse()+"\n");
+			if (link.gearRatio_ != 1.0) writer.write(indent+"  gearRatio "+link.gearRatio_+"\n");
+			if (link.rotorInertia_ != 0.0) writer.write(indent+"  rotorInertia "+link.rotorInertia_+"\n");
+			if (link.rotorResistor_ != 0.0) writer.write(indent+"  rotorResistor "+link.rotorResistor_+"\n");
+			if (link.torqueConst_ != 1.0) writer.write(indent+"  torqueConst "+link.torqueConst_+"\n");
+			if (link.encoderPulse_ != 1.0) writer.write(indent+"  encoderPulse "+link.encoderPulse_+"\n");
 			writer.write(indent+"  children[\n");
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxSensorItem){
 				exportSensor(writer, (GrxSensorItem)link.children_.get(i), indent+"    ", exportDir, mainPath);
 				}
 			}
-			writer.write(indent+"    DEF "+link.getName()+"_Link Segment{\n");
-			writer.write(indent+"      centerOfMass "+link.getProperty("centerOfMass")+"\n");
-			writer.write(indent+"      mass "+link.mass()+"\n");
-			writer.write(indent+"      momentsOfInertia [ "+link.getProperty("momentsOfInertia")+"]\n");
-			writer.write(indent+"      children[\n");
-			//String exported_url = null;
 			for (int i=0; i<link.children_.size(); i++){
-				if (link.children_.get(i) instanceof GrxShapeItem){
-					GrxShapeItem shape = (GrxShapeItem)link.children_.get(i);
-					exportShape(writer, shape, indent+"        ", exportDir, mainPath);
+				if (link.children_.get(i) instanceof GrxSegmentItem){
+				exportSegment(writer, (GrxSegmentItem)link.children_.get(i), indent+"    ", exportDir, mainPath);
 				}
 			}
-			writer.write(indent+"      ]\n");
-			writer.write(indent+"    }\n");
 			for (int i=0; i<link.children_.size(); i++){
 				if (link.children_.get(i) instanceof GrxLinkItem){
 					Vector<GrxLinkItem> childLinks = exportLink(writer, (GrxLinkItem)link.children_.get(i), 
@@ -325,6 +322,41 @@ public class GrxVrmlExporter {
 		return links;
 	}
 
+	public static void exportSegment(BufferedWriter writer, GrxSegmentItem segment, String indent, String exportDir, String mainPath){
+		try{
+			String translation = segment.getProperty("translation");
+			String rotation = segment.getProperty("rotation");
+			boolean useTransform = false;
+			if(!valueEquals(translation, "0.0 0.0 0.0 " ) || !isZero(rotation, 3 )){
+				useTransform = true;
+				writer.write(indent+"Transform {\n");
+				writer.write(indent+"  translation "+translation+"\n");
+				writer.write(indent+"  rotation "+rotation+"\n");
+				writer.write(indent+"  children[\n");
+				indent += "    ";
+			}
+			writer.write(indent+"DEF "+segment.getName()+" Segment{\n");
+			writer.write(indent+"  centerOfMass "+segment.getProperty("centerOfMass")+"\n");
+			writer.write(indent+"  mass "+segment.getProperty("mass")+"\n");
+			writer.write(indent+"  momentsOfInertia [ "+segment.getProperty("momentsOfInertia")+"]\n");
+			writer.write(indent+"  children[\n");
+			for (int i=0; i<segment.children_.size(); i++){
+				if (segment.children_.get(i) instanceof GrxShapeItem){
+					GrxShapeItem shape = (GrxShapeItem)segment.children_.get(i);
+					exportShape(writer, shape, indent+"    ", exportDir, mainPath);
+				}
+			}
+			writer.write(indent+"  ]\n");
+			writer.write(indent+"}\n");	
+			if(useTransform){
+				writer.write(indent+"  ]\n");
+				writer.write(indent+"}\n");	
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}	
+	}
+	
 	/**
 	 * @biref export sensor item
 	 * @param writer output stream
@@ -336,21 +368,21 @@ public class GrxVrmlExporter {
 	public static void exportSensor(BufferedWriter writer, GrxSensorItem sensor, String indent, String exportDir, String mainPath){
 		try{
 			String nodeType="unknown";
-			if (sensor.type().equals("Force")){
+			if (sensor.type_.equals("Force")){
 				nodeType = "ForceSensor";
-			}else if(sensor.type().equals("RateGyro")){
+			}else if(sensor.type_.equals("RateGyro")){
 				nodeType = "Gyro"; 
-			}else if(sensor.type().equals("Acceleration")){
+			}else if(sensor.type_.equals("Acceleration")){
 				nodeType = "AccelerationSensor";
-			}else if(sensor.type().equals("Vision")){
+			}else if(sensor.type_.equals("Vision")){
 				nodeType = "VisionSensor";
 			}
 			writer.write(indent+"DEF "+sensor.getName()+" "+nodeType+" {\n");
-			writer.write(indent+"  sensorId "+sensor.id()+"\n");
+			writer.write(indent+"  sensorId "+sensor.id_+"\n");
 			if (!valueEquals(sensor.getProperty("translation"),"0.0 0.0 0.0 ")){
 				writer.write(indent+"  translation "+sensor.getProperty("translation")+"\n");
 			}
-			if (!valueEquals(sensor.getProperty("rotation"),"0.0 0.0 1.0 0.0")){
+			if (!isZero(sensor.getProperty("rotation"),3)){
 				writer.write(indent+"  rotation "+sensor.getProperty("rotation")+"\n");
 			}
 			// sensor specific parameters
@@ -434,7 +466,7 @@ public class GrxVrmlExporter {
 				if (!valueEquals(shape.getProperty("translation"),"0.0 0.0 0.0 ")){
 					writer.write(indent+"  translation "+shape.getProperty("translation")+"\n");
 				}
-				if (!valueEquals(shape.getProperty("rotation"),"0.0 0.0 1.0 0.0")){
+				if (!isZero(shape.getProperty("rotation"),3)){
 					writer.write(indent+"  rotation "+shape.getProperty("rotation")+"\n");
 				}
 				writer.write(indent+"  children[\n");
@@ -467,7 +499,7 @@ public class GrxVrmlExporter {
 				if (!valueEquals(shape.getProperty("translation"),"0.0 0.0 0.0 ")){
 					writer.write(indent+"  translation "+shape.getProperty("translation")+"\n");
 				}
-				if (!valueEquals(shape.getProperty("rotation"),"0.0 0.0 1.0 0.0")){
+				if (!isZero(shape.getProperty("rotation"),3)){
 					writer.write(indent+"  rotation "+shape.getProperty("rotation")+"\n");
 				}
 				writer.write(indent+"  children[\n");
@@ -667,5 +699,20 @@ public class GrxVrmlExporter {
 			}
 		}
 		return true;
+	}
+	
+	private static boolean isZero(String s1, int i){
+		String[] ss1 = s1.split(" ");
+		if(i < ss1.length ){
+			try{
+				if( Math.abs(Double.parseDouble(ss1[i])) < 1e-10 )
+					return true;
+				else
+					return false;
+			}catch(Exception ex){
+				return false;
+			}
+		}else
+			return false;
 	}
 }

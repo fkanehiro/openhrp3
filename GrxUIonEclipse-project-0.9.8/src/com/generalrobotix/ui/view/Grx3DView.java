@@ -1100,8 +1100,8 @@ public class Grx3DView
                     	List<GrxSensorItem> sensors = model.getSensors("Range"); //$NON-NLS-1$
                     	for (int j=0; j<sensors.size(); j++){
                     		GrxSensorItem sensor = sensors.get(j);
-                    		if (sensor.isVisible() && sensor.id() >= 0 && sensor.id() < charStat.sensorState.range.length){
-                    			sensor.updateShapeOfVisibleArea(charStat.sensorState.range[sensor.id()]);
+                    		if (sensor.isVisible() && sensor.id_ >= 0 && sensor.id_ < charStat.sensorState.range.length){
+                    			sensor.updateShapeOfVisibleArea(charStat.sensorState.range[sensor.id_]);
                     		}
                     	}
                     }
@@ -1496,10 +1496,10 @@ public class Grx3DView
           	KeyStroke ks = KeyStroke.getKeyStrokeForEvent(arg0);
           	if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_UP,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_K,0)) {
-          		int next = li.jointId()-1;
+          		int next = li.jointId_-1;
           		if (next >= 0) {
           			for (int j=0; j<item.links_.size(); j++) {
-          				if (next == item.links_.get(j).jointId()) {
+          				if (next == item.links_.get(j).jointId_) {
           					behaviorManager_.setPickTarget(item.links_.get(j).tg_);
           					break;
           				}
@@ -1507,45 +1507,45 @@ public class Grx3DView
           		}
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_DOWN,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_J,0)) {
-          		int next = li.jointId()+1;
+          		int next = li.jointId_+1;
   				for (int j=0; j<item.links_.size(); j++) {
-      				if (next == item.links_.get(j).jointId()) {
+      				if (next == item.links_.get(j).jointId_) {
           				behaviorManager_.setPickTarget(item.links_.get(j).tg_);
       					break;
       				}
        			}
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,KeyEvent.SHIFT_MASK) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_H,KeyEvent.SHIFT_MASK)) {
-          		li.jointValue(li.jointValue()-dAngle_);
+          		li.jointValue(li.jointValue_-dAngle_);
           		
-          		if (li.llimit()[0] < li.ulimit()[0])
-          			li.jointValue(Math.max(li.jointValue(), li.llimit()[0]));
+          		if (li.llimit_[0] < li.ulimit_[0])
+          			li.jointValue(Math.max(li.jointValue_, li.llimit_[0]));
           		item.calcForwardKinematics();
-        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue())); //$NON-NLS-1$
+        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue_)); //$NON-NLS-1$
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,KeyEvent.SHIFT_MASK) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_L,KeyEvent.SHIFT_MASK)) {
-          		li.jointValue(li.jointValue()+dAngle_);
-          		if (li.llimit()[0] < li.ulimit()[0])
-          			li.jointValue(Math.min(li.jointValue(), li.ulimit()[0]));
+          		li.jointValue(li.jointValue_+dAngle_);
+          		if (li.llimit_[0] < li.ulimit_[0])
+          			li.jointValue(Math.min(li.jointValue_, li.ulimit_[0]));
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue())); //$NON-NLS-1$
+        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue_)); //$NON-NLS-1$
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_H,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0)) {
-          		li.jointValue(li.jointValue()-dAngle_*20);
-          		if (li.llimit()[0] < li.ulimit()[0])
-          			li.jointValue(Math.max(li.jointValue(), li.llimit()[0]));
+          		li.jointValue(li.jointValue_-dAngle_*20);
+          		if (li.llimit_[0] < li.ulimit_[0])
+          			li.jointValue(Math.max(li.jointValue_, li.llimit_[0]));
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue())); //$NON-NLS-1$
+        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue_)); //$NON-NLS-1$
         	 	
           	} else if (ks == KeyStroke.getKeyStroke(KeyEvent.VK_L,0) ||
           			ks == KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0)) {
-          		li.jointValue(li.jointValue()+dAngle_*20);
-          		if (li.llimit()[0] < li.ulimit()[0])
-          			li.jointValue(Math.min(li.jointValue(), li.ulimit()[0]));
+          		li.jointValue(li.jointValue_+dAngle_*20);
+          		if (li.llimit_[0] < li.ulimit_[0])
+          			li.jointValue(Math.min(li.jointValue_, li.ulimit_[0]));
         	 	item.calcForwardKinematics();
-        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue())); //$NON-NLS-1$
+        	 	item.setProperty(li.getName()+".angle",String.valueOf(li.jointValue_)); //$NON-NLS-1$
           	}
           	arg0.consume();
         }     

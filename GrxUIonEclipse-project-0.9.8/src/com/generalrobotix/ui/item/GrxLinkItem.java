@@ -17,10 +17,8 @@
 
 package com.generalrobotix.ui.item;
 
-import java.io.File;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.media.j3d.Appearance;import javax.media.j3d.BadTransformException;
@@ -29,161 +27,398 @@ import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.PolygonAttributes;
-import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3d;
-import javax.vecmath.Point2f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 
-import jp.go.aist.hrp.simulator.BodyInfo;
-import jp.go.aist.hrp.simulator.DblArray3SequenceHolder;
 import jp.go.aist.hrp.simulator.HwcInfo;
 import jp.go.aist.hrp.simulator.LinkInfo;
 import jp.go.aist.hrp.simulator.SensorInfo;
 import jp.go.aist.hrp.simulator.ShapeInfo;
+import jp.go.aist.hrp.simulator.SegmentInfo;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.osgi.util.NLS;
 
-import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 import com.generalrobotix.ui.util.AxisAngle4d;
+import com.generalrobotix.ui.util.CalcInertiaUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.OrderedHashMap;
 
-import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.geometry.NormalGenerator;
-import com.sun.j3d.utils.geometry.Primitive;
 import com.sun.j3d.utils.picking.PickTool;
 
 
 @SuppressWarnings("serial") //$NON-NLS-1$
 public class GrxLinkItem extends GrxTransformItem{
+	private double[] translation_ = {0,0,0};		// parent link local 
+	private double[] rotation_ = {0,1,0,0};
+    public short	jointId_;
+    public String jointType_;
+    public double jointValue_;
+    public double[] jointAxis_;
+    public double[] ulimit_;
+    public double[] llimit_;
+    private double[] uvlimit_;
+    private double[] lvlimit_;
+    public double	  linkMass_; 
+    private double[] linkCenterOfMass_;
+    private double[] linkInertia_;
+    public double 	rotorInertia_; 
+    public double		rotorResistor_;
+    public double		gearRatio_;
+    public double		torqueConst_;  
+    public double		encoderPulse_;  
 
-	private LinkInfo info_;
-	
+    public short	  	parentIndex_;  
+    public short[]	childIndices_; ///< 子リンクインデックス列  
+    private short AABBmaxNum_;
+
     // display
     private Switch switchCom_;
     private TransformGroup tgCom_;
-    private Switch switchBb_;
     private Switch switchAxis_;
     private Switch switchAABB_;
 
-    private double  jointValue_;
+    public Transform3D absTransform(){
+    	Transform3D t3d = new Transform3D();
+    	tg_.getTransform(t3d);
+    	return t3d;
+    }
     
-    private int AABBmaxNum_;
-
-    /**
-     * @brief get inertia matrix
-     * @return inertia matrix
-     */
-    public double [] inertia(){
-    	return info_.inertia;
+    public double[] localTranslation(){
+    	return translation_;
+    }
+    
+    public double[] localRotation(){
+    	return rotation_;
     }
 
-    /**
-     * @brief get relative position of center of mass
-     * @return position of center of mass relative to coordinates of this link
-     */
-    public double [] centerOfMass(){
-    	return info_.centerOfMass;
+    public void absTransform(double[] p, double[] R){
+    	Transform3D t3d = new Transform3D();
+        tg_.getTransform(t3d);        
+        t3d.setTranslation(new Vector3d(p));
+        AxisAngle4d a4d = new AxisAngle4d();
+		a4d.setMatrix(new Matrix3d(R));
+		double[] newrot = new double[4];
+		a4d.get(newrot);
+        t3d.setRotation(new AxisAngle4d(newrot));
+        tg_.setTransform(t3d);
     }
+    
+    public boolean localTranslation(double[] pos){
+    	if (pos == null || pos.length != 3) return false;
+    	translation_ = pos;
+        setDblAry("translation", pos, 4);
+        if (model_ != null && parent_ != null) model_.notifyModified();
+        return true;
+    }
+    
+    public boolean localTranslation(String value){
+    	double [] pos = getDblAry(value);
+    	if (localTranslation(pos)){
+            return true;
+    	}else{
+    		return false;
+    	}
+    }
+    
+    public boolean localRotation(double[] rot){
+    	if (rot == null)	return false;
+    	if(rot.length == 9){
+    		AxisAngle4d a4d = new AxisAngle4d();
+    		a4d.setMatrix(new Matrix3d(rot));
+    		rot = new double[4];
+    		a4d.get(rot);
+    	}
+    	if(rot.length == 4){ 
+    		rotation_ = rot;
+    		setDblAry("rotation", rot, 4);
+    		if (model_ != null && parent_ != null) model_.notifyModified();
+    		return true;
+    	}
+    	return false;
+    }
+    
+    public boolean localRotation(String value){
+    	double [] rot = getDblAry(value);
+    	if (localRotation(rot)){
+            return true;
+    	}else{
+    		return false;
+    	}
+    }
+ 
     /**
-     * @brief get axis of joint
-     * @return axis of joint
+     * @brief set new joint value
+     * @param jv joint value
      */
-    public double[] jointAxis(){
-    	return info_.jointAxis;
+    public void jointValue(double jv){
+    	jointValue_ = jv;
+    	setDbl("angle", jointValue_); //$NON-NLS-1$
+    }
+    
+    /**
+     * @brief set joint value from string
+     * @param value joint value
+     * @return true if set successfully, false otherwise
+     */
+    public boolean jointValue(String value){
+		Double a = getDbl(value);
+		if (a != null){
+			jointValue(a);
+			return true;
+		}else{
+			return false;
+		}
+    }
+    
+    /**
+     * @brief set inertia matrix
+     * @param newI inertia matrix(length=9)
+     * @return true if set successfully, false otherwise
+     */
+    public boolean inertia(double [] newI){
+    	if (newI != null && newI.length == 9){
+    		linkInertia_ = newI;
+    		setDblAry("momentsOfInertia", linkInertia_); //$NON-NLS-1$
+    		_updateScaleOfBall();
+    		if (model_ != null) model_.notifyModified();
+    		return true;
+       	}
+    	return false;
+    }
+    
+    public void inertia(String i){
+    	double [] mi = getDblAry(i);
+    	if(mi != null)
+    		inertia(mi);
+    }
+    
+    /**
+     * @brief set CoM position
+     * @param com CoM position(length=3)
+     * @return true if set successfully, false otherwise
+     */
+    public boolean centerOfMass(double [] com){
+		if (com != null && com.length==3){
+        	linkCenterOfMass_ = com;
+        	setDblAry("centerOfMass", com); //$NON-NLS-1$
+    		if (model_ != null) model_.notifyModified();
+        	Transform3D t3d = new Transform3D();
+        	tgCom_.getTransform(t3d);
+        	t3d.setTranslation(new Vector3d(linkCenterOfMass_));
+        	tgCom_.setTransform(t3d);
+        	return true;
+		}else{
+			return false;
+		}
+    }
+    
+    /**
+     * @brief set CoM position from string
+     * @param value space separated array of double(length=3)
+     */
+    public void centerOfMass(String value){
+		double [] com = getDblAry(value);
+		if(com != null)
+			centerOfMass(com);
+    }
+    
+    /**
+     * @brief set joint axis
+     * @param axis axis of this joint. it must be one of "X", "Y" and "Z"
+     */
+    public void jointAxis(double[] newAxis){
+    	if(jointType_.equals("fixed")||jointType_.equals("free"))
+    		return;
+    	if (newAxis != null && newAxis.length == 3){
+    		jointAxis_ = newAxis;
+    		setDblAry("jointAxis", newAxis); //$NON-NLS-1$
+    		updateAxis();
+    		if (model_ != null) model_.notifyModified();
+    	}  	
     }
 
+    void jointAxis(String axis){
+    	double[] newAxis = getDblAry(axis);
+    	if(newAxis != null)
+    		jointAxis(newAxis);
+    }
+ 
     /**
-     * @brief get joint id
+     * @brief set joint id
      * @return joint id
      */
-    public int jointId(){
-    	return info_.jointId;
+    public void jointId(short id){
+    	jointId_ = id;
+		setShort("jointId", id); //$NON-NLS-1$
+		if (model_ != null) model_.notifyModified();
+    }
+    
+    /**
+     * set joint id from string
+     * @param value string
+     */
+    public void jointId(String value){
+    	Short id = getShort(value);
+    	if (id != null && id != jointId_){
+    		jointId(id);
+    	}
     }
 
     /**
-     * @brief get index of parent link in lInfo_
-     * @return index of parent link
+     * @brief set mass from string
+     * @param value mass
      */
-    public short parentIndex() {
-    	return info_.parentIndex;
+    public void mass(double m){
+    	linkMass_ = m;
+        setDbl("mass", linkMass_); //$NON-NLS-1$
+        _updateScaleOfBall();
+		if (model_ != null) model_.notifyModified();
     }
-
+    
+    public boolean mass(String value){
+    	Double a = getDbl(value);
+		if (a != null){
+			mass(a);
+			return true;
+		}else{
+			return false;
+		}
+    }
+    
     /**
-     * @brief get indices of child links in lInfo_
-     * @return indices of child links
+     * @brief set joint type
+     * @param type type of this joint. It must be one of "fixed", "free", "rotate" and "slide"
      */
-    public short[] childIndices() {
-    	return info_.childIndices;
+    public void jointType(String type){
+		if (type.equals("fixed")||type.equals("rotate")||type.equals("free")||type.equals("slide"))
+	    	jointType_ = type;
+		else
+			jointType_ = "free";
+		setProperty("jointType", type); //$NON-NLS-1$
+		if(type.equals("fixed")||type.equals("free"))
+			setProperty("jointAxis", "---");
+		else
+			if(getProperty("jointAxis")== null || getProperty("jointAxis").equals("---"))
+				jointAxis("0.0 0.0 1.0");
+		if (model_ != null) model_.notifyModified();		
     }
 
-    /**
-     * @brief get mass of link
-     * @return mass of link
-     */
-    public double mass() {
-    	return info_.mass;
+    public void gearRatio(double r){
+    	gearRatio_ = r;
+    	setDbl("gearRatio", r);
+		if (model_ != null) model_.notifyModified();
+    }
+    
+    public void gearRatio(String g){
+    	Double gr = getDbl(g);
+    	if(gr != null)
+    		gearRatio(gr);
+    }
+    
+    public void encoderPulse(double e){
+    	encoderPulse_ = e;
+    	setDbl("encoderPulse", e);
+    	if (model_ != null) model_.notifyModified();
     }
 
-    /**
-     * @brief get type of joint
-     * @return type of joint
-     */
-    public String jointType() {
-    	return info_.jointType;
+    public void encoderPulse(String e){
+    	Double ep = getDbl(e);
+    	if(ep != null)
+    		encoderPulse(ep);
+    }
+    
+    public void rotorInertia(double r){
+    	rotorInertia_ = r;
+    	setDbl("rotorInertia", r);
+    	if (model_ != null) model_.notifyModified();
     }
 
-    public double gearRatio(){
-    	return info_.gearRatio;
+    public void rotorResistor(double r){
+    	rotorResistor_ = r;
+    	setDbl("rotorResistor", r);
+    	if (model_ != null) model_.notifyModified();
     }
 
-    public double encoderPulse(){
-    	return info_.encoderPulse;
+    public void rotorResistor(String r){
+    	Double rr = getDbl(r);
+    	if(rr != null)
+    		rotorResistor(rr);
+    }
+    
+    public void torqueConst(double t){
+    	torqueConst_ = t;
+    	setDbl("torqueConst", t);
+    	if (model_ != null) model_.notifyModified();
     }
 
-    public double rotorInertia(){
-    	return info_.rotorInertia;
+    public void torqueConst(String t){
+    	Double tc = getDbl(t);
+    	if(tc != null)
+    		torqueConst(tc);
+    }
+    
+    public void ulimit(double[] u){
+    	ulimit_ = u;
+    	setDblAry("ulimit", u);
+    	if (model_ != null) model_.notifyModified();
     }
 
-    public double rotorResistor(){
-    	return info_.rotorResistor;
+    public void ulimit(String u){
+    	double[] ulimit = getDblAry(u);
+    	if(ulimit != null)
+    		ulimit(ulimit);
+    }
+    
+    public void llimit(double[] l){
+    	llimit_ = l;
+    	setDblAry("llimit", l);
+    	if (model_ != null) model_.notifyModified();
     }
 
-    public double torqueConst(){
-    	return info_.torqueConst;
+    public void llimit(String l){
+    	double[] llimit = getDblAry(l);
+    	if(llimit != null)
+    		llimit(llimit);
     }
-
-    public double [] ulimit(){
-    	return info_.ulimit;
+    
+    public void uvlimit(double[] uv){
+    	uvlimit_ = uv;
+    	setDblAry("uvlimit", uv);
+    	if (model_ != null) model_.notifyModified();
     }
-
-    public double [] llimit(){
-    	return info_.llimit;
+    
+    public void uvlimit(String uv){
+    	double[] uvlimit = getDblAry(uv);
+    	if(uvlimit != null)
+    		uvlimit(uvlimit);
     }
-
-    public double [] uvlimit(){
-    	return info_.uvlimit;
+    
+    public void lvlimit(double[] lv){
+    	lvlimit_ = lv;
+    	setDblAry("lvlimit", lv);
+    	if (model_ != null) model_.notifyModified();
     }
-
-    public double [] lvlimit(){
-    	return info_.lvlimit;
+    
+    public void lvlimit(String lv){
+    	double[] lvlimit = getDblAry(lv);
+    	if(lvlimit != null)
+    		lvlimit(lvlimit);
     }
+        
     /**
      * @brief create and add a new link as a child
      * @param name name of the new link
@@ -218,15 +453,9 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void addSensor(String name){
     	try{
-	    	SensorInfo info = new SensorInfo();
-	    	info.id = -1;
-	    	info.type = new String("Force"); //$NON-NLS-1$
-	    	info.translation = new double[]{0.0, 0.0, 0.0};
-	    	info.rotation = new double[]{0.0, 0.0, 1.0, 0.0};
-	    	info.specValues = new float[]{-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f};
-	    	GrxSensorItem sensor = new GrxSensorItem(name, manager_, model_, info);
+	    	GrxSensorItem sensor = new GrxSensorItem(name, manager_, model_, null);
 	    	addSensor(sensor);
-	    	 manager_.itemChange(sensor, GrxPluginManager.ADD_ITEM);
+	    	manager_.itemChange(sensor, GrxPluginManager.ADD_ITEM);
     	}catch(Exception ex){
     		ex.printStackTrace();
     	}
@@ -234,26 +463,18 @@ public class GrxLinkItem extends GrxTransformItem{
     }
 
     /**
-     * @brief add child under this link
-     * @param child child
+     * @brief create and add a new sensor as a child
+     * @param name name of the new sensor
      */
-    public void addShape(GrxTransformItem child){
-    	super.addChild(child);
-    	resizeBoundingBox();
-    }
-    
-    /**
-     * @brief read shape from VRML97 and add
-     * @param fPath URL of VRML file
-     */
-    public void addShape(String fPath){
-    	super.addShape(fPath);
-    	resizeBoundingBox();
-    }
-    
-    public void addPrimitiveShape(String name){
-    	super.addPrimitiveShape(name);
-    	resizeBoundingBox();
+    public void addSegment(String name){
+    	try{
+	    	GrxSegmentItem segment = new GrxSegmentItem(name, manager_, model_, null, null);
+	    	addChild(segment);
+	    	 manager_.itemChange(segment, GrxPluginManager.ADD_ITEM);
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    	}
+    	//manager_.reselectItems();
     }
     
     /**
@@ -282,238 +503,31 @@ public class GrxLinkItem extends GrxTransformItem{
     
     public void addHwc(GrxHwcItem hwc){
     	addChild(hwc);
-    }
-    
-    /**
-     * @brief set joint value from string
-     * @param value joint value
-     * @return true if set successfully, false otherwise
-     */
-    public boolean jointValue(String value){
-		Double a = getDbl(value);
-		if (a != null){
-			jointValue(a);
-			return true;
-		}else{
-			return false;
-		}
-    }
-    /**
-     * @brief set new joint value
-     * @param jv joint value
-     */
-    public void jointValue(double jv){
-    	jointValue_ = jv;
-    	setDbl("angle", jointValue_); //$NON-NLS-1$
-    }
-
-    /**
-     * @brief set new joint values recursively
-     * @param values new joint values
-     */
-	public void jointValue(double[] values) {
-		if (jointId() >= 0 && jointId() < values.length){
-			jointValue(values[jointId()]);
-		}
-		for (int i=0; i<children_.size(); i++){
-			if (children_.get(i) instanceof GrxLinkItem){
-				GrxLinkItem link = (GrxLinkItem)children_.get(i);
-				link.jointValue(values);
-			}
-		}
-	}
-
-    /**
-     * @brief get current joint value
-     * @return joint value
-     */
-    public double jointValue(){
-    	return jointValue_;
-    }
+    }   
 
     /**
      * @brief compute CoM in global frame
      * @return computed CoM
      */
     public Vector3d absCoM(){
-        Vector3d absCom = new Vector3d();
-        Vector3d p = new Vector3d();
-        Transform3D t3d = new Transform3D();
-        absCom.set(centerOfMass());
-        tg_.getTransform(t3d);
-        t3d.transform(absCom);
-        t3d.get(p);
-        absCom.add(p);
-        return absCom;
+        Vector3d absCom = new Vector3d(linkCenterOfMass_);
+        return transformV3(absCom);
     }
-    
-    /**
-     * @brief set joint type
-     * @param type type of this joint. It must be one of "fixed", "free", "rotate" and "slide"
-     */
-    void jointType(String type){
-		if (type.equals("fixed")||type.equals("rotate")||type.equals("free")||type.equals("slide")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-	    	info_.jointType = type;
-	    	setProperty("jointType", type); //$NON-NLS-1$
-	    	if(type.equals("fixed")||type.equals("free"))
-	    		setProperty("jointAxis", "---");
-	    	else
-	    		if(getProperty("jointAxis").equals("---"))
-	    			jointAxis("0.0 0.0 1.0");
-    		if (model_ != null) model_.notifyModified();
-		}
-    }
-    /**
-     * @brief set joint axis
-     * @param axis axis of this joint. it must be one of "X", "Y" and "Z"
-     */
-    void jointAxis(double[] newAxis){
-    	if(info_.jointType.equals("fixed")||info_.jointType.equals("free"))
-    		return;
-    	if (newAxis != null && newAxis.length == 3){
-    		info_.jointAxis = newAxis;
-    		setDblAry("jointAxis", newAxis); //$NON-NLS-1$
-    		resizeBoundingBox();
-    		if (model_ != null) model_.notifyModified();
-    	}  	
-    }
-
-    void jointAxis(String axis){
-    	double[] newAxis = getDblAry(axis);
-    	jointAxis(newAxis);
-    }
-    
-    /**
-     * set joint id from string
-     * @param value string
-     */
-    void jointId(String value){
-    	Short id = getShort(value);
-    	if (id != null && id != info_.jointId){
-    		info_.jointId = id;
-    		setShort("jointId", id); //$NON-NLS-1$
-    		if (model_ != null) model_.notifyModified();
-    	}
-    }
-    
-    /**
-     * @brief set new translation
-     * @param pos new translation
-     * @return true if new translation is set successfully, false otherwise
-     */
-    public boolean translation(double[] pos){
-    	if (super.translation(pos)){
-        	info_.translation = pos;
-        	return true;
-    	}else{
-    		return false;
-    	}
-    }
-
-    /**
-     * @brief set new rotation
-     * @param rot new rotation(axis and angle, length=4)
-     * @return true if set successfully, false otherwise
-     */
-    public boolean rotation(double[] rot){
-    	if (super.rotation(rot)){
-        	info_.rotation = rot;
-        	return true;
-    	}else{
-    		return false;
-    	}
-    }
-
-    /**
-     * @brief set CoM position from string
-     * @param value space separated array of double(length=3)
-     */
-    public void CoM(String value){
-		double [] com = getDblAry(value);
-		CoM(com);
-    }
-    
-    /**
-     * @brief set CoM position
-     * @param com CoM position(length=3)
-     * @return true if set successfully, false otherwise
-     */
-    public boolean CoM(double [] com){
-		if (com != null && com.length==3){
-        	info_.centerOfMass = com;
-        	setDblAry("centerOfMass", com); //$NON-NLS-1$
-    		if (model_ != null) model_.notifyModified();
-        	Transform3D t3d = new Transform3D();
-        	tgCom_.getTransform(t3d);
-        	t3d.setTranslation(new Vector3d(centerOfMass()));
-        	tgCom_.setTransform(t3d);
-        	return true;
-		}else{
-			return false;
-		}
-    }
-    
-    /**
-     * @brief set inertia matrix
-     * @param newI inertia matrix(length=9)
-     * @return true if set successfully, false otherwise
-     */
-    public boolean inertia(double [] newI){
-    	if (newI != null && newI.length == 9){
-    		info_.inertia = newI;
-    		setDblAry("momentsOfInertia", info_.inertia); //$NON-NLS-1$
-    		_updateScaleOfBall();
-    		if (model_ != null) model_.notifyModified();
-    		return true;
-       	}
-    	return false;
-    }
-    
-    /**
-     * @brief set mass from string
-     * @param value mass
-     */
-    public void mass(String value){
-    	try{
-    		double m = Double.parseDouble(value);
-    		mass(m);
-    	}catch(Exception ex){
-    		
-    	}
-    }
-    
-    public void mass(double m){
-    	info_.mass = m;
-        setDbl("mass", info_.mass); //$NON-NLS-1$
-        _updateScaleOfBall();
-		if (model_ != null) model_.notifyModified();
-    }
-    
+       
     private void _updateScaleOfBall(){
-		Matrix3d I = new Matrix3d(inertia());
-		double m = mass();
-		Matrix3d R = new Matrix3d();
-		Matrix3d II = new Matrix3d();
-		if (diagonalize(I,R,II)){
-			Transform3D t3d = new Transform3D();
-			tgCom_.getTransform(t3d);
-			double sum = II.m00+II.m11+II.m22;
-			Vector3d sv = new Vector3d(
-					m*Math.sqrt(sum/II.m00),
-					m*Math.sqrt(sum/II.m11),
-					m*Math.sqrt(sum/II.m22));
-			t3d.setScale(sv);
-			try{
-				tgCom_.setTransform(t3d);
-			}catch(BadTransformException ex){
-				System.out.println("BadTransformException in _updateScaleOfBall"); //$NON-NLS-1$
-				System.out.println("I = ("+II.m00+", "+II.m11+", "+II.m22+"), mass = "+m); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			}
-		}else{
-			System.out.println("diagonalization failed"); //$NON-NLS-1$
+		Matrix3d I = new Matrix3d(linkInertia_);
+		double m = linkMass_;
+		Vector3d scale = CalcInertiaUtil.calcScale(I, m);
+		Transform3D t3d = new Transform3D();
+		tgCom_.getTransform(t3d);
+		t3d.setScale(scale);
+		try{
+			tgCom_.setTransform(t3d);
+		}catch(BadTransformException ex){
+			System.out.println("BadTransformException in _updateScaleOfBall"); //$NON-NLS-1$
 		}
-
     }
+    
     /**
      * @brief check validity of new value of property and update if valid
      * @param property name of property
@@ -528,12 +542,12 @@ public class GrxLinkItem extends GrxTransformItem{
         		calcForwardKinematics();
     		}
     	}else if(property.equals("translation")){ //$NON-NLS-1$
-    		if (translation(value)){
+    		if (localTranslation(value)){
     			model_.updateInitialTransformRoot();
             	calcForwardKinematics();
     		}
     	}else if(property.equals("rotation")){ //$NON-NLS-1$
-    		if (rotation(value)){
+    		if (localRotation(value)){
     			model_.updateInitialTransformRoot();
             	calcForwardKinematics();
     		}
@@ -544,68 +558,27 @@ public class GrxLinkItem extends GrxTransformItem{
     	}else if(property.equals("jointId")){ //$NON-NLS-1$
     		jointId(value);
     	}else if(property.equals("ulimit")){ //$NON-NLS-1$
-    		double[] limit = getDblAry(value);
-    		if (limit != null){
-    			info_.ulimit = limit;
-        		setProperty(property, value);
-        		if (model_ != null) model_.notifyModified();
-    		}
-    	}else if(property.equals("vlimit")){ //$NON-NLS-1$
-    		double[] limit = getDblAry(value);
-    		if (limit != null){
-    			info_.llimit = limit;
-        		setProperty(property, value);
-        		if (model_ != null) model_.notifyModified();
-    		}
+    		ulimit(value);
+    	}else if(property.equals("llimit")){ //$NON-NLS-1$
+    		llimit(value);
     	}else if(property.equals("uvlimit")){ //$NON-NLS-1$
-    		double[] limit = getDblAry(value);
-    		if (limit != null){
-    			info_.uvlimit = limit;
-        		setProperty(property, value);
-        		if (model_ != null) model_.notifyModified();
-    		}
+    		uvlimit(value);
     	}else if(property.equals("lvlimit")){ //$NON-NLS-1$
-    		double[] limit = getDblAry(value);
-    		if (limit != null){
-    			info_.lvlimit = limit;
-        		setProperty(property, value);
-        		if (model_ != null) model_.notifyModified();
-    		}
+    		lvlimit(value);
     	}else if(property.equals("torqueConst")){ //$NON-NLS-1$
-    		Double tc = getDbl(value);
-    		if (tc != null){
-        		info_.torqueConst = tc;
-        		setProperty(property, value);
-        		if (model_ != null) model_.notifyModified();
-    		}
+    		torqueConst(value);
     	}else if(property.equals("rotorResistor")){ //$NON-NLS-1$
-    		Double rr = getDbl(value);
-    		if (rr != null){
-        		info_.rotorResistor = rr;
-        		setProperty(property, value);
-        		if (model_ != null) model_.notifyModified();
-    		}
+    		rotorResistor(value);
     	}else if(property.equals("encoderPulse")){ //$NON-NLS-1$
-    		Double tc = getDbl(value);
-    		if (tc != null){
-        		info_.torqueConst = tc;
-        		setProperty(property, value);
-        		if (model_ != null) model_.notifyModified();
-    		}
+    		encoderPulse(value);
     	}else if(property.equals("gearRatio")){ //$NON-NLS-1$
-    		Double gr = getDbl(value);
-    		if (gr != null){
-        		info_.gearRatio = gr;
-        		setProperty(property, value);
-        		if (model_ != null) model_.notifyModified();
-    		}
+    		gearRatio(value);
     	}else if(property.equals("centerOfMass")){ //$NON-NLS-1$
-    		CoM(value);
+    		centerOfMass(value);
     	}else if(property.equals("mass")){ //$NON-NLS-1$
     		mass(value);
     	}else if(property.equals("momentsOfInertia")){ //$NON-NLS-1$
-    		double [] I = getDblAry(value);
-    		inertia(I);
+    		inertia(value);
     	}else if (property.equals("tolerance")){ //$NON-NLS-1$
     		Double tr = getDbl(value);
     		if (tr != null){
@@ -639,22 +612,6 @@ public class GrxLinkItem extends GrxTransformItem{
     }
 
     /**
-     * @brief get translation relative to the parent joint
-     * @return translation
-     */
-    public double[] translation(){
-    	return info_.translation;
-    }
-
-    /**
-     * @brief get axis and angle relative to the parent link
-     * @return axis and angle
-     */
-    public double[] rotation(){
-    	return info_.rotation;
-    }
-
-    /**
      * @brief compute forward kinematics
      */
     public void calcForwardKinematics(){
@@ -666,33 +623,33 @@ public class GrxLinkItem extends GrxTransformItem{
     	Matrix3d m3d2 = new Matrix3d();
     	AxisAngle4d a4d = new AxisAngle4d();
     	if (parent_ != null){
-    		parent_.tg_.getTransform(t3dp);
-            v3d.set(translation());
-            if (jointType().equals("rotate")) { //$NON-NLS-1$ //$NON-NLS-2$
+    		t3dp = ((GrxLinkItem)parent_).absTransform();
+            v3d.set(localTranslation());
+            if (jointType_.equals("rotate")) { //$NON-NLS-1$ //$NON-NLS-2$
                 t3d.setTranslation(v3d);
-                m3d.set(new AxisAngle4d(rotation()));
-                a4d.set(jointAxis()[0], jointAxis()[1], jointAxis()[2], jointValue());
+                m3d.set(new AxisAngle4d(localRotation()));
+                a4d.set(jointAxis_[0], jointAxis_[1], jointAxis_[2], jointValue_);
                 m3d2.set(a4d);
                 m3d.mul(m3d2);
                 t3d.setRotation(m3d);
-            } else if(jointType().equals("slide")) { //$NON-NLS-1$
-                v3d2.set(jointAxis()[0], jointAxis()[1], jointAxis()[2]);
-                v3d2.scale(jointValue());
+            } else if(jointType_.equals("slide")) { //$NON-NLS-1$
+                v3d2.set(jointAxis_[0], jointAxis_[1], jointAxis_[2]);
+                v3d2.scale(jointValue_);
                 v3d.add(v3d2);
                 t3d.setTranslation(v3d);
-                m3d.set(new AxisAngle4d(rotation()));
+                m3d.set(new AxisAngle4d(localRotation()));
                 t3d.setRotation(m3d);
-            }else if(jointType().equals("free") || jointType().equals("fixed") ){
+            }else if(jointType_.equals("free") || jointType_.equals("fixed") ){
             	t3d.setTranslation(v3d);
-            	m3d.set(new AxisAngle4d(rotation()));
+            	m3d.set(new AxisAngle4d(localRotation()));
             	t3d.setRotation(m3d);
             }
             t3dp.mul(t3d);
             tg_.setTransform(t3dp);
         }else{
-        	v3d.set(translation());
+        	v3d.set(localTranslation());
         	t3d.setTranslation(v3d);
-        	t3d.setRotation(new AxisAngle4d(rotation()));
+        	t3d.setRotation(new AxisAngle4d(localRotation()));
         	tg_.setTransform(t3d);
         }
         for (int i=0; i<children_.size(); i++){
@@ -706,23 +663,28 @@ public class GrxLinkItem extends GrxTransformItem{
 
     protected GrxLinkItem(String name, GrxPluginManager manager, GrxModelItem model){
     	super(name, manager, model);
-		info_ = new LinkInfo();
-		info_.translation = new double[]{0.0, 0.0, 0.0};
-		info_.rotation = new double[]{0.0, 0.0, 1.0, 0.0};
-		info_.centerOfMass = new double[]{0.0, 0.0, 0.0};
-		info_.inertia = new double[]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-		info_.mass = 1.0;
-		info_.jointAxis = new double[]{0.0, 0.0, 1.0};
-		info_.jointId = -1;
-		info_.gearRatio = 1.0;
-		info_.jointType = new String("rotate"); //$NON-NLS-1$
-		info_.encoderPulse = 1.0;
-		info_.torqueConst = 1.0;
-		info_.ulimit = new double[]{};
-		info_.llimit = new double[]{};
-		info_.uvlimit = new double[]{};
-		info_.lvlimit = new double[]{};
     	_init();
+		jointValue(0);
+        localTranslation(new double[]{0.0, 0.0, 0.0});
+        localRotation(new double[]{0.0, 0.0, 1.0, 0.0});
+        centerOfMass(new double[]{0.0, 0.0, 0.0});
+        inertia(new double[]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0});
+        jointType("rotate");
+        jointAxis(new double[]{0.0, 0.0, 1.0});
+        mass(1.0);
+        ulimit(new double[]{0,0});
+        llimit(new double[]{0,0});
+        uvlimit(new double[]{0,0});
+        lvlimit(new double[]{0,0});
+        gearRatio(1.0);
+        torqueConst(1.0);
+        rotorInertia(1.0);
+        rotorResistor(1.0);
+        encoderPulse(1.0);
+        jointId((short)-1);
+        parentIndex_ = 0;  
+        childIndices_ = null;  
+        AABBmaxNum_ = 0;
     }
 	/**
      * @constructor
@@ -730,8 +692,61 @@ public class GrxLinkItem extends GrxTransformItem{
      */
 	protected GrxLinkItem(String name, GrxPluginManager manager, GrxModelItem model, LinkInfo info) {
 		super(name, manager, model);
-		info_ = info;
 		_init();
+		jointValue(0);
+        localTranslation(info.translation);
+        localRotation(info.rotation);
+        centerOfMass(info.centerOfMass);
+        inertia(info.inertia);
+        jointType(info.jointType);
+        jointAxis(info.jointAxis);
+        mass(info.mass);
+        if (info.ulimit == null || info.ulimit.length == 0)
+        	ulimit(new double[]{0,0});
+        else
+        	ulimit(info.ulimit);
+        if (info.llimit == null || info.llimit.length == 0) 
+        	llimit(new double[]{0,0});
+        else
+        	llimit(info.llimit);
+        uvlimit(info.uvlimit);
+        lvlimit(info.lvlimit);
+        gearRatio(info.gearRatio);
+        torqueConst(info.torqueConst);
+        rotorInertia(info.rotorInertia);
+        rotorResistor(info.rotorResistor);
+        encoderPulse(info.encoderPulse);
+        jointId(info.jointId);
+
+        SensorInfo[] sinfo = info.sensors;
+        if (sinfo != null){
+            for (int i=0; i<sinfo.length; i++) {
+            	GrxSensorItem sensor = new GrxSensorItem(sinfo[i].name, manager_, model_, sinfo[i]);
+            	manager_.itemChange(sensor, GrxPluginManager.ADD_ITEM);
+            	addSensor(sensor);
+            }
+        }
+        
+        HwcInfo[] hinfo = info.hwcs;
+        if (hinfo != null){
+        	for (int i=0; i<hinfo.length; i++) {
+        		GrxHwcItem hwc = new GrxHwcItem(hinfo[i].name, manager_, model_, hinfo[i]);
+        		manager_.itemChange(hwc, GrxPluginManager.ADD_ITEM);
+        		addHwc(hwc);
+        	}
+        }
+        
+        SegmentInfo[] segmentInfo = info.segments;
+        if (segmentInfo != null){
+        	for (int i=0; i<segmentInfo.length; i++) {
+        		GrxSegmentItem segment = new GrxSegmentItem(segmentInfo[i].name, manager_, model_, info, segmentInfo[i]);
+        		manager_.itemChange(segment, GrxPluginManager.ADD_ITEM);
+        		addChild(segment);
+        	}
+        }
+        parentIndex_ = info.parentIndex;  
+        childIndices_ = info.childIndices;  
+        AABBmaxNum_ = info.AABBmaxNum;
     }
 
 	/**
@@ -800,66 +815,20 @@ public class GrxLinkItem extends GrxTransformItem{
 		};
 		setMenuItem(item);
 
-		// menu item : add shape
+		// menu item : add segment
 		item = new Action(){
 			public String getText(){
-				return MessageBundle.get("GrxLinkItem.menu.VRML97"); //$NON-NLS-1$
+				return MessageBundle.get("GrxLinkItem.menu.addSegment"); //$NON-NLS-1$
 			}
 			public void run(){
-				FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
-				fdlg.setFilterExtensions(new String[]{"*.wrl"});
-				fdlg.setFilterPath(getDefaultDir().getAbsolutePath());
-				String fPath = fdlg.open();
-				System.out.println("fPath = "+fPath); //$NON-NLS-1$
-				if( fPath != null ) {
-					addShape( fPath );
-					setDefaultDirectory(new File(fPath).getParent());
-				}
+				InputDialog dialog = new InputDialog( null, getText(),
+						MessageBundle.get("GrxLinkItem.dialog.message.segmentName"), null,null); //$NON-NLS-1$
+				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
+					addSegment( dialog.getValue() );
 			}
 		};
-        setMenuItem(item);
-        
-        // menu item : add primitive shape
-        MenuManager subMenu= new MenuManager(MessageBundle.get("GrxLinkItem.menu.primitiveShape")); //$NON-NLS-1$
-        setSubMenu(subMenu);      
-        item = new Action(){
-			public String getText(){
-				return "Box"; //$NON-NLS-1$
-			}
-			public void run(){
-				addPrimitiveShape("Box"); //$NON-NLS-1$
-			}
-		};
-		subMenu.add(item);
-		item = new Action(){
-			public String getText(){
-				return "Cone"; //$NON-NLS-1$
-			}
-			public void run(){
-				addPrimitiveShape("Cone"); //$NON-NLS-1$
-			}
-		};
-		subMenu.add(item);
-		item = new Action(){
-			public String getText(){
-				return "Cylinder"; //$NON-NLS-1$
-			}
-			public void run(){
-				addPrimitiveShape("Cylinder"); //$NON-NLS-1$
-			}
-		};
-		subMenu.add(item);
-		item = new Action(){
-			public String getText(){
-				return "Sphere"; //$NON-NLS-1$
-			}
-			public void run(){
-				addPrimitiveShape("Sphere"); //$NON-NLS-1$
-			}
-		};
-		subMenu.add(item);
-		setSubMenu(subMenu);
-		
+		setMenuItem(item);
+
         /* diable copy and paste menus until they are implemented
         // menu item : copy
         item = new Action(){
@@ -894,130 +863,53 @@ public class GrxLinkItem extends GrxTransformItem{
 		model_.addLink(this);
 
 		setDbl("tolerance", 0.0); //$NON-NLS-1$
+        setDbl("jointVelocity", 0.0);
 		
 		// CoM display
 		// 0.01 is default scale of ellipsoid
-        switchCom_ = GrxShapeUtil.createBall(0.01, new Color3f(1.0f, 1.0f, 0.0f), 0.5f);
+        switchCom_ = GrxShapeUtil.createBall(0.01, new Color3f(1.0f, 0.5f, 0.5f), 0.5f);
         tgCom_ = (TransformGroup)switchCom_.getChild(0);
         tg_.addChild(switchCom_);
 
         Transform3D tr = new Transform3D();
         tr.setIdentity();
         tg_.setTransform(tr);
-        
+
         SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-
-        modifier.init_ = true;
-        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
-        modifier._calcUpperLower(tg_, tr);
-        
-        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
-        tg_.addChild(switchBb_);
-
-        Vector3d jointAxis = new Vector3d(jointAxis());
+        Vector3d jointAxis = new Vector3d(0.0, 0.0, 1.0);
         switchAxis_ = SceneGraphModifier._makeSwitchNode(modifier._makeAxisLine(jointAxis));
         tg_.addChild(switchAxis_);
 
         setIcon("joint.png"); //$NON-NLS-1$
 
-        jointValue(0);
-        translation(info_.translation);
-        rotation(info_.rotation);
-        CoM(info_.centerOfMass);
-        inertia(info_.inertia);
-        jointAxis(info_.jointAxis);
-        jointType(info_.jointType);
-        mass(info_.mass);
-        setDblAry("ulimit", info_.ulimit); //$NON-NLS-1$
-        setDblAry("llimit", info_.llimit); //$NON-NLS-1$
-        setDblAry("uvlimit", info_.uvlimit); //$NON-NLS-1$
-        setDblAry("lvlimit", info_.lvlimit); //$NON-NLS-1$
-        setDbl("gearRatio", info_.gearRatio); //$NON-NLS-1$
-        setDbl("torqueConst", info_.torqueConst); //$NON-NLS-1$
-        setDbl("rotorInertia", info_.rotorInertia); //$NON-NLS-1$
-        setDbl("rotorResistor", info_.rotorResistor); //$NON-NLS-1$
-        setDbl("encoderPulse", info_.encoderPulse); //$NON-NLS-1$
-        setDbl("jointVelocity", 0.0);
-        setProperty("jointId", String.valueOf(info_.jointId)); //$NON-NLS-1$
-
-        if (info_.ulimit == null || info_.ulimit.length == 0) {
-            info_.ulimit = new double[]{0.0};
-        }
-
-        if (info_.llimit == null || info_.llimit.length == 0){
-            info_.llimit = new double[]{0.0};
-        }
-
-        SensorInfo[] sinfo = info_.sensors;
-        if (sinfo != null){
-            for (int i=0; i<sinfo.length; i++) {
-            	GrxSensorItem sensor = new GrxSensorItem(sinfo[i].name, manager_, model_, sinfo[i]);
-            	addSensor(sensor);
-            }
-        }
-        
-        HwcInfo[] hinfo = info_.hwcs;
-        if (hinfo != null){
-        	for (int i=0; i<hinfo.length; i++) {
-        		GrxHwcItem hwc = new GrxHwcItem(hinfo[i].name, manager_, model_, hinfo[i]);
-        		addHwc(hwc);
-        	}
-        }
-        
         Map<String, Object> userData = new Hashtable<String, Object>();
         userData.put("linkInfo", this); //$NON-NLS-1$
         userData.put("object", model_); //$NON-NLS-1$
-        userData.put("boundingBoxSwitch", switchBb_); //$NON-NLS-1$
         tg_.setUserData(userData);
         tg_.setCapability(TransformGroup.ENABLE_PICK_REPORTING);
         
         switchAABB_ = SceneGraphModifier._makeSwitchNode();
         tg_.addChild(switchAABB_);
-        AABBmaxNum_ = info_.AABBmaxNum;
         setProperty("NumOfAABB","original data"); //String.valueOf(AABBmaxDepth_));
         if(model_.getProperty(getName()+".NumOfAABB")!=null)
         	model_.remove(getName()+".NumOfAABB");
 	}
-
-	/**
-	 * @brief resize bounding box and axis line which are displayed when this joint is selected
-	 */
-	private void resizeBoundingBox(){
-		Transform3D trorg = new Transform3D();
-		tg_.getTransform(trorg);
-        try{
-		Transform3D tr = new Transform3D();
-        tg_.setTransform(tr);
-        
-        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
- 
-        modifier.init_ = true;
-        modifier.mode_ = SceneGraphModifier.RESIZE_BOUNDS;
-        modifier._calcUpperLower(tg_, tr);
-        
-    	Shape3D shapeNode = (Shape3D)switchBb_.getChild(0);
-    	Geometry gm = (Geometry)shapeNode.getGeometry(0);
-
-    	Point3f[] p3fW = modifier._makePoints();
-    	if (gm instanceof QuadArray) {
-    		QuadArray qa = (QuadArray) gm;
-    		qa.setCoordinates(0, p3fW);
-		}
-
-    	shapeNode = (Shape3D)switchAxis_.getChild(0);
-    	gm = (Geometry)shapeNode.getGeometry(0);
-    	
-    	p3fW = modifier.makeAxisPoints(new Vector3d(jointAxis()));
-    	if (gm instanceof LineArray){
-    		LineArray la = (LineArray)gm;
-    		la.setCoordinates(0, p3fW);
-    	}
-        }catch(Exception ex){
+	
+	private void updateAxis(){
+		try{
+			Shape3D shapeNode = (Shape3D)switchAxis_.getChild(0);
+			Geometry gm = (Geometry)shapeNode.getGeometry(0);
+			SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+			Point3f[] p3fW = modifier.makeAxisPoints(new Vector3d(jointAxis_));
+			if (gm instanceof LineArray){
+				LineArray la = (LineArray)gm;
+				la.setCoordinates(0, p3fW);
+			}
+		}catch(Exception ex){
         	ex.printStackTrace();
         }
-        tg_.setTransform(trorg);
-}
+	}
+	
 	
     /**
      * @brief Override clone method
@@ -1038,32 +930,21 @@ public class GrxLinkItem extends GrxTransformItem{
 	 * @param rot new rotation
 	 */
 	public void setTransform(Vector3d pos, Matrix3d rot) {
-		if (parent_ != null) return;
+		if (parent_ != null) return;	// root only
 		
     	if (pos != null){
     		double[] newpos = new double[3];
     		pos.get(newpos);
-    		translation(newpos);
+    		localTranslation(newpos);
     	}
     	if (rot != null){
     		AxisAngle4d a4d = new AxisAngle4d();
     		a4d.setMatrix(rot);
     		double[] newrot = new double[4];
     		a4d.get(newrot);
-    		rotation(newrot);
+    		localRotation(newrot);
     	}
     	if (pos != null || rot != null)	calcForwardKinematics();
-	}
-
-	/**
-	 * @brief set new position and rotation in global frame
-	 * @param pos new position(length = 3)
-	 * @param rot new rotation(length = 9)
-	 */
-	public void setTransform(double[] pos, double[] rot) {
-		Vector3d v3d = new Vector3d(pos);
-		Matrix3d m3d = new Matrix3d(rot);
-		setTransform(v3d, m3d);
 	}
 
 	/**
@@ -1081,11 +962,11 @@ public class GrxLinkItem extends GrxTransformItem{
 	 * @brief limit joint value within limits recursively
 	 */
 	public void setJointValuesWithinLimit() {
-        if (llimit() != null && ulimit() != null && llimit()[0] < ulimit()[0]) {
-            if (jointValue() < llimit()[0])
-                jointValue(llimit()[0]);
-            else if (ulimit()[0] < jointValue())
-                jointValue(ulimit()[0]);
+        if (llimit_ != null && ulimit_ != null && llimit_[0] < ulimit_[0]) {
+            if (jointValue_ < llimit_[0])
+                jointValue(llimit_[0]);
+            else if (ulimit_[0] < jointValue_)
+                jointValue(ulimit_[0]);
         }
         for (int i=0; i<children_.size(); i++){
         	if (children_.get(i) instanceof GrxLinkItem){
@@ -1094,14 +975,6 @@ public class GrxLinkItem extends GrxTransformItem{
         	}
         }
 	}
-
-	/**
-	 * @brief make CoM ball visible/invisible
-	 * @param b true to make visible, false otherwise
-	 */
-    public void setVisibleCoM(boolean b) {
-        switchCom_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
-    }
     
     /**
      * @brief set/unset fucus on this item
@@ -1111,117 +984,18 @@ public class GrxLinkItem extends GrxTransformItem{
      */
     public void setFocused(boolean b){
     	//if (b!=isSelected()) System.out.println("GrxLinkItem.setFocused("+getName()+" of "+model_.getName()+", flag = "+b+")");
-    	super.setFocused(b);
-    	setVisibleCoM(b);
     	if (b){
     		resizeBoundingBox();
-			switchBb_.setWhichChild(Switch.CHILD_ALL);
-    		if (jointType().equals("rotate") || jointType().equals("slide")) { //$NON-NLS-1$ //$NON-NLS-2$
+    		if (jointType_.equals("rotate") || jointType_.equals("slide")) { //$NON-NLS-1$ //$NON-NLS-2$
+    			updateAxis();
     			switchAxis_.setWhichChild(Switch.CHILD_ALL);
-    		}
+    		}else
+    			switchAxis_.setWhichChild(Switch.CHILD_NONE);
     	}else{
-            switchBb_.setWhichChild(Switch.CHILD_NONE);
             switchAxis_.setWhichChild(Switch.CHILD_NONE);
     	}
-    }
-
-    /**
-     * @brief diagonalize symmetric matrix
-     * @param a symmetric matrix
-     * @param U orthogonal matrix
-     * @param W diagonal matrix
-     * @return true if diagonalized successfully, false otherwise
-     */
-    static boolean diagonalize(Matrix3d a, Matrix3d U, Matrix3d W){
-    	int i=0,j=0,l,m,p,q,count;
-    	double max,theta;
-    	Matrix3d oldU = new Matrix3d();
-    	Matrix3d newW = new Matrix3d();
-    	W.set(a);
-
-    	//計算結果としてだされた直行行列を格納するための配列を単位行列に初期化しておく。
-    	for(p=0;p<3;p++) {
-    		for(q=0;q<3;q++) {
-    			if(p==q){
-    				U.setElement(p, q, 1.0);
-    			}else{
-    				U.setElement(p, q, 0.0);
-    			}
-    		}
-    	}
-
-    	for(count=0;count<=10000;count++) {
-
-    		//配列olduは新たな対角化計算を行う前にかけてきた直行行列を保持する。
-    		for(p=0;p<3;p++) {
-    			for(q=0;q<3;q++) {
-    				oldU.setElement(p, q, U.getElement(p, q));
-    			}
-    		}
-    		//非対角要素の中から絶対値の最大のものを見つける
-    		max=0.0;
-    		for(p=0;p<3;p++) {
-    			for(q=0;q<3;q++) {
-    				if(max<Math.abs(W.getElement(p, q)) && p!=q) {
-    					max=Math.abs(W.getElement(p, q));
-    					//その最大のものの成分の行と列にあたる数を記憶しておく。
-    					i=p;
-    					j=q;
-    				}
-    			}
-    		}
-    		/*先ほど選んだ最大のものが指定の値より小さければ対角化終了*/
-    		if(max < 1.0e-10) {
-    			break;
-    		}
-    		/*条件によってシータの値を決める*/
-    		if(W.getElement(i,i)==W.getElement(j,j)){
-    			theta=Math.PI/4.0;
-    		}else{
-    			theta=Math.atan(-2*W.getElement(i,j)/(W.getElement(i,i)-W.getElement(j,j)))/2.0;
-    		}
-
-    		//ここでこのときに実対称行列にかける個々の直行行列uが決まるが 特にここでの計算の意味はない。(する必要はない。)*/
-    		double sth = Math.sin(theta);
-    		double cth = Math.cos(theta);
-
-    		/*ここでいままで実対称行列にかけてきた直行行列を配列Uに入れる。*/
-    		for(p=0;p<3;p++) {
-    			U.setElement(p,i,oldU.getElement(p,i)*cth-oldU.getElement(p,j)*sth);
-    			U.setElement(p,j,oldU.getElement(p,i)*sth+oldU.getElement(p,j)*cth);
-    		}
-
-    		//対角化計算によってでた新たな実対称行列の成分を配列newaに入れる。
-    		newW.setElement(i,i,W.getElement(i,i)*cth*cth
-    				+W.getElement(j,j)*sth*sth-2.0*W.getElement(i,j)*sth*cth);
-    		newW.setElement(j, j, W.getElement(i,i)*sth*sth
-    				+W.getElement(j,j)*cth*cth+2.0*W.getElement(i,j)*sth*cth);
-    		newW.setElement(i,j,0.0);
-    		newW.setElement(j,i,0.0);
-    		for(l=0;l<3;l++) {
-    			if(l!=i && l!=j) {
-    				newW.setElement(i,l,W.getElement(i,l)*cth-W.getElement(j,l)*sth);
-    				newW.setElement(l,i,newW.getElement(i,l));
-    				newW.setElement(j,l,W.getElement(i,l)*sth+W.getElement(j,l)*cth);
-    				newW.setElement(l,j,newW.getElement(j,l));
-    			}
-    		}
-    		for(l=0;l<3;l++) {
-    			for(m=0;m<3;m++) {
-    				if(l!=i && l!=j && m!=i && m!=j) newW.setElement(l, m, W.getElement(l,m));
-    			}
-    		}
-
-    		//次の対角化計算を行う行列の成分を配列aへ上書きする。
-    		W.set(newW);
-
-    	}
-    	if(count==10000) {
-    		System.out.println("対角化するためにはまだ作業を繰り返す必要があります"); //$NON-NLS-1$
-    		return false;
-    	}else{
-    		return true;
-    	}
+    	super.setFocused(b);
+    	switchCom_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
     }
 
 	/**
@@ -1328,7 +1102,7 @@ public class GrxLinkItem extends GrxTransformItem{
         if(mcoll != null)
         {
         	String modelName = model().getName();
-        	Iterator it = mcoll.values().iterator();
+        	Iterator<?> it = mcoll.values().iterator();
         	while(it.hasNext())
         	{
         		GrxCollisionPairItem ci = (GrxCollisionPairItem)it.next();
@@ -1348,7 +1122,76 @@ public class GrxLinkItem extends GrxTransformItem{
             return new ValueEditCombo(jointTypeComboItem_);
         }else if(key.equals("mode")){
             return new ValueEditCombo(modeComboItem_);
+        }else if( key.equals("mass") || key.equals("centerOfMass") || key.equals("momentsOfInertia") ){
+        	return null;
         }
         return super.GetValueEditType(key);
     }
+
+    public void modifyMass(){
+    	double w = 0.0;
+    	for(int i=0; i<children_.size(); i++){
+    		if(children_.get(i) instanceof GrxSegmentItem){
+    			GrxSegmentItem segment = (GrxSegmentItem)children_.get(i);
+    			w += segment.mass_;
+    		}
+    	}
+    	mass(w);
+    	modifyCenterOfMass();
+    	modifyInertia();
+    }
+    
+	public void modifyCenterOfMass() {
+		double[] w = {0.0, 0.0, 0.0};
+    	for(int i=0; i<children_.size(); i++){
+    		if(children_.get(i) instanceof GrxSegmentItem){
+    			GrxSegmentItem segment = (GrxSegmentItem)children_.get(i);
+    			Vector3d com = segment.transformV3(new Vector3d(segment.centerOfMass_));
+    			w[0] += segment.mass_ * com.x;
+    			w[1] += segment.mass_ * com.y;
+    			w[2] += segment.mass_ * com.z;
+    			
+    		}
+    	}
+    	for(int j=0; j<3; j++){
+    		if(linkMass_==0.0)
+    			w[j] = 0.0;
+    		else
+    			w[j] /= linkMass_;
+    	}
+    	centerOfMass(w);
+    	modifyInertia();
+    	model_.updateCoM();
+	}
+
+	public void modifyInertia() {
+		double[] w = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		for(int i=0; i<children_.size(); i++){
+    		if(children_.get(i) instanceof GrxSegmentItem){
+    			GrxSegmentItem segment = (GrxSegmentItem)children_.get(i);
+    			Matrix3d I = new Matrix3d(segment.momentOfInertia_);
+    			Matrix3d R = new Matrix3d(); 
+    			segment.getTransform().get(R);
+    			Matrix3d W = new Matrix3d(); 
+    			W.mul(R,I);
+    			I.mulTransposeRight(W,R);   			
+    			
+    			Vector3d com = segment.transformV3(new Vector3d(segment.centerOfMass_));
+    		    double x = com.x - linkCenterOfMass_[0];
+   		        double y = com.y - linkCenterOfMass_[1];
+   		        double z = com.z - linkCenterOfMass_[2];
+   		        double m = segment.mass_;
+   		        w[0] += I.m00 +  m * (y*y + z*z);
+   		        w[1] += I.m01 - m * x * y;
+   		        w[2] += I.m02 - m * x * z;
+   		        w[3] += I.m10 - m * y * x;
+   		        w[4] += I.m11 + m * (z*z + x*x);
+   		        w[5] += I.m12 - m * y * z;
+   		        w[6] += I.m20 - m * z * x;
+   		        w[7] += I.m21 - m * z * y;
+   		        w[8] += I.m22 + m * (x*x + y*y);
+    		}
+		}
+		inertia(w);
+	}
 }

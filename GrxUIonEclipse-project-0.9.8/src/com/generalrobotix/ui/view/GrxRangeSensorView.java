@@ -171,7 +171,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     	if (currentSensor_ != null && currentSensorState_ != null){
     		double step = currentSensor_.getDbl("scanStep", 0.1);
     		double maxD = currentSensor_.getDbl("maxDistance", 10.0);
-    		if (currentSensor_.id() >= 0 && currentSensor_.id() < currentSensorState_.range.length){
+    		if (currentSensor_.id_ >= 0 && currentSensor_.id_ < currentSensorState_.range.length){
     	    	Rectangle bounds = canvas_.getBounds();
     	    	if(bounds.height < bounds.width) {
     	    		bounds.x = (bounds.width - bounds.height) / 2;
@@ -182,7 +182,7 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     	    	}
     	    	// I don't know why "-5" is required. An arc shifts slightly right without it.
     	    	e.gc.drawArc(bounds.x-5,bounds.y-5,bounds.width-1, bounds.height-1,0,360);
-    			double [] distances = currentSensorState_.range[currentSensor_.id()];
+    			double [] distances = currentSensorState_.range[currentSensor_.id_];
      			int half = distances.length/2;
     			int x,y,oldx,oldy;
     			int centerx = bounds.x + bounds.width / 2;

@@ -113,6 +113,26 @@ module OpenHRP {
   
   /**
      @if jp
+     セグメントの情報を格納する構造体
+     複数個のセグメントノードを持つリンクをGUIから編集するために使用
+     @endif
+   */
+  struct SegmentInfo
+  {
+    string      name;           ///< セグメント名  
+    double	    mass;		    ///< 質量  
+    DblArray3   centerOfMass;	///< 重心位置  
+    DblArray9   inertia;	    ///< 慣性行列  
+    DblArray12	transformMatrix;
+
+    /// TransformedShapeIndexのインデックス列  
+    sequence<short> shapeIndices;
+  };
+
+  typedef sequence<SegmentInfo> SegmentInfoSequence;
+
+  /**
+     @if jp
      各リンクの情報を格納する構造体。
      旧IDLでは interface としていたが、新IDLでは struct となることに注意。
      equivalentInertia は廃止。
@@ -172,6 +192,7 @@ module OpenHRP {
 
     SensorInfoSequence sensors; ///< 本リンクに設置されたセンサの情報  
     HwcInfoSequence hwcs;
+    SegmentInfoSequence segments;
 
     /**
        @if jp

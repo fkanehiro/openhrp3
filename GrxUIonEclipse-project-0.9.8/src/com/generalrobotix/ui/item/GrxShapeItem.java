@@ -43,6 +43,7 @@ import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3d;
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Point2f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
@@ -79,7 +80,7 @@ import com.sun.j3d.utils.picking.PickTool;
 /**
  * @brief sensor item
  */
-public class GrxShapeItem extends GrxTransformItem{
+public class GrxShapeItem extends GrxShapeTransformItem{
     public ShapeInfo[] shapes_;
     public AppearanceInfo[] appearances_;
     public MaterialInfo[] materials_;
@@ -88,10 +89,8 @@ public class GrxShapeItem extends GrxTransformItem{
 	private int primitiveFlag = Primitive.GEOMETRY_NOT_SHARED | Primitive.GENERATE_NORMALS | Primitive.GENERATE_TEXTURE_COORDS;
 	private Appearance appearance_=null;
 	private BranchGroup bg_;
-    
-    protected Switch switchBb_;
 
-    /**
+	/**
      * @brief constructor
      * @param name name of this item
      * @param manager PluginManager
@@ -110,29 +109,28 @@ public class GrxShapeItem extends GrxTransformItem{
         
    	}
    	
-   	public void loadShape(TransformedShapeIndex tsi) {
+   	public void loadShape(Matrix4d shapeT, int index, Matrix4d segmentT) {
    		GrxModelItem model = model();
-     	Transform3D t3d = new Transform3D();
     	
     	shapes_ = new ShapeInfo[1];
         appearances_ = new AppearanceInfo[1];
         materials_ = new MaterialInfo[1];
         textures_ = new TextureInfo[1];
-        double[] transform = tsi.transformMatrix;
-        Vector3d v3d = new Vector3d(transform[3], transform[7], transform[11]);
-        Matrix3d m3d = new Matrix3d(transform[0], transform[1], transform[2],
-        		transform[4], transform[5], transform[6],
-                transform[8], transform[9], transform[10]);
-        t3d.setTranslation(v3d);
-        t3d.setRotation(m3d);
-        setShapeInfofromModel(tsi.shapeIndex, 0);
+
+        Matrix4d invSegmentT = new Matrix4d();
+        invSegmentT.invert(segmentT);
+        Matrix4d shapeT0 = new Matrix4d();
+        shapeT0.mul(invSegmentT, shapeT);
+        Transform3D t3d = new Transform3D(shapeT0);
+   	
+        setShapeInfofromModel((short) index, 0);
         Shape3D shape3d = createShape3D(shapes_[0], appearances_[0], materials_[0], textures_[0]);
     	bg_.addChild(shape3d);
     	tg_.addChild(bg_);
-        setPrimitiveProperty(model.shapes[tsi.shapeIndex]);
+        setPrimitiveProperty(model.shapes[index]);
     	
        	tg_.setTransform(t3d);
-        setURL(model.shapes[tsi.shapeIndex].url);
+        setURL(model.shapes[index].url);
 		
         initialize(t3d);
 
@@ -225,56 +223,40 @@ public class GrxShapeItem extends GrxTransformItem{
     	initialize(t3d);
     	setFltAry("diffuseColor", materials_[0].diffuseColor); //$NON-NLS-1$
    	}
-   	
-   	public void loadInlineShape(TransformedShapeIndex[] tsi,	double[] inlinedSTM, List index) {
-   		int n = index.size();
+ 	
+   	public void loadInlineShape(Matrix4d[] shapeT, Matrix4d inlinedT, int[] index, Matrix4d segmentT){
+   		int n = index.length;
     	shapes_ = new ShapeInfo[n];
     	appearances_ = new AppearanceInfo[n];
     	materials_ = new MaterialInfo[n];
     	textures_ = new TextureInfo[n];
-    	for(int k=0; k<n; k++){
-    		int i = (Integer)index.get(k);
-    		setShapeInfofromModel(tsi[i].shapeIndex, k);
+    	for(int i=0; i<n; i++){
+    		setShapeInfofromModel((short) index[i], i);
     	} 
     	
-    	setShape(tsi, inlinedSTM, index);
-    	setURL(model().shapes[tsi[(Integer)index.get(0)].shapeIndex].url);
+    	setShape(shapeT, inlinedT, n, segmentT);
+    	setURL(model().shapes[index[0]].url);
    	}
-   	
-   	private void setShape(TransformedShapeIndex[] tsi, double[] inlinedSTM, List index){
-     	Transform3D t3d = new Transform3D();
-    	Vector3d v3d = new Vector3d(inlinedSTM[3], inlinedSTM[7], inlinedSTM[11]);
-    	Matrix3d m3d = new Matrix3d(inlinedSTM[0], inlinedSTM[1], inlinedSTM[2],
-    			inlinedSTM[4], inlinedSTM[5], inlinedSTM[6],
-    			inlinedSTM[8], inlinedSTM[9], inlinedSTM[10]);  
-    	t3d.setTranslation(v3d);
-    	t3d.setRotation(m3d);
-    	Transform3D inverset3d = new Transform3D();
-    	inverset3d.invert(t3d);
-    		
-    	int n = tsi.length;
-    	if(index!=null)
-    		n = index.size();
-    	for(int k=0; k<n; k++){
-    		int i=k;
-    		if(index!=null)
-    			i = (Integer)index.get(k);
+ 
+   	private void setShape(Matrix4d[] shapeT, Matrix4d inlinedT, int n, Matrix4d segmentT){
+   		Matrix4d invertIT = new Matrix4d();
+   		invertIT.invert(inlinedT);
+    	for(int i=0; i<n; i++){
     		TransformGroup tfg = new TransformGroup();
-    		double[] transform = tsi[i].transformMatrix;
-    		v3d = new Vector3d(transform[3], transform[7], transform[11]);
-    		m3d = new Matrix3d(transform[0], transform[1], transform[2],
-    				transform[4], transform[5], transform[6],
-                    transform[8], transform[9], transform[10]);
-    		Transform3D transform3d = new Transform3D();
-    		transform3d.setTranslation(v3d);
-    		transform3d.setRotation(m3d);
-    		transform3d.mul(inverset3d, transform3d);
+    		Matrix4d shapeT0 = new Matrix4d();
+    		shapeT0.mul(invertIT, shapeT[i]);
+    		Transform3D transform3d = new Transform3D(shapeT0);
     		tfg.setTransform(transform3d);
     		
-     		Shape3D linkShape3D = createShape3D(shapes_[k], appearances_[k], materials_[k], textures_[k]);
+     		Shape3D linkShape3D = createShape3D(shapes_[i], appearances_[i], materials_[i], textures_[i]);
         	tfg.addChild(linkShape3D);
     		tg_.addChild(tfg);
-    	} 
+    	}
+    	Matrix4d invSegmentT = new Matrix4d();
+    	invSegmentT.invert(segmentT);
+        Matrix4d inlinedT0 = new Matrix4d();
+        inlinedT0.mul(invSegmentT, inlinedT);
+   		Transform3D t3d = new Transform3D(inlinedT0);
        	tg_.setTransform(t3d);
 		
         initialize(t3d);
@@ -292,6 +274,7 @@ public class GrxShapeItem extends GrxTransformItem{
     	appearances_ = new AppearanceInfo[n];
     	materials_ = new MaterialInfo[n];
     	textures_ = new TextureInfo[n];
+    	Matrix4d[] shapeT = new Matrix4d[n];
     	for(int k=0; k<n; k++){
     		ShapeInfo shapeInfo = shapes[tsi[k].shapeIndex];
    	        AppearanceInfo appearanceInfo = null;
@@ -310,12 +293,10 @@ public class GrxShapeItem extends GrxTransformItem{
    	        appearances_[k] = appearanceInfo;
    	        materials_[k] = materialInfo;
    	        textures_[k] = textureInfo;
+   	        double[] m = tsi[k].transformMatrix;
+   	        shapeT[k] = new Matrix4d(m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[9],m[10],m[11],0,0,0,1);
     	} 
-   		        
-        double[] inlinedSTM = {1,0,0,0,
-        						0,1,0,0,
-        						0,0,1,0};
-        setShape(tsi, inlinedSTM, null);
+        setShape(shapeT, new Matrix4d(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1), n, new Matrix4d(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
    	}
    	
    	protected void initialize(Transform3D t3d){
@@ -332,23 +313,9 @@ public class GrxShapeItem extends GrxTransformItem{
         double [] rot = new double[4];
         a4d.get(rot);
         rotation(rot);
-        
-        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
 
-        modifier.init_ = true;
-        modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
-        Transform3D tr = new Transform3D();
-        Transform3D trorg = new Transform3D();
-		tg_.getTransform(trorg);
-		tg_.setTransform(tr);
-        modifier._calcUpperLower(tg_, tr);
-        tg_.setTransform(trorg);
-        
-        Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
-        switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
-        tg_.addChild(switchBb_);
-        
-		getMenu().clear();
+        resizeBoundingBox();
+        getMenu().clear();
 
 		Action item;
 
@@ -448,28 +415,7 @@ public class GrxShapeItem extends GrxTransformItem{
         materials_[id] = materialInfo;
         textures_[id] = textureInfo;
     }
- /*       
-    private void addShape(TransformGroup tg,  int id){
-    	Shape3D linkShape3D = createShape3D(shapes_[id], appearances_[id], materials_[id], textures_[id]);
-    	tg.addChild(linkShape3D);
 
-    	/*
-        if(model.shapes[shapeIndex].primitiveType == ShapePrimitiveType.SP_MESH ){
-        	Shape3D linkShape3D = createShape3D(shapeInfo, appearanceInfo, materialInfo, textureInfo);
-        	tg.addChild(linkShape3D);
-        }else{
-        	Primitive primitive = createPrimitive(shapeInfo, appearanceInfo, materialInfo, textureInfo);
-        	for (int j=0; j<primitive.numChildren(); j++){
-        		if (primitive.getChild(j) instanceof Shape3D){
-        			Shape3D shape = (Shape3D)primitive.getChild(j);
-        			shape.setCapability(Shape3D.ALLOW_APPEARANCE_READ);
-        		}
-        	}
-        	tg.addChild(primitive);
-        }
-        
-    }
-    */
 	/**
      * @brief create Shape3D object from shapeInfo, appearanceInfo, MaterialInfo and TextureInfo
      * @param shapeInfo shape information
@@ -953,35 +899,6 @@ public class GrxShapeItem extends GrxTransformItem{
     	diffuseColor(newValue);
     }
     
-    private void resizeBoundingBox(){
-    	Transform3D trorg = new Transform3D();
-		tg_.getTransform(trorg);
-        try{
-			Transform3D tr = new Transform3D(); 
-			tg_.setTransform(tr);
-			
-	        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
-	 
-	        modifier.init_ = true;
-	        modifier.mode_ = SceneGraphModifier.RESIZE_BOUNDS;
-	        modifier._calcUpperLower(tg_, tr);
-	        
-	    	Shape3D shapeNode = (Shape3D)switchBb_.getChild(0);
-	    	Geometry gm = (Geometry)shapeNode.getGeometry(0);
-	
-	    	Point3f[] p3fW = modifier._makePoints();
-	    	if (gm instanceof QuadArray) {
-	    		QuadArray qa = (QuadArray) gm;
-	    		qa.setCoordinates(0, p3fW);
-			}
-	
-	    }catch(Exception ex){
-	        	ex.printStackTrace();
-
-	    }
-	    tg_.setTransform(trorg);
-    }
-    
     public class TextureInfoLocal
     {
         public	short		numComponents;
@@ -1212,15 +1129,6 @@ public class GrxShapeItem extends GrxTransformItem{
 		restoreColor(tg_, 0);
 	}
 	
-	
-	public void setFocused(boolean b){
-		if (b){
-			switchBb_.setWhichChild(Switch.CHILD_ALL);
-		}else{
-			switchBb_.setWhichChild(Switch.CHILD_NONE);
-		}
-	}
-
 	private void setPrimitiveProperty(ShapeInfo shapeInfo){
 		switch(shapeInfo.primitiveType.value()){
 		case ShapePrimitiveType._SP_BOX :

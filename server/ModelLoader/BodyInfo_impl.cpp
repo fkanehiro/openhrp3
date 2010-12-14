@@ -210,9 +210,23 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
     try	{
         vector<VrmlProtoInstancePtr>& segmentNodes = jointNodeSet->segmentNodes;
         int numSegment = segmentNodes.size();
+        links_[index].segments.length(numSegment);
         for(int i = 0 ; i < numSegment ; ++i){
+            SegmentInfo_var segmentInfo(new SegmentInfo());
             Matrix44 T = jointNodeSet->transforms.at(i);
+            long s = links_[index].shapeIndices.length();
+            int p = 0;
+            for(int row=0; row < 3; ++row){
+                for(int col=0; col < 4; ++col){
+                    segmentInfo->transformMatrix[p++] = T(row, col);
+                }
+            }
             traverseShapeNodes(segmentNodes[i].get(), T, links_[index].shapeIndices, links_[index].inlinedShapeTransformMatrices, &topUrl());
+            long e =links_[index].shapeIndices.length();
+            segmentInfo->shapeIndices.length(e-s);
+            for(int j=0, i=s; i<e; i++)
+                segmentInfo->shapeIndices[j++] = i;
+            links_[index].segments[i] = segmentInfo;
         }
         setJointParameters(index, jointNodeSet->jointNode);
         setSegmentParameters(index, jointNodeSet);
@@ -294,6 +308,7 @@ void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr join
 
     vector<VrmlProtoInstancePtr>& segmentNodes = jointNodeSet->segmentNodes;
     int numSegment = segmentNodes.size();
+
     linkInfo.mass = 0.0;
     for( int i = 0 ; i < 3 ; ++i ) {
         linkInfo.centerOfMass[i] = 0.0;
@@ -311,10 +326,11 @@ void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr join
     std::vector<Vector4> centerOfMassArray;
     std::vector<double> massArray;
     for(int i = 0 ; i < numSegment ; ++i){
+        SegmentInfo& segmentInfo = linkInfo.segments[i];
         Matrix44 T = jointNodeSet->transforms.at(i);
-        DblArray3 centerOfMass;
-        CORBA::Double mass;
-        DblArray9 inertia;
+        DblArray3& centerOfMass = segmentInfo.centerOfMass;
+        CORBA::Double& mass =segmentInfo.mass;
+        DblArray9& inertia = segmentInfo.inertia;
         TProtoFieldMap& fmap = segmentNodes[i]->fields;
         copyVrmlField( fmap, "centerOfMass",     centerOfMass );
         copyVrmlField( fmap, "mass",             mass );
@@ -327,8 +343,10 @@ void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr join
             linkInfo.centerOfMass[j] = c1(j) * mass + linkInfo.centerOfMass[j] * linkInfo.mass;
         }
         linkInfo.mass += mass;
-        for(int j=0; j<3; j++){
-            linkInfo.centerOfMass[j] /= linkInfo.mass;
+        if(linkInfo.mass > 0.0){
+            for(int j=0; j<3; j++){
+                linkInfo.centerOfMass[j] /= linkInfo.mass;
+            }
         }
         Matrix33 I;
         I = inertia[0], inertia[1], inertia[2], inertia[3], inertia[4], inertia[5], inertia[6], inertia[7], inertia[8];
@@ -337,8 +355,9 @@ void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr join
         Matrix33 I1(R * I * trans(R));
         for(int j=0; j<3; j++){
             for(int k=0; k<3; k++)
-                linkInfo.inertia[j*3+k] = I1(j,k);    
+                linkInfo.inertia[j*3+k] += I1(j,k);    
         }
+        segmentInfo.name = CORBA::string_dup( segmentNodes[i]->defName.c_str() );
     }
 
     for(int i = 0 ; i < numSegment ; ++i){

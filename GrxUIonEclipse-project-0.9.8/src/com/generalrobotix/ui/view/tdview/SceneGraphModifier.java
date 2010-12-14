@@ -439,7 +439,7 @@ public class SceneGraphModifier {
         lines.setCoordinates(0, points);                // 座標
         Color3f[] colors = new Color3f[points.length];
         Vector3f[] normals = new Vector3f[points.length];
-        Color3f color = new Color3f(0.0f, 0.0f, 1.0f);
+        Color3f color = new Color3f(1.0f, 0.0f, 1.0f);
         Vector3f normal = new Vector3f(0.0f, 0.0f, 1.0f);
         for (int i = 0; i < points.length; i++) {
             colors[i] = color;

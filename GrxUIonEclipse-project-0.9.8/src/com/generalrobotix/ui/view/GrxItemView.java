@@ -55,6 +55,7 @@ import com.generalrobotix.ui.item.GrxHwcItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxSegmentItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.util.OrderedHashMap;
 
@@ -172,14 +173,12 @@ public class GrxItemView extends GrxBaseView {
         Iterator<Class<? extends GrxBaseItem>> it = mode.activeItemClassList_.listIterator();
         while (it.hasNext()){
         	Class<? extends GrxBaseItem> local = (Class<? extends GrxBaseItem>)it.next();
-        	if ( manager_.isItemVisible( local ) ){
-        		Map<String, ?> map = (Map<String, ?>) manager_.getItemMap(local);
-        		Iterator itI = map.values().iterator();
-                while(itI.hasNext()){
-                	GrxBaseItem baseItem = (GrxBaseItem) itI.next();
-                	baseItems_.add(baseItem);
-                	baseItem.addObserver(this);
-                }
+        	Map<String, ?> map = (Map<String, ?>) manager_.getItemMap(local);
+        	Iterator itI = map.values().iterator();
+        	while(itI.hasNext()){
+        		GrxBaseItem baseItem = (GrxBaseItem) itI.next();
+        		baseItems_.add(baseItem);
+        		baseItem.addObserver(this);
         	}
         }
 
@@ -234,6 +233,12 @@ public class GrxItemView extends GrxBaseView {
 			// GrxLinkItem -> 子供のリンク,センサ、形状を返す
 			if (o instanceof GrxLinkItem){
 				GrxLinkItem link = (GrxLinkItem)o;
+				return link.children_.toArray();
+			}
+			
+			// GrxLinkItem -> 子供のリンク,センサ、形状を返す
+			if (o instanceof GrxSegmentItem){
+				GrxSegmentItem link = (GrxSegmentItem)o;
 				return link.children_.toArray();
 			}
 			
@@ -328,10 +333,16 @@ public class GrxItemView extends GrxBaseView {
 	public void registerItemChange(GrxBaseItem item, int event){
 		switch(event){
 	    	case GrxPluginManager.ADD_ITEM:
-	    		item.addObserver(this);
+	    		if(!baseItems_.contains(item)){
+	    			item.addObserver(this);
+	    			baseItems_.add(item);
+	    		}
 	    		break;
 	    	case GrxPluginManager.REMOVE_ITEM:
-	    		item.deleteObserver(this);
+	    		if(baseItems_.contains(item)){
+	    			item.deleteObserver(this);
+	    			baseItems_.remove(item);
+	    		}
 	    		break;
 	    	default:
 	    		break;

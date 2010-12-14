@@ -78,7 +78,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 				"true"+PreferenceConstants.SEPARATOR+"true");
 		
 		store.setDefault(PreferenceConstants.MODE, "Simulation");
-		store.setDefault(PreferenceConstants.MODE+"."+PreferenceConstants.ITEMINDEX, "0,1,2,3,4,5,6,7,8,9,10");
+		store.setDefault(PreferenceConstants.MODE+"."+PreferenceConstants.ITEMINDEX, "0,1,2,3,4,5,6,7,8,9,10,11");
 		//   複数のモードを設定する場合		//
 		//	 mode="Simulation::Robot"		//
 		//	 itemIndex="0,1,2,3,4,5,6,7,8,9::0,2,4"		//
@@ -89,14 +89,16 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 				PreferenceConstants.SHAPEITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.SENSORITEM+PreferenceConstants.SEPARATOR+
 				PreferenceConstants.HWCITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.WORLDSTATEITEM+PreferenceConstants.SEPARATOR+
 				PreferenceConstants.COLLISIONPAIRITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.GRAPHITEM+PreferenceConstants.SEPARATOR+
-				PreferenceConstants.PYTHONSCRIPTITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.PATHPLANNINGALGORITHMITEM);
+				PreferenceConstants.PYTHONSCRIPTITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.PATHPLANNINGALGORITHMITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.SEGMENTITEM);
 		store.setDefault(PreferenceConstants.ITEM+"."+PreferenceConstants.VISIBLE,
 				"true"+PreferenceConstants.SEPARATOR+
 				"true"+PreferenceConstants.SEPARATOR+"false"+PreferenceConstants.SEPARATOR+
 				"false"+PreferenceConstants.SEPARATOR+"false"+PreferenceConstants.SEPARATOR+
 				"false"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
 				"true"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
-				"true"+PreferenceConstants.SEPARATOR+"true");
+				"true"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
+				"false");
 		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASS,"");
 		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASSPATH,"");
 		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.VISIBLE,"");

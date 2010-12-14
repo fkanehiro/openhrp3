@@ -21,8 +21,8 @@ import jp.go.aist.hrp.simulator.HwcInfo;
 import com.generalrobotix.ui.GrxPluginManager;
 
 @SuppressWarnings("serial")
-public class GrxHwcItem extends GrxTransformItem{
-	HwcInfo info_;
+public class GrxHwcItem extends GrxShapeTransformItem{
+	//HwcInfo info_;
 	
 	/**
      * @constructor
@@ -30,14 +30,19 @@ public class GrxHwcItem extends GrxTransformItem{
      */
 	protected GrxHwcItem(String name, GrxPluginManager manager, GrxModelItem model, HwcInfo info) {
 		super(name, manager, model);
-		info_ = info;
+		//info_ = info;
 		
-    	setProperty("id", String.valueOf(info_.id));
-    	translation(info_.translation);
-    	rotation(info_.rotation);
-    	setURL(info_.url);
+    	setProperty("id", String.valueOf(info.id));
+    	translation(info.translation);
+    	rotation(info.rotation);
+    	setURL(info.url);
 
     	setIcon("camera.png");
+    	
+    	int n = info.shapeIndices.length;
+        for(int i=0; i<n; i++)
+        	addTransformedShapeIndex(info.shapeIndices[i]);
+        buildShapeTransforms(info.inlinedShapeTransformMatrices);
 
     }
 }
