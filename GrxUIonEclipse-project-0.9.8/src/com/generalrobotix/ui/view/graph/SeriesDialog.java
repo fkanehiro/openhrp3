@@ -296,7 +296,7 @@ public class SeriesDialog extends Dialog {
 					if(model!=null){
 						GrxLinkItem link = model.getLink(linkName);
 						if(link!=null)
-							if(link.jointType().equals("rotate") || link.jointType().equals("slide") )
+							if(link.jointType_.equals("rotate") || link.jointType_.equals("slide") )
 							isControlJoint = true;
 					}
 					if (tableModel_.getRowCount() > 0) {

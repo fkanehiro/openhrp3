@@ -51,6 +51,7 @@ public class PreferenceConstants {
 	public static final String GRAPHITEM="com.generalrobotix.ui.item.GrxGraphItem";
 	public static final String PYTHONSCRIPTITEM="com.generalrobotix.ui.item.GrxPythonScriptItem";
 	public static final String PATHPLANNINGALGORITHMITEM="com.generalrobotix.ui.item.GrxPathPlanningAlgorithmItem";
+	public static final String SEGMENTITEM="com.generalrobotix.ui.item.GrxSegmentItem";
 	
 	public static final String INITIALPROJECT="initialProjectFile";
 

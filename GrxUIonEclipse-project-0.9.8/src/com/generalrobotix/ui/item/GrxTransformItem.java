@@ -18,10 +18,18 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import javax.media.j3d.BadTransformException;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Geometry;
+import javax.media.j3d.QuadArray;
+import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import com.generalrobotix.ui.util.AxisAngle4d;
+
+import javax.vecmath.Color3f;
+import javax.vecmath.Matrix3d;
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 
 import jp.go.aist.hrp.simulator.ModelLoader;
@@ -36,20 +44,21 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
 import com.generalrobotix.ui.util.MessageBundle;
+import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
 
 /**
  * @brief item which have a transformation
  */
 @SuppressWarnings("serial")
 public class GrxTransformItem extends GrxBaseItem {
-	public TransformGroup tg_;
+	public TransformGroup tg_;	
 	public BranchGroup bg_;
 	
 	public GrxTransformItem parent_;
 	public Vector<GrxTransformItem> children_;
 	
 	private Switch switchAxes_;
-	
+	private Switch switchBb_;
 	protected GrxModelItem model_;
 
     /**
@@ -78,7 +87,9 @@ public class GrxTransformItem extends GrxBaseItem {
         
         bg_.addChild(tg_);
 
-        children_ = new Vector<GrxTransformItem>();
+        createBoundingBox();
+        
+        children_ = new Vector<GrxTransformItem>();   
 
     }
 
@@ -125,126 +136,6 @@ public class GrxTransformItem extends GrxBaseItem {
     }
 
     /**
-     * @brief set new translation from string
-     * @param value string of space separated array of double(length=3)
-     * @return true if set successfully, false otherwise
-     */
-    public boolean translation(String value){
-    	double [] pos = getDblAry(value);
-    	if (translation(pos)){
-            return true;
-    	}else{
-    		return false;
-    	}
-    }
-    
-    /**
-     * @brief set new translation to TransformGroup
-     * @param pos new translation(length=3)
-     * @return true if new translation is set successfully, false otherwise
-     */
-    public boolean translation(double[] pos){
-    	if (pos == null || pos.length != 3) return false;
-        Transform3D t3d = new Transform3D();
-        tg_.getTransform(t3d);
-        Vector3d v = new Vector3d(pos);
-        t3d.setTranslation(v);
-        setDblAry("translation", pos, 4);
-        if (model_ != null && parent_ != null) model_.notifyModified();
-        try{
-        	tg_.setTransform(t3d);
-        }catch(BadTransformException e){
-        	System.out.println("Invalid translation:"+v+" is applied to "+getName());
-        	return false;
-        }
-        return true;
-    }
-
-    /**
-     * @brief set new rotation from string
-     * @param value string of space separated array of double(length=4)
-     * @return true if set successfully, false otherwise
-     */
-    public boolean rotation(String value){
-    	double [] rot = getDblAry(value);
-    	if (rotation(rot)){
-            return true;
-    	}else{
-    		return false;
-    	}
-    }
-    
-    /**
-     * @breif set new rotation to TransformGroup
-     * @param rot new rotation(axis and angle, length=4)
-	 * @return true if new rotation is set successfully, false otherwise
-     */
-    public boolean rotation(double[] rot){
-    	if (rot == null || rot.length != 4) return false;
-        Transform3D t3d = new Transform3D();
-        tg_.getTransform(t3d);
-        t3d.setRotation(new AxisAngle4d(rot));
-        tg_.setTransform(t3d);
-        setDblAry("rotation", rot, 4);
-        if (model_ != null && parent_ != null) model_.notifyModified();
-        return true;
-    }
-
-    /**
-     * @brief create and add a new shape as a child
-     * @param url URL of the file where shape is described
-     */
-    public void addShape(String fPath){
-		if( fPath != null ) {
-            try {
-                ModelLoader mloader = ModelLoaderHelper.narrow(
-                        GrxCorbaUtil.getReference("ModelLoader"));
-                    
-                SceneInfo sInfo = mloader.loadSceneInfo(fPath);
-                int n=children_.size();
-                GrxShapeItem shapeItem = new GrxShapeItem(getName()+"_shape_"+n, manager_, model_);
-                shapeItem.loadnewInlineShape(sInfo);
-                shapeItem.setURL(fPath);
-                addChild(shapeItem);
-                
-            	//manager_.reselectItems();
-                manager_.itemChange(shapeItem, GrxPluginManager.ADD_ITEM);
-            } catch(ModelLoaderException me){
-                MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
-                                        MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
-                                        MessageBundle.get("GrxModelItem.dialog.message.loadSceneError") +"\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                                        fPath + "\n\n" + me.description); //$NON-NLS-1$
-                System.out.println("Failed to load scene info:" + fPath);
-                me.printStackTrace();
-            } catch(Exception ex){
-                System.out.println("Failed to load scene info:" + fPath);
-                ex.printStackTrace();
-            }
-		}
-
-    }
-    
-    public void addPrimitiveShape(String name){
-    	int n=children_.size();
-    	int type;
-    	if(name.equals("Box"))
-    		type = ShapePrimitiveType._SP_BOX;
-    	else if(name.equals("Cone"))
-    		type = ShapePrimitiveType._SP_CONE;
-    	else if(name.equals("Cylinder"))
-    		type = ShapePrimitiveType._SP_CYLINDER;
-    	else if(name.equals("Sphere"))
-    		type = ShapePrimitiveType._SP_SPHERE;
-    	else
-    		type = -1;
-        GrxShapeItem shapeItem = new GrxShapeItem(getName()+"_"+name+"_"+n, manager_, model_);
-        shapeItem.createnewPrimitiveShape(type);
-    	addChild(shapeItem);
-    	//manager_.reselectItems();
-        manager_.itemChange(shapeItem, GrxPluginManager.ADD_ITEM);
-    }
-
-    /**
      * @brief get model item to which this item belongs
      * @return model item
      */
@@ -255,12 +146,51 @@ public class GrxTransformItem extends GrxBaseItem {
 	public void setFocused(boolean b){
 		super.setFocused(b);
 		switchAxes_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
+		switchBb_.setWhichChild(b? Switch.CHILD_ALL:Switch.CHILD_NONE);
 	}
+	
+	private void createBoundingBox(){
+		 SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+		 modifier.init_ = true;
+	     modifier.mode_ = SceneGraphModifier.CREATE_BOUNDS;
+	     Color3f color = new Color3f(1.0f, 0.0f, 0.0f);
+	     switchBb_ =  SceneGraphModifier._makeSwitchNode(modifier._makeBoundingBox(color));
+	     tg_.addChild(switchBb_);
+	}
+	
+	protected void resizeBoundingBox(){
+    	Transform3D trorg = new Transform3D();
+		tg_.getTransform(trorg);
+        try{
+			Transform3D tr = new Transform3D(); 
+			tg_.setTransform(tr);
+			
+	        SceneGraphModifier modifier = SceneGraphModifier.getInstance();
+	 
+	        modifier.init_ = true;
+	        modifier.mode_ = SceneGraphModifier.RESIZE_BOUNDS;
+	        modifier._calcUpperLower(tg_, tr);
+	        
+	    	Shape3D shapeNode = (Shape3D)switchBb_.getChild(0);
+	    	Geometry gm = (Geometry)shapeNode.getGeometry(0);
+	
+	    	Point3f[] p3fW = modifier._makePoints();
+	    	if (gm instanceof QuadArray) {
+	    		QuadArray qa = (QuadArray) gm;
+	    		qa.setCoordinates(0, p3fW);
+			}
+	
+	    }catch(Exception ex){
+	        	ex.printStackTrace();
+
+	    }
+	    tg_.setTransform(trorg);
+    }
 	
 	public void gatherSensors(String type, List<GrxSensorItem> sensors){
 		if (this instanceof GrxSensorItem){
 			GrxSensorItem sensor = (GrxSensorItem)this;
-			if (sensor.type().equals(type)){
+			if (sensor.type_.equals(type)){
 				sensors.add(sensor);
 			}
 		}
@@ -268,4 +198,17 @@ public class GrxTransformItem extends GrxBaseItem {
 			children_.get(i).gatherSensors(type, sensors);
 		}
 	}
+	
+	// (Vector3)v = (Matrix4d)tg_*(Vector3d)v 
+	public Vector3d transformV3  (Vector3d v){
+		Transform3D t3d = new Transform3D();
+		Vector3d p = new Vector3d();
+		Vector3d _v = new Vector3d(v);
+        tg_.getTransform(t3d);
+        t3d.transform(v, _v);
+        t3d.get(p);
+        _v.add(p);
+        return _v;
+	}
+	
 }

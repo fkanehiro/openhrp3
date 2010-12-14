@@ -127,7 +127,7 @@ class JointRotationHandler extends OperationHandler {
         vw2view.mul(target2vw);
         vw2view.transform(point000);
         Vector3d vectorView = new Vector3d(point000);
-        vectorCylinder_ = new Vector3d(l.jointAxis());
+        vectorCylinder_ = new Vector3d(l.jointAxis_);
         vw2view.transform(vectorCylinder_);
         
         // 二つの Vector で angle の角度を得て diskAngle と
@@ -261,8 +261,8 @@ class JointRotationHandler extends OperationHandler {
         try {
             GrxModelItem model = SceneGraphModifier.getModelFromTG(tgTarget_);
             GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tgTarget_);
-            if( link.jointType().equals("rotate") ||  link.jointType().equals("slide") ){
-	            link.jointValue(link.jointValue()+angle_);
+            if( link.jointType_.equals("rotate") ||  link.jointType_.equals("slide") ){
+	            link.jointValue(link.jointValue_+angle_);
 	            link.setJointValuesWithinLimit();
 	            model.updateInitialJointValue(link);
 	            model.calcForwardKinematics();
