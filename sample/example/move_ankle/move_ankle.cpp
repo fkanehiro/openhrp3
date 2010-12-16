@@ -35,7 +35,7 @@ main(int argc, char* argv[])
     OnlineViewer_var olv = getOnlineViewer(argc, argv);
     try {
         olv->load(body->modelName().c_str(), url.c_str());
-        olv->clearLog();
+        olv->setLogName("move_ankle");
     } catch (CORBA::SystemException& ex) {
         cerr << "Failed to connect GrxUI." << endl;
         return 1;
@@ -56,8 +56,18 @@ main(int argc, char* argv[])
     WorldState world;
     world.characterPositions.length(1);
 
+    world.collisions.length(1);
+    world.collisions[0].points.length(1);
+    world.collisions[0].points[0].position[0] = 0;
+    world.collisions[0].points[0].position[1] = 0;
+    world.collisions[0].points[0].position[2] = 0;
+    world.collisions[0].points[0].normal[0] = 0;
+    world.collisions[0].points[0].normal[1] = 0;
+    world.collisions[0].points[0].normal[2] = 1;
+    world.collisions[0].points[0].idepth = 0.1;
+
     // SampleRobot用CharacterPosition  //
-    world.collisions.length(0);
+    //world.collisions.length(0);
     CharacterPosition& robot = world.characterPositions[0];
     robot.characterName = CORBA::string_dup("SampleRobot");
 
