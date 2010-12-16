@@ -101,6 +101,7 @@ public class GrxTransformItem extends GrxBaseItem {
     	children_.add(child);
     	child.parent_ = this;
     	tg_.addChild(child.bg_);
+    	resizeBoundingBox();
     }
 
     /**
@@ -110,6 +111,7 @@ public class GrxTransformItem extends GrxBaseItem {
     public void removeChild(GrxTransformItem child){
     	children_.remove(child);
     	child.bg_.detach();
+    	resizeBoundingBox();
     }
 
     /**
@@ -122,10 +124,8 @@ public class GrxTransformItem extends GrxBaseItem {
     		children_.get(0).delete();
     	}
 
-    	super.delete();
     	if (parent_ != null){
     		parent_.removeChild(this);
-    		manager_.itemChange(this, GrxPluginManager.REMOVE_ITEM);
     		// I don't know why the following line is required.
     		// But without the line, this transform is moved to the origin.
 			model_.calcForwardKinematics();
@@ -133,6 +133,7 @@ public class GrxTransformItem extends GrxBaseItem {
     	}catch(Exception ex){
     		ex.printStackTrace();
     	}
+		manager_.itemChange(this, GrxPluginManager.REMOVE_ITEM);
     }
 
     /**

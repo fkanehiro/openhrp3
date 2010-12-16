@@ -459,7 +459,6 @@ public class GrxLinkItem extends GrxTransformItem{
     	}catch(Exception ex){
     		ex.printStackTrace();
     	}
-    	//manager_.reselectItems();
     }
 
     /**
@@ -474,15 +473,6 @@ public class GrxLinkItem extends GrxTransformItem{
     	}catch(Exception ex){
     		ex.printStackTrace();
     	}
-    	//manager_.reselectItems();
-    }
-    
-    /**
-     * @brief remove child
-     */
-    public void removeChild(GrxTransformItem child){
-    	super.removeChild(child);
-    	resizeBoundingBox();
     }
 
     /**
@@ -501,10 +491,6 @@ public class GrxLinkItem extends GrxTransformItem{
     	}
     }
     
-    public void addHwc(GrxHwcItem hwc){
-    	addChild(hwc);
-    }   
-
     /**
      * @brief compute CoM in global frame
      * @return computed CoM
@@ -535,7 +521,8 @@ public class GrxLinkItem extends GrxTransformItem{
      * @return true if checked(even if value is not used), false otherwise
      */
     public boolean propertyChanged(String property, String value) {
-    	if (super.propertyChanged(property, value)){
+    	if (property.equals("name")){ //$NON-NLS-1$
+			rename(value);
     	}else if (property.equals("angle")){ //$NON-NLS-1$
     		if (jointValue(value)){
     			model_.updateInitialJointValue(this);
@@ -732,7 +719,7 @@ public class GrxLinkItem extends GrxTransformItem{
         	for (int i=0; i<hinfo.length; i++) {
         		GrxHwcItem hwc = new GrxHwcItem(hinfo[i].name, manager_, model_, hinfo[i]);
         		manager_.itemChange(hwc, GrxPluginManager.ADD_ITEM);
-        		addHwc(hwc);
+        		addChild(hwc);
         	}
         }
         
@@ -779,7 +766,11 @@ public class GrxLinkItem extends GrxTransformItem{
 			public void run(){
                 String mes = MessageBundle.get("GrxLinkItem.dialog.message.delete"); //$NON-NLS-1$
                 mes = NLS.bind(mes, new String[]{getName()});
-                
+                if(parent_ == null){ 	// can't delete root link 
+                	MessageDialog.openInformation(null, MessageBundle.get("GrxLinkItem.dialog.title.delete0"), 
+                			MessageBundle.get("GrxLinkItem.dialog.message.rootLinkDelete"));
+                	return;
+                }
 				if( MessageDialog.openQuestion( null, MessageBundle.get("GrxLinkItem.dialog.title.delete0"), //$NON-NLS-1$
 						mes) )
 					delete();
@@ -1004,7 +995,6 @@ public class GrxLinkItem extends GrxTransformItem{
 	public void delete(){
 		super.delete();
 		model_.removeLink(this);
-		manager_.itemChange(this, GrxPluginManager.REMOVE_ITEM);
 	}
 	
 	public void setColor(java.awt.Color color){
@@ -1095,9 +1085,8 @@ public class GrxLinkItem extends GrxTransformItem{
 	 */
 	public void rename(String newName) {
     	String oldName = getName();
-    	
-		super.rename(newName);
-
+    	setName(newName);
+    	if (model_ != null) model_.notifyModified();
         OrderedHashMap mcoll = manager_.pluginMap_.get(GrxCollisionPairItem.class);
         if(mcoll != null)
         {

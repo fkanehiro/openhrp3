@@ -57,6 +57,7 @@ import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxSegmentItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
+import com.generalrobotix.ui.item.GrxTransformItem;
 import com.generalrobotix.ui.util.OrderedHashMap;
 
 @SuppressWarnings("serial")
@@ -162,7 +163,6 @@ public class GrxItemView extends GrxBaseView {
 
         manager_.registerItemChangeListener(this, GrxBaseItem.class);
         setUp();
-        manager_.getProject().addObserver(this);
 	}
 
 	public void setUp(){
@@ -173,16 +173,34 @@ public class GrxItemView extends GrxBaseView {
         Iterator<Class<? extends GrxBaseItem>> it = mode.activeItemClassList_.listIterator();
         while (it.hasNext()){
         	Class<? extends GrxBaseItem> local = (Class<? extends GrxBaseItem>)it.next();
-        	Map<String, ?> map = (Map<String, ?>) manager_.getItemMap(local);
-        	Iterator itI = map.values().iterator();
-        	while(itI.hasNext()){
-        		GrxBaseItem baseItem = (GrxBaseItem) itI.next();
-        		baseItems_.add(baseItem);
-        		baseItem.addObserver(this);
+        	if ( manager_.isItemVisible( local ) ){
+	        	Map<String, ?> map = (Map<String, ?>) manager_.getItemMap(local);
+	        	Iterator itI = map.values().iterator();
+	        	while(itI.hasNext()){
+	        		GrxBaseItem baseItem = (GrxBaseItem) itI.next();
+	        		baseItems_.add(baseItem);
+	        		baseItem.addObserver(this);
+	        		if(baseItem instanceof GrxModelItem){
+	        			GrxModelItem model = (GrxModelItem)baseItem;
+	        			GrxLinkItem root = model.rootLink();
+	    				if (root != null){
+	    					addchildrenObserver(root);
+	    				}
+	        		}
+	        	}
         	}
         }
-
+        manager_.getProject().addObserver(this);
         updateTree();
+	}
+	
+	private void addchildrenObserver(GrxBaseItem item){
+		baseItems_.add(item);
+		item.addObserver(this);
+		Vector<GrxTransformItem> children = ((GrxTransformItem)item).children_;
+		for(int i=0; i<children.size(); i++){
+			addchildrenObserver(children.get(i));
+		}
 	}
 	
 	/**
@@ -236,7 +254,7 @@ public class GrxItemView extends GrxBaseView {
 				return link.children_.toArray();
 			}
 			
-			// GrxLinkItem -> 子供のリンク,センサ、形状を返す
+			// GrxLinkItem -> 子供の形状を返す
 			if (o instanceof GrxSegmentItem){
 				GrxSegmentItem link = (GrxSegmentItem)o;
 				return link.children_.toArray();
@@ -355,21 +373,12 @@ public class GrxItemView extends GrxBaseView {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void shutdown(){
 		manager_.removeItemChangeListener(this, GrxBaseItem.class);
-		
-        GrxModeInfoItem mode = manager_.getMode();
-        Iterator<Class<? extends GrxBaseItem>> it = mode.activeItemClassList_.listIterator();
-        while (it.hasNext()){
-        	Class<? extends GrxBaseItem> local = (Class<? extends GrxBaseItem>)it.next();
-        	if ( manager_.isItemVisible( local ) ){
-        		Map<String, ?> map = (Map<String, ?>) manager_.getItemMap(local);
-        		Iterator itI = map.values().iterator();
-                while(itI.hasNext())
-                	((GrxBaseItem)itI.next()).deleteObserver(this);
-        	}
-        }
+		Iterator<GrxBasePlugin> it = baseItems_.iterator();
+		while(it.hasNext()){
+			it.next().deleteObserver(this);
+		}
         manager_.getProject().deleteObserver(this);
 	}
 	
