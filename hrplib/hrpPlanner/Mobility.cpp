@@ -5,7 +5,8 @@ using namespace PathEngine;
 
 double Mobility::interpolationDistance_ = 0.1;
 
-bool Mobility::isReachable(Configuration& from, Configuration& to) const
+bool Mobility::isReachable(Configuration& from, Configuration& to,
+                           bool checkCollision) const
 {
     std::vector<Configuration> path;
     if (!getPath(from, to, path)) return false;
@@ -15,7 +16,11 @@ bool Mobility::isReachable(Configuration& from, Configuration& to) const
         std::cout << i << ":" << path[i] << std::endl;
     }
 #endif
-    return !planner_->checkCollision(path);
+    if (checkCollision){
+        return !planner_->checkCollision(path);
+    }else{
+        return true;
+    }
 }
 
 bool Mobility::getPath(Configuration &from, Configuration &to,

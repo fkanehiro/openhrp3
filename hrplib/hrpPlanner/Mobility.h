@@ -87,7 +87,7 @@ namespace PathEngine {
      * @brief fromからtoへ干渉なしに移動可能であるかどうか
      * @return 移動可能であればtrue、そうでなければfalse
      */
-    bool isReachable(Configuration& from, Configuration& to) const;
+    bool isReachable(Configuration& from, Configuration& to, bool checkCollision=true) const;
 
     /**
      * @brief 
