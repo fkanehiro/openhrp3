@@ -160,6 +160,8 @@ namespace PathEngine {
         //< point cloud created by vision or range sensor
         std::vector<hrp::Vector3> pointCloud_; 
         double radius_; ///< radius of spheres assigned to points
+
+        hrp::ColdetModelPair *collidingPair_;
     public:
         hrp::BodyPtr robot();
         void setApplyConfigFunc(applyConfigFunc i_func);
@@ -402,6 +404,8 @@ namespace PathEngine {
         double timeForwardKinematics() const;
 
         void boundingBoxMode(bool mode) { bboxMode_ = mode; } 
+
+        hrp::ColdetModelPair *collidingPair() { return collidingPair_; }
     };
 };
 #endif // __PATH_PLANNER_H__
