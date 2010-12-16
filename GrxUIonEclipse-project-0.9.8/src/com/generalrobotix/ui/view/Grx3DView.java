@@ -1700,9 +1700,14 @@ public class Grx3DView
         }
         
         public void clearData() {}
+        
         public void drawScene(WorldState arg0) {
-          update(arg0);
+        	GrxWorldStateItem.WorldStateEx statex = new GrxWorldStateItem.WorldStateEx(arg0);	
+        	_showCollision(statex.collisions);
+            updateModels(statex);
+            updateViewSimulator(statex.time);
          }
+        
         public void setLineScale(float arg0) {}
         public void setLineWidth(float arg0) {}
     
@@ -1717,7 +1722,20 @@ public class Grx3DView
 	    		});
 			}
 	     }
-    
+	    
+	    public void setLogName(final String name){
+	    	syncExec(new Runnable(){
+        		public void run(){
+			    	GrxWorldStateItem item = (GrxWorldStateItem)manager_.getItem(GrxWorldStateItem.class, name);
+			    	if(item==null){
+			    		item = (GrxWorldStateItem)manager_.createItem(GrxWorldStateItem.class, name);
+			    		manager_.itemChange(item, GrxPluginManager.ADD_ITEM);
+			    		firstTime_ = true;
+			    	}
+					manager_.setSelectedItem(item, true);
+        		}
+	    	});
+	    }
     }
     
     public void attach(BranchGroup bg) {

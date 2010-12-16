@@ -81,6 +81,16 @@ module OpenHRP {
      * @endif
      */
     boolean getPosture(in string robotId, out DblSequence posture);
+
+    /**
+     * @if jp
+     * ログの保存先(WorldStateItem)を設定します。
+     * 指定した名前のWorldStateItemが存在しない場合は新たに作成します。
+     * @param name WorldStateItemの名前
+     * @endif
+     */
+    void setLogName(in string name);
+
   };
   
 };
