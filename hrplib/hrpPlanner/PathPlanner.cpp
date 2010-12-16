@@ -76,7 +76,7 @@ bool setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cf
 // コンストラクタ
 // ----------------------------------------------
 PathPlanner::PathPlanner(bool isDebugMode) 
-    : m_applyConfigFunc(&setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), debug_(isDebugMode)
+    : m_applyConfigFunc(&setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), debug_(isDebugMode), collidingPair_(NULL)
 {
     if (isDebugMode) {
         std::cerr << "PathPlanner::PathPlanner() : debug mode" << std::endl;
@@ -618,6 +618,9 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
 bool PathPlanner::checkIntersection()
 {
     tick_t t1 = get_tick();
+
+    collidingPair_ = NULL;
+
     if (USE_INTERNAL_COLLISION_DETECTOR){
         Link *l;
             for (int j=0; j<model_->numLinks(); j++){
@@ -631,7 +634,10 @@ bool PathPlanner::checkIntersection()
     if(USE_INTERNAL_COLLISION_DETECTOR){
         for (unsigned int i=0; i<checkPairs_.size(); i++){
             if (checkPairs_[i].tolerance() == 0){
-                if (checkPairs_[i].checkCollision()) return true;
+                if (checkPairs_[i].checkCollision()){
+                    collidingPair_ = &checkPairs_[i];
+                    return true;
+                }
             } else{
                 if (checkPairs_[i].detectIntersection()) return true;
             } 
