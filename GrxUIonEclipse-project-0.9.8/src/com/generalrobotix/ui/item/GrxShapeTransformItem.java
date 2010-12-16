@@ -2,8 +2,6 @@ package com.generalrobotix.ui.item;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
 
 import javax.media.j3d.BadTransformException;
 import javax.media.j3d.Transform3D;
@@ -365,6 +363,10 @@ public class GrxShapeTransformItem extends GrxTransformItem {
 		setSubMenu(subMenu);
     }
     
+    public void rename(String newName) {
+    	setName(newName);
+    	if (model_ != null) model_.notifyModified();
+    }
 }
 
 class ShapeTransform {

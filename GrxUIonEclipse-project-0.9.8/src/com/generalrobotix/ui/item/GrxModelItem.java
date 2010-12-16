@@ -226,6 +226,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         // create root link
         GrxLinkItem link = new GrxLinkItem("root", manager_, this); //$NON-NLS-1$
+        manager_.itemChange(link, GrxPluginManager.ADD_ITEM);
         link.jointType("free"); //$NON-NLS-1$
         bgRoot_.addChild(link.bg_);
         
@@ -1161,6 +1162,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				item.delete();
 			}
         }
+        GrxLinkItem root = rootLink();
+        if(root != null)
+        	root.delete();
     }
     
     /**

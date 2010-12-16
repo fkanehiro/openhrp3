@@ -215,7 +215,8 @@ public class GrxSensorItem extends GrxShapeTransformItem implements  Comparable 
      * @return true if checked(even if value is not used), false otherwise
      */
     public boolean propertyChanged(String property, String value) {
-    	if (super.propertyChanged(property, value)){
+    	if (property.equals("name")){ //$NON-NLS-1$
+			rename(value);
     	}else if(property.equals("translation")){ //$NON-NLS-1$
     		translation(value);
     	}else if(property.equals("rotation")){ //$NON-NLS-1$

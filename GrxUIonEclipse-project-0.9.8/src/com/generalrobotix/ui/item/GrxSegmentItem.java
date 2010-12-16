@@ -80,7 +80,8 @@ public class GrxSegmentItem extends GrxShapeTransformItem {
 	}
        
     public boolean propertyChanged(String property, String value) {
-    	if (super.propertyChanged(property, value)){
+    	if (property.equals("name")){ //$NON-NLS-1$
+			rename(value);
     	}else if(property.equals("translation")){ //$NON-NLS-1$
     		translation(value);
     		((GrxLinkItem)parent_).modifyCenterOfMass();
