@@ -80,14 +80,22 @@ bool Algorithm::preparePlanning()
   std::cout << "goal:" << goal_ << std::endl;
 
   // validity checks of start&goal configurations
-  if (!start_.isValid() || planner_->checkCollision(start_)){
-      std::cout << "start configuration is invalid" << std::endl;
+  if (!start_.isValid()){
+      std::cerr << "start configuration is invalid" << std::endl;
       return false;
   }
-  if (!goal_.isValid() || planner_->checkCollision(goal_)){
-      std::cout << "goal configuration is invalid" << std::endl;
+  if (planner_->checkCollision(start_)){
+      std::cerr << "start configuration is not collision-free" << std::endl;
       return false;
   }
-  
+  if (!goal_.isValid()){
+      std::cerr << "goal configuration is invalid" << std::endl;
+      return false;
+  }
+  if (planner_->checkCollision(goal_)){
+      std::cerr << "goal configuration is not collision-free" << std::endl;
+      return false;
+  }
+
   return true;
 }
