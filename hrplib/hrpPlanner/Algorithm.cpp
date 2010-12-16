@@ -96,6 +96,12 @@ bool Algorithm::preparePlanning()
       std::cerr << "goal configuration is not collision-free" << std::endl;
       return false;
   }
+  Mobility *mobility = planner_->getMobility();
+  if (!mobility->isReachable(start_, goal_, false)){
+      std::cerr << "goal is not reachable even if collision is not checked"
+                << std::endl;
+      return false;
+  }
 
   return true;
 }
