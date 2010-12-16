@@ -55,16 +55,7 @@ main(int argc, char* argv[])
     // WorldStateを作成する  //
     WorldState world;
     world.characterPositions.length(1);
-
-    world.collisions.length(1);
-    world.collisions[0].points.length(1);
-    world.collisions[0].points[0].position[0] = 0;
-    world.collisions[0].points[0].position[1] = 0;
-    world.collisions[0].points[0].position[2] = 0;
-    world.collisions[0].points[0].normal[0] = 0;
-    world.collisions[0].points[0].normal[1] = 0;
-    world.collisions[0].points[0].normal[2] = 1;
-    world.collisions[0].points[0].idepth = 0.1;
+    world.collisions.length(0);
 
     // SampleRobot用CharacterPosition  //
     //world.collisions.length(0);
