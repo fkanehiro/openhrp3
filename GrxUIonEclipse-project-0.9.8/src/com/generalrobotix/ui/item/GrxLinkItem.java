@@ -17,6 +17,7 @@
 
 package com.generalrobotix.ui.item;
 
+import java.io.File;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,9 +47,12 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.FileDialog;
 
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.view.tdview.SceneGraphModifier;
+import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 import com.generalrobotix.ui.util.AxisAngle4d;
 import com.generalrobotix.ui.util.CalcInertiaUtil;
 import com.generalrobotix.ui.util.GrxShapeUtil;
@@ -492,6 +496,14 @@ public class GrxLinkItem extends GrxTransformItem{
     }
     
     /**
+     * @brief load and add a new robot as a child
+     * @param f file name of the new robot
+     */
+    public void addRobot(File f){
+    	model_.addRobot(f, this);
+    }
+    
+    /**
      * @brief compute CoM in global frame
      * @return computed CoM
      */
@@ -816,6 +828,24 @@ public class GrxLinkItem extends GrxTransformItem{
 						MessageBundle.get("GrxLinkItem.dialog.message.segmentName"), null,null); //$NON-NLS-1$
 				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
 					addSegment( dialog.getValue() );
+			}
+		};
+		setMenuItem(item);
+		
+		// menu item : add robot
+		item = new Action(){
+			public String getText(){
+				return MessageBundle.get("GrxLinkItem.menu.addRobot"); //$NON-NLS-1$
+			}
+			public void run(){
+				FileDialog fdlg = new FileDialog(GrxUIPerspectiveFactory.getCurrentShell(), SWT.OPEN);
+                String[] fe = { "*.wrl" };
+                fdlg.setFilterExtensions(fe);
+                String fPath = fdlg.open();
+                if (fPath != null) {
+                    File f = new File(fPath);
+					addRobot( f );
+                }
 			}
 		};
 		setMenuItem(item);

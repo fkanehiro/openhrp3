@@ -81,6 +81,7 @@ import com.sun.j3d.utils.picking.PickTool;
  * @brief sensor item
  */
 public class GrxShapeItem extends GrxShapeTransformItem{
+	public boolean isInline_ = false;
     public ShapeInfo[] shapes_;
     public AppearanceInfo[] appearances_;
     public MaterialInfo[] materials_;
@@ -225,6 +226,7 @@ public class GrxShapeItem extends GrxShapeTransformItem{
    	}
  	
    	public void loadInlineShape(Matrix4d[] shapeT, Matrix4d inlinedT, int[] index, Matrix4d segmentT){
+   		isInline_ = true;
    		int n = index.length;
     	shapes_ = new ShapeInfo[n];
     	appearances_ = new AppearanceInfo[n];
@@ -263,6 +265,7 @@ public class GrxShapeItem extends GrxShapeTransformItem{
    	}
    	
    	public void loadnewInlineShape(SceneInfo sInfo){  		
+   		isInline_ = true;
    		ShapeInfo[] shapes = sInfo.shapes();
         AppearanceInfo[] appearances = sInfo.appearances();
         MaterialInfo[] materials = sInfo.materials();

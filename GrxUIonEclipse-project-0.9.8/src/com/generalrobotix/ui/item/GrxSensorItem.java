@@ -48,7 +48,8 @@ public class GrxSensorItem extends GrxShapeTransformItem implements  Comparable 
 	private Camera_impl camera_ = null;
 	private Switch switchVisibleArea_ = null;
 
-    protected static final String[] sensorTypeComboItem_ = new String[] { "Vision",  "RateGyro" , "Acceleration" , "Force" , "Range" };
+	public static final String[] sensorType = { "Vision",  "RateGyro" , "Acceleration" , "Force" , "Range" };
+    protected static final String[] sensorTypeComboItem_ = sensorType;
     protected static final String[] cameraTypeComboItem_ = new String[] { "NONE",  "COLOR" , "MONO" , "DEPTH" , "COLOR_DEPTH" , "MONO_DEPTH" };
 
     /**
