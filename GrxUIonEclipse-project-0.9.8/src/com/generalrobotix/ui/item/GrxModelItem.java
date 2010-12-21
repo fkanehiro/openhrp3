@@ -759,6 +759,94 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         
     }
 
+    /**
+     * @brief load and add a new robot as a child
+     * @param f file name of the new robot
+     */
+    public void addRobot(File f, GrxLinkItem parentLink){
+    	try {
+    	    GrxDebugUtil.println("Loading " + f.getCanonicalPath());
+    		ModelLoader mloader = ModelLoaderHelper.narrow(
+    				GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
+    		BodyInfo bInfo = mloader.loadBodyInfo(f.getCanonicalPath());
+    		LinkInfo[] linkInfoList = bInfo.links();
+    		int numOfLink = links_.size();
+    		int numOfJoint = getDOF();
+    		Vector<String> sensorType = new Vector<String>();
+    		Vector<String>[] sensorNames = new Vector[GrxSensorItem.sensorType.length];
+    		for(int i=0; i<GrxSensorItem.sensorType.length; i++){
+    			sensorType.add(GrxSensorItem.sensorType[i]);
+    			sensorNames[i] = new Vector<String>();
+    			String[] names = getSensorNames(GrxSensorItem.sensorType[i]);
+    			if(names!=null)
+    				for(int j=0; j<names.length; j++)
+    					sensorNames[i].add(names[j]);
+    		}
+    		int rootIndex = -1;
+    		int jointCount  = 0;
+    		for (int i = 0; i < linkInfoList.length; i++) {
+    			if(linkInfoList[i].parentIndex < 0 ){
+    				linkInfoList[i].parentIndex = (short) links_.indexOf(parentLink);
+    				rootIndex = i+numOfLink;
+    			}else
+    				linkInfoList[i].parentIndex += numOfLink;
+    			for(int j=0; j<linkInfoList[i].childIndices.length; j++)
+    				linkInfoList[i].childIndices[j] += numOfLink;
+    			if(linkInfoList[i].jointId >= 0){
+    				linkInfoList[i].jointId += numOfJoint;
+    				jointCount++;
+    			}
+    			SensorInfo[] sensors = linkInfoList[i].sensors;
+    			for(int j=0; j<sensors.length; j++){
+    				int type = sensorType.indexOf(sensors[j].type);
+    				sensors[j].id += sensorNames[type].size();
+    				String sensorName = sensors[j].name;
+    				for(int k=0; sensorNames[type].indexOf(sensorName)!=-1; k++)
+    					sensorName = sensors[j].name + "_" + k;
+    				sensors[j].name = sensorName;
+    			}
+    			String linkName = linkInfoList[i].name;
+    			for(int j=0; nameToLink_.get(linkName)!=null; j++ )
+    				linkName = linkInfoList[i].name + "_" + j;
+            	GrxLinkItem link = new GrxLinkItem(linkName, manager_, this, linkInfoList[i]);
+            	nameToLink_.put(linkName, link);
+            }
+    		createLink(rootIndex);
+    		jointToLink_ = new int[numOfJoint+jointCount];
+    		for (int i=0; i<numOfJoint+jointCount; i++) {
+    			for (int j=0; j<links_.size(); j++) {
+    				if (links_.get(j).jointId_ == i) {
+    					jointToLink_[i] = j;
+    				}
+    			}
+    		}   		
+    		for(int i=numOfLink; i<numOfLink+linkInfoList.length; i++)
+    			manager_.itemChange(links_.get(i), GrxPluginManager.ADD_ITEM);
+    		
+    		shapes = bInfo.shapes();
+    		appearances = bInfo.appearances();
+    		materials = bInfo.materials();
+    		textures = bInfo.textures();
+            
+            for(int linkIndex = numOfLink; linkIndex < links_.size(); linkIndex++) {
+                GrxLinkItem link = links_.get(linkIndex);
+                for (int i=0; i<link.children_.size(); i++){
+                	if(link.children_.get(i) instanceof GrxSegmentItem){
+                		GrxSegmentItem segment = (GrxSegmentItem)link.children_.get(i);
+                		segment.addShape(segment.getTransform());
+                	}else if (link.children_.get(i) instanceof GrxSensorItem){
+                		GrxSensorItem sensor = (GrxSensorItem)link.children_.get(i);
+                		sensor.addShape(new Matrix4d(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
+                	}else if (link.children_.get(i) instanceof GrxHwcItem){
+                		GrxHwcItem hwc = (GrxHwcItem)link.children_.get(i);
+                		hwc.addShape(new Matrix4d(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1));
+                	}
+                }
+            }
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    	}
+    }
 
     /**
      * @brief
