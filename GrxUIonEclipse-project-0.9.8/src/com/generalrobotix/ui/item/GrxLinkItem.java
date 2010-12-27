@@ -542,13 +542,13 @@ public class GrxLinkItem extends GrxTransformItem{
     		}
     	}else if(property.equals("translation")){ //$NON-NLS-1$
     		if (localTranslation(value)){
+    			calcForwardKinematics();
     			model_.updateInitialTransformRoot();
-            	calcForwardKinematics();
     		}
     	}else if(property.equals("rotation")){ //$NON-NLS-1$
     		if (localRotation(value)){
-    			model_.updateInitialTransformRoot();
             	calcForwardKinematics();
+    			model_.updateInitialTransformRoot();
     		}
     	}else if(property.equals("jointAxis")){ //$NON-NLS-1$
     		jointAxis(value);
@@ -667,10 +667,10 @@ public class GrxLinkItem extends GrxTransformItem{
         localTranslation(new double[]{0.0, 0.0, 0.0});
         localRotation(new double[]{0.0, 0.0, 1.0, 0.0});
         centerOfMass(new double[]{0.0, 0.0, 0.0});
-        inertia(new double[]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0});
+        inertia(new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
         jointType("rotate");
         jointAxis(new double[]{0.0, 0.0, 1.0});
-        mass(1.0);
+        mass(0.0);
         ulimit(new double[]{0,0});
         llimit(new double[]{0,0});
         uvlimit(new double[]{0,0});
