@@ -41,10 +41,8 @@ int main(int argc, char* argv[])
         PortableServer::POAManager_var manager = rootPOA -> the_POAManager();
 
         CosNaming::NamingContext_var cxT;
-        {
-            CORBA::Object_var	nS = orb->resolve_initial_references("NameService");
-            cxT = CosNaming::NamingContext::_narrow(nS);
-        }
+        CORBA::Object_var	nS = orb->resolve_initial_references("NameService");
+        cxT = CosNaming::NamingContext::_narrow(nS);
 
         CORBA::Object_var integratorFactory;
         DynamicsSimulatorFactory_impl* integratorFactoryImpl = new DynamicsSimulatorFactory_impl(orb);

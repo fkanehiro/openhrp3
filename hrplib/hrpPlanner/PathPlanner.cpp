@@ -201,10 +201,8 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
         stream << "corbaloc:iiop:" << nameServer << "/NameService";
 
         CosNaming::NamingContext_var cxT;
-        {
-            CORBA::Object_var	nS = orb_->string_to_object(stream.str().c_str());
-            cxT = CosNaming::NamingContext::_narrow(nS);
-        }
+        CORBA::Object_var	nS = orb_->string_to_object(stream.str().c_str());
+        cxT = CosNaming::NamingContext::_narrow(nS);
 
         if (is_nil(cxT)) {
             std::cerr << "name serivce not found" << std::endl;
