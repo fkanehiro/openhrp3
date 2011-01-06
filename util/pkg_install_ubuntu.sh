@@ -102,7 +102,7 @@ update_source_list () {
 # sun-java6-* インストールのため(10.04以降)
 #---------------------------------------
 update_source_list_partner () {
-    partner_repo="deb http://archive.canonical.com/ $code_name partner"
+    partner_repo="deb http://archive.canonical.com/ubuntu $code_name partner"
     if test "$code_name" = "lucid" ; then
         partnersite=`grep "^deb http://archive.canonical.com/.* $code_name partner$" /etc/apt/sources.list`
         if test "x$partnersite" = "x" ; then
