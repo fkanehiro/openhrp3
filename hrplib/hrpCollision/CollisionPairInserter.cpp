@@ -95,7 +95,7 @@ int CollisionPairInserter::is_convex_neighbor(col_tri* t1, col_tri* t2)
 {
     const double EPS = 1.0e-12; // a small number
         
-    calc_normal_vector(t2);
+    calc_normal_vector(t1);
         
     // printf("normal vector1 = %f %f %f\n", t1->n[0], t1->n[1], t1->n[2]);
     // printf("normal vector2 = %f %f %f\n", t2->n[0], t2->n[1], t2->n[2]);
@@ -106,7 +106,7 @@ int CollisionPairInserter::is_convex_neighbor(col_tri* t1, col_tri* t2)
         
     // printf("is_convex_neighbor = %f %f %f\n",innerProd(t1->n,vec1),innerProd(t1->n,vec2),innerProd(t1->n,vec3));
         
-    if(dot(t2->n, vec1) < EPS && dot(t2->n, vec2) < EPS && dot(t2->n, vec3) < EPS){
+    if(dot(t1->n, vec1) < EPS && dot(t1->n, vec2) < EPS && dot(t1->n, vec3) < EPS){
         return 1;
     } else {
         return 0;
