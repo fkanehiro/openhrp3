@@ -10,8 +10,8 @@
    @author Shin'ichiro Nakaoka
 */
 
-#ifndef OPENHRP_COLDET_MODEL_H_INCLUDED
-#define OPENHRP_COLDET_MODEL_H_INCLUDED
+#ifndef HRPCOLLISION_COLDET_MODEL_H_INCLUDED
+#define HRPCOLLISION_COLDET_MODEL_H_INCLUDED
 
 #include "config.h"
 #include <string>

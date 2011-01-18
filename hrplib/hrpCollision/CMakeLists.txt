@@ -46,6 +46,7 @@ set(headers
   ColdetModel.h
   ColdetModelPair.h
   CollisionPairInserter.h
+  DistFuncs.h
   )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Opcode)
