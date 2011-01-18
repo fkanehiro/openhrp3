@@ -1,5 +1,8 @@
+#ifndef HRPCOLLISION_DISTFUNCS_H_INCLUDED
+#define HRPCOLLISION_DISTFUNCS_H_INCLUDED
 
 #include "Opcode/Opcode.h"
+#include "config.h"
 
 /**
  * @brief compute distance between a point and a line segment
@@ -8,7 +11,7 @@
  * @param u1 the other end point of the line segment
  * @return distance between the point and the line segment
  */
-float PointSegDist(const Point& P, const Point& u0, const Point& u1);
+HRP_COLLISION_EXPORT float PointSegDist(const Point& P, const Point& u0, const Point& u1);
 
 /**
  * @brief compute distance between line segments
@@ -18,8 +21,8 @@ float PointSegDist(const Point& P, const Point& u0, const Point& u1);
  * @brief v1 the other end point of the second line segment
  * @return distance between line segments
  */
-float SegSegDist(const Point& u0, const Point& u1,
-                 const Point& v0, const Point& v1);
+HRP_COLLISION_EXPORT float SegSegDist(const Point& u0, const Point& u1,
+                                      const Point& v0, const Point& v1);
 
 /**
  * @brief compute the minimum distance and the closest points between two triangles
@@ -33,13 +36,14 @@ float SegSegDist(const Point& u0, const Point& u1,
  * @param cp1 the closest point on the second triangle
  * @return the minimum distance
  */
-float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
-                 const Point& V0, const Point& V1, const Point& V2,
-                 Point& cp0, Point& cp1);
-
+HRP_COLLISION_EXPORT float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
+                                      const Point& V0, const Point& V1, const Point& V2,
+                                      Point& cp0, Point& cp1);
 
 
 #if 1
 #include <iostream>
 std::ostream &operator<<(std::ostream &ost, const Point& p);
+#endif
+
 #endif
