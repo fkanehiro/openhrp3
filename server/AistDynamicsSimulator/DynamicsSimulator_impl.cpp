@@ -557,6 +557,7 @@ void DynamicsSimulator_impl::initSimulation()
 
     world.initialize();
     world.constraintForceSolver.enableConstraintForceOutput(true);
+    world.constraintForceSolver.clearExternalForces();
 
     _updateCharacterPositions();
 
@@ -584,8 +585,6 @@ void DynamicsSimulator_impl::stepSimulation()
         cout << "DynamicsSimulator_impl::stepSimulation()" << endl;
     }
 
-    world.constraintForceSolver.clearExternalForces();
-
     if(enableTimeMeasure) timeMeasure2.begin();
     world.calcNextState(collisions);
 
@@ -599,6 +598,8 @@ void DynamicsSimulator_impl::stepSimulation()
         collisionDetector->queryContactDeterminationForDefinedPairs(allCharacterPositions.in(), collisions.out());
     }
     if(enableTimeMeasure) timeMeasure3.end();
+
+    world.constraintForceSolver.clearExternalForces();
 
     if(enableTimeMeasure){
         if(world.currentTime() > 10.0 && !timeMeasureFinished){
