@@ -99,7 +99,7 @@ namespace PathEngine {
 
     void extendFromStart(bool b) { extendFromStart_ = b; }
 
-    void extenFromGoal(bool b) { extendFromGoal_ = b; }
+    void extendFromGoal(bool b) { extendFromGoal_ = b; }
   };
 };
 
