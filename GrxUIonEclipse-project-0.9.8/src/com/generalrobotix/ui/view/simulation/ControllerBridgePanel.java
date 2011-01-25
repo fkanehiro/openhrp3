@@ -14,6 +14,7 @@ import java.util.Vector;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
@@ -125,6 +126,8 @@ public class ControllerBridgePanel extends Dialog{
 	private StyledText emText_;
 	private Button saveButton_ ;
 	private Button saveAsButton_ ; 
+	private Label fileNameLabel_;
+	private Label rtcConfFileNameLabel_;
 	
 	private int os_;
 	private final int LINUX = 0;
@@ -346,11 +349,11 @@ public class ControllerBridgePanel extends Dialog{
 				emText_.setText(errorMessage_);
 			}
     	});
-    	Label label7 = new Label(panel4, SWT.LEFT);
+    	fileNameLabel_ = new Label(panel4, SWT.LEFT);
     	if(fileName_=="")
-    		label7.setText("new file");
+    		fileNameLabel_.setText("new file");
     	else
-    		label7.setText(fileName_);
+    		fileNameLabel_.setText(fileName_);
     	cbtext_ = new StyledText(panel4, SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL);
     	GridData gridData2 = new GridData();
     	gridData2.horizontalAlignment = GridData.FILL;
@@ -366,11 +369,11 @@ public class ControllerBridgePanel extends Dialog{
     	Composite panel3 = new Composite(composite,SWT.NONE);
     	panel3.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     	panel3.setLayout(new GridLayout(1,false));
-    	Label label6 = new Label(panel3, SWT.LEFT);
+    	rtcConfFileNameLabel_ = new Label(panel3, SWT.LEFT);
     	if(rtcConfFileName_.equals(""))
-    		label6.setText("rtc.conf");
+    		rtcConfFileNameLabel_.setText("rtc.conf");
     	else
-    		label6.setText(rtcConfFileName_);
+    		rtcConfFileNameLabel_.setText(rtcConfFileName_);
     	rctext_ = new StyledText(panel3,  SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL );
     	rctext_.setLayoutData(gridData2);
     	rctext_.setBackground(Activator.getDefault().getColor("gray"));
@@ -527,9 +530,13 @@ public class ControllerBridgePanel extends Dialog{
 			if(!option.equals("")){
 				String[] options = option.split("--");
 				rtcConfFileName_ = file.getCanonicalFile().getParent()+File.separator+"rtc.conf";
-				loadRtcConf(rtcConfFileName_);
+				boolean ret = loadRtcConf(rtcConfFileName_);
 				parse(options);
 				createPortTable();
+				if(!ret){
+					rtcConfFileName_="";
+					rtcConfInit(nameServer_.host_, nameServer_.port_);
+				}
 			}else
 				;// no command line
 		} catch (FileNotFoundException e) {
@@ -599,8 +606,12 @@ public class ControllerBridgePanel extends Dialog{
 		nameServer_.port_ = "2809";
 		errorMessage_ = "";
 		
+		rtcConfInit(nameServer_.host_, nameServer_.port_);
+	}
+	
+	private void rtcConfInit(String host, String port){
 		rtcConfFile_.clear();
-		rtcConfFile_.add("corba.nameservers: localhost:2809");
+		rtcConfFile_.add("corba.nameservers: "+host+":"+port);
 		rtcConfFile_.add("naming.formats: %n.rtc");
 		rtcConfFile_.add("logger.log_level: TRACE");
 		rtcConfFile_.add("exec_cxt.periodic.type: SynchExtTriggerEC");
@@ -609,8 +620,8 @@ public class ControllerBridgePanel extends Dialog{
 		rtcConfFile_.add("manager.modules.abs_path_allowed: yes");
 		rtcConfFile_.add("manager.modules.preload: ");
 		rtcConfFile_.add("manager.components.precreate: ");
-		rtcNameServer_.host_ = "";
-		rtcNameServer_.port_ = "";
+		rtcNameServer_.host_ = host;
+		rtcNameServer_.port_ = port;
 		moduleName_ = "";
 		controllerRtcName_ = "";
 
@@ -887,7 +898,8 @@ public class ControllerBridgePanel extends Dialog{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		fileNameLabel_.setText(fileName_);
+		rtcConfFileNameLabel_.setText(rtcConfFileName_);
 		
 	}
 	
@@ -898,6 +910,15 @@ public class ControllerBridgePanel extends Dialog{
 			File file = new File(fileName_);
 			try {
 				rtcConfFileName_ = file.getCanonicalFile().getParent()+File.separator+"rtc.conf";
+				file = new File(rtcConfFileName_);
+				if(file.exists()){
+					if(!MessageDialog.openQuestion(getShell(), rtcConfFileName_, MessageBundle.get("Grx3DView.dialog.message.fileExist"))){
+						fdlg.setFileName(rtcConfFileName_);
+						rtcConfFileName_ = fdlg.open();
+						if(rtcConfFileName_==null)
+							return false;
+					}
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -1095,6 +1116,8 @@ public class ControllerBridgePanel extends Dialog{
 					}
 				}
 			}
+			if(port.controllerPortName_.startsWith("0:"))
+				errorMessage_ += MessageBundle.get("panel.Bridge.errorPort")+" "+port.name_+ MessageBundle.get("panel.Bridge.error.controllerPortName")+"\n";
 		}
 		
 		if(moduleName_.equals(""))
@@ -1215,7 +1238,7 @@ public class ControllerBridgePanel extends Dialog{
 						b = false;
 						break;
 					}
-				if(b){
+				if(b && joints_.size()!=0){
 					id_ = "All joints";
 				}else{	
 					id_ = "";
