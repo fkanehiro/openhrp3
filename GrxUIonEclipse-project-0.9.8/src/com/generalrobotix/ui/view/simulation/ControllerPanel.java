@@ -255,10 +255,11 @@ public class ControllerPanel extends Composite{
         private Text tfSetupDirectory_;
         private Text tfSetupCommand_;
         private Button btnOk_,btnCancel_;
+        private ControllerBridgePanel controllerBridge_;
         
         public ControllerEditorPanel(Composite parent,int style,String[] initialNames) {
             super(parent,style);
-            setLayout(new GridLayout(4,true));
+            setLayout(new GridLayout(5,true));
 
             Label lbl = new Label(this,SWT.SHADOW_NONE);
             lbl.setText(MessageBundle.get("panel.controller.controller")); //$NON-NLS-1$
@@ -269,6 +270,7 @@ public class ControllerPanel extends Composite{
             boxController_.select(0);
             GridData gridData = new GridData();
             gridData.widthHint = COMBO_WIDTH;
+            gridData.horizontalSpan = 2;
             boxController_.setLayoutData(gridData);
             boxController_.setItems(new String[0]);
             
@@ -278,6 +280,8 @@ public class ControllerPanel extends Composite{
             lbl.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER|GridData.HORIZONTAL_ALIGN_END));
             
             spinControlTime_ = new SEDoubleTextWithSpinForSWT(this,SWT.NONE,0,10,0.001);
+            gridData = new GridData(GridData.FILL_HORIZONTAL);
+            spinControlTime_.setLayoutData(gridData);
             
             // Setup Command Working Directory
             lbl = new Label(this,SWT.SHADOW_NONE);
@@ -294,30 +298,31 @@ public class ControllerPanel extends Composite{
             GridData btnGridData = new GridData(GridData.VERTICAL_ALIGN_END);
             btnGridData.verticalSpan = 2;
             btnCmdRef.setLayoutData(btnGridData);
-            btnCmdRef.setText("..."); //$NON-NLS-1$
+            btnCmdRef.setText(MessageBundle.get("panel.controller.selectFile")); //$NON-NLS-1$
             
-/*
-            Button btnDirRef = new Button(this, SWT.PUSH);
-            btnDirRef.setText("..."); //$NON-NLS-1$
-            btnDirRef.addSelectionListener(new SelectionListener(){
-				public void widgetDefaultSelected(SelectionEvent e) {
+            Button btnCreate = new Button(this, SWT.PUSH);
+           // btnCreate.setLayoutData(btnGridData);
+            btnCreate.setText(MessageBundle.get("panel.controller.newFile")); //$NON-NLS-1$
+            btnCreate.addSelectionListener(new SelectionListener(){
+				public void widgetDefaultSelected(SelectionEvent e) {				
 				}
-
-				public void widgetSelected(SelectionEvent e) {
-					DirectoryDialog ddlg = new DirectoryDialog( GrxUIPerspectiveFactory.getCurrentShell() );
-					try {
-						ddlg.setFilterPath(new File(tfSetupDirectory_.getText()).getCanonicalPath());
-					} catch (IOException e1) {
-						// TODO 自動生成された catch ブロック
-						e1.printStackTrace();
-					}
-					String fPath = ddlg.open();
-					if( fPath != null ) {
-						tfSetupDirectory_.setText(fPath);
-					}
+				public void widgetSelected(SelectionEvent e) {		
+					controllerBridge_ = new ControllerBridgePanel(getShell());
+					int row = viewer_.getTable().getSelectionIndex();
+		            GrxModelItem model = vecRobot_.get(row);
+	                controllerBridge_.setRobot(model);
+	                String controllerName = boxController_.getText(); 
+	                if(controllerName==""){
+	                	MessageDialog.openError(getShell(), MessageBundle.get("dialog.error.title"), 
+	                			MessageBundle.get("panel.controller.setControllerName"));
+		            	return;
+	                }
+	                controllerBridge_.setControllerName(controllerName);
+	                controllerBridge_.setProjectControllerName(controllerName);
+		            controllerBridge_.open();
 				}
             });
-*/
+
  			// Setup Command
             lbl = new Label(this,SWT.SHADOW_NONE);
             lbl.setText(MessageBundle.get("panel.controller.setupCommand")); //$NON-NLS-1$
@@ -341,8 +346,43 @@ public class ControllerPanel extends Composite{
                     }
                 }
             });
+            
+            Button btnEdit_ = new Button(this, SWT.PUSH);
+            btnEdit_.setText(MessageBundle.get("panel.controller.openFile"));
+            btnEdit_.addSelectionListener(new SelectionListener(){
+				public void widgetDefaultSelected(SelectionEvent e) {				
+				}
+				public void widgetSelected(SelectionEvent e) {		
+		            controllerBridge_ = new ControllerBridgePanel(getShell());
+		            if(!controllerBridge_.load(tfSetupDirectory_.getText()+File.separator+tfSetupCommand_.getText())){
+		            	MessageDialog.openError(getShell(), MessageBundle.get("dialog.error.title"),
+		            			MessageBundle.get("panel.controller.cantOpenFile"));
+		            	return;
+		            }
+		            int row = viewer_.getTable().getSelectionIndex();
+		            GrxModelItem model = vecRobot_.get(row);
+	                controllerBridge_.setRobot(model);
+	                String controllerName = boxController_.getText(); 
+	                if(controllerName==""){
+	                	MessageDialog.openError(getShell(), MessageBundle.get("dialog.error.title"), 
+	                			MessageBundle.get("panel.controller.setControllerName"));
+		            	return;
+	                }
+	                if(!controllerBridge_.setProjectControllerName(controllerName)){
+	                	if(MessageDialog.openQuestion(getShell(), MessageBundle.get("dialog.error.title"), 
+	                			MessageBundle.get("panel.controller.invalidControllerName")))	                	
+	                		controllerBridge_.setControllerName(controllerName);
+	                }
+	                if(!controllerBridge_.checkNameServer()){
+	                	if(MessageDialog.openQuestion(getShell(), MessageBundle.get("dialog.error.title"),
+	                			MessageBundle.get("panel.controller.invalidNameServer")))
+	                		controllerBridge_.setNameServer();
+	                }
+		            controllerBridge_.open();
 
-
+				}
+            });
+            
             btnOk_ = new Button(this,SWT.PUSH);
             btnOk_.setText(MessageBundle.get("dialog.okButton")); //$NON-NLS-1$
             btnOk_.addSelectionListener(new SelectionListener(){
