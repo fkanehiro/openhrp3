@@ -71,6 +71,9 @@ public class ControllerBridgePanel extends Dialog{
 	private HashMap<String, String> connection_ = new HashMap<String, String>();
 	private NameServer nameServer_ = new NameServer();
 	private Vector<Port> portTable_ = new Vector<Port>();
+	private boolean useConfigFile_;
+	private String configFileName_;   //Relative path//
+	private StringBuffer bridgeConfFile_ = new StringBuffer();
 	private enum DataTypeId {JOINT_VALUE, JOINT_VELOCITY, JOINT_ACCELERATION, JOINT_TORQUE, EXTERNAL_FORCE,
 	    			  ABS_TRANSFORM, ABS_VELOCITY, ABS_ACCELERATION, FORCE_SENSOR, RATE_GYRO_SENSOR, ACCELERATION_SENSOR,
 	    			  RANGE_SENSOR, CONSTRAINT_FORCE, COLOR_IMAGE, GRAYSCALE_IMAGE, DEPTH_IMAGE;
@@ -119,6 +122,7 @@ public class ControllerBridgePanel extends Dialog{
 	
 	private StyledText cbtext_;
 	private StyledText rctext_;
+	private StyledText bctext_;
 	private Text rrnText_;
 	private Text nshText_;
 	private Text nspText_;
@@ -128,6 +132,7 @@ public class ControllerBridgePanel extends Dialog{
 	private Button saveAsButton_ ; 
 	private Label fileNameLabel_;
 	private Label rtcConfFileNameLabel_;
+	private Label bridgeConfFileNameLabel_;
 	
 	private int os_;
 	private final int LINUX = 0;
@@ -204,7 +209,7 @@ public class ControllerBridgePanel extends Dialog{
         table.setHeaderVisible(true);
         TableColumn column = new TableColumn(table,SWT.NONE);
         column.setText("Type");
-        column.setWidth(50);
+        column.setWidth(100);
         column = new TableColumn(table,SWT.NONE);
         column.setText("name");
         column.setWidth(100);
@@ -331,8 +336,33 @@ public class ControllerBridgePanel extends Dialog{
 			}
     	});
     	
+    	Composite panel6 = new Composite(composite,SWT.NONE);
+    	panel6.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    	panel6.setLayout(new GridLayout(2,false));
+    	final Button configFileButton = new Button(panel6, SWT.CHECK);
+    	configFileButton.setText(MessageBundle.get("panel.Bridge.useConfigFile"));
+    	configFileButton.addSelectionListener(new SelectionListener(){
+			public void widgetDefaultSelected(SelectionEvent e) {			
+			}
+			public void widgetSelected(SelectionEvent e) {
+				useConfigFile_ = configFileButton.getSelection();
+				saveButtonEnabled(false);
+			}
+    	});
+    	if(useConfigFile_)
+    		configFileButton.setSelection(true);
+    	final Text text6 = new Text(panel6, SWT.BORDER);
+    	text6.setLayoutData(gridData0);
+    	text6.setText(configFileName_);
+    	text6.addModifyListener(new ModifyListener(){
+			public void modifyText(ModifyEvent e) {
+				configFileName_ = text6.getText();
+				bridgeConfFileNameLabel_.setText(configFileName_);
+				saveButtonEnabled(false);
+			}
+    	});
+    	
     	Composite panel4 = new Composite(composite,SWT.NONE);
-    	panel4.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     	panel4.setLayout(new GridLayout(1,false));
     	Button button = new Button(panel4, SWT.PUSH);
     	button.setText(MessageBundle.get("panel.Bridge.check"));
@@ -360,10 +390,25 @@ public class ControllerBridgePanel extends Dialog{
     	gridData2.grabExcessHorizontalSpace = true;
     	gridData2.verticalAlignment = GridData.FILL;
     	gridData2.grabExcessVerticalSpace = true;
-    	gridData2.minimumHeight = 150;
+    	gridData2.minimumHeight = 100;
+    	gridData2.widthHint = 700;
     	cbtext_.setLayoutData(gridData2);
     	cbtext_.setBackground(Activator.getDefault().getColor("gray"));
     	cbtext_.setEditable(false);
+    	bridgeConfFileNameLabel_ = new Label(panel4, SWT.LEFT);
+    	bridgeConfFileNameLabel_.setLayoutData(gridData0);
+    	bridgeConfFileNameLabel_.setText(configFileName_);
+    	bctext_ = new StyledText(panel4, SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL);
+    	GridData gridData5 = new GridData();
+    	gridData5.horizontalAlignment = GridData.FILL;
+    	gridData5.grabExcessHorizontalSpace = true;
+    	gridData5.verticalAlignment = GridData.FILL;
+    	gridData5.grabExcessVerticalSpace = true;
+    	gridData5.minimumHeight = 100;
+    	gridData5.widthHint = 700;
+    	bctext_.setLayoutData(gridData5);
+    	bctext_.setBackground(Activator.getDefault().getColor("gray"));
+    	bctext_.setEditable(false);
     	cbTextUpdate();
     	
     	Composite panel3 = new Composite(composite,SWT.NONE);
@@ -375,7 +420,14 @@ public class ControllerBridgePanel extends Dialog{
     	else
     		rtcConfFileNameLabel_.setText(rtcConfFileName_);
     	rctext_ = new StyledText(panel3,  SWT.BORDER|SWT.H_SCROLL|SWT.V_SCROLL );
-    	rctext_.setLayoutData(gridData2);
+    	GridData gridData4 = new GridData();
+    	gridData4.horizontalAlignment = GridData.FILL;
+    	gridData4.grabExcessHorizontalSpace = true;
+    	gridData4.verticalAlignment = GridData.FILL;
+    	gridData4.grabExcessVerticalSpace = true;
+    	gridData4.widthHint = 700;
+    	gridData4.minimumHeight = 50;
+    	rctext_.setLayoutData(gridData4);
     	rctext_.setBackground(Activator.getDefault().getColor("gray"));
     	rcTextUpdate();
     	rctext_.setEditable(false);
@@ -605,7 +657,8 @@ public class ControllerBridgePanel extends Dialog{
 		nameServer_.host_ = "localhost";
 		nameServer_.port_ = "2809";
 		errorMessage_ = "";
-		
+		useConfigFile_ = false;
+		configFileName_ = "";
 		rtcConfInit(nameServer_.host_, nameServer_.port_);
 	}
 	
@@ -645,6 +698,8 @@ public class ControllerBridgePanel extends Dialog{
 		rtcNameServer_.port_ = "";
 		moduleName_ = "";
 		controllerRtcName_ = "";
+		useConfigFile_ = false;
+		configFileName_ = "";
 	}
 	
 	private void parse(String[] options){
@@ -727,12 +782,20 @@ public class ControllerBridgePanel extends Dialog{
 				nameServer_.port_ = s[1].trim();
 			}else if(option.equals("config-file")){
 				loadConfigFile(parameter);
+				useConfigFile_ = true;
+				configFileName_ = parameter;
 			}
 		}
 	}
 	
 	private void loadConfigFile(String fileName){
-		File file = new File(fileName);
+		File file = new File(fileName_);
+		try {
+			fileName = file.getCanonicalFile().getParent()+File.separator+fileName;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		file = new File(fileName);
 		if (file == null || !file.isFile())
 			return;
 		try {
@@ -740,11 +803,12 @@ public class ControllerBridgePanel extends Dialog{
 			Vector<String> options = new Vector<String>();
 			while (reader.ready()) {
 				String string = reader.readLine();
+				bridgeConfFile_.append(string+"\n");
 				String[] s = string.split("=");
 				if(s.length==2)
 					options.add(s[0]+" "+s[1]);
 			}
-			parse((String[]) options.toArray());
+			parse(options.toArray(new String[0]));
 		
 		} catch (FileNotFoundException e) {
 			GrxDebugUtil.println("File Not Found. ("+file.getName()+")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -869,10 +933,18 @@ public class ControllerBridgePanel extends Dialog{
 		if(fileName_.equals(""))
 			if(!setFileName())
 				return;
+		File file = new File(fileName_);
 		if(rtcConfFileName_.equals("")){
-			File file = new File(fileName_);
 			try {
 				rtcConfFileName_ = file.getCanonicalFile().getParent()+File.separator+"rtc.conf";
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		String bridgeConfFileName=null;
+		if(useConfigFile_){
+			try {
+				bridgeConfFileName = file.getCanonicalFile().getParent()+File.separator+configFileName_;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -895,6 +967,13 @@ public class ControllerBridgePanel extends Dialog{
 			}
 			writer.flush();
 			writer.close();
+			
+			if(useConfigFile_){
+				writer = new BufferedWriter(new FileWriter(bridgeConfFileName));
+				writer.write(bridgeConfFile_.toString());
+				writer.flush();
+				writer.close();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -905,8 +984,9 @@ public class ControllerBridgePanel extends Dialog{
 	
 	private boolean setFileName(){
 		FileDialog fdlg = new FileDialog( GrxUIPerspectiveFactory.getCurrentShell(), SWT.SAVE);
-		fileName_ = fdlg.open();
-		if( fileName_ != null ) {
+		String fileName = fdlg.open();
+		if( fileName != null ) {
+			fileName_ = fileName;
 			File file = new File(fileName_);
 			try {
 				rtcConfFileName_ = file.getCanonicalFile().getParent()+File.separator+"rtc.conf";
@@ -927,109 +1007,111 @@ public class ControllerBridgePanel extends Dialog{
 		return false;
 	}
 	
-	/*
-	private void modifyControllerBridgeFile(String option, String oldString, String newString){
-		int i=0;
-		boolean find = false;
-		for(i=commandLineStart_; i<commandLineEnd_+1; i++){
-			String string = controllerBridgeFile_.get(i);
-			int optionIndex = string.indexOf("--"+option);
-			if(optionIndex!=-1){
-				find = true;
-				String string0 = string.substring(optionIndex+2+option.length());
-				String string1 = "";
-				if(!oldString.equals(""))
-					string1 =string0.replace(oldString, newString);
-				else
-					string1 = " " + newString + " " + string0.trim();
-				controllerBridgeFile_.set(i, string.substring(0,optionIndex+2+option.length())+string1);
-				if(newString.equals("")){
-					String s=string.substring(0,optionIndex) + string1.trim();
-					if(s.equals(endChar_)){
-						controllerBridgeFile_.remove(i);
-						commandLineEnd_--;
-					}else if(s.equals("")){
-						controllerBridgeFile_.remove(i);
-						if(i==commandLineEnd_ && i>1){
-							String string2 = controllerBridgeFile_.get(i-1);
-							if(string2.endsWith(endChar_)){
-								controllerBridgeFile_.set(i-1, string2.substring(0,string2.length()-1).trim());
-							}
-						}
-						commandLineEnd_--;
-					}else{
-						controllerBridgeFile_.set(i, s);
-					}
-				}
-				break;
-			}
-		}
-		if(!find){
-			String s = controllerBridgeFile_.get(commandLineEnd_) + " " + endChar_;
-			controllerBridgeFile_.set(commandLineEnd_, s);
-			s = "--"+option+" "+newString;
-			commandLineEnd_++;
-			controllerBridgeFile_.insertElementAt(s, commandLineEnd_);
-		}
-		cbTextUpdate();
-	}
-	*/
-	
 	private void updateControllerBridgeFile(){
 		String commandLine = controllerBridgeFile_.get(commandLineStart_);
 		int index = commandLine.indexOf("openhrp-controller-bridge");
 		if( index != -1 ){
-			commandLine = commandLine.substring(0,index+25)+" "+endChar_;
+			commandLine = commandLine.substring(0,index+25)+" ";
 		}
 		for(int i=commandLineEnd_; i>=commandLineStart_; i--)
 			controllerBridgeFile_.remove(i);
-		int i = commandLineStart_;
-		controllerBridgeFile_.insertElementAt(commandLine, i++);
+		bridgeConfFile_ = new StringBuffer();
+		
+		if(useConfigFile_){
+			controllerBridgeFile_.insertElementAt( commandLine+"--config-file "+configFileName_,commandLineStart_);
+			commandLineEnd_ = commandLineStart_;
+			updateBridgeConfFile();
+		}else{
+			int i = commandLineStart_;
+			controllerBridgeFile_.insertElementAt(commandLine+endChar_, i++);
+			if(!controllerName_.equals("")){
+				String string = "--server-name "+controllerName_ +" "+endChar_;
+				controllerBridgeFile_.insertElementAt(string, i++);
+			}
+			Iterator<Port> it = portTable_.iterator();
+			while(it.hasNext()){
+				String string="";
+				Port port = it.next();
+				if(port.type_.equals("IN")){
+					string += "--in-port "+port.name_;
+					if(!port.id_.equals("All joints") && !port.id_.equals(""))
+						string += ":"+port.id_;
+					string += ":"+port.propertyName_;
+				}else{
+					string += "--out-port "+port.name_;
+					if(!port.id_.equals("All joints") && !port.id_.equals(""))
+						string += ":"+port.id_;
+					string += ":"+port.propertyName_;
+					if(!port.outputTime_.equals("control Time"))
+						string += ":"+port.outputTime_;
+				}
+				string += " "+endChar_;
+				controllerBridgeFile_.insertElementAt(string, i++);
+				if(!port.controllerPortName_.equals("")){
+					String[] s = port.controllerPortName_.split(":");
+					String controllerPortName = port.controllerPortName_;
+					if(s.length==2 && s[0].equals(controllerRtcName_+"0"))
+						controllerPortName = s[1];
+					string = "--connection "+port.name_+":"+controllerPortName+" "+endChar_;
+					controllerBridgeFile_.insertElementAt(string, i++);
+				}
+			}
+			if(!robotRtcName_.equals("")){
+				String string = "--robot-name "+robotRtcName_ +" "+endChar_;
+				controllerBridgeFile_.insertElementAt(string, i++);
+			}
+			if(!nameServer_.host_.equals("localhost") || !nameServer_.port_.equals("2809")){
+				String string = "--name-server "+nameServer_.host_+":"+nameServer_.port_+" " +endChar_;
+				controllerBridgeFile_.insertElementAt(string, i++);
+			}
+	
+			commandLineEnd_ = i-1;
+			String string = controllerBridgeFile_.get(commandLineEnd_);
+			string = string.substring(0, string.length()-1);
+			controllerBridgeFile_.setElementAt(string, commandLineEnd_);
+		}
+	}
+	
+	private void updateBridgeConfFile(){
+		String lineSeparator = System.getProperty("line.separator");
 		if(!controllerName_.equals("")){
-			String string = "--server-name "+controllerName_ +" "+endChar_;
-			controllerBridgeFile_.insertElementAt(string, i++);
+			bridgeConfFile_.append("server-name = "+controllerName_ +lineSeparator);
 		}
 		Iterator<Port> it = portTable_.iterator();
 		while(it.hasNext()){
 			String string="";
 			Port port = it.next();
 			if(port.type_.equals("IN")){
-				string += "--in-port "+port.name_;
+				string += "in-port = "+port.name_;
 				if(!port.id_.equals("All joints") && !port.id_.equals(""))
 					string += ":"+port.id_;
 				string += ":"+port.propertyName_;
 			}else{
-				string += "--out-port "+port.name_;
+				string += "out-port = "+port.name_;
 				if(!port.id_.equals("All joints") && !port.id_.equals(""))
 					string += ":"+port.id_;
 				string += ":"+port.propertyName_;
 				if(!port.outputTime_.equals("control Time"))
 					string += ":"+port.outputTime_;
 			}
-			string += " "+endChar_;
-			controllerBridgeFile_.insertElementAt(string, i++);
+			bridgeConfFile_.append(string+lineSeparator);
 			if(!port.controllerPortName_.equals("")){
 				String[] s = port.controllerPortName_.split(":");
 				String controllerPortName = port.controllerPortName_;
 				if(s.length==2 && s[0].equals(controllerRtcName_+"0"))
 					controllerPortName = s[1];
-				string = "--connection "+port.name_+":"+controllerPortName+" "+endChar_;
-				controllerBridgeFile_.insertElementAt(string, i++);
+				string = "connection = "+port.name_+":"+controllerPortName+lineSeparator;
+				bridgeConfFile_.append(string);
 			}
 		}
 		if(!robotRtcName_.equals("")){
-			String string = "--robot-name "+robotRtcName_ +" "+endChar_;
-			controllerBridgeFile_.insertElementAt(string, i++);
+			String string = "robot-name = "+robotRtcName_ +lineSeparator;
+			bridgeConfFile_.append(string);
 		}
 		if(!nameServer_.host_.equals("localhost") || !nameServer_.port_.equals("2809")){
-			String string = "--name-server "+nameServer_.host_+":"+nameServer_.port_+" " +endChar_;
-			controllerBridgeFile_.insertElementAt(string, i++);
+			String string = "name-server = "+nameServer_.host_+":"+nameServer_.port_+lineSeparator;
+			bridgeConfFile_.append(string);
 		}
-
-		commandLineEnd_ = i-1;
-		String string = controllerBridgeFile_.get(commandLineEnd_);
-		string = string.substring(0, string.length()-1);
-		controllerBridgeFile_.setElementAt(string, commandLineEnd_);
 	}
 	
 	private void updateRtcConfFile(){
@@ -1054,6 +1136,7 @@ public class ControllerBridgePanel extends Dialog{
     	while(it.hasNext())
     		s += it.next() + "\n";
     	cbtext_.setText(s);
+    	bctext_.setText(bridgeConfFile_.toString());
 	}
 	
 	private void rcTextUpdate(){
@@ -1124,6 +1207,8 @@ public class ControllerBridgePanel extends Dialog{
 			errorMessage_ += MessageBundle.get("panel.Bridge.error.moduleName")+"\n";
 		if(controllerRtcName_.equals(""))
 			errorMessage_ += MessageBundle.get("panel.Bridge.error.controlRTCName")+"\n";
+		if(useConfigFile_ && configFileName_.equals(""))
+			errorMessage_ += MessageBundle.get("panel.Bridge.error.configFileName")+"\n";
 	}
 	
 	private class IdCellDialog extends Dialog {
