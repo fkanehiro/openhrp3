@@ -738,14 +738,18 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
         contact.depth = collision.idepth;
 
         bool isNeighborhood = false;
-        
-        // dense contact points are eliminated
-        for(int k=0; k < numExtractedPoints; ++k){
-            if(norm2(constraintPoints[k].point - contact.point) < linkPair.culling_thresh){
-                isNeighborhood = true;
-                break;
+
+        if(linkPair.culling_thresh > 0.0 )
+        {
+            // dense contact points are eliminated
+            for(int k=0; k < numExtractedPoints; ++k){
+                if(norm2(constraintPoints[k].point - contact.point) < linkPair.culling_thresh){
+                    isNeighborhood = true;
+                    break;
+                }
             }
         }
+
 
         if(isNeighborhood){
             constraintPoints.pop_back();
