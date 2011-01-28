@@ -117,6 +117,7 @@ public class ControllerBridgePanel extends Dialog{
 	private String moduleName_;
 	private String controllerRtcName_;
 	private String endChar_ = "";
+	private String commentChar_ = "";
 	private int commandLineStart_=0;
 	private int commandLineEnd_=0;
 	
@@ -143,9 +144,11 @@ public class ControllerBridgePanel extends Dialog{
 		if(System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X")){
 			os_ = LINUX;
 			endChar_ = "\\";
+			commentChar_ = "#";
 		}else{
 			endChar_ = "^";
 			os_ = WINDOWS;
+			commentChar_ = "REM";
 		}
 		init();
 	}
@@ -559,6 +562,8 @@ public class ControllerBridgePanel extends Dialog{
 			int i=0;
 			while (reader.ready()) {
 				String string = reader.readLine();
+				if(string.startsWith(commentChar_))
+					continue;
 				controllerBridgeFile_.add(string);
 				int index = string.indexOf("openhrp-controller-bridge");
 				if( index != -1 ){
@@ -609,6 +614,8 @@ public class ControllerBridgePanel extends Dialog{
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			while (reader.ready()) {
 				String string = reader.readLine();
+				if(string.startsWith("#"))
+					continue;
 				rtcConfFile_.add(string);
 				String string0 = string.trim();
 				if(string0.startsWith("corba.nameservers:")){
@@ -803,6 +810,8 @@ public class ControllerBridgePanel extends Dialog{
 			Vector<String> options = new Vector<String>();
 			while (reader.ready()) {
 				String string = reader.readLine();
+				if(string.startsWith("#"))
+					continue;
 				bridgeConfFile_.append(string+"\n");
 				String[] s = string.split("=");
 				if(s.length==2)
