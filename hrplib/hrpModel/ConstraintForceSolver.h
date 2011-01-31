@@ -47,6 +47,8 @@ namespace hrp
 		void initialize(void);
         void solve(OpenHRP::CollisionSequence& corbaCollisionSequence);
 		void clearExternalForces();
+        void setAllowedPenetraitonDepth(double dVal);
+        double getAllowedPenetraitonDepth() const;
 	};
 };
 
