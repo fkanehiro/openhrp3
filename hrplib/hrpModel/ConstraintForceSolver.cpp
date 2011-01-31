@@ -265,6 +265,7 @@ namespace hrp
         int  numGaussSeidelInitialIteration;
         double gaussSeidelMaxRelError;
         double negativeVelocityRatioForPenetration;
+        double allowedPenetraitonDepth;
 
         int numGaussSeidelTotalLoops;
         int numGaussSeidelTotalCalls;
@@ -380,6 +381,7 @@ CFSImpl::CFSImpl(WorldBase& world) :
 
     isConstraintForceOutputMode = false;
     useBuiltinCollisionDetector = false;
+    allowedPenetraitonDepth = ALLOWED_PENETRATION_DEPTH;
 }
 
 
@@ -1533,7 +1535,7 @@ void CFSImpl::setConstantVectorAndMuBlock()
                 // contact constraint
                 if(ALLOW_SUBTLE_PENETRATION_FOR_STABILITY){
                     double extraNegativeVel;
-                    double newDepth = ALLOWED_PENETRATION_DEPTH - constraint.depth;
+                    double newDepth = allowedPenetraitonDepth - constraint.depth;
                     extraNegativeVel = negativeVelocityRatioForPenetration * newDepth;
                     b(globalIndex) = an0(globalIndex) + (constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
                 } else {
@@ -2212,4 +2214,14 @@ void ConstraintForceSolver::solve(CollisionSequence& corbaCollisionSequence)
 void ConstraintForceSolver::clearExternalForces()
 {
     impl->clearExternalForces();
+}
+
+void ConstraintForceSolver::setAllowedPenetraitonDepth(double dVal)
+{
+    impl->allowedPenetraitonDepth = dVal;
+}
+
+double ConstraintForceSolver::getAllowedPenetraitonDepth() const
+{
+    return impl->allowedPenetraitonDepth;
 }
