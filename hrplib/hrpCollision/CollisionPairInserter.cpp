@@ -197,8 +197,13 @@ void CollisionPairInserter::get_triangles_in_neighbor(
     col_tri* neighbor_tris,
     int* n,
     const Opcode::AABBCollisionNode* root,
-    Opcode::MeshInterface* mesh)
+    Opcode::MeshInterface* mesh,
+    const Opcode::AABBCollisionNode* exclude)
 {
+    if (root == exclude) {
+        return;
+    }
+ 
     if(root->IsLeaf()){
         //三角形のデータを変換する。
         tri t;
@@ -210,8 +215,8 @@ void CollisionPairInserter::get_triangles_in_neighbor(
         copy_tri(&neighbor_tris[*n], &t);
         *n += 1;
     } else {
-        if(root->GetPos()) get_triangles_in_neighbor(neighbor_tris, n, root->GetPos(), mesh);
-        if(root->GetNeg()) get_triangles_in_neighbor(neighbor_tris, n, root->GetNeg(), mesh);
+        if(root->GetPos()) get_triangles_in_neighbor(neighbor_tris, n, root->GetPos(), mesh, exclude);
+        if(root->GetNeg()) get_triangles_in_neighbor(neighbor_tris, n, root->GetNeg(), mesh, exclude);
     }
 }
 
@@ -464,7 +469,7 @@ void CollisionPairInserter::find_signed_distance(
 
     // collect triangles in the neighborhood
     int n = 0;
-    get_triangles_in_neighbor(tri_neighbor, &n, root, mesh);
+    get_triangles_in_neighbor(tri_neighbor, &n, root, mesh, b1);
     //tri型に変換してから関数を呼ぶ
     tri t;
     Opcode::VertexPointers vp;

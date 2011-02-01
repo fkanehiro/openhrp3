@@ -112,7 +112,8 @@ namespace hrp {
             col_tri* neighbor_tris,
             int* n,
             const Opcode::AABBCollisionNode* root,
-            Opcode::MeshInterface* mesh);
+            Opcode::MeshInterface* mesh,
+            const Opcode::AABBCollisionNode* exclude=NULL);
 
         static int count_num_of_triangles(const Opcode::AABBCollisionNode* root);
 
