@@ -135,7 +135,7 @@ void ForwardDynamicsMM::initialize()
 }
 
 
-inline void ForwardDynamicsMM::solveUnknownAccels()
+void ForwardDynamicsMM::solveUnknownAccels()
 {
     if(!isNoUnknownAccelMode){
     	initializeAccelSolver();
