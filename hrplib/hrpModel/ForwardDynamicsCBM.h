@@ -53,6 +53,8 @@ namespace hrp
 		void initializeAccelSolver();
 		void solveUnknownAccels(const Vector3& fext, const Vector3& tauext);
         void solveUnknownAccels(Link* link, const Vector3& fext, const Vector3& tauext, const Vector3& rootfext, const Vector3& roottauext);
+        void sumExternalForces();
+		inline void solveUnknownAccels();
 
     private:
         
@@ -148,8 +150,6 @@ namespace hrp
 		void setColumnOfMassMatrix(dmatrix& M, int column);
 		void calcInverseDynamics(Link* link, Vector3& out_f, Vector3& out_tau);
         void calcd1(Link* link, Vector3& out_f, Vector3& out_tau);
-		void sumExternalForces();
-		inline void solveUnknownAccels();
 		inline void calcAccelFKandForceSensorValues();
 		void calcAccelFKandForceSensorValues(Link* link, Vector3& out_f, Vector3& out_tau);
 		void updateForceSensorInfo(Link* link, bool hasSensorsAbove);

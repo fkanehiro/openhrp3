@@ -1031,8 +1031,8 @@ void CFSImpl::setDefaultAccelerationVector()
 
                 bodyData.rootLinkPosRef = &(bodyData.body->rootLink()->p);
                 Vector3 zeroForce(0.0);
-                bodyData.forwardDynamicsMM->initializeAccelSolver();
-                bodyData.forwardDynamicsMM->solveUnknownAccels(zeroForce, zeroForce);
+                bodyData.forwardDynamicsMM->sumExternalForces();
+                bodyData.forwardDynamicsMM->solveUnknownAccels();
                 calcAccelsMM(bodyData, numeric_limits<int>::max());
 
             } else {
