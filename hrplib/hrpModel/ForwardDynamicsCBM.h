@@ -54,7 +54,7 @@ namespace hrp
 		void solveUnknownAccels(const Vector3& fext, const Vector3& tauext);
         void solveUnknownAccels(Link* link, const Vector3& fext, const Vector3& tauext, const Vector3& rootfext, const Vector3& roottauext);
         void sumExternalForces();
-		inline void solveUnknownAccels();
+		void solveUnknownAccels();
 
     private:
         
