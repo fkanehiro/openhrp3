@@ -1172,8 +1172,8 @@ void CFSImpl::initABMForceElementsWithNoExtForce(BodyData& bodyData)
         Link* link = traverse[i];
         LinkData& data = linksData[i];
 
-        data.pf0   = link->pf;
-        data.ptau0 = link->ptau;
+        data.pf0   = link->pf - link->fext;
+        data.ptau0 = link->ptau - link->tauext;
 
         for(Link* child = link->child; child; child = child->sibling){
 
