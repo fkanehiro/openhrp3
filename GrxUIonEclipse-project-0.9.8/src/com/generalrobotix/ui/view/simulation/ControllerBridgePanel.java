@@ -9,7 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -27,14 +26,25 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.PopupList;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DragSourceListener;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.DropTargetListener;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -1220,37 +1230,62 @@ public class ControllerBridgePanel extends Dialog{
 			errorMessage_ += MessageBundle.get("panel.Bridge.error.configFileName")+"\n";
 	}
 	
+	@SuppressWarnings("unchecked")
 	private class IdCellDialog extends Dialog {
-		private Vector<String> links_ = new Vector<String>();
-		private Vector<String> joints_ = new Vector<String>();
-		private String[][] sensors_ = new String[GrxSensorItem.sensorType.length][];
-		private Integer[] cameraId_ = new Integer[0];
-		private String id_;
+		private class IdData {
+			public String name_;
+			public int id_;
+			public boolean selection_;
+			public IdData(String name, int id){
+				name_ = name;
+				id_ = id;
+				selection_ = false;
+			}
+			public boolean equals(Object object){
+				if(id_ < 0)
+					return name_.equals(((IdData)object).name_);
+				else
+					return name_.equals(((IdData)object).name_) || id_ == ((IdData)object).id_ ;
+			}
+		}
+		private class Link extends IdData {
+			public Link(String name, int jointId) {
+				super(name, jointId);
+			}
+			public boolean isJoint(){
+				if(id_ < 0)
+					return false;
+				else
+					return true;
+			}
+		}
 		
-		private Button[] linkButtons_;
-		private Button[][] sensorButtons_ = new Button[GrxSensorItem.sensorType.length][];
+		private Vector<Link> links_ = new Vector<Link>();
+		private Vector<IdData>[] sensors_ = new Vector[GrxSensorItem.sensorType.length];
+		private String id_;
+		private Vector<Button> linkButtons_ = new Vector<Button>();
+		private Vector<Button>[] sensorButtons_ = new Vector[GrxSensorItem.sensorType.length];
 		private Button allJointButton_;
 		
 		protected IdCellDialog(Shell parentShell) {
 			super(parentShell);
-			Iterator<GrxLinkItem> it = robot_.links_.iterator();
-			while(it.hasNext())
-				links_.add(it.next().getName());
-			linkButtons_ = new Button[links_.size()];
 			String[] joints = robot_.getJointNames();
 			for(int i=0; i<joints.length; i++)
-				joints_.add(joints[i]);
-    		for(int i=0; i<GrxSensorItem.sensorType.length; i++){
-    			sensors_[i] = robot_.getSensorNames(GrxSensorItem.sensorType[i]);
-    			if(sensors_[i] == null)
-    				sensors_[i] = new String[0];
-    			sensorButtons_[i] = new Button[sensors_[i].length];
-    		}
-    		List<GrxSensorItem> cameras_ = robot_.getSensors("Vision");
-    		if(cameras_!=null){
-	    		cameraId_ = new Integer[cameras_.size()];
-	    		for(int i=0; i<cameras_.size(); i++)
-	    			cameraId_[i] = cameras_.get(i).id_;
+				links_.add(new Link(joints[i], i));
+			Iterator<GrxLinkItem> it = robot_.links_.iterator();
+			while(it.hasNext()){
+				GrxLinkItem link = it.next();
+				if(link.jointId_ < 0)
+					links_.add(new Link(link.getName(), -1));
+			}			
+			for(int i=0; i<GrxSensorItem.sensorType.length; i++){
+    			sensors_[i] = new Vector<IdData>(); 
+    			String[] names = robot_.getSensorNames(GrxSensorItem.sensorType[i]);
+    			if(names!=null){
+	    			for(int j=0; j<names.length; j++)
+	    				sensors_[i].add(new IdData(names[j], j));
+    			}
+    			sensorButtons_[i] = new Vector<Button>();
     		}
 		}
 		
@@ -1260,7 +1295,7 @@ public class ControllerBridgePanel extends Dialog{
 	    	
 	    	Composite panel0 = new Composite(composite,SWT.NONE);
 	    	panel0.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-	    	panel0.setLayout(new RowLayout(SWT.VERTICAL));
+	    	panel0.setLayout(new FillLayout(SWT.VERTICAL));
 	    	Label label0 = new Label(panel0, SWT.NONE);
 			label0.setText("Link");
 			label0.setForeground(Activator.getDefault().getColor("blue"));
@@ -1272,36 +1307,28 @@ public class ControllerBridgePanel extends Dialog{
 				public void widgetSelected(SelectionEvent e) {
 					if(allJointButton_.getSelection()){
 						for(int i=0; i<links_.size(); i++){
-							if(joints_.indexOf(links_.get(i)) >= 0)
-								linkButtons_[i].setSelection(true);
+							if(links_.get(i).isJoint())
+								linkButtons_.get(i).setSelection(true);
 						}
 					}else{
 						for(int i=0; i<links_.size(); i++){
-							if(joints_.indexOf(links_.get(i)) >= 0)
-								linkButtons_[i].setSelection(false);
+							if(links_.get(i).isJoint())
+								linkButtons_.get(i).setSelection(false);
 						}
 					}
 				}			
 			});
 	    	for(int i=0; i<links_.size(); i++){
-	    		linkButtons_[i] = new Button(panel0, SWT.CHECK|SWT.LEFT);
-	    		linkButtons_[i].setText(links_.get(i));
-	    		linkButtons_[i].addSelectionListener(new SelectionListener(){
-					public void widgetDefaultSelected(SelectionEvent e) {
-					}
-					public void widgetSelected(SelectionEvent e) {
-						boolean b = true;
-						for(int i=0; i<links_.size(); i++){
-							if(joints_.indexOf(links_.get(i)) >= 0)
-								b = b && linkButtons_[i].getSelection();
-						}	
-						if(b)
-							allJointButton_.setSelection(true);
-						else
-							allJointButton_.setSelection(false);
-					}	    			
+	    		linkButtons_.add(new Button(panel0, SWT.CHECK|SWT.LEFT));
+	    		linkButtons_.get(i).addSelectionListener(new SelectionListener(){
+	    			public void widgetDefaultSelected(SelectionEvent e) {
+	    			}
+	    			public void widgetSelected(SelectionEvent e) {
+	    				updateAllJointButton();
+	    			}	    			
 	    		});
 	    	}
+	    	updateButton(true, 0);
 	    	
 	    	Composite panel1 = new Composite(composite,SWT.NONE);
 	    	panel1.setLayoutData(new GridData(GridData.FILL_VERTICAL));
@@ -1310,45 +1337,138 @@ public class ControllerBridgePanel extends Dialog{
 	    		Label label = new Label(panel1, SWT.NONE);
     			label.setText(GrxSensorItem.sensorType[i]);
     			label.setForeground(Activator.getDefault().getColor("blue"));
-	    		for(int j=0; j<sensors_[i].length; j++){
-	    			sensorButtons_[i][j] = new Button(panel1, SWT.CHECK|SWT.LEFT);
-	    			String s = sensors_[i][j];
-	    			if(i==0)
-	    				s += " (id= "+cameraId_[j]+" )";
-	    			sensorButtons_[i][j].setText(s);
+	    		for(int j=0; j<sensors_[i].size(); j++){
+	    			sensorButtons_[i].add(new Button(panel1, SWT.CHECK|SWT.LEFT));
 	    		}
 	    		Label dumy = new Label(panel1, SWT.NONE);
 	    	}
-	    	updateButton();
+	    	updateButton(false, -1);
+	    	
+	    	Transfer [] transfers = new Transfer[]{ TextTransfer.getInstance() };
+	    	DragSourceListener dragSourceListener = new DragSourceListener() {
+				public void dragFinished(DragSourceEvent event) {
+				}
+				public void dragSetData(DragSourceEvent event) {
+					Button sourceButton = (Button)((DragSource) event.getSource()).getControl();
+					int index = linkButtons_.indexOf(sourceButton);
+					if(index>=0)
+						event.data = "link "+String.valueOf(index);//links_.get(index).name_;
+					else
+						for(int i=0; i<sensorButtons_.length; i++){
+							index = sensorButtons_[i].indexOf(sourceButton);
+							if(index >= 0){
+								event.data = "sensor "+String.valueOf(i)+" "+String.valueOf(index);
+								break;
+							}
+						}
+				}
+				public void dragStart(DragSourceEvent event) {
+				}
+	    	};
+	    	DropTargetListener dropTargetListener = new DropTargetListener(){
+	    	    public void drop(DropTargetEvent event){
+	    	        if (event != null){
+	    	        	Button targetButton = (Button)((DropTarget) event.getSource()).getControl();
+	    	        	String string = (String)event.data;
+	    	        	String[] source = string.split(" ");
+	    	        	if(source[0].equals("link")){
+	    	        		for(int i=0; i<links_.size(); i++)
+		    	        		links_.get(i).selection_ = linkButtons_.get(i).getSelection();
+	    	        		int sourceIndex = Integer.parseInt(source[1]);
+	    	        		int targetIndex = linkButtons_.indexOf(targetButton);
+	    	        		if(targetIndex >=0){
+			    	        	Link sourceLink = links_.get(sourceIndex);
+			    	        	Link targetLink = links_.get(targetIndex);
+			    	        	links_.remove(sourceLink);
+			    	        	links_.insertElementAt(sourceLink, links_.indexOf(targetLink));
+			    	        	updateButton(true, 0);
+	    	        		}
+	    	        	}else{	//sensor
+	    	        		int type = Integer.parseInt(source[1]);
+	    	        		for(int i=0; i<sensors_[type].size(); i++)
+	    	        			sensors_[type].get(i).selection_ = sensorButtons_[type].get(i).getSelection();
+	    	        		int sourceIndex = Integer.parseInt(source[2]);
+	    	        		int targetIndex =  sensorButtons_[type].indexOf(targetButton);
+	    	        		if(targetIndex >=0){
+			    	        	IdData sourceData = sensors_[type].get(sourceIndex);
+			    	        	IdData targetData = sensors_[type].get(targetIndex);
+			    	        	sensors_[type].remove(sourceData);
+			    	        	sensors_[type].insertElementAt(sourceData, sensors_[type].indexOf(targetData));
+			    	        	updateButton(false, type);
+	    	        		}
+	    	        	}
+	    	        }
+	    	    }
+				private Color buttonColor_;
+				public void dragEnter(DropTargetEvent event) {
+					Button targetButton = (Button)((DropTarget) event.getSource()).getControl();
+					buttonColor_ = targetButton.getBackground(); 
+					targetButton.setBackground(Activator.getDefault().getColor("darkGray"));
+				}
+				public void dragLeave(DropTargetEvent event) {
+					Button targetButton = (Button)((DropTarget) event.getSource()).getControl();
+					targetButton.setBackground(buttonColor_);
+				}
+				public void dragOperationChanged(DropTargetEvent event) {
+				}
+				public void dragOver(DropTargetEvent event) {	
+				}
+				public void dropAccept(DropTargetEvent event) {
+				}
+	    	};
+	    	for(int i=0; i<links_.size(); i++){
+		    	DragSource source = new DragSource(linkButtons_.get(i), DND.DROP_MOVE );
+		    	source.setTransfer(transfers);
+		    	source.addDragListener(dragSourceListener);
+		    	DropTarget target = new DropTarget(linkButtons_.get(i), DND.DROP_MOVE);
+		    	target.setTransfer(transfers);
+		    	target.addDropListener(dropTargetListener);
+	    	}
+	    	
+	    	for(int i=0; i<sensors_.length; i++){
+	    		for(int j=0; j<sensors_[i].size(); j++){
+	    			DragSource source = new DragSource(sensorButtons_[i].get(j), DND.DROP_MOVE );
+	    			source.setTransfer(transfers);
+	    			source.addDragListener(dragSourceListener);
+	    			DropTarget target = new DropTarget(sensorButtons_[i].get(j), DND.DROP_MOVE);
+	    			target.setTransfer(transfers);
+	    			target.addDropListener(dropTargetListener);
+	    		}
+	    	}
+	    	
 			return composite;
 		}
 
 		protected void buttonPressed(int buttonId) {
 	    	if (buttonId == IDialogConstants.OK_ID) {
-				Iterator<String> it = joints_.iterator();
-				boolean b = true;
-				while(it.hasNext())
-					if(!linkButtons_[links_.indexOf(it.next())].getSelection()){
-						b = false;
-						break;
-					}
-				if(b && joints_.size()!=0){
+	    		boolean b = false;
+	    		for(int i=0; i<links_.size(); i++){
+	    			if(links_.get(i).isJoint()){
+	    				b = true;
+	    				if(!linkButtons_.get(i).getSelection()){
+	    					b = false;
+							break;
+	    				}
+	    			}
+	    		}
+				if(b){
 					id_ = "All joints";
 				}else{	
 					id_ = "";
-					for(int i=0; i<linkButtons_.length; i++)
-						if(linkButtons_[i].getSelection())
-							id_ += linkButtons_[i].getText() + ",";
+					for(int i=0; i<linkButtons_.size(); i++)
+						if(linkButtons_.get(i).getSelection())
+							id_ += links_.get(i).name_ + ",";
 					for(int i=1; i<sensorButtons_.length; i++)
-						for(int j=0; j<sensorButtons_[i].length; j++)
-							if(sensorButtons_[i][j].getSelection())
-								id_ += sensorButtons_[i][j].getText() + ",";
+						for(int j=0; j<sensorButtons_[i].size(); j++)
+							if(sensorButtons_[i].get(j).getSelection())
+								id_ += sensors_[i].get(j).name_ + ",";
 					if(id_.length()!=0)
 						id_ = id_.substring(0, id_.length()-1);
 					else
-						for(int i=0; i<sensorButtons_[0].length; i++)
-							if(sensorButtons_[0][i].getSelection())
-								id_ = cameraId_[i].toString();
+						for(int i=0; i<sensorButtons_[0].size(); i++)
+							if(sensorButtons_[0].get(i).getSelection())
+								id_ = String.valueOf(sensors_[0].get(i).id_);
+								
 				}
 	    	}
 	    	super.buttonPressed(buttonId);
@@ -1360,46 +1480,85 @@ public class ControllerBridgePanel extends Dialog{
 		
 		public void setId(String value) {
 			id_ = value;
-		}
-		
-		private void updateButton(){
 			if(id_.equals("All joints")){
 				for(int i=0; i<links_.size(); i++){
-					if(joints_.indexOf(links_.get(i)) >= 0)
-						linkButtons_[i].setSelection(true);
+					if(links_.get(i).isJoint())
+						links_.get(i).selection_ = true;
 				}
-				allJointButton_.setSelection(true);
 			}else{
 				String[] names = id_.split(",");
-				for(int i=0; i<names.length; i++){
-					String name = names[i].trim();
-					int index = links_.indexOf(name);
+				for(int i=names.length; i>0; ){
+					String name = names[--i].trim();
+					int index = links_.indexOf(new Link(name, -1));
 					if(index >= 0){
-						linkButtons_[index].setSelection(true);
+						Link link = links_.get(index);
+						link.selection_ = true;
+						links_.remove(link);
+						links_.insertElementAt(link, 0);
 						continue;
 					}
 					for(int j=1; j<GrxSensorItem.sensorType.length; j++){
-						for(int k=0; k<sensors_[j].length; k++){
-							if(sensors_[j][k].equals(name)){
-								sensorButtons_[j][k].setSelection(true);
-								continue;
-							}
+						index = sensors_[j].indexOf(new IdData(name, -1));
+						if(index >= 0){
+							IdData idData = sensors_[j].get(index);
+							idData.selection_ = true;
+							sensors_[j].remove(idData);
+							sensors_[j].insertElementAt(idData, 0);
+							continue;
 						}
 					}
 					try{
 						int id = Integer.valueOf(name);
-						for(int j=0; j<cameraId_.length; j++){
-							if(id == cameraId_[j]){
-								sensorButtons_[0][j].setSelection(true);
-								continue;
-							}
+						index = sensors_[0].indexOf(new IdData("", id));
+						if(index >= 0){
+							IdData idData = sensors_[0].get(index);
+							idData.selection_ = true;
+							sensors_[0].remove(idData);
+							sensors_[0].insertElementAt(idData, 0);
 						}
 					}catch(NumberFormatException e){
 						;
 					}
 				}
-				allJointButton_.setSelection(false);
 			}
+		}
+		
+		private void updateButton(boolean isLink, int type){
+			if(isLink){
+				for(int i=0; i<links_.size(); i++){
+	        		String string = links_.get(i).name_;
+	        		if(links_.get(i).isJoint())
+	        			string += " (id= "+links_.get(i).id_+")";
+	        		linkButtons_.get(i).setText(string);
+	        		linkButtons_.get(i).setSelection(links_.get(i).selection_);
+	        	}
+				updateAllJointButton();
+			}else{
+				if(type < 0)
+					for(int i=0; i<GrxSensorItem.sensorType.length; i++){
+			    		for(int j=0; j<sensors_[i].size(); j++){
+			    			sensorButtons_[i].get(j).setText(sensors_[i].get(j).name_+" (id= "+sensors_[i].get(j).id_+")");
+			    			sensorButtons_[i].get(j).setSelection(sensors_[i].get(j).selection_);
+			    		}
+			    	}
+				else{
+					for(int j=0; j<sensors_[type].size(); j++){
+		    			sensorButtons_[type].get(j).setText(sensors_[type].get(j).name_+" (id= "+sensors_[type].get(j).id_+")");
+		    			sensorButtons_[type].get(j).setSelection(sensors_[type].get(j).selection_);
+		    		}
+				}
+			}
+		}
+		
+		private void updateAllJointButton() {
+			boolean b = true;
+			for(int i=0; i<links_.size(); i++)
+				if(links_.get(i).isJoint())
+					b = b && linkButtons_.get(i).getSelection();
+			if(b)
+				allJointButton_.setSelection(true);
+			else
+				allJointButton_.setSelection(false);
 		}
 	}
 	
