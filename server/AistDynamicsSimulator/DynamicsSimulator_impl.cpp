@@ -466,7 +466,6 @@ void DynamicsSimulator_impl::getCharacterSensorValues
     }
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return;
@@ -659,13 +658,15 @@ void DynamicsSimulator_impl::setCharacterLinkData
     }
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return;
     }
     Link* link = body->link(linkName);
-    assert(link);
+    if(!link){
+        std::cerr << "not found! :" << linkName << std::endl;
+        return;
+    }
 
     switch(type) {
 
@@ -763,13 +764,15 @@ void DynamicsSimulator_impl::getCharacterLinkData
     }
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return;
     }
     Link* link = body->link(linkName);
-    assert(link);
+    if(!link){
+        std::cerr << "not found! :" << linkName << std::endl;
+        return;
+    }
 
     DblSequence_var rdata = new DblSequence;
 
@@ -863,7 +866,6 @@ void DynamicsSimulator_impl::getCharacterAllLinkData
     }
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return;
@@ -924,7 +926,6 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
     }
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return;
@@ -979,7 +980,10 @@ void DynamicsSimulator_impl::setGVector
     const DblSequence3& wdata
     )
 {
-    assert(wdata.length() == 3);
+    if(wdata.length() != 3){
+        std::cerr << "setGVector : The data length is not three. " << std::endl;
+        return;
+    }
 
     Vector3 g;
     getVector3(g, wdata);
@@ -1023,7 +1027,6 @@ void DynamicsSimulator_impl::setCharacterAllJointModes
     bool isHighGainMode = (jointMode == OpenHRP::DynamicsSimulator::HIGH_GAIN_MODE);
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return;
@@ -1062,7 +1065,6 @@ CORBA::Boolean DynamicsSimulator_impl::calcCharacterInverseKinematics
     bool solved = false;
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return false;
@@ -1102,7 +1104,6 @@ void DynamicsSimulator_impl::calcCharacterForwardKinematics
     }
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return;
@@ -1369,7 +1370,10 @@ CORBA::Boolean DynamicsSimulator_impl::getCharacterCollidingPairs
              << characterName << ")" << endl;
     }
 
-    assert(world.body(characterName));
+    if(!world.body(characterName)){
+        std::cerr << "not found! :" << characterName << std::endl;
+        return false;
+    }
 
     std::vector<unsigned int> locations;
 
@@ -1412,7 +1416,6 @@ void DynamicsSimulator_impl::calcCharacterJacobian
     }
 
     BodyPtr body = world.body(characterName);
-    assert(body);
     if(!body){
         std::cerr << "not found! :" << characterName << std::endl;
         return;
