@@ -16,7 +16,7 @@
 #include "config.h"
 #include "CollisionData.h"
 #include "ColdetModel.h"
-#include "CollisionPairInserter.h"
+#include "CollisionPairInserterBase.h"
 #include <vector>
 #include <hrpUtil/Referenced.h>
 
@@ -40,11 +40,11 @@ namespace hrp {
         }
 
         std::vector<collision_data>& collisions() {
-            return collisionPairInserter.cdContact;
+            return collisionPairInserter->cdContact;
         }
 
         void clearCollisions(){
-            collisionPairInserter.cdContact.clear();
+            collisionPairInserter->cdContact.clear();
         }
 
         bool checkCollision() {
@@ -63,6 +63,8 @@ namespace hrp {
 
         double tolerance() const { return tolerance_; }
 
+        void setCollisionPairInserter(CollisionPairInserterBase *inserter); 
+
       private:
         std::vector<collision_data>& detectCollisionsSub(bool detectAllContacts);
         bool detectMeshMeshCollisions(bool detectAllContacts);
@@ -71,7 +73,7 @@ namespace hrp {
         ColdetModelPtr models[2];
         double tolerance_;
 
-        CollisionPairInserter collisionPairInserter;
+        CollisionPairInserterBase *collisionPairInserter;
 
         int boxTestsCount;
         int triTestsCount;

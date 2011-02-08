@@ -46,6 +46,7 @@ set(headers
   ColdetModel.h
   ColdetModelPair.h
   CollisionPairInserter.h
+  CollisionPairInserterBase.h
   DistFuncs.h
   )
 
@@ -74,3 +75,5 @@ endif()
 hrplib_install_macro(${target} ${HRPCOLLISION_VERSION})
 
 install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCollision)
+
+ADD_SUBDIRECTORY(Opcode)
