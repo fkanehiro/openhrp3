@@ -75,7 +75,7 @@
 //#include<iostream>
 
 namespace hrp {
-    class CollisionPairInserter;
+    class CollisionPairInserterBase;
 }
 
 	namespace Opcode

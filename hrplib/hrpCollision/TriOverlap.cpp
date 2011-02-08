@@ -11,7 +11,7 @@
 // TriOverlap.cpp
 //
 
-#include "CollisionPairInserter.h"
+#include "CollisionPairInserterBase.h"
 #include <cmath>
 #include <cstdio>
 #include <iostream>
@@ -675,7 +675,7 @@ int tri_tri_overlap(
     const Vector3& Q2,
     const Vector3& Q3,
     collision_data* col_p,
-    CollisionPairInserter* collisionPairInserter) 
+    CollisionPairInserterBase* collisionPairInserter) 
 {
     /*
       One triangle is (p1,p2,p3).  Other is (q1,q2,q3).
@@ -1030,7 +1030,7 @@ int tri_tri_overlap(
     
     if(HIRUKAWA_DEBUG){
 
-        CollisionPairInserter& c = *collisionPairInserter;
+        CollisionPairInserterBase& c = *collisionPairInserter;
     
         Vector3 p1w(c.CD_s2 * (c.CD_Rot2 * P1 + c.CD_Trans2));
         Vector3 p2w(c.CD_s2 * (c.CD_Rot2 * P2 + c.CD_Trans2));

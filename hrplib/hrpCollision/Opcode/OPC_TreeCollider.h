@@ -74,7 +74,7 @@
                 AABBTreeCollider();
 		virtual								~AABBTreeCollider();
 
-                inline void setCollisionPairInserter(hrp::CollisionPairInserter* collisionPairInserter) {
+                inline void setCollisionPairInserter(hrp::CollisionPairInserterBase* collisionPairInserter) {
                     this->collisionPairInserter = collisionPairInserter;
                 }
 
@@ -217,7 +217,7 @@
 		// Settings
 							bool			mFullBoxBoxTest;	//!< Perform full BV-BV tests (true) or SAT-lite tests (false)
 							bool			mFullPrimBoxTest;	//!< Perform full Primitive-BV tests (true) or SAT-lite tests (false)
-                                                        hrp::CollisionPairInserter* collisionPairInserter;
+                                                        hrp::CollisionPairInserterBase* collisionPairInserter;
 		// Internal methods
 
 			// Standard AABB trees

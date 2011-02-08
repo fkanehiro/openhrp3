@@ -26,7 +26,7 @@ int tri_tri_overlap(
     const Vector3& Q2,
     const Vector3& Q3,
     collision_data* col_p,
-    CollisionPairInserter* collisionPairInserter);
+    CollisionPairInserterBase* collisionPairInserter);
     
 
 namespace {

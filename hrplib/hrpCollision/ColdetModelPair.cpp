@@ -21,30 +21,30 @@ using namespace hrp;
 
 ColdetModelPair::ColdetModelPair()
 {
-
+    collisionPairInserter = new CollisionPairInserter;
 }
 
 
 ColdetModelPair::ColdetModelPair(ColdetModelPtr model0, ColdetModelPtr model1,
                                  double tolerance)
 {
-    models[0] = model0;
-    models[1] = model1;
+    collisionPairInserter = new CollisionPairInserter;
+    set(model0, model1);
     tolerance_ = tolerance;
 }
 
 
 ColdetModelPair::ColdetModelPair(const ColdetModelPair& org)
 {
-    models[0] = org.models[0];
-    models[1] = org.models[1];
+    collisionPairInserter = new CollisionPairInserter;
+    set(org.models[0], org.models[1]);
     tolerance_ = org.tolerance_;
 }
 
 
 ColdetModelPair::~ColdetModelPair()
 {
-
+    delete collisionPairInserter;
 }
 
 
@@ -52,12 +52,15 @@ void ColdetModelPair::set(ColdetModelPtr model0, ColdetModelPtr model1)
 {
     models[0] = model0;
     models[1] = model1;
+    // inverse order because of historical background
+    // this should be fixed.(note that the direction of normal is inversed when the order inversed 
+    collisionPairInserter->set(model1->dataSet, model0->dataSet);
 }
 
 
 std::vector<collision_data>& ColdetModelPair::detectCollisionsSub(bool detectAllContacts)
 {
-    collisionPairInserter.clear();
+    collisionPairInserter->clear();
 
     bool detected;
     
@@ -71,10 +74,10 @@ std::vector<collision_data>& ColdetModelPair::detectCollisionsSub(bool detectAll
     }
 
     if(!detected){
-        collisionPairInserter.clear();
+        collisionPairInserter->clear();
     }
 
-    return collisionPairInserter.collisions();
+    return collisionPairInserter->collisions();
 }
 
 
@@ -92,7 +95,7 @@ bool ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
         colCache.Model1 = &models[0]->dataSet->model;
 
         Opcode::AABBTreeCollider collider;
-        collider.setCollisionPairInserter(&collisionPairInserter);
+        collider.setCollisionPairInserter(collisionPairInserter);
         
         if(!detectAllContacts){
             collider.SetFirstContact(true);
@@ -155,7 +158,7 @@ bool ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts)
     if (rcosth >= dBottom) contactsCount+=2;
 
     if (contactsCount){
-        std::vector<collision_data>& cdata = collisionPairInserter.collisions();
+        std::vector<collision_data>& cdata = collisionPairInserter->collisions();
         cdata.resize(contactsCount);
         for (unsigned int i=0; i<contactsCount; i++){
             cdata[i].num_of_i_points = 1;
@@ -292,4 +295,13 @@ bool ColdetModelPair::detectIntersection()
     }
 
     return false;
+}
+
+void ColdetModelPair::setCollisionPairInserter(CollisionPairInserterBase *inserter)
+{
+    delete collisionPairInserter;
+    collisionPairInserter = inserter;
+    // inverse order because of historical background
+    // this should be fixed.(note that the direction of normal is inversed when the order inversed 
+    collisionPairInserter->set(models[1]->dataSet, models[0]->dataSet);
 }
