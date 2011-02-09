@@ -44,6 +44,7 @@ set(headers
   config.h
   CollisionData.h
   ColdetModel.h
+  ColdetModelSharedDataSet.h
   ColdetModelPair.h
   CollisionPairInserter.h
   CollisionPairInserterBase.h

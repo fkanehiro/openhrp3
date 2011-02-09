@@ -212,6 +212,7 @@ namespace hrp {
         int getAABBmaxNum();
         int numofBBtoDepth(int minNumofBB);
 
+        ColdetModelSharedDataSet *getDataSet() { return dataSet; }
       private:
         /**
          * @brief common part of constuctors
