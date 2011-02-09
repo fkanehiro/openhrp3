@@ -166,7 +166,11 @@ ImageConverter::loadPNG(
         case PNG_COLOR_TYPE_GRAY:
             numComponents = 1;
             if(depth < 8) 
+#if PNG_LIBPNG_VER_MINOR >= 4
+                png_set_expand_gray_1_2_4_to_8(pPng);
+#else
                 png_set_gray_1_2_4_to_8(pPng);
+#endif
             break;
 
         case PNG_COLOR_TYPE_GRAY_ALPHA:
