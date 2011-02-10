@@ -17,8 +17,7 @@ using namespace std;
 using namespace Opcode;
 using namespace hrp;
 
-
-int tri_tri_overlap(
+HRP_COLLISION_EXPORT int tri_tri_overlap(
     const Vector3& P1,
     const Vector3& P2,
     const Vector3& P3,
@@ -27,7 +26,6 @@ int tri_tri_overlap(
     const Vector3& Q3,
     collision_data* col_p,
     CollisionPairInserterBase* collisionPairInserter);
-    
 
 namespace {
     const bool COLLIDE_DEBUG = false;

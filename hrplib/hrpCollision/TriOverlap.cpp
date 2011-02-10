@@ -19,6 +19,17 @@
 using namespace std;
 using namespace hrp;
 
+HRP_COLLISION_EXPORT int tri_tri_overlap(
+    const Vector3& P1,
+    const Vector3& P2,
+    const Vector3& P3,
+    const Vector3& Q1,
+    const Vector3& Q2,
+    const Vector3& Q3,
+    collision_data* col_p,
+    CollisionPairInserterBase* collisionPairInserter);
+
+
 namespace {
 
     const bool HIRUKAWA_DEBUG = false;
