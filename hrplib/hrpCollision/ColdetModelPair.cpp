@@ -93,6 +93,9 @@ bool ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
         // this should be fixed.(note that the direction of normal is inversed when the order inversed 
         colCache.Model0 = &models[1]->dataSet->model;
         colCache.Model1 = &models[0]->dataSet->model;
+        
+        if(colCache.Model0->HasSingleNode() || colCache.Model1->HasSingleNode())
+            return result;
 
         Opcode::AABBTreeCollider collider;
         collider.setCollisionPairInserter(collisionPairInserter);

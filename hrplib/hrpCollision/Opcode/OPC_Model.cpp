@@ -156,6 +156,7 @@ bool Model::Build(const OPCODECREATE& create)
 
 	// Special case for 1-triangle meshes [Opcode 1.3]
 	udword NbTris = create.mIMesh->GetNbTriangles();
+    /*
 	if(NbTris==1)
 	{
 		// We don't need to actually create a tree here, since we'll only have a single triangle to deal with anyway.
@@ -163,7 +164,7 @@ bool Model::Build(const OPCODECREATE& create)
 		mModelCode |= OPC_SINGLE_NODE;
 		return true;
 	}
-
+    */
 	// 2) Build a generic AABB Tree.
 	mSource = new AABBTree;
 	CHECKALLOC(mSource);
