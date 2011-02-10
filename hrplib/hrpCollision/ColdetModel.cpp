@@ -171,12 +171,12 @@ bool ColdetModelSharedDataSet::build()
         OPCC.mKeepOriginal = false;
         
         model.Build(OPCC);
-
-        AABBTreeMaxDepth = computeDepth(((Opcode::AABBCollisionTree*)model.GetTree())->GetNodes(), 0, -1) + 1;
-        for(int i=0; i<AABBTreeMaxDepth; i++)
-            for(int j=0; j<i; j++)
-                numBBMap.at(i) += numLeafMap.at(j);
-
+        if(model.GetTree()){
+            AABBTreeMaxDepth = computeDepth(((Opcode::AABBCollisionTree*)model.GetTree())->GetNodes(), 0, -1) + 1;
+            for(int i=0; i<AABBTreeMaxDepth; i++)
+                for(int j=0; j<i; j++)
+                    numBBMap.at(i) += numLeafMap.at(j);
+        }
         result = true;
     }
 
