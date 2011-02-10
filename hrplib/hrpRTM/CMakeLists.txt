@@ -10,7 +10,9 @@ set(target SimulationEC )
 
 add_library(${target} SHARED ${sources})
 set_target_properties(${target} PROPERTIES PREFIX "")
-
+if(WIN32)
+  set_target_properties(${target} PROPERTIES DEBUG_POSTFIX d )
+endif()
 # interface version 0.0.0 - version 3.0.0 beta1
 set(HRPRTM_VERSION ${HRPSOVERSION}.0.0 )
 set_target_properties(${target} PROPERTIES VERSION ${HRPRTM_VERSION} SOVERSION ${HRPSOVERSION})
