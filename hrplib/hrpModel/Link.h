@@ -41,7 +41,7 @@ namespace hrp {
 
         Link();
         Link(const Link& link);
-        ~Link();
+        virtual ~Link();
 
         bool isValid() { return (index >= 0); }
         void addChild(Link* link);
