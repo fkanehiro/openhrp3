@@ -54,7 +54,8 @@ void ColdetModelPair::set(ColdetModelPtr model0, ColdetModelPtr model1)
     models[1] = model1;
     // inverse order because of historical background
     // this should be fixed.(note that the direction of normal is inversed when the order inversed 
-    collisionPairInserter->set(model1->dataSet, model0->dataSet);
+    if(model0 && model1)
+        collisionPairInserter->set(model1->dataSet, model0->dataSet);
 }
 
 
