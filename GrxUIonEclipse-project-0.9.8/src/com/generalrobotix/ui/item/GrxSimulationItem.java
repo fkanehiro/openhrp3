@@ -159,22 +159,8 @@ public class GrxSimulationItem extends GrxBaseItem {
 					return false;
 				}
 			}
-			   
 			currentWorld_.clearLog();
-			try {
-				if (!initDynamicsSimulator()) {
-					MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(),"", MessageBundle.get("GrxOpenHRPView.dialog.message.failedInit")); //$NON-NLS-1$ //$NON-NLS-2$
-					return false;
-				}
-				if (!initController()) {
-					MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(), "", MessageBundle.get("GrxOpenHRPView.dialog.message.failedController")); //$NON-NLS-1$ //$NON-NLS-2$
-					return false;
-				}
-			} catch (Exception e) {
-				GrxDebugUtil.printErr("SimulationLoop:", e); //$NON-NLS-1$
-				return false;
-			}
-
+			
 			GrxOpenHRPView openHRPView = (GrxOpenHRPView)manager_.getView( GrxOpenHRPView.class, true );
 			if(openHRPView != null)
 				openHRPView.fixParam();
@@ -185,7 +171,24 @@ public class GrxSimulationItem extends GrxBaseItem {
 			stepTime_    = getDbl("timeStep", 0.001);
 			logStepTime_ = currentWorld_.getDbl("logTimeStep", 0.001);
 			isSimulatingView_ = isTrue("viewsimulate", false);
-	                
+			if(stepTime_ > logStepTime_ ){
+				MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(), MessageBundle.get("GrxOpenHRPView.dialog.title.start"), MessageBundle.get("GrxOpenHRPView.dialog.message.errorLogStepTime")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					return false;			
+			}
+
+			try {
+				if (!initDynamicsSimulator()) {
+					MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(),"", MessageBundle.get("GrxOpenHRPView.dialog.message.failedInit")); //$NON-NLS-1$ //$NON-NLS-2$
+					return false;
+				}
+				if (!initController()) {
+					return false;
+				}
+			} catch (Exception e) {
+				GrxDebugUtil.printErr("SimulationLoop:", e); //$NON-NLS-1$
+				return false;
+			}
+
 			if(isSimulatingView_){
 				view3D =  (Grx3DView)manager_.getView( Grx3DView.class, false );
 				if(view3D==null){
@@ -731,8 +734,7 @@ public class GrxSimulationItem extends GrxBaseItem {
     	_refreshControllers( localStrList );
     	for (GrxModelItem model: modelList ) {
     		if( model.isRobot() ){
-    			if ( _setupController(model, _getControllerFromControllerName(model.getProperty("controller"))) < 0 ) //$NON-NLS-1$
-    				ret =  false;
+    			ret &= _setupController(model, _getControllerFromControllerName(model.getProperty("controller")));//$NON-NLS-1$
     		}
     	}
     	return ret;
@@ -781,12 +783,17 @@ public class GrxSimulationItem extends GrxBaseItem {
     	}
     }
 	    
-    private short _setupController(GrxModelItem model, ControllerAttribute deactivatedController) {
+    private boolean _setupController(GrxModelItem model, ControllerAttribute deactivatedController) {
     	String controllerName = model.getProperty("controller"); //$NON-NLS-1$
-    	double step = model.getDbl("controlTime", 0.005); //$NON-NLS-1$
-	        
     	if (controllerName == null || controllerName.equals("")) //$NON-NLS-1$
-    		return 0;
+    		return true;
+    	
+    	double step = model.getDbl("controlTime", 0.005); //$NON-NLS-1$
+    	if(stepTime_ > step){
+    		MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(), "", MessageBundle.get("GrxOpenHRPView.dialog.message.errorControlTime")); //$NON-NLS-1$ //$NON-NLS-2$
+    		return false;
+    	}
+	    	
     	String optionAdd = null;
     	if (!isTrue("integrate", true))
     		optionAdd = " -nosim"; //$NON-NLS-1$
@@ -815,7 +822,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 	                    		deactivatedController.active();
 	                        break;
 	                    default:
-	                        return -1;
+	                    	return false;
 	                    }
 	                }
 
@@ -897,16 +904,18 @@ public class GrxSimulationItem extends GrxBaseItem {
     				before = new Date();
     				j=0;
     			} else if (ans == 1) {
-    				break;
+    				MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(), "", MessageBundle.get("GrxOpenHRPView.dialog.message.failedController"));
+    				return false;
     			} else {
-    				return -1;
+    				MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(), "", MessageBundle.get("GrxOpenHRPView.dialog.message.failedController"));
+    				return false;
     			}
     		} else {
     			try {Thread.sleep(1000);} catch (Exception e) {}
     		}
     	}
 	        
-    	return 1;
+    	return true;
     }
 	    
     private boolean extendTime() {
