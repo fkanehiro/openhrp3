@@ -84,6 +84,7 @@ public class ControllerBridgePanel extends Dialog{
 	private boolean useConfigFile_;
 	private String configFileName_;   //Relative path//
 	private StringBuffer bridgeConfFile_ = new StringBuffer();
+	private double controlTime_ = 0;
 	private enum DataTypeId {JOINT_VALUE, JOINT_VELOCITY, JOINT_ACCELERATION, JOINT_TORQUE, EXTERNAL_FORCE,
 	    			  ABS_TRANSFORM, ABS_VELOCITY, ABS_ACCELERATION, FORCE_SENSOR, RATE_GYRO_SENSOR, ACCELERATION_SENSOR,
 	    			  RANGE_SENSOR, CONSTRAINT_FORCE, COLOR_IMAGE, GRAYSCALE_IMAGE, DEPTH_IMAGE;
@@ -1212,7 +1213,10 @@ public class ControllerBridgePanel extends Dialog{
 					errorMessage_ += MessageBundle.get("panel.Bridge.errorPort")+" "+port.name_+" : "+port.propertyName_+MessageBundle.get("panel.Bridge.error.outportPropertyName")+"\n";
 				if(!port.outputTime_.equals("control Time") && !port.outputTime_.equals("")){
 					try{
-						Double.valueOf(port.outputTime_);
+						double time = Double.valueOf(port.outputTime_);
+						if(time < controlTime_){
+							errorMessage_ +=  MessageBundle.get("panel.Bridge.errorPort")+" "+port.name_+ MessageBundle.get("panel.Bridge.error.outportTimeValue")+"\n";
+						}
 					}catch(NumberFormatException e){
 						errorMessage_ +=  MessageBundle.get("panel.Bridge.errorPort")+" "+port.name_+ MessageBundle.get("panel.Bridge.error.outportTime")+"\n";
 					}
@@ -1560,6 +1564,10 @@ public class ControllerBridgePanel extends Dialog{
 			else
 				allJointButton_.setSelection(false);
 		}
+	}
+
+	public void setControlTime(double time) {
+		controlTime_ = time;
 	}
 	
 }
