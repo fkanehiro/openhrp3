@@ -319,6 +319,7 @@ public class ControllerPanel extends Composite{
 	                }
 	                controllerBridge_.setControllerName(controllerName);
 	                controllerBridge_.setProjectControllerName(controllerName);
+	                controllerBridge_.setControlTime(spinControlTime_.getValueDouble());
 		            controllerBridge_.open();
 				}
             });
@@ -378,6 +379,7 @@ public class ControllerPanel extends Composite{
 	                			MessageBundle.get("panel.controller.invalidNameServer")))
 	                		controllerBridge_.setNameServer();
 	                }
+	                controllerBridge_.setControlTime(spinControlTime_.getValueDouble());
 		            controllerBridge_.open();
 
 				}
