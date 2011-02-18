@@ -567,7 +567,7 @@ public class GrxProcessManager extends GrxBaseItem{
 				                    display.asyncExec(new Runnable() {
 				                        public void run() {
 				                        	if (showOutput_){
-					                        	notifyObservers("append", "[" + pi_.id + ":O] " + "Process End"); 
+					                        	notifyObservers("append", "[" + pi_.id + ":O] " + "Process End\n"); 
 					                        	notifyObservers("setTopIndex");
 				                        	}
 				                        	serverManager_.notifyObservers("ProcessEnd", pi_.id);

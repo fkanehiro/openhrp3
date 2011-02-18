@@ -46,6 +46,7 @@ public:
     void writeDataToOutPorts(Controller_impl* controller);
     void readDataFromInPorts(Controller_impl* controller);
     void stop();
+    bool checkOutPortStepTime(double controlTimeStep);
     bool isOwnedByController;
 
 private:

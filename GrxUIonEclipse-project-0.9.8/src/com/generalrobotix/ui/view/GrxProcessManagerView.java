@@ -18,6 +18,7 @@
 
 package com.generalrobotix.ui.view;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.eclipse.jface.action.Action;
@@ -25,15 +26,20 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.LineStyleEvent;
+import org.eclipse.swt.custom.LineStyleListener;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 
 import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.util.GrxProcessManager;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.GrxProcessManager.AProcess;
@@ -79,7 +85,8 @@ public class GrxProcessManagerView extends GrxBaseView
     public void initializeComposite() {
         outputArea_ = new StyledText(composite_, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         outputArea_.setEditable(false);
-
+        outputArea_.addLineStyleListener(new HilightListener());
+        
         // 右クリックメニューを自動再生成させる
         MenuManager manager = new MenuManager();
         manager.setRemoveAllWhenShown(true);
@@ -145,4 +152,24 @@ public class GrxProcessManagerView extends GrxBaseView
     public void widgetDisposed(DisposeEvent e){
         processManager_.stopType();
     }
+  
+	public static class HilightListener implements LineStyleListener {
+		public void lineGetStyle(LineStyleEvent event) {
+			String string = event.lineText;
+		    StyleRange[] styles = new StyleRange[1];
+		    styles[0] = new StyleRange();
+		    if(string.startsWith("[")){
+	    		int i=string.indexOf(']');
+	    		if(i>0){
+	    			char c = string.charAt(i-1);
+	    			if(c=='E'){
+	    				styles[0].start  = event.lineOffset;
+	    				styles[0].length = string.length();
+	    				styles[0].foreground = Activator.getDefault().getColor("red");
+	    			}
+	    		}	
+	    	}
+		    event.styles = styles;
+		}
+	}
 }
