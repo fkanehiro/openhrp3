@@ -35,6 +35,7 @@ import jp.go.aist.hrp.simulator.SensorStateHolder;
 import jp.go.aist.hrp.simulator.ViewSimulator;
 import jp.go.aist.hrp.simulator.ViewSimulatorHelper;
 import jp.go.aist.hrp.simulator.WorldStateHolder;
+import jp.go.aist.hrp.simulator.ControllerPackage.ControllerException;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.IntegrateMethod;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.JointDriveMode;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.LinkDataType;
@@ -526,7 +527,10 @@ public class GrxSimulationItem extends GrxBaseItem {
 		private void active() {
 			try {
 				controller_.initialize();
-			} catch (Exception e) {
+			} catch(ControllerException e){
+				System.out.println("setupController:"+e.description);
+    			MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(), "", MessageBundle.get("GrxOpenHRPView.dialog.message.failedController"));
+			}catch (Exception e) {
 				GrxDebugUtil.printErr("Exception in active", e);  //$NON-NLS-1$
 			}
 		}
@@ -873,8 +877,6 @@ public class GrxSimulationItem extends GrxBaseItem {
     				Controller controller = ControllerHelper.narrow(cobj);
     				controller.setModelName(model.getName());
     				controller.setDynamicsSimulator(currentDynamics_);
-    				controller.initialize();
-
     				if (isTrue("viewsimulate")){//simParamPane_.isSimulatingView()) {
     					cobj = GrxCorbaUtil.getReference("ViewSimulator"); //$NON-NLS-1$
     					ViewSimulator viewsim = ViewSimulatorHelper.narrow(cobj);
@@ -888,8 +890,15 @@ public class GrxSimulationItem extends GrxBaseItem {
     				}
     				GrxDebugUtil.println(" connected to the Controller("+controllerName+")\n"); //$NON-NLS-1$ //$NON-NLS-2$
     				controller.setTimeStep(step);
+    				controller.initialize();
     				controller.start();
     				break;
+    			}catch (ControllerException e) {
+        			System.out.println("setupController:"+e.description);
+        			MessageDialog.openInformation(GrxUIPerspectiveFactory.getCurrentShell(), e.description, MessageBundle.get("GrxOpenHRPView.dialog.message.failedController"));
+        			if (proc != null)
+            			proc.stop();
+        			return false;
     			} catch (Exception e) {
     				GrxDebugUtil.printErr("setupController:", e); //$NON-NLS-1$
     			}
