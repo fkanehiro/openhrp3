@@ -323,6 +323,9 @@ void Controller_impl::start()
         cout << "Controller_impl::start" << endl;
     }
 
+    if(!virtualRobotRTC->checkOutPortStepTime(timeStep))
+        ;
+
     controlTime = 0.0;
     try{
         if( bRestart ){

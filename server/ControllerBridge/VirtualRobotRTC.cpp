@@ -501,3 +501,16 @@ void VirtualRobotRTC::stop()
 {
 
 }
+
+bool VirtualRobotRTC::checkOutPortStepTime(double controlTimeStep)
+{
+    bool ret = true;
+    for(OutPortHandlerMap::iterator it = outPortHandlers.begin(); it != outPortHandlers.end(); ++it){
+        double stepTime = it->second->stepTime;
+        if(stepTime && stepTime < controlTimeStep){
+            cerr << "OutPort(" << it->second->portName << ") : Output interval(" << stepTime << ") must be longer than the control interval(" << controlTimeStep << ")." << std::endl;
+            ret &= false;
+        }
+    }
+    return ret;
+}
