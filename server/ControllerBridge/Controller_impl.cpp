@@ -323,9 +323,6 @@ void Controller_impl::start()
         cout << "Controller_impl::start" << endl;
     }
 
-    if(!virtualRobotRTC->checkOutPortStepTime(timeStep))
-        ;
-
     controlTime = 0.0;
     try{
         if( bRestart ){
@@ -500,16 +497,18 @@ void Controller_impl::initialize()
         } else {
             virtualRobotRTC->isOwnedByController = true;
             try{
+                if(!virtualRobotRTC->checkOutPortStepTime(timeStep))
+                    throw OpenHRP::Controller::ControllerException("Error OutPort StepTime"); 
                 detectRtcs();
                 setupRtcConnections();
             } catch(CORBA_SystemException& ex){
                 cerr << ex._rep_id() << endl;
                 cerr << "exception in initializeController" << endl;
+                throw OpenHRP::Controller::ControllerException(""); 
             } catch(std::invalid_argument& ex){
                 cerr << "invalid argument : " << ex.what() << endl;
-            } catch(...){
-                cerr << "unknown exception in Controller_impl::initialize()" <<  endl;
-            }
+                throw OpenHRP::Controller::ControllerException(""); 
+            } 
         }
     }
 }
