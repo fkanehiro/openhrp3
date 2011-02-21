@@ -512,7 +512,7 @@ public:
 	 * are computed such that the relative velocity becomes zero after
 	 * timestep [s].
 	 * @param[in] timestep  Timestep of the integration.
-	 * @param[in] col_info  Pointer to the ColInfo object containing the contact information.
+	 * @param[in] sdContactPairs  Pointer to the ColInfo object containing the contact information.
 	 */
 	int Update(double timestep, std::vector<class SDContactPair*>& sdContactPairs);
 

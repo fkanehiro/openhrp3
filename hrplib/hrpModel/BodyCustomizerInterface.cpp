@@ -139,6 +139,7 @@ static bool loadCustomizerDll(BodyInterface* bodyInterface, const std::string fi
    hrp::findBodyCustomizer() function.
 
    \param pathString the path to a DLL file or a directory that contains DLLs
+   \param bodyInterface
 */
 int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyInterface)
 {

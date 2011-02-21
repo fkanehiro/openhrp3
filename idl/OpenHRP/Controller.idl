@@ -2,7 +2,7 @@
 #ifndef OPENHRP_CONTROLLER_IDL_INCLUDED
 #define OPENHRP_CONTROLLER_IDL_INCLUDED
 
-/** @file Controller/corba/Controller.idl
+/** @file idl/OpenHRP/Controller.idl
  * @if jp
  * Controller サーバ関連インターフェース
  * @else

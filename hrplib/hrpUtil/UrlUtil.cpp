@@ -49,7 +49,7 @@ string hrp::deleteURLScheme(string url)
   @brief URLスキーム文字列を取り除いた文字列を生成する  
   @param[out]   refUrl  URLスキーム文字列を取り除いた文字列を格納  
   @param[in]    rootDir 親ディレクトリ     
-  @param[in]    srcPath 元となるURL  
+  @param[in]    srcUrl 元となるURL  
   @return URLスキーム文字列を取り除いた文字列  
   @endif
 */

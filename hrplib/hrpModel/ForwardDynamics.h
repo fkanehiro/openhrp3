@@ -60,7 +60,7 @@ namespace hrp
                    @param p0 p(t)
                    @param R0 R(t)
                    @param w angular velocity
-                   @param v0 spatial velocity
+                   @param vo spatial velocity
                    @param dt time step[s]
                  */
 		static void SE3exp(Vector3& out_p, Matrix33& out_R,

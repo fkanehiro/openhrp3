@@ -28,14 +28,14 @@ namespace hrp {
     {
       public:
         /**
-           @breif clear collision information
+           @brief clear collision information
         */
         void clear(){
             cdContact.clear();
         }
 
         /**
-           @breif detect collsiion between triangles
+           @brief detect collsiion between triangles
            @param P1 the first vertex of the first triangle
            @param P2 the second vertex of the first triangle
            @param P3 the third vertex of the first triangle
@@ -62,6 +62,7 @@ namespace hrp {
            @param id1 id of the first colliding triangle
            @param id2 id of the second colliding triangle
            @param num_of_i_points the number of intersecting points
+	   @param i_points intersecting points
            @param n_vector normal vector of collision
            @param depth penetration depth
            @param n1 normal vector of the first triangle
@@ -86,8 +87,8 @@ namespace hrp {
                   Opcode::MeshInterface* mesh2)=0;
 
         /**
-           @breif get collision information
-           @retrun collision information
+           @brief get collision information
+           @return collision information
          */
         std::vector<collision_data>& collisions() {
             return cdContact;

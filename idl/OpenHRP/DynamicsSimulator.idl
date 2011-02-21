@@ -4,7 +4,7 @@
 
 #include "CollisionDetector.idl"
 /**
- * @file DynamicsSimulator/corba/DynamicsSimulator.idl
+ * @file idl/OpenHRP/DynamicsSimulator.idl
  * @if jp
  * DynamicsSimulator サーバ関連インターフェース
  * @endif
@@ -145,7 +145,7 @@ module OpenHRP {
 		 *
 		 * シミュレーションの条件を設定し、サーバを初期化します。
 		 * @param timeStep シミュレーション1ステップごとの時間[s]
-		 * @param integrateopt 積分に用いる手法(オイラー法, ルンゲクッタ法)
+		 * @param integrateOpt 積分に用いる手法(オイラー法, ルンゲクッタ法)
 		 * @param sensorOpt センサーを使用するか
 		 * @else
 		 * Initialise Server
@@ -187,7 +187,8 @@ module OpenHRP {
 		 * @param   slipFriction  Slip Friction
 		 * @param	K Parameters for Spring
 		 * @param	C Parameters for Damper
-		 * K and C should be of zero length for no Spring-Damper stuff.
+		 * @param   culling_thresh
+		 * @note K and C should be of zero length for no Spring-Damper stuff.
 		 * @endif
 		 */
 		void registerCollisionCheckPair
@@ -305,13 +306,13 @@ module OpenHRP {
 		 *
 		 * @param   characterName	センサーがついているキャラクタ名
 		 * @param	sensorName		センサ名
-		 * @param	sensorOutput	センサ出力
+		 * @param	values      	センサ出力
 		 *
 		 * @else
 		 * Get Sensor Values
 		 * @param   characterName	Name of character with sensor.
 		 * @param	sensorName		Name of sensor.
-		 * @param	sensorOutput	Place to put data from sensor.
+		 * @param	values      	Place to put data from sensor.
 		 * @endif
 		 */
 		void getCharacterSensorValues
@@ -499,7 +500,7 @@ module OpenHRP {
 		/**
 		 * @if jp
 		 * @brief 重力ベクトルを取得します。
-		 * @param 重力ベクトル
+		 * @param wdata 重力ベクトル
 		 * @else
 		 * Get World G-Vector
 		 * @endif
@@ -511,8 +512,8 @@ module OpenHRP {
 		 * @if jp
 		 * @brief キャラクタの全ての Joint のモードをセットします。
 		 * 
-		 * @param キャラクタ名
-		 * @param モード
+		 * @param characterName キャラクタ名
+		 * @param jointMode モード
 		 * @else
 		 * Set Character All Joint Modes
 		 * @param characterName
@@ -611,10 +612,10 @@ module OpenHRP {
 		/**
 		 * @if jp
 		 * @brief シミュレーションの状態を表すWorldStateを取得します。
-		 * @param state シミュレーションの状態
+		 * @param wstate シミュレーションの状態
 		 * @else
 		 * Get state of simulated world
-		 * @param state     State of simulated world
+		 * @param wstate     State of simulated world
 		 * @endif
 		 */
 		void getWorldState(out WorldState wstate);

@@ -128,10 +128,10 @@ module OpenHRP {
 		/**
 		 * @if jp
 		 * @brief 経路計画アルゴリズム名を指定する
-		 * @param 使用する経路計画アルゴリズム名
+		 * @param name 使用する経路計画アルゴリズム名
 		 * @endif
 		 */
-		void setAlgorithmName(in string model);
+		void setAlgorithmName(in string name);
 
 		/**
 		 * @brief 使用可能な経路計画アルゴリズム名一覧を取得
@@ -142,8 +142,6 @@ module OpenHRP {
 
 		/**
 		 * @brief エンジンの初期化を行う
-		 *
-		 * @param algorithm 経路計画アルゴリズム名
 		 */
 		void initPlanner();
 

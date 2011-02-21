@@ -421,6 +421,12 @@ class IKHandle
 public:
 	/*!
 	 * Default constructor.
+	 * @param[in] _ik
+	 * @param[in] _jname
+	 * @param[in] _jnt
+	 * @param[in] cindex
+	 * @param[in] _pri
+	 * @param[in] _gain
 	 * @param[in] _rel_pos  relative position in joint frame (default: 0,0,0)
 	 * @param[in] _rel_att  relative orientation in joint frame (default: identity)
 	 * @param[in] _other_joint  joint to which the constraint is attached (default: world)

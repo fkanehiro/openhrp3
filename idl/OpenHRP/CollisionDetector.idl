@@ -1,7 +1,7 @@
 #ifndef OPENHRP_COLLISION_DETECTOR_IDL_INCLUDED
 #define OPENHRP_COLLISION_DETECTOR_IDL_INCLUDED
 
-/** @file CollisionDetector/corba/CollisionDetector.idl
+/** @file idl/OpenHRP/CollisionDetector.idl
  * @if jp
  * CollisionDetector サーバ関連インターフェース
  * @endif
@@ -27,10 +27,10 @@ module OpenHRP {
     /**
      * @if jp
      * @brief 干渉チェックペアを追加します。
-     * @param   colPair       干渉チェックペア
+     * @param   collisionPair       干渉チェックペア
      * @else
      * Adding Polygon Set Pairs
-     * @param   colPair       Collision Pair
+     * @param   collisionPair       Collision Pair
      * @endif
     */
     void addCollisionPair(in LinkPair collisionPair);
@@ -47,7 +47,7 @@ module OpenHRP {
      * Check for Collision between pre-defined Pairs
      * @param  checkAll     true:  Check All Pairs
      * 		  false: Stop when 1 collision is found
-     * @param  characters    Position and Attitude of Object
+     * @param  positions    Position and Attitude of Object
      * @param  collidedPairs  Array of Pairs that are colliding(If none length is 0)
      * @return true:  At least one pair is colliding
      *      false: No pairs are colliding
@@ -74,7 +74,7 @@ module OpenHRP {
      * @param  checkAll     true:  Check All Pairs
      *                     false: Return when 1 collision is found
      * @param  checkPairs   Array of Pairs to check for Collision
-     * @param  characters    Position and Attitude of Object
+     * @param  positions    Position and Attitude of Object
      * @param  collidedPairs  Array of Pairs that are colliding(If none length is 0)
      * @return true:  At least one pair is colliding
      *         false: No pairs are colliding
@@ -91,14 +91,14 @@ module OpenHRP {
     /**
      * @if jp
      * すでに設定したペアの衝突情報を取得します。
-     * @param characters キャラクタの位置/姿勢
-     * @param colInfos 衝突情報
+     * @param positions キャラクタの位置/姿勢
+     * @param collisions 衝突情報
      * @return ひとつでも衝突していれば true, 衝突していなければ false
      * @else
      * Get Collision State Information of pre-defined Pairs
      *
-     * @param  characters    Position of Object
-     * @param  colInfos     Collision Information
+     * @param  positions    Position of Object
+     * @param  collisions     Collision Information
      * @return true:        At least one pair is colliding
      *         false:       No pairs are colliding
      * @endif
@@ -112,15 +112,15 @@ module OpenHRP {
      * @if jp
      * ペアを与え衝突情報を取得します。
      * @param checkPairs ペア
-     * @param characters キャラクタの位置/姿勢
-     * @param colInfos 衝突情報
+     * @param positions キャラクタの位置/姿勢
+     * @param collisions 衝突情報
      * @return ひとつでも衝突していれば true, 衝突していなければ false
      * @else
      * Get Collision State Information for given Pairs
      *
      * @param  checkPairs   Array of pairs to check for collision
-     * @param  characters    Position of Object
-     * @param  colInfos     Collision Information
+     * @param  positions    Position of Object
+     * @param  collisions     Collision Information
      * @return true:        At least one pair is colliding
      *         false:       No pairs are colliding
      * @endif

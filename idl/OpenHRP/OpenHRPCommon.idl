@@ -9,7 +9,7 @@
  * @else
  * OpenHRP CORBA Common
  * @endif
- * @file Common/corba/OpenHRPCommon.idl
+ * @file idl/OpenHRP/OpenHRPCommon.idl
  */
 
 
