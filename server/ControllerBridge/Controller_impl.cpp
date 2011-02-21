@@ -80,11 +80,13 @@ void Controller_impl::detectRtcs()
             try {
                 CORBA::Object_var objRef = naming->resolve(rtcNamingName.c_str());
                 if ( CORBA::is_nil(objRef) ) {
-                    cout << rtcName << " is not found." << endl;
+                    cerr << rtcName << " is not found." << endl;
+                    throw OpenHRP::Controller::ControllerException(string(rtcName+" is not found.").c_str());  
                 } else {
                     rtcRef = RTC::RTObject::_narrow(objRef);
                     if(CORBA::is_nil(rtcRef)){
-                        cout << rtcName << " is not an RTC object." << endl;
+                        cerr << rtcName << " is not an RTC object." << endl;
+                        throw OpenHRP::Controller::ControllerException(string(rtcName+" is not an RTC object.").c_str());  
                     }
                 }
             } catch(CORBA_SystemException& ex) {
@@ -124,11 +126,13 @@ void Controller_impl::detectRtcs()
                 string rtcNamingName = rtcName + ".rtc";
                 CORBA::Object_var objRef = naming->resolve(rtcNamingName.c_str());
                 if(CORBA::is_nil(objRef)){
-                    cout << rtcName << " is not found." << endl;
+                    cerr << rtcName << " is not found." << endl;
+                    throw OpenHRP::Controller::ControllerException(string(rtcName+" is not found.").c_str());
                 } else {
                     rtcRef = RTC::RTObject::_narrow(objRef);
                     if(CORBA::is_nil(rtcRef)){
-                        cout << rtcName << " is not an RTC object." << endl;
+                        cerr << rtcName << " is not an RTC object." << endl;
+                        throw OpenHRP::Controller::ControllerException(string(rtcName+" is not an RTC object.").c_str());
                     }
                 }
             }
@@ -238,16 +242,18 @@ void Controller_impl::setupRtcConnections()
 
             PortMap::iterator q = rtcInfo->portMap.find(connection.controllerPortName);
             if(q == rtcInfo->portMap.end()){
-                cout << "\n";
-                cout << controllerInstanceName << " does not have a port ";
-                cout << connection.controllerPortName << "\n";
+                cerr << "\n";
+                cerr << controllerInstanceName << " does not have a port ";
+                cerr << connection.controllerPortName << "\n";
+                throw OpenHRP::Controller::ControllerException("not found a port");
             } else {
             	Port_Service_Ptr_Type controllerPortRef = q->second;
 
                 PortHandlerPtr robotPortHandler = virtualRobotRTC->getPortHandler(connection.robotPortName);
                 if(!robotPortHandler){
-                    cout << "\n";
-                    cout << "The robot does not have a port named " << connection.robotPortName << "\n";
+                    cerr << "\n";
+                    cerr << "The robot does not have a port named " << connection.robotPortName << "\n";
+                    throw OpenHRP::Controller::ControllerException("not found a port");
                 } else {
                 	Port_Service_Ptr_Type robotPortRef = robotPortHandler->portRef;
 
@@ -265,7 +271,7 @@ void Controller_impl::setupRtcConnections()
         if(connected){
             cout << " ...ok" << endl;
         } else {
-            cout << "Connection failed." << endl;
+            cerr << "Connection failed." << endl;
         }
     }
 }
