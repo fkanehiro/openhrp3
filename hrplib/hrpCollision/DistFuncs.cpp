@@ -98,7 +98,7 @@ inline float SegSegDist(const Point& u0, const Point& u,
 /**
  * @brief compute signed distance between a point and a plane
  * @param P a point
- * @param pointOnPolane a point on the plane
+ * @param pointOnPlane a point on the plane
  * @param n normal vector of the plane
  * @param cp the closest point on the plane from P
  */
@@ -132,7 +132,7 @@ float PointSegDist(const Point& P, const Point& u0, const Point& u1)
 
 /**
  * @brief check whether a point is in Voroni region of a face
- * @param p a point to be tested
+ * @param P a point to be tested
  * @param vertices vertices of the triangle
  * @param edges edges of the triangle
  * @param n normal vector of the triangle

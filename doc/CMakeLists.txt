@@ -28,7 +28,7 @@ macro( configure_doxygen doc_dir_name doc_project_name
   set(doc_enabled_sections "jp")
   set(doc_dir_name ${doc_dir_name}_${doc_enabled_sections})
   configure_file( ${OpenHRP_SOURCE_DIR}/doc/Doxyfile.in ${OpenHRP_SOURCE_DIR}/doc/${doc_dir_name}_${doc_enabled_sections}${DOXY_SFX} )
-  list( APPEND depends_dirs ${doc_dir_name})
+  list( APPEND depends_dirs ${doc_dir_name}_${doc_enabled_sections})
   file(MAKE_DIRECTORY ${doc_dir_name}_${doc_enabled_sections})
   list( APPEND output_files ${doc_dir_name}_${doc_enabled_sections}/html/index.html)
   add_custom_command( OUTPUT ${doc_dir_name}_${doc_enabled_sections}/html/index.html

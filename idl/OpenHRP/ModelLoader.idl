@@ -412,8 +412,8 @@ module OpenHRP {
     /**
        @if jp
        テクスチャの画像イメージ。
-       VRMLのSFImageから、先頭の<width>, <height>, <num components>
-       を除いたものと同様。<width>, <height>, <num components>に対応する
+       VRMLのSFImageから、先頭の&lt;width&gt;, &lt;height&gt;, &lt;num components&gt;
+       を除いたものと同様。&lt;width&gt;, &lt;height&gt;, &lt;num components&gt;に対応する
        値は本構造体の width, height, numComponents で指定。
 
        元のデータがurl指定の場合は、urlフィールドに画像ファイルの位置が格納される。
@@ -608,6 +608,7 @@ module OpenHRP {
       @if jp
       オプション付きで、getBodyInfoを実行
       @param   url モデルファイルのURL
+      @param   option
       @endif  
     **/
     BodyInfo getBodyInfoEx(in string url, in ModelLoadOption option ) raises (ModelLoaderException);

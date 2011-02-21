@@ -1,7 +1,7 @@
 #ifndef OPENHRP_VIEW_SIMULATOR_IDL_INCLUDED
 #define OPENHRP_VIEW_SIMULATOR_IDL_INCLUDED
 
-/** @file ViewSimulator/corba/ViewSimulator.idl
+/** @file idl/OpenHRP/ViewSimulator.idl
  * @if jp
  * ViewSimulator インターフェース定義
  * @else

@@ -211,7 +211,6 @@ using namespace OpenHRP;
 		/**
 		 * constructor
 		 * @param orb     reference to ORB
-		 * @param collisionCheckerFactory reference to collision detector
 		 */
 		DynamicsSimulatorFactory_impl(CORBA::ORB_ptr orb);
 
