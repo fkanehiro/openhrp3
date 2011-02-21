@@ -82,7 +82,7 @@ static const double ALLOWED_PENETRATION_DEPTH = 0.0001;
 //static const double PENETRATION_A = 500.0;
 //static const double PENETRATION_B = 80.0;
 static const double DEFAULT_NEGATIVE_VELOCITY_RATIO_FOR_PENETRATION = 10.0;
-
+static const double COEFFICIENT_OF_RESTITUTION = 0.0;
 
 // test for mobile robots with wheels
 //static const double ALLOWED_PENETRATION_DEPTH = 0.005;
@@ -1537,9 +1537,9 @@ void CFSImpl::setConstantVectorAndMuBlock()
                     double extraNegativeVel;
                     double newDepth = allowedPenetraitonDepth - constraint.depth;
                     extraNegativeVel = negativeVelocityRatioForPenetration * newDepth;
-                    b(globalIndex) = an0(globalIndex) + (constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
+                    b(globalIndex) = an0(globalIndex) + ((1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
                 } else {
-                    b(globalIndex) = an0(globalIndex) + constraint.normalProjectionOfRelVelocityOn0 * dtinv;
+                    b(globalIndex) = an0(globalIndex) + (1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 * dtinv;
                 }
 
                 contactIndexToMu[globalIndex] = constraint.mu;
