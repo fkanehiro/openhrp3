@@ -154,7 +154,7 @@ void BridgeConf::parseCommandLineOptions(int argc, char* argv[])
       ifstream ifs(fileName.c_str());
       
       if (ifs.fail()) {
-	throw invalid_argument(string("cannot open the config file"));
+	    throw invalid_argument(string("cannot open the config file"));
       }
       program_options::store(program_options::parse_config_file(ifs, options), vmap);
       
