@@ -330,22 +330,25 @@ public class Grx3DView
         	model.deleteObserver(this);
         }
         currentModels_ = manager_.<GrxModelItem>getSelectedItemList(GrxModelItem.class);
+        currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
+        behaviorManager_.setItem(currentModels_, currentCollisionPairs_);
         it = currentModels_.iterator();
+        boolean modelModified = false;
         while(it.hasNext())	{
         	GrxModelItem model = it.next();
         	bgRoot_.addChild(model.bgRoot_);
         	model.setWireFrame(viewToolBar_.isWireFrameSelected());
-        	if(model.isModified())
-    			optionButtonEnable(false);
+        	modelModified |= model.isModified();
         	model.addObserver(this);
         }
+        if(modelModified)
+        	optionButtonEnable(false);
+    	else
+    		optionButtonEnable(true);
 		if(btnBBdisp_.isSelected()){
 			btnBBdisp_.doClick();
 		}
-        
-        currentCollisionPairs_ = manager_.<GrxCollisionPairItem>getSelectedItemList(GrxCollisionPairItem.class);
-        behaviorManager_.setItem(currentModels_, currentCollisionPairs_);
- 
+		
 		if(currentWorld_ != null){
 			currentWorld_.deleteObserver(this);
             currentWorld_.deletePosObserver(this);
