@@ -123,7 +123,7 @@ private:
 	void makePortMap(RtcInfoPtr& rtcInfo);
     Controller_impl::RtcInfoPtr addRtcVectorWithConnection(RTC::RTObject_var rtcRef);
 	void setupRtcConnections();
-	bool connectPorts(Port_Service_Ptr_Type outPort, Port_Service_Ptr_Type inPort);
+	int connectPorts(Port_Service_Ptr_Type outPort, Port_Service_Ptr_Type inPort);
 
     void activeComponents();
     void deactiveComponents();
