@@ -234,7 +234,7 @@ void Controller_impl::setupRtcConnections()
         cout << "connect " << virtualRobotRTC->getInstanceName() << ":" << connection.robotPortName;
         cout << " <--> " << controllerInstanceName << ":" << connection.controllerPortName;
 
-        bool connected = false;
+        int connected = false;
 
         RtcInfoMap::iterator p = rtcInfoMap.find(controllerInstanceName);
         if(p != rtcInfoMap.end()){
@@ -268,17 +268,31 @@ void Controller_impl::setupRtcConnections()
             }
         }
 
-        if(connected){
+        if(!connected){
             cout << " ...ok" << endl;
-        } else {
+        } else if(connected == -1){
             cerr << "Connection failed." << endl;
+        } else if(connected == 1){
+            cerr << " It has already been connected." << endl;
         }
     }
 }
 
 
-bool Controller_impl::connectPorts(Port_Service_Ptr_Type outPort, Port_Service_Ptr_Type inPort)
+int Controller_impl::connectPorts(Port_Service_Ptr_Type outPort, Port_Service_Ptr_Type inPort)
 {
+    RTC::ConnectorProfileList_var connectorProfiles = inPort->get_connector_profiles();
+    for(CORBA::ULong i=0; i < connectorProfiles->length(); ++i){
+        RTC::ConnectorProfile& connectorProfile = connectorProfiles[i];
+        Port_Service_List_Type& connectedPorts = connectorProfile.ports;
+
+        for(CORBA::ULong j=0; j < connectedPorts.length(); ++j){
+        	Port_Service_Ptr_Type connectedPortRef = connectedPorts[j];
+            if(connectedPortRef->_is_equivalent(outPort)){
+                return 1;
+            }
+        }
+    }
     // connect ports
     RTC::ConnectorProfile cprof;
     cprof.connector_id = "";
@@ -307,7 +321,10 @@ bool Controller_impl::connectPorts(Port_Service_Ptr_Type outPort, Port_Service_P
 #endif
     RTC::ReturnCode_t result = inPort->connect(cprof);
 
-    return (result == RTC::RTC_OK);
+    if(result == RTC::RTC_OK)
+        return 0;
+    else
+        return -1;
 }
 
 
