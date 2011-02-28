@@ -477,7 +477,7 @@ void CollisionPairInserter::find_signed_distance(
     t.p3[0] = vp.Vertex[2]->x; t.p3[1] = vp.Vertex[2]->y; t.p3[2] = vp.Vertex[2]->z;
   
     // get the triangles in the convex neighbor of the root triangle and their normal vectors
-    num = get_triangles_in_convex_neighbor(&t, tri_convex_neighbor, tri_neighbor, num_tri);
+    num = get_triangles_in_convex_neighbor(&t, tri_convex_neighbor, tri_neighbor, n);
 
     // if(COLLIDE_DEBUG) printf("num of triangles in convex neighbor = %d\n", num);
 
