@@ -11,6 +11,7 @@
 package com.generalrobotix.ui.view.vsensor;
 
 import java.awt.Canvas;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -237,9 +238,13 @@ public class Camera_impl extends CameraPOA {
     		canvas_.getView().removeCanvas3D(canvas_);
 		
         if(frm_!=null) {
-        	frm_.setVisible(false);
-        	frm_.dispose();
-        	frm_ = null;
+        	EventQueue.invokeLater(new Runnable () {
+				public void run() {
+					frm_.setVisible(false);
+					frm_.dispose ();
+					frm_ = null;
+				}
+        	});
         }
 
 		raster_ = null;
