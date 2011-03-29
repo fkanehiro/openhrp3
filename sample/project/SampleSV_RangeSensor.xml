@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<grxui>
+    <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxSimulationItem" name="simulationItem" select="true">
+            <property name="method" value="RUNGE_KUTTA"/>
+            <property name="totalTime" value="10.0 "/>
+            <property name="realTime" value="false"/>
+            <property name="integrate" value="true"/>
+            <property name="timeStep" value="0.0020 "/>
+            <property name="viewsimulate" value="false"/>
+            <property name="viewsimulationTimeStep" value="0.033 "/>
+            <property name="gravity" value="9.8 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="longfloor" select="true" url="$(CURRENT_DIR)/../model/RoboStation.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
+            <property name="WAIST.translation" value="0.0 0.0 0.0 "/>
+            <property name="WAIST.velocity" value="0.0 0.0 0.0 "/>
+            <property name="markRadius" value="0.05 "/>
+            <property name="WAIST.angularVelocity" value="0.0 0.0 0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(CURRENT_DIR)/../model/box.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="WAIST.rotation" value="1.0 0.0 0.0 1.57 "/>
+            <property name="WAIST.translation" value="1.0 -1.0 0.1 "/>
+            <property name="WAIST.velocity" value="0.0 0.0 0.0 "/>
+            <property name="markRadius" value="0.05 "/>
+            <property name="WAIST.angularVelocity" value="0.0 0.0 0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box2" select="true" url="$(CURRENT_DIR)/../model/box.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="WAIST.rotation" value="1.0 0.0 0.0 1.57 "/>
+            <property name="WAIST.translation" value="1.5 1.0 0.1"/>
+            <property name="WAIST.velocity" value="0.0 0.0 0.0 "/>
+            <property name="markRadius" value="0.05 "/>
+            <property name="WAIST.angularVelocity" value="0.0 0.0 0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="simple_vehicle" select="true" url="$(CURRENT_DIR)/../model/simple_vehicle_with_rangesensor.wrl">
+            <property name="BODY.mode" value="Torque"/>
+            <property name="setupCommand" value="SampleSV$(BIN_SFX)"/>
+            <property name="FRONT_WHEEL.mode" value="Torque"/>
+            <property name="BODY.angularVelocity" value="0.0 0.0 0.0 "/>
+            <property name="controlTime" value="0.002"/>
+            <property name="BODY.velocity" value="0.0 0.0 0.0 "/>
+            <property name="REAR_WHEEL_R.mode" value="Torque"/>
+            <property name="REAR_WHEEL_L.angle" value="0.0 "/>
+            <property name="markRadius" value="0.05 "/>
+            <property name="REAR_WHEEL_R.angle" value="0.0 "/>
+            <property name="isRobot" value="true"/>
+            <property name="BODY.rotation" value="5.845551260101391E-4 -0.0012503904589774894 0.9999990474090488 1.0552500569859855 "/>
+            <property name="REAR_WHEEL_L.mode" value="Torque"/>
+            <property name="controller" value="SampleSVController"/>
+            <property name="BODY.translation" value="0.16525592291725483 -0.5631259371508932 0.0996712361915264 "/>
+            <property name="FRONT_WHEEL.angle" value="0.0 "/>
+            <property name="setupDirectory" value="$(CURRENT_DIR)/../controller/SampleSV"/>
+            <property name="STEERING.mode" value="Torque"/>
+            <property name="STEERING.angle" value="0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
+            <property name="logTimeStep" value="0.0020 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#floor#simple_vehicle" select="true">
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="simple_vehicle"/>
+            <property name="objectName1" value="longfloor"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxGraphItem" name="GraphList1" select="true">
+            <property name="Graph1.dataItems" value=""/>
+            <property name="timeRange" value="1.0 0.8 "/>
+            <property name="Graph2.dataItems" value=""/>
+            <property name="Graph3.dataItems" value=""/>
+            <property name="Graph0.dataItems" value=""/>
+        </item>
+        <view class="com.generalrobotix.ui.view.GrxRobotStatView" name="Robot State">
+            <property name="jcolumnWidth9" value="50"/>
+            <property name="jcolumnWidth8" value="40"/>
+            <property name="jcolumnWidth7" value="40"/>
+            <property name="jcolumnWidth6" value="40"/>
+            <property name="jcolumnWidth5" value="40"/>
+            <property name="jcolumnWidth4" value="60"/>
+            <property name="jcolumnWidth3" value="60"/>
+            <property name="jcolumnWidth10" value="50"/>
+            <property name="jcolumnWidth2" value="60"/>
+            <property name="scolumnWidth6" value="75"/>
+            <property name="jcolumnWidth1" value="90"/>
+            <property name="scolumnWidth5" value="75"/>
+            <property name="scolumnWidth4" value="75"/>
+            <property name="jcolumnWidth0" value="30"/>
+            <property name="scolumnWidth3" value="75"/>
+            <property name="scolumnWidth2" value="75"/>
+            <property name="scolumnWidth1" value="75"/>
+            <property name="scolumnWidth0" value="110"/>
+        </view>
+        <view class="com.generalrobotix.ui.view.Grx3DView" name="3DView">
+            <property name="view.mode" value="Room"/>
+            <property name="showCoM" value="false"/>
+            <property name="showCoMonFloor" value="false"/>
+            <property name="showDistance" value="false"/>
+            <property name="showIntersection" value="false"/>
+            <property name="eyeHomePosition" value="0.00381 0.99952 -0.03079 2.80742 -0.99999 0.0038 -0.00012 -0.23381 0 0.03079 0.99953 15.74738 0 0 0 1 "/>
+            <property name="showCollision" value="true"/>
+            <property name="showActualState" value="true"/>
+            <property name="showScale" value="true"/>
+        </view>
+    </mode>
+</grxui>
