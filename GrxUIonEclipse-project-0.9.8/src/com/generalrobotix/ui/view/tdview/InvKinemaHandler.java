@@ -293,13 +293,6 @@ class InvKinemaHandler extends OperationHandler {
     }
 
     private boolean _enableBoundingBoxFrom(TransformGroup tg) {
-        Hashtable<String, Object> hashTable = SceneGraphModifier.getHashtableFromTG(tg);
-
-        bbSwitchFrom_ = (Switch)hashTable.get("boundingBoxSwitch");
-        if (bbSwitchFrom_ == null) {
-            return false;
-        }
-
         GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
         if (model == null) {
             return false;
@@ -311,26 +304,23 @@ class InvKinemaHandler extends OperationHandler {
         }
         
         resolver_.setFromJoint(model, link);
+        bbSwitchFrom_ = link.getBBSwitch();
         bbSwitchFrom_.setWhichChild(Switch.CHILD_ALL);
         return true;
      }
 
     private boolean _enableBoundingBoxTo(TransformGroup tg) {
-        Hashtable<String, Object> hashTable = SceneGraphModifier.getHashtableFromTG(tg);
-        if (bbSwitchTo_ != null) {
+    	if (bbSwitchTo_ != null) {
             bbSwitchTo_.setWhichChild(Switch.CHILD_NONE);
         }
-
-        bbSwitchTo_ = (Switch)hashTable.get("boundingBoxSwitch");
-     
+    	GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tg);
+        GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
+        bbSwitchTo_ = link.getBBSwitch();
         // fromジョイントと同じジョイントをPickした場合
         if (bbSwitchFrom_ == bbSwitchTo_) {
             bbSwitchTo_ = null;
             return false;
         }
-     
-        GrxLinkItem link = SceneGraphModifier.getLinkFromTG(tg);
-        GrxModelItem model = SceneGraphModifier.getModelFromTG(tg);
         if (bbSwitchTo_ != null && resolver_.setToJoint(model, link)) {
             bbSwitchTo_.setWhichChild(Switch.CHILD_ALL);
             tgTarget_ = tg;
