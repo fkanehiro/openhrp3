@@ -212,4 +212,8 @@ public class GrxTransformItem extends GrxBaseItem {
         return _v;
 	}
 	
+	public Switch getBBSwitch(){
+		resizeBoundingBox();
+		return switchBb_;
+	}
 }
