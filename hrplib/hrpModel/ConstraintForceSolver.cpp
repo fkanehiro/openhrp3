@@ -58,7 +58,8 @@ static const bool usePivotingLCP = false;
 
 static const double VEL_THRESH_OF_DYNAMIC_FRICTION = 1.0e-4;
 
-static const bool ENABLE_STATIC_FRICTION = true;
+//static const bool ENABLE_STATIC_FRICTION = true;
+static const bool ENABLE_STATIC_FRICTION = false;
 static const bool ONLY_STATIC_FRICTION_FORMULATION = (true && ENABLE_STATIC_FRICTION);
 static const bool STATIC_FRICTION_BY_TWO_CONSTRAINTS = true;
 static const bool IGNORE_CURRENT_VELOCITY_IN_STATIC_FRICTION = false;
@@ -265,7 +266,7 @@ namespace hrp
         int  numGaussSeidelInitialIteration;
         double gaussSeidelMaxRelError;
         double negativeVelocityRatioForPenetration;
-        double allowedPenetraitonDepth;
+        double allowedPenetrationDepth;
 
         int numGaussSeidelTotalLoops;
         int numGaussSeidelTotalCalls;
@@ -381,7 +382,7 @@ CFSImpl::CFSImpl(WorldBase& world) :
 
     isConstraintForceOutputMode = false;
     useBuiltinCollisionDetector = false;
-    allowedPenetraitonDepth = ALLOWED_PENETRATION_DEPTH;
+    allowedPenetrationDepth = ALLOWED_PENETRATION_DEPTH;
 }
 
 
@@ -1535,7 +1536,7 @@ void CFSImpl::setConstantVectorAndMuBlock()
                 // contact constraint
                 if(ALLOW_SUBTLE_PENETRATION_FOR_STABILITY){
                     double extraNegativeVel;
-                    double newDepth = allowedPenetraitonDepth - constraint.depth;
+                    double newDepth = allowedPenetrationDepth - constraint.depth;
                     extraNegativeVel = negativeVelocityRatioForPenetration * newDepth;
                     b(globalIndex) = an0(globalIndex) + ((1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
                 } else {
@@ -2218,10 +2219,10 @@ void ConstraintForceSolver::clearExternalForces()
 
 void ConstraintForceSolver::setAllowedPenetraitonDepth(double dVal)
 {
-    impl->allowedPenetraitonDepth = dVal;
+    impl->allowedPenetrationDepth = dVal;
 }
 
-double ConstraintForceSolver::getAllowedPenetraitonDepth() const
+double ConstraintForceSolver::getAllowedPenetrationDepth() const
 {
-    return impl->allowedPenetraitonDepth;
+    return impl->allowedPenetrationDepth;
 }
