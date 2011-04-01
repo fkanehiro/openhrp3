@@ -48,7 +48,7 @@ namespace hrp
         void solve(OpenHRP::CollisionSequence& corbaCollisionSequence);
 		void clearExternalForces();
         void setAllowedPenetraitonDepth(double dVal);
-        double getAllowedPenetraitonDepth() const;
+        double getAllowedPenetrationDepth() const;
 	};
 };
 
