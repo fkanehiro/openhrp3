@@ -2217,7 +2217,7 @@ void ConstraintForceSolver::clearExternalForces()
     impl->clearExternalForces();
 }
 
-void ConstraintForceSolver::setAllowedPenetraitonDepth(double dVal)
+void ConstraintForceSolver::setAllowedPenetrationDepth(double dVal)
 {
     impl->allowedPenetrationDepth = dVal;
 }
