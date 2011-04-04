@@ -469,8 +469,14 @@ void VrmlParserImpl::load(const string& filename)
 {
     filesystem::path localPath(filename);
     localPath.normalize();
+
+#if (BOOST_VERSION < 104600)
     ancestorPathsList.push_back(localPath.file_string());
     scanner->loadFile(localPath.file_string());
+#else
+    ancestorPathsList.push_back(localPath.string());
+    scanner->loadFile(localPath.string());
+#endif
     
     // header check
     scanner->setCommentChar(0);
