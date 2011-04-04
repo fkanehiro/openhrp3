@@ -55,16 +55,29 @@ string hrp::deleteURLScheme(string url)
 */
 void hrp::getPathFromUrl(string& refUrl, const string& rootDir, string srcUrl)
 {
+
     if ( isFileProtocol(srcUrl) ){   // ローカルファイル //
+#if (BOOST_VERSION < 104600)
         filesystem::path filepath( deleteURLScheme(srcUrl), filesystem::native);
-        if(filesystem::exists(filepath)){    // 元が絶対パス //
+        if(exists(filepath)){    // 元が絶対パス //
             refUrl = filesystem::system_complete(filepath).file_string();
         }else{               // 元が相対パス //
             filesystem::path filepath(rootDir + deleteURLScheme(srcUrl), filesystem::native);
             if(filesystem::exists(filepath)){
-                refUrl = filesystem::system_complete(filepath).file_string();
+                refUrl = system_complete(filepath).file_string();
             }
         }
+#else
+        filesystem3::path filepath( deleteURLScheme(srcUrl), filesystem3::native);
+        if(exists(filepath)){    // 元が絶対パス //
+            refUrl = filesystem3::system_complete(filepath).string();
+        }else{               // 元が相対パス //
+            filesystem3::path filepath(rootDir + deleteURLScheme(srcUrl), filesystem3::native);
+            if(filesystem::exists(filepath)){
+                refUrl = system_complete(filepath).string();
+            }
+        }
+#endif
     } else {
     	// ファイルスキーム以外の処理 //
     }

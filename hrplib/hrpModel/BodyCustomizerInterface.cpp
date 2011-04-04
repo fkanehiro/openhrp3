@@ -63,8 +63,10 @@ namespace {
     inline string toNativePathString(const filesystem::path& path) {
 #if (BOOST_VERSION <= 103301)
         return path.native_file_string();
-#else
+#elif (BOOST_VERSION < 104600)
         return path.file_string();
+#else
+        return path.string();
 #endif
     }
 
@@ -146,7 +148,7 @@ int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyIn
     pluginLoadingFunctionsCalled = true;
 	
     int numLoaded = 0;
-
+#if (BOOST_VERSION < 104600)
     filesystem::path pluginPath(pathString, filesystem::native);
 	
     if(filesystem::exists(pluginPath)){
@@ -171,7 +173,32 @@ int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyIn
             }
         }
     }
+#else
+    filesystem3::path pluginPath(pathString, filesystem3::native);
+	
+    if(filesystem3::exists(pluginPath)){
 
+        if(!filesystem3::is_directory(pluginPath)){
+            if(loadCustomizerDll(bodyInterface, toNativePathString(pluginPath))){
+                numLoaded++;
+            }
+        } else {
+            regex pluginNamePattern(string(".+Customizer") + DLLSFX);
+            filesystem3::directory_iterator end;
+			
+            for(filesystem3::directory_iterator it(pluginPath); it != end; ++it){
+                const filesystem3::path& filepath = *it;
+                if(!filesystem3::is_directory(filepath)){
+                    if(regex_match(filepath.filename().string(), pluginNamePattern)){
+                        if(loadCustomizerDll(bodyInterface, toNativePathString(filepath))){
+                            numLoaded++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+#endif
     return numLoaded;
 }
 
