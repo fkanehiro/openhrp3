@@ -411,6 +411,8 @@ public class SceneGraphModifier {
         		lower_[1]*jointAxis.y+
         		lower_[2]*jointAxis.z);
         float offset = 0.05f;
+        if(upperlen < lowerlen)
+        	offset = -0.05f;
         
         points[0]  = new Point3f(
             (upperlen + offset) * (float)jointAxis.x,
