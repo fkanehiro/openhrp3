@@ -174,7 +174,7 @@ int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyIn
         }
     }
 #else
-    filesystem3::path pluginPath(pathString, filesystem3::native);
+    filesystem3::path pluginPath(pathString, (void *)filesystem3::native);
 	
     if(filesystem3::exists(pluginPath)){
 

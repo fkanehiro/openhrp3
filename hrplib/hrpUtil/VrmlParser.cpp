@@ -21,6 +21,7 @@
 #include <hrpUtil/EasyScanner.h>
 #include <hrpUtil/UrlUtil.h>
 
+#include <boost/version.hpp>
 #if (BOOST_VERSION <= 103301)
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>

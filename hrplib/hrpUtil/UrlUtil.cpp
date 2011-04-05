@@ -4,6 +4,7 @@
 
 #include "UrlUtil.h"
 
+#include <boost/version.hpp>
 #if (BOOST_VERSION <= 103301)
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -68,11 +69,11 @@ void hrp::getPathFromUrl(string& refUrl, const string& rootDir, string srcUrl)
             }
         }
 #else
-        filesystem3::path filepath( deleteURLScheme(srcUrl), filesystem3::native);
+        filesystem3::path filepath( deleteURLScheme(srcUrl), (void *)filesystem3::native);
         if(exists(filepath)){    // 元が絶対パス //
             refUrl = filesystem3::system_complete(filepath).string();
         }else{               // 元が相対パス //
-            filesystem3::path filepath(rootDir + deleteURLScheme(srcUrl), filesystem3::native);
+            filesystem3::path filepath(rootDir + deleteURLScheme(srcUrl), (void *)filesystem3::native);
             if(filesystem::exists(filepath)){
                 refUrl = system_complete(filepath).string();
             }
