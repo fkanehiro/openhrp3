@@ -632,11 +632,12 @@ public class GrxLinkItem extends GrxTransformItem{
                 m3d.mul(m3d2);
                 t3d.setRotation(m3d);
             } else if(jointType_.equals("slide")) { //$NON-NLS-1$
+                m3d.set(new AxisAngle4d(localRotation()));
                 v3d2.set(jointAxis_[0], jointAxis_[1], jointAxis_[2]);
                 v3d2.scale(jointValue_);
+                m3d.transform(v3d2);
                 v3d.add(v3d2);
                 t3d.setTranslation(v3d);
-                m3d.set(new AxisAngle4d(localRotation()));
                 t3d.setRotation(m3d);
             }else if(jointType_.equals("free") || jointType_.equals("fixed") ){
             	t3d.setTranslation(v3d);
