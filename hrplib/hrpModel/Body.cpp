@@ -273,6 +273,7 @@ void Body::initializeConfiguration()
     rootLink_->dw = 0.0;
     rootLink_->vo = 0.0;
     rootLink_->dvo = 0.0;
+    rootLink_->constraintForces.clear();
     
     int n = linkTraverse_.numLinks();
     for(int i=0; i < n; ++i){
@@ -281,6 +282,7 @@ void Body::initializeConfiguration()
         link->q = 0.0;
         link->dq = 0.0;
         link->ddq = 0.0;
+        link->constraintForces.clear();
     }
  
     calcForwardKinematics(true, true);
