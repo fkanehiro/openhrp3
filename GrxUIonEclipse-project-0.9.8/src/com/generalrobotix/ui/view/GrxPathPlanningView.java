@@ -154,6 +154,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 	}
 
 	public void setUp(){
+		removeCarpet();
 		if(ppaItem_ != null)
 			ppaItem_.deleteObserver(this);
 		ppaItem_ = manager_.<GrxPathPlanningAlgorithmItem>getSelectedItem(GrxPathPlanningAlgorithmItem.class, null);
@@ -913,6 +914,7 @@ public class GrxPathPlanningView extends GrxBaseView {
 	}
 
 	public void shutdown() {
+		removeCarpet();
         manager_.removeItemChangeListener(this, GrxPathPlanningAlgorithmItem.class);
         if(ppaItem_!=null)
         	ppaItem_.deleteObserver(this);
