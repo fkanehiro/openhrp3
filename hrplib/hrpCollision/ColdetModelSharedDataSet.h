@@ -22,6 +22,9 @@ using namespace std;
 using namespace hrp;
 
 namespace hrp {
+     struct triangle3 {
+        int triangles[3];
+     };
 
     class ColdetModelSharedDataSet
     {
@@ -40,6 +43,8 @@ namespace hrp {
 
         ColdetModel::PrimitiveType pType;
         std::vector<float> pParams;
+
+        std::vector<triangle3> neighbor;
 
         int getAABBTreeDepth() {
             return AABBTreeMaxDepth;

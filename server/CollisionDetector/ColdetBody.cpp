@@ -29,11 +29,12 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
         LinkInfo& linkInfo = links[linkIndex];
 			
         int totalNumTriangles = 0;
+        int totalNumVertices = 0;
         const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
         short shapeIndex;
         double R[9], p[3];
         unsigned int nshape = shapeIndices.length();
-	for(int i=0; i < shapeIndices.length(); i++){
+	    for(int i=0; i < shapeIndices.length(); i++){
             shapeIndex = shapeIndices[i].shapeIndex;
             const DblArray12 &tform = shapeIndices[i].transformMatrix;
             R[0] = tform[0]; R[1] = tform[1]; R[2] = tform[2]; p[0] = tform[3];
@@ -41,6 +42,7 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
             R[6] = tform[8]; R[7] = tform[9]; R[8] = tform[10]; p[2] = tform[11];
             const ShapeInfo& shapeInfo = shapes[shapeIndex];
             totalNumTriangles += shapeInfo.triangles.length() / 3;
+            totalNumVertices += shapeInfo.vertices.length() / 3;
         }
 
         const SensorInfoSequence& sensors = linkInfo.sensors;
@@ -56,10 +58,11 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
                 R[6] = tform[8]; R[7] = tform[9]; R[8] = tform[10]; p[2] = tform[11];
                 const ShapeInfo& shapeInfo = shapes[shapeIndex];
                 totalNumTriangles += shapeInfo.triangles.length() / 3;
+                totalNumVertices += shapeInfo.vertices.length() / 3 ;
             }
         }
 
-        int totalNumVertices = totalNumTriangles * 3;
+        //int totalNumVertices = totalNumTriangles * 3;
 
         ColdetModelPtr coldetModel(new ColdetModel());
         coldetModel->setName(linkInfo.name);
@@ -124,20 +127,23 @@ void ColdetBody::addLinkVerticesAndTriangles
     T = Tparent * Tlocal;
     
     const ShapeInfo& shapeInfo = shapes[shapeIndex];
-    
+    int vertexIndexBase = vertexIndex;
     const FloatSequence& vertices = shapeInfo.vertices;
+    const int numVertices = vertices.length() / 3;
+    for(int j=0; j < numVertices; ++j){
+        Vector4 v(T * Vector4(vertices[j*3], vertices[j*3+1], vertices[j*3+2], 1.0));
+        coldetModel->setVertex(vertexIndex++, v[0], v[1], v[2]);
+    }
+
     const LongSequence& triangles = shapeInfo.triangles;
     const int numTriangles = triangles.length() / 3;
-    
+    coldetModel->initNeighbor(numTriangles);
     for(int j=0; j < numTriangles; ++j){
-        int vertexIndexTop = vertexIndex;
-        for(int k=0; k < 3; ++k){
-            long orgVertexIndex = shapeInfo.triangles[j * 3 + k];
-            int p = orgVertexIndex * 3;
-            Vector4 v(T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0));
-            coldetModel->setVertex(vertexIndex++, (float)v[0], (float)v[1], (float)v[2]);
-        }
-        coldetModel->setTriangle(triangleIndex++, vertexIndexTop, vertexIndexTop + 1, vertexIndexTop + 2);
+       int t0 = triangles[j*3] + vertexIndexBase;
+       int t1 = triangles[j*3+1] + vertexIndexBase;
+       int t2 = triangles[j*3+2] + vertexIndexBase;
+       coldetModel->setTriangle( triangleIndex, t0, t1, t2);
+       coldetModel->setNeighborTriangle(triangleIndex++, t0, t1, t2);
     }
     
 }

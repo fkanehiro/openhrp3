@@ -67,44 +67,15 @@ namespace hrp {
         
         static int is_convex_neighbor(col_tri* t1, col_tri* t2);
         
-        static int identical_ver(const Vector3& v1, const Vector3& v2);
+        void triangleIndexToPoint(ColdetModelSharedDataSet* model, int id, col_tri& tri);
         
-        static int is_neighboring_triangle(col_tri* t1, col_tri* t2);
+        int get_triangles_in_convex_neighbor(ColdetModelSharedDataSet* model, int id, col_tri* tri_convex_neighbor, int max_num);
         
-        static void get_neighboring_triangles(
-            col_tri* tri_convex_neighbor, col_tri* tri_neighbor,
-            int* start_tri, int* end_tri, int num_tri);
+        void get_triangles_in_convex_neighbor(ColdetModelSharedDataSet* model, int id, col_tri* tri_convex_neighbor, std::vector<int>& map, int& count);
         
-        static int get_triangles_in_convex_neighbor(
-            tri* root, col_tri* tri_convex_neighbor, col_tri* tri_neighbor,
-            int num_tri, int max_num);
-        
-        static int get_triangles_in_convex_neighbor(
-            tri* root, col_tri* tri_convex_neighbor, col_tri* tri_neighbor, int num_tri);
-        
-        static void get_triangles_in_neighbor(
-            col_tri* neighbor_tris,
-            int* n,
-            const Opcode::AABBCollisionNode* root,
-            Opcode::MeshInterface* mesh,
-            const Opcode::AABBCollisionNode* exclude=NULL);
+        void examine_normal_vector(int id1, int id2, int ctype);
 
-        static int count_num_of_triangles(const Opcode::AABBCollisionNode* root);
-
-        void examine_normal_vector(
-            const Opcode::AABBCollisionNode* b1,
-            const Opcode::AABBCollisionNode* b2,
-            int ctype,
-            Opcode::MeshInterface* mesh1,
-            Opcode::MeshInterface* mesh2);
-
-        void check_separability(
-            const Opcode::AABBCollisionNode* b1,
-            const Opcode::AABBCollisionNode* root1, int num_tri1,
-            const Opcode::AABBCollisionNode* b2,
-            const Opcode::AABBCollisionNode* root2, int num_tri2,
-            int ctype,
-            Opcode::MeshInterface* mesh1, Opcode::MeshInterface* mesh2);
+        void check_separability(int id1, int id2, int ctype);
 
         void find_signed_distance(
             Vector3 &signed_distance, col_tri *trp, int nth, int ctype, int obj);
@@ -112,15 +83,7 @@ namespace hrp {
         void find_signed_distance(
             Vector3& signed_distance, const Vector3& vert, int nth, int ctype, int obj);
 
-        void find_signed_distance(
-            Vector3& signed_distance,
-            const Opcode::AABBCollisionNode* b1,
-            const Opcode::AABBCollisionNode* root,
-            int num_tri,
-            int contactIndex,
-            int ctype,
-            int obj,
-            Opcode::MeshInterface* mesh);
+        void find_signed_distance(Vector3& signed_distance1, ColdetModelSharedDataSet* model0, int id1, int contactIndex, int ctype, int obj);
 
         int new_point_test(int k);
     };
