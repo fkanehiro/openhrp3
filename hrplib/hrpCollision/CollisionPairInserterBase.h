@@ -12,7 +12,6 @@
 #define HRPCOLLISION_COLLISION_PAIR_INSERTER_BASE_H_INCLUDED
 
 #include "CollisionData.h"
-#include "ColdetModelSharedDataSet.h"
 #include <boost/intrusive_ptr.hpp>
 #include <vector>
 
@@ -23,6 +22,7 @@ namespace Opcode {
 }
     
 namespace hrp {
+    class ColdetModelSharedDataSet;
 
     class CollisionPairInserterBase
     {
