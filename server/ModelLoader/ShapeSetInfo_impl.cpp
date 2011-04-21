@@ -652,25 +652,24 @@ void ShapeSetInfo_impl::setColdetModelTriangles
     T = Tparent * Tlocal;
     
     const ShapeInfo& shapeInfo = shapes_[shapeIndex];
-    
+    int vertexIndexBase = coldetModel->getNumVertices();
     const FloatSequence& vertices = shapeInfo.vertices;
+    const int numVertices = vertices.length() / 3;
+    coldetModel->setNumVertices(coldetModel->getNumVertices()+numVertices);
+    for(int j=0; j < numVertices; ++j){
+        Vector4 v(T * Vector4(vertices[j*3], vertices[j*3+1], vertices[j*3+2], 1.0));
+        coldetModel->setVertex(vertexIndex++, v[0], v[1], v[2]);
+    }
     const LongSequence& triangles = shapeInfo.triangles;
     const int numTriangles = triangles.length() / 3;
-    
     coldetModel->setNumTriangles(coldetModel->getNumTriangles()+numTriangles);
-    int numVertices = numTriangles * 3;
-    coldetModel->setNumVertices(coldetModel->getNumVertices()+numVertices);
     for(int j=0; j < numTriangles; ++j){
-        int vertexIndexTop = vertexIndex;
-        for(int k=0; k < 3; ++k){
-            long orgVertexIndex = shapeInfo.triangles[j * 3 + k];
-            int p = orgVertexIndex * 3;
-            Vector4 v(T * Vector4(vertices[p+0], vertices[p+1], vertices[p+2], 1.0));
-            coldetModel->setVertex(vertexIndex++, (float)v[0], (float)v[1], (float)v[2]);
-        }
-        coldetModel->setTriangle(triangleIndex++, vertexIndexTop, vertexIndexTop + 1, vertexIndexTop + 2);
+        int t0 = triangles[j*3] + vertexIndexBase;
+        int t1 = triangles[j*3+1] + vertexIndexBase;
+        int t2 = triangles[j*3+2] + vertexIndexBase;
+        coldetModel->setTriangle( triangleIndex++, t0, t1, t2);
     }
-    
+
 }
 
 void ShapeSetInfo_impl::saveOriginalData(){

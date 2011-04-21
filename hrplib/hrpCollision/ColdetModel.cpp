@@ -26,6 +26,8 @@ ColdetModel::ColdetModel()
     dataSet = new ColdetModelSharedDataSet();
     isValid_ = false;
     initialize();
+    dataSet->neighbor.clear();
+    vertex2TriangleMap.clear();
 }
 
 
@@ -343,3 +345,49 @@ bool ColdetModel::checkCollisionWithPointCloud(const std::vector<Vector3> &i_clo
     }
     return false;
 }
+
+void ColdetModel::setNeighborTriangle(int triangle, int vertex0, int vertex1, int vertex2){
+    setNeighborTriangleSub(triangle, vertex0, vertex1);
+    setNeighborTriangleSub(triangle, vertex1, vertex2);
+    setNeighborTriangleSub(triangle, vertex2, vertex0);
+}
+
+void ColdetModel::setNeighborTriangleSub(int triangle, int vertex0, int vertex1){
+    VertexIndexPair indexPair(vertex1, vertex0);
+    std::map<VertexIndexPair, int>::iterator it = vertex2TriangleMap.find(indexPair);
+    if(it==vertex2TriangleMap.end()){
+        VertexIndexPair reIndexPair(vertex0, vertex1);
+        it = vertex2TriangleMap.find(reIndexPair);
+        if(it==vertex2TriangleMap.end()){
+            vertex2TriangleMap.insert(std::make_pair(indexPair,triangle));
+            return;
+        }
+    }
+    setNeighbor(triangle, it->second);
+}
+
+void ColdetModel::initNeighbor(int n){
+    for(int i=0; i<n; i++){
+        triangle3 init;
+        init.triangles[0] = init.triangles[1] = init.triangles[2] = -1;
+        dataSet->neighbor.push_back(init);
+    }
+}
+
+void ColdetModel::setNeighbor(int triangle0, int triangle1 ){
+    triangle3* t0 = &(dataSet->neighbor.at(triangle0));
+    for(int i=0; i<3; i++){
+        if(t0->triangles[i] == -1){
+            t0->triangles[i] = triangle1;
+            break;
+        }
+    }
+    t0 = &(dataSet->neighbor.at(triangle1));
+    for(int i=0; i<3; i++){
+        if(t0->triangles[i] == -1){
+            t0->triangles[i] = triangle0;
+            break;
+        }
+    }
+}
+

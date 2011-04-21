@@ -18,6 +18,7 @@
 #include <hrpUtil/Tvmet3d.h>
 #include <hrpUtil/Referenced.h>
 #include <vector>
+#include <map>
 
 
 namespace IceMaths {
@@ -27,6 +28,28 @@ namespace IceMaths {
 namespace hrp {
 
     class ColdetModelSharedDataSet;
+    class VertexIndexPair
+    {
+    public :
+        VertexIndexPair(int i0, int i1){
+            vertex[0] = i0;
+            vertex[1] = i1;
+        }
+
+        bool operator<(const VertexIndexPair& vertexIndexPair) const {
+            if(vertex[0] < vertexIndexPair.vertex[0])
+                return true;
+            else if(vertex[0] == vertexIndexPair.vertex[0])
+                if(vertex[1] < vertexIndexPair.vertex[1])
+                    return true;
+                else
+                    return false;
+            else
+                return false;
+        }
+    private :
+        int vertex[2];
+    };
 
     class HRP_COLLISION_EXPORT ColdetModel : public Referenced
     {
@@ -212,6 +235,9 @@ namespace hrp {
         int getAABBmaxNum();
         int numofBBtoDepth(int minNumofBB);
 
+        void setNeighborTriangle(int triangle, int vertex0, int vertex1, int vertex2);
+        void initNeighbor(int n);
+
         ColdetModelSharedDataSet *getDataSet() { return dataSet; }
       private:
         /**
@@ -224,6 +250,10 @@ namespace hrp {
         IceMaths::Matrix4x4* pTransform; ///< transform of primitive
         std::string name_;
         bool isValid_;
+        std::map<VertexIndexPair, int> vertex2TriangleMap;
+
+        void setNeighborTriangleSub(int triangle, int vertex0, int vertex1);
+        void setNeighbor(int triangle0, int triangle1);
 
         friend class ColdetModelPair;
     };
