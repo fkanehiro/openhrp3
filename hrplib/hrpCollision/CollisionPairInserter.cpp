@@ -9,6 +9,7 @@
  */
 
 #include "CollisionPairInserter.h"
+#include "ColdetModelSharedDataSet.h"
 #include "Opcode/Opcode.h"
 #include <cstdio>
 #include <iostream>
