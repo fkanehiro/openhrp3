@@ -20,7 +20,7 @@
 #ifndef __OPC_TREECOLLIDER_H__
 #define __OPC_TREECOLLIDER_H__
 
-
+#include"../config.h"
 	//! This structure holds cached information used by the algorithm.
 	//! Two model pointers and two colliding primitives are cached. Model pointers are assigned
 	//! to their respective meshes, and the pair of colliding primitives is used for temporal
@@ -182,7 +182,7 @@
 		 *	\return		null if everything is ok, else a string describing the problem
 		 */
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		override(Collider)	const char*		ValidateSettings();
+		override(Collider)	HRP_COLLISION_EXPORT const char*		ValidateSettings();
 
 		protected:
 		// Colliding pairs
@@ -241,7 +241,7 @@
 			inline_			BOOL			TriBoxOverlap(const Point& center, const Point& extents);
 						BOOL			TriTriOverlap(const Point& V0, const Point& V1, const Point& V2, const Point& U0, const Point& U1, const Point& U2);
 			// Init methods
-							void			InitQuery(const Matrix4x4* world0=null, const Matrix4x4* world1=null);
+			HRP_COLLISION_EXPORT	void	InitQuery(const Matrix4x4* world0=null, const Matrix4x4* world1=null);
 							bool			CheckTemporalCoherence(Pair* cache);
 
 		inline_				BOOL			Setup(const MeshInterface* mi0, const MeshInterface* mi1)

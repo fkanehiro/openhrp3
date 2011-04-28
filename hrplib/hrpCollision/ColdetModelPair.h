@@ -34,6 +34,7 @@ namespace hrp {
         void set(ColdetModelPtr model0, ColdetModelPtr model1);
 
         ColdetModel* model(int index) { return models[index].get(); }
+        IceMaths::Matrix4x4* transform(int index) { return models[index]->transform; }
 
         std::vector<collision_data>& detectCollisions() {
             return detectCollisionsSub(true);

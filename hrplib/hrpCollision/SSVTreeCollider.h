@@ -1,6 +1,7 @@
 #ifndef __SSV_TREE_COLLIDER_H__
 #define __SSV_TREE_COLLIDER_H__
 
+#include "config.h"
 #include "Opcode/Opcode.h"
 
 using namespace Opcode;
@@ -8,7 +9,7 @@ using namespace Opcode;
 /**
  * @brief collision detector based on SSV(Sphere Swept Volume)
  */
-class SSVTreeCollider : public AABBTreeCollider {
+class HRP_COLLISION_EXPORT SSVTreeCollider : public AABBTreeCollider {
 public:
     /**
      * @brief constructor
@@ -43,6 +44,26 @@ public:
      */
     bool Collide(BVTCache& cache, double tolerance,
                  const Matrix4x4* world0=null, const Matrix4x4* world1=null);
+
+protected:
+     /**
+     * @brief compute distance between SSV(Swept Sphere Volume)s
+     * @param b0 collision node from the left tree
+     * @param b1 collision node from the right tree 
+     * @param return distance
+     */
+     float SsvSsvDist(const AABBCollisionNode* b0, const AABBCollisionNode *b1);
+
+    /**
+     * @brief compute distance between primitives(triangles)
+     * @param id0 index of the first primitive
+     * @param id1 index of the second primitive
+     * @param point0 the closest point on the first primitive
+     * @param point1 the closest point on the second primitive
+     * @return the minimum distance
+     */
+     float PrimDist(udword id0, udword id1, Point& point0, Point& point1);
+
 private:
     void Distance(const AABBCollisionTree* tree0, 
                   const AABBCollisionTree* tree1, 
@@ -58,25 +79,6 @@ private:
     
     bool _Collide(const AABBCollisionNode* b0, const AABBCollisionNode* b1,
                   double tolerance);
-
-    /**
-     * @brief compute distance between SSV(Swept Sphere Volume)s
-     * @param b0 collision node from the left tree
-     * @param b1 collision node from the right tree 
-     * @param return distance
-     */
-    float SsvSsvDist(const AABBCollisionNode* b0, const AABBCollisionNode *b1);
-
-    /**
-     * @brief compute distance between primitives(triangles)
-     * @param id0 index of the first primitive
-     * @param id1 index of the second primitive
-     * @param point0 the closest point on the first primitive
-     * @param point1 the closest point on the second primitive
-     * @return the minimum distance
-     */
-    float PrimDist(udword id0, udword id1, Point& point0, Point& point1);
-
     /**
      * @brief compute distance between PSS(Point Swept Sphere)
      * @param r0 radius of the first sphere

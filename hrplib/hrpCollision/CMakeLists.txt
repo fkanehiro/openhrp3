@@ -49,6 +49,7 @@ set(headers
   CollisionPairInserter.h
   CollisionPairInserterBase.h
   DistFuncs.h
+  SSVTreeCollider.h
   )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Opcode)
