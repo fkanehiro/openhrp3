@@ -43,7 +43,10 @@ public class RecordingDialog extends ModalDialog {
     private JComboBox imSizeCombo_;
     private JComboBox playbackRateCombo_;
     private JTextField frameRateField_;
-    public RecordingDialog(Frame owner) {
+    private JTextField startTimeField_;
+    private JTextField endTimeField_;
+    private double logEndTime_;
+    public RecordingDialog(Frame owner, double endTime) {
         super(
             owner,
             MessageBundle.get("RecordingDialog.dialog.title.recording"), //$NON-NLS-1$
@@ -56,13 +59,42 @@ public class RecordingDialog extends ModalDialog {
         playbackRateCombo_ = new JComboBox(playbackRateString_);
         playbackRateCombo_.setSelectedIndex(2);
         frameRateField_ = new JTextField("10"); //$NON-NLS-1$
+        startTimeField_ = new JTextField("0.0");
+        endTimeField_ = new JTextField(String.format("%.5f", endTime));
+        logEndTime_ = endTime;
         
         addInputComponent(MessageBundle.get("RecordingDialog.label.fileName"), fileInput_, MULTILINE_CAPTION, true); //$NON-NLS-1$
         addInputComponent(MessageBundle.get("RecordingDialog.label.imageSize"), imSizeCombo_, MULTILINE_CAPTION, true); //$NON-NLS-1$
         addInputComponent(MessageBundle.get("RecordingDialog.label.playRate"), playbackRateCombo_, MULTILINE_CAPTION, true); //$NON-NLS-1$
         addInputComponent(MessageBundle.get("RecordingDialog.label.frameRate"), frameRateField_, MULTILINE_CAPTION, true); //$NON-NLS-1$
-		 setInputAreaWidth(300);
+        addInputComponent(MessageBundle.get("RecordingDialog.label.startTime"), startTimeField_, INLINE_CAPTION, true);
+        addInputComponent(MessageBundle.get("RecordingDialog.label.endTime"), endTimeField_, INLINE_CAPTION, true);
+		setInputAreaWidth(300);
 	 }
+    
+    public double getStartTime(){
+    	double startTime;
+    	try{
+    		startTime = Double.parseDouble(startTimeField_.getText());
+    	}catch (NumberFormatException e){
+    		startTime = 0.0;
+    	}
+    	if(startTime < 0.0)
+    		startTime = 0.0;
+    	return startTime;
+    }
+    
+    public double getEndTime(){
+    	double endTime;
+    	try{
+    		endTime = Double.parseDouble(endTimeField_.getText());
+    	}catch (NumberFormatException e){
+    		endTime = 0.0;
+    	}
+    	if(endTime > logEndTime_)
+    		endTime = logEndTime_;
+    	return endTime;
+    }
 
     public String getFileName() {
         return fileInput_.getFileName();
