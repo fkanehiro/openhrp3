@@ -1116,7 +1116,7 @@ public class Grx3DView
     }
 
     private void rec(){
-    	RecordingDialog dialog = new RecordingDialog(frame_);
+    	RecordingDialog dialog = new RecordingDialog(frame_, currentWorld_.getTime(currentWorld_.getLogSize()-1));
         if (dialog.showModalDialog() != ModalDialog.OK_BUTTON){
         	btnRec_.setSelected(false);		
         	return;		
@@ -1195,14 +1195,15 @@ public class Grx3DView
 		objectToolBar_.setMode(ObjectToolBar.DISABLE_MODE);
                
         final double stepTime = 1.0/framerate*playbackRate;
-        
+        double startTime = dialog.getStartTime();
+        double endTime = dialog.getEndTime();
+        final int startPosition = currentWorld_.getPositionAt(startTime);
+        final int endPosition = currentWorld_.getPositionAt(endTime);
         Thread recThread_ = new Thread() {
 			public void run() {
-				try {
-					int startPosition =0;
-					int endPosition = currentWorld_.getLogSize();  
+				try { 
 					double playRateLogTime_ = currentWorld_.getTime(startPosition);					
-					for (int position=startPosition; position < endPosition; position++) {
+					for (int position=startPosition; position <= endPosition; position++) {
 						if(!btnRec_.isSelected())break;
 						double time = currentWorld_.getTime(position);
 						if (time >= playRateLogTime_) {
