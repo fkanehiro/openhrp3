@@ -19,6 +19,7 @@ package com.generalrobotix.ui.view.tdview;
 import java.awt.*;
 import javax.swing.*;
 
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.util.FileInput;
 import com.generalrobotix.ui.util.MessageBundle;
 import com.generalrobotix.ui.util.ModalDialog;
@@ -54,7 +55,7 @@ public class RecordingDialog extends ModalDialog {
             OK_CANCEL_TYPE
         );
 
-		fileInput_ = new FileInput(new String[] { "mov" }, System.getProperty("user.dir")); //$NON-NLS-1$ //$NON-NLS-2$
+		fileInput_ = new FileInput(new String[] { "mov" }, Activator.getDefault().getPreferenceStore().getString("PROJECT_DIR")); //$NON-NLS-1$ //$NON-NLS-2$
 		imSizeCombo_ = new JComboBox(_makeSizeStrings(imageSize_));
         playbackRateCombo_ = new JComboBox(playbackRateString_);
         playbackRateCombo_.setSelectedIndex(2);
