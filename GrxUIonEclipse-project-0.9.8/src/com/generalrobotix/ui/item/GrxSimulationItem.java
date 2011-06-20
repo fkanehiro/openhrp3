@@ -324,6 +324,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 									}
 								}
 							}
+							Thread.yield();
 						}
 						isExecuting_ = false;
 						simulateTime_ += (System.currentTimeMillis() - startT - suspendT)/1000.0;
