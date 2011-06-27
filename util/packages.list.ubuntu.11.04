@@ -1,0 +1,86 @@
+# package list for ubuntu 11.04
+
+# java
+sun-java6-jdk
+sun-java6-fonts
+sun-java6-plugin
+jython
+libreadline-java
+java-common
+
+# japanese font
+ttf-sazanami-gothic
+ttf-sazanami-mincho
+ttf-kochi-gothic
+ttf-kochi-mincho
+
+# compiler & build tools
+gcc
+g++
+make
+build-essential
+cmake
+cmake-qt-gui
+cmake-curses-gui
+doxygen
+graphviz
+pkg-config
+python-yaml
+
+
+# omniORB
+libcos4-dev
+libomnievents-dev
+libomniorb4-1
+libomniorb4-dev
+libomnithread3-dev
+libomnithread3c2
+omnievents
+omniidl4
+omniidl-python
+omniorb4
+omniorb4-idl
+omniorb4-nameserver
+#python-omniorb2
+python-tk
+
+# math 
+liblapack3gf
+liblapack-dev
+libatlas-base-dev
+libatlas-dev
+libblas3gf
+libblas-dev
+f2c
+libf2c2
+libf2c2-dev
+libgfortran3
+libgfortran3-dbg
+tvmet
+
+# boost
+libboost1.42-dev
+libboost-filesystem1.42-dev 
+libboost-program-options1.42-dev 
+libboost-regex1.42-dev
+libboost-signals1.42-dev
+libboost-thread1.42-dev
+
+# eclipse3.4.2
+xulrunner-1.9.2
+
+# etc
+zlib1g-dev
+libjpeg62-dev
+libpng12-dev
+uuid-dev
+
+# openrtm
+openrtm-aist
+openrtm-aist-doc
+openrtm-aist-dev
+openrtm-aist-example
+
+# for hrpsys
+# libncurses5-dev
+# libreadline5-dev
