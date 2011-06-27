@@ -103,7 +103,7 @@ update_source_list () {
 #---------------------------------------
 update_source_list_partner () {
     partner_repo="deb http://archive.canonical.com/ubuntu $code_name partner"
-    if test "$code_name" = "lucid" ; then
+    if test "$code_name" = "lucid" -o  "$code_name" = "natty" ; then
         partnersite=`grep "^deb http://archive.canonical.com/.* $code_name partner$" /etc/apt/sources.list`
         if test "x$partnersite" = "x" ; then
             echo $msg12
