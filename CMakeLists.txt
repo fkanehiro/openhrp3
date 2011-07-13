@@ -410,6 +410,7 @@ if(ENABLE_CPACK)
     
   else()
     include(${CPACK_MODULE_PATH}DEPENDENT${UBUNTU_VERSION_NUM}_BASENAMES.cmake)
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/usr" CACHE PATH "The root directory of the package")
     
     foreach(name ${DEPENDENT_BASENAMES})
       if ( depends_line )
