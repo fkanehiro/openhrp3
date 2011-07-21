@@ -1599,9 +1599,28 @@ public class Grx3DView
             arg1.value = new Camera[0];
         }
 
-        public void registerCharacter(String name, BodyInfo bInfo) {}
-        public void updateScene(WorldState arg0) { }
-
+        public void registerCharacter(final String name, final BodyInfo bInfo) {
+        	syncExec(new Runnable(){
+            	public void run(){
+            		GrxBaseItem newItem = manager_.createItem(GrxModelItem.class, name);
+            		if(newItem!=null){
+                        manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
+                        manager_.setSelectedItem(newItem, true);
+                        ((GrxModelItem)newItem).registerCharacter(bInfo);
+            		}
+            	}
+            });
+        }
+        
+        public void updateScene(WorldState worldState) {
+        	final WorldStateEx statex = new WorldStateEx(worldState);
+        	syncExec(new Runnable(){
+        		public void run(){
+        	       	updateModels(statex);
+                    updateViewSimulator(0);
+        		}
+            });
+        }
     }
     
     private class OnlineViewer_impl extends OnlineViewerPOA {

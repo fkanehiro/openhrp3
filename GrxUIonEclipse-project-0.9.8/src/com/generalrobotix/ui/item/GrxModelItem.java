@@ -572,16 +572,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     
     private boolean load0(File f) {
         long load_stime = System.currentTimeMillis();
-        manager_.focusedItem(null);
-        manager_.setSelectedItem(this, false);
-        bgRoot_.detach();
-        bgRoot_ = new BranchGroup();
-        bgRoot_.setCapability(BranchGroup.ALLOW_DETACH);
-        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
-        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-        file_ = f;
-        
+        file_ = f; 
         String url=null;
 		try {
 			url = f.getCanonicalPath();
@@ -594,7 +585,40 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
             setURL(url);
             bInfo_ = mloader.loadBodyInfo(getURL(true));
-            //
+            boolean ret = registerCharacter();
+            long load_etime = System.currentTimeMillis();
+            System.out.println("load time = " + (load_etime-load_stime) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
+            return ret;
+        }catch(ModelLoaderException me){
+            MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
+                    MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
+                    MessageBundle.get("GrxModelItem.dialog.message.loadError") +"\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                    url + "\n\n" + me.description); //$NON-NLS-1$
+			System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
+			me.printStackTrace();
+			return false;
+		} catch (Exception ex) {
+			System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
+			ex.printStackTrace();
+			return false;
+		}
+    }
+    
+    public boolean registerCharacter(BodyInfo bInfo){
+    	bInfo_ = bInfo;
+    	return registerCharacter();
+    }
+    
+    private boolean registerCharacter(){
+        manager_.focusedItem(null);
+        manager_.setSelectedItem(this, false);
+        bgRoot_.detach();
+        bgRoot_ = new BranchGroup();
+        bgRoot_.setCapability(BranchGroup.ALLOW_DETACH);
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_READ);
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
+        bgRoot_.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+
             LinkInfo[] linkInfoList = bInfo_.links();
 
             // delete existing model data
@@ -647,7 +671,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             }
 
             long stime = System.currentTimeMillis();
-            _loadVrmlScene(linkInfoList);
+            try {
+				_loadVrmlScene(linkInfoList);
+			} catch (BadLinkStructureException e) {
+				e.printStackTrace();
+				return false;
+			}
             long etime = System.currentTimeMillis();
             System.out.println("_loadVrmlScene time = " + (etime-stime) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -667,23 +696,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             
             manager_.setSelectedItem(this, true);
             cancelModified();
-
-        } catch(ModelLoaderException me){
-            MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
-                                    MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
-                                    MessageBundle.get("GrxModelItem.dialog.message.loadError") +"\n" + //$NON-NLS-1$ //$NON-NLS-2$
-                                    url + "\n\n" + me.description); //$NON-NLS-1$
-            System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
-            me.printStackTrace();
-            return false;
-        } catch (Exception ex) {
-            System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
-            ex.printStackTrace();
-            return false;
-        }
-        long load_etime = System.currentTimeMillis();
-        System.out.println("load time = " + (load_etime-load_stime) + "ms"); //$NON-NLS-1$ //$NON-NLS-2$
-        return true;
+            return true;
     }
 
     /**
