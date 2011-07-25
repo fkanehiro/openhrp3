@@ -3,5 +3,6 @@ add_subdirectory(simulationEC)
 add_subdirectory(customizer)
 add_subdirectory(move_ankle)
 add_subdirectory(clap)
+add_subdirectory(viewSimulator)
 
 
