@@ -96,18 +96,20 @@ int main(int argc, char* argv[])
 	RTC::Manager* rtcManager;
 
     try {
-		unsigned int i;
-		for (i=1; i<argc; i++){
-			if (strcmp(argv[i], "-f")==0){
-				break;
-			} 
-		}
-		if (i == argc){
-			rtcManager = RTC::Manager::init(1, argv);
-		}else{
-			rtcManager = RTC::Manager::init(3, argv+i-1);
-		}
-		rtcManager->activateManager();
+        unsigned int i;
+        int rtc_argc = 1;
+        char** rtc_argv = (char **)malloc(sizeof(char *)*argc);
+        rtc_argv[0] = argv[0];
+        for (i=1; i<argc; i++){
+            if (strncmp(argv[i], "--", 2)!=0 ) {
+                rtc_argv[rtc_argc] = argv[i];
+                rtc_argc++;
+            }else {
+                i++;
+            } 
+        }
+        rtcManager = RTC::Manager::init(rtc_argc, rtc_argv);
+        rtcManager->activateManager();
 	}
 	catch(...) {
 		cerr << "Cannot initialize OpenRTM" << endl;
