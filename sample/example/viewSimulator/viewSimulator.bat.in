@@ -1,0 +1,1 @@
+viewSimulator.exe -ORBInitRef NameService=corbaloc:iiop:localhost:2809/NameService -url /"@OPENHRP_DIR@/@RELATIVE_SAMPLE_INSTALL_PATH@\model\longfloor.wrl" /"@OPENHRP_DIR@/@RELATIVE_SAMPLE_INSTALL_PATH@\model\sample.wrl"
