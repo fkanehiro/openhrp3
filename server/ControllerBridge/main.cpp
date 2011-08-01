@@ -11,6 +11,7 @@
 /**
    \file
    \author Shin'ichiro Nakaoka
+   \author Kei Okada
 */
 
 #include <iostream>
