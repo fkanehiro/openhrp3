@@ -62,6 +62,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
+//import org.omg.PortableServer.POAPackage.ObjectNotActive;
+//import org.omg.PortableServer.POAPackage.ServantAlreadyActive;
 import org.omg.PortableServer.POAPackage.ServantNotActive;
 import org.omg.PortableServer.POAPackage.WrongPolicy;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -1459,9 +1461,13 @@ public class Grx3DView
         ViewSimulator_impl  viewImpl = new ViewSimulator_impl();
         ViewSimulator view = viewImpl._this(manager_.orb_);//GrxCorbaUtil.getORB());
         NameComponent[] path2 = {new NameComponent("ViewSimulator", "")}; //$NON-NLS-1$ //$NON-NLS-2$
+       // ViewSimulatorFactory_impl  viewImplFactory = new ViewSimulatorFactory_impl();
+       // ViewSimulatorFactory viewFactory = viewImplFactory._this(manager_.orb_);//GrxCorbaUtil.getORB());
+       // NameComponent[] path3 = {new NameComponent("ViewSimulatorFactory", "")}; //$NON-NLS-1$ //$NON-NLS-2$
         try {
             rootnc.rebind(path1, olv);
             rootnc.rebind(path2, view);
+            //rootnc.rebind(path3, viewFactory);
         } catch (Exception ex) {
             GrxDebugUtil.println("3DVIEW : failed to bind to localhost NameService"); //$NON-NLS-1$
             return false;
@@ -1476,9 +1482,11 @@ public class Grx3DView
         NamingContext rootnc = GrxCorbaUtil.getNamingContext();
         NameComponent[] path1 = {new NameComponent("OnlineViewer", "")};
         NameComponent[] path2 = {new NameComponent("ViewSimulator", "")};
+       // NameComponent[] path3 = {new NameComponent("ViewSimulatorFactory", "")};
         try{
             rootnc.unbind(path1);
             rootnc.unbind(path2);
+            //rootnc.unbind(path3);
             GrxDebugUtil.println("3DVIEW : successfully unbound to localhost NameService");
         }catch(Exception ex){
             GrxDebugUtil.println("3DVIEW : failed to unbind to localhost NameService");
@@ -1554,9 +1562,44 @@ public class Grx3DView
           	arg0.consume();
         }     
     }
-    
+/*
+    private class ViewSimulatorFactory_impl extends ViewSimulatorFactoryPOA{
+
+		public ViewSimulator create() {
+			ViewSimulator_impl viewImpl = new ViewSimulator_impl();
+			try {
+				manager_.poa_.activate_object(viewImpl);
+			} catch (ServantAlreadyActive e) {
+				e.printStackTrace();
+			} catch (WrongPolicy e) {
+				e.printStackTrace();
+			}
+			return viewImpl._this(manager_.orb_);
+		}
+
+		public void shutdown() {
+		}
+    	
+    }
+*/    
     private class ViewSimulator_impl extends ViewSimulatorPOA {
         public void destroy() {
+        	/*
+        	byte[] id;
+			try {
+				id = manager_.poa_.servant_to_id(this);
+				manager_.poa_.deactivate_object(id);
+			} catch (ServantNotActive e) {
+
+				e.printStackTrace();
+			} catch (WrongPolicy e) {
+
+				e.printStackTrace();
+			} catch (ObjectNotActive e) {
+
+				e.printStackTrace();
+			}
+			*/
         }
 
         public void getCameraSequence(CameraSequenceHolder arg0) {
@@ -1714,6 +1757,7 @@ public class Grx3DView
             }
             
             currentWorld_.addValue(statex.time, statex);
+            Thread.yield();
             if(!updateTimer_){
 	            java.util.Timer timer = new java.util.Timer();
 	            timer.schedule(new updateView(),20);

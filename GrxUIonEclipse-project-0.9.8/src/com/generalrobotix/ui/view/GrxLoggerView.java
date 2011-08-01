@@ -68,6 +68,7 @@ public class GrxLoggerView extends GrxBaseView {
 	private boolean isPlaying_ = false;
     private boolean isControlDisabled_ = false; 
     private boolean inSimulation_ = false;
+    private boolean buttonClick_ = false;
 		
     // widgets
 	private Scale sliderFrameRate_;
@@ -269,6 +270,7 @@ public class GrxLoggerView extends GrxBaseView {
 		sliderTime_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
             	currentItem_.setPosition(sliderTime_.getSelection());
+            	buttonClick_ = true;
             }
 		} );
 		sliderTime_.addKeyListener(new KeyListener(){
@@ -315,6 +317,7 @@ public class GrxLoggerView extends GrxBaseView {
                     playRate_ *= -1;
                 else if (playRate_ > -64)
                     playRate_ *= 2.0;
+                buttonClick_ = true;
                 play();
             }
         };
@@ -327,6 +330,7 @@ public class GrxLoggerView extends GrxBaseView {
                     playRate_ *= -1;
                 else if (1/playRate_ > -64)
                     playRate_ *= 0.5;
+                buttonClick_ = true;
                 play();
             }
         };
@@ -339,6 +343,7 @@ public class GrxLoggerView extends GrxBaseView {
         Action actPlay_ = new Action(){
             public void run(){
                 playRate_ = 1.0;
+                buttonClick_ = true;
                 play();
             }
         };
@@ -351,6 +356,7 @@ public class GrxLoggerView extends GrxBaseView {
                     playRate_ *= -1;
                 else if (1/playRate_ < 64)
                     playRate_ *= 0.5;
+                buttonClick_ = true;
                 play();
             }
         };
@@ -363,6 +369,7 @@ public class GrxLoggerView extends GrxBaseView {
                     playRate_ *= -1;
                 else if (playRate_ < 64)
                     playRate_ *= 2.0;
+                buttonClick_ = true;
                 play();
             }
         };
@@ -473,16 +480,20 @@ public class GrxLoggerView extends GrxBaseView {
                     boolean _continue = true;
 
                     int diffpos = (int)((nowNs - prevDispNs_) / (logTimeStepMs_ * mills2nano) * playRate_);
-                    int newpos = current_ + diffpos;
-
                     int sliderMax = currentItem_.getLogSize()-1;
+                    int newpos;
+                    if(inSimulation_ && !buttonClick_)
+                    	newpos = sliderMax;
+                    else
+                    	newpos = current_ + diffpos;
                     if (sliderMax < newpos) {
                         newpos = sliderMax;
                         if(!inSimulation_)
                             _continue = false;
                     } else if (newpos < 0) {
                         newpos = 0;
-                        _continue = false;
+                        if(!inSimulation_)
+                        	_continue = false;
                     }
 
                     if(newpos != current_){
@@ -650,6 +661,7 @@ public class GrxLoggerView extends GrxBaseView {
 		if(simItem_==plugin){
 			if((String)arg[0]=="StartSimulation"){ //$NON-NLS-1$
 				inSimulation_ = true; 
+				buttonClick_ = false;
 				lblPlayRate_.setText(MessageBundle.get("GrxLoggerView.label.live")); //$NON-NLS-1$
 				if((Boolean)arg[1])
 					disableControl();
