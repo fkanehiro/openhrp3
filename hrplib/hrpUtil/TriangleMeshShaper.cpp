@@ -901,9 +901,9 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
         const vector<int>& triangles = triangulator.triangles();
         for(int i=0; i<triangles.size(); i+=3 )
             if(extrusion->ccw){
-                addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
-            }else{
                 addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+2]], polygon[triangles[i+1]]);
+            }else{
+                addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
             }
     }
 
