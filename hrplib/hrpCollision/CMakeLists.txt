@@ -66,8 +66,8 @@ if(UNIX)
   if(NOT CMAKE_BUILD_TYPE STREQUAL Debug)
     # to avoid a bug which may be caused by the optimization
     #set_source_files_properties(OPC_TreeCollider.cpp PROPERTIES COMPILE_FLAGS -O)
+    #set_source_files_properties(Opcode/OPC_AABBTree.cpp PROPERTIES COMPILE_FLAGS -O)
   endif()
-
   target_link_libraries(${target} m)
 elseif(WIN32)
   add_definitions(-DHRP_COLLISION_MAKE_DLL)

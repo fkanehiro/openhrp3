@@ -340,10 +340,11 @@
 		//! Returns largest axis
 		inline_	PointComponent	LargestAxis()						const
 								{
-									const float* Vals = &x;
+									//const float* Vals = &x;
 									PointComponent m = _X;
-									if(Vals[_Y] > Vals[m]) m = _Y;
-									if(Vals[_Z] > Vals[m]) m = _Z;
+									//if(Vals[_Y] > Vals[m]) m = _Y;
+									//if(Vals[_Z] > Vals[m]) m = _Z;
+									y > x ? (z > y ? m = _Z : m = _Y) : (z > x ? m = _Z : m = _X);  
 									return m;
 								}
 
@@ -360,10 +361,11 @@
 		//! Returns smallest axis
 		inline_	PointComponent	SmallestAxis()						const
 								{
-									const float* Vals = &x;
+									//const float* Vals = &x;
 									PointComponent m = _X;
-									if(Vals[_Y] < Vals[m]) m = _Y;
-									if(Vals[_Z] < Vals[m]) m = _Z;
+									//if(Vals[_Y] < Vals[m]) m = _Y;
+									//if(Vals[_Z] < Vals[m]) m = _Z;
+									y < x ? (z < y ? m = _Z : m = _Y) : (z < x ? m = _Z : m = _X);  
 									return m;
 								}
 
