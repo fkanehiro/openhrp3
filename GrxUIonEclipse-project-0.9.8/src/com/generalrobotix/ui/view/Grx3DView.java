@@ -1650,6 +1650,7 @@ public class Grx3DView
                         manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
                         manager_.setSelectedItem(newItem, true);
                         ((GrxModelItem)newItem).registerCharacter(bInfo);
+                        ((GrxModelItem)newItem).setURL(bInfo.url());
             		}
             	}
             });
