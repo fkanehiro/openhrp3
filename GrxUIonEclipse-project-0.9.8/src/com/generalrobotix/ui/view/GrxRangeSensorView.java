@@ -41,6 +41,7 @@ import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseView;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
+import com.generalrobotix.ui.grxui.Activator;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
@@ -176,28 +177,29 @@ public class GrxRangeSensorView extends GrxBaseView implements PaintListener{
     	    	if(bounds.height < bounds.width) {
     	    		bounds.x = (bounds.width - bounds.height) / 2;
     	    		bounds.width = bounds.height;
+    	    		bounds.y = 0;
     	    	} else {
     	    		bounds.y = (bounds.height - bounds.width) / 2;
     	    		bounds.height = bounds.width;
+    	    		bounds.x = 0;
     	    	}
-    	    	// I don't know why "-5" is required. An arc shifts slightly right without it.
-    	    	e.gc.drawArc(bounds.x-5,bounds.y-5,bounds.width-1, bounds.height-1,0,360);
+    	    	e.gc.drawArc(bounds.x, bounds.y, bounds.width-1, bounds.height-1,0,360);
     			double [] distances = currentSensorState_.range[currentSensor_.id_];
-     			int half = distances.length/2;
-    			int x,y,oldx,oldy;
     			int centerx = bounds.x + bounds.width / 2;
     			int centery = bounds.y + bounds.height / 2;
-    			oldx = centerx;
-    			oldy = centery;
     			double scale = bounds.width/(maxD*2);
-    			for (int i=-half; i<=half; i++){
-    				x = centerx - (int)(scale*distances[i+half]*Math.sin(step*i));
-    				y = centery - (int)(scale*distances[i+half]*Math.cos(step*i));
-    				e.gc.drawLine(oldx, oldy, x, y);
-    				oldx = x;
-    				oldy = y;
+    			e.gc.setBackground(Activator.getDefault().getColor("darkGray"));
+    			int stepAngle = (int)(step*57.29579+0.5);
+    			int half = (int)(distances.length/2);
+    			double startAngle = 1.570796-step*half-step/2;
+    			for(int i=0; i<distances.length; i++){
+    				double distance = distances[i];
+    				if(distance==0)
+    					distance = maxD;
+    				int iDistance = (int)(scale*distance);
+    				e.gc.fillArc(centerx-iDistance, centery-iDistance, iDistance*2, iDistance*2, (int)(startAngle*57.29579), stepAngle);
+    				startAngle += step;
     			}
-    			e.gc.drawLine(oldx, oldy, centerx, centery);
     		}
     	}
     }
