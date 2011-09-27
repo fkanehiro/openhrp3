@@ -381,10 +381,13 @@ public class GrxSensorItem extends GrxShapeTransformItem implements  Comparable 
     		p3f[0] = new Point3f(0,0,0);
     		for (int i=-half; i<=half; i++){
     			double angle = step*i;
+    			double distance = distances[i+half];
+    			if(distance==0)
+    				distance = getFlt("maxDistance", 10.0f);
     			p3f[i+half+1] = new Point3f(
-    					(float)(-distances[i+half]*Math.sin(angle)),
+    					(float)(-distance*Math.sin(angle)),
     					0.0f,
-    					(float)(-distances[i+half]*Math.cos(angle)));
+    					(float)(-distance*Math.cos(angle)));
     		}
     		return p3f;
     	}else{

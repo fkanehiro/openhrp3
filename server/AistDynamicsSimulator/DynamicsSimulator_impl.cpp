@@ -1339,8 +1339,6 @@ void DynamicsSimulator_impl::_updateSensorStates()
                                                                               rangeSensor->scanStep, rangeSensor->scanAngle);
                 rangeSensor->distances.resize(data->length());
                 for (unsigned int i=0; i<data->length(); i++){
-                    if(!data[i])
-                        data[i] = rangeSensor->maxDistance;
                     rangeSensor->distances[i] = data[i];
                 }
                 rangeSensor->nextUpdateTime += 1.0/rangeSensor->scanRate;
