@@ -19,7 +19,7 @@ if(WIN32)
 endif()
 
 install(TARGETS ${program} DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/SampleSimulationEC CONFIGURATIONS Release Debug)
-install(FILES rtc.conf DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/SampleSimulationEC)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rtc.conf DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/SampleSimulationEC)
 
 if(CMAKE_INSTALL_PREFIX)
   STRING(REGEX REPLACE "\\\\" "/" CMAKE_INSTALL_PREFIX_TMP "${CMAKE_INSTALL_PREFIX}")
@@ -36,4 +36,4 @@ elseif(WIN32)
   set(SO_SFX "dll")
 endif()
 
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/rtc.conf.in ${CMAKE_CURRENT_SOURCE_DIR}/rtc.conf)
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/rtc.conf.in ${CMAKE_CURRENT_BINARY_DIR}/rtc.conf)
