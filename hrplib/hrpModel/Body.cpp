@@ -586,7 +586,8 @@ void Body::clearSensorValues()
 {
     for(int i=0; i < numSensorTypes(); ++i){
         for(int j=0; j < numSensors(i); ++j){
-            sensor(i, j)->clear();
+            if(sensor(i,j))
+                sensor(i, j)->clear();
         }
     }
 }
