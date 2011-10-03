@@ -377,18 +377,24 @@ public class GrxSensorItem extends GrxShapeTransformItem implements  Comparable 
     	if (type_.equals("Range")){ //$NON-NLS-1$
     		float step = specValues_[1];
     		int half = distances.length/2;
-    		Point3f[] p3f = new Point3f[half*2+1+1];
+    		float maxD = getFlt("maxDistance", 10.0f);
+    		Point3f[] p3f = new Point3f[distances.length*2+1];
     		p3f[0] = new Point3f(0,0,0);
-    		for (int i=-half; i<=half; i++){
-    			double angle = step*i;
-    			double distance = distances[i+half];
-    			if(distance==0)
-    				distance = getFlt("maxDistance", 10.0f);
-    			p3f[i+half+1] = new Point3f(
-    					(float)(-distance*Math.sin(angle)),
+    		double startAngle = -step*half-step/2;
+			for(int i=0; i<distances.length; i++){
+				double distance = distances[i];
+				if(distance==0)
+					distance = maxD;
+				p3f[2*i+1] = new Point3f(
+    					(float)(-distance*Math.sin(startAngle)),
     					0.0f,
-    					(float)(-distance*Math.cos(angle)));
-    		}
+    					(float)(-distance*Math.cos(startAngle)));
+				startAngle += step;
+				p3f[2*i+2] = new Point3f(
+    					(float)(-distance*Math.sin(startAngle)),
+    					0.0f,
+    					(float)(-distance*Math.cos(startAngle)));
+			}
     		return p3f;
     	}else{
     		return null;
@@ -419,16 +425,22 @@ public class GrxSensorItem extends GrxShapeTransformItem implements  Comparable 
     		double scanAngle = specValues_[0];
     		double step = specValues_[1];
     		float d = specValues_[3];
-    		int half = (int)(scanAngle/2/step);
-    		Point3f[] p3f = new Point3f[half*2+1+1];
+    		int length = (int)(scanAngle/step);
+    		int half = (int)(length/2);
+    		Point3f[] p3f = new Point3f[length*2+1];
     		p3f[0] = new Point3f(0,0,0);
-    		for (int i=-half; i<=half; i++){
-    			double angle = step*i;
-    			p3f[i+half+1] = new Point3f(
-    					(float)(-d*Math.sin(angle)),
+    		double startAngle = -step*half-step/2;
+			for(int i=0; i<length; i++){
+				p3f[2*i+1] = new Point3f(
+    					(float)(-d*Math.sin(startAngle)),
     					0.0f,
-    					(float)(-d*Math.cos(angle)));
-    		}
+    					(float)(-d*Math.cos(startAngle)));
+				startAngle += step;
+				p3f[2*i+2] = new Point3f(
+    					(float)(-d*Math.sin(startAngle)),
+    					0.0f,
+    					(float)(-d*Math.cos(startAngle)));
+			}
     		int[] stripVertexCounts = { p3f.length };
     		TriangleFanArray tri = new TriangleFanArray(p3f.length,
     				TriangleFanArray.COORDINATES,
