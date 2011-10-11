@@ -1,5 +1,19 @@
 OpenHRP3 Updates History (Release Notes)
 
+Ver.3.1.1 (09-05-2011)
+=========================
+ * GraphView now supports displaying the position of a model and the posture.
+
+ * Resolved miscellaneous problems of CollisionView.
+
+ * Added a feature that supports creating model files that have multiple Segment node on GrxUI.
+
+ * Added a feature that supports combining the existing model on GrxUI.
+ 
+ * Added a View which sets up a controller bridge. 
+
+ * resolved some miscellaneous problems in OpenHRP.
+ 
 
 Ver.3.1.00-Release (21-09-2010)
 ==============================
