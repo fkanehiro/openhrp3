@@ -21,17 +21,14 @@ above-mentioned EPL that applied to the source package of OpenHRP3.）
 - Java Media Framewark
    Software and license text is available at GrxUIonEclipse-project-0.9.8/jmf-2_1_1e-alljava.
 
- - vrml97.jar
-   Software and license text is available at ModelLoader/server/vrml97.
-
  - Opcode
-   Applied for some files at CollisionDetector/server.
+   Applied for some files at hrplib/hrpCollision/Opcode.
 
  - zlib
-   Software and license text is available at hrplib/hrpParser/zlib123.
+   Software and license text is available at hrplib/hrpUtil/zlib123.
 
  - JPEG
-   Software and license text is available at hrplib/hrpParser/Jpeg-6b.
+   Software and license text is available at hrplib/hrpUtil/Jpeg-6b.
 
  - libpng
-   Software and license text is available at hrplib/hrpParser/lping1232.
+   Software and license text is available at hrplib/hrpUtil/lping1232.

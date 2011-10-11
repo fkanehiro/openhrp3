@@ -20,22 +20,18 @@ http://www.eclipse.org/legal/eplfaq.php#EPLVERSION）
 
 GrxUIonEclipse-project-0.9.8/jmf-2_1_1e-alljava 以下に、ソフトウェアおよびライセンス文書を格納してあります。
 
-- vrml97.jar
-
-ModelLoader/server/vrml97 以下に、ソフトウェアおよびライセンス文書を格納してあります。
-
 - Opcode
 
-CollisionDetector/server 以下の一部のファイルが該当します.
+hrplib/hrpCollision/Opcode 以下の一部のファイルが該当します.
 
 - zlib
 
-hrplib/hrpParser/zlib123 以下に、ソフトウェアおよびライセンス文書を格納してあります。
+hrplib/hrpUtil/zlib123 以下に、ソフトウェアおよびライセンス文書を格納してあります。
 
 - JPEG
 
-hrplib/hrpParser/Jpeg-6b 以下に、ソフトウェアおよびライセンス文書を格納してあります。
+hrplib/hrpUtil/Jpeg-6b 以下に、ソフトウェアおよびライセンス文書を格納してあります。
 
 - libpng
 
-hrplib/hrpParser/lping1232 以下に、ソフトウェアおよびライセンス文書を格納してあります。
+hrplib/hrpUtil/lping1232 以下に、ソフトウェアおよびライセンス文書を格納してあります。
