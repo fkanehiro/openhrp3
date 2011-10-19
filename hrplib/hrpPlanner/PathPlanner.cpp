@@ -7,6 +7,8 @@
 #include "OmniWheel.h"
 // optimizers
 #include "ShortcutOptimizer.h"
+#include "RandomShortcutOptimizer.h"
+//
 #include "PathPlanner.h"
 
 #include <hrpCorba/OpenHRPCommon.hh>
@@ -95,6 +97,9 @@ PathPlanner::PathPlanner(bool isDebugMode)
     registerOptimizer("Shortcut", 
                       OptimizerCreate<ShortcutOptimizer>,
                       OptimizerDelete<ShortcutOptimizer>);
+    registerOptimizer("RandomShortcut", 
+                      OptimizerCreate<RandomShortcutOptimizer>,
+                      OptimizerDelete<RandomShortcutOptimizer>);
 		    
     allCharacterPositions_ = new OpenHRP::CharacterPositionSequence;
 

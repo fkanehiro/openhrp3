@@ -9,6 +9,7 @@ set(sources
   TGT.cpp
   RoadmapNode.cpp
   ShortcutOptimizer.cpp 
+  RandomShortcutOptimizer.cpp 
   OmniWheel.cpp
   Configuration.cpp
   )
@@ -24,6 +25,7 @@ set(headers
   TGT.h
   RoadmapNode.h
   ShortcutOptimizer.h 
+  RandomShortcutOptimizer.h 
   OmniWheel.h
   Configuration.h
   Optimizer.h
