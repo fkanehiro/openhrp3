@@ -2,6 +2,10 @@
 #include "PathPlanner.h"
 #include "RandomShortcutOptimizer.h"
 
+#ifdef WIN32
+#define random() rand()
+#endif
+
 using namespace PathEngine;
 
 std::vector<Configuration> RandomShortcutOptimizer::optimize(const std::vector<Configuration> &path)
