@@ -238,7 +238,7 @@ void ModelLoaderHelper::createGeometry(ODE_Link* link, const LinkInfo& linkInfo)
              M[8],M[9],M[10];
         if(isOrthogonalMatrix(R0)){
             switch(shapeInfo.primitiveType){
-                case OpenHRP::ShapePrimitiveType::SP_BOX :{
+                case OpenHRP::SP_BOX :{
                         dReal x = shapeInfo.primitiveParameters[0];
                         dReal y = shapeInfo.primitiveParameters[1];
                         dReal z = shapeInfo.primitiveParameters[2];
@@ -249,7 +249,7 @@ void ModelLoaderHelper::createGeometry(ODE_Link* link, const LinkInfo& linkInfo)
                         numofGeom++;
                     }
                     break;
-                case OpenHRP::ShapePrimitiveType::SP_CYLINDER :{
+                case OpenHRP::SP_CYLINDER :{
                         dReal radius = shapeInfo.primitiveParameters[0];
                         dReal height = shapeInfo.primitiveParameters[1];
                         link->geomIds.push_back(dCreateCylinder( spaceId, radius, height));
@@ -259,7 +259,7 @@ void ModelLoaderHelper::createGeometry(ODE_Link* link, const LinkInfo& linkInfo)
                         numofGeom++;
                                                            }
                     break;
-                case OpenHRP::ShapePrimitiveType::SP_SPHERE :{
+                case OpenHRP::SP_SPHERE :{
                         dReal radius = shapeInfo.primitiveParameters[0];
                         link->geomIds.push_back(dCreateSphere( spaceId, radius ));
                         dGeomSetBody(link->geomIds.at(numofGeom), link->bodyId);
@@ -308,9 +308,9 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ODE_Link* link, const LinkIn
              M[4],M[5],M[6],
              M[8],M[9],M[10];
         if(isOrthogonalMatrix(R0) && 
-            (shapeInfo.primitiveType == OpenHRP::ShapePrimitiveType::SP_BOX ||
-            shapeInfo.primitiveType == OpenHRP::ShapePrimitiveType::SP_CYLINDER ||
-            shapeInfo.primitiveType == OpenHRP::ShapePrimitiveType::SP_SPHERE ) )
+            (shapeInfo.primitiveType == OpenHRP::SP_BOX ||
+            shapeInfo.primitiveType == OpenHRP::SP_CYLINDER ||
+            shapeInfo.primitiveType == OpenHRP::SP_SPHERE ) )
             continue;
 
         Matrix44 T;
