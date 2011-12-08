@@ -1,0 +1,32 @@
+﻿本ソフトウェア(OpenHRP3)は、オープンソースライセンス 
+Eclipse Public License v1.0 により配布し、あなたがライセンス条項に従うことに
+同意する場合のみ利用することが可能です。あなたが本ソフトウェアを取得、使用、
+あるいは配布した時点でライセンス条項に同意したものとみなします。
+
+Eclipse Public License v1.0 の詳細については、Eclipse Foundation の
+Web サイトをご参照下さい。
+http://www.eclipse.org/legal/epl-v10.html
+(EPLに関するFAQのURLは http://www.eclipse.org/legal/eplfaq.php にございます。)
+
+本ソフトウェアの派生物のバイナリを販売したい場合等、その他の利用法を
+希望される場合は（独）産業技術総合研究所にご相談下さい。
+
+本パッケージは以下のソフトウェアも含みます。これらのソフトウェアの使用に
+ついては、それぞれのライセンスに従う必要があります。
+(これらのライセンスはOpenHRP3本体に適用される上記EPLとは矛盾せずに
+ 利用することが可能です。）
+
+- OpenRTM-aist 1.0.0
+(InstallDir)/License/OpenRTM-aist_COPYRIGHT にライセンス文書を格納してあります。
+
+- omniORB 4.1.2
+(InstallDir)/License/omniORB_COPYING にライセンス文書を格納してあります。
+
+- Boost 1.35.0
+(InstallDir)/License/Boost_LICENSE_1_0.txt にライセンス文書を格納してあります。
+
+- clapack 3.1.1
+(InstallDir)/License/clapack_COPYING にライセンス文書を格納してあります。
+
+- tvmet 1.7.2
+(InstallDir)/License/tvmet_LICENSE にライセンス文書を格納してあります。

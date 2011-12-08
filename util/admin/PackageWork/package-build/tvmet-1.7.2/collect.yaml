@@ -1,0 +1,9 @@
+# OpenHRP以外のリリース物件のファイル定義
+- name: tvmet-1.7.2
+  feature: true
+  description: tvmet-1.7.2
+  path: C:/Program Files/tvmet-1.7.2
+  files:
+    ./:
+      - include/
+      - LICENSE

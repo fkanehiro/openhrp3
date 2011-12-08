@@ -1,0 +1,33 @@
+This software(OpenHRP3) is distributed under "Eclipse Public License" (EPL)
+ v1.0, and you are allowed to use OpenHRP3, only if you agree with these
+license conditions. Further, it is considered that you agreed with our
+license conditions whenever you download, use or distribute this software.
+
+Please visit Eclipse Foundation website for more details abour
+"Eclipse Public License" v1.0.
+http://www.eclipse.org/legal/epl-v10.html
+(FAQ of EPL can be viewed at, http://www.eclipse.org/legal/eplfaq.php)
+
+In case any other uses of this software, such as building a derivative 
+binary package and distributing for proprietary use, please consult National
+Institute of Advanced Industrial Science and Technology (AIST) in advance. 
+
+Moreover this package includes following softwares. You are requested to
+agree with each of those software licenses, before you proceed.
+(These licenses are available to use, without having conflicts with the
+ above-mentioned EPL that applied to the source package of OpenHRP3.)
+
+- OpenRTM-aist 1.0.0
+  License text is available at (InstallDir)/License/OpenRTM-aist_COPYRIGHT
+
+- omniORB 4.1.2
+  License text is available at (InstallDir)/License/omniORB_COPYING
+
+- Boost 1.35.0
+  License text is available at (InstallDir)/License/Boost_LICENSE_1_0.txt
+
+- clapack 3.1.1
+  License text is available at (InstallDir)/License/clapack_COPYING
+
+- tvmet 1.7.2
+  License text is available at (InstallDir)/License/tvmet_LICENSE

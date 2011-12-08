@@ -1,0 +1,25 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='OpenHRP-SDK 3.1.0-Release'
+           Id='B9741C26-A1D9-48fd-BAD9-14927D2BF03E'
+           UpgradeCode='E0A5FA57-255E-4dad-B61C-CEBD8E431CE6'
+           Language='1041' Codepage='932'
+           Version='3.1.06' Manufacturer='AIST'>
+    <Package Id='*' Keywords='Installer'
+             Description='OpenHRP-SDK 3.1.0-Release Installer'
+             Comments='This installer database contains the logic and data required to install OpenHRP-SDK 3.1.0-Release.'
+             Manufacturer='AIST' InstallerVersion='100'
+             Languages='1041' Compressed='yes' SummaryCodepage='932' />
+
+    <Media Id='1' Cabinet='OpenHRPSDK.cab' EmbedCab='yes' />
+<!-- %%Directory%% -->
+<!-- %%Component%% -->
+<!-- %%Feature%% -->
+    <UIRef Id="WixUI_FeatureTree" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <Icon Id="OpenHRP_ICON" SourceFile="grxrobot.ico" />
+    <WixVariable Id="WixUILicenseRtf" Value="license-ja.rtf" />
+    <Property Id="ARPPRODUCTICON" Value="OpenHRP_ICON" />
+  </Product>
+</Wix>
