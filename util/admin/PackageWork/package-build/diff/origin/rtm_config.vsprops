@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="shift_jis"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="OpenRTM-aist-1.0"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="$(omni_includes);$(rtm_includes)"
+		PreprocessorDefinitions="RTC_CORBA_CXXMAPPING11;_WIN32_WINNT=0x0500"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="$(omni_libdir);$(rtm_libdir)"
+	/>
+	<UserMacro
+		Name="omni_root"
+		Value="%OMNI_ROOT%"
+	/>
+	<UserMacro
+		Name="omni_dllver"
+		Value="414"
+	/>
+	<UserMacro
+		Name="omnithread_dllver"
+		Value="34"
+	/>
+	<UserMacro
+		Name="rtm_root"
+		Value="%RTM_ROOT%"
+	/>
+	<UserMacro
+		Name="rtm_dllver"
+		Value="100"
+	/>
+	<UserMacro
+		Name="rtm_version"
+		Value="1.0.0"
+	/>
+	<UserMacro
+		Name="coil_dllver"
+		Value=""
+	/>
+	<!-- omniORB macros -->
+	<UserMacro
+		Name="omni_includes"
+		Value="&quot;$(omni_root)\include&quot;"
+	/>
+	<UserMacro
+		Name="omni_libdir"
+		Value="&quot;$(omni_root)\lib\x86_win32&quot;"
+	/>
+	<UserMacro
+		Name="omni_bin"
+		Value="&quot;$(omni_root)\bin\x86_win32&quot;"
+	/>
+	<UserMacro
+		Name="omni_lib"
+		Value="omniORB$(omni_dllver)_rt.lib omniDynamic$(omni_dllver)_rt.lib omnithread$(omnithread_dllver)_rt.lib"
+	/>
+	<UserMacro
+		Name="omni_libd"
+		Value="omniORB$(omni_dllver)_rtd.lib omniDynamic$(omni_dllver)_rtd.lib omnithread$(omnithread_dllver)_rtd.lib"
+	/>
+	<!-- OpenRTM-aist macros -->
+	<UserMacro
+		Name="rtm_includes"
+		Value="&quot;$(rtm_root)&quot;;&quot;$(rtm_root)\rtm\idl&quot;"
+	/>
+	<UserMacro
+		Name="rtm_libdir"
+		Value="&quot;$(rtm_root)\bin&quot;"
+	/>
+	<UserMacro
+		Name="rtm_bin"
+		Value="&quot;$(rtm_root)\bin&quot;;&quot;$(rtm_root)\build&quot;"
+	/>
+	<UserMacro
+		Name="rtm_path"
+		Value="$(rtm_bin);$(omni_bin)"
+	/>
+	<UserMacro
+		Name="rtm_libd"
+		Value="RTC$(rtm_dllver)d.lib $(coil_libd) $(omni_libd) advapi32.lib ws2_32.lib mswsock.lib $(user_libd)"
+	/>
+	<UserMacro
+		Name="rtm_lib"
+		Value="RTC$(rtm_dllver).lib $(coil_lib) $(omni_lib) advapi32.lib ws2_32.lib mswsock.lib $(user_lib)"
+	/>
+	<UserMacro
+		Name="rtm_idlc"
+		Value="omniidl"
+	/>
+	<UserMacro
+		Name="rtm_idlflags"
+		Value="-bcxx -Wba -nf"
+	/>
+	<!-- coil macros -->
+	<UserMacro
+		Name="coil_lib"
+		Value="coil$(coil_dllver).lib"
+	/>
+	<UserMacro
+		Name="coil_libd"
+		Value="coil$(coil_dllver)d.lib"
+	/>
+
+</VisualStudioPropertySheet>

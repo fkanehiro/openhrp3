@@ -1,0 +1,23 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='tvmet-1.7.2'
+           Id='{11004503-8BEE-40fc-877B-778CF38C450D}'
+           UpgradeCode='{219C61E5-B956-4f8b-8D33-11CC1A9724EC}'
+           Language='1033' Codepage='1252'
+           Version='1.7.2' Manufacturer='AIST'>
+    <Package Id='*' Keywords='Installer'
+             Description='tvmet-1.7.2 Installer'
+             Comments='tvmet-1.7.2 Installer'
+             Manufacturer='AIST' InstallerVersion='100'
+             Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+    <Media Id='1' Cabinet='tvmet.cab' EmbedCab='yes' />
+<!-- %%Directory%% -->
+<!-- %%Component%% -->
+<!-- %%Feature%% -->
+    <UIRef Id="WixUI_InstallDir" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
+  </Product>
+</Wix>

@@ -1,0 +1,115 @@
+# OpenHRP以外のリリース物件のファイル定義
+- name: OpenRTM
+  path: C:/Program Files/OpenRTM-aist/1.0  # ソースディレクトリのパス
+  files: 
+    bin:                 # インストール先のディレクトリ
+      - bin/coil.dll     # 収集するファイルorディレクトリ(pathからの相対パス)
+      - bin/coild.dll
+      - bin/RTC100.dll
+      - bin/RTC100d.dll
+      - bin/rtcd.exe
+      - bin/rtcprof.exe
+    include:
+      - coil/
+      - rtm/
+    lib:
+      - bin/coil.lib
+      - bin/coild.lib
+      - bin/RTC100.lib
+      - bin/RTC100d.lib
+    utils/rtc-template:
+      - utils/rtc-template/cxx_gen.py
+      - utils/rtc-template/cxx_svc_impl.py
+      - utils/rtc-template/gen_base.py
+      - utils/rtc-template/profile_gen.py
+      - utils/rtc-template/python_gen.py
+      - utils/rtc-template/README_gen.py
+      - utils/rtc-template/rtc-template.py
+      - utils/rtc-template/slntool.py
+      - utils/rtc-template/uuid.py
+      - utils/rtc-template/vcprojtool.py
+      - utils/rtc-template/yat.py
+- name: omniORB
+  path: C:/Program Files/omniORB/4.1.4
+  files:
+    bin:
+      - bin/x86_win32/omniNames.exe
+      - bin/x86_win32/omniDynamic414_vc9_rt.dll
+      - bin/x86_win32/omniDynamic414_vc9_rtd.dll
+      - bin/x86_win32/omniORB414_vc9_rt.dll
+      - bin/x86_win32/omniORB414_vc9_rtd.dll
+      - bin/x86_win32/omnithread34_vc9_rt.dll
+      - bin/x86_win32/omnithread34_vc9_rtd.dll
+    include:
+      - include/omniconfig.h
+      - include/omnithread.h
+      - include/omniORB4/
+      - include/omnithread/
+    lib:
+      - lib/x86_win32/omniDynamic414_rt.lib
+      - lib/x86_win32/omniDynamic414_rtd.lib
+      - lib/x86_win32/omniORB414_rt.lib
+      - lib/x86_win32/omniORB414_rtd.lib
+      - lib/x86_win32/omnithread34_rt.lib
+      - lib/x86_win32/omnithread34_rtd.lib
+- name: License
+  path: ./
+  files:
+    ./:
+      - License/epl-v10.html
+      - License/license-en.txt
+      - License/license-ja.txt
+    License/:
+      - License/clapack_COPYING
+      - License/omniORB_COPYING
+      - License/OpenRTM-aist_COPYRIGHT
+      - License/tvmet_LICENSE
+- name: GrxUI
+  path: ../pack_src
+  files:
+    ./:
+      - GrxUI/
+- name: Boost-1.35.0
+  feature: true
+  description: Boost-1.35.0
+  path: C:/Program Files/Boost-1.35.0
+  files:
+    include/:
+      - boost/
+    ./:
+      - lib/
+- name: CLAPACK
+  feature: true
+  description: CLAPACK 3.1.1
+  path: C:/Program Files/CLAPACK-3.1.1
+  files:
+    include/:
+      - INCLUDE/blaswrap.h
+      - INCLUDE/clapack.h
+      - INCLUDE/f2c.h
+    lib/:
+      - LIB/Win32/BLAS.lib
+      - LIB/Win32/BLASd.lib
+      - LIB/Win32/BLASd_nowrap.lib
+      - LIB/Win32/BLAS_nowrap.lib
+      - LIB/Win32/cblaswrap.lib
+      - LIB/Win32/cblaswrapd.lib
+      - LIB/Win32/clapack.lib
+      - LIB/Win32/clapackd.lib
+      - LIB/Win32/clapackd_nowrap.lib
+      - LIB/Win32/clapack_nowrap.lib
+      - LIB/Win32/f77blaswrap.lib
+      - LIB/Win32/f77blaswrapd.lib
+      - LIB/Win32/libf2c.lib
+      - LIB/Win32/libf2cd.lib
+      - LIB/Win32/tmglib.lib
+      - LIB/Win32/tmglibd.lib
+      - LIB/Win32/tmglibd_nowrap.lib
+      - LIB/Win32/tmglib_nowrap.lib
+- name: tvmet-1.7.2
+  feature: true
+  description: tvmet-1.7.2
+  path: C:/Program Files/tvmet-1.7.2
+  files:
+    include/:
+      - include/tvmet

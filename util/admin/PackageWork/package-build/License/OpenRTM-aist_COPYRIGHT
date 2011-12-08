@@ -1,0 +1,83 @@
+
+Copyright (C) 2003-2010
+     Noriaki Ando and the OpenRTM-aist Project team
+     Intelligent Systems Research Institute,
+     National Institute of Advanced Industrial Science and Technology (AIST),
+     Tsukuba, Japan, All rights reserved.
+
+
+NOTICE
+------
+THIS IS A LEGAL CONTRACT BETWEEN YOU AND THE COPYRIGHT HOLDER.  YOU
+SHOULD CAREFULLY READ AND ACCEPT ALL THE TERMS AND CONDITIONS SET
+FORTH IN THIS DOCUMENT BEFORE USING ALL OR ANY PORTION OF THIS
+SOFTWARE. BY USING THE SOFTWARE, YOU ARE AGREEING TO BE BOUND BY ALL
+OF THE TERMS AND CONDITION OF THIS LICENSE AND ALSO AGREE THAT THIS
+AGREEMENT IS ENFORCEABLE LIKE ANY WRITTEN NEGOTIATED AGREEMENT SIGNED
+BY YOU.
+
+
+LICENSE
+-------
+The OpenRTM-aist is the dual-licensed open source software. You can
+use, copy, distribute and/or modify this library under the terms and
+conditions of either of the licenses below.
+
+1) EPL (Eclipse Public License - v 1.0)
+See
+http://www.eclipse.org/legal/epl-v10.html
+http://www.eclipse.org/org/documents/epl-v10.php
+or
+COPYING.LIB.
+
+2) Individual Licnese
+You can purchase license from AIST and/or AIST's TLO to copy,
+distribute, modify and/or sublicense the library without any
+limitation in the terms of LGPL. The individual license should be
+concluded with a negotiated agreement between you and AIST and/or AIST
+TLO. To conclude individual license, contact the person responsible of
+AIST.
+
+
+SUBMISSIONS
+-----------
+The OpenRTM-aist is maintained by the National Institute of Advanced
+Industrial Science and Technology (AIST), Tsukuba, Japan for the
+development of open-source software as part of the open-source
+software community.  By submitting comments, suggestions, code, code
+snippets, techniques (including that of usage) and algorithms
+(collectively ``Submissions''), submitters acknowledge that they have
+the right to do so, that any such Submissions are given freely and
+unreservedly, and that they waive any claims to copyright or
+ownership. In addition, submitters acknowledge that any such
+Submission might become part of the copyright maintained on the
+overall body of code that comprises the OpenRTM-aist. By making a
+Submission, submitter agree to these terms. Moreover, submitters
+acknowledge that the incorporation or modification of such Submissions
+is entirely at the discretion of the moderators of the open-source
+software projects or their designees.
+
+
+DISCLAIMER
+----------
+THIS SOFTWARE IS PROVIDED BY AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL AUTHOR OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+CONTACT INFORMATION
+-------------------
+Noriaki Ando <n-ando@aist.go.jp>
+National Institute of Advanced Industrial Science and Technology
+Intelligent Systems Research Institute
+Tsukuba Central 2, 1-1-1 Umezono, Tsukuba, Ibaraki 305-8568 JAPAN. 
+TEL: +81-29-861-5981 FAX: +81-29-861-6631
+
