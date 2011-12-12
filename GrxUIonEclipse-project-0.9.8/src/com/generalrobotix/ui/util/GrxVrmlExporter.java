@@ -201,7 +201,25 @@ public class GrxVrmlExporter {
 	        writer.write("    children    IS children\n");                             
 	        writer.write("  }\n");                                                          
 	        writer.write("}\n");                                                            
-	        writer.write("\n");                         
+	        writer.write("\n");            
+	        writer.write("PROTO RangeSensor [\n");                                              
+	        writer.write("  exposedField SFVec3f    translation     0 0 0\n");              
+	        writer.write("  exposedField SFRotation rotation        0 0 1 0\n");            
+	        writer.write("  exposedField MFNode     children        [ ]\n");              
+	        writer.write("  exposedField SFInt32    sensorId        -1\n");   
+	        writer.write("  exposedField SFFloat    scanAngle       3.14159 #[rad]\n");
+	        writer.write("  exposedField SFFloat    scanStep        0.1     #[rad]\n");
+	        writer.write("  exposedField SFFloat    scanRate        10      #[Hz]\n");
+	        writer.write("  exposedField SFFloat    maxDistance	    10\n");
+	        writer.write("]\n");                                                            
+	        writer.write("{\n");                                                            
+	        writer.write("  Transform {\n");                                                
+	        writer.write("    translation IS translation\n");                               
+	        writer.write("    rotation    IS rotation\n");                                  
+	        writer.write("    children    IS children\n");                             
+	        writer.write("  }\n");                                                          
+	        writer.write("}\n");                                                            
+	        writer.write("\n");                    
 	        writer.write("PROTO Plane [\n");
 	        writer.write("  exposedField SFVec3f size 10 10 0\n");
 	        writer.write("]\n");
@@ -224,8 +242,7 @@ public class GrxVrmlExporter {
 	        writer.write("  position    3 0 0.835\n");                                      
 	        writer.write("  orientation 0.5770 0.5775 0.5775 2.0935\n");                    
 	        writer.write("}\n");                                                            
-	        writer.write("\n");                                                             
-	        
+	        writer.write("\n");   
 	        writer.write("DEF "+model.getName()+" Humanoid{\n");
 	        writer.write("  humanoidBody [\n");
 	        Vector<GrxLinkItem> links = exportLink(writer, model.rootLink(), "    ", exportDir, model.getURL(false));
@@ -376,6 +393,8 @@ public class GrxVrmlExporter {
 				nodeType = "AccelerationSensor";
 			}else if(sensor.type_.equals("Vision")){
 				nodeType = "VisionSensor";
+			}else if(sensor.type_.equals("Range")){
+				nodeType = "RangeSensor";
 			}
 			writer.write(indent+"DEF "+sensor.getName()+" "+nodeType+" {\n");
 			writer.write(indent+"  sensorId "+sensor.id_+"\n");
@@ -429,6 +448,23 @@ public class GrxVrmlExporter {
 				String max = sensor.getProperty("maxAcceleration");
 				if (!valueEquals(max, "-1.0 -1.0 -1.0 ")){
 					writer.write(indent+"  maxAcceleration "+max+"\n");
+				}
+			}else if(nodeType.equals("RangeSensor")){
+	        	String angle = sensor.getProperty("scanAngle");
+				if (!valueEquals(angle, "3.14159")){
+					writer.write(indent+"  scanAngle "+angle+"\n");
+				}
+				String step = sensor.getProperty("scanStep");
+				if (!valueEquals(step, "0.1")){
+					writer.write(indent+"  scanStep "+step+"\n");
+				}
+				String rate = sensor.getProperty("scanRate");
+				if (!valueEquals(rate, "10")){
+					writer.write(indent+"  scanRate "+rate+"\n");
+				}
+				String distance = sensor.getProperty("maxDistance");
+				if (!valueEquals(distance, "10")){
+					writer.write(indent+"  maxDistance "+distance+"\n");
 				}
 			}
 			if (sensor.children_.size() > 0){
