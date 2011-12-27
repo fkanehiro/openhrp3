@@ -98,7 +98,7 @@ elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION100} OR ${OPENRTM_VERSION} S
   if(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION100} )
     set(rtm_stub_jar OpenRTM-aist-1.0.0.jar)
   elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION101} )
-    set(rtm_stub_jar OpenRTM-aist-1.0.1.jar)
+    set(rtm_stub_jar OpenRTM-aist-1.0.0.jar)
   elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION110})
     set(rtm_stub_jar OpenRTM-aist-1.1.0.jar)
   endif()
