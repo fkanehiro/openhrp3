@@ -1,0 +1,64 @@
+// -*- IDL -*-
+/*!
+ * @file OpenRTM.idl
+ * @brief OpenRTM interface definition
+ * @date $Date: 2007-09-21 09:19:33 $
+ * @author Noriaki Ando <n-ando@aist.go.jp>
+ *
+ * Copyright (C) 2007
+ *     Task-intelligence Research Group,
+ *     Intelligent Systems Research Institute,
+ *     National Institute of
+ *         Advanced Industrial Science and Technology (AIST), Japan
+ *     All rights reserved.
+ *
+ * $Id: OpenRTM.idl 1338 2009-05-18 05:58:25Z n-ando $
+ *
+ */
+
+#include "RTC.idl"
+
+#pragma prefix "openrtm.aist.go.jp"
+
+module OpenRTM
+{
+
+  interface DataFlowComponent
+    : RTC::RTObject, RTC::DataFlowComponent
+  {
+  };
+
+//  interface FiniteStateMachineComponent
+//    : RTC::RTObject, RTC::FsmParticipant
+//  {
+//  };
+//
+//  interface DataFlowFiniteStateMachineComponent
+//    : RTC::RTObject, RTC::DataFlowComponent, RTC::FsmParticipant
+//  {
+//  };
+//
+//  interface DataFlowMultiModeComponent
+//    : RTC::RTObject, RTC::DataFlowComponent, RTC::MultiModeObject
+//  {
+//  };
+//
+//  interface FiniteStateMachineMultiModeComponent
+//    : RTC::RTObject, RTC::FsmParticipant, RTC::MultiModeObject
+//  {
+//  };
+//
+//  interface DataFlowFiniteStateMachineMultiModeComponent
+//    : RTC::RTObject, RTC::DataFlowComponent,
+//    RTC::FsmParticipant, RTC::MultiModeObject
+//  {
+//  };
+
+
+  interface ExtTrigExecutionContextService
+    : RTC::ExecutionContextService
+  {
+    void tick();
+  };
+
+};

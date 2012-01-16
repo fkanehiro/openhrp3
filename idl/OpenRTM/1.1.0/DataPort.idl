@@ -1,0 +1,48 @@
+// -*- IDL -*-
+/*!
+ * @file DataPort.idl
+ * @brief DataPort interface definition
+ * @date $Date: 2007-01-09 15:40:14 $
+ * @author Noriaki Ando <n-ando@aist.go.jp>
+ *
+ * Copyright (C) 2006
+ *     Noriaki Ando
+ *     Task-intelligence Research Group,
+ *     Intelligent Systems Research Institute,
+ *     National Institute of
+ *         Advanced Industrial Science and Technology (AIST), Japan
+ *
+ *     All rights reserved.
+ *
+ * $Id: DataPort.idl 1597 2009-12-22 02:26:17Z n-ando $
+ *
+ */
+
+#ifndef DataInPort_idl
+#define DataInPort_idl
+
+module OpenRTM
+{
+  enum PortStatus
+  {
+    PORT_OK,
+    PORT_ERROR,
+    BUFFER_FULL,
+    BUFFER_EMPTY,
+    BUFFER_TIMEOUT,
+    UNKNOWN_ERROR
+  };
+
+  typedef sequence<octet> CdrData;
+
+  interface InPortCdr
+  {
+    PortStatus put(in CdrData data);
+  };
+
+  interface OutPortCdr
+  {
+    PortStatus get(out CdrData data);
+  };
+};
+#endif
