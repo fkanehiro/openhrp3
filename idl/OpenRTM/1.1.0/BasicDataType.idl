@@ -1,0 +1,189 @@
+// -*- IDL -*-
+/*!
+ * @file DataType.idl
+ * @brief Basic Data Type definition
+ * @date $Date: 2007-01-09 15:36:29 $
+ * @author Noriaki Ando <n-ando@aist.go.jp>
+ *
+ * Copyright (C) 2003-2006
+ *     Task-intelligence Research Group,
+ *     Intelligent Systems Research Institute,
+ *     National Institute of
+ *         Advanced Industrial Science and Technology (AIST), Japan
+ *     All rights reserved.
+ *
+ * $Id: BasicDataType.idl 1580 2009-12-07 08:54:10Z kurihara $
+ *
+ */
+
+#ifndef BasicDataType_idl
+#define BasicDataType_idl
+
+module RTC {
+  //------------------------------------------------------------
+  // Basic data type definition
+  //------------------------------------------------------------
+  struct Time
+  {
+        unsigned long sec;    // sec
+        unsigned long nsec;   // nano sec
+  };
+
+  struct TimedState
+  {
+	Time tm;
+	short data;
+  };
+
+  struct TimedShort
+  {
+	Time tm;
+	short data;
+  };
+
+  struct TimedLong
+  {
+	Time tm;
+	long data;
+  };
+
+  struct TimedUShort
+  {
+	Time tm;
+	unsigned short data;
+  };
+
+  struct TimedULong
+  {
+	Time tm;
+	unsigned long data;
+  };
+
+  struct TimedFloat
+  {
+	Time tm;
+	float data;
+  };
+
+  struct TimedDouble
+  {
+	Time tm;
+	double data;
+  };
+
+  struct TimedChar
+  {
+	Time tm;
+	char data;
+  };
+
+  struct TimedWChar
+  {
+	Time tm;
+	wchar data;
+  };
+
+  struct TimedBoolean
+  {
+	Time tm;
+	boolean data;
+  };
+
+  struct TimedOctet
+  {
+	Time tm;
+	octet data;
+  };
+
+  struct TimedString
+  {
+	Time tm;
+	string data;
+  };
+
+
+  struct TimedWString
+  {
+	Time tm;
+	wstring data;
+  };
+
+
+  /*!
+   * Sequence data type
+   */
+  struct TimedShortSeq
+  {
+	Time tm;
+	sequence<short> data;
+  };
+
+  struct TimedLongSeq
+  {
+	Time tm;
+	sequence<long> data;
+  };
+
+  struct TimedUShortSeq
+  {
+	Time tm;
+	sequence<unsigned short> data;
+  };
+
+  struct TimedULongSeq
+  {
+	Time tm;
+	sequence<unsigned long> data;
+  };
+
+  struct TimedFloatSeq
+  {
+	Time tm;
+	sequence<float> data;
+  };
+
+  struct TimedDoubleSeq
+  {
+	Time tm;
+	sequence<double> data;
+  };
+
+  struct TimedCharSeq
+  {
+	Time tm;
+	sequence<char> data;
+  };
+
+  struct TimedWCharSeq
+  {
+	Time tm;
+	sequence<wchar> data;
+  };
+
+  struct TimedBooleanSeq
+  {
+	Time tm;
+	sequence<boolean> data;
+  };
+
+  struct TimedOctetSeq
+  {
+	Time tm;
+	sequence<octet> data;
+  };
+
+  struct TimedStringSeq
+  {
+	Time tm;
+	sequence<string> data;
+  };
+  
+  struct TimedWStringSeq
+  {
+	Time tm;
+	sequence<wstring> data;
+  };
+  
+};
+
+#endif // end of BasicDataType_idl
