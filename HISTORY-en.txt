@@ -1,5 +1,24 @@
 OpenHRP3 Updates History (Release Notes)
 
+Ver.3.1.2
+=========================
+ * OpenHRP3 now officially supports Ubuntu 11.04.
+
+ * With the version upgrade of OpenRTM, we supports OpenRTM-aist-1.0.2,OpenRTM-aist-1.1.0. 
+
+ * The fault RengeSensor information is not saved at a model file was corrected. 
+
+ * The fault of the display of RengeSensor was corrected. 
+
+ * The problem of the Extrusion node in ModelLoader was solved. 
+
+ * New functions were added to the ViewSimulator server. 
+
+ * The starting point and the terminal point of an animation can be specified now. 
+
+ * resolved some miscellaneous problems in OpenHRP.
+
+
 Ver.3.1.1 (09-05-2011)
 =========================
  * GraphView now supports displaying the position of a model and the posture.
