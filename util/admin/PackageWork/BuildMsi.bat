@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set VERSION_STRING=3.1.0-Rel-v2
+set VERSION_STRING=3.1.2
 
 rem ディレクトリ関連
 set SRC_DIR=src
@@ -19,10 +19,11 @@ set SVN_PASSWORD=
 set SVN_REVISION=HEAD
 
 rem VC関連
-set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/VCExpress.exe
+rem set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/VCExpress.exe
+set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/devenv.exe
 
 rem ECLIPSE LAUNCHER
-set ECLIPSE_LAUNCHER=C:\eclipse\plugins\org.eclipse.equinox.launcher_1.0.101.R34x_v20081125.jar
+set ECLIPSE_LAUNCHER="C:\Program Files\eclipse3.4\plugins\org.eclipse.equinox.launcher_1.0.101.R34x_v20081125.jar"
 
 rem Eclipse製品関連(基本的には設定不要)
 set ECLIPSE_ANT_XML=product.xml
