@@ -582,7 +582,7 @@ bool PathPlanner::checkCollision (const Configuration &pos) {
 
     // 干渉チェック
     tick_t t1 = get_tick();
-    bool ret = checkIntersection();
+    bool ret = checkCollision();
     countCollisionCheck_++; 
     tickCollisionCheck_ += get_tick() - t1;
 
@@ -618,7 +618,7 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
     }
 }
 
-bool PathPlanner::checkIntersection()
+bool PathPlanner::checkCollision()
 {
     tick_t t1 = get_tick();
 

@@ -150,7 +150,6 @@ namespace PathEngine {
         OpenHRP::CollisionDetector_var collisionDetector_;
         OpenHRP::CharacterPositionSequence_var allCharacterPositions_;
 
-        bool checkIntersection();
         void _setupCharacterData();
         void _updateCharacterPositions();
 
@@ -362,6 +361,11 @@ namespace PathEngine {
 
         Algorithm* getAlgorithm() {return algorithm_;}
 
+        /**
+         * @brief 干渉検出を行う
+         * @return 干渉している場合true, それ以外false
+         */
+        bool checkCollision();
         /**
          * @brief 干渉検出を行う
          * @param pos ロボットの位置
