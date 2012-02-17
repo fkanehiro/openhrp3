@@ -7,14 +7,13 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+#include "hrpUtil/TimeMeasure.h"
 
 #include "exportdef.h"
 #include "Algorithm.h"
 #include "Configuration.h"
 #include "Mobility.h"
 #include "Optimizer.h"
-
-#include "TimeUtil.h"
 
 #include "hrpCollision/ColdetModelPair.h"
 #undef random
@@ -139,9 +138,7 @@ namespace PathEngine {
         /**
          * @brief 干渉チェックに使用したクロック数
          */
-        tick_t tickCollisionCheck_;
-
-        tick_t tickForwardKinematics_;
+        TimeMeasure timeCollisionCheck_, timeForwardKinematics_;
 
         CORBA::ORB_var orb_;
 
@@ -397,7 +394,7 @@ namespace PathEngine {
          * @brief 干渉チェックを呼び出した回数を取得する
          * @return 干渉チェックを呼び出した回数
          */
-        unsigned int countCollisionCheck() const { return countCollisionCheck_;}
+        unsigned int countCollisionCheck() const { return timeCollisionCheck_.numCalls();}
 
         /**
          * @brief 干渉チェックに使用した時間[s]を取得する
