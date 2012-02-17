@@ -259,10 +259,7 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
     }
 
     world_.clearBodies();
-    countCollisionCheck_ = 0;
-    tickCollisionCheck_ = 0;
-    tickForwardKinematics_ = 0;
-	checkPairs_.clear();
+    checkPairs_.clear();
 
 }
 
@@ -581,10 +578,7 @@ bool PathPlanner::checkCollision (const Configuration &pos) {
     if (!setConfiguration(pos)) return true;
 
     // 干渉チェック
-    tick_t t1 = get_tick();
     bool ret = checkCollision();
-    countCollisionCheck_++; 
-    tickCollisionCheck_ += get_tick() - t1;
 
     if (debug_) {
         // 結果を得る
@@ -620,7 +614,8 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
 
 bool PathPlanner::checkCollision()
 {
-    tick_t t1 = get_tick();
+    timeCollisionCheck_.begin();
+    timeForwardKinematics_.begin();
 
     collidingPair_ = NULL;
 
@@ -633,16 +628,20 @@ bool PathPlanner::checkCollision()
     }else{
         _updateCharacterPositions();
     }
-    tickForwardKinematics_ += get_tick() - t1; 
+    timeForwardKinematics_.end();
     if(USE_INTERNAL_COLLISION_DETECTOR){
         for (unsigned int i=0; i<checkPairs_.size(); i++){
             if (checkPairs_[i].tolerance() == 0){
                 if (checkPairs_[i].checkCollision()){
                     collidingPair_ = &checkPairs_[i];
+                    timeCollisionCheck_.end();
                     return true;
                 }
             } else{
-                if (checkPairs_[i].detectIntersection()) return true;
+                if (checkPairs_[i].detectIntersection()) {
+                    timeCollisionCheck_.end();
+                    return true;
+                }
             } 
         } 
         if (pointCloud_.size() > 0){
@@ -650,15 +649,18 @@ bool PathPlanner::checkCollision()
                 Link *l = model_->link(i);
                 if (l->coldetModel->checkCollisionWithPointCloud(pointCloud_,
                                                                  radius_)){
+                    timeCollisionCheck_.end();
                     return true;
                 }
             }
         }
+        timeCollisionCheck_.end();
         return false;
     }else{
         OpenHRP::LinkPairSequence_var pairs = new OpenHRP::LinkPairSequence;
         collisionDetector_->queryIntersectionForDefinedPairs(false, allCharacterPositions_.in(), pairs);
         
+        timeCollisionCheck_.end();
         return pairs->length() > 0;
     }
 }
@@ -837,12 +839,12 @@ void PathPlanner::_updateCharacterPositions()
 
 double PathPlanner::timeCollisionCheck() const
 {
-    return tickCollisionCheck_/get_cpu_frequency();
+    return timeCollisionCheck_.totalTime();
 }
 
 double PathPlanner::timeForwardKinematics() const
 {
-    return tickForwardKinematics_/get_cpu_frequency();
+    return timeForwardKinematics_.totalTime();
 }
 
 void PathPlanner::setApplyConfigFunc(applyConfigFunc i_func)
