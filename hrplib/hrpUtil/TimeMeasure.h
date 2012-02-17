@@ -20,12 +20,12 @@ class TimeMeasure
     struct timeval tv;
     double time_;
     double totalTime_;
-    int numCalls;
+    int numCalls_;
     
 public:
     TimeMeasure() {
 	totalTime_ = 0.0;
-	numCalls = 0;
+	numCalls_ = 0;
     }
 
     void begin() {
@@ -38,13 +38,13 @@ public:
 	double endTime = tv.tv_sec + (double)tv.tv_usec * 1.0e-6;
 	time_ = endTime - beginTime;
 	totalTime_ += time_;
-	numCalls++;
+	numCalls_++;
     }
 
-    double time() { return time_; }
-    double totalTime() { return totalTime_; }
-    double avarageTime() { return totalTime_ / numCalls; }
-
+    double time() const { return time_; }
+    double totalTime() const { return totalTime_; }
+    double avarageTime() const { return totalTime_ / numCalls_; }
+    int numCalls() const { return numCalls_; }
 };
 
 
@@ -59,12 +59,12 @@ class TimeMeasure
     ulonglong endTime;
     double time_;
     double totalTime_;
-    int numCalls;
+    int numCalls_;
  
 public:
     TimeMeasure() { 
         totalTime_ = 0.0;
-        numCalls = 0;
+        numCalls_ = 0;
         BOOL iDummyBool = QueryPerformanceFrequency ((LARGE_INTEGER *) &iTimerScale);
         if(!iDummyBool)
             iTimerScale=1;
@@ -82,11 +82,12 @@ public:
             endTime=0;
         time_ = (double)(endTime - beginTime) / iTimerScale;
         totalTime_ += time_;
-        numCalls++;
+        numCalls_++;
     }
-    double time() { return time_; }
-    double totalTime() { return totalTime_; }
-    double avarageTime() { return totalTime_ / numCalls; }
+    double time() const { return time_; }
+    double totalTime() const { return totalTime_; }
+    double avarageTime() const { return totalTime_ / numCalls_; }
+    int numCalls() const { return numCalls_; }
 };
 
 #endif
