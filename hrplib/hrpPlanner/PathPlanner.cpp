@@ -1,4 +1,5 @@
 #include <math.h>
+#include <boost/bind.hpp>
 // planning algorithms
 #include "RRT.h"
 #include "PRM.h"
@@ -78,7 +79,7 @@ bool setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cf
 // コンストラクタ
 // ----------------------------------------------
 PathPlanner::PathPlanner(bool isDebugMode) 
-    : m_applyConfigFunc(&setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), debug_(isDebugMode), collidingPair_(NULL)
+    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), debug_(isDebugMode), collidingPair_(NULL)
 {
     if (isDebugMode) {
         std::cerr << "PathPlanner::PathPlanner() : debug mode" << std::endl;
@@ -566,7 +567,7 @@ void PathPlanner::initSimulation () {
 
 bool PathPlanner::setConfiguration(const Configuration &pos)
 {
-    return (*m_applyConfigFunc)(this, pos);
+    return m_applyConfigFunc(this, pos);
 }
 
 bool PathPlanner::checkCollision (const Configuration &pos) {
@@ -614,7 +615,6 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
 
 bool PathPlanner::checkCollision()
 {
-    timeCollisionCheck_.begin();
     timeForwardKinematics_.begin();
 
     collidingPair_ = NULL;
@@ -629,6 +629,7 @@ bool PathPlanner::checkCollision()
         _updateCharacterPositions();
     }
     timeForwardKinematics_.end();
+    timeCollisionCheck_.begin();
     if(USE_INTERNAL_COLLISION_DETECTOR){
         for (unsigned int i=0; i<checkPairs_.size(); i++){
             if (checkPairs_[i].tolerance() == 0){

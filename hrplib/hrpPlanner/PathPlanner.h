@@ -7,6 +7,7 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+#include <boost/function.hpp>
 #include "hrpUtil/TimeMeasure.h"
 
 #include "exportdef.h"
@@ -32,7 +33,7 @@ namespace PathEngine {
     class Mobility;
     class PathPlanner;
 
-    typedef bool applyConfigFunc(PathPlanner *, const Configuration &);
+    typedef boost::function2<bool, PathPlanner *, const Configuration &> applyConfigFunc;
     /**
      * @brief 計画経路エンジン
      *
@@ -41,7 +42,7 @@ namespace PathEngine {
     class HRPPLANNER_API PathPlanner {
 
     private:
-        applyConfigFunc *m_applyConfigFunc;
+        applyConfigFunc m_applyConfigFunc;
         typedef std::map<const std::string, std::pair<AlgorithmNewFunc, AlgorithmDeleteFunc> > AlgorithmFactory;
         typedef AlgorithmFactory::value_type AlgorithmFactoryValueType;
         /**
