@@ -43,7 +43,7 @@ public:
 
     double time() const { return time_; }
     double totalTime() const { return totalTime_; }
-    double avarageTime() const { return totalTime_ / numCalls_; }
+    double averageTime() const { return totalTime_ / numCalls_; }
     int numCalls() const { return numCalls_; }
 };
 
@@ -86,7 +86,7 @@ public:
     }
     double time() const { return time_; }
     double totalTime() const { return totalTime_; }
-    double avarageTime() const { return totalTime_ / numCalls_; }
+    double averageTime() const { return totalTime_ / numCalls_; }
     int numCalls() const { return numCalls_; }
 };
 
