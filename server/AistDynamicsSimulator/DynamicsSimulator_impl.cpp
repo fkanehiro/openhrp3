@@ -606,7 +606,7 @@ void DynamicsSimulator_impl::stepSimulation()
             timeMeasure1.end();
             cout << "Total elapsed time = " << timeMeasure1.totalTime() << "\n"
                  << "Internal elapsed time = " << timeMeasure2.totalTime()
-                 << ", the avarage = " << timeMeasure2.avarageTime() << endl;
+                 << ", the average = " << timeMeasure2.averageTime() << endl;
             cout << "Collision check time = " << timeMeasure3.totalTime() << endl;
         }
     }
