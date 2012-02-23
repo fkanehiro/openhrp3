@@ -29,6 +29,7 @@ set(headers
   OmniWheel.h
   Configuration.h
   Optimizer.h
+  CollisionDetector.h
   exportdef.h
   )
 
