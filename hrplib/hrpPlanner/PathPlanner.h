@@ -15,7 +15,7 @@
 #include "Configuration.h"
 #include "Mobility.h"
 #include "Optimizer.h"
-
+#include "CollisionDetector.h"
 #include "hrpCollision/ColdetModelPair.h"
 #undef random
 
@@ -159,6 +159,10 @@ namespace PathEngine {
         double radius_; ///< radius of spheres assigned to points
 
         hrp::ColdetModelPair *collidingPair_;
+
+        CollisionDetector *customCollisionDetector_;
+
+        bool defaultCheckCollision();
     public:
         hrp::BodyPtr robot();
         void setApplyConfigFunc(applyConfigFunc i_func);
@@ -408,6 +412,10 @@ namespace PathEngine {
         void boundingBoxMode(bool mode) { bboxMode_ = mode; } 
 
         hrp::ColdetModelPair *collidingPair() { return collidingPair_; }
+
+        void setCollisionDetector(CollisionDetector *i_cd){
+            customCollisionDetector_ = i_cd; 
+        }
     };
 };
 #endif // __PATH_PLANNER_H__
