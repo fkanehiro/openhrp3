@@ -79,7 +79,7 @@ bool setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cf
 // コンストラクタ
 // ----------------------------------------------
 PathPlanner::PathPlanner(bool isDebugMode) 
-    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), debug_(isDebugMode), collidingPair_(NULL)
+    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), debug_(isDebugMode), collidingPair_(NULL), customCollisionDetector_(NULL)
 {
     if (isDebugMode) {
         std::cerr << "PathPlanner::PathPlanner() : debug mode" << std::endl;
@@ -614,6 +614,21 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
 }
 
 bool PathPlanner::checkCollision()
+{
+    if (customCollisionDetector_){
+        timeForwardKinematics_.begin();
+        customCollisionDetector_->updatePositions();
+        timeForwardKinematics_.end();
+        timeCollisionCheck_.begin();
+        bool ret = customCollisionDetector_->checkCollision();
+        timeCollisionCheck_.end();
+        return ret;
+    }else{
+        return defaultCheckCollision();
+    }
+}
+
+bool PathPlanner::defaultCheckCollision()
 {
     timeForwardKinematics_.begin();
 
