@@ -19,12 +19,14 @@ class TimeMeasure
 {
     struct timeval tv;
     double time_;
+    double maxTime_;
     double totalTime_;
     int numCalls_;
     
 public:
     TimeMeasure() {
 	totalTime_ = 0.0;
+        maxTime_ = 0.0;
 	numCalls_ = 0;
     }
 
@@ -37,12 +39,14 @@ public:
 	gettimeofday(&tv, 0);
 	double endTime = tv.tv_sec + (double)tv.tv_usec * 1.0e-6;
 	time_ = endTime - beginTime;
+        if (time_ > maxTime_) maxTime_ = time_; 
 	totalTime_ += time_;
 	numCalls_++;
     }
 
     double time() const { return time_; }
     double totalTime() const { return totalTime_; }
+    double maxTime() const { return maxTime_; }
     double averageTime() const { return totalTime_ / numCalls_; }
     int numCalls() const { return numCalls_; }
 };
@@ -58,12 +62,14 @@ class TimeMeasure
     ulonglong beginTime;
     ulonglong endTime;
     double time_;
+    double maxTime_;
     double totalTime_;
     int numCalls_;
  
 public:
     TimeMeasure() { 
         totalTime_ = 0.0;
+        maxTime_ = 0.0;
         numCalls_ = 0;
         BOOL iDummyBool = QueryPerformanceFrequency ((LARGE_INTEGER *) &iTimerScale);
         if(!iDummyBool)
@@ -81,11 +87,13 @@ public:
         if(!iDummyBool)
             endTime=0;
         time_ = (double)(endTime - beginTime) / iTimerScale;
+        if (time_ > maxTime_) maxTime_ = time_; 
         totalTime_ += time_;
         numCalls_++;
     }
     double time() const { return time_; }
     double totalTime() const { return totalTime_; }
+    double maxTime() const { return maxTime_; }
     double averageTime() const { return totalTime_ / numCalls_; }
     int numCalls() const { return numCalls_; }
 };
