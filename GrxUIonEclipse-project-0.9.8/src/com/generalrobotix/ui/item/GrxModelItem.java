@@ -634,6 +634,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
             int jointCount = 0;
             nameToLink_.clear();
 
+            int massZeroLink = -1;
             for (int i = 0; i < linkInfoList.length; i++) {
             	GrxLinkItem link = new GrxLinkItem(linkInfoList[i].name, manager_, this, linkInfoList[i]); 
             	manager_.itemChange(link, GrxPluginManager.ADD_ITEM);
@@ -641,7 +642,12 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                     jointCount++;
                 }
                 nameToLink_.put(link.getName(), link);
+                if(linkInfoList[i].mass <= 0.0)
+                	massZeroLink = i;
             }
+            if(massZeroLink >= 0)
+            	MessageDialog.openWarning(null, getName(), linkInfoList[massZeroLink].name+"::"+ 
+                			MessageBundle.get("GrxModelItem.dialog.message.massZero"));
             System.out.println("links_.size() = "+links_.size()); //$NON-NLS-1$
 
             // Search root node.
