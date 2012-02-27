@@ -41,5 +41,16 @@
             <property name="Graph2.dataItems" value=""/>
             <property name="Graph3.dataItems" value=""/>
         </item>
+        <view class="com.generalrobotix.ui.view.Grx3DView" name="3DView">
+            <property name="view.mode" value="Room"/>
+            <property name="showCoM" value="false"/>
+            <property name="showCoMonFloor" value="false"/>
+            <property name="showDistance" value="false"/>
+            <property name="showIntersection" value="false"/>
+            <property name="eyeHomePosition" value="-0.63298 -0.10803 0.76659 2.31545 0.77417 -0.08833 0.62679 1.90609 -0 0.99022 0.13954 0.56402 0 0 0 1 "/>
+            <property name="showCollision" value="true"/>
+            <property name="showActualState" value="true"/>
+            <property name="showScale" value="true"/>
+        </view>
     </mode>
 </grxui>
