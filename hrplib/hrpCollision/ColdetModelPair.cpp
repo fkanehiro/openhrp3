@@ -74,10 +74,6 @@ std::vector<collision_data>& ColdetModelPair::detectCollisionsSub(bool detectAll
         detected = detectMeshMeshCollisions(detectAllContacts);
     }
 
-    if(!detected){
-        collisionPairInserter->clear();
-    }
-
     return collisionPairInserter->collisions();
 }
 
@@ -111,7 +107,10 @@ bool ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
         triTestsCount = collider.GetNbPrimPrimTests();
     }
 
-    return result;
+    if(!result)
+        collisionPairInserter->clear();
+
+    return !(collisionPairInserter->collisions().empty());
 }
 
 
