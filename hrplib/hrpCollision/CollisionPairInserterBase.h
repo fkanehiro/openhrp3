@@ -27,6 +27,7 @@ namespace hrp {
     class CollisionPairInserterBase
     {
       public:
+        virtual ~CollisionPairInserterBase(){}
         /**
            @brief clear collision information
         */
