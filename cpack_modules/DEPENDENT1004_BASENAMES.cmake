@@ -1,7 +1,6 @@
 set(DEPENDENT_BASENAMES
-  sun-java6-jdk
-  sun-java6-fonts
-  sun-java6-plugin
+  openjdk-6-jdk
+  openjdk-6-jre
   jython
   libreadline-java
   java-common
