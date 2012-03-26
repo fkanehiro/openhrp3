@@ -101,22 +101,22 @@ update_source_list () {
 # ソースリスト更新関数の定義
 # sun-java6-* インストールのため(10.04以降)
 #---------------------------------------
-update_source_list_partner () {
-    partner_repo="deb http://archive.canonical.com/ubuntu $code_name partner"
-    if test "$code_name" = "lucid" -o  "$code_name" = "natty" ; then
-        partnersite=`grep "^deb http://archive.canonical.com/.* $code_name partner$" /etc/apt/sources.list`
-        if test "x$partnersite" = "x" ; then
-            echo $msg12
-            echo $msg13
-            echo "  " $partner_repo
-            read -p $msg6 kick_shell
-
-            if test "x$kick_shell" != "xn" ; then
-                add-apt-repository "$partner_repo"
-            fi
-        fi
-    fi
-}
+#update_source_list_partner () {
+#    partner_repo="deb http://archive.canonical.com/ubuntu $code_name partner"
+#    if test "$code_name" = "lucid" -o  "$code_name" = "natty" ; then
+#        partnersite=`grep "^deb http://archive.canonical.com/.* $code_name partner$" /etc/apt/sources.list`
+#        if test "x$partnersite" = "x" ; then
+#            echo $msg12
+#            echo $msg13
+#            echo "  " $partner_repo
+#            read -p $msg6 kick_shell
+#
+#            if test "x$kick_shell" != "xn" ; then
+#                add-apt-repository "$partner_repo"
+#            fi
+#        fi
+#    fi
+#}
 
 #----------------------------------------
 # root かどうかをチェック
