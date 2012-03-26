@@ -672,7 +672,7 @@ public class ControllerBridgePanel extends Dialog{
 		inport_.clear();
 		outport_.clear();
 		connection_.clear();
-		nameServer_.host_ = "localhost";
+		nameServer_.host_ = "127.0.0.1";
 		nameServer_.port_ = "2809";
 		errorMessage_ = "";
 		useConfigFile_ = false;
@@ -707,7 +707,7 @@ public class ControllerBridgePanel extends Dialog{
 		inport_.clear();
 		outport_.clear();
 		connection_.clear();
-		nameServer_.host_ = "localhost";
+		nameServer_.host_ = "127.0.0.1";
 		nameServer_.port_ = "2809";
 		errorMessage_ = "";
 		
@@ -1080,7 +1080,7 @@ public class ControllerBridgePanel extends Dialog{
 				String string = "--robot-name "+robotRtcName_ +" "+endChar_;
 				controllerBridgeFile_.insertElementAt(string, i++);
 			}
-			if(!nameServer_.host_.equals("localhost") || !nameServer_.port_.equals("2809")){
+			if(!nameServer_.host_.equals("127.0.0.1") || !nameServer_.port_.equals("2809")){
 				String string = "--name-server "+nameServer_.host_+":"+nameServer_.port_+" " +endChar_;
 				controllerBridgeFile_.insertElementAt(string, i++);
 			}
@@ -1128,7 +1128,7 @@ public class ControllerBridgePanel extends Dialog{
 			String string = "robot-name = "+robotRtcName_ +lineSeparator;
 			bridgeConfFile_.append(string);
 		}
-		if(!nameServer_.host_.equals("localhost") || !nameServer_.port_.equals("2809")){
+		if(!nameServer_.host_.equals("127.0.0.1") || !nameServer_.port_.equals("2809")){
 			String string = "name-server = "+nameServer_.host_+":"+nameServer_.port_+lineSeparator;
 			bridgeConfFile_.append(string);
 		}
