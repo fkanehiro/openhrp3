@@ -73,7 +73,7 @@ void BridgeConf::initOptionsDescription()
   options.add_options()
 
     ("name-server",
-     program_options::value<string>()->default_value("localhost:2809"),
+     program_options::value<string>()->default_value("127.0.0.1:2809"),
      "Nameserver used by OpenHRP (hostname:port)")
 
     ("server-name",
