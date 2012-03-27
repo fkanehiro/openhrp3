@@ -535,7 +535,7 @@ public class SWTMoviePlayer implements ControllerListener{
         				public void run(){
         	                try {
 								enc.encode(_convertBufferedImage(frameGrabCtrl_.grabFrame() ));
-							} catch (ImageFormatException e) {
+							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							} 
