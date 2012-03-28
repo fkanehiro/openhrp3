@@ -136,8 +136,8 @@ int main(int argc, char* argv[])
     // initial position and orientation
     Vector3  waist_p;
     Matrix33 waist_R;
-    waist_p = 0, 0, 0.7135;
-	waist_R = tvmet::identity<Matrix33>();
+    waist_p << 0, 0, 0.7135;
+	waist_R = Matrix33::Identity();
 
 	DblSequence trans;
 	trans.length(12);

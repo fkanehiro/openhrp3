@@ -88,17 +88,17 @@ static int triangle_inside_test(
     const Vector3& P2,
     const Vector3& Q)
 {	
-    double ef1P1 = dot(ef1, P1); /*project P1 on ef1*/
-    double ef1P3 = dot(ef1, P3); /*project P3 on ef1*/
-    double ef1Q  = dot(ef1, Q);  /*project Q on ef1*/
+    double ef1P1 = ef1.dot(P1); /*project P1 on ef1*/
+    double ef1P3 = ef1.dot(P3); /*project P3 on ef1*/
+    double ef1Q  = ef1.dot(Q);  /*project Q on ef1*/
 
-    double ef2P2 = dot(ef2, P2); /*project P2 on ef2*/
-    double ef2P1 = dot(ef2, P1); /*project P1 on ef2*/	
-    double ef2Q  = dot(ef2,Q);   /*project Q on ef2*/
+    double ef2P2 = ef2.dot(P2); /*project P2 on ef2*/
+    double ef2P1 = ef2.dot(P1); /*project P1 on ef2*/	
+    double ef2Q  = ef2.dot(Q);   /*project Q on ef2*/
 
-    double ef3P3 = dot(ef3,P3);  /*project P3 on ef3*/	
-    double ef3P2 = dot(ef3,P2);  /*project P2 on ef3*/		
-    double ef3Q  = dot(ef3,Q);   /*project Q on ef3*/		
+    double ef3P3 = ef3.dot(P3);  /*project P3 on ef3*/	
+    double ef3P2 = ef3.dot(P2);  /*project P2 on ef3*/		
+    double ef3Q  = ef3.dot(Q);   /*project Q on ef3*/		
 
     if((ef1P3 > ef1P1 && ef1Q > ef1P1 	||
         ef1P3 < ef1P1 && ef1Q < ef1P1     ) 
@@ -161,10 +161,10 @@ static inline double calc_depth(
     // vecNormalize(n);
 
     if(HIRUKAWA_DEBUG){
-        cout << "calc_depth 1 = " << dot(ip1 - ip2, n) << endl;
+        cout << "calc_depth 1 = " << (ip1 - ip2).dot(n) << endl;
     }
     
-    return fabs(dot(ip1 - ip2, n));
+    return fabs((ip1 - ip2).dot(n));
 }
 
 
@@ -174,8 +174,8 @@ static double calc_depth(
     const Vector3& pt2,
     const Vector3& n)
 {
-    double d1 = fabs(dot(ip - pt1, n));
-    double d2 = fabs(dot(ip - pt2, n));
+    double d1 = fabs((ip - pt1).dot(n));
+    double d2 = fabs((ip - pt2).dot(n));
     double depth = (d1 < d2) ? d1 : d2;
 
     if(HIRUKAWA_DEBUG){
@@ -199,9 +199,9 @@ static double calc_depth(
     
     // vecNormalize(n);
     
-    double d1 = fabs(dot(ip1 - pt1, n));
-    double d2 = fabs(dot(ip2 - pt2, n));
-    double d3 = fabs(dot(ip1 - pt3, n)); // ip1 can be either ip1 or ip2
+    double d1 = fabs((ip1 - pt1).dot(n));
+    double d2 = fabs((ip2 - pt2).dot(n));
+    double d3 = fabs((ip1 - pt3).dot(n)); // ip1 can be either ip1 or ip2
     
     double depth = (d1 < d2) ? d2 : d1;
     if(d3 < depth){
@@ -234,7 +234,7 @@ static void find_foot(
     */
 
     const Vector3 pt(pt2 - pt1);
-    const double p = dot(pt, ip - pt1) / dot(pt, pt);
+    const double p = pt.dot(ip - pt1) / pt.dot(pt);
     f = pt1 + p * pt;
 }
 
@@ -260,9 +260,9 @@ static double calc_depth(
     }
     
     // fabs() is taken to cope with numerical error of find_foot()
-    const double d1 = fabs(dot(f12 - ip, n));
-    const double d2 = fabs(dot(f23 - ip, n));
-    const double d3 = fabs(dot(f31 - ip, n));
+    const double d1 = fabs((f12 - ip).dot(n));
+    const double d2 = fabs((f23 - ip).dot(n));
+    const double d3 = fabs((f31 - ip).dot(n));
     
     // cout << "d1 d2 d3 = " << d1 << " " << d2 << " " << d3 << endl;
     // dsum = fabs(d1)+fabs(d2)+fabs(d3);
@@ -318,9 +318,9 @@ static void calcNormal(
     // find the vector from v1 to the mid point of v2 and v3 when 0<sgn
     
     if(sgn < 0){
-        vec = -normalize(Vector3(v1 - 0.5 * (v2 + v3)));
+        vec = -(v1 - 0.5 * (v2 + v3)).normalized();
     } else {
-        vec =  normalize(Vector3(v1 - 0.5 * (v2 + v3)));
+        vec =  (v1 - 0.5 * (v2 + v3)).normalized();
     }
 }
 
@@ -343,10 +343,10 @@ static int find_common_perpendicular(
     const Vector3 e(p2 - p1);
     const Vector3 f(q2 - q1);
 
-    const double c11 = dot(e, e);
-    const double c12 = - dot(e, f);
+    const double c11 = e.dot(e);
+    const double c12 = - e.dot(f);
     const double c21 = - c12;
-    const double c22 = - dot(f, f);
+    const double c22 = - f.dot(f);
 
     const double det = c11 * c22 - c12 * c21;
     // cout << "det = " << det << endl;
@@ -355,8 +355,8 @@ static int find_common_perpendicular(
         return 0;
     } else {
         const Vector3 g(q1 - p1);
-        const double a = dot(e, g);
-        const double b = dot(f, g);
+        const double a = e.dot(g);
+        const double b = f.dot(g);
         const double t1 = ( c22 * a - c12 * b) / det;
         const double t2 = (-c21 * a + c11 * b) / det;
 
@@ -394,7 +394,7 @@ static inline int get_normal_vector_test(
     
     // This condition should be checked mildly because the whole sole of a foot
     // may sink inside the floor and then no collision is detected.
-    return (eps_applicability < dot(n1, m1)) ? 0 : 1;
+    return (eps_applicability < n1.dot(m1)) ? 0 : 1;
 }
 
 
@@ -425,10 +425,10 @@ static int get_normal_vector_test(
 
     // quit if two triangles does not satifsy the applicability condition
     // i.e. two triangles do not face each other
-    if(- eps_applicability < dot(n1,m1)) return 0;
+    if(- eps_applicability < n1.dot(m1)) return 0;
     
-    const double ea_length = norm2(va1 - va2);
-    const double eb_length = norm2(vb1 - vb2);
+    const double ea_length = (va1 - va2).norm();
+    const double eb_length = (vb1 - vb2).norm();
     
     // return the normal vector of a triangle if an intersecting edge is too short
     if(ea_length < eps_length || eb_length < eps_length){
@@ -442,28 +442,28 @@ static int get_normal_vector_test(
     }
 
     const Vector3 sv1(v1 - ip);
-    const double sv1_norm = norm2(sv1);
+    const double sv1_norm = sv1.norm();
     const Vector3 sv2(v2 - iq);
-    const double sv2_norm = norm2(sv2);
+    const double sv2_norm = sv2.norm();
 
     if(eps_length < sv1_norm && eps_length < sv2_norm){
         // quit if two triangles do not satisfy the applicability conditions
-        if(- eps_applicability < dot(sv1, sv2) / (sv1_norm * sv2_norm)){
+        if(- eps_applicability < sv1.dot(sv2) / (sv1_norm * sv2_norm)){
             return 0;
         }
     }
 
     // now neither of two edges is not too short
-    Vector3 ef(normalize(ef0));
+    Vector3 ef(ef0.normalized());
 
     // Triangle p1p2p3
-    const double theta1 = dot(ef, n1) / norm2(n1);
+    const double theta1 = ef.dot(n1) / n1.norm();
     const double theta1_abs = fabs(theta1);
     
     double theta2;
     double theta2_abs;
     if(eps_length < sv1_norm){
-        theta2 = dot(ef, sv1) / sv1_norm;
+        theta2 = ef.dot(sv1) / sv1_norm;
         theta2_abs = fabs(theta2);
     } else {
         theta2 = 0.0;
@@ -471,13 +471,13 @@ static int get_normal_vector_test(
     }
     
     // triangle q1q2q3
-    const double theta3 = dot(ef, m1) / norm2(m1);
+    const double theta3 = ef.dot(m1) / m1.norm();
     const double theta3_abs = fabs(theta3);
     
     double theta4;
     double theta4_abs;
     if(eps_length < sv2_norm){
-        theta4 = dot(ef, sv2) / sv2_norm;
+        theta4 = ef.dot(sv2) / sv2_norm;
         theta4_abs = fabs(theta4);
     } else {
         theta4 = 0.0;
@@ -568,7 +568,7 @@ static int get_normal_vector_test(
         cout << endl;
     }
 
-    if(dot(n_vector, sv1) < eps_applicability || - eps_applicability < dot(n_vector, sv2)){
+    if(n_vector.dot(sv1) < eps_applicability || - eps_applicability < n_vector.dot(sv2)){
         // when the separating plane separates the outsides of the triangles
         return 0;
     } else {
@@ -724,7 +724,7 @@ int tri_tri_overlap(
     const int VF = 2; // vertex-face contact type
     const int EE = 3; // edge-edge contact type
 
-    z = 0.0;
+    z << 0.0,0.0,0.0;
   
     p1 =  P1 - P1;
     p2 =  P2 - P1;
@@ -742,8 +742,8 @@ int tri_tri_overlap(
     f2 =  q3 - q2;
     f3 =  q1 - q3;
 
-    n1 = cross(e1, e2);
-    m1 = cross(f1, f2);
+    n1 = e1.cross(e2);
+    m1 = f1.cross(f2);
 
     // now begin the series of tests
 
@@ -751,29 +751,29 @@ int tri_tri_overlap(
         separability test by face
     ************************************/
 
-    nq[0] = dot(n1, q1);
-    nq[1] = dot(n1, q2);
-    nq[2] = dot(n1, q3);
+    nq[0] = n1.dot(q1);
+    nq[1] = n1.dot(q2);
+    nq[2] = n1.dot(q3);
     triQ = separability_test_by_face(nq);
 
     if(triQ == NOT_INTERSECT) return 0;
 
-    double mq = dot(m1, q1);
-    mp[0] = dot(m1, p1) - mq;
-    mp[1] = dot(m1, p2) - mq;
-    mp[2] = dot(m1, p3) - mq;
+    double mq = m1.dot(q1);
+    mp[0] = m1.dot(p1) - mq;
+    mp[1] = m1.dot(p2) - mq;
+    mp[2] = m1.dot(p3) - mq;
     triP = separability_test_by_face(mp);
     if(triP == NOT_INTERSECT) return 0;
 
-    ef11 = cross(e1, f1);
-    ef12 = cross(e1, f2);
-    ef13 = cross(e1, f3);
-    ef21 = cross(e2, f1);
-    ef22 = cross(e2, f2);
-    ef23 = cross(e2, f3);
-    ef31 = cross(e3, f1);
-    ef32 = cross(e3, f2);
-    ef33 = cross(e3, f3);
+    ef11 = e1.cross(f1);
+    ef12 = e1.cross(f2);
+    ef13 = e1.cross(f3);
+    ef21 = e2.cross(f1);
+    ef22 = e2.cross(f2);
+    ef23 = e2.cross(f3);
+    ef31 = e3.cross(f1);
+    ef32 = e3.cross(f2);
+    ef33 = e3.cross(f3);
 
     edf1 = 0; edf2 = 0; edf3 = 0; ede1 = 0; ede2 = 0; ede3 = 0;
 
@@ -857,8 +857,8 @@ int tri_tri_overlap(
         return 0;
     }
 
-    alias(n1) = normalize(n1);
-    alias(m1) = normalize(m1);
+    n1.normalize();
+    m1.normalize();
 
     /*********************************
     find intersection points

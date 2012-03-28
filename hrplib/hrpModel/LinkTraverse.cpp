@@ -88,18 +88,18 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
         switch(child->jointType){
 
         case Link::ROTATIONAL_JOINT:
-            link->R = child->R * trans(rodrigues(child->a, child->q));
+            link->R = child->R * rodrigues(child->a, child->q).transpose();
             arm = link->R * child->b;
             link->p = child->p - arm;
 
             if(calcVelocity){
                 child->sw = link->R * child->a;
                 link->w = child->w - child->dq * child->sw;
-                link->v = child->v - cross(link->w, arm);
+                link->v = child->v - link->w.cross(arm);
 
                 if(calcAcceleration){
-                    link->dw = child->dw - child->dq * cross(child->w, child->sw) - (child->ddq * child->sw);
-                    link->dv = child->dv - cross(child->w, cross(child->w, arm)) - cross(child->dw, arm);
+                    link->dw = child->dw - child->dq * child->w.cross(child->sw) - (child->ddq * child->sw);
+                    link->dv = child->dv - child->w.cross(child->w.cross(arm)) - child->dw.cross(arm);
                 }
             }
             break;
@@ -116,8 +116,8 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
 
                 if(calcAcceleration){
                     link->dw = child->dw;
-                    link->dv = child->dv - cross(child->w, cross(child->w, arm)) - cross(child->dw, arm)
-                        - 2.0 * child->dq * cross(child->w, child->sv) - child->ddq * child->sv;
+                    link->dv = child->dv - child->w.cross(child->w.cross(arm)) - child->dw.cross(arm)
+                        - 2.0 * child->dq * child->w.cross(child->sv) - child->ddq * child->sv;
                 }
             }
             break;
@@ -156,11 +156,11 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
             if(calcVelocity){
                 link->sw = parent->R * link->a;
                 link->w = parent->w + link->sw * link->dq;
-                link->v = parent->v + cross(parent->w, arm);
+                link->v = parent->v + parent->w.cross(arm);
 
                 if(calcAcceleration){
-                    link->dw = parent->dw + link->dq * cross(parent->w, link->sw) + (link->ddq * link->sw);
-                    link->dv = parent->dv + cross(parent->w, cross(parent->w, arm)) + cross(parent->dw, arm);
+                    link->dw = parent->dw + link->dq * parent->w.cross(link->sw) + (link->ddq * link->sw);
+                    link->dv = parent->dv + parent->w.cross(parent->w.cross(arm)) + parent->dw.cross(arm);
                 }
             }
             break;
@@ -177,8 +177,8 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
 
                 if(calcAcceleration){
                     link->dw = parent->dw;
-                    link->dv = parent->dv + cross(parent->w, cross(parent->w, arm)) + cross(parent->dw, arm)
-                        + 2.0 * link->dq * cross(parent->w, link->sv) + link->ddq * link->sv;
+                    link->dv = parent->dv + parent->w.cross(parent->w.cross(arm)) + parent->dw.cross(arm)
+                        + 2.0 * link->dq * parent->w.cross(link->sv) + link->ddq * link->sv;
                 }
             }
             break;

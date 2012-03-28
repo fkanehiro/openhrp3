@@ -16,8 +16,8 @@
 
 namespace hrp
 {
-	typedef tvmet::Matrix<double, 4, 4> Matrix44;
-	typedef tvmet::Vector<double, 4> Vector4;
+    typedef Eigen::Matrix4d Matrix44;
+    typedef Eigen::Vector4d Vector4;
 
 	HRP_UTIL_EXPORT void calcRodrigues(Matrix44& out_R, const Vector3& axis, double q);
     HRP_UTIL_EXPORT void calcTransformMatrix(VrmlTransform* transform, Matrix44& out_T);

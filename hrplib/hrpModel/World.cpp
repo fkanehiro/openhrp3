@@ -30,7 +30,7 @@ WorldBase::WorldBase()
     currentTime_ = 0.0;
     timeStep_ = 0.005;
 
-    g = 0.0, 0.0, DEFAULT_GRAVITY_ACCELERATION;
+    g << 0.0, 0.0, DEFAULT_GRAVITY_ACCELERATION;
 
     isEulerMethod =false;
     sensorsAreEnabled = false;

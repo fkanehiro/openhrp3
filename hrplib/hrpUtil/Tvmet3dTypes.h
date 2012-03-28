@@ -36,13 +36,13 @@ using std::asin;
 using std::atan2;
 #endif
 
-#include <tvmet/Matrix.h>
-#include <tvmet/Vector.h>
+//#include <Eigen/Core>
+//#include <Eigen/Geometry>
+#include <Eigen/Eigen>
 
-namespace hrp
-{
-    typedef tvmet::Matrix<double, 3, 3> Matrix33;
-    typedef tvmet::Vector<double, 3> Vector3;
-}
+namespace hrp{
+    typedef Eigen::Vector3d Vector3;
+    typedef Eigen::Matrix3d Matrix33;
+};
 
 #endif

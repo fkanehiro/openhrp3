@@ -10,7 +10,6 @@
 
 #include "Tvmet3d.h"
 
-using namespace tvmet;
 using namespace hrp;
 
 
@@ -52,7 +51,7 @@ void hrp::calcRodrigues(Matrix33& out_R, const Vector3& axis, double q)
     ay *= sth;
     az *= sth;
 
-    out_R = 1.0 - azz - ayy, -az + axy,       ay + azx,
+    out_R << 1.0 - azz - ayy, -az + axy,       ay + azx,
             az + axy,        1.0 - azz - axx, -ax + ayz,
             -ay + azx,       ax + ayz,        1.0 - ayy - axx;
 }
@@ -146,13 +145,15 @@ void hrp::calcInverse(Matrix33& inv, const Matrix33& m)
       throw std::string("Invrse matrix cannot be calculated.");
   }
   else{
-    inv =
+      inv <<
        (m(1,1)*m(2,2)-m(1,2)*m(2,1)) / det, (m(0,2)*m(2,1)-m(0,1)*m(2,2)) / det, (m(0,1)*m(1,2)-m(0,2)*m(1,1)) / det,
        (m(1,2)*m(2,0)-m(1,0)*m(2,2)) / det, (m(0,0)*m(2,2)-m(0,2)*m(2,0)) / det, (m(0,2)*m(1,0)-m(0,0)*m(1,2)) / det,
        (m(1,0)*m(2,1)-m(1,1)*m(2,0)) / det, (m(0,1)*m(2,0)-m(0,0)*m(2,1)) / det, (m(0,0)*m(1,1)-m(0,1)*m(1,0)) / det;
   }
 }
 
+#if 0
 bool hrp::isOrthogonalMatrix(Matrix33& m){
-    return all_elements( m * trans(m) == tvmet::identity<Matrix33>() );
+    return all_elements( m * m.transpose() == Matrix33::Identity() );
 }
+#endif

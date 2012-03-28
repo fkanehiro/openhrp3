@@ -48,9 +48,9 @@ namespace hrp {
         bool detachChild(Link* link);
         bool isRoot() { return !parent; }
 
-        void setAttitude(const Matrix33& R) { this->R = R * trans(Rs); }
+        void setAttitude(const Matrix33& R) { this->R = R * Rs.transpose(); }
         Matrix33 attitude() { return Matrix33(this->R * Rs); }
-        Matrix33 calcRfromAttitude(const Matrix33& R) { return Matrix33(R * trans(Rs)); }
+        Matrix33 calcRfromAttitude(const Matrix33& R) { return Matrix33(R * Rs.transpose()); }
 
         /**
            @brief compute sum of m x wc of subtree
@@ -61,7 +61,7 @@ namespace hrp {
         /**
            @deprecated use setAttitude().
         */
-        void setSegmentAttitude(const Matrix33& R) { this->R = R * trans(Rs); }
+        void setSegmentAttitude(const Matrix33& R) { this->R = R * Rs.transpose(); }
 
         /**
            @deprecated use attitude().

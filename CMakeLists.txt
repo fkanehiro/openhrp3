@@ -116,10 +116,9 @@ include_directories(${LAPACK_INCLUDE_DIRS})
 link_directories(${LAPACK_LIBRARY_DIRS})
 
 
-# tvmet
-find_package(Tvmet REQUIRED)
-include_directories(${TVMET_INCLUDE_DIR})
-add_definitions(-DTVMET_OPTIMIZE)
+# eigen
+find_package(Eigen)
+include_directories(${EIGEN_INCLUDE_DIR})
 
 # build flag of jpeg and png library
 if(UNIX)

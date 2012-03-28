@@ -105,7 +105,7 @@ namespace hrp {
         virtual void putInformation(std::ostream& os);
 
         // The following members are used in the ForwardDynamics class
-        typedef tvmet::Vector<double, 2> vector2;
+        typedef Eigen::Vector2d vector2;
         vector2 x[3]; 
         bool isFirstUpdate;
     };

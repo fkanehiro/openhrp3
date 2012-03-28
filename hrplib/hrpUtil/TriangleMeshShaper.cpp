@@ -776,40 +776,70 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
             Vector3 Yaxis, Zaxis;
             if(i==0){
                 if(isClosed){
-                    spine1 = Vector3(extrusion->spine[numSpine-2].begin(),3);
-                    spine2 = Vector3(extrusion->spine[0].begin(),3);
-                    spine3 = Vector3(extrusion->spine[1].begin(),3);
+                    spine1[0] = extrusion->spine[numSpine-2][0];
+                    spine1[1] = extrusion->spine[numSpine-2][1];
+                    spine1[2] = extrusion->spine[numSpine-2][2];
+                    spine2[0] = extrusion->spine[0][0];
+                    spine2[1] = extrusion->spine[0][1];
+                    spine2[2] = extrusion->spine[0][2];
+                    spine3[0] = extrusion->spine[1][0];
+                    spine3[1] = extrusion->spine[1][1];
+                    spine3[2] = extrusion->spine[1][2];
                     Yaxis = Vector3(spine3-spine1);
-                    Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                    Zaxis = (spine3-spine2).cross(spine1-spine2);
                 }else{
-                    spine1 = Vector3(extrusion->spine[0].begin(),3);
-                    spine2 = Vector3(extrusion->spine[1].begin(),3);
-                    spine3 = Vector3(extrusion->spine[2].begin(),3);
+                    spine1[0] = extrusion->spine[0][0];
+                    spine1[1] = extrusion->spine[0][1];
+                    spine1[2] = extrusion->spine[0][2];
+                    spine2[0] = extrusion->spine[1][0];
+                    spine2[1] = extrusion->spine[1][1];
+                    spine2[2] = extrusion->spine[1][2];
+                    spine3[0] = extrusion->spine[2][0];
+                    spine3[1] = extrusion->spine[2][1];
+                    spine3[2] = extrusion->spine[2][2];
                     Yaxis = Vector3(spine2-spine1);
-                    Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                    Zaxis = (spine3-spine2).cross(spine1-spine2);
                 }
             }else if(i==numSpine-1){
                 if(isClosed){
-                    spine1 = Vector3(extrusion->spine[numSpine-2].begin(),3);
-                    spine2 = Vector3(extrusion->spine[0].begin(),3);
-                    spine3 = Vector3(extrusion->spine[1].begin(),3);
+                    spine1[0] = extrusion->spine[numSpine-2][0];
+                    spine1[1] = extrusion->spine[numSpine-2][1];
+                    spine1[2] = extrusion->spine[numSpine-2][2];
+                    spine2[0] = extrusion->spine[0][0];
+                    spine2[1] = extrusion->spine[0][1];
+                    spine2[2] = extrusion->spine[0][2];
+                    spine3[0] = extrusion->spine[1][0];
+                    spine3[1] = extrusion->spine[1][1];
+                    spine3[2] = extrusion->spine[1][2];
                     Yaxis = Vector3(spine3-spine1);
-                    Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                    Zaxis = (spine3-spine2).cross(spine1-spine2);
                 }else{
-                    spine1 = Vector3(extrusion->spine[numSpine-3].begin(),3);
-                    spine2 = Vector3(extrusion->spine[numSpine-2].begin(),3);
-                    spine3 = Vector3(extrusion->spine[numSpine-1].begin(),3);
+                    spine1[0] = extrusion->spine[numSpine-3][0];
+                    spine1[1] = extrusion->spine[numSpine-3][1];
+                    spine1[2] = extrusion->spine[numSpine-3][2];
+                    spine2[0] = extrusion->spine[numSpine-2][0];
+                    spine2[1] = extrusion->spine[numSpine-2][1];
+                    spine2[2] = extrusion->spine[numSpine-2][2];
+                    spine3[0] = extrusion->spine[numSpine-1][0];
+                    spine3[1] = extrusion->spine[numSpine-1][1];
+                    spine3[2] = extrusion->spine[numSpine-1][2];
                     Yaxis = Vector3(spine3-spine2);
-                    Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                    Zaxis = (spine3-spine2).cross(spine1-spine2);
                 }
             }else{
-                spine1 = Vector3(extrusion->spine[i-1].begin(),3);
-                spine2 = Vector3(extrusion->spine[i].begin(),3);
-                spine3 = Vector3(extrusion->spine[i+1].begin(),3);
+                spine1[0] = extrusion->spine[i-1][0];
+                spine1[1] = extrusion->spine[i-1][1];
+                spine1[2] = extrusion->spine[i-1][2];
+                spine2[0] = extrusion->spine[i][0];
+                spine2[1] = extrusion->spine[i][1];
+                spine2[2] = extrusion->spine[i][2];
+                spine3[0] = extrusion->spine[i+1][0];
+                spine3[1] = extrusion->spine[i+1][1];
+                spine3[2] = extrusion->spine[i+1][2];
                 Yaxis = Vector3(spine3-spine1);
-                Zaxis = Vector3(cross((spine3-spine2),(spine1-spine2)));
+                Zaxis = (spine3-spine2).cross(spine1-spine2);
             }
-            if(!norm2(Zaxis)){
+            if(!Zaxis.norm()){
                 if(definedZaxis!=-1)
                     Zaxis=preZaxis;
             }else{
@@ -823,8 +853,12 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
     }else{
         Vector3 spine1, spine2;
         Vector3 Yaxis;
-        spine1 = Vector3(extrusion->spine[0].begin(),3);
-        spine2 = Vector3(extrusion->spine[1].begin(),3);
+        spine1[0] = extrusion->spine[0][0];
+        spine1[1] = extrusion->spine[0][1];
+        spine1[2] = extrusion->spine[0][2];
+        spine2[0] = extrusion->spine[1][0];
+        spine2[1] = extrusion->spine[1][1];
+        spine2[2] = extrusion->spine[1][2];
         Yaxis = Vector3(spine2-spine1);
         Yaxisarray.push_back(Yaxis);
         Yaxisarray.push_back(Yaxis);
@@ -832,7 +866,7 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
     for(int i=0; i<numSpine; i++){
         Matrix33 Scp;
         if(definedZaxis==-1){
-            Vector3 y(normalize(Yaxisarray[i]));    
+            Vector3 y(Yaxisarray[i].normalized());
             SFRotation R;
             // R[0,1,2] = y X (0,1,0) cos(R[3]) = y.(0,1,0)
             R[0] = y[2]; R[1] = 0.0; R[2] = -y[0]; R[3] = acos(y[1]);
@@ -840,17 +874,20 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
         }else{
             if(i<definedZaxis)
                 Zaxisarray[i] = Zaxisarray[definedZaxis];
-            if( i && dot(Zaxisarray[i],Zaxisarray[i-1])<0 )
+            if( i && Zaxisarray[i].dot(Zaxisarray[i-1])<0 )
                 Zaxisarray[i] *= -1;
-            Vector3 y(normalize(Yaxisarray[i]));
-		    Vector3 z(normalize(Zaxisarray[i]));
-		    Vector3 x(cross(y, z));
+            Vector3 y(Yaxisarray[i].normalized());
+                    Vector3 z(Zaxisarray[i].normalized());
+		    Vector3 x(y.cross(z));
  		    setVector3(x, Scp, 0, 0);
 		    setVector3(y, Scp, 0, 1);
 		    setVector3(z, Scp, 0, 2);
         }
 
-        Vector3 spine(extrusion->spine[i].begin(),3);
+        Vector3 spine(extrusion->spine[i][0],
+                      extrusion->spine[i][1],
+                      extrusion->spine[i][2]);
+                      
         Vector3 scale;
         if(extrusion->scale.size()==1)
             scale = Vector3(extrusion->scale[0][0], 0, extrusion->scale[0][1]);
@@ -965,7 +1002,8 @@ void TMSImpl::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
         Vector3Ref v0(getVector3Ref(vertices[triangles[faceIndex * 4 + 0]].data()));
         Vector3Ref v1(getVector3Ref(vertices[triangles[faceIndex * 4 + 1]].data()));
         Vector3Ref v2(getVector3Ref(vertices[triangles[faceIndex * 4 + 2]].data()));
-        const Vector3 normal(tvmet::normalize(Vector3(tvmet::cross(v1 - v0, v2 - v0))));
+        Vector3 normal((v1 - v0).cross(v2 - v0));
+        normal.normalize();
         faceNormals.push_back(normal);
 
         if(triangleMesh->normalPerVertex){
@@ -977,7 +1015,7 @@ void TMSImpl::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
                     const Vector3& otherNormal = faceNormals[facesOfVertex[j]];
                     const Vector3 d(otherNormal - normal);
                     // the same face is not appended
-                    if(tvmet::dot(d, d) <= numeric_limits<double>::epsilon()){
+                    if(d.dot(d) <= numeric_limits<double>::epsilon()){
                     	isSameNormalFaceFound = true;
                     	break;
                     }
@@ -1022,8 +1060,8 @@ void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
             for(int j=0; j < facesOfVertex.size(); ++j){
                 int adjoingFaceIndex = facesOfVertex[j];
                 const Vector3& adjoingFaceNormal = faceNormals[adjoingFaceIndex];
-                double angle = acos(tvmet::dot(currentFaceNormal, adjoingFaceNormal)
-                                    / (tvmet::norm2(currentFaceNormal) * tvmet::norm2(adjoingFaceNormal)));
+                double angle = acos(currentFaceNormal.dot(adjoingFaceNormal)
+                                    / (currentFaceNormal.norm() * adjoingFaceNormal.norm()));
                 if(angle > 1.0e-6 && angle < triangleMesh->creaseAngle){
                     normal += adjoingFaceNormal;
                     normalIsFaceNormal = false;
@@ -1031,7 +1069,7 @@ void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
                 
             }
             if(!normalIsFaceNormal){
-                alias(normal) = tvmet::normalize(normal);
+                normal.normalize();
             }
 
             int normalIndex = -1;
@@ -1043,7 +1081,7 @@ void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
                     int index = normalIndicesOfVertex[k];
                     const SFVec3f& norg = normals[index];
                     const Vector3 d(Vector3(norg[0], norg[1], norg[2]) - normal);
-                    if(tvmet::dot(d, d) <= numeric_limits<double>::epsilon()){
+                    if(d.dot(d) <= numeric_limits<double>::epsilon()){
                         normalIndex = index;
                         goto normalIndexFound;
                     }
@@ -1051,7 +1089,7 @@ void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
             }
             if(normalIndex < 0){
                 SFVec3f n;
-                std::copy(normal.begin(), normal.end(), n.begin());
+                n[0] = normal[0]; n[1] = normal[1]; n[2] = normal[2]; 
                 normalIndex = normals.size();
                 normals.push_back(n);
                 vertexIndexToNormalIndicesMap[vertexIndex].push_back(normalIndex);
@@ -1092,7 +1130,7 @@ void TMSImpl::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
                 int index = normalIndicesOfVertex[j];
                 const SFVec3f& norg = normals[index];
                 const Vector3 n(norg[0], norg[1], norg[2]);
-                if(tvmet::norm2(n - normal) <= numeric_limits<double>::epsilon()){
+                if((n - normal).norm() <= numeric_limits<double>::epsilon()){
                     normalIndex = index;
                     goto normalIndexFound2;
                 }
@@ -1100,7 +1138,7 @@ void TMSImpl::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
         }
         if(normalIndex < 0){
             SFVec3f n;
-            std::copy(normal.begin(), normal.end(), n.begin());
+            n[0] = normal[0]; n[1] = normal[1]; n[2] = normal[2]; 
             normalIndex = normals.size();
             normals.push_back(n);
             for(int i=0; i < 3; ++i){

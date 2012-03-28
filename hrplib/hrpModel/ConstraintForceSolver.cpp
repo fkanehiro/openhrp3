@@ -31,14 +31,10 @@
 #include <boost/format.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/random.hpp>
-#include <boost/numeric/ublas/triangular.hpp>
-#include <boost/numeric/ublas/lu.hpp>
 
 
 using namespace std;
 using namespace boost;
-using namespace tvmet;
-using namespace boost::numeric::ublas;
 using namespace hrp;
 using namespace OpenHRP;
 
@@ -241,8 +237,7 @@ namespace hrp
 
         // Mlcp * solution + b   _|_  solution
 
-        typedef boost::numeric::ublas::matrix<double, ublas::row_major> rmdmatrix;
-        rmdmatrix Mlcp;
+        dmatrix Mlcp;
 
         // constant acceleration term when no external force is applied
         dvector an0;
@@ -287,17 +282,17 @@ namespace hrp
         void calcAccelsMM(BodyData& bodyData, int constraintIndex);
 
         void extractRelAccelsOfConstraintPoints
-        (matrix_range<rmdmatrix>& Kxn, matrix_range<rmdmatrix>& Kxt, int testForceIndex, int constraintIndex);
+        (Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, int testForceIndex, int constraintIndex);
 
         void extractRelAccelsFromLinkPairCase1
-        (matrix_range<rmdmatrix>& Kxn, matrix_range<rmdmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int constraintIndex);
+        (Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int constraintIndex);
         void extractRelAccelsFromLinkPairCase2
-        (matrix_range<rmdmatrix>& Kxn, matrix_range<rmdmatrix>& Kxt, LinkPair& linkPair, int iTestForce, int iDefault, int testForceIndex, int constraintIndex);
+        (Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int iTestForce, int iDefault, int testForceIndex, int constraintIndex);
         void extractRelAccelsFromLinkPairCase3
-        (matrix_range<rmdmatrix>& Kxn, matrix_range<rmdmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int constraintIndex);
+        (Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int constraintIndex);
 
         void copySymmetricElementsOfAccelerationMatrix
-        (matrix_range<rmdmatrix>& Knn, matrix_range<rmdmatrix>& Ktn, matrix_range<rmdmatrix>& Knt, matrix_range<rmdmatrix>& Ktt);
+        (Eigen::Block<dmatrix>& Knn, Eigen::Block<dmatrix>& Ktn, Eigen::Block<dmatrix>& Knt, Eigen::Block<dmatrix>& Ktt);
 
         void clearSingularPointConstraintsOfClosedLoopConnections();
 		
@@ -306,19 +301,19 @@ namespace hrp
         void addConstraintForceToLink(LinkPair* linkPair, int ipair);
 
         void solveMCPByProjectedGaussSeidel
-        (const rmdmatrix& M, const dvector& b, dvector& x);
+        (const dmatrix& M, const dvector& b, dvector& x);
         void solveMCPByProjectedGaussSeidelInitial
-        (const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration);
+        (const dmatrix& M, const dvector& b, dvector& x, const int numIteration);
         void solveMCPByProjectedGaussSeidelMain
-        (const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration);
+        (const dmatrix& M, const dvector& b, dvector& x, const int numIteration);
         double solveMCPByProjectedGaussSeidelErrorCheck
-        (const rmdmatrix& M, const dvector& b, dvector& x);
+        (const dmatrix& M, const dvector& b, dvector& x);
 
-        void checkLCPResult(rmdmatrix& M, dvector& b, dvector& x);
-        void checkMCPResult(rmdmatrix& M, dvector& b, dvector& x);
+        void checkLCPResult(dmatrix& M, dvector& b, dvector& x);
+        void checkMCPResult(dmatrix& M, dvector& b, dvector& x);
 
 #ifdef USE_PIVOTING_LCP
-        bool callPathLCPSolver(rmdmatrix& Mlcp, dvector& b, dvector& solution);
+        bool callPathLCPSolver(dmatrix& Mlcp, dvector& b, dvector& solution);
 
         // for PATH solver
         std::vector<double> lb;
@@ -339,12 +334,12 @@ namespace hrp
 template<class TMatrix>
 static void putMatrix(TMatrix& M, const char *name)
 {
-    if(M.size2() == 1){
+    if(M.cols() == 1){
         std::cout << "Vector " << name << M << std::endl;
     } else {
         std::cout << "Matrix " << name << ": \n";
-        for(size_t i=0; i < M.size1(); i++){
-            for(size_t j=0; j < M.size2(); j++){
+        for(size_t i=0; i < M.rows(); i++){
+            for(size_t j=0; j < M.cols(); j++){
                 std::cout << boost::format(" %6.3f ") % M(i, j);
             }
             std::cout << std::endl;
@@ -353,7 +348,7 @@ static void putMatrix(TMatrix& M, const char *name)
 }
 
 template<class TVector>
-static void putVector(TVector& M, const char *name)
+static void putVector(const TVector& M, const char *name)
 {
     std::cout << "Vector " << name << M << std::endl;
 }
@@ -365,7 +360,7 @@ static inline void debugPutMatrix(TMatrix& M, const char *name)
 }
 
 template<class TVector>
-static inline void debugPutVector(TVector& M, const char *name)
+static inline void debugPutVector(const TVector& M, const char *name)
 {
     if(CFS_DEBUG_VERBOSE) putVector(M, name);
 }
@@ -459,8 +454,8 @@ void CFSImpl::initialize(void)
             int n = linksData.size();
             for(int j=0; j < n; ++j){
                 LinkData& linkData = linksData[j];
-                linkData.dw  = 0.0;
-                linkData.dvo = 0.0;
+                linkData.dw.setZero();
+                linkData.dvo.setZero();
             }
         }
 
@@ -592,10 +587,8 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
             debugPutVector(an0, "an0");
             debugPutVector(at0, "at0");
             debugPutMatrix(Mlcp, "Mlcp");
-            vector_range<dvector> b1(b, range(0, globalNumConstraintVectors));
-            debugPutVector(b1, "b1");
-            vector_range<dvector> b2(b, range(globalNumConstraintVectors, globalNumConstraintVectors + globalNumFrictionVectors));
-            debugPutVector(b2, "b2");
+            debugPutVector(b.head(globalNumConstraintVectors), "b1");
+            debugPutVector(b.segment(globalNumConstraintVectors, globalNumConstraintVectors + globalNumFrictionVectors), "b2");
         }
 
         bool isConverged;
@@ -603,7 +596,7 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
         isConverged = callPathLCPSolver(Mlcp, b, solution);
 #else
         if(!USE_PREVIOUS_LCP_SOLUTION || constraintsSizeChanged){
-            solution.clear();
+            solution.setZero();
         }
         solveMCPByProjectedGaussSeidel(Mlcp, b, solution);
         isConverged = true;
@@ -746,7 +739,7 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
         {
             // dense contact points are eliminated
             for(int k=0; k < numExtractedPoints; ++k){
-                if(norm2(constraintPoints[k].point - contact.point) < linkPair.culling_thresh){
+                if((constraintPoints[k].point - contact.point).norm() < linkPair.culling_thresh){
                     isNeighborhood = true;
                     break;
                 }
@@ -765,14 +758,14 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
             for(int k=0; k < 2; ++k){
                 Link* link = linkPair.link[k];
                 if(link->isRoot() && link->jointType == Link::FIXED_JOINT){
-                    v[k] = 0.0;
+                    v[k].setZero();
                 } else {
-                    v[k] = link->vo + cross(link->w, contact.point);
+                    v[k] = link->vo + link->w.cross(contact.point);
                 }
             }
             contact.relVelocityOn0 = v[1] - v[0];
 
-            contact.normalProjectionOfRelVelocityOn0 = dot(contact.normalTowardInside[1], contact.relVelocityOn0);
+            contact.normalProjectionOfRelVelocityOn0 = contact.normalTowardInside[1].dot(contact.relVelocityOn0);
 
             if( ! areThereImpacts){
                 if(contact.normalProjectionOfRelVelocityOn0 < -1.0e-6){
@@ -784,7 +777,7 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
 
             contact.globalFrictionIndex = globalNumFrictionVectors;
 
-            double vt_square = dot(v_tangent, v_tangent);
+            double vt_square = v_tangent.dot(v_tangent);
             static const double vsqrthresh = VEL_THRESH_OF_DYNAMIC_FRICTION * VEL_THRESH_OF_DYNAMIC_FRICTION;
             bool isSlipping = (vt_square > vsqrthresh);
             contact.mu = isSlipping ? linkPair.muDynamic : linkPair.muStatic;
@@ -793,9 +786,9 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
                 contact.numFrictionVectors = 1;
                 double vt_mag = sqrt(vt_square);
                 Vector3 t1(v_tangent / vt_mag);
-                Vector3 t2(cross(contact.normalTowardInside[1], t1));
-                Vector3 t3(cross(t2, contact.normalTowardInside[1]));
-                contact.frictionVector[0][0] = normalize(t3);
+                Vector3 t2(contact.normalTowardInside[1].cross(t1));
+                Vector3 t3(t2.cross(contact.normalTowardInside[1]));
+                contact.frictionVector[0][0] = t3.normalized();
                 contact.frictionVector[0][1] = -contact.frictionVector[0][0];
 
                 // proportional dynamic friction near zero velocity
@@ -833,10 +826,10 @@ void CFSImpl::setFrictionVectors(ConstraintPoint& contact)
     }
     u(minAxis) = 1.0;
 
-    Vector3 t1(cross(normal, u));
-    t1 /= norm2(t1);
-    Vector3 t2(cross(normal, t1));
-    t2 /= norm2(t2);
+    Vector3 t1(normal.cross(u));
+    t1.normalize();
+    Vector3 t2(normal.cross(t1));
+    t2.normalize();
 
     if(ENABLE_RANDOM_STATIC_FRICTION_BASE){
         double theta = randomAngle();
@@ -878,7 +871,7 @@ bool CFSImpl::setConnectionConstraintPoints(LinkPair& linkPair)
     Vector3 midPoint((point[0] + point[1]) / 2.0);
     Vector3 error(midPoint - point[0]);
 
-    if(dot(error, error) > (0.04 * 0.04)){
+    if(error.dot(error) > (0.04 * 0.04)){
         return false;
     }
 
@@ -887,9 +880,9 @@ bool CFSImpl::setConnectionConstraintPoints(LinkPair& linkPair)
     for(int k=0; k < 2; ++k){
         Link* link = connection->link[k];
         if(link->isRoot() && link->jointType == Link::FIXED_JOINT){
-            v[k] = 0.0;
+            v[k].setZero();
         } else {
-            v[k] = link->vo + cross(link->w, point[k]);
+            v[k] = link->vo + link->w.cross(point[k]);
         }
     }
     Vector3 relVelocityOn0(v[1] - v[0]);
@@ -900,9 +893,9 @@ bool CFSImpl::setConnectionConstraintPoints(LinkPair& linkPair)
         const Vector3 axis(link0->R * connection->constraintAxes[i]);
         constraint.normalTowardInside[0] =  axis;
         constraint.normalTowardInside[1] = -axis;
-        constraint.depth = dot(axis, error);
+        constraint.depth = axis.dot(error);
         constraint.globalIndex = globalNumConstraintVectors++;
-        constraint.normalProjectionOfRelVelocityOn0 = dot(constraint.normalTowardInside[1], relVelocityOn0);
+        constraint.normalProjectionOfRelVelocityOn0 = constraint.normalTowardInside[1].dot(relVelocityOn0);
     }
 
     return true;
@@ -953,27 +946,18 @@ void CFSImpl::initMatrices()
 
     const int dimLCP = usePivotingLCP ? (n + m + m) : (n + m);
 
-    Mlcp.resize(dimLCP, dimLCP, false);
-    b.resize(dimLCP, false);
-    solution.resize(dimLCP, false);
-
-    range block1(0, n);
-    range block2(n, n + m);
+    Mlcp.resize(dimLCP, dimLCP);
+    b.resize(dimLCP);
+    solution.resize(dimLCP);
 
     if(usePivotingLCP){
 
-        range block3(n + m, n + m + m);
-
-        project(Mlcp, block1, block3) = dzeromatrix(n, m);
-        project(Mlcp, block3, block1) = dzeromatrix(m, n); // clear mu block
-
-        didentity identity(m);
-        project(Mlcp, block3, block2) = -identity;
-
-        project(Mlcp, block3, block3) = dzeromatrix(m, m);
-        project(Mlcp, block2, block3) =  identity;
-
-        project(b, block3) = dzerovector(m);
+        Mlcp.block(0, n + m, n, m).setZero();
+        Mlcp.block(n + m, 0, m, n).setZero();
+        Mlcp.block(n + m, n, m, m) = -dmatrix::Identity(m, m);
+        Mlcp.block(n + m, n + m, m, m).setZero();
+        Mlcp.block(n, n + m, m, m).setIdentity();
+        b.tail(m).setZero();
 
     } else {
         frictionIndexToContactIndex.resize(m);
@@ -1054,21 +1038,21 @@ void CFSImpl::setDefaultAccelerationVector()
 
             for(int k=0; k < 2; ++k){
                 if(linkPair.bodyData[k]->isStatic){
-                    constraint.defaultAccel[k] = 0.0;
+                    constraint.defaultAccel[k].setZero();
                 } else {
                     Link* link = linkPair.link[k];
                     LinkData* linkData = linkPair.linkData[k];
                     constraint.defaultAccel[k] =
-                        linkData->dvo - cross(constraint.point, linkData->dw) +
-                        cross(link->w, Vector3(link->vo + cross(link->w, constraint.point)));
+                        linkData->dvo - constraint.point.cross(linkData->dw) +
+                        link->w.cross(Vector3(link->vo + link->w.cross(constraint.point)));
                 }
             }
 
             Vector3 relDefaultAccel(constraint.defaultAccel[1] - constraint.defaultAccel[0]);
-            an0[constraint.globalIndex] = dot(constraint.normalTowardInside[1], relDefaultAccel);
+            an0[constraint.globalIndex] = constraint.normalTowardInside[1].dot(relDefaultAccel);
 
             for(int k=0; k < constraint.numFrictionVectors; ++k){
-                at0[constraint.globalFrictionIndex + k] = dot(constraint.frictionVector[k][1], relDefaultAccel);
+                at0[constraint.globalFrictionIndex + k] = constraint.frictionVector[k][1].dot(relDefaultAccel);
             }
         }
     }
@@ -1080,12 +1064,10 @@ void CFSImpl::setAccelerationMatrix()
     const int n = globalNumConstraintVectors;
     const int m = globalNumFrictionVectors;
 
-    range block1(0, n);
-    range block2(n, n + m);
-    matrix_range<rmdmatrix> Knn(Mlcp, block1, block1);
-    matrix_range<rmdmatrix> Ktn(Mlcp, block1, block2);
-    matrix_range<rmdmatrix> Knt(Mlcp, block2, block1);
-    matrix_range<rmdmatrix> Ktt(Mlcp, block2, block2);
+    Eigen::Block<dmatrix> Knn = Mlcp.block(0, 0, n, n);
+    Eigen::Block<dmatrix> Ktn = Mlcp.block(0, n, n, m);
+    Eigen::Block<dmatrix> Knt = Mlcp.block(n, 0, m, n);
+    Eigen::Block<dmatrix> Ktt = Mlcp.block(n, n, m, m);
 
     for(size_t i=0; i < constrainedLinkPairs.size(); ++i){
 
@@ -1108,12 +1090,12 @@ void CFSImpl::setAccelerationMatrix()
                     if(bodyData.forwardDynamicsMM){
                         //! \todo This code does not work correctly when the links are in the same body. Fix it.
                         Vector3 arm(constraint.point - *(bodyData.rootLinkPosRef));
-                        Vector3 tau(cross(arm, f));
-                        Vector3 tauext = cross(constraint.point, f);
+                        Vector3 tau(arm.cross(f));
+                        Vector3 tauext = constraint.point.cross(f);
                         bodyData.forwardDynamicsMM->solveUnknownAccels(linkPair.link[k], f, tauext, f, tau);
                         calcAccelsMM(bodyData, constraintIndex);
                     } else {
-                        Vector3 tau(cross(constraint.point, f));
+                        Vector3 tau(constraint.point.cross(f));
                         calcABMForceElementsWithTestForce(bodyData, linkPair.link[k], f, tau);
                         if(!linkPair.isSameBodyPair || (k > 0)){
                             calcAccelsABM(bodyData, constraintIndex);
@@ -1133,12 +1115,12 @@ void CFSImpl::setAccelerationMatrix()
                         if(bodyData.forwardDynamicsMM){
                             //! \todo This code does not work correctly when the links are in the same body. Fix it.
                             Vector3 arm(constraint.point - *(bodyData.rootLinkPosRef));
-                            Vector3 tau(cross(arm, f));
-                            Vector3 tauext = cross(constraint.point, f);
+                            Vector3 tau(arm.cross(f));
+                            Vector3 tauext = constraint.point.cross(f);
                             bodyData.forwardDynamicsMM->solveUnknownAccels(linkPair.link[k], f, tauext, f, tau);
                             calcAccelsMM(bodyData, constraintIndex);
                         } else {
-                            Vector3 tau(cross(constraint.point, f));
+                            Vector3 tau(constraint.point.cross(f));
                             calcABMForceElementsWithTestForce(bodyData, linkPair.link[k], f, tau);
                             if(!linkPair.isSameBodyPair || (k > 0)){
                                 calcAccelsABM(bodyData, constraintIndex);
@@ -1162,8 +1144,8 @@ void CFSImpl::setAccelerationMatrix()
 
 void CFSImpl::initABMForceElementsWithNoExtForce(BodyData& bodyData)
 {
-    bodyData.dpf   = 0;
-    bodyData.dptau = 0;
+    bodyData.dpf.setZero();
+    bodyData.dptau.setZero();
 
     std::vector<LinkData>& linksData = bodyData.linksData;
     const LinkTraverse& traverse = bodyData.body->linkTraverse();
@@ -1192,7 +1174,7 @@ void CFSImpl::initABMForceElementsWithNoExtForce(BodyData& bodyData)
 
         if(i > 0){
             if(link->jointType != Link::FIXED_JOINT){
-                data.uu0  = link->uu + link->u - (dot(link->sv, data.pf0) + dot(link->sw, data.ptau0));
+                data.uu0  = link->uu + link->u - (link->sv.dot(data.pf0) + link->sw.dot(data.ptau0));
                 data.uu = data.uu0;
             }
         }
@@ -1212,7 +1194,7 @@ void CFSImpl::calcABMForceElementsWithTestForce
     while(link->parent){
         if(link->jointType != Link::FIXED_JOINT){
             LinkData& data = linksData[link->index];
-            double duu = -(dot(link->sv, dpf) + dot(link->sw, dptau));
+            double duu = -(link->sv.dot(dpf) + link->sw.dot(dptau));
             data.uu += duu;
             double duudd = duu / link->dd;
             dpf   += duudd * link->hhv;
@@ -1237,32 +1219,30 @@ void CFSImpl::calcAccelsABM(BodyData& bodyData, int constraintIndex)
         Vector3 pf  (rootData.pf0   + bodyData.dpf);
         Vector3 ptau(rootData.ptau0 + bodyData.dptau);
 
-        ublas::bounded_matrix<double, 6, 6, ublas::column_major> Ia;
+        dmatrix Ia(6,6);
         setMatrix33(rootLink->Ivv, Ia, 0, 0);
         setTransMatrix33(rootLink->Iwv, Ia, 0, 3);
         setMatrix33(rootLink->Iwv, Ia, 3, 0);
         setMatrix33(rootLink->Iww, Ia, 3, 3);
 
-        ublas::bounded_vector<double, 6> p;
+        dvector p(6);
         setVector3(pf,   p, 0);
         setVector3(ptau, p, 3);
         p *= -1.0;
 
-        ublas::permutation_matrix<std::size_t> pm(6);
-        ublas::lu_factorize (Ia, pm);
-        ublas::lu_substitute(Ia, pm, p);
+        dvector a(Ia.colPivHouseholderQr().solve(p));
 
-        getVector3(rootData.dvo, p, 0);
-        getVector3(rootData.dw,  p, 3);
+        rootData.dvo = a.head<3>();
+        rootData.dw = a.tail<3>();
 
     } else {
-        rootData.dw  = 0.0;
-        rootData.dvo = 0.0;
+        rootData.dw.setZero();
+        rootData.dvo.setZero();
     }
 
     // reset
-    bodyData.dpf   = 0;
-    bodyData.dptau = 0;
+    bodyData.dpf.setZero();
+    bodyData.dptau.setZero();
 
     int skipCheckNumber = ASSUME_SYMMETRIC_MATRIX ? constraintIndex : (numeric_limits<int>::max() - 1);
     int n = linksData.size();
@@ -1276,7 +1256,7 @@ void CFSImpl::calcAccelsABM(BodyData& bodyData, int constraintIndex)
             LinkData& parentData = linksData[linkData.parentIndex];
 
             if(link->jointType != Link::FIXED_JOINT){
-                linkData.ddq = (linkData.uu - (dot(link->hhv, parentData.dvo) + dot(link->hhw, parentData.dw))) / link->dd;
+                linkData.ddq = (linkData.uu - (link->hhv.dot(parentData.dvo) + link->hhw.dot(parentData.dw))) / link->dd;
                 linkData.dvo = parentData.dvo + link->cv + link->sv * linkData.ddq;
                 linkData.dw  = parentData.dw  + link->cw + link->sw * linkData.ddq;
             }else{
@@ -1325,7 +1305,7 @@ void CFSImpl::calcAccelsMM(BodyData& bodyData, int constraintIndex)
 
 
 void CFSImpl::extractRelAccelsOfConstraintPoints
-(matrix_range<rmdmatrix>& Kxn, matrix_range<rmdmatrix>& Kxt, int testForceIndex, int constraintIndex)
+(Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, int testForceIndex, int constraintIndex)
 {
     int maxConstraintIndexToExtract = ASSUME_SYMMETRIC_MATRIX ? constraintIndex : globalNumConstraintVectors;
 
@@ -1355,7 +1335,7 @@ void CFSImpl::extractRelAccelsOfConstraintPoints
 
 
 void CFSImpl::extractRelAccelsFromLinkPairCase1
-(matrix_range<rmdmatrix>& Kxn, matrix_range<rmdmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int maxConstraintIndexToExtract)
+(Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int maxConstraintIndexToExtract)
 {
     ConstraintPointArray& constraintPoints = linkPair.constraintPoints;
 
@@ -1374,24 +1354,24 @@ void CFSImpl::extractRelAccelsFromLinkPairCase1
         LinkData* linkData1 = linkPair.linkData[1];
 
         //! \todo Can the follwoing equations be simplified ?
-        Vector3 dv0(linkData0->dvo - cross(constraint.point, linkData0->dw) + cross(link0->w, Vector3(link0->vo + cross(link0->w, constraint.point))));
-        Vector3 dv1(linkData1->dvo - cross(constraint.point, linkData1->dw) + cross(link1->w, Vector3(link1->vo + cross(link1->w, constraint.point))));
+        Vector3 dv0(linkData0->dvo - constraint.point.cross(linkData0->dw) + link0->w.cross(Vector3(link0->vo + link0->w.cross(constraint.point))));
+        Vector3 dv1(linkData1->dvo - constraint.point.cross(linkData1->dw) + link1->w.cross(Vector3(link1->vo + link1->w.cross(constraint.point))));
 
         Vector3 relAccel(dv1 - dv0);
 
         Kxn(constraintIndex, testForceIndex) =
-            dot(constraint.normalTowardInside[1], relAccel) - an0(constraintIndex);
+            constraint.normalTowardInside[1].dot(relAccel) - an0(constraintIndex);
 
         for(int j=0; j < constraint.numFrictionVectors; ++j){
             const int index = constraint.globalFrictionIndex + j;
-            Kxt(index, testForceIndex) = dot(constraint.frictionVector[j][1], relAccel) - at0(index);
+            Kxt(index, testForceIndex) = constraint.frictionVector[j][1].dot(relAccel) - at0(index);
         }
     }
 }
 
 
 void CFSImpl::extractRelAccelsFromLinkPairCase2
-(matrix_range<rmdmatrix>& Kxn, matrix_range<rmdmatrix>& Kxt, LinkPair& linkPair, int iTestForce, int iDefault, int testForceIndex, int maxConstraintIndexToExtract)
+(Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int iTestForce, int iDefault, int testForceIndex, int maxConstraintIndexToExtract)
 {
     ConstraintPointArray& constraintPoints = linkPair.constraintPoints;
 
@@ -1407,7 +1387,7 @@ void CFSImpl::extractRelAccelsFromLinkPairCase2
         Link* link = linkPair.link[iTestForce];
         LinkData* linkData = linkPair.linkData[iTestForce];
 
-        Vector3 dv(linkData->dvo - cross(constraint.point, linkData->dw) + cross(link->w, Vector3(link->vo + cross(link->w, constraint.point))));
+        Vector3 dv(linkData->dvo - constraint.point.cross(linkData->dw) + link->w.cross(Vector3(link->vo + link->w.cross(constraint.point))));
 
         if(CFS_DEBUG_VERBOSE_2)
             std::cout << "dv " << constraintIndex << " = " << dv << "\n";
@@ -1415,12 +1395,12 @@ void CFSImpl::extractRelAccelsFromLinkPairCase2
         Vector3 relAccel(constraint.defaultAccel[iDefault] - dv);
 
         Kxn(constraintIndex, testForceIndex) =
-            dot(constraint.normalTowardInside[iDefault], relAccel) - an0(constraintIndex);
+            constraint.normalTowardInside[iDefault].dot(relAccel) - an0(constraintIndex);
 
         for(int j=0; j < constraint.numFrictionVectors; ++j){
             const int index = constraint.globalFrictionIndex + j;
             Kxt(index, testForceIndex) =
-                dot(constraint.frictionVector[j][iDefault], relAccel) - at0(index);
+                constraint.frictionVector[j][iDefault].dot(relAccel) - at0(index);
         }
 
     }
@@ -1428,7 +1408,7 @@ void CFSImpl::extractRelAccelsFromLinkPairCase2
 
 
 void CFSImpl::extractRelAccelsFromLinkPairCase3
-(matrix_range<rmdmatrix>& Kxn, matrix_range<rmdmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int maxConstraintIndexToExtract)
+(Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int maxConstraintIndexToExtract)
 {
     ConstraintPointArray& constraintPoints = linkPair.constraintPoints;
 
@@ -1451,7 +1431,7 @@ void CFSImpl::extractRelAccelsFromLinkPairCase3
 
 
 void CFSImpl::copySymmetricElementsOfAccelerationMatrix
-(matrix_range<rmdmatrix>& Knn, matrix_range<rmdmatrix>& Ktn, matrix_range<rmdmatrix>& Knt, matrix_range<rmdmatrix>& Ktt)
+(Eigen::Block<dmatrix>& Knn, Eigen::Block<dmatrix>& Ktn, Eigen::Block<dmatrix>& Knt, Eigen::Block<dmatrix>& Ktt)
 {
     for(size_t linkPairIndex=0; linkPairIndex < constrainedLinkPairs.size(); ++linkPairIndex){
 
@@ -1489,9 +1469,9 @@ void CFSImpl::copySymmetricElementsOfAccelerationMatrix
 
 void CFSImpl::clearSingularPointConstraintsOfClosedLoopConnections()
 {
-    for(size_t i = 0; i < Mlcp.size1(); ++i){
+    for(size_t i = 0; i < Mlcp.rows(); ++i){
         if(Mlcp(i, i) < 1.0e-4){
-            for(size_t j=0; j < Mlcp.size1(); ++j){
+            for(size_t j=0; j < Mlcp.rows(); ++j){
                 Mlcp(j, i) = 0.0;
             }
             Mlcp(i, i) = numeric_limits<double>::max();
@@ -1549,7 +1529,7 @@ void CFSImpl::setConstantVectorAndMuBlock()
                 for(int k=0; k < constraint.numFrictionVectors; ++k){
 
                     // constraints for tangent acceleration
-                    double tangentProjectionOfRelVelocity = dot(constraint.frictionVector[k][1], constraint.relVelocityOn0);
+                    double tangentProjectionOfRelVelocity = constraint.frictionVector[k][1].dot(constraint.relVelocityOn0);
 
                     b(block2 + globalFrictionIndex) = at0(globalFrictionIndex);
                     if( !IGNORE_CURRENT_VELOCITY_IN_STATIC_FRICTION || constraint.numFrictionVectors == 1){
@@ -1607,7 +1587,7 @@ void CFSImpl::addConstraintForceToLink(LinkPair* linkPair, int ipair)
         }
 
         f_total   += f;
-        tau_total += cross(constraint.point, f);
+        tau_total += constraint.point.cross(f);
 
         if(isConstraintForceOutputMode){
             Link::ConstraintForceArray& constraintForces = link->constraintForces;
@@ -1629,7 +1609,7 @@ void CFSImpl::addConstraintForceToLink(LinkPair* linkPair, int ipair)
 
 
 
-void CFSImpl::solveMCPByProjectedGaussSeidel(const rmdmatrix& M, const dvector& b, dvector& x)
+void CFSImpl::solveMCPByProjectedGaussSeidel(const dmatrix& M, const dvector& b, dvector& x)
 {
     static const int loopBlockSize = DEFAULT_NUM_GAUSS_SEIDEL_ITERATION_BLOCK;
 
@@ -1668,7 +1648,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidel(const rmdmatrix& M, const dvector& 
 
 
 void CFSImpl::solveMCPByProjectedGaussSeidelInitial
-(const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration)
+(const dmatrix& M, const dvector& b, dvector& x, const int numIteration)
 {
     const int size = globalNumConstraintVectors + globalNumFrictionVectors;
 
@@ -1794,7 +1774,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
 
 
 void CFSImpl::solveMCPByProjectedGaussSeidelMain
-(const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration)
+(const dmatrix& M, const dvector& b, dvector& x, const int numIteration)
 {
     const int size = globalNumConstraintVectors + globalNumFrictionVectors;
 
@@ -1913,7 +1893,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
 
 
 double CFSImpl::solveMCPByProjectedGaussSeidelErrorCheck
-(const rmdmatrix& M, const dvector& b, dvector& x)
+(const dmatrix& M, const dvector& b, dvector& x)
 {
     const int size = globalNumConstraintVectors + globalNumFrictionVectors;
 
@@ -2031,12 +2011,12 @@ double CFSImpl::solveMCPByProjectedGaussSeidelErrorCheck
 
 
 
-void CFSImpl::checkLCPResult(rmdmatrix& M, dvector& b, dvector& x)
+void CFSImpl::checkLCPResult(dmatrix& M, dvector& b, dvector& x)
 {
     std::cout << "check LCP result\n";
     std::cout << "-------------------------------\n";
 
-    dvector z = prod(M, x) + b;
+    dvector z = M*x + b;
 
     int n = x.size();
     for(int i=0; i < n; ++i){
@@ -2061,12 +2041,12 @@ void CFSImpl::checkLCPResult(rmdmatrix& M, dvector& b, dvector& x)
 }
 
 
-void CFSImpl::checkMCPResult(rmdmatrix& M, dvector& b, dvector& x)
+void CFSImpl::checkMCPResult(dmatrix& M, dvector& b, dvector& x)
 {
     std::cout << "check MCP result\n";
     std::cout << "-------------------------------\n";
 
-    dvector z = prod(M, x) + b;
+    dvector z = M*x + b;
 
     for(int i=0; i < globalNumConstraintVectors; ++i){
         std::cout << "(" << x(i) << ", " << z(i) << ")";
@@ -2111,7 +2091,7 @@ void CFSImpl::checkMCPResult(rmdmatrix& M, dvector& b, dvector& x)
 
 
 #ifdef USE_PIVOTING_LCP
-bool CFSImpl::callPathLCPSolver(rmdmatrix& Mlcp, dvector& b, dvector& solution)
+bool CFSImpl::callPathLCPSolver(dmatrix& Mlcp, dvector& b, dvector& solution)
 {
     int size = solution.size();
     int square = size * size;
