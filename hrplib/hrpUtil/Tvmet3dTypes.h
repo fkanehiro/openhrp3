@@ -36,13 +36,18 @@ using std::asin;
 using std::atan2;
 #endif
 
-//#include <Eigen/Core>
-//#include <Eigen/Geometry>
-#include <Eigen/Eigen>
+#include <hrpUtil/EigenTypes.h>
+#warning Tvmet3dTypes.h is obsolete. Please replace it with EigenTypes.h
 
 namespace hrp{
-    typedef Eigen::Vector3d Vector3;
-    typedef Eigen::Matrix3d Matrix33;
+    inline Vector3 cross(const Vector3& v1, const Vector3& v2){
+        return v1.cross(v2);
+    }
+    inline Vector3 trans(const Vector3& v) { return v.transpose(); }
+    inline double dot(const Vector3& v1, const Vector3& v2) {
+        return v1.dot(v2);
+    }
+    inline double norm2(const Vector3& v) { return v.norm(); }
 };
 
 #endif
