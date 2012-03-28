@@ -34,6 +34,7 @@ set(headers
   config.h
   Referenced.h
   EasyScanner.h
+  EigenTypes.h
   Tvmet3dTypes.h
   Tvmet3d.h
   Tvmet4d.h
