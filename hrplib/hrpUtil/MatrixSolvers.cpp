@@ -57,12 +57,12 @@ namespace hrp {
 
 		int solveLinearEquationLU(dmatrix a, const dmatrix &b, dmatrix &out_x)
 		{
-				assert(a.size1() == a.size2() && a.size2() == b.size1() );
+				assert(a.rows() == a.cols() && a.cols() == b.rows() );
 
 				out_x = b;
 
-				const int n = a.size1();
-				const int nrhs = b.size2();
+				const int n = a.rows();
+				const int nrhs = b.cols();
 				int info;
 				std::vector<int> ipiv(n);
 
@@ -90,9 +90,9 @@ namespace hrp {
 		*/
 		int solveLinearEquationLU(const dmatrix &_a, const dvector &_b, dvector &_x)
 		{
-				assert(_a.size2() == _a.size1() && _a.size2() == _b.size() );
+				assert(_a.cols() == _a.rows() && _a.cols() == _b.size() );
 
-				int n = (int)_a.size2();
+				int n = (int)_a.cols();
 				int nrhs = 1;
 
 				int lda = n;
@@ -156,8 +156,8 @@ namespace hrp {
 		*/
 		int solveLinearEquationSVD(const dmatrix &_a, const dvector &_b, dvector &_x, double _sv_ratio)
 		{
-				const int m = _a.size1();
-				const int n = _a.size2();
+				const int m = _a.rows();
+				const int n = _a.cols();
 				assert( m == static_cast<int>(_b.size()) );
 				_x.resize(n);
 
@@ -229,7 +229,7 @@ namespace hrp {
 		*/
 		int solveLinearEquation(const dmatrix &_a, const dvector &_b, dvector &_x, double _sv_ratio)
 		{
-				if(_a.size2() == _a.size1())
+				if(_a.cols() == _a.rows())
 						return solveLinearEquationLU(_a, _b, _x);
 				else
 						return solveLinearEquationSVD(_a, _b, _x,  _sv_ratio);
@@ -245,8 +245,8 @@ namespace hrp {
 				int i, j, k;
 				char jobu  = 'A';
 				char jobvt = 'A';
-				int m = (int)_a.size1();
-				int n = (int)_a.size2();
+				int m = (int)_a.rows();
+				int n = (int)_a.cols();
 				int max_mn = max(m,n);
 				int min_mn = min(m,n);
 
@@ -307,16 +307,16 @@ namespace hrp {
 		//----- Calculation of eigen vectors and eigen values -----
 		int calcEigenVectors(const dmatrix &_a, dmatrix  &_evec, dvector &_eval)
 		{
-				assert( _a.size2() == _a.size1() );
+				assert( _a.cols() == _a.rows() );
 
-				typedef boost::numeric::ublas::matrix<double> mlapack;
-				typedef boost::numeric::ublas::vector<double> vlapack;
+				typedef dmatrix mlapack;
+				typedef dvector vlapack;
 				
 				mlapack a    = _a; // <-
 				mlapack evec = _evec;
 				vlapack eval = _eval;
 				
-				int n = (int)_a.size2();
+				int n = (int)_a.cols();
 				
 				double *wi = new double[n];
 				double *vl = new double[n*n];
@@ -327,7 +327,7 @@ namespace hrp {
 				
 				dgeev_("N","V", &n, &(a(0,0)), &n, &(eval(0)), wi, vl, &n, &(evec(0,0)), &n, work, &lwork, &info);
 				
-				_evec = trans(evec);
+				_evec = evec.transpose();
 				_eval = eval;
 				
 				delete [] wi;
@@ -341,13 +341,13 @@ namespace hrp {
 		//--- Calculation of determinamt ---
 		double det(const dmatrix &_a)
 		{
-				assert( _a.size2() == _a.size1() );
+				assert( _a.cols() == _a.rows() );
 
-				typedef boost::numeric::ublas::matrix<double> mlapack;
+				typedef dmatrix mlapack;
 				mlapack a = _a;	// <-
 
 				int info;
-				int n = a.size2();
+				int n = a.cols();
 				int lda = n;
 				std::vector<int> ipiv(n);
 

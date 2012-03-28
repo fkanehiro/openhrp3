@@ -17,13 +17,12 @@
 #include "Sensor.h"
 
 using namespace hrp;
-using namespace tvmet;
 
 
 ForwardDynamics::ForwardDynamics(BodyPtr body)
 	: body(body)
 {
-    g = 0.0;
+    g.setZero();
     timeStep = 0.005;
 
     integrationMode = RUNGEKUTTA_METHOD;
@@ -74,7 +73,7 @@ void ForwardDynamics::SE3exp(Vector3& out_p, Matrix33& out_R,
 {
     using ::std::numeric_limits;
 	
-    double norm_w = norm2(w);
+    double norm_w = w.norm();
 	
     if(norm_w < numeric_limits<double>::epsilon() ) {
 		out_p = p0 + vo * dt;
@@ -85,7 +84,7 @@ void ForwardDynamics::SE3exp(Vector3& out_p, Matrix33& out_R,
 		Vector3 vo_n(vo / norm_w);
 		Matrix33 rot = rodrigues(w_n, th);
 		
-		out_p = rot * p0 + (identity<Matrix33>() - rot) * Vector3(cross(w_n, vo_n)) + VVt_prod(w_n, w_n) * vo_n * th;
+		out_p = rot * p0 + (Matrix33::Identity() - rot) * Vector3(w_n.cross(vo_n)) + VVt_prod(w_n, w_n) * vo_n * th;
 		out_R = rot * R0;
     }
 }
@@ -109,7 +108,7 @@ void ForwardDynamics::updateSensorsFinal()
     for(int i=0; i < n; ++i){
         RateGyroSensor* sensor = body->sensor<RateGyroSensor>(i);
         Link* link = sensor->link;
-		sensor->w = trans(sensor->localR) * Vector3(trans(link->R) * link->w);
+        sensor->w = sensor->localR.transpose() * Vector3(link->R.transpose() * link->w);
 	}
 
 	n = body->numSensors(Sensor::ACCELERATION);
@@ -125,7 +124,7 @@ void ForwardDynamics::updateAccelSensor(AccelSensor* sensor)
 	Link* link = sensor->link;
 	vector2* x = sensor->x;
 
-	Vector3 o_Vgsens(link->R * cross(Vector3(trans(link->R) * link->w), sensor->localPos) + link->v);
+	Vector3 o_Vgsens(link->R * Vector3(link->R.transpose() * link->w).cross(sensor->localPos) + link->v);
 
     if(sensor->isFirstUpdate){
 		sensor->isFirstUpdate = false;
@@ -136,14 +135,14 @@ void ForwardDynamics::updateAccelSensor(AccelSensor* sensor)
     } else {
 		// kalman filtering
 		for(int i=0; i < 3; ++i){
-			alias(x[i]) = A * x[i] + o_Vgsens(i) * B;
+			x[i] = A * x[i] + o_Vgsens(i) * B;
 		}
     }
 
     Vector3 o_Agsens(x[0](1), x[1](1), x[2](1));
     o_Agsens += g;
 
-    sensor->dv = trans(link->R) * o_Agsens;
+    sensor->dv = link->R.transpose() * o_Agsens;
 }
 
 
@@ -166,13 +165,13 @@ void ForwardDynamics::initializeAccelSensors()
 		// s.kajita  2003 Jan.22
 
 		matrix22 Ac;
-		Ac = -sqrt(2*n_input/n_output), 1.0,
+		Ac << -sqrt(2*n_input/n_output), 1.0,
 			-n_input/n_output, 0.0;
 
 		vector2 Bc(sqrt(2*n_input/n_output), n_input/n_output);
 
-		A = identity<matrix22>();
-		matrix22 An(identity<matrix22>());
+		A = matrix22::Identity();
+		matrix22 An(matrix22::Identity());
 		matrix22 An2;
 		B = timeStep * Bc;
 		vector2 Bn(B);

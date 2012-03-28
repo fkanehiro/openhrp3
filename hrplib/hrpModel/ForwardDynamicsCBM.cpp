@@ -11,9 +11,6 @@
    \author Shin'ichiro Nakaoka
 */
 
-#include <boost/numeric/ublas/triangular.hpp>
-#include <boost/numeric/ublas/lu.hpp>
-
 #include "Body.h"
 #include "Link.h"
 #include "LinkTraverse.h"
@@ -22,8 +19,6 @@
 
 using namespace hrp;
 using namespace std;
-using namespace tvmet;
-using namespace boost::numeric;
 
 
 static const bool CALC_ALL_JOINT_TORQUES = false;
@@ -36,12 +31,12 @@ static const bool debugMode = false;
 template<class TMatrix>
 static void putMatrix(TMatrix& M, char* name)
 {
-	if(M.size2() == 1){
+	if(M.cols() == 1){
 		std::cout << "Vector " << name << M << std::endl;
 	} else {
 		std::cout << "Matrix " << name << ": \n";
 		for(size_t i=0; i < M.size1(); i++){
-			for(size_t j=0; j < M.size2(); j++){
+			for(size_t j=0; j < M.cols(); j++){
 				std::cout << boost::format(" %6.3f ") % M(i, j);
 			}
 			std::cout << std::endl;
@@ -176,9 +171,9 @@ void ForwardDynamicsMM::calcNextState()
 			getVector3(x0, root->R, 0, 0);
 			Vector3 y0;
 			getVector3(y0, root->R, 0, 1);
-			Vector3 x(normalize(x0));
-			Vector3 z(normalize((cross(x, y0))));
-			Vector3 y(cross(z, x));
+			Vector3 x(x0.normalized());
+			Vector3 z(x.cross(y0).normalized());
+			Vector3 y(z.cross(x));
 			setVector3(x, root->R, 0, 0);
 			setVector3(y, root->R, 0, 1);
 			setVector3(z, root->R, 0, 2);
@@ -257,10 +252,10 @@ void ForwardDynamicsMM::calcMotionWithRungeKuttaMethod()
 		w0  = root->w;
     }
 
-    vo  = 0;
-    w   = 0;
-    dvo = 0;
-    dw  = 0;
+    vo.setZero();
+    w.setZero();
+    dvo.setZero();
+    dw.setZero();
 
 	int numLinks = body->numLinks();
 
@@ -375,10 +370,10 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
     int n = traverse.numLinks();
 
 	Link* root = traverse[0];
-	root_w_x_v = cross(root->w, Vector3(root->vo + cross(root->w, root->p)));
+	root_w_x_v = root->w.cross(Vector3(root->vo + root->w.cross(root->p)));
     
     if(given_rootDof){
-        root->vo = root->v - cross(root->w, root->p);
+        root->vo = root->v - root->w.cross(root->p);
     }
 
     for(int i=0; i < n; ++i){
@@ -392,7 +387,7 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
 			case Link::SLIDE_JOINT:
 				link->p  = parent->R * (link->b + link->q * link->d) + parent->p;
 				link->R  = parent->R;
-				link->sw = 0.0;
+				link->sw.setZero();
 				link->sv = parent->R * link->d;
 				link->w  = parent->w;
 				break;
@@ -401,7 +396,7 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
 				link->R  = parent->R * rodrigues(link->a, link->q);
 				link->p  = parent->R * link->b + parent->p;
 				link->sw = parent->R * link->a;
-				link->sv = cross(link->p, link->sw);
+				link->sv = link->p.cross(link->sw);
 				link->w  = link->dq * link->sw + parent->w;
 				break;
 
@@ -411,17 +406,17 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
 				link->R = parent->R;
 				link->w = parent->w;
 				link->vo = parent->vo;
-				link->sw = 0.0;
-				link->sv = 0.0;
-				link->cv = 0.0;
-				link->cw = 0.0;
+				link->sw.setZero();
+				link->sv.setZero();
+				link->cv.setZero();
+				link->cw.setZero();
                 goto COMMON_CALCS_FOR_ALL_JOINT_TYPES;
 			}
 
 			link->vo = link->dq * link->sv + parent->vo;
 
-			Vector3 dsv(cross(parent->w, link->sv) + cross(parent->vo, link->sw));
-			Vector3 dsw(cross(parent->w, link->sw));
+			Vector3 dsv(parent->w.cross(link->sv) + parent->vo.cross(link->sw));
+			Vector3 dsw(parent->w.cross(link->sw));
 			link->cv = link->dq * dsv;
 			link->cw = link->dq * dsw;
 		}
@@ -429,19 +424,19 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
         COMMON_CALCS_FOR_ALL_JOINT_TYPES:
 
 		/// \todo remove this  equation
-		link->v = link->vo + cross(link->w, link->p);
+		link->v = link->vo + link->w.cross(link->p);
 
 		link->wc = link->R * link->c + link->p;
-		Matrix33 Iw(Matrix33(link->R * link->I)  * trans(link->R));
+		Matrix33 Iw(Matrix33(link->R * link->I)  * link->R.transpose());
         Matrix33 c_hat(hat(link->wc));
-		link->Iww = link->m * (c_hat * trans(c_hat)) + Iw;
+                link->Iww = link->m * (c_hat * c_hat.transpose()) + Iw;
 		link->Iwv = link->m * c_hat;
 
-		Vector3 P(link->m * (link->vo + cross(link->w, link->wc)));
-		Vector3 L(link->Iww * link->w + link->m * cross(link->wc, link->vo));
+		Vector3 P(link->m * (link->vo + link->w.cross(link->wc)));
+		Vector3 L(link->Iww * link->w + link->m * link->wc.cross(link->vo));
 
-		link->pf   = cross(link->w,  P);
-		link->ptau = cross(link->vo, P) + cross(link->w, L);
+		link->pf   = link->w.cross(P);
+		link->ptau = link->vo.cross(P) + link->w.cross(L);
         
     }
 }
@@ -469,7 +464,7 @@ void ForwardDynamicsMM::calcMassMatrix()
 	dvoorg = root->dvo;
 	dworg  = root->dw;
 	root->dvo = g - root_w_x_v;   // dv = g, dw = 0
-	root->dw  = 0.0;
+	root->dw.setZero();
 	
 	setColumnOfMassMatrix(b1, 0);
 
@@ -481,7 +476,7 @@ void ForwardDynamicsMM::calcMassMatrix()
 		}
 		for(int i=0; i < 3; ++i){
 			root->dw[i] = 1.0;
-			Vector3 dw_x_p = cross(root->dw, root->p);
+			Vector3 dw_x_p = root->dw.cross(root->p);
 			root->dvo -= dw_x_p;
 			setColumnOfMassMatrix(M11, i + 3);
 			root->dvo += dw_x_p;
@@ -496,7 +491,7 @@ void ForwardDynamicsMM::calcMassMatrix()
 		}
 		for(int i=0; i < 3; ++i){
 			root->dw[i] = 1.0;
-			Vector3 dw_x_p = cross(root->dw, root->p);
+			Vector3 dw_x_p = root->dw.cross(root->p);
 			root->dvo -= dw_x_p;
 			setColumnOfMassMatrix(M12, i + 3);
 			root->dvo += dw_x_p;
@@ -521,12 +516,11 @@ void ForwardDynamicsMM::calcMassMatrix()
     }
 
 	// subtract the constant term
-	ublas::matrix_column<dmatrix> vb1(b1, 0);
-	for(size_t i=0; i < M11.size2(); ++i){
-		ublas::matrix_column<dmatrix>(M11, i) -= vb1;
+	for(size_t i=0; i < M11.cols(); ++i){
+            M11.col(i) -= b1;
 	}
-	for(size_t i=0; i < M12.size2(); ++i){
-		ublas::matrix_column<dmatrix>(M12, i) -= vb1;
+	for(size_t i=0; i < M12.cols(); ++i){
+            M12.col(i) -= b1;
 	}
 
 	for(int i=1; i < numLinks; ++i){
@@ -549,7 +543,7 @@ void ForwardDynamicsMM::setColumnOfMassMatrix(dmatrix& M, int column)
     calcInverseDynamics(root, f, tau);
 
 	if(unknown_rootDof){
-		tau -= cross(root->p, f);
+                tau -= root->p.cross(f);
 		setVector3(f,   M, 0, column);
 		setVector3(tau, M, 3, column);
 	}
@@ -579,10 +573,10 @@ void ForwardDynamicsMM::calcInverseDynamics(Link* link, Vector3& out_f, Vector3&
 		out_tau += tau_c;
     }
 
-    out_f   += link->m   * link->dvo + trans(link->Iwv) * link->dw;
+    out_f   += link->m   * link->dvo + link->Iwv.transpose() * link->dw;
     out_tau += link->Iwv * link->dvo + link->Iww        * link->dw;
 
-    link->u = dot(link->sv, out_f) + dot(link->sw, out_tau);
+    link->u = link->sv.dot(out_f) + link->sw.dot(out_tau);
 
     if(link->sibling){
 		Vector3 f_s;
@@ -596,8 +590,8 @@ void ForwardDynamicsMM::calcInverseDynamics(Link* link, Vector3& out_f, Vector3&
 
 void ForwardDynamicsMM::sumExternalForces()
 {
-	fextTotal   = 0.0;
-	tauextTotal = 0.0;
+    fextTotal.setZero();
+    tauextTotal.setZero();
 
     int n = body->numLinks();
     for(int i=0; i < n; ++i){
@@ -606,7 +600,7 @@ void ForwardDynamicsMM::sumExternalForces()
 		tauextTotal += link->tauext;
     }
 
-	tauextTotal -= cross(body->rootLink()->p, fextTotal);
+    tauextTotal -= body->rootLink()->p.cross(fextTotal);
 }
 
 void ForwardDynamicsMM::calcd1(Link* link, Vector3& out_f, Vector3& out_tau)
@@ -622,7 +616,7 @@ void ForwardDynamicsMM::calcd1(Link* link, Vector3& out_f, Vector3& out_tau)
 		out_tau += tau_c;
     }
 
-    link->u = dot(link->sv, out_f) + dot(link->sw, out_tau);
+    link->u = link->sv.dot(out_f) + link->sw.dot(out_tau);
 
     if(link->sibling){
 		Vector3 f_s;
@@ -640,7 +634,7 @@ void ForwardDynamicsMM::initializeAccelSolver()
 		if(!ddqGivenCopied){
             if(given_rootDof){
                 Link* root = body->rootLink();
-                root->dvo = root->dv - cross(root->dw, root->p) - cross(root->w, root->v);
+                root->dvo = root->dv - root->dw.cross(root->p) - root->w.cross(root->v);
                 setVector3(root->dvo, ddqGiven, 0, 0);
                 setVector3(root->dw, ddqGiven, 3, 0);
             }
@@ -650,7 +644,7 @@ void ForwardDynamicsMM::initializeAccelSolver()
 			ddqGivenCopied = true;
 		}
 
-		b1 += prod(M12, ddqGiven);
+		b1 += M12*ddqGiven;
         
         for(int i=1; i < body->numLinks(); ++i){
 		    Link* link = body->link(i);
@@ -715,20 +709,16 @@ void ForwardDynamicsMM::solveUnknownAccels(const Vector3& fext, const Vector3& t
 		c1(i + unknown_rootDof) = torqueModeJoints[i]->u;
 	}
 
-    c1 -= ublas::matrix_column<dmatrix>(d1, 0);
-	c1 -= ublas::matrix_column<dmatrix>(b1, 0);
+        c1 -= d1;
+	c1 -= b1.col(0);
 
-	dmatrix M = M11;
-	ublas::permutation_matrix<std::size_t> pm(c1.size());
-	ublas::lu_factorize(M, pm);
-	ublas::lu_substitute(M, pm, c1);
+        dvector a(M11.colPivHouseholderQr().solve(c1));
 
 	if(unknown_rootDof){
 		Link* root = body->rootLink();
-		getVector3(root->dw,  c1, 3);
-		Vector3 dv;
-		getVector3(dv, c1, 0);
-		root->dvo = dv - cross(root->dw, root->p) - root_w_x_v;
+		root->dw = a.segment(3, 3);
+		Vector3 dv = a.head(3);
+		root->dvo = dv - root->dw.cross(root->p) - root_w_x_v;
 	}
 
 	for(size_t i=0; i < torqueModeJoints.size(); ++i){
@@ -762,7 +752,7 @@ void ForwardDynamicsMM::calcAccelFKandForceSensorValues(Link* link, Vector3& out
 	if(CALC_ALL_JOINT_TORQUES || info.hasSensorsAbove){
 
         Vector3 fg(-link->m * g);
-        Vector3 tg(cross(link->wc, fg));
+        Vector3 tg(link->wc.cross(fg));
 
 		out_f   -= fg;
 		out_tau -= tg;
@@ -770,11 +760,11 @@ void ForwardDynamicsMM::calcAccelFKandForceSensorValues(Link* link, Vector3& out
 		out_f   -= link->fext;
 		out_tau -= link->tauext;
 
-		out_f   += link->m   * link->dvo + trans(link->Iwv) * link->dw;
+		out_f   += link->m   * link->dvo + link->Iwv.transpose() * link->dw;
 		out_tau += link->Iwv * link->dvo + link->Iww        * link->dw;
 
 		if(CALC_ALL_JOINT_TORQUES && link->isHighGainMode){
-			link->u = dot(link->sv, out_f) + dot(link->sw, out_tau);
+                    link->u = link->sv.dot(out_f) + link->sw.dot(out_tau);
 		}
 
 		if(info.sensor){
@@ -782,8 +772,8 @@ void ForwardDynamicsMM::calcAccelFKandForceSensorValues(Link* link, Vector3& out
 			Matrix33 sensorR  (link->R * sensor->localR);
 			Vector3  sensorPos(link->p + link->R * sensor->localPos);
 			Vector3 f(-out_f);
-			sensor->f   = trans(sensorR) * f;
-			sensor->tau = trans(sensorR) * (-out_tau - cross(sensorPos, f));
+			sensor->f   = sensorR.transpose() * f;
+			sensor->tau = sensorR.transpose() * (-out_tau - sensorPos.cross(f));
 		}
 	}
 }

@@ -85,7 +85,7 @@ void CollisionPairInserter::calc_normal_vector(col_tri* t)
     if(t->status == 0){
         const Vector3 e1(t->p2 - t->p1);
         const Vector3 e2(t->p3 - t->p2);
-        t->n = normalize(Vector3(cross(e1, e2)));
+        t->n = e1.cross(e2).normalized();
         t->status = 1;
     }
 }
@@ -106,7 +106,7 @@ int CollisionPairInserter::is_convex_neighbor(col_tri* t1, col_tri* t2)
         
     // printf("is_convex_neighbor = %f %f %f\n",innerProd(t1->n,vec1),innerProd(t1->n,vec2),innerProd(t1->n,vec3));
         
-    if(dot(t2->n, vec1) < EPS && dot(t2->n, vec2) < EPS && dot(t2->n, vec3) < EPS){
+    if(t2->n.dot(vec1) < EPS && t2->n.dot(vec2) < EPS && t2->n.dot(vec3) < EPS){
         return 1;
     } else {
         return 0;
@@ -280,9 +280,9 @@ void CollisionPairInserter::find_signed_distance(
     // use the first intersecting point to find the distance
     const Vector3 vec(vert_w - cdContact[nth].i_points[0]);
     //vecNormalize(cdContact[nth].n_vector);
-    tvmet::alias(cdContact[nth].n_vector) = normalize(cdContact[nth].n_vector);
+    cdContact[nth].n_vector.normalize();
         
-    double dis0 = dot(cdContact[nth].n_vector, vec);
+    double dis0 = cdContact[nth].n_vector.dot(vec);
         
 #if 0
     switch(ctype){
@@ -306,16 +306,16 @@ void CollisionPairInserter::find_signed_distance(
         
     switch(ctype){
     case FV:
-        dis1 =   dot(cdContact[nth].m, vec);
+        dis1 =   cdContact[nth].m.dot(vec);
         if(COLLIDE_DEBUG) printf("dis1 = %f\n", dis1);
         break;
     case VF:
-        dis1 = - dot(cdContact[nth].n, vec);
+        dis1 = - cdContact[nth].n.dot(vec);
         if(COLLIDE_DEBUG) printf("dis1 = %f\n", dis1);
         break;
     case EE:
-        dis1 =   dot(cdContact[nth].m, vec);
-        dis2 = - dot(cdContact[nth].n, vec);
+        dis1 =   cdContact[nth].m.dot(vec);
+        dis2 = - cdContact[nth].n.dot(vec);
         if(COLLIDE_DEBUG){
             printf("dis1 = %f\n", dis1);
             printf("dis2 = %f\n", dis2);
@@ -366,7 +366,7 @@ int CollisionPairInserter::new_point_test(int k)
         for(int j=0; j < cdContact[i].num_of_i_points; ++j){
             Vector3 dv(cdContact[i].i_points[j] - cdContact[last].i_points[k]);
             double d = cdContact[i].depth - cdContact[last].depth;
-            if(dot(dv, dv) < eps && d*d < eps) return 0;
+            if(dv.dot(dv) < eps && d*d < eps) return 0;
         }
     }
     return 1;

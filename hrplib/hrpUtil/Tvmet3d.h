@@ -16,10 +16,9 @@
 
 namespace hrp
 {
-    typedef tvmet::XprVector<tvmet::VectorConstReference<double, 3>, 3> Vector3Ref;
-
+    typedef Eigen::Vector3d Vector3Ref;
     inline Vector3Ref getVector3Ref(const double* data) {
-        return tvmet::cvector_ref<double, 3>(data);
+        return Vector3Ref(data[0], data[1], data[2]);
     }
 
     HRP_UTIL_EXPORT void calcRodrigues(Matrix33& out_R, const Vector3& axis, double q);
@@ -47,7 +46,7 @@ namespace hrp
         Matrix33 R;
         double c = cos(theta);
         double s = sin(theta);
-        R = 1.0, 0.0, 0.0,
+        R << 1.0, 0.0, 0.0,
             0.0,  c,  -s,
             0.0,  s,   c ;
         return R;
@@ -57,7 +56,7 @@ namespace hrp
         Matrix33 R;
         double c = cos(theta);
         double s = sin(theta);
-        R = c,   0.0,  s,
+        R << c,   0.0,  s,
             0.0, 1.0, 0.0,
             -s,  0.0,  c ;
         return R;
@@ -67,7 +66,7 @@ namespace hrp
         Matrix33 R;
         double c = cos(theta);
         double s = sin(theta);
-        R =  c,  -s,  0.0,
+        R <<  c,  -s,  0.0,
              s,   c,  0.0,
             0.0, 0.0, 1.0;
         return R;
@@ -91,7 +90,7 @@ namespace hrp
     
     inline Matrix33 hat(const Vector3& c) {
         Matrix33 m;
-        m = 0.0,  -c(2),  c(1),
+        m << 0.0,  -c(2),  c(1),
             c(2),  0.0,  -c(0),
             -c(1),  c(0),  0.0;
         return m;
@@ -99,7 +98,7 @@ namespace hrp
     
     inline Matrix33 VVt_prod(const Vector3& a, const Vector3& b){
         Matrix33 m;
-        m = a(0) * b(0), a(0) * b(1), a(0) * b(2),
+        m << a(0) * b(0), a(0) * b(1), a(0) * b(2),
             a(1) * b(0), a(1) * b(1), a(1) * b(2),
             a(2) * b(0), a(2) * b(1), a(2) * b(2);
         return m;

@@ -81,8 +81,8 @@ namespace hrp
 
 		// varialbes for calculating sensor values
 		// preview control gain matrices for force sensors
-		typedef tvmet::Matrix<double, 2,2> matrix22;
-		typedef tvmet::Vector<double, 2> vector2;
+		typedef Eigen::Matrix2d matrix22;
+		typedef Eigen::Vector2d vector2;
 		matrix22 A;
 		vector2 B;
 		

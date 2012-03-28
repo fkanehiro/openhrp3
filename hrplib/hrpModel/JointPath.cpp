@@ -128,7 +128,7 @@ void JointPath::onJointPathUpdated()
 void JointPath::calcJacobian(dmatrix& out_J) const
 {
     const int n = joints.size();
-    out_J.resize(6, n, false);
+    out_J.resize(6, n);
 	
     if(n > 0){
 		
@@ -147,7 +147,7 @@ void JointPath::calcJacobian(dmatrix& out_J) const
                 if(!isJointDownward(i)){
                     omega *= -1.0;
                 } 
-                Vector3 dp(cross(omega, arm));
+                Vector3 dp(omega.cross(arm));
                 setVector3(dp,    out_J, 0, i);
                 setVector3(omega, out_J, 3, i);
             }
@@ -243,17 +243,17 @@ bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_
         calcJacobian(J);
 	
         Vector3 dp(end_p - target->p);
-        Vector3 omega(target->R * omegaFromRot(Matrix33(trans(target->R) * end_R)));
+        Vector3 omega(target->R * omegaFromRot(Matrix33(target->R.transpose() * end_R)));
 
         if(isBestEffortIKMode){
             const double errsqr0 = errsqr;
-            errsqr = dot(dp, dp) + dot(omega, omega);
+            errsqr = dp.dot(dp) + omega.dot(omega);
             if(fabs(errsqr - errsqr0) < maxIKErrorSqr){
                 converged = true;
                 break;
             }
         } else {
-            const double errsqr = dot(dp, dp) + dot(omega, omega);
+            const double errsqr = dp.dot(dp) + omega.dot(omega);
             if(errsqr < maxIKErrorSqr){
                 converged = true;
                 break;
