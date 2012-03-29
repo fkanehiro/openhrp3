@@ -18,7 +18,7 @@
 #include <vector>
 #include <string>
 #include <hrpUtil/Referenced.h>
-#include <hrpUtil/Tvmet4d.h>
+#include <hrpUtil/Eigen4d.h>
 #include <hrpCorba/ModelLoader.hh>
 #include <hrpCollision/ColdetModel.h>
 

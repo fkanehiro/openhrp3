@@ -19,7 +19,7 @@
 #include "SampleRH2.h"
 
 #include <iostream>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 
 #define ROOT_FILE "etc/body.dat"
 

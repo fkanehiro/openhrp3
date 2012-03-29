@@ -18,8 +18,7 @@
 #include <ostream>
 #include <boost/shared_ptr.hpp>
 #include <hrpUtil/Referenced.h>
-#include <hrpUtil/Tvmet3d.h>
-#include <hrpUtil/EigenTypes.h>
+#include <hrpUtil/Eigen3d.h>
 #include "LinkTraverse.h"
 #include "Config.h"
 

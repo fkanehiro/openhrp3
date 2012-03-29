@@ -18,7 +18,7 @@
 #include <cmath>
 #include <vector>
 #include <map>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 
 using namespace std;
 using namespace boost;

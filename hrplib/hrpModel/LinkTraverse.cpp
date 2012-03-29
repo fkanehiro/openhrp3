@@ -17,7 +17,7 @@
 
 #include "LinkTraverse.h"
 #include "Link.h"
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 
 using namespace std;
 using namespace hrp;
