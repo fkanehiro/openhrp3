@@ -84,7 +84,7 @@ void ForwardDynamics::SE3exp(Vector3& out_p, Matrix33& out_R,
 		Vector3 vo_n(vo / norm_w);
 		Matrix33 rot = rodrigues(w_n, th);
 		
-		out_p = rot * p0 + (Matrix33::Identity() - rot) * Vector3(w_n.cross(vo_n)) + VVt_prod(w_n, w_n) * vo_n * th;
+		out_p = rot * p0 + (Matrix33::Identity() - rot) * w_n.cross(vo_n) + VVt_prod(w_n, w_n) * vo_n * th;
 		out_R = rot * R0;
     }
 }
@@ -108,7 +108,7 @@ void ForwardDynamics::updateSensorsFinal()
     for(int i=0; i < n; ++i){
         RateGyroSensor* sensor = body->sensor<RateGyroSensor>(i);
         Link* link = sensor->link;
-        sensor->w = sensor->localR.transpose() * Vector3(link->R.transpose() * link->w);
+        sensor->w = sensor->localR.transpose() * link->R.transpose() * link->w;
 	}
 
 	n = body->numSensors(Sensor::ACCELERATION);
@@ -124,7 +124,7 @@ void ForwardDynamics::updateAccelSensor(AccelSensor* sensor)
 	Link* link = sensor->link;
 	vector2* x = sensor->x;
 
-	Vector3 o_Vgsens(link->R * Vector3(link->R.transpose() * link->w).cross(sensor->localPos) + link->v);
+	Vector3 o_Vgsens(link->R * (link->R.transpose() * link->w).cross(sensor->localPos) + link->v);
 
     if(sensor->isFirstUpdate){
 		sensor->isFirstUpdate = false;

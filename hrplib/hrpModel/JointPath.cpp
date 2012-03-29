@@ -148,8 +148,7 @@ void JointPath::calcJacobian(dmatrix& out_J) const
                     omega *= -1.0;
                 } 
                 Vector3 dp(omega.cross(arm));
-                setVector3(dp,    out_J, 0, i);
-                setVector3(omega, out_J, 3, i);
+                out_J.col(i) << dp, omega;
             }
             break;
 				
@@ -159,10 +158,7 @@ void JointPath::calcJacobian(dmatrix& out_J) const
                 if(!isJointDownward(i)){
                     dp *= -1.0;
                 }
-                setVector3(dp, out_J, 0, i);
-                out_J(3, i) = 0.0;
-                out_J(4, i) = 0.0;
-                out_J(5, i) = 0.0;
+                out_J.col(i) << dp, Vector3::Zero();
             }
             break;
 				
@@ -243,7 +239,7 @@ bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_
         calcJacobian(J);
 	
         Vector3 dp(end_p - target->p);
-        Vector3 omega(target->R * omegaFromRot(Matrix33(target->R.transpose() * end_R)));
+        Vector3 omega(target->R * omegaFromRot(target->R.transpose() * end_R));
 
         if(isBestEffortIKMode){
             const double errsqr0 = errsqr;
@@ -260,8 +256,7 @@ bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_
             }
         }
 
-        setVector3(dp   , v, 0);
-        setVector3(omega, v, 3);
+        v << dp, omega;
 		
         if(n == 6){ 
             solveLinearEquationLU(J, v, dq);

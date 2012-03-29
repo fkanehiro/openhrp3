@@ -90,7 +90,7 @@ namespace hrp
 
 		dvector qGiven;
 		dvector dqGiven;
-		dmatrix ddqGiven;
+		dvector ddqGiven;
         Vector3 pGiven;
         Matrix33 RGiven;
         Vector3 voGiven;

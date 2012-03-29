@@ -318,7 +318,7 @@ Vector3 Body::calcCM()
         totalMass_ += link->m;
     }
 
-    return Vector3(mc / totalMass_);
+    return mc / totalMass_;
 }
 
 
@@ -363,7 +363,7 @@ void Body::calcMassMatrix(dmatrix& out_M)
     // preserve and clear the root link acceleration
     dvoorg = rootLink_->dvo;
     dworg  = rootLink_->dw;
-    root_w_x_v = rootLink_->w.cross(Vector3(rootLink_->vo + rootLink_->w.cross(rootLink_->p)));
+    root_w_x_v = rootLink_->w.cross(rootLink_->vo + rootLink_->w.cross(rootLink_->p));
     rootLink_->dvo = g - root_w_x_v;   // dv = g, dw = 0
     rootLink_->dw.setZero();
 	
@@ -419,8 +419,7 @@ void Body::setColumnOfMassMatrix(dmatrix& out_M, int column)
 
     if( !isStaticModel_ ){
         tau -= rootLink_->p.cross(f);
-        setVector3(f,   out_M, 0, column);
-        setVector3(tau, out_M, 3, column);
+        out_M.block<6,1>(0, column) << f, tau;
     }
 
     int n = numJoints();
@@ -508,7 +507,7 @@ void Body::calcTotalMomentum(Vector3& out_P, Vector3& out_L)
     for(int i=0; i < n; i++){
         Link* link = linkTraverse_[i];
 
-        dwc = link->v + link->w.cross(Vector3(link->R * link->c));
+        dwc = link->v + link->w.cross(link->R * link->c);
 
         P   = link->m * dwc;
 
@@ -794,10 +793,10 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
         Vector3 p_relative;
         Matrix33 R_relative;
         if(!isCustomizedIkPathReversed){
-            p_relative = baseLink_->R.transpose() * Vector3(end_p - baseLink_->p);
+            p_relative = baseLink_->R.transpose() * (end_p - baseLink_->p);
             R_relative = baseLink_->R.transpose() * end_R;
         } else {
-            p_relative = end_R.transpose() * Vector3(baseLink_->p - end_p);
+            p_relative = end_R.transpose() * (baseLink_->p - end_p);
             R_relative = end_R.transpose() * baseLink_->R;
         }
         solved = body->customizerInterface->
@@ -808,7 +807,7 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
             calcForwardKinematics();
 
             Vector3 dp(end_p - targetLink->p);
-            Vector3 omega(omegaFromRot(Matrix33(targetLink->R.transpose() * end_R)));
+            Vector3 omega(omegaFromRot(targetLink->R.transpose() * end_R));
 			
             double errsqr = dp.dot(dp) + omega.dot(omega);
 			
@@ -887,7 +886,7 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
             Vector3 omega(sgn[j->jointId]*j->R*j->a);
             Vector3 arm((j->submwc-j->subm*j->p)/totalMass_);
             Vector3 dp(omega.cross(arm));
-            setVector3(dp, J, 0, j->jointId);
+            J.col(j->jointId) = dp;
             break;
         }
         default:

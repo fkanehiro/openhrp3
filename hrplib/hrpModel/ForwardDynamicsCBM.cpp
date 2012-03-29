@@ -166,17 +166,13 @@ void ForwardDynamicsMM::calcNextState()
 		}
 		
 		if(ROOT_ATT_NORMALIZATION_ENABLED && unknown_rootDof){
-			Link* root = body->rootLink();
-			Vector3 x0;
-			getVector3(x0, root->R, 0, 0);
-			Vector3 y0;
-			getVector3(y0, root->R, 0, 1);
-			Vector3 x(x0.normalized());
-			Vector3 z(x.cross(y0).normalized());
-			Vector3 y(z.cross(x));
-			setVector3(x, root->R, 0, 0);
-			setVector3(y, root->R, 0, 1);
-			setVector3(z, root->R, 0, 2);
+                        Matrix33& R = body->rootLink()->R;
+                        Matrix33::ColXpr x = R.col(0);
+                        Matrix33::ColXpr y = R.col(1);
+                        Matrix33::ColXpr z = R.col(2);
+                        x.normalize();
+                        z = x.cross(y).normalized();
+                        y = z.cross(x);
 		}
 	}
 		
@@ -370,7 +366,7 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
     int n = traverse.numLinks();
 
 	Link* root = traverse[0];
-	root_w_x_v = root->w.cross(Vector3(root->vo + root->w.cross(root->p)));
+	root_w_x_v = root->w.cross(root->vo + root->w.cross(root->p));
     
     if(given_rootDof){
         root->vo = root->v - root->w.cross(root->p);
@@ -427,7 +423,7 @@ void ForwardDynamicsMM::calcPositionAndVelocityFK()
 		link->v = link->vo + link->w.cross(link->p);
 
 		link->wc = link->R * link->c + link->p;
-		Matrix33 Iw(Matrix33(link->R * link->I)  * link->R.transpose());
+		Matrix33 Iw(link->R * link->I * link->R.transpose());
         Matrix33 c_hat(hat(link->wc));
                 link->Iww = link->m * (c_hat * c_hat.transpose()) + Iw;
 		link->Iwv = link->m * c_hat;
@@ -544,8 +540,7 @@ void ForwardDynamicsMM::setColumnOfMassMatrix(dmatrix& M, int column)
 
 	if(unknown_rootDof){
                 tau -= root->p.cross(f);
-		setVector3(f,   M, 0, column);
-		setVector3(tau, M, 3, column);
+                M.block<6,1>(0, column) << f, tau;
 	}
 
 	for(size_t i=0; i < torqueModeJoints.size(); ++i){
@@ -635,8 +630,8 @@ void ForwardDynamicsMM::initializeAccelSolver()
             if(given_rootDof){
                 Link* root = body->rootLink();
                 root->dvo = root->dv - root->dw.cross(root->p) - root->w.cross(root->v);
-                setVector3(root->dvo, ddqGiven, 0, 0);
-                setVector3(root->dw, ddqGiven, 3, 0);
+                ddqGiven.head(3)      = root->dvo;
+                ddqGiven.segment(3,3) = root->dw;
             }
 			for(size_t i=0; i < highGainModeJoints.size(); ++i){
 				ddqGiven(given_rootDof+i,0) = highGainModeJoints[i]->ddq;
@@ -701,8 +696,8 @@ void ForwardDynamicsMM::solveUnknownAccels(Link* link, const Vector3& fext, cons
 void ForwardDynamicsMM::solveUnknownAccels(const Vector3& fext, const Vector3& tauext)
 {
     if(unknown_rootDof){
-        setVector3(fext,   c1, 0);
-	    setVector3(tauext, c1, 3);
+        c1.head(3)      = fext;
+        c1.segment(3,3) = tauext;
     }
 
 	for(size_t i=0; i < torqueModeJoints.size(); ++i){
