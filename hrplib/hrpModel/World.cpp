@@ -11,6 +11,7 @@
    \author Shin'ichiro Nakaoka
 */
 
+#include <iostream>
 #include "World.h"
 #include "Link.h"
 #include "ForwardDynamicsABM.h"

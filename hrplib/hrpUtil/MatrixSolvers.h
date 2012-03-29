@@ -11,7 +11,7 @@
 #ifndef HRPUTIL_MATRIX_SOLVERS_H_INCLUDED
 #define HRPUTIL_MATRIX_SOLVERS_H_INCLUDED
 
-#include "uBlasCommonTypes.h"
+#include "EigenTypes.h"
 #include "config.h"
 
 namespace hrp {

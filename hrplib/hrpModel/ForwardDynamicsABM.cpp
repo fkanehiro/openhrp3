@@ -16,14 +16,11 @@
 #include "Link.h"
 #include "LinkTraverse.h"
 #include "Sensor.h"
-#include <hrpUtil/uBlasCommonTypes.h>
-#include <boost/numeric/ublas/triangular.hpp>
-#include <boost/numeric/ublas/lu.hpp>
+#include <hrpUtil/EigenTypes.h>
 
 
 using namespace hrp;
 using namespace std;
-using namespace boost::numeric;
 
 
 static const bool debugMode = false;
@@ -442,23 +439,21 @@ void ForwardDynamicsABM::calcABMPhase3()
         // - | Ivv  trans(Iwv) | * | dvo | = | pf   |
         //   | Iwv     Iww     |   | dw  |   | ptau |
 
-        ublas::bounded_matrix<double, 6, 6, ublas::column_major> Ia;
+        dmatrix Ia(6,6);
         setMatrix33(root->Ivv, Ia, 0, 0);
         setTransMatrix33(root->Iwv, Ia, 0, 3);
         setMatrix33(root->Iwv, Ia, 3, 0);
         setMatrix33(root->Iww, Ia, 3, 3);
         
-        ublas::bounded_vector<double, 6> p;
+        dvector p(6);
         setVector3(root->pf, p, 0);
         setVector3(root->ptau, p, 3);
         p *= -1.0;
         
-        ublas::permutation_matrix<std::size_t> pm(6);
-        ublas::lu_factorize(Ia, pm);
-        ublas::lu_substitute(Ia, pm, p);
+        dvector pm(Ia.colPivHouseholderQr().solve(p));
 
-        getVector3(root->dvo, p, 0);
-        getVector3(root->dw, p, 3);
+        getVector3(root->dvo, pm, 0);
+        getVector3(root->dw, pm, 3);
 
     } else {
         root->dvo.setZero();

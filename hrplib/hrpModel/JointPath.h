@@ -17,7 +17,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
-#include <hrpUtil/uBlasCommonTypes.h>
+#include <hrpUtil/EigenTypes.h>
 #include "LinkPath.h"
 #include "InverseKinematics.h"
 #include "Config.h"
