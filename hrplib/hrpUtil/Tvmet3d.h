@@ -13,4 +13,6 @@
 
 #include "Eigen3d.h"
 #warning Tvmet3d.h is obsolete. Please replace it with Eigen3d.h
+#include "Tvmet2Eigen.h"
+
 #endif

@@ -38,16 +38,6 @@ using std::atan2;
 
 #include <hrpUtil/EigenTypes.h>
 #warning Tvmet3dTypes.h is obsolete. Please replace it with EigenTypes.h
-
-namespace hrp{
-    inline Vector3 cross(const Vector3& v1, const Vector3& v2){
-        return v1.cross(v2);
-    }
-    inline Matrix33 trans(const Matrix33& m) { return m.transpose(); }
-    inline double dot(const Vector3& v1, const Vector3& v2) {
-        return v1.dot(v2);
-    }
-    inline double norm2(const Vector3& v) { return v.norm(); }
-};
+#include <hrpUtil/Tvmet2Eigen.h>
 
 #endif
