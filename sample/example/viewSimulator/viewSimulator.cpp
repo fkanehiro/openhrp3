@@ -1,4 +1,5 @@
 // -*- mode: c++; indent-tabs-mode: t; tab-width: 4; c-basic-offset: 8; -*-
+#include <iostream>
 #include <hrpModel/ModelLoaderUtil.h>
 #include <hrpCorba/DynamicsSimulator.hh>
 #include <hrpCorba/Controller.hh>

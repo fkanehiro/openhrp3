@@ -23,7 +23,7 @@
 #include "ForwardDynamicsCBM.h"
 #include "ConstraintForceSolver.h"
 
-#include <hrpUtil/uBlasCommonTypes.h>
+#include <hrpUtil/EigenTypes.h>
 #include <hrpCorba/OpenHRPCommon.hh>
 #include <hrpCollision/ColdetModelPair.h>
 

@@ -12,7 +12,7 @@
 #define HRPUTIL_TVMET3D_H_INCLUDED
 
 #include "config.h"
-#include "Tvmet3dTypes.h"
+#include "EigenTypes.h"
 
 namespace hrp
 {

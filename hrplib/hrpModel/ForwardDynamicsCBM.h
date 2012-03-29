@@ -18,7 +18,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include <hrpUtil/Tvmet3d.h>
-#include <hrpUtil/uBlasCommonTypes.h>
+#include <hrpUtil/EigenTypes.h>
 #include "ForwardDynamics.h"
 #include "Config.h"
 
