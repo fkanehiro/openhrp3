@@ -7,7 +7,8 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 
-#include "Tvmet4d.h"
+#include "Eigen4d.h"
+#include "VrmlNodes.h"
 
 using namespace hrp;
 

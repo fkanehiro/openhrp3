@@ -11,7 +11,7 @@
 
 #include "DynamicsSimulator_impl.h"
 
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 #include <hrpModel/Body.h>
 #include <hrpModel/Link.h>
 #include <hrpModel/LinkTraverse.h>

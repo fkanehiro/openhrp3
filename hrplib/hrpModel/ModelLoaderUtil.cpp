@@ -15,8 +15,8 @@
 #include "ModelLoaderUtil.h"
 #include "Link.h"
 #include "Sensor.h"
-#include <hrpUtil/Tvmet3d.h>
-#include <hrpUtil/Tvmet4d.h>
+#include <hrpUtil/Eigen3d.h>
+#include <hrpUtil/Eigen4d.h>
 #include <hrpCorba/OpenHRPCommon.hh>
 #include <hrpCollision/ColdetModel.h>
 #include <stack>

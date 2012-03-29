@@ -21,7 +21,6 @@ set(DEPENDENT_BASENAMES
   omniorb4-nameserver
   python-omniorb2
   python-tk
-  tvmet\ \(>=1.7.2\)
   lapack3
   lapack3-dev
   atlas3-base

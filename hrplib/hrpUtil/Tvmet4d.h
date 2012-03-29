@@ -10,17 +10,6 @@
 #ifndef OPENHRP_UTIL_TVMET4D_H_INCLUDED
 #define OPENHRP_UTIL_TVMET4D_H_INCLUDED
 
-#include "config.h"
-#include "Tvmet3d.h"
-#include "VrmlNodes.h"
-
-namespace hrp
-{
-    typedef Eigen::Matrix4d Matrix44;
-    typedef Eigen::Vector4d Vector4;
-
-	HRP_UTIL_EXPORT void calcRodrigues(Matrix44& out_R, const Vector3& axis, double q);
-    HRP_UTIL_EXPORT void calcTransformMatrix(VrmlTransform* transform, Matrix44& out_T);
-};
-
+#include "Eigen4d.h"
+#warning Tvmet4d.h is obsolete. Please replace it with Eigen4d.h
 #endif

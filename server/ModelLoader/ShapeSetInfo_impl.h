@@ -20,8 +20,8 @@
 #include <hrpCorba/ModelLoader.hh>
 #include <hrpUtil/TriangleMeshShaper.h>
 #include <hrpUtil/VrmlNodes.h>
-#include <hrpUtil/Tvmet3d.h>
-#include <hrpUtil/Tvmet4d.h>
+#include <hrpUtil/Eigen3d.h>
+#include <hrpUtil/Eigen4d.h>
 #include <hrpCollision/ColdetModel.h>
 
 using namespace OpenHRP;

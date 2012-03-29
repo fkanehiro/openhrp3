@@ -18,7 +18,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/signals.hpp>
 #include <hrpUtil/VrmlNodes.h>
-#include <hrpUtil/Tvmet4d.h>
+#include <hrpUtil/Eigen4d.h>
 #include "Config.h"
 
 

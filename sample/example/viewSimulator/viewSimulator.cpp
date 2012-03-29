@@ -4,7 +4,7 @@
 #include <hrpCorba/DynamicsSimulator.hh>
 #include <hrpCorba/Controller.hh>
 #include <hrpCorba/ViewSimulator.hh>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 
 using namespace std;
 using namespace hrp;

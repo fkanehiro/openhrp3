@@ -3,7 +3,7 @@
 #include <hrpModel/ModelLoaderUtil.h>
 #include <hrpCorba/DynamicsSimulator.hh>
 #include <hrpCorba/Controller.hh>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 #include <fstream>
 
 using namespace std;
