@@ -79,17 +79,13 @@ void ForwardDynamicsABM::calcNextState()
 	}
 
 	if(rootAttitudeNormalizationEnabled){
-		Link* root = body->rootLink();
-		Vector3 x0;
-		getVector3(x0, root->R, 0, 0);
-		Vector3 y0;
-		getVector3(y0, root->R, 0, 1);
-		Vector3 x(x0.normalized());
-		Vector3 z(x.cross(y0).normalized());
-                Vector3 y(z.cross(x));
-		setVector3(x, root->R, 0, 0);
-		setVector3(y, root->R, 0, 1);
-		setVector3(z, root->R, 0, 2);
+		Matrix33& R = body->rootLink()->R;
+                Matrix33::ColXpr x = R.col(0);
+                Matrix33::ColXpr y = R.col(1);
+                Matrix33::ColXpr z = R.col(2);
+                x.normalize();
+                z = x.cross(y).normalized();
+                y = z.cross(x);
 	}
 
 	calcABMFirstHalf();
@@ -278,7 +274,7 @@ void ForwardDynamicsABM::calcABMPhase1()
         link->wc = link->R * link->c + link->p;
         
         // compute I^s (Eq.(6.24) of Kajita's textbook))
-        Matrix33 Iw(Matrix33(link->R * link->I)  * link->R.transpose());
+        Matrix33 Iw(link->R * link->I * link->R.transpose());
         
         Matrix33 c_hat(hat(link->wc));
         link->Iww = link->m * (c_hat * c_hat.transpose()) + Iw;
@@ -329,7 +325,7 @@ void ForwardDynamicsABM::calcABMPhase2()
                 Vector3 hhv_dd(child->hhv / child->dd);
                 link->Ivv += child->Ivv - VVt_prod(child->hhv, hhv_dd);
                 link->Iwv += child->Iwv - VVt_prod(child->hhw, hhv_dd);
-                link->Iww += child->Iww - VVt_prod(child->hhw, Vector3(child->hhw / child->dd));
+                link->Iww += child->Iww - VVt_prod(child->hhw, child->hhw / child->dd);
             }
 
             link->pf   += child->Ivv * child->cv + child->Iwv.transpose() * child->cw + child->pf;
@@ -378,7 +374,7 @@ void ForwardDynamicsABM::calcABMPhase2Part1()
                 Vector3 hhv_dd(child->hhv / child->dd);
                 link->Ivv += child->Ivv - VVt_prod(child->hhv, hhv_dd);
                 link->Iwv += child->Iwv - VVt_prod(child->hhw, hhv_dd);
-                link->Iww += child->Iww - VVt_prod(child->hhw, Vector3(child->hhw / child->dd));
+                link->Iww += child->Iww - VVt_prod(child->hhw, child->hhw / child->dd);
             }
 
             link->pf   += child->Ivv * child->cv + child->Iwv.transpose() * child->cw;
@@ -440,20 +436,17 @@ void ForwardDynamicsABM::calcABMPhase3()
         //   | Iwv     Iww     |   | dw  |   | ptau |
 
         dmatrix Ia(6,6);
-        setMatrix33(root->Ivv, Ia, 0, 0);
-        setTransMatrix33(root->Iwv, Ia, 0, 3);
-        setMatrix33(root->Iwv, Ia, 3, 0);
-        setMatrix33(root->Iww, Ia, 3, 3);
+        Ia << root->Ivv, root->Iwv.transpose(),
+            root->Iwv, root->Iww;
         
         dvector p(6);
-        setVector3(root->pf, p, 0);
-        setVector3(root->ptau, p, 3);
+        p << root->pf, root->ptau;
         p *= -1.0;
         
         dvector pm(Ia.colPivHouseholderQr().solve(p));
 
-        getVector3(root->dvo, pm, 0);
-        getVector3(root->dw, pm, 3);
+        root->dvo = pm.head(3);
+        root->dw  = pm.tail(3);
 
     } else {
         root->dvo.setZero();

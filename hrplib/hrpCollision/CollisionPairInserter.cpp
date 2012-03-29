@@ -270,9 +270,9 @@ void CollisionPairInserter::find_signed_distance(
 {
     Vector3 vert_w;
     if(obj==1){
-        vert_w = CD_s1 * Vector3(CD_Rot1 * vert + CD_Trans1);
+        vert_w = CD_s1 * (CD_Rot1 * vert + CD_Trans1);
     } else {
-        vert_w = CD_s2 * Vector3(CD_Rot2 * vert + CD_Trans2);
+        vert_w = CD_s2 * (CD_Rot2 * vert + CD_Trans2);
     }
         
     if(COLLIDE_DEBUG) printf("vertex = %f %f %f\n", vert_w[0], vert_w[1], vert_w[2]);
@@ -400,7 +400,7 @@ int CollisionPairInserter::apply(
     if(COLLIDE_DEBUG) printf("num_of_i_points = %d\n", num_of_i_points);
 
     for(int i=0; i < num_of_i_points; ++i){
-        contact.i_points[i] = CD_s2 * Vector3((CD_Rot2 * i_points[i]) + CD_Trans2);
+        contact.i_points[i] = CD_s2 * ((CD_Rot2 * i_points[i]) + CD_Trans2);
     }
 
     contact.n_vector = CD_Rot2 * n_vector;

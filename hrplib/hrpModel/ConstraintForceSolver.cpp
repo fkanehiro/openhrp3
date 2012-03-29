@@ -1044,7 +1044,7 @@ void CFSImpl::setDefaultAccelerationVector()
                     LinkData* linkData = linkPair.linkData[k];
                     constraint.defaultAccel[k] =
                         linkData->dvo - constraint.point.cross(linkData->dw) +
-                        link->w.cross(Vector3(link->vo + link->w.cross(constraint.point)));
+                        link->w.cross(link->vo + link->w.cross(constraint.point));
                 }
             }
 
@@ -1220,20 +1220,17 @@ void CFSImpl::calcAccelsABM(BodyData& bodyData, int constraintIndex)
         Vector3 ptau(rootData.ptau0 + bodyData.dptau);
 
         dmatrix Ia(6,6);
-        setMatrix33(rootLink->Ivv, Ia, 0, 0);
-        setTransMatrix33(rootLink->Iwv, Ia, 0, 3);
-        setMatrix33(rootLink->Iwv, Ia, 3, 0);
-        setMatrix33(rootLink->Iww, Ia, 3, 3);
+        Ia << rootLink->Ivv, rootLink->Iwv.transpose(),
+            rootLink->Iwv, rootLink->Iww;
 
         dvector p(6);
-        setVector3(pf,   p, 0);
-        setVector3(ptau, p, 3);
+        p << pf, ptau;
         p *= -1.0;
 
         dvector a(Ia.colPivHouseholderQr().solve(p));
 
-        rootData.dvo = a.head<3>();
-        rootData.dw = a.tail<3>();
+        rootData.dvo = a.head(3);
+        rootData.dw = a.tail(3);
 
     } else {
         rootData.dw.setZero();
@@ -1354,8 +1351,8 @@ void CFSImpl::extractRelAccelsFromLinkPairCase1
         LinkData* linkData1 = linkPair.linkData[1];
 
         //! \todo Can the follwoing equations be simplified ?
-        Vector3 dv0(linkData0->dvo - constraint.point.cross(linkData0->dw) + link0->w.cross(Vector3(link0->vo + link0->w.cross(constraint.point))));
-        Vector3 dv1(linkData1->dvo - constraint.point.cross(linkData1->dw) + link1->w.cross(Vector3(link1->vo + link1->w.cross(constraint.point))));
+        Vector3 dv0(linkData0->dvo - constraint.point.cross(linkData0->dw) + link0->w.cross(link0->vo + link0->w.cross(constraint.point)));
+        Vector3 dv1(linkData1->dvo - constraint.point.cross(linkData1->dw) + link1->w.cross(link1->vo + link1->w.cross(constraint.point)));
 
         Vector3 relAccel(dv1 - dv0);
 
@@ -1387,7 +1384,7 @@ void CFSImpl::extractRelAccelsFromLinkPairCase2
         Link* link = linkPair.link[iTestForce];
         LinkData* linkData = linkPair.linkData[iTestForce];
 
-        Vector3 dv(linkData->dvo - constraint.point.cross(linkData->dw) + link->w.cross(Vector3(link->vo + link->w.cross(constraint.point))));
+        Vector3 dv(linkData->dvo - constraint.point.cross(linkData->dw) + link->w.cross(link->vo + link->w.cross(constraint.point)));
 
         if(CFS_DEBUG_VERBOSE_2)
             std::cout << "dv " << constraintIndex << " = " << dv << "\n";

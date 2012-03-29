@@ -776,67 +776,37 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
             Vector3 Yaxis, Zaxis;
             if(i==0){
                 if(isClosed){
-                    spine1[0] = extrusion->spine[numSpine-2][0];
-                    spine1[1] = extrusion->spine[numSpine-2][1];
-                    spine1[2] = extrusion->spine[numSpine-2][2];
-                    spine2[0] = extrusion->spine[0][0];
-                    spine2[1] = extrusion->spine[0][1];
-                    spine2[2] = extrusion->spine[0][2];
-                    spine3[0] = extrusion->spine[1][0];
-                    spine3[1] = extrusion->spine[1][1];
-                    spine3[2] = extrusion->spine[1][2];
-                    Yaxis = Vector3(spine3-spine1);
+                    getVector3(spine1, extrusion->spine[numSpine-2]);
+                    getVector3(spine2, extrusion->spine[0]);
+                    getVector3(spine3, extrusion->spine[1]);
+                    Yaxis = spine3-spine1;
                     Zaxis = (spine3-spine2).cross(spine1-spine2);
                 }else{
-                    spine1[0] = extrusion->spine[0][0];
-                    spine1[1] = extrusion->spine[0][1];
-                    spine1[2] = extrusion->spine[0][2];
-                    spine2[0] = extrusion->spine[1][0];
-                    spine2[1] = extrusion->spine[1][1];
-                    spine2[2] = extrusion->spine[1][2];
-                    spine3[0] = extrusion->spine[2][0];
-                    spine3[1] = extrusion->spine[2][1];
-                    spine3[2] = extrusion->spine[2][2];
-                    Yaxis = Vector3(spine2-spine1);
+                    getVector3(spine1, extrusion->spine[0]);
+                    getVector3(spine2, extrusion->spine[1]);
+                    getVector3(spine3, extrusion->spine[2]);
+                    Yaxis = spine2-spine1;
                     Zaxis = (spine3-spine2).cross(spine1-spine2);
                 }
             }else if(i==numSpine-1){
                 if(isClosed){
-                    spine1[0] = extrusion->spine[numSpine-2][0];
-                    spine1[1] = extrusion->spine[numSpine-2][1];
-                    spine1[2] = extrusion->spine[numSpine-2][2];
-                    spine2[0] = extrusion->spine[0][0];
-                    spine2[1] = extrusion->spine[0][1];
-                    spine2[2] = extrusion->spine[0][2];
-                    spine3[0] = extrusion->spine[1][0];
-                    spine3[1] = extrusion->spine[1][1];
-                    spine3[2] = extrusion->spine[1][2];
-                    Yaxis = Vector3(spine3-spine1);
+                    getVector3(spine1, extrusion->spine[numSpine-2]);
+                    getVector3(spine2, extrusion->spine[0]);
+                    getVector3(spine3, extrusion->spine[1]);
+                    Yaxis = spine3-spine1;
                     Zaxis = (spine3-spine2).cross(spine1-spine2);
                 }else{
-                    spine1[0] = extrusion->spine[numSpine-3][0];
-                    spine1[1] = extrusion->spine[numSpine-3][1];
-                    spine1[2] = extrusion->spine[numSpine-3][2];
-                    spine2[0] = extrusion->spine[numSpine-2][0];
-                    spine2[1] = extrusion->spine[numSpine-2][1];
-                    spine2[2] = extrusion->spine[numSpine-2][2];
-                    spine3[0] = extrusion->spine[numSpine-1][0];
-                    spine3[1] = extrusion->spine[numSpine-1][1];
-                    spine3[2] = extrusion->spine[numSpine-1][2];
-                    Yaxis = Vector3(spine3-spine2);
+                    getVector3(spine1, extrusion->spine[numSpine-3]);
+                    getVector3(spine2, extrusion->spine[numSpine-2]);
+                    getVector3(spine3, extrusion->spine[numSpine-1]);
+                    Yaxis = spine3-spine2;
                     Zaxis = (spine3-spine2).cross(spine1-spine2);
                 }
             }else{
-                spine1[0] = extrusion->spine[i-1][0];
-                spine1[1] = extrusion->spine[i-1][1];
-                spine1[2] = extrusion->spine[i-1][2];
-                spine2[0] = extrusion->spine[i][0];
-                spine2[1] = extrusion->spine[i][1];
-                spine2[2] = extrusion->spine[i][2];
-                spine3[0] = extrusion->spine[i+1][0];
-                spine3[1] = extrusion->spine[i+1][1];
-                spine3[2] = extrusion->spine[i+1][2];
-                Yaxis = Vector3(spine3-spine1);
+                getVector3(spine1, extrusion->spine[i-1]);
+                getVector3(spine2, extrusion->spine[i]);
+                getVector3(spine3, extrusion->spine[i+1]);
+                Yaxis = spine3-spine1;
                 Zaxis = (spine3-spine2).cross(spine1-spine2);
             }
             if(!Zaxis.norm()){
@@ -853,13 +823,9 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
     }else{
         Vector3 spine1, spine2;
         Vector3 Yaxis;
-        spine1[0] = extrusion->spine[0][0];
-        spine1[1] = extrusion->spine[0][1];
-        spine1[2] = extrusion->spine[0][2];
-        spine2[0] = extrusion->spine[1][0];
-        spine2[1] = extrusion->spine[1][1];
-        spine2[2] = extrusion->spine[1][2];
-        Yaxis = Vector3(spine2-spine1);
+        getVector3(spine1, extrusion->spine[0]);
+        getVector3(spine2, extrusion->spine[1]);
+        Yaxis = spine2-spine1;
         Yaxisarray.push_back(Yaxis);
         Yaxisarray.push_back(Yaxis);
     }
@@ -877,11 +843,9 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
             if( i && Zaxisarray[i].dot(Zaxisarray[i-1])<0 )
                 Zaxisarray[i] *= -1;
             Vector3 y(Yaxisarray[i].normalized());
-                    Vector3 z(Zaxisarray[i].normalized());
-		    Vector3 x(y.cross(z));
- 		    setVector3(x, Scp, 0, 0);
-		    setVector3(y, Scp, 0, 1);
-		    setVector3(z, Scp, 0, 2);
+            Vector3 z(Zaxisarray[i].normalized());
+            Vector3 x(y.cross(z));
+            Scp << x, y, z;
         }
 
         Vector3 spine(extrusion->spine[i][0],
