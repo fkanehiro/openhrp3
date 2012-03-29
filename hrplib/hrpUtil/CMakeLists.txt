@@ -38,6 +38,7 @@ set(headers
   Tvmet3dTypes.h
   Tvmet3d.h
   Tvmet4d.h
+  Tvmet2Eigen.h
   Eigen3d.h
   Eigen4d.h
   uBlasCommonTypes.h
