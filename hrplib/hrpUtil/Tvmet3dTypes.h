@@ -43,7 +43,7 @@ namespace hrp{
     inline Vector3 cross(const Vector3& v1, const Vector3& v2){
         return v1.cross(v2);
     }
-    inline Vector3 trans(const Vector3& v) { return v.transpose(); }
+    inline Matrix33 trans(const Matrix33& m) { return m.transpose(); }
     inline double dot(const Vector3& v1, const Vector3& v2) {
         return v1.dot(v2);
     }
