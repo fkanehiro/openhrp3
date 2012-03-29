@@ -961,12 +961,12 @@ void CFSImpl::initMatrices()
 
     } else {
         frictionIndexToContactIndex.resize(m);
-        contactIndexToMu.resize(globalNumContactNormalVectors, false);
-        mcpHi.resize(globalNumContactNormalVectors, false);
+        contactIndexToMu.resize(globalNumContactNormalVectors);
+        mcpHi.resize(globalNumContactNormalVectors);
     }
 
-    an0.resize(n, false);
-    at0.resize(m, false);
+    an0.resize(n);
+    at0.resize(m);
 
 }
 
