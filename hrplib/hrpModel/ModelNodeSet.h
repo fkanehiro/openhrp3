@@ -34,7 +34,7 @@ namespace hrp {
     public:
         VrmlProtoInstancePtr jointNode;
         std::vector<JointNodeSetPtr> childJointNodeSets;
-        std::vector<Matrix44> transforms;
+        std::vector<Matrix44, Eigen::aligned_allocator<Matrix44> > transforms;
         std::vector<VrmlProtoInstancePtr> segmentNodes;
         std::vector<VrmlProtoInstancePtr> sensorNodes;
         std::vector<VrmlProtoInstancePtr> hwcNodes;
