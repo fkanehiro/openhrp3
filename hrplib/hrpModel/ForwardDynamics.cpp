@@ -85,7 +85,7 @@ void ForwardDynamics::SE3exp(Vector3& out_p, Matrix33& out_R,
 		Matrix33 rot = rodrigues(w_n, th);
 		
 		out_p = rot * p0 + (Matrix33::Identity() - rot) * w_n.cross(vo_n) + VVt_prod(w_n, w_n) * vo_n * th;
-		out_R = rot * R0;
+		out_R.noalias() = rot * R0;
     }
 }
 
@@ -142,7 +142,7 @@ void ForwardDynamics::updateAccelSensor(AccelSensor* sensor)
     Vector3 o_Agsens(x[0](1), x[1](1), x[2](1));
     o_Agsens += g;
 
-    sensor->dv = link->R.transpose() * o_Agsens;
+    sensor->dv.noalias() = link->R.transpose() * o_Agsens;
 }
 
 
@@ -186,11 +186,11 @@ void ForwardDynamics::initializeAccelSensors()
 		}
 
 		for(int i=1; i <= 12; i++){
-			An2 = Ac * An;
+                        An2.noalias() = Ac * An;
 			An = timeStep * An2;
 			A += (1.0 / factorial[i]) * An;
 
-			Bn2 = Ac * Bn;
+			Bn2.noalias() = Ac * Bn;
 			Bn = timeStep * Bn2;
 			B += (1.0 / factorial[i+1]) * Bn;
 		}

@@ -88,12 +88,12 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
         switch(child->jointType){
 
         case Link::ROTATIONAL_JOINT:
-            link->R = child->R * rodrigues(child->a, child->q).transpose();
-            arm = link->R * child->b;
+            link->R.noalias() = child->R * rodrigues(child->a, child->q).transpose();
+            arm.noalias() = link->R * child->b;
             link->p = child->p - arm;
 
             if(calcVelocity){
-                child->sw = link->R * child->a;
+                child->sw.noalias() = link->R * child->a;
                 link->w = child->w - child->dq * child->sw;
                 link->v = child->v - link->w.cross(arm);
 
@@ -106,11 +106,11 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
             
         case Link::SLIDE_JOINT:
             link->R = child->R;
-            arm = link->R * (child->b + child->q * child->d);
+            arm.noalias() = link->R * (child->b + child->q * child->d);
             link->p = child->p - arm;
 
             if(calcVelocity){
-                child->sv = link->R * child->d;
+                child->sv.noalias() = link->R * child->d;
                 link->w = child->w;
                 link->v = child->v - child->dq * child->sv;
 
@@ -149,12 +149,12 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
         switch(link->jointType){
             
         case Link::ROTATIONAL_JOINT:
-            link->R = parent->R * rodrigues(link->a, link->q);
-            arm = parent->R * link->b;
+            link->R.noalias() = parent->R * rodrigues(link->a, link->q);
+            arm.noalias() = parent->R * link->b;
             link->p = parent->p + arm;
 
             if(calcVelocity){
-                link->sw = parent->R * link->a;
+                link->sw.noalias() = parent->R * link->a;
                 link->w = parent->w + link->sw * link->dq;
                 link->v = parent->v + parent->w.cross(arm);
 
@@ -167,11 +167,11 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
             
         case Link::SLIDE_JOINT:
             link->R = parent->R;
-            arm = parent->R * (link->b + link->q * link->d);
+            arm.noalias() = parent->R * (link->b + link->q * link->d);
             link->p = parent->p + arm;
 
             if(calcVelocity){
-                link->sv = parent->R * link->d;
+                link->sv.noalias() = parent->R * link->d;
                 link->w = parent->w;
                 link->v = parent->v + link->sv * link->dq;
 
