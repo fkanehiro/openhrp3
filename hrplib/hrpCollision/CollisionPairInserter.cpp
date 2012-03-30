@@ -400,12 +400,12 @@ int CollisionPairInserter::apply(
     if(COLLIDE_DEBUG) printf("num_of_i_points = %d\n", num_of_i_points);
 
     for(int i=0; i < num_of_i_points; ++i){
-        contact.i_points[i] = CD_s2 * ((CD_Rot2 * i_points[i]) + CD_Trans2);
+        contact.i_points[i].noalias() = CD_s2 * ((CD_Rot2 * i_points[i]) + CD_Trans2);
     }
 
-    contact.n_vector = CD_Rot2 * n_vector;
-    contact.n = CD_Rot2 * n1;
-    contact.m = CD_Rot2 * m1;
+    contact.n_vector.noalias() = CD_Rot2 * n_vector;
+    contact.n.noalias() = CD_Rot2 * n1;
+    contact.m.noalias() = CD_Rot2 * m1;
         examine_normal_vector(id1, id2, ctype);
 
 #ifdef DEPTH_CHECK

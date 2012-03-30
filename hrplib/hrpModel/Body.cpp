@@ -440,7 +440,7 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
         Vector3 dsv,dsw,sv,sw;
 
         if(ptr->jointType != Link::FIXED_JOINT){
-            sw  = parent->R * ptr->a;
+            sw.noalias()  = parent->R * ptr->a;
             sv  = ptr->p.cross(sw);
         }else{
             sw.setZero();
@@ -460,10 +460,10 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
     Matrix33 I,c_hat;
 
     c = ptr->R * ptr->c + ptr->p;
-    I = ptr->R * ptr->I * ptr->R.transpose();
+    I.noalias() = ptr->R * ptr->I * ptr->R.transpose();
     c_hat = hat(c);
     I += ptr->m * c_hat * c_hat.transpose();
-    P = ptr->m * (ptr->vo + ptr->w.cross(c));
+    P.noalias() = ptr->m * (ptr->vo + ptr->w.cross(c));
     L = ptr->m * c.cross(ptr->vo) + I * ptr->w;
 
     out_f   = ptr->m * (ptr->dvo + ptr->dw.cross(c)) + ptr->w.cross(P);
@@ -512,8 +512,8 @@ void Body::calcTotalMomentum(Vector3& out_P, Vector3& out_L)
         P   = link->m * dwc;
 
         //L   = cross(link->wc, P) + link->R * link->I * trans(link->R) * link->w; 
-        Llocal = link->I * link->R.transpose()*link->w;
-        L      = link->wc.cross(P) + link->R * Llocal; 
+        Llocal.noalias() = link->I * link->R.transpose()*link->w;
+        L                = link->wc.cross(P) + link->R * Llocal; 
 
         out_P += P;
         out_L += L;
@@ -793,11 +793,11 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
         Vector3 p_relative;
         Matrix33 R_relative;
         if(!isCustomizedIkPathReversed){
-            p_relative = baseLink_->R.transpose() * (end_p - baseLink_->p);
-            R_relative = baseLink_->R.transpose() * end_R;
+            p_relative.noalias() = baseLink_->R.transpose() * (end_p - baseLink_->p);
+            R_relative.noalias() = baseLink_->R.transpose() * end_R;
         } else {
-            p_relative = end_R.transpose() * (baseLink_->p - end_p);
-            R_relative = end_R.transpose() * baseLink_->R;
+            p_relative.noalias() = end_R.transpose() * (baseLink_->p - end_p);
+            R_relative.noalias() = end_R.transpose() * baseLink_->R;
         }
         solved = body->customizerInterface->
             calcAnalyticIk(body->customizerHandle, ikTypeId, p_relative, R_relative);

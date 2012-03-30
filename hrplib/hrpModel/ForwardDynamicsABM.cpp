@@ -231,9 +231,9 @@ void ForwardDynamicsABM::calcABMPhase1()
             switch(link->jointType){
                 
             case Link::ROTATIONAL_JOINT:
-                link->R = parent->R * rodrigues(link->a, link->q);
+                link->R.noalias() = parent->R * rodrigues(link->a, link->q);
                 link->p = parent->R * link->b + parent->p;
-                link->sw = parent->R * link->a;
+                link->sw.noalias() = parent->R * link->a;
                 link->sv = link->p.cross(link->sw);
                 link->w = link->dq * link->sw + parent->w;
                 break;
@@ -242,7 +242,7 @@ void ForwardDynamicsABM::calcABMPhase1()
                 link->p = parent->R * (link->b + link->q * link->d) + parent->p;
                 link->R = parent->R;
                 link->sw.setZero();
-                link->sv = parent->R * link->d;
+                link->sv.noalias() = parent->R * link->d;
                 link->w = parent->w;
                 break;
                 
