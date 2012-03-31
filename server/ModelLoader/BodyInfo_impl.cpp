@@ -323,7 +323,7 @@ void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr join
     //  R = Tの回転行列               //
     //  G = y*y+z*z, -x*y, -x*z, -y*x, z*z+x*x, -y*z, -z*x, -z*y, x*x+y*y    //
     //  (x, y, z ) = T * c - C        //
-    std::vector<Vector4> centerOfMassArray;
+    std::vector<Vector4, Eigen::aligned_allocator<Vector4> > centerOfMassArray;
     std::vector<double> massArray;
     for(int i = 0 ; i < numSegment ; ++i){
         SegmentInfo& segmentInfo = linkInfo.segments[i];

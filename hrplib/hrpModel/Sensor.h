@@ -95,6 +95,8 @@ namespace hrp {
     class HRPMODEL_API AccelSensor : public Sensor
     {
       public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
         static const int TYPE = ACCELERATION;
 
         AccelSensor();

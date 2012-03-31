@@ -35,6 +35,7 @@ namespace hrp
     class HRPMODEL_API ForwardDynamics {
 
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         
         ForwardDynamics(BodyPtr body);
 		virtual ~ForwardDynamics();
