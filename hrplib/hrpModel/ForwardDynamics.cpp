@@ -84,7 +84,7 @@ void ForwardDynamics::SE3exp(Vector3& out_p, Matrix33& out_R,
 		Vector3 vo_n(vo / norm_w);
 		Matrix33 rot = rodrigues(w_n, th);
 		
-		out_p = rot * p0 + (Matrix33::Identity() - rot) * w_n.cross(vo_n) + VVt_prod(w_n, w_n) * vo_n * th;
+		out_p = rot * p0 + (Matrix33::Identity() - rot) * w_n.cross(vo_n) + w_n * w_n.transpose() * vo_n * th;
 		out_R.noalias() = rot * R0;
     }
 }
