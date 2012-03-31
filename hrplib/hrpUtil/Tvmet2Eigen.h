@@ -29,7 +29,7 @@ namespace hrp{
         return m;
     }
 
-    void calcInverse(Matrix33& inv, const Matrix33& m){
+    inline void calcInverse(Matrix33& inv, const Matrix33& m){
         bool invertible;
         m.computeInverseWithCheck(inv, invertible);
         if(!invertible){
