@@ -137,21 +137,6 @@ void hrp::calcRotFromRpy(Matrix33& out_R, double r, double p, double y)
 }
 
 
-void hrp::calcInverse(Matrix33& inv, const Matrix33& m)
-{
-  double det = m(0,0)*(m(1,1)*m(2,2)-m(1,2)*m(2,1)) - m(0,1)*(m(1,0)*m(2,2)-m(1,2)*m(2,0)) + m(0,2)*(m(1,0)*m(2,1)-m(1,1)*m(2,0));
-  
-  if(fabs(det) < std::numeric_limits<double>::epsilon()){
-      throw std::string("Invrse matrix cannot be calculated.");
-  }
-  else{
-      inv <<
-       (m(1,1)*m(2,2)-m(1,2)*m(2,1)) / det, (m(0,2)*m(2,1)-m(0,1)*m(2,2)) / det, (m(0,1)*m(1,2)-m(0,2)*m(1,1)) / det,
-       (m(1,2)*m(2,0)-m(1,0)*m(2,2)) / det, (m(0,0)*m(2,2)-m(0,2)*m(2,0)) / det, (m(0,2)*m(1,0)-m(0,0)*m(1,2)) / det,
-       (m(1,0)*m(2,1)-m(1,1)*m(2,0)) / det, (m(0,1)*m(2,0)-m(0,0)*m(2,1)) / det, (m(0,0)*m(1,1)-m(0,1)*m(1,0)) / det;
-  }
-}
-
 #if 0
 bool hrp::isOrthogonalMatrix(Matrix33& m){
     return all_elements( m * m.transpose() == Matrix33::Identity() );

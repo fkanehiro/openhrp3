@@ -21,6 +21,29 @@ namespace hrp{
     }
     inline double norm2(const Vector3& v) { return v.norm(); }
     inline Vector3 nomralize(const Vector3& v) { return v.normalized(); } 
+    inline Matrix33 VVt_prod(const Vector3& a, const Vector3& b){
+        Matrix33 m;
+        m << a(0) * b(0), a(0) * b(1), a(0) * b(2),
+            a(1) * b(0), a(1) * b(1), a(1) * b(2),
+            a(2) * b(0), a(2) * b(1), a(2) * b(2);
+        return m;
+    }
+
+    void calcInverse(Matrix33& inv, const Matrix33& m){
+        bool invertible;
+        m.computeInverseWithCheck(inv, invertible);
+        if(!invertible){
+            throw std::string("Inverse matrix cannot be calculated.");
+        }
+    }
+
+    inline Matrix33 inverse(const Matrix33& m){
+        Matrix33 inv;
+        calcInverse(inv, m);
+        return inv;
+    }
+    
+    HRP_UTIL_EXPORT inline Matrix33 inverse33(const Matrix33& m) { return inverse(m); }
 };
 
 #endif
