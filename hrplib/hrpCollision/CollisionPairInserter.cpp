@@ -185,8 +185,8 @@ void CollisionPairInserter::examine_normal_vector(int id1, int id2, int ctype)
 void CollisionPairInserter::check_separability(int id1, int id2, int ctype){
     int contactIndex = cdContact.size() - 1;
     Vector3 signed_distance;
-    Vector3 signed_distance1(99999999.0);
-    Vector3 signed_distance2(-99999999.0);
+    Vector3 signed_distance1(99999999.0,99999999.0,99999999.0);
+    Vector3 signed_distance2(-99999999.0,-99999999.0,-99999999.0);
 
     ColdetModelSharedDataSet* model0 = ((CollisionPairInserterBase*)this)->models[0];
     ColdetModelSharedDataSet* model1 = ((CollisionPairInserterBase*)this)->models[1];
