@@ -224,8 +224,8 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
             traverseShapeNodes(segmentNodes[i].get(), T, links_[index].shapeIndices, links_[index].inlinedShapeTransformMatrices, &topUrl());
             long e =links_[index].shapeIndices.length();
             segmentInfo->shapeIndices.length(e-s);
-            for(int j=0, i=s; i<e; i++)
-                segmentInfo->shapeIndices[j++] = i;
+            for(int j=0, k=s; k<e; k++)
+                segmentInfo->shapeIndices[j++] = k;
             links_[index].segments[i] = segmentInfo;
         }
         setJointParameters(index, jointNodeSet->jointNode);
