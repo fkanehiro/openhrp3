@@ -308,7 +308,7 @@ Vector3 Body::calcCM()
 {
     totalMass_ = 0.0;
     
-    Vector3 mc(0.0);
+    Vector3 mc(Vector3::Zero());
 
     int n = linkTraverse_.numLinks();
     for(int i=0; i < n; i++){
