@@ -75,32 +75,13 @@ namespace hrp
     HRP_UTIL_EXPORT Vector3 omegaFromRot(const Matrix33& r);
     HRP_UTIL_EXPORT Vector3 rpyFromRot(const Matrix33& m);
     
-    HRP_UTIL_EXPORT void calcInverse(Matrix33& inv, const Matrix33& m);
-
     HRP_UTIL_EXPORT bool isOrthogonalMatrix(Matrix33& m);
 
-    inline Matrix33 inverse(const Matrix33& m){
-        Matrix33 inv;
-        calcInverse(inv, m);
-        return inv;
-    }
-    
-    // for backward compatibility (to be obsolete)
-    HRP_UTIL_EXPORT inline Matrix33 inverse33(const Matrix33& m) { return inverse(m); }
-    
     inline Matrix33 hat(const Vector3& c) {
         Matrix33 m;
         m << 0.0,  -c(2),  c(1),
             c(2),  0.0,  -c(0),
             -c(1),  c(0),  0.0;
-        return m;
-    }
-    
-    inline Matrix33 VVt_prod(const Vector3& a, const Vector3& b){
-        Matrix33 m;
-        m << a(0) * b(0), a(0) * b(1), a(0) * b(2),
-            a(1) * b(0), a(1) * b(1), a(1) * b(2),
-            a(2) * b(0), a(2) * b(1), a(2) * b(2);
         return m;
     }
     
