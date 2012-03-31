@@ -462,7 +462,7 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
     c = ptr->R * ptr->c + ptr->p;
     I.noalias() = ptr->R * ptr->I * ptr->R.transpose();
     c_hat = hat(c);
-    I += ptr->m * c_hat * c_hat.transpose();
+    I.noalias() += ptr->m * c_hat * c_hat.transpose();
     P.noalias() = ptr->m * (ptr->vo + ptr->w.cross(c));
     L = ptr->m * c.cross(ptr->vo) + I * ptr->w;
 

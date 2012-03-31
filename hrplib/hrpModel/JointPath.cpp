@@ -163,9 +163,7 @@ void JointPath::calcJacobian(dmatrix& out_J) const
             break;
 				
             default:
-                for(int j=0; j < 6; ++j){
-                    out_J(j, i) = 0.0;
-                }
+                out_J.col(i).setZero();
             }
         }
     }

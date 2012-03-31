@@ -323,9 +323,9 @@ void ForwardDynamicsABM::calcABMPhase2()
 
             }else{
                 Vector3 hhv_dd(child->hhv / child->dd);
-                link->Ivv += child->Ivv - VVt_prod(child->hhv, hhv_dd);
-                link->Iwv += child->Iwv - VVt_prod(child->hhw, hhv_dd);
-                link->Iww += child->Iww - VVt_prod(child->hhw, child->hhw / child->dd);
+                link->Ivv += child->Ivv - child->hhv * hhv_dd.transpose();
+                link->Iwv += child->Iwv - child->hhw * hhv_dd.transpose();
+                link->Iww += child->Iww - child->hhw * (child->hhw / child->dd).transpose();
             }
 
             link->pf   += child->Ivv * child->cv + child->Iwv.transpose() * child->cw + child->pf;
@@ -372,9 +372,9 @@ void ForwardDynamicsABM::calcABMPhase2Part1()
 
             }else{
                 Vector3 hhv_dd(child->hhv / child->dd);
-                link->Ivv += child->Ivv - VVt_prod(child->hhv, hhv_dd);
-                link->Iwv += child->Iwv - VVt_prod(child->hhw, hhv_dd);
-                link->Iww += child->Iww - VVt_prod(child->hhw, child->hhw / child->dd);
+                link->Ivv += child->Ivv - child->hhv * hhv_dd.transpose();
+                link->Iwv += child->Iwv - child->hhw * hhv_dd.transpose();
+                link->Iww += child->Iww - child->hhw * (child->hhw / child->dd).transpose();
             }
 
             link->pf   += child->Ivv * child->cv + child->Iwv.transpose() * child->cw;
