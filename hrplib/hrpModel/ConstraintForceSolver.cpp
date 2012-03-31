@@ -815,7 +815,7 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
 
 void CFSImpl::setFrictionVectors(ConstraintPoint& contact)
 {
-    Vector3 u(0.0);
+    Vector3 u(Vector3::Zero());
     int minAxis = 0;
     Vector3& normal = contact.normalTowardInside[0];
 
@@ -1015,7 +1015,7 @@ void CFSImpl::setDefaultAccelerationVector()
             if(bodyData.forwardDynamicsMM){
 
                 bodyData.rootLinkPosRef = &(bodyData.body->rootLink()->p);
-                Vector3 zeroForce(0.0);
+                Vector3 zeroForce(Vector3::Zero());
                 bodyData.forwardDynamicsMM->sumExternalForces();
                 bodyData.forwardDynamicsMM->solveUnknownAccels();
                 calcAccelsMM(bodyData, numeric_limits<int>::max());
@@ -1565,8 +1565,8 @@ void CFSImpl::addConstraintForceToLinks()
 
 void CFSImpl::addConstraintForceToLink(LinkPair* linkPair, int ipair)
 {
-    Vector3 f_total(0.0);
-    Vector3 tau_total(0.0);
+    Vector3 f_total(Vector3::Zero());
+    Vector3 tau_total(Vector3::Zero());
 
     ConstraintPointArray& constraintPoints = linkPair->constraintPoints;
     int numConstraintPoints = constraintPoints.size();
