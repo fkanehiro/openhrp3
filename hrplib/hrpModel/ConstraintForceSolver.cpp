@@ -235,9 +235,10 @@ namespace hrp
         bool areThereImpacts;
         int numUnconverged;
 
+        typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> rmdmatrix;
         // Mlcp * solution + b   _|_  solution
 
-        dmatrix Mlcp;
+        rmdmatrix Mlcp;
 
         // constant acceleration term when no external force is applied
         dvector an0;
@@ -282,17 +283,17 @@ namespace hrp
         void calcAccelsMM(BodyData& bodyData, int constraintIndex);
 
         void extractRelAccelsOfConstraintPoints
-        (Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, int testForceIndex, int constraintIndex);
+        (Eigen::Block<rmdmatrix>& Kxn, Eigen::Block<rmdmatrix>& Kxt, int testForceIndex, int constraintIndex);
 
         void extractRelAccelsFromLinkPairCase1
-        (Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int constraintIndex);
+        (Eigen::Block<rmdmatrix>& Kxn, Eigen::Block<rmdmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int constraintIndex);
         void extractRelAccelsFromLinkPairCase2
-        (Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int iTestForce, int iDefault, int testForceIndex, int constraintIndex);
+        (Eigen::Block<rmdmatrix>& Kxn, Eigen::Block<rmdmatrix>& Kxt, LinkPair& linkPair, int iTestForce, int iDefault, int testForceIndex, int constraintIndex);
         void extractRelAccelsFromLinkPairCase3
-        (Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int constraintIndex);
+        (Eigen::Block<rmdmatrix>& Kxn, Eigen::Block<rmdmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int constraintIndex);
 
         void copySymmetricElementsOfAccelerationMatrix
-        (Eigen::Block<dmatrix>& Knn, Eigen::Block<dmatrix>& Ktn, Eigen::Block<dmatrix>& Knt, Eigen::Block<dmatrix>& Ktt);
+        (Eigen::Block<rmdmatrix>& Knn, Eigen::Block<rmdmatrix>& Ktn, Eigen::Block<rmdmatrix>& Knt, Eigen::Block<rmdmatrix>& Ktt);
 
         void clearSingularPointConstraintsOfClosedLoopConnections();
 		
@@ -301,19 +302,19 @@ namespace hrp
         void addConstraintForceToLink(LinkPair* linkPair, int ipair);
 
         void solveMCPByProjectedGaussSeidel
-        (const dmatrix& M, const dvector& b, dvector& x);
+        (const rmdmatrix& M, const dvector& b, dvector& x);
         void solveMCPByProjectedGaussSeidelInitial
-        (const dmatrix& M, const dvector& b, dvector& x, const int numIteration);
+        (const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration);
         void solveMCPByProjectedGaussSeidelMain
-        (const dmatrix& M, const dvector& b, dvector& x, const int numIteration);
+        (const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration);
         double solveMCPByProjectedGaussSeidelErrorCheck
-        (const dmatrix& M, const dvector& b, dvector& x);
+        (const rmdmatrix& M, const dvector& b, dvector& x);
 
-        void checkLCPResult(dmatrix& M, dvector& b, dvector& x);
-        void checkMCPResult(dmatrix& M, dvector& b, dvector& x);
+        void checkLCPResult(rmdmatrix& M, dvector& b, dvector& x);
+        void checkMCPResult(rmdmatrix& M, dvector& b, dvector& x);
 
 #ifdef USE_PIVOTING_LCP
-        bool callPathLCPSolver(dmatrix& Mlcp, dvector& b, dvector& solution);
+        bool callPathLCPSolver(rmdmatrix& Mlcp, dvector& b, dvector& solution);
 
         // for PATH solver
         std::vector<double> lb;
@@ -954,7 +955,7 @@ void CFSImpl::initMatrices()
 
         Mlcp.block(0, n + m, n, m).setZero();
         Mlcp.block(n + m, 0, m, n).setZero();
-        Mlcp.block(n + m, n, m, m) = -dmatrix::Identity(m, m);
+        Mlcp.block(n + m, n, m, m) = -rmdmatrix::Identity(m, m);
         Mlcp.block(n + m, n + m, m, m).setZero();
         Mlcp.block(n, n + m, m, m).setIdentity();
         b.tail(m).setZero();
@@ -1064,10 +1065,10 @@ void CFSImpl::setAccelerationMatrix()
     const int n = globalNumConstraintVectors;
     const int m = globalNumFrictionVectors;
 
-    Eigen::Block<dmatrix> Knn = Mlcp.block(0, 0, n, n);
-    Eigen::Block<dmatrix> Ktn = Mlcp.block(0, n, n, m);
-    Eigen::Block<dmatrix> Knt = Mlcp.block(n, 0, m, n);
-    Eigen::Block<dmatrix> Ktt = Mlcp.block(n, n, m, m);
+    Eigen::Block<rmdmatrix> Knn = Mlcp.block(0, 0, n, n);
+    Eigen::Block<rmdmatrix> Ktn = Mlcp.block(0, n, n, m);
+    Eigen::Block<rmdmatrix> Knt = Mlcp.block(n, 0, m, n);
+    Eigen::Block<rmdmatrix> Ktt = Mlcp.block(n, n, m, m);
 
     for(size_t i=0; i < constrainedLinkPairs.size(); ++i){
 
@@ -1302,7 +1303,7 @@ void CFSImpl::calcAccelsMM(BodyData& bodyData, int constraintIndex)
 
 
 void CFSImpl::extractRelAccelsOfConstraintPoints
-(Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, int testForceIndex, int constraintIndex)
+(Eigen::Block<rmdmatrix>& Kxn, Eigen::Block<rmdmatrix>& Kxt, int testForceIndex, int constraintIndex)
 {
     int maxConstraintIndexToExtract = ASSUME_SYMMETRIC_MATRIX ? constraintIndex : globalNumConstraintVectors;
 
@@ -1332,7 +1333,7 @@ void CFSImpl::extractRelAccelsOfConstraintPoints
 
 
 void CFSImpl::extractRelAccelsFromLinkPairCase1
-(Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int maxConstraintIndexToExtract)
+(Eigen::Block<rmdmatrix>& Kxn, Eigen::Block<rmdmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int maxConstraintIndexToExtract)
 {
     ConstraintPointArray& constraintPoints = linkPair.constraintPoints;
 
@@ -1368,7 +1369,7 @@ void CFSImpl::extractRelAccelsFromLinkPairCase1
 
 
 void CFSImpl::extractRelAccelsFromLinkPairCase2
-(Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int iTestForce, int iDefault, int testForceIndex, int maxConstraintIndexToExtract)
+(Eigen::Block<rmdmatrix>& Kxn, Eigen::Block<rmdmatrix>& Kxt, LinkPair& linkPair, int iTestForce, int iDefault, int testForceIndex, int maxConstraintIndexToExtract)
 {
     ConstraintPointArray& constraintPoints = linkPair.constraintPoints;
 
@@ -1405,7 +1406,7 @@ void CFSImpl::extractRelAccelsFromLinkPairCase2
 
 
 void CFSImpl::extractRelAccelsFromLinkPairCase3
-(Eigen::Block<dmatrix>& Kxn, Eigen::Block<dmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int maxConstraintIndexToExtract)
+(Eigen::Block<rmdmatrix>& Kxn, Eigen::Block<rmdmatrix>& Kxt, LinkPair& linkPair, int testForceIndex, int maxConstraintIndexToExtract)
 {
     ConstraintPointArray& constraintPoints = linkPair.constraintPoints;
 
@@ -1428,7 +1429,7 @@ void CFSImpl::extractRelAccelsFromLinkPairCase3
 
 
 void CFSImpl::copySymmetricElementsOfAccelerationMatrix
-(Eigen::Block<dmatrix>& Knn, Eigen::Block<dmatrix>& Ktn, Eigen::Block<dmatrix>& Knt, Eigen::Block<dmatrix>& Ktt)
+(Eigen::Block<rmdmatrix>& Knn, Eigen::Block<rmdmatrix>& Ktn, Eigen::Block<rmdmatrix>& Knt, Eigen::Block<rmdmatrix>& Ktt)
 {
     for(size_t linkPairIndex=0; linkPairIndex < constrainedLinkPairs.size(); ++linkPairIndex){
 
@@ -1606,7 +1607,7 @@ void CFSImpl::addConstraintForceToLink(LinkPair* linkPair, int ipair)
 
 
 
-void CFSImpl::solveMCPByProjectedGaussSeidel(const dmatrix& M, const dvector& b, dvector& x)
+void CFSImpl::solveMCPByProjectedGaussSeidel(const rmdmatrix& M, const dvector& b, dvector& x)
 {
     static const int loopBlockSize = DEFAULT_NUM_GAUSS_SEIDEL_ITERATION_BLOCK;
 
@@ -1645,7 +1646,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidel(const dmatrix& M, const dvector& b,
 
 
 void CFSImpl::solveMCPByProjectedGaussSeidelInitial
-(const dmatrix& M, const dvector& b, dvector& x, const int numIteration)
+(const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration)
 {
     const int size = globalNumConstraintVectors + globalNumFrictionVectors;
 
@@ -1771,7 +1772,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
 
 
 void CFSImpl::solveMCPByProjectedGaussSeidelMain
-(const dmatrix& M, const dvector& b, dvector& x, const int numIteration)
+(const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration)
 {
     const int size = globalNumConstraintVectors + globalNumFrictionVectors;
 
@@ -1890,7 +1891,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
 
 
 double CFSImpl::solveMCPByProjectedGaussSeidelErrorCheck
-(const dmatrix& M, const dvector& b, dvector& x)
+(const rmdmatrix& M, const dvector& b, dvector& x)
 {
     const int size = globalNumConstraintVectors + globalNumFrictionVectors;
 
@@ -2008,7 +2009,7 @@ double CFSImpl::solveMCPByProjectedGaussSeidelErrorCheck
 
 
 
-void CFSImpl::checkLCPResult(dmatrix& M, dvector& b, dvector& x)
+void CFSImpl::checkLCPResult(rmdmatrix& M, dvector& b, dvector& x)
 {
     std::cout << "check LCP result\n";
     std::cout << "-------------------------------\n";
@@ -2038,7 +2039,7 @@ void CFSImpl::checkLCPResult(dmatrix& M, dvector& b, dvector& x)
 }
 
 
-void CFSImpl::checkMCPResult(dmatrix& M, dvector& b, dvector& x)
+void CFSImpl::checkMCPResult(rmdmatrix& M, dvector& b, dvector& x)
 {
     std::cout << "check MCP result\n";
     std::cout << "-------------------------------\n";
@@ -2088,7 +2089,7 @@ void CFSImpl::checkMCPResult(dmatrix& M, dvector& b, dvector& x)
 
 
 #ifdef USE_PIVOTING_LCP
-bool CFSImpl::callPathLCPSolver(dmatrix& Mlcp, dvector& b, dvector& solution)
+bool CFSImpl::callPathLCPSolver(rmdmatrix& Mlcp, dvector& b, dvector& solution)
 {
     int size = solution.size();
     int square = size * size;
