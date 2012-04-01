@@ -659,6 +659,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
             std::vector<collision_data>& cdata = linkPair.detectCollisions();
             
             if(cdata.empty()){
+                pCollisionPoints->length(0);
                 pCollisionPoints = 0;
             } else {
                 int npoints = 0;
@@ -668,6 +669,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
                     }
                 }
                 if(npoints == 0){
+                    pCollisionPoints->length(npoints);
                     pCollisionPoints = 0;
                 } else {
                     pCollisionPoints->length(npoints);
