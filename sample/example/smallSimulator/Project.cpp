@@ -158,6 +158,12 @@ bool Project::parse(const std::string& filename)
               if ( cur_node->type == XML_ELEMENT_NODE ) {
                   if ( xmlStrEqual(xmlGetProp(cur_node, (xmlChar *)"name"),(xmlChar *)"logTimeStep") ) {
                       //logTimeStep = atof((char *)(xmlGetProp(cur_node, (xmlChar *)"value")));
+                  } else if ( xmlStrEqual(xmlGetProp(cur_node, (xmlChar *)"name"),(xmlChar *)"timeStep") ) {
+                      m_timeStep = atof((char *)(xmlGetProp(cur_node, (xmlChar *)"value")));
+                  } else if ( xmlStrEqual(xmlGetProp(cur_node, (xmlChar *)"name"),(xmlChar *)"totalTime") ) {
+                      m_totalTime = atof((char *)(xmlGetProp(cur_node, (xmlChar *)"value")));
+                  } else if ( xmlStrEqual(xmlGetProp(cur_node, (xmlChar *)"name"),(xmlChar *)"method") ) {
+                      m_isEuler = std::string((char *)(xmlGetProp(cur_node, (xmlChar *)"value"))) == std::string("EULER");
                   }
               }
               cur_node = cur_node->next;
