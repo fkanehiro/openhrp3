@@ -68,6 +68,35 @@ bool Project::parse(const std::string& filename)
               }
               cur_node = cur_node->next;
           }
+      } else if ( xmlStrEqual( xmlGetProp(node, (xmlChar *)"class"), (xmlChar *)"com.generalrobotix.ui.item.GrxRTSItem")  ) {
+          std::cout << "rts item" << std::endl;
+          xmlNodePtr cur_node = node->children;
+          while ( cur_node ) {
+              if ( cur_node->type == XML_ELEMENT_NODE ) {
+                  std::string name = (char *)xmlGetProp(cur_node, (xmlChar *)"name");
+                  std::string value = (char *)xmlGetProp(cur_node, (xmlChar *)"value");
+                  //std::cout << name << "," << value << std::endl;
+
+                  int pos = name.find('.');
+                  if (pos < 0){
+                      std::cerr << "unknown property name:" << name 
+                                << std::endl; 
+                  }else{
+                      std::string comp = name.substr(0,pos);
+                      std::string cat = name.substr(pos+1);
+                      if (cat == "factory"){
+                          m_rts.components[comp].path = value;
+                          int pos = value.find_last_of("/");
+                          m_rts.components[comp].name = value.substr(pos+1);
+                      }else if (cat == "period") {
+                          m_rts.components[comp].period = atof(value.c_str());
+                      }else{
+                          m_rts.connections.push_back(std::make_pair(name, value));
+                      }
+                  }
+              }
+              cur_node = cur_node->next;
+          }
       } else if ( xmlStrEqual( xmlGetProp(node, (xmlChar *)"class"), (xmlChar *)"com.generalrobotix.ui.item.GrxModelItem")  ) {
           //std::cerr << "GrxModelItem name:" << xmlGetProp(node, (xmlChar *)"name") << ", url:" << xmlGetProp(node, (xmlChar *)"url") << std::endl;
           std::string path = "file://";
