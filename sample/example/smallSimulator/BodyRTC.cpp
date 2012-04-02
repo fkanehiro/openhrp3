@@ -149,5 +149,7 @@ void BodyRTC::moduleInit(RTC::Manager* manager)
     coil::Properties profile(bodyext_spec);
     manager->registerFactory(profile,
                              RTC::Create<BodyRTC>,
-                             DummyDelete<BodyRTC>);
+                             DummyDelete<BodyRTC>
+                             //RTC::Delete<BodyRTC>
+        );
 }

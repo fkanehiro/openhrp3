@@ -42,6 +42,19 @@ public:
     std::map<std::string,JointItem> joint;
 };
 
+class RTSItem {
+public:
+    class rtc{
+    public:
+        rtc() : period(0.0){}
+        std::string name;
+        std::string path;
+        double period;
+    };
+    std::map<std::string, rtc> components;
+    std::vector<std::pair<std::string, std::string> > connections;
+};
+
 class Project{
 public:
     Project();
@@ -53,6 +66,7 @@ public:
     bool kinematicsOnly() { return m_kinematicsOnly; }
     std::map<std::string, ModelItem>& models(){ return m_models; }
     std::vector<CollisionPairItem>& collisionPairs() { return m_collisionPairs; }
+    RTSItem &RTS() { return m_rts; }
 private:
     double m_timeStep;
     double m_totalTime;
@@ -61,5 +75,6 @@ private:
     bool m_kinematicsOnly;
     std::map<std::string, ModelItem> m_models;
     std::vector<CollisionPairItem> m_collisionPairs;
+    RTSItem m_rts;
 };
 #endif

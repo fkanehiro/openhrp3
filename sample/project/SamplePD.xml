@@ -12,6 +12,13 @@
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
             <property name="logTimeStep" value="0.0020 "/>
         </item>
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="SamplePD0.factory" value="/home/kanehiro/openrtp/share/OpenHRP-3.1/sample/controller/SamplePD/SamplePD"/>
+	    <property name="SamplePD0.period" value="0.002"/>  
+	    <property name="sample.period" value="0.002"/>  
+	    <property name="sample.q" value="SamplePD0.angle"/>  
+	    <property name="SamplePD0.torque" value="sample.tau"/>  
+        </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/floor.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>

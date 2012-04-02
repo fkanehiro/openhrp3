@@ -5,6 +5,7 @@ set(sources
   Project.cpp
   ProjectUtil.cpp
   OnlineViewerUtil.cpp
+  OpenRTMUtil.cpp
   smallSimulator.cpp
 )
 

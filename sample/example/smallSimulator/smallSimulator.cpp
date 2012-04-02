@@ -11,13 +11,14 @@
 #include "BodyRTC.h"
 #include "OnlineViewerUtil.h"
 #include "ProjectUtil.h"
+#include "OpenRTMUtil.h"
 
 using namespace std;
 using namespace hrp;
 using namespace OpenHRP;
 
 BodyPtr createBody(const std::string& name, const std::string& url,
-                   std::vector<BodyRTCPtr> &bodies,
+                   std::vector<BodyRTCPtr> *bodies,
                    int argc, char *argv[])
 {
     RTC::Manager& manager = RTC::Manager::instance();
@@ -29,7 +30,7 @@ BodyPtr createBody(const std::string& name, const std::string& url,
         return BodyPtr();
     }else{
         body->createDataPorts();
-        bodies.push_back(body);
+        bodies->push_back(body);
         return body;
     }
 }
@@ -62,8 +63,12 @@ int main(int argc, char* argv[])
     //================= setup World ======================
     World<ConstraintForceSolver> world;
     std::vector<BodyRTCPtr> bodies; 
-    BodyFactory factory = boost::bind(createBody, _1, _2, bodies, argc, argv);
+    BodyFactory factory = boost::bind(createBody, _1, _2, &bodies, argc, argv);
     initWorld(prj, factory, world);
+
+    std::vector<ClockReceiver> receivers;
+    initRTS(prj, receivers);
+    std::cout << "number of receivers:" << receivers.size() << std::endl;
 
     //==================== OnlineViewer (GrxUI) setup ===============
     OnlineViewer_var olv;
@@ -102,17 +107,20 @@ int main(int argc, char* argv[])
         }
         // ================== simulate one step ==============
         for (unsigned int i=0; i<bodies.size(); i++){
-            bodies[i]->readDataPorts();
-        }
-        // TODO : send tick() to execution contexts
-        world.constraintForceSolver.clearExternalForces();
-        world.calcNextState(state.collisions);
-
-        for (unsigned int i=0; i<bodies.size(); i++){
             bodies[i]->writeDataPorts();
         }
-    }
 
+        for (unsigned int i=0; i<bodies.size(); i++){
+            bodies[i]->readDataPorts();
+        }
+
+        for (unsigned int i=0; i<receivers.size(); i++){
+            receivers[i].tick(world.timeStep());
+        }
+
+        world.constraintForceSolver.clearExternalForces();
+        world.calcNextState(state.collisions);
+    }
     manager->shutdown();
 
     return 0;
