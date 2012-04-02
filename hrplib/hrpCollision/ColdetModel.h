@@ -15,7 +15,7 @@
 
 #include "config.h"
 #include <string>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 #include <hrpUtil/Referenced.h>
 #include <vector>
 #include <map>

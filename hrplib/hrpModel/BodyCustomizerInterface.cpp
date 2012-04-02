@@ -13,6 +13,7 @@
    \author Shin'ichiro Nakaoka
 */
 
+#include <iostream>
 #include "BodyCustomizerInterface.h"
 #include "Body.h"
 #include <cstdlib>

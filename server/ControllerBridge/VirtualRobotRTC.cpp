@@ -254,10 +254,14 @@ bool VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
       break;
 
     case FORCE_SENSOR:
-    case RATE_GYRO_SENSOR:
-    case ACCELERATION_SENSOR:
     case RANGE_SENSOR:
       ret = registerOutPortHandler(new SensorDataOutPortHandler(portInfo));
+      break;
+    case RATE_GYRO_SENSOR:
+      ret = registerOutPortHandler(new GyroSensorOutPortHandler(portInfo));
+      break;
+    case ACCELERATION_SENSOR:
+      ret = registerOutPortHandler(new AccelerationSensorOutPortHandler(portInfo));
       break;
 
     default:

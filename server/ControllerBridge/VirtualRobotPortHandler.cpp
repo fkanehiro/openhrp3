@@ -173,6 +173,72 @@ void SensorDataOutPortHandler::writeDataToPort()
 }
 
 
+GyroSensorOutPortHandler::GyroSensorOutPortHandler(PortInfo& info) :
+  OutPortHandler(info),
+  outPort(info.portName.c_str(), value),
+  sensorName(info.dataOwnerName)
+{
+    stepTime = info.stepTime;
+}
+
+
+void GyroSensorOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
+{
+    size_t n;
+    CORBA::ULong m;
+    n = sensorName.size();
+    for(size_t i=0, k=0; i<n; i++){
+        DblSequence_var data = controller->getSensorDataFromSimulator(sensorName[i]);    
+        if(!i){
+            m = data->length();
+        }
+	value.data.avx = data[0];
+	value.data.avy = data[1];
+	value.data.avz = data[2];
+    }  
+    setTime(value, controller->controlTime);
+}
+
+
+void GyroSensorOutPortHandler::writeDataToPort()
+{
+  outPort.write();
+}
+
+
+AccelerationSensorOutPortHandler::AccelerationSensorOutPortHandler(PortInfo& info) :
+  OutPortHandler(info),
+  outPort(info.portName.c_str(), value),
+  sensorName(info.dataOwnerName)
+{
+    stepTime = info.stepTime;
+}
+
+
+void AccelerationSensorOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
+{
+    size_t n;
+    CORBA::ULong m;
+    n = sensorName.size();
+    for(size_t i=0, k=0; i<n; i++){
+        DblSequence_var data = controller->getSensorDataFromSimulator(sensorName[i]);    
+        if(!i){
+            m = data->length();
+        }
+	value.data.ax = data[0];
+	value.data.ay = data[1];
+	value.data.az = data[2];
+    }  
+    setTime(value, controller->controlTime);
+}
+
+
+void AccelerationSensorOutPortHandler::writeDataToPort()
+{
+  outPort.write();
+}
+
+
 ColorImageOutPortHandler::ColorImageOutPortHandler(PortInfo& info) :
   OutPortHandler(info),
   outPort(info.portName.c_str(), image),

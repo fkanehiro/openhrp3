@@ -17,7 +17,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 #include "Body.h"
 #include "ForwardDynamics.h"
 #include "Config.h"

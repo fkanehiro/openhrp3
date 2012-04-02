@@ -22,7 +22,6 @@
 #include <cstdlib>
 
 using namespace hrp;
-using namespace tvmet;
 using namespace std;
 
 static const bool PUT_DEBUG_MESSAGE = true;
@@ -90,8 +89,8 @@ Body::Body()
     rootLink_ = new Link;
     rootLink_->body = this;
 
-    defaultRootPosition = 0.0;
-    defaultRootAttitude = tvmet::identity<Matrix33>();
+    defaultRootPosition.setZero();
+    defaultRootAttitude.setIdentity();
 }
 
 
@@ -171,28 +170,28 @@ Link* Body::createEmptyJoint(int jointId)
     Link* empty = new Link;
     empty->body = this;
     empty->jointId = jointId;
-    empty->p = 0.0;
-    empty->R = tvmet::identity<Matrix33>();
-    empty->v = 0.0;
-    empty->w = 0.0;
-    empty->dv = 0.0;
-    empty->dw = 0.0;
+    empty->p.setZero();
+    empty->R.setIdentity();
+    empty->v.setZero();
+    empty->w.setZero();
+    empty->dv.setZero();
+    empty->dw.setZero();
     empty->q = 0.0;
     empty->dq = 0.0;
     empty->ddq = 0.0;
     empty->u = 0.0;
-    empty->a = 0.0;
-    empty->d = 0.0;
-    empty->b = 0.0;
-    empty->Rs = tvmet::identity<Matrix33>();
+    empty->a.setZero();
+    empty->d.setZero();
+    empty->b.setZero();
+    empty->Rs.setIdentity();
     empty->m = 0.0;
-    empty->I = 0.0;
-    empty->c = 0.0;
-    empty->wc = 0.0;
-    empty->vo = 0.0;
-    empty->dvo = 0.0;
-    empty->fext = 0.0;
-    empty->tauext = 0.0;
+    empty->I.setZero();
+    empty->c.setZero();
+    empty->wc.setZero();
+    empty->vo.setZero();
+    empty->dvo.setZero();
+    empty->fext.setZero();
+    empty->tauext.setZero();
     empty->Jm2 = 0.0;
     empty->ulimit = 0.0;
     empty->llimit = 0.0;
@@ -267,12 +266,12 @@ void Body::initializeConfiguration()
     rootLink_->p = defaultRootPosition;
     rootLink_->setAttitude(defaultRootAttitude);
 
-    rootLink_->v = 0.0;
-    rootLink_->dv = 0.0;
-    rootLink_->w = 0.0;
-    rootLink_->dw = 0.0;
-    rootLink_->vo = 0.0;
-    rootLink_->dvo = 0.0;
+    rootLink_->v.setZero();
+    rootLink_->dv.setZero();
+    rootLink_->w.setZero();
+    rootLink_->dw.setZero();
+    rootLink_->vo.setZero();
+    rootLink_->dvo.setZero();
     rootLink_->constraintForces.clear();
     
     int n = linkTraverse_.numLinks();
@@ -309,7 +308,7 @@ Vector3 Body::calcCM()
 {
     totalMass_ = 0.0;
     
-    Vector3 mc(0.0);
+    Vector3 mc(Vector3::Zero());
 
     int n = linkTraverse_.numLinks();
     for(int i=0; i < n; i++){
@@ -319,7 +318,7 @@ Vector3 Body::calcCM()
         totalMass_ += link->m;
     }
 
-    return Vector3(mc / totalMass_);
+    return mc / totalMass_;
 }
 
 
@@ -364,9 +363,9 @@ void Body::calcMassMatrix(dmatrix& out_M)
     // preserve and clear the root link acceleration
     dvoorg = rootLink_->dvo;
     dworg  = rootLink_->dw;
-    root_w_x_v = cross(rootLink_->w, Vector3(rootLink_->vo + cross(rootLink_->w, rootLink_->p)));
+    root_w_x_v = rootLink_->w.cross(rootLink_->vo + rootLink_->w.cross(rootLink_->p));
     rootLink_->dvo = g - root_w_x_v;   // dv = g, dw = 0
-    rootLink_->dw  = 0.0;
+    rootLink_->dw.setZero();
 	
     setColumnOfMassMatrix(b1, 0);
 
@@ -378,7 +377,7 @@ void Body::calcMassMatrix(dmatrix& out_M)
         }
         for(int i=0; i < 3; ++i){
             rootLink_->dw[i] = 1.0;
-            Vector3 dw_x_p = cross(rootLink_->dw, rootLink_->p);	//  spatial acceleration caused by ang. acc.
+            Vector3 dw_x_p = rootLink_->dw.cross(rootLink_->p);	//  spatial acceleration caused by ang. acc.
             rootLink_->dvo -= dw_x_p;
             setColumnOfMassMatrix(out_M, i + 3);
             rootLink_->dvo += dw_x_p;
@@ -396,9 +395,8 @@ void Body::calcMassMatrix(dmatrix& out_M)
     }
 
     // subtract the constant term
-    ublas::matrix_column<dmatrix> vb1(b1, 0);
-    for(size_t i = 0; i < out_M.size2(); ++i){
-        ublas::matrix_column<dmatrix>(out_M, i) -= vb1;
+    for(size_t i = 0; i < out_M.cols(); ++i){
+        out_M.col(i) -= b1;
     }
 
     // recover state
@@ -420,9 +418,8 @@ void Body::setColumnOfMassMatrix(dmatrix& out_M, int column)
     calcInverseDynamics(rootLink_, f, tau);
 
     if( !isStaticModel_ ){
-        tau -= cross(rootLink_->p, f);
-        setVector3(f,   out_M, 0, column);
-        setVector3(tau, out_M, 3, column);
+        tau -= rootLink_->p.cross(f);
+        out_M.block<6,1>(0, column) << f, tau;
     }
 
     int n = numJoints();
@@ -443,14 +440,14 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
         Vector3 dsv,dsw,sv,sw;
 
         if(ptr->jointType != Link::FIXED_JOINT){
-            sw  = parent->R * ptr->a;
-            sv  = cross(ptr->p, sw);
+            sw.noalias()  = parent->R * ptr->a;
+            sv  = ptr->p.cross(sw);
         }else{
-            sw = 0.0;
-            sv = 0.0;
+            sw.setZero();
+            sv.setZero();
         }
-        dsv = cross(parent->w, sv) + cross(parent->vo, sw);
-        dsw = cross(parent->w, sw);
+        dsv = parent->w.cross(sv) + parent->vo.cross(sw);
+        dsw = parent->w.cross(sw);
 
         ptr->dw  = parent->dw  + dsw * ptr->dq + sw * ptr->ddq;
         ptr->dvo = parent->dvo + dsv * ptr->dq + sv * ptr->ddq;
@@ -463,14 +460,14 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
     Matrix33 I,c_hat;
 
     c = ptr->R * ptr->c + ptr->p;
-    I = ptr->R * ptr->I * trans(ptr->R);
+    I.noalias() = ptr->R * ptr->I * ptr->R.transpose();
     c_hat = hat(c);
-    I += ptr->m * c_hat * trans(c_hat);
-    P = ptr->m * (ptr->vo + cross(ptr->w, c));
-    L = ptr->m * cross(c, ptr->vo) + I * ptr->w;
+    I.noalias() += ptr->m * c_hat * c_hat.transpose();
+    P.noalias() = ptr->m * (ptr->vo + ptr->w.cross(c));
+    L = ptr->m * c.cross(ptr->vo) + I * ptr->w;
 
-    out_f   = ptr->m * (ptr->dvo + cross(ptr->dw, c)) + cross(ptr->w, P);
-    out_tau = ptr->m * cross(c, ptr->dvo) + I * ptr->dw + cross(ptr->vo,P) + cross(ptr->w,L);
+    out_f   = ptr->m * (ptr->dvo + ptr->dw.cross(c)) + ptr->w.cross(P);
+    out_tau = ptr->m * c.cross(ptr->dvo) + I * ptr->dw + ptr->vo.cross(P) + ptr->w.cross(L);
 
     if(ptr->child){
         Vector3 f_c;
@@ -480,7 +477,7 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
         out_tau += tau_c;
     }
 
-    ptr->u = dot(ptr->sv, out_f) + dot(ptr->sw, out_tau);
+    ptr->u = ptr->sv.dot(out_f) + ptr->sw.dot(out_tau);
 
     if(ptr->sibling){
         Vector3 f_s;
@@ -498,8 +495,8 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
 */
 void Body::calcTotalMomentum(Vector3& out_P, Vector3& out_L)
 {
-    out_P = 0.0;
-    out_L = 0.0;
+    out_P.setZero();
+    out_L.setZero();
 
     Vector3 dwc;	// Center of mass speed in world frame
     Vector3 P;		// Linear momentum of the link
@@ -510,13 +507,13 @@ void Body::calcTotalMomentum(Vector3& out_P, Vector3& out_L)
     for(int i=0; i < n; i++){
         Link* link = linkTraverse_[i];
 
-        dwc = link->v + cross(link->w, Vector3(link->R * link->c));
+        dwc = link->v + link->w.cross(link->R * link->c);
 
         P   = link->m * dwc;
 
         //L   = cross(link->wc, P) + link->R * link->I * trans(link->R) * link->w; 
-        Llocal = link->I * Mtx_prod(link->R, link->w);
-        L      = cross(link->wc, P) + link->R * Llocal; 
+        Llocal.noalias() = link->I * link->R.transpose()*link->w;
+        L                = link->wc.cross(P) + link->R * Llocal; 
 
         out_P += P;
         out_L += L;
@@ -616,8 +613,8 @@ void Body::clearExternalForces()
     int n = linkTraverse_.numLinks();
     for(int i=0; i < n; ++i){
         Link* link = linkTraverse_[i];
-        link->fext = 0.0;
-        link->tauext = 0.0;
+        link->fext.setZero();
+        link->tauext.setZero();
     }
 }
 
@@ -796,11 +793,11 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
         Vector3 p_relative;
         Matrix33 R_relative;
         if(!isCustomizedIkPathReversed){
-            p_relative = trans(baseLink_->R) * Vector3(end_p - baseLink_->p);
-            R_relative = trans(baseLink_->R) * end_R;
+            p_relative.noalias() = baseLink_->R.transpose() * (end_p - baseLink_->p);
+            R_relative.noalias() = baseLink_->R.transpose() * end_R;
         } else {
-            p_relative = trans(end_R) * Vector3(baseLink_->p - end_p);
-            R_relative = trans(end_R) * baseLink_->R;
+            p_relative.noalias() = end_R.transpose() * (baseLink_->p - end_p);
+            R_relative.noalias() = end_R.transpose() * baseLink_->R;
         }
         solved = body->customizerInterface->
             calcAnalyticIk(body->customizerHandle, ikTypeId, p_relative, R_relative);
@@ -810,9 +807,9 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
             calcForwardKinematics();
 
             Vector3 dp(end_p - targetLink->p);
-            Vector3 omega(omegaFromRot(Matrix33(trans(targetLink->R) * end_R)));
+            Vector3 omega(omegaFromRot(targetLink->R.transpose() * end_R));
 			
-            double errsqr = dot(dp, dp) + dot(omega, omega);
+            double errsqr = dp.dot(dp) + omega.dot(omega);
 			
             if(errsqr < maxIKErrorSqr){
                 solved = true;
@@ -888,8 +885,8 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
         {
             Vector3 omega(sgn[j->jointId]*j->R*j->a);
             Vector3 arm((j->submwc-j->subm*j->p)/totalMass_);
-            Vector3 dp(cross(omega, arm));
-            setVector3(dp, J, 0, j->jointId);
+            Vector3 dp(omega.cross(arm));
+            J.col(j->jointId) = dp;
             break;
         }
         default:

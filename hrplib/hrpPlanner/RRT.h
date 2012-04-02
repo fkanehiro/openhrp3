@@ -80,6 +80,8 @@ namespace PathEngine {
 
     bool extendFromGoal_;
 
+    std::vector<Configuration> extraGoals_;
+
   public:
     /**
      * @brief コンストラクタ
@@ -100,6 +102,8 @@ namespace PathEngine {
     void extendFromStart(bool b) { extendFromStart_ = b; }
 
     void extendFromGoal(bool b) { extendFromGoal_ = b; }
+
+    void addExtraGoal(const Configuration &cfg) { extraGoals_.push_back(cfg); }
   };
 };
 

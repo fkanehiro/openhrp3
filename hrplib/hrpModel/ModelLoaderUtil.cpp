@@ -15,8 +15,8 @@
 #include "ModelLoaderUtil.h"
 #include "Link.h"
 #include "Sensor.h"
-#include <hrpUtil/Tvmet3d.h>
-#include <hrpUtil/Tvmet4d.h>
+#include <hrpUtil/Eigen3d.h>
+#include <hrpUtil/Eigen4d.h>
 #include <hrpCorba/OpenHRPCommon.hh>
 #include <hrpCollision/ColdetModel.h>
 #include <stack>
@@ -177,7 +177,7 @@ bool ModelLoaderHelper::createBody(BodyPtr& body, BodyInfo_ptr bodyInfo)
 
     if(rootIndex >= 0){ // root exists
 
-        Matrix33 Rs(tvmet::identity<Matrix33>());
+        Matrix33 Rs(Matrix33::Identity());
         Link* rootLink = createLink(rootIndex, Rs);
         body->setRootLink(rootLink);
         body->setDefaultRootPosition(rootLink->b, rootLink->Rs);
@@ -233,8 +233,8 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
         }
     }
 
-    link->a = 0.0;
-    link->d = 0.0;
+    link->a.setZero();
+    link->d.setZero();
 
     Vector3 axis( Rs * Vector3(linkInfo.jointAxis[0], linkInfo.jointAxis[1], linkInfo.jointAxis[2]));
 
@@ -270,7 +270,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
 
     Matrix33 Io;
     getMatrix33FromRowMajorArray(Io, linkInfo.inertia);
-    link->I = Rs * Io * trans(Rs);
+    link->I = Rs * Io * Rs.transpose();
 
     // a stack is used for keeping the same order of children
     std::stack<Link*> children;
@@ -385,7 +385,7 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel,
         short shapeIndex = tsi.shapeIndex;
         const DblArray12& M = tsi.transformMatrix;;
         Matrix44 T;
-        T = M[0], M[1], M[2],  M[3],
+        T << M[0], M[1], M[2],  M[3],
             M[4], M[5], M[6],  M[7],
             M[8], M[9], M[10], M[11],
             0.0,  0.0,  0.0,   1.0;
@@ -446,16 +446,17 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel,
         short shapeIndex = tsi.shapeIndex;
         const DblArray12& M = tsi.transformMatrix;;
         Matrix44 T0;
-        T0 = M[0], M[1], M[2],  M[3],
+        T0 << M[0], M[1], M[2],  M[3],
              M[4], M[5], M[6],  M[7],
              M[8], M[9], M[10], M[11],
              0.0,  0.0,  0.0,   1.0;
         Matrix44 Rs44;
-        Rs44 = Rs(0,0), Rs(0,1), Rs(0,2), 0.0,
+        Rs44 << Rs(0,0), Rs(0,1), Rs(0,2), 0.0,
                Rs(1,0), Rs(1,1), Rs(1,2), 0.0,
                Rs(2,0), Rs(2,1), Rs(2,2), 0.0,
                0.0,     0.0,     0.0,     1.0;
-        Matrix44 T(Rs44 * T0);
+        //Matrix44 T(Rs44 * T0);
+        Matrix44 T(T0);
 
         const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
         const FloatSequence& vertices = shapeInfo.vertices;

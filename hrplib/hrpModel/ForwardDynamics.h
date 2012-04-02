@@ -18,7 +18,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 
 #include "Config.h"
 
@@ -35,6 +35,7 @@ namespace hrp
     class HRPMODEL_API ForwardDynamics {
 
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         
         ForwardDynamics(BodyPtr body);
 		virtual ~ForwardDynamics();
@@ -81,8 +82,8 @@ namespace hrp
 
 		// varialbes for calculating sensor values
 		// preview control gain matrices for force sensors
-		typedef tvmet::Matrix<double, 2,2> matrix22;
-		typedef tvmet::Vector<double, 2> vector2;
+		typedef Eigen::Matrix2d matrix22;
+		typedef Eigen::Vector2d vector2;
 		matrix22 A;
 		vector2 B;
 		

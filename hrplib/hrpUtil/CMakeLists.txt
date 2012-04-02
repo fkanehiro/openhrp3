@@ -17,8 +17,8 @@ endif()
 
 set(sources
   EasyScanner.cpp
-  Tvmet3d.cpp
-  Tvmet4d.cpp
+  Eigen3d.cpp
+  Eigen4d.cpp
   MatrixSolvers.cpp
   UrlUtil.cpp
   VrmlNodes.cpp
@@ -34,9 +34,13 @@ set(headers
   config.h
   Referenced.h
   EasyScanner.h
+  EigenTypes.h
   Tvmet3dTypes.h
   Tvmet3d.h
   Tvmet4d.h
+  Tvmet2Eigen.h
+  Eigen3d.h
+  Eigen4d.h
   uBlasCommonTypes.h
   MatrixSolvers.h
   TimeMeasure.h

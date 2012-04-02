@@ -43,10 +43,10 @@ int Triangulator::apply(const vector<int>& polygon)
         workPolygon[i] = i;
     }
     
-    ccs = 0.0;
+    ccs << 0.0, 0.0, 0.0;
     const Vector3Ref o(vertex(0));
     for(int i=1; i < numOrgVertices - 1; ++i){
-        ccs += tvmet::cross(Vector3(vertex(i) - o), Vector3(vertex((i+1) % numOrgVertices) - o));
+        ccs += (vertex(i) - o).cross(vertex((i+1) % numOrgVertices) - o);
     }
 
     int numTriangles = 0;
@@ -93,14 +93,14 @@ Triangulator::Convexity Triangulator::calcConvexity(int ear)
     const Vector3Ref p0(workVertex((ear + n - 1) % n));
     Vector3 a(workVertex(ear) - p0);
     Vector3 b(workVertex((ear + 1) % n) - p0);
-    Vector3 ccs(cross(a, b));
+    Vector3 ccs(a.cross(b));
 
     Convexity convexity;
     
-    if((norm2(ccs) / (norm2(a) + norm2(b))) < 1.0e-4){
+    if((ccs.norm() / a.norm() + b.norm()) < 1.0e-4){
         convexity = FLAT;
     } else {
-        convexity = (dot(this->ccs, ccs) > 0.0) ? CONVEX : CONCAVE;
+        convexity = (this->ccs.dot(ccs) > 0.0) ? CONVEX : CONCAVE;
     }
 
     return convexity;
@@ -125,13 +125,13 @@ bool Triangulator::checkIfEarContainsOtherVertices(int ear)
         for(int i=0; i < workPolygon.size(); ++i){
             if(!earMask[i]){
                 const Vector3Ref p(workVertex(i));
-                if(tvmet::dot(tvmet::cross(a - p, b - p), ccs) <= 0){
+                if((a - p).cross(b - p).dot(ccs) <= 0){
                     continue;
                 }
-                if(tvmet::dot(tvmet::cross(b - p, c - p), ccs) <= 0){
+                if((b - p).cross(c - p).dot(ccs) <= 0){
                     continue;
                 }
-                if(tvmet::dot(tvmet::cross(c - p, a - p), ccs) <= 0){
+                if((c - p).cross(a - p).dot(ccs) <= 0){
                     continue;
                 }
                 contains = true;

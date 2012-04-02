@@ -10,7 +10,7 @@
 #ifndef HRPCOLLISION_COLLISION_DATA_H_INCLUDED
 #define HRPCOLLISION_COLLISION_DATA_H_INCLUDED
 
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 #include "config.h"
 
 namespace hrp {

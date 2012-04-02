@@ -10,7 +10,7 @@
    @author Shin'ichiro Nakaoka
 */
 
-
+#include <iostream>
 #include "ColdetModel.h"
 #include "ColdetModelSharedDataSet.h"
 

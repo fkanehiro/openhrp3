@@ -411,7 +411,7 @@ JointNodeSetPtr ModelNodeSetImpl::addJointNodeSet(VrmlProtoInstancePtr jointNode
     acceptableProtoIds.set(PROTO_SENSOR);
     acceptableProtoIds.set(PROTO_HARDWARECOMPONENT);
     
-    Matrix44 T(tvmet::identity<Matrix44>());
+    Matrix44 T(Matrix44::Identity());
     extractChildNodes(jointNodeSet, childNodes, acceptableProtoIds, T);
 
     return jointNodeSet;
@@ -461,20 +461,20 @@ void ModelNodeSetImpl::extractChildNodes
             switch(id){
                 
             case PROTO_JOINT:
-                if(any_elements(T != tvmet::identity<Matrix44>() ))
+                if(T != Matrix44::Identity())
                     throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
                 jointNodeSet->childJointNodeSets.push_back(addJointNodeSet(protoInstance));
                 break;
                 
             case PROTO_SENSOR:
-                if(any_elements(T != tvmet::identity<Matrix44>() ))
+                if(T != Matrix44::Identity())
                     throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
                 jointNodeSet->sensorNodes.push_back(protoInstance);
                 putMessage(protoName + protoInstance->defName);
                 break;
                 
             case PROTO_HARDWARECOMPONENT:
-                if(any_elements(T != tvmet::identity<Matrix44>() ))
+                if(T != Matrix44::Identity())
                     throw ModelNodeSet::Exception(protoName + " node is not in a correct place.");
                 jointNodeSet->hwcNodes.push_back(protoInstance);
                 putMessage(protoName + protoInstance->defName);

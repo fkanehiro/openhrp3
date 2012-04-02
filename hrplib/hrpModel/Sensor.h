@@ -17,7 +17,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 #include "Config.h"
 
 namespace hrp {
@@ -95,6 +95,8 @@ namespace hrp {
     class HRPMODEL_API AccelSensor : public Sensor
     {
       public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
         static const int TYPE = ACCELERATION;
 
         AccelSensor();
@@ -105,7 +107,7 @@ namespace hrp {
         virtual void putInformation(std::ostream& os);
 
         // The following members are used in the ForwardDynamics class
-        typedef tvmet::Vector<double, 2> vector2;
+        typedef Eigen::Vector2d vector2;
         vector2 x[3]; 
         bool isFirstUpdate;
     };

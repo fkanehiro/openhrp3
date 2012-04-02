@@ -22,6 +22,7 @@
 #include <rtm/OutPort.h>
 #include <rtm/InPort.h>
 #include <rtm/idl/BasicDataTypeStub.h>
+#include <rtm/idl/ExtendedDataTypes.hh>
 
 #include <hrpCorba/DynamicsSimulator.hh>
 
@@ -114,6 +115,30 @@ public:
     RTC::OutPort<RTC::TimedDoubleSeq> outPort;
 private:
     RTC::TimedDoubleSeq value;
+    std::vector<std::string> sensorName;
+};
+
+class GyroSensorOutPortHandler : public OutPortHandler
+{
+public:
+    GyroSensorOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedAngularVelocity3D> outPort;
+private:
+    RTC::TimedAngularVelocity3D value;
+    std::vector<std::string> sensorName;
+};
+
+class AccelerationSensorOutPortHandler : public OutPortHandler
+{
+public:
+    AccelerationSensorOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedAcceleration3D> outPort;
+private:
+    RTC::TimedAcceleration3D value;
     std::vector<std::string> sensorName;
 };
 

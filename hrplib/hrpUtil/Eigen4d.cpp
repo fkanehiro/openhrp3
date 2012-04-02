@@ -7,9 +7,9 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  */
 
-#include "Tvmet4d.h"
+#include "Eigen4d.h"
+#include "VrmlNodes.h"
 
-using namespace tvmet;
 using namespace hrp;
 
 
@@ -33,7 +33,7 @@ void hrp::calcRodrigues(Matrix44& out_R, const Vector3& axis, double q)
     ay *= sth;
     az *= sth;
 
-    out_R =
+    out_R <<
         1.0 - azz - ayy, -az + axy,       ay + azx,        0.0,
         az + axy,        1.0 - azz - axx, -ax + ayz,       0.0,
         -ay + azx,       ax + ayz,        1.0 - ayy - axx, 0.0,
@@ -61,7 +61,7 @@ void hrp::calcTransformMatrix(VrmlTransform* transform, Matrix44& out_T)
     const SFVec3f& s = transform->scale;
 
     Matrix44 SinvSR;
-    SinvSR =
+    SinvSR <<
         s[0] * SR(0,0), s[0] * SR(1,0), s[0] * SR(2,0), 0.0,
         s[1] * SR(0,1), s[1] * SR(1,1), s[1] * SR(2,1), 0.0,
         s[2] * SR(0,2), s[2] * SR(1,2), s[2] * SR(2,2), 0.0,

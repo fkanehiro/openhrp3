@@ -332,7 +332,7 @@ void computeBoundingBox(BodyPtr body, double min[3], double max[3])
     bool firsttime = true;
     Vector3 v, p;
     Link *l, *root=body->rootLink();
-	Matrix33 Rt = (Matrix33)trans(root->R);
+    Matrix33 Rt = root->R.transpose();
     float x, y, z;
     for (int i=0; i<body->numLinks(); i++){
         l = body->link(i);
@@ -388,8 +388,8 @@ BodyPtr createBoundingBoxBody(BodyPtr body)
     coldetModel->build();
 
     Link *root = new Link();
-    root->R = tvmet::identity<Matrix33>();
-    root->Rs = tvmet::identity<Matrix33>();
+    root->R = Matrix33::Identity();
+    root->Rs = Matrix33::Identity();
     root->coldetModel = coldetModel;
 
     BodyPtr bboxBody = new Body();
