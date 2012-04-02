@@ -158,11 +158,11 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
         int vertexIndex = 0;
         int triangleIndex = 0;
         
-        Matrix44 E(tvmet::identity<Matrix44>());
+        Matrix44 E(Matrix44::Identity());
         const TransformedShapeIndexSequence& shapeIndices = linkShapeIndices_[linkIndex];
         setColdetModel(coldetModel, shapeIndices, E, vertexIndex, triangleIndex);
 
-        Matrix44 T(tvmet::identity<Matrix44>());
+        Matrix44 T(Matrix44::Identity());
         const SensorInfoSequence& sensors = links_[linkIndex].sensors;
         for (unsigned int i=0; i<sensors.length(); i++){
             const SensorInfo& sensor = sensors[i];
@@ -224,8 +224,8 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
             traverseShapeNodes(segmentNodes[i].get(), T, links_[index].shapeIndices, links_[index].inlinedShapeTransformMatrices, &topUrl());
             long e =links_[index].shapeIndices.length();
             segmentInfo->shapeIndices.length(e-s);
-            for(int j=0, i=s; i<e; i++)
-                segmentInfo->shapeIndices[j++] = i;
+            for(int j=0, k=s; k<e; k++)
+                segmentInfo->shapeIndices[j++] = k;
             links_[index].segments[i] = segmentInfo;
         }
         setJointParameters(index, jointNodeSet->jointNode);
@@ -323,7 +323,7 @@ void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr join
     //  R = Tの回転行列               //
     //  G = y*y+z*z, -x*y, -x*z, -y*x, z*z+x*x, -y*z, -z*x, -z*y, x*x+y*y    //
     //  (x, y, z ) = T * c - C        //
-    std::vector<Vector4> centerOfMassArray;
+    std::vector<Vector4, Eigen::aligned_allocator<Vector4> > centerOfMassArray;
     std::vector<double> massArray;
     for(int i = 0 ; i < numSegment ; ++i){
         SegmentInfo& segmentInfo = linkInfo.segments[i];
@@ -349,10 +349,10 @@ void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr join
             }
         }
         Matrix33 I;
-        I = inertia[0], inertia[1], inertia[2], inertia[3], inertia[4], inertia[5], inertia[6], inertia[7], inertia[8];
+        I << inertia[0], inertia[1], inertia[2], inertia[3], inertia[4], inertia[5], inertia[6], inertia[7], inertia[8];
         Matrix33 R;
-        R = T(0,0), T(0,1), T(0,2), T(1,0), T(1,1), T(1,2), T(2,0), T(2,1), T(2,2);
-        Matrix33 I1(R * I * trans(R));
+        R << T(0,0), T(0,1), T(0,2), T(1,0), T(1,1), T(1,2), T(2,0), T(2,1), T(2,2);
+        Matrix33 I1(R * I * R.transpose());
         for(int j=0; j<3; j++){
             for(int k=0; k<3; k++)
                 linkInfo.inertia[j*3+k] += I1(j,k);    
@@ -537,7 +537,7 @@ void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, Vr
         }
         */
 
-        Matrix44 E(tvmet::identity<Matrix44>());
+        Matrix44 E(Matrix44::Identity());
         VrmlVariantField *field = sensorNode->getField("children");
         if (field){
             MFNode &children = field->mfNode();
@@ -568,7 +568,7 @@ void BodyInfo_impl::readHwcNode(int linkInfoIndex, HwcInfo& hwcInfo, VrmlProtoIn
         copyVrmlField( fmap, "url", url );
         hwcInfo.url = CORBA::string_dup( url.c_str() );
 
-        Matrix44 E(tvmet::identity<Matrix44>());
+        Matrix44 E(Matrix44::Identity());
         VrmlVariantField *field = hwcNode->getField("children");
         if (field){
             MFNode &children = field->mfNode();
@@ -632,7 +632,7 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
                 bool flg=false;
                 int k=0;
                 for( ; k<boxSizeMap.size(); k++)
-                    if(norm2(boxSizeMap[k] - boundingBoxData[j*2+1]) < EPS)
+                    if((boxSizeMap[k] - boundingBoxData[j*2+1]).norm() < EPS)
                         break;
                 if( k<boxSizeMap.size() )
                     flg=true;
@@ -645,7 +645,7 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
                     int l=0;
                     for( ; l<tsiMap.size(); l++){
                         Vector3 p(tsiMap[l].transformMatrix[3],tsiMap[l].transformMatrix[7],tsiMap[l].transformMatrix[11]);
-                        if(norm2(p - boundingBoxData[j*2]) < EPS && tsiMap[l].shapeIndex == k)
+                        if((p - boundingBoxData[j*2]).norm() < EPS && tsiMap[l].shapeIndex == k)
                             break;
                     }
                     if( l==tsiMap.size() )
@@ -658,7 +658,7 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
                     TransformedShapeIndex& tsi = links_[i].shapeIndices[num];
                     tsi.inlinedShapeTransformMatrixIndex = -1;
                     tsi.shapeIndex = k;
-                    Matrix44 T(tvmet::identity<Matrix44>());
+                    Matrix44 T(Matrix44::Identity());
                     for(int p = 0,row=0; row < 3; ++row)
                        for(int col=0; col < 4; ++col)
                             if(col==3){

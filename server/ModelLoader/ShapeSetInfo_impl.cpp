@@ -482,21 +482,21 @@ void ShapeSetInfo_impl::createTextureTransformMatrix(AppearanceInfo& appInfo, Vr
     Matrix33 m;
     if(textureTransform){
         Matrix33 matCT;
-        matCT = 1, 0, textureTransform->translation[0]+textureTransform->center[0],
+        matCT << 1, 0, textureTransform->translation[0]+textureTransform->center[0],
                 0, 1, textureTransform->translation[1]+textureTransform->center[1],
                 0,0,1 ;
         Matrix33 matR;
-        matR = cos(textureTransform->rotation), -sin(textureTransform->rotation), 0,
+        matR << cos(textureTransform->rotation), -sin(textureTransform->rotation), 0,
                sin(textureTransform->rotation), cos(textureTransform->rotation), 0,
                0,0,1;
         Matrix33 matCS;
-        matCS = textureTransform->scale[0], 0, -textureTransform->center[0],
+        matCS << textureTransform->scale[0], 0, -textureTransform->center[0],
                 0, textureTransform->scale[1], -textureTransform->center[1],
                 0,0,1 ;
         
         m = matCS * matR * matCT;
     }else{
-        m = tvmet::identity<Matrix33>();
+        m = Matrix33::Identity();
     }
  
     for(int i=0,k=0; i<3; i++)
@@ -645,7 +645,7 @@ void ShapeSetInfo_impl::setColdetModelTriangles
     short shapeIndex = tsi.shapeIndex;
     const DblArray12& M = tsi.transformMatrix;;
     Matrix44 T, Tlocal;
-    Tlocal = M[0], M[1], M[2],  M[3],
+    Tlocal << M[0], M[1], M[2],  M[3],
              M[4], M[5], M[6],  M[7],
              M[8], M[9], M[10], M[11],
              0.0,  0.0,  0.0,   1.0;

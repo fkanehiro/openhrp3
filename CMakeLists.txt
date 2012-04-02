@@ -16,7 +16,7 @@ project(OpenHRP)
 
 set(OPENHRP_VERSION_MAJOR 3)
 set(OPENHRP_VERSION_MINOR 1)
-set(OPENHRP_VERSION_MICRO 2)
+set(OPENHRP_VERSION_MICRO 3)
 set(OPENHRP_VERSION_ADD_TAIL )
 set(CPACK_DEBIAN_PACKAGE_VERSION_TAIL 1)
 
@@ -116,10 +116,9 @@ include_directories(${LAPACK_INCLUDE_DIRS})
 link_directories(${LAPACK_LIBRARY_DIRS})
 
 
-# tvmet
-find_package(Tvmet REQUIRED)
-include_directories(${TVMET_INCLUDE_DIR})
-add_definitions(-DTVMET_OPTIMIZE)
+# eigen
+find_package(Eigen)
+include_directories(${EIGEN_INCLUDE_DIR})
 
 # build flag of jpeg and png library
 if(UNIX)

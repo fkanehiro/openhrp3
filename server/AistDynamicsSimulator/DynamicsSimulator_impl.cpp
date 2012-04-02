@@ -11,7 +11,7 @@
 
 #include "DynamicsSimulator_impl.h"
 
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 #include <hrpModel/Body.h>
 #include <hrpModel/Link.h>
 #include <hrpModel/LinkTraverse.h>
@@ -714,7 +714,7 @@ void DynamicsSimulator_impl::setCharacterLinkData
         link->w(1) = wdata[4];
         link->w(2) = wdata[5];
         // ABS_TRANSFORM‚ªæ‚ÉŽÀs‚³‚ê‚Ä‚¢‚é‚±‚Æ@//
-        link->vo = link->v - cross(link->w, link->p);
+        link->vo = link->v - link->w.cross(link->p);
     }
     break;
 

@@ -22,7 +22,6 @@ set(DEPENDENT_BASENAMES
   omniorb4-nameserver
   python-omniorb2
   python-tk
-  tvmet\ \(>=1.7.2\)
   liblapack3gf
   liblapack-dev
   libatlas-base-dev

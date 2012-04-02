@@ -37,7 +37,7 @@ inline float SegSegDist(const Point& u0, const Point& u,
 
     // compute the line parameters of the two closest points
 #define EPS 1e-8
-    if (D < EPS*a*c) { // the lines are almost parallel
+    if (D < EPS) { // the lines are almost parallel
         sN = 0.0;        // force using point P0 on segment S1
         sD = 1.0;        // to prevent possible division by 0.0 later
         tN = e;
@@ -98,7 +98,7 @@ inline float SegSegDist(const Point& u0, const Point& u,
 /**
  * @brief compute signed distance between a point and a plane
  * @param P a point
- * @param pointOnPlane a point on the plane
+ * @param pointOnPolane a point on the plane
  * @param n normal vector of the plane
  * @param cp the closest point on the plane from P
  */
@@ -132,7 +132,7 @@ float PointSegDist(const Point& P, const Point& u0, const Point& u1)
 
 /**
  * @brief check whether a point is in Voroni region of a face
- * @param P a point to be tested
+ * @param p a point to be tested
  * @param vertices vertices of the triangle
  * @param edges edges of the triangle
  * @param n normal vector of the triangle
@@ -180,21 +180,23 @@ float TriTriDist(const Point& U0, const Point& U1, const Point& U2,
                            *vvertices[j], vedges[j],
                            p0, p1);
             n = p0 - p1;
-            if (d <= min_d) min_d = d;
-            cp0 = p0;
-            cp1 = p1;
-            // check overlap
-            vec = *uvertices[(i+2)%3] - cp0;
-            float u = (vec|n)/min_d;
-            vec = *vvertices[(j+2)%3] - cp1;
-            float v = (vec|n)/min_d;
-            // n directs from v -> u
-            if (u>=0 && v<=0) return min_d;
-			
-            if (u > 0) u = 0;
-            if (v < 0) v = 0;
-            if ((n.Magnitude() + u - v) > 0){
-                overlap = false;
+            if (d <= min_d){
+                min_d = d;
+                cp0 = p0;
+                cp1 = p1;
+                // check overlap
+                vec = *uvertices[(i+2)%3] - cp0;
+                float u = (vec|n)/min_d;
+                vec = *vvertices[(j+2)%3] - cp1;
+                float v = (vec|n)/min_d;
+                // n directs from v -> u
+                if (u>=0 && v<=0) return min_d;
+
+                if (u > 0) u = 0;
+                if (v < 0) v = 0;
+                if ((n.Magnitude() + u - v) > 0){
+                    overlap = false;
+                }
             }
         }
     }

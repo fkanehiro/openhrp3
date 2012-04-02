@@ -1,7 +1,7 @@
 prefix=@OPENHRP_DIR@
 exec_prefix=${prefix}/bin
 libdir=${prefix}/lib
-includedir=${prefix}/@RELATIVE_HEADERS_INSTALL_PATH@
+includedir=-I${prefix}/@RELATIVE_HEADERS_INSTALL_PATH@ -I@EIGEN_INCLUDE_DIR@
 idl_dir=${prefix}/@RELATIVE_IDL_INSTALL_PATH@
 link_shared_files=@PKG_CONF_LINK_SHARED_FILES@
 link_static_files=@PKG_CONF_LINK_STATIC_FILES@
@@ -18,4 +18,4 @@ Version: @OPENHRP_VERSION_MAJOR@.@OPENHRP_VERSION_MINOR@.@OPENHRP_VERSION_MICRO@
 Requires: @PKG_CONF_REQUIRES@
 Libs: ${link_depend_dirs} -L${libdir} ${link_shared_files} ${link_depend_options} ${link_depend_files} 
 Libs.private: ${link_static_files}
-Cflags: ${cflag_defs} ${cflag_options} -I${includedir}
+Cflags: ${cflag_defs} ${cflag_options} ${includedir}

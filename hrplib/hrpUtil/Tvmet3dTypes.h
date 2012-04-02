@@ -36,13 +36,8 @@ using std::asin;
 using std::atan2;
 #endif
 
-#include <tvmet/Matrix.h>
-#include <tvmet/Vector.h>
-
-namespace hrp
-{
-    typedef tvmet::Matrix<double, 3, 3> Matrix33;
-    typedef tvmet::Vector<double, 3> Vector3;
-}
+#include <hrpUtil/EigenTypes.h>
+#warning Tvmet3dTypes.h is obsolete. Please replace it with EigenTypes.h
+#include <hrpUtil/Tvmet2Eigen.h>
 
 #endif

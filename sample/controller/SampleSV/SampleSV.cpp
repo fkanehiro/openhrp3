@@ -64,6 +64,9 @@ SampleSV::SampleSV(RTC::Manager* manager)
     // <rtc-template block="initializer">
     m_steerIn("steer", m_steer),
     m_velIn("vel", m_vel),
+#if 1
+	m_rangeIn("range", m_range),
+#endif
     m_torqueOut("torque", m_torque),
     
     // </rtc-template>
@@ -102,6 +105,9 @@ RTC::ReturnCode_t SampleSV::onInitialize()
   // Set InPort buffers
   addInPort("steer", m_steerIn);
   addInPort("vel", m_velIn);
+#if 1
+  addInPort("range", m_rangeIn);
+#endif
 
   // Set OutPort buffer
   addOutPort("torque", m_torqueOut);
@@ -175,6 +181,12 @@ RTC::ReturnCode_t SampleSV::onExecute(RTC::UniqueId ec_id)
   if( m_velIn.isNew() ){
     m_velIn.read();
   }
+#if 1
+  if (m_rangeIn.isNew()){
+	  m_rangeIn.read();
+	  std::cout << "received range data(" << m_range.data.length() << ")" << std::endl;
+  }
+#endif
 
   //double q_ref, dq_ref;
   double dummy;

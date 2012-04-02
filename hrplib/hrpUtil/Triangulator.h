@@ -16,7 +16,7 @@
 
 #include <vector>
 #include <boost/dynamic_bitset.hpp>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 #include "VrmlNodes.h"
 
 namespace hrp {

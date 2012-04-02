@@ -15,7 +15,7 @@
 #define HRPMODEL_INVERSE_KINEMATICS_H_INCLUDED
 
 #include <boost/shared_ptr.hpp>
-#include <hrpUtil/Tvmet3d.h>
+#include <hrpUtil/Eigen3d.h>
 
 namespace hrp {
 

@@ -109,6 +109,10 @@ class SampleSV
 
   TimedDoubleSeq m_vel;
   InPort<TimedDoubleSeq> m_velIn;
+#if 1
+	TimedFloatSeq m_range;
+	InPort<TimedFloatSeq> m_rangeIn;
+#endif
 
   // </rtc-template>
 

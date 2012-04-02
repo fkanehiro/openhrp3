@@ -17,8 +17,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <boost/intrusive_ptr.hpp>
-#include <hrpUtil/Tvmet3d.h>
-#include <hrpUtil/uBlasCommonTypes.h>
+#include <hrpUtil/Eigen3d.h>
 #include "ForwardDynamics.h"
 #include "Config.h"
 
@@ -90,7 +89,7 @@ namespace hrp
 
 		dvector qGiven;
 		dvector dqGiven;
-		dmatrix ddqGiven;
+		dvector ddqGiven;
         Vector3 pGiven;
         Matrix33 RGiven;
         Vector3 voGiven;

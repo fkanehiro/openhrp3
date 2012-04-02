@@ -78,7 +78,7 @@ void SceneInfo_impl::load(const std::string& url)
         VrmlParser parser;
         parser.load(filename);
 
-        Matrix44 E(tvmet::identity<Matrix44>());
+        Matrix44 E(Matrix44::Identity());
 
         while(VrmlNodePtr node = parser.readNode()){
             if(!node->isCategoryOf(PROTO_DEF_NODE)){

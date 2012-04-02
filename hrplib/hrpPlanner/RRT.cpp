@@ -156,16 +156,22 @@ bool RRT::calcPath()
     Ta_->addNode(startNode);
     Tb_->addNode(goalNode);
 
+    for (unsigned int i=0; i<extraGoals_.size(); i++){
+        RoadmapNode *node = new RoadmapNode(extraGoals_[i]);
+        Tb_->addNode(node);
+    }
+
     bool isTaStart = true;
     bool isSucceed = false;
   
     for (int i=0; i<times_; i++) {
         if (!isRunning_) break;
-        printf("%5d/%5d\r", i+1, times_); fflush(stdout);
+        printf("%5d/%5dtrials : %5d/%5dnodes\r", i+1, times_, Ta_->nNodes(),Tb_->nNodes());
+        fflush(stdout);
     
         Configuration qNew = Configuration::random();
         if (extendFromStart_ && extendFromGoal_){
-            
+
             if (isTaStart){
                 if (extend(Ta_, qNew) != Trapped) {
                     if (connect(Tb_, qNew, true) == Reached) {

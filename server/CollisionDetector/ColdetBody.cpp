@@ -120,7 +120,7 @@ void ColdetBody::addLinkVerticesAndTriangles
     short shapeIndex = tsi.shapeIndex;
     const DblArray12& M = tsi.transformMatrix;;
     Matrix44 T, Tlocal;
-    Tlocal = M[0], M[1], M[2],  M[3],
+    Tlocal << M[0], M[1], M[2],  M[3],
              M[4], M[5], M[6],  M[7],
              M[8], M[9], M[10], M[11],
              0.0,  0.0,  0.0,   1.0;
@@ -156,13 +156,13 @@ void ColdetBody::addLinkVerticesAndTriangles
 
     const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
 
-    Matrix44 E(tvmet::identity<Matrix44>());
+    Matrix44 E(Matrix44::Identity());
     for(unsigned int i=0; i < shapeIndices.length(); i++){
         addLinkVerticesAndTriangles(coldetModel, shapeIndices[i], E, shapes,
                                     vertexIndex, triangleIndex);
     }
 
-    Matrix44 T(tvmet::identity<Matrix44>());
+    Matrix44 T(Matrix44::Identity());
     const SensorInfoSequence& sensors = linkInfo.sensors;
     for (unsigned int i=0; i<sensors.length(); i++){
         const SensorInfo& sensor = sensors[i]; 

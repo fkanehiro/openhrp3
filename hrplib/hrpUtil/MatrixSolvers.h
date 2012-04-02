@@ -11,7 +11,7 @@
 #ifndef HRPUTIL_MATRIX_SOLVERS_H_INCLUDED
 #define HRPUTIL_MATRIX_SOLVERS_H_INCLUDED
 
-#include "uBlasCommonTypes.h"
+#include "EigenTypes.h"
 #include "config.h"
 
 namespace hrp {
@@ -35,8 +35,8 @@ namespace hrp {
     */
     inline dmatrix inverse(const dmatrix& M)
     {
-        const int dim = M.size1();
-        dmatrix E = ublas::identity_matrix<double>(dim);
+        const int dim = M.rows();
+        dmatrix E = dmatrix::Identity(dim,dim);
         dmatrix Minv(dim, dim);
         solveLinearEquationLU(M, E, Minv);
         return Minv;

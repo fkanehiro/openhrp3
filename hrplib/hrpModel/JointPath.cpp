@@ -128,7 +128,7 @@ void JointPath::onJointPathUpdated()
 void JointPath::calcJacobian(dmatrix& out_J) const
 {
     const int n = joints.size();
-    out_J.resize(6, n, false);
+    out_J.resize(6, n);
 	
     if(n > 0){
 		
@@ -147,9 +147,8 @@ void JointPath::calcJacobian(dmatrix& out_J) const
                 if(!isJointDownward(i)){
                     omega *= -1.0;
                 } 
-                Vector3 dp(cross(omega, arm));
-                setVector3(dp,    out_J, 0, i);
-                setVector3(omega, out_J, 3, i);
+                Vector3 dp(omega.cross(arm));
+                out_J.col(i) << dp, omega;
             }
             break;
 				
@@ -159,17 +158,12 @@ void JointPath::calcJacobian(dmatrix& out_J) const
                 if(!isJointDownward(i)){
                     dp *= -1.0;
                 }
-                setVector3(dp, out_J, 0, i);
-                out_J(3, i) = 0.0;
-                out_J(4, i) = 0.0;
-                out_J(5, i) = 0.0;
+                out_J.col(i) << dp, Vector3::Zero();
             }
             break;
 				
             default:
-                for(int j=0; j < 6; ++j){
-                    out_J(j, i) = 0.0;
-                }
+                out_J.col(i).setZero();
             }
         }
     }
@@ -243,25 +237,24 @@ bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_
         calcJacobian(J);
 	
         Vector3 dp(end_p - target->p);
-        Vector3 omega(target->R * omegaFromRot(Matrix33(trans(target->R) * end_R)));
+        Vector3 omega(target->R * omegaFromRot(target->R.transpose() * end_R));
 
         if(isBestEffortIKMode){
             const double errsqr0 = errsqr;
-            errsqr = dot(dp, dp) + dot(omega, omega);
+            errsqr = dp.dot(dp) + omega.dot(omega);
             if(fabs(errsqr - errsqr0) < maxIKErrorSqr){
                 converged = true;
                 break;
             }
         } else {
-            const double errsqr = dot(dp, dp) + dot(omega, omega);
+            const double errsqr = dp.dot(dp) + omega.dot(omega);
             if(errsqr < maxIKErrorSqr){
                 converged = true;
                 break;
             }
         }
 
-        setVector3(dp   , v, 0);
-        setVector3(omega, v, 3);
+        v << dp, omega;
 		
         if(n == 6){ 
             solveLinearEquationLU(J, v, dq);

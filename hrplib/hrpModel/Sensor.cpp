@@ -102,8 +102,8 @@ ForceSensor::ForceSensor()
 
 void ForceSensor::clear()
 {
-    f = 0.0;
-    tau = 0.0;
+    f.setZero();
+    tau.setZero();
 }
 
 
@@ -123,7 +123,7 @@ RateGyroSensor::RateGyroSensor()
 
 void RateGyroSensor::clear()
 {
-    w = 0.0;
+    w.setZero();
 }
 
 
