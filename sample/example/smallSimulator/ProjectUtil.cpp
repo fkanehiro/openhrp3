@@ -120,6 +120,10 @@ void initRTS(Project &prj, std::vector<ClockReceiver>& receivers)
              = rts.components.begin(); it != rts.components.end(); it++){
         RTC::RTObject_impl *rtc = manager.getComponent(it->first.c_str());
         if (!rtc){
+            if (it->second.name == ""){
+                std::cerr << "factory name for " << it->first << "is not defined" << std::endl;
+                continue;
+            }                
             std::cout << "creating " << it->first << std::endl;
             std::string args = it->second.name + "?instance_name=" + it->first; 
             rtc = manager.createComponent(args.c_str());
