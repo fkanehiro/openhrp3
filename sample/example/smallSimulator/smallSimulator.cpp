@@ -2,6 +2,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <rtm/Manager.h>
+#include <rtm/CorbaNaming.h>
 #include <hrpUtil/OnlineViewerUtil.h>
 #include <hrpUtil/Eigen3d.h>
 #include <hrpModel/World.h>
@@ -19,12 +20,14 @@ using namespace OpenHRP;
 
 BodyPtr createBody(const std::string& name, const std::string& url,
                    std::vector<BodyRTCPtr> *bodies,
-                   int argc, char *argv[])
+                   RTC::CorbaNaming *naming)
 {
     RTC::Manager& manager = RTC::Manager::instance();
     std::string args = "BodyRTC?instance_name="+name;
     BodyRTCPtr body = (BodyRTC *)manager.createComponent(args.c_str());
-    if (!loadBodyFromModelLoader(body, url.c_str(), argc, argv, true)){
+    if (!loadBodyFromModelLoader(body, url.c_str(), 
+                                 CosNaming::NamingContext::_duplicate(naming->getRootContext()),
+                                 true)){
         std::cerr << "failed to load model[" << url << "]" << std::endl;
         manager.deleteComponent(body.get());
         return BodyPtr();
@@ -60,10 +63,18 @@ int main(int argc, char* argv[])
     manager->activateManager();
     manager->runManager(true);
 
+    std::string nameServer = manager->getConfig()["corba.nameservers"];
+    int comPos = nameServer.find(",");
+    if (comPos < 0){
+        comPos = nameServer.length();
+    }
+    nameServer = nameServer.substr(0, comPos);
+    RTC::CorbaNaming naming(manager->getORB(), nameServer.c_str());
+
     //================= setup World ======================
     World<ConstraintForceSolver> world;
     std::vector<BodyRTCPtr> bodies; 
-    BodyFactory factory = boost::bind(createBody, _1, _2, &bodies, argc, argv);
+    BodyFactory factory = boost::bind(createBody, _1, _2, &bodies, &naming);
     initWorld(prj, factory, world);
 
     std::vector<ClockReceiver> receivers;
@@ -74,7 +85,7 @@ int main(int argc, char* argv[])
     OnlineViewer_var olv;
     WorldState state;
     if (display){
-        olv = getOnlineViewer(argc, argv);
+        olv = getOnlineViewer(CosNaming::NamingContext::_duplicate(naming.getRootContext()));
         
         if (CORBA::is_nil( olv )) {
             std::cerr << "OnlineViewer not found" << std::endl;
