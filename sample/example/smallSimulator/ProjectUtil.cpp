@@ -18,7 +18,7 @@ void initWorld(Project& prj, BodyFactory &factory,
     // add bodies
     for (std::map<std::string, ModelItem>::iterator it=prj.models().begin();
          it != prj.models().end(); it++){
-        hrp::BodyPtr body = factory(it->first, it->second.url);
+        hrp::BodyPtr body = factory(it->second.rtcName == "" ? it->first : it->second.rtcName, it->second.url);
         if (body){
             body->setName(it->first);
             for (std::map<std::string, JointItem>::iterator it2=it->second.joint.begin();
@@ -121,7 +121,7 @@ void initRTS(Project &prj, std::vector<ClockReceiver>& receivers)
         RTC::RTObject_impl *rtc = manager.getComponent(it->first.c_str());
         if (!rtc){
             if (it->second.name == ""){
-                std::cerr << "factory name for " << it->first << "is not defined" << std::endl;
+                std::cerr << "factory name for " << it->first << " is not defined" << std::endl;
                 continue;
             }                
             std::cout << "creating " << it->first << std::endl;

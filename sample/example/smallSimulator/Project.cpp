@@ -120,6 +120,8 @@ bool Project::parse(const std::string& filename)
                       }
                   } else if ( xmlStrEqual(xmlGetProp(cur_node, (xmlChar *)"name"),(xmlChar *)"controlTime") ) {
                       //controlTimeStep = atof((char *)(xmlGetProp(cur_node, (xmlChar *)"value")));
+                  } else if ( xmlStrEqual(xmlGetProp(cur_node, (xmlChar *)"name"),(xmlChar *)"rtcName") ) {
+                      m.rtcName = (char *)xmlGetProp(cur_node, (xmlChar *)"value");
                   } else if ( std::string((char *)xmlGetProp(cur_node, (xmlChar *)"name")).rfind(".angle") != std::string::npos ) {
                       std::string name = std::string((char *)xmlGetProp(cur_node, (xmlChar *)"name"));
                       name.erase(name.rfind(".angle"));

@@ -39,6 +39,7 @@ public:
 class ModelItem {
 public:
     std::string url;
+    std::string rtcName;
     std::map<std::string,JointItem> joint;
 };
 
