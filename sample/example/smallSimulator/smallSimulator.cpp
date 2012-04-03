@@ -22,6 +22,7 @@ BodyPtr createBody(const std::string& name, const std::string& url,
                    std::vector<BodyRTCPtr> *bodies,
                    RTC::CorbaNaming *naming)
 {
+    std::cout << "createBody(" << name << "," << url << ")" << std::endl;
     RTC::Manager& manager = RTC::Manager::instance();
     std::string args = "BodyRTC?instance_name="+name;
     BodyRTCPtr body = (BodyRTC *)manager.createComponent(args.c_str());
@@ -105,6 +106,10 @@ int main(int argc, char* argv[])
         initWorldState(state, world);
     }
 
+#if 1
+    std::cout << "timestep = " << prj.timeStep() << ", total time = " 
+              << prj.totalTime() << std::endl;
+#endif
     // ==================  main loop   ======================
     while (world.currentTime() < prj.totalTime()) {
         // ================== viewer update ====================
