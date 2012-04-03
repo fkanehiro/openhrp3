@@ -21,11 +21,11 @@ public:
     virtual ~BodyRTC(void);
 
     RTC::ReturnCode_t onActivated(RTC::UniqueId ec_id){
-        std::cout << "BodyRTC::onActivated" << std::endl;
+        std::cout << "BodyRTC::onActivated(" << ec_id << ")" << std::endl;
         return RTC::RTC_OK;
     }
     RTC::ReturnCode_t onDeactivated(RTC::UniqueId ec_id){
-        std::cout << "BodyRTC::onDeactivated" << std::endl;
+        std::cout << "BodyRTC::onDeactivated(" << ec_id << ")" << std::endl;
         return RTC::RTC_OK;
     }
 
