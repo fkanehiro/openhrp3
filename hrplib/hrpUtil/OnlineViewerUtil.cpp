@@ -12,7 +12,7 @@
 //using namespace hrp;
 using namespace OpenHRP;
 
-OnlineViewer_var getOnlineViewer(CosNaming::NamingContext_var cxt)
+OnlineViewer_var hrp::getOnlineViewer(CosNaming::NamingContext_var cxt)
 {  
     CosNaming::Name ncName;
     ncName.length(1);
