@@ -105,6 +105,9 @@ void BodyRTC::writeDataPorts()
         setVector3(s->f,   m_force[id].data, 0);
         setVector3(s->tau, m_force[id].data, 3);
     }
+    for (unsigned int i=0; i<m_forceOut.size(); i++){
+        m_forceOut[i]->write();
+    }
 
     n = numSensors(Sensor::RATE_GYRO);
     for(int id=0; id < n; ++id){
@@ -112,6 +115,9 @@ void BodyRTC::writeDataPorts()
         m_rate[id].data.avx = s->w[0];
         m_rate[id].data.avy = s->w[1];
         m_rate[id].data.avz = s->w[2];
+    }
+    for (unsigned int i=0; i<m_rateOut.size(); i++){
+        m_rateOut[i]->write();
     }
     
     n = numSensors(Sensor::ACCELERATION);
@@ -121,6 +127,9 @@ void BodyRTC::writeDataPorts()
         m_acc[id].data.ay = s->dv[1];
         m_acc[id].data.az = s->dv[2];
     }		
+    for (unsigned int i=0; i<m_accOut.size(); i++){
+        m_accOut[i]->write();
+    }
 }
 
 void BodyRTC::readDataPorts()
