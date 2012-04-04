@@ -8,9 +8,9 @@
 #include <hrpModel/World.h>
 #include <hrpModel/ConstraintForceSolver.h>
 #include <hrpModel/ModelLoaderUtil.h>
+#include <hrpModel/OnlineViewerUtil.h>
 #include "Project.h"
 #include "BodyRTC.h"
-#include "OnlineViewerUtil.h"
 #include "ProjectUtil.h"
 #include "OpenRTMUtil.h"
 
