@@ -35,6 +35,7 @@ set(headers
   InverseKinematics.h
   ModelNodeSet.h
   ModelLoaderUtil.h
+  OnlineViewerUtil.h
   Sensor.h
   World.h
   Config.h
