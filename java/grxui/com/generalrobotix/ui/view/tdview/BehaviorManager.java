@@ -237,7 +237,8 @@ public class BehaviorManager implements WorldReplaceListener {
 						pair.getDbl("staticFriction", 0.5), 
 						pair.getDbl("slidingFriction", 0.5),
 						pair.getDblAry("springConstant", new double[]{0, 0, 0, 0, 0, 0}), 
-						pair.getDblAry("damperConstant", new double[]{0, 0, 0, 0, 0, 0})
+						pair.getDblAry("damperConstant", new double[]{0, 0, 0, 0, 0, 0}),
+						0
 				); 
 			}
 
@@ -260,7 +261,7 @@ public class BehaviorManager implements WorldReplaceListener {
 			data = model.getJointValues();
 			currentDynamics_.setCharacterAllLinkData(name, LinkDataType.JOINT_VALUE, data);
 		}
-		currentDynamics_.checkCollision();
+		currentDynamics_.checkCollision(false);
 		WorldStateHolder wsH = new WorldStateHolder();
 		currentDynamics_.getWorldState(wsH);
 		return wsH.value.collisions;

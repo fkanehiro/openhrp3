@@ -503,7 +503,8 @@ public class GrxOpenHRPView extends GrxBaseView {
 						pair.getDbl("staticFriction", 0.5), 
 						pair.getDbl("slidingFriction", 0.5),
 						pair.getDblAry("springConstant", new double[]{0, 0, 0, 0, 0, 0}), 
-						pair.getDblAry("damperConstant", new double[]{0, 0, 0, 0, 0, 0})
+						pair.getDblAry("damperConstant", new double[]{0, 0, 0, 0, 0, 0}),
+                        0
 				); 
 			}
 
@@ -610,8 +611,9 @@ public class GrxOpenHRPView extends GrxBaseView {
 			cobj = GrxCorbaUtil.getReference(controllerName, nsHost_, nsPort_);
 			if (cobj != null) {
 				try {
-					ControllerFactory cfactory = ControllerFactoryHelper.narrow(cobj);
-					Controller controller = cfactory.create(model.getName());
+					Controller controller = ControllerHelper.narrow(cobj);
+                    controller.setModelName(model.getName());
+                    controller.initialize();
 					controller.setDynamicsSimulator(currentDynamics_);
 
 					if (simParamPane_.isViewSimulate()) {
@@ -623,6 +625,7 @@ public class GrxOpenHRPView extends GrxBaseView {
 					controllers_.add(new ControllerAttribute(model.getName(), controller, step));	
 					GrxDebugUtil.println(" connected to the Controller("+controllerName+")\n");
                     controller.setTimeStep(step);
+                    controller.initialize();
 					controller.start();
 					break;
 				} catch (Exception e) {
