@@ -34,6 +34,7 @@ import jp.go.aist.hrp.simulator.DynamicsSimulatorPackage.*;
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.item.GrxCollisionPairItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxSimulationItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem;
 import com.generalrobotix.ui.item.GrxWorldStateItem.WorldStateEx;
 import com.generalrobotix.ui.util.*;
@@ -347,7 +348,19 @@ public class GrxOpenHRPView extends GrxBaseView {
 	public void itemSelectionChanged(List<GrxBaseItem> itemList) {
 		if (!isExecuting_) {
 			currentWorld_ = (GrxWorldStateItem)manager_.getSelectedItem(GrxWorldStateItem.class, null);
-			simParamPane_.updateItem(currentWorld_);
+            GrxSimulationItem simItem = (GrxSimulationItem)manager_.getSelectedItem(GrxSimulationItem.class, null);
+            if (simItem != null){
+                currentWorld_.setDbl("totalTime",
+                                     simItem.getDbl("totalTime",com.generalrobotix.ui.item.GrxWorldStateItem.DEFAULT_TOTAL_TIME));
+                currentWorld_.setDbl("timeStep",
+                                     simItem.getDbl("timeStep",
+                                                    com.generalrobotix.ui.item.GrxWorldStateItem.DEFAULT_STEP_TIME));
+                currentWorld_.setDbl("gravity", simItem.getDbl("gravity", 9.8));
+                //setMethod(item.getProperty("method",METHOD_NAMES[0]));
+                //setIntegrate(item.isTrue("integrate", true));
+                //setViewSimulate(item.isTrue("viewsimulate", false));
+            }
+            simParamPane_.updateItem(currentWorld_);
 			controllerPane_.updateRobots(itemList);
 			collisionPane_.updateCollisionPairs(itemList);
 			return;

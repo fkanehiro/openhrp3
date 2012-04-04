@@ -549,7 +549,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				m3d.mul(m3d2);
 				t3d.setRotation(m3d);
 			} else if(l.jointType.equals("slide")) {
-				m3d.set(l.rotation);
+			        m3d.set(new AxisAngle4d(l.rotation));
 				v3d.set(l.translation[0], l.translation[1], l.translation[2]);
 				v3d2.set(l.jointAxis[0], l.jointAxis[1], l.jointAxis[2]);
 				v3d2.scale(lInfo_[linkId].jointValue);
