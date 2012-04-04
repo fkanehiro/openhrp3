@@ -4,7 +4,6 @@ set(sources
   BodyRTC.cpp
   Project.cpp
   ProjectUtil.cpp
-  OnlineViewerUtil.cpp
   OpenRTMUtil.cpp
   smallSimulator.cpp
 )

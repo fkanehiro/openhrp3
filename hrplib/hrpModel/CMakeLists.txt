@@ -17,6 +17,7 @@ set(sources
   ConstraintForceSolver.cpp
   ModelNodeSet.cpp
   ModelLoaderUtil.cpp
+  OnlineViewerUtil.cpp
   )
 
 set(headers
