@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grxui>
+    <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="newworldstate0" select="true">
+            <property name="logTimeStep" value="0.0010 "/>
+            <property name="totalTime" value="30.0 "/>
+            <property name="timeStep" value="0.0010 "/>
+            <property name="gravity" value="9.8 "/>
+            <property name="viewsimulationTimeStep" value="0.033 "/>
+            <property name="method" value="RUNGE_KUTTA"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="closedlink3" select="true" url="/home/nakaoka/OpenHRP/OpenHRP.IDLMod/etc/closedlink3.wrl">
+            <property name="isRobot" value="true"/>
+            <property name="WAIST.rotation" value="1 0.1 0 1.5"/>
+            <property name="WAIST.translation" value="-0.001 0.0006 -0"/>
+        </item>
+    </mode>
+</grxui>

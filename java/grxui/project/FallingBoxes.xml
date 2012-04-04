@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grxui>
+    <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="FallingBoxes" select="true">
+            <property name="logTimeStep" value="0.0010"/>
+            <property name="integrate" value="true"/>
+            <property name="viewsimulate" value="false"/>
+            <property name="totalTime" value="3.0"/>
+            <property name="timeStep" value="0.0010"/>
+            <property name="method" value="RUNGE_KUTTA"/>
+            <property name="gravity" value="9.8"/>
+            <property name="viewsimulationTimeStep" value="0.033 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(OPENHRPHOME)/etc/floor.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
+            <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box1" select="true" url="$(OPENHRPHOME)/etc/box2.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="controller" value=""/>
+            <property name="controlTime" value="0.0010"/>
+            <property name="WAIST.rotation" value="-0.0946 0.318 -0.9434 0.6114 "/>
+            <property name="WAIST.translation" value="0.0375 0.15 1.4159 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box2" select="true" url="$(OPENHRPHOME)/etc/box2.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="controller" value=""/>
+            <property name="controlTime" value="0.0010"/>
+            <property name="WAIST.rotation" value="0.0954 0.292 0.9517 0.6623 "/>
+            <property name="WAIST.translation" value="0.0108 0.2371 1.0699 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box3" select="true" url="$(OPENHRPHOME)/etc/box2.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="controller" value=""/>
+            <property name="controlTime" value="0.0010"/>
+            <property name="WAIST.rotation" value="0.7954 0.6059 -0.0145 0.3327 "/>
+            <property name="WAIST.translation" value="-0.0123 0.15 0.6871 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="box4" select="true" url="$(OPENHRPHOME)/etc/box2.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="controller" value=""/>
+            <property name="controlTime" value="0.0010"/>
+            <property name="WAIST.rotation" value="0.99 0.1005 -0.0989 1.5698 "/>
+            <property name="WAIST.translation" value="0.0631 0.159 2.1828 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#box3#box1" select="true">
+            <property name="objectName1" value="box3"/>
+            <property name="objectName2" value="box1"/>
+            <property name="jointName1" value=""/>
+            <property name="jointName2" value=""/>
+            <property name="staticFriction" value="0.5"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#box1#box2" select="true">
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="box2"/>
+            <property name="objectName1" value="box1"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#floor#box3" select="true">
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="box3"/>
+            <property name="objectName1" value="floor"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#box2#box4" select="true">
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="box4"/>
+            <property name="objectName1" value="box2"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#floor#box1" select="true">
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="box1"/>
+            <property name="objectName1" value="floor"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#box3#box4" select="true">
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="box4"/>
+            <property name="objectName1" value="box3"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#floor#box2" select="true">
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="box2"/>
+            <property name="objectName1" value="floor"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#box1#box4" select="true">
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="jointName2" value=""/>
+            <property name="jointName1" value=""/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+            <property name="objectName2" value="box4"/>
+            <property name="objectName1" value="box1"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#box2#box3" select="true">
+            <property name="objectName1" value="box2"/>
+            <property name="objectName2" value="box3"/>
+            <property name="jointName1" value=""/>
+            <property name="jointName2" value=""/>
+            <property name="staticFriction" value="0.5"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#floor#box4" select="true">
+            <property name="objectName1" value="floor"/>
+            <property name="objectName2" value="box4"/>
+            <property name="jointName1" value=""/>
+            <property name="jointName2" value=""/>
+            <property name="staticFriction" value="0.5"/>
+            <property name="slidingFriction" value="0.5"/>
+            <property name="sprintDamperModel" value="false"/>
+            <property name="springConstant" value="0 0 0 0 0 0"/>
+            <property name="damperConstant" value="0 0 0 0 0 0"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxGraphItem" name="GraphList1" select="true">
+            <property name="Graph1.dataItems" value=""/>
+            <property name="Graph2.dataItems" value=""/>
+            <property name="Graph3.dataItems" value=""/>
+            <property name="Graph0.dataItems" value=""/>
+        </item>
+    </mode>
+</grxui>
