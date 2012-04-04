@@ -8,7 +8,7 @@
 #include "Project.h"
 
 Project::Project() : 
-    m_timeStep(0.001), m_totalTime(1.0), m_gravity(9.8), m_isEuler(true)
+    m_timeStep(0.001), m_totalTime(1.0), m_gravity(9.8), m_isEuler(true), m_kinematicsOnly(false)
 {
 }
 
