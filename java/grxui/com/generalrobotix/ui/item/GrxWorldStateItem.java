@@ -177,18 +177,18 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 			logger_.closeFileAsRead();
 	}
 	
-	public void registerCharacter(String cname, CharacterInfo cinfo) {
+	public void registerCharacter(String cname, BodyInfo cinfo) {
 		ArrayList<String> logList = new ArrayList<String>();
 		logList.add("time");
 		logList.add("float");
 		
 		LinkInfo[] li = cinfo.links();
-		ArrayList<Integer> jointList = new ArrayList<Integer>();
+		ArrayList<Short> jointList = new ArrayList<Short>();
 		ArrayList<SensorInfoLocal> sensList  = new ArrayList<SensorInfoLocal>();
 		for (int i=0; i<li.length; i++)	 {
-			jointList.add(li[i].jointId());
+			jointList.add(li[i].jointId);
 			
-			SensorInfo[] si = li[i].sensors();
+			SensorInfo[] si = li[i].sensors;
 			for (int j=0; j<si.length; j++) 
 				sensList.add(new SensorInfoLocal(si[j]));
 		}
@@ -197,17 +197,17 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		
 		int len = storeAllPos_ ? li.length : 1;
 		for (int i=0; i< len; i++) {
-			String jname = li[i].name();
+			String jname = li[i].name;
 			logList.add(jname+".translation");
 			logList.add("float[3]");
 			logList.add(jname+".rotation");
 			logList.add("float[4]");
 		}
-		
-		for (int i=0; i<jointList.size(); i++) {
-			int idx = jointList.indexOf(i);
+
+		for (short i=0; i<jointList.size(); i++) {
+		        int idx = jointList.indexOf(i);
 			if (idx >= 0) {
-				String jname = li[idx].name();
+				String jname = li[idx].name;
 				logList.add(jname+".angle");
 				logList.add("float");
 				logList.add(jname+".jointTorque");
@@ -217,26 +217,25 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		
 		for (int i=0; i<sensList.size(); i++) {
 			String sname = sensList.get(i).name;
-			switch(sensList.get(i).type) {
-			case SensorType._FORCE_SENSOR:
-				logList.add(sname+".force");
-				logList.add("float[3]");
-				logList.add(sname+".torque");
-				logList.add("float[3]");
-				break;
-			case SensorType._RATE_GYRO:
-				logList.add(sname+".angularVelocity");
-				logList.add("float[3]");
-				break;
-			case SensorType._ACCELERATION_SENSOR:
-				logList.add(sname+".acceleration");
-				logList.add("float[3]");
-				break;
-			default:
-				break;
+			if (sensList.get(i).type.equals("Force")){
+			    logList.add(sname+".force");
+			    logList.add("float[3]");
+			    logList.add(sname+".torque");
+			    logList.add("float[3]");
+			}else if (sensList.get(i).type.equals("RateGyro")){
+			    logList.add(sname+".angularVelocity");
+			    logList.add("float[3]");
+			}else if (sensList.get(i).type.equals("Acceleration")){
+			    logList.add(sname+".acceleration");
+			    logList.add("float[3]");
 			}
 		}
-		
+
+		/*
+		for (int i=0; i<logList.size(); i++){
+		    System.out.println(i+":"+logList.get(i));
+		}
+		*/
 		try {
 			logger_.addLogObject(cname, logList.toArray(new String[0]));
 		} catch (LogFileFormatException e) {
@@ -329,8 +328,9 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 		SimulationTime stime = new SimulationTime();
 		stime.setCurrentTime(newStat_.time);
 		stime.setStartTime(newStat_.time);
-		
+
 		double val = getDbl("logTimeStep",DEFAULT_STEP_TIME);
+
 		stime.setTimeStep(val);
 		setDbl("logTimeStep",val);
 		val = getDbl("totalTime", DEFAULT_TOTAL_TIME);
@@ -708,18 +708,18 @@ public class GrxWorldStateItem extends GrxTimeSeriesItem {
 	
 	private static class SensorInfoLocal implements Comparable {
 		String name;
-		int type;
+	        String type;
 		int id;
 		public SensorInfoLocal(SensorInfo info) {
-			name = info.name();
-			type = info.type().value();
-			id = info.id();
+			name = info.name;
+			type = info.type;
+			id = info.id;
 		}
 
 		public int compareTo(Object o) {
 			if (o instanceof SensorInfoLocal) {
 				SensorInfoLocal s = (SensorInfoLocal) o;
-				if (type < s.type)
+				if (type.compareTo(s.type) < 0)
 					return -1;
 				else if (type == s.type && id < s.id)
 					return -1;

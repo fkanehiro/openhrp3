@@ -53,13 +53,13 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	public boolean update_ = true;
 	
 	public BranchGroup bgRoot_;
-	public CharacterInfo cInfo_;
+	public BodyInfo cInfo_;
 	public LinkInfoLocal[] lInfo_;
 	public LinkInfoLocal activeLinkInfo_;
 	private int[] jointToLink_; // length = joint number
 	private final Map<String, LinkInfoLocal> lInfoMap_ = new HashMap<String, LinkInfoLocal>();
 	private final Vector<Shape3D> shapeVector_ = new Vector<Shape3D>();
-	private final Map<SensorType, List<SensorInfoLocal>> sensorMap_ = new HashMap<SensorType, List<SensorInfoLocal>>();
+	private final Map<String, List<SensorInfoLocal>> sensorMap_ = new HashMap<String, List<SensorInfoLocal>>();
 	private List<Camera_impl> cameraList = new ArrayList<Camera_impl>();
 	
 	private Switch switchCom_;
@@ -196,7 +196,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		GrxDebugUtil.println("Loading " + url);
 		try {
 			ModelLoader ml = ModelLoaderHelper.narrow(GrxCorbaUtil.getReference("ModelLoader"));
-			cInfo_ = ml.loadURL(url);
+			cInfo_ = ml.getBodyInfo(url);
 			lInfo_ = new LinkInfoLocal[cInfo_.links().length];
 			lInfoMap_.clear();
 			
@@ -232,7 +232,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			setProperty("isRobot", Boolean.toString(isRobot_));
 		} catch (Exception ex) {
 			System.out.println("Failed to load vrml model:" + url);
-			//ex.printStackTrace();
+			ex.printStackTrace();
 			return false;
 		}
 		return true;
@@ -263,14 +263,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				info.tg = g;
 				for (int j=0; j<info.sensors.length; j++) {
 					SensorInfoLocal si = info.sensors[j];
-					if (si.type.equals(SensorType.VISION_SENSOR)) {
+					if (si.type.equals("Vision")) {
 						Camera_impl camera = cameraList.get(si.id);
 						g.addChild(camera.getBranchGraph());
 						double[] pos = si.translation;
 						double[] rot = si.rotation;
 						Transform3D t3d = new Transform3D();
 						t3d.setTranslation(new Vector3d(pos));
-						t3d.setRotation(new Matrix3d(rot));
+						t3d.setRotation(new AxisAngle4d(rot));
 						camera.getTransformGroup().setTransform(t3d);
 					}
 				}
@@ -543,7 +543,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			if (l.jointType.equals("rotate") || l.jointType.equals("fixed")) {
 				v3d.set(l.translation[0], l.translation[1], l.translation[2]);
 				t3d.setTranslation(v3d);
-				m3d.set(l.rotation);
+				m3d.set(new AxisAngle4d(l.rotation));
 				a4d.set(l.jointAxis[0], l.jointAxis[1], l.jointAxis[2], lInfo_[linkId].jointValue);
 				m3d2.set(a4d);
 				m3d.mul(m3d2);
@@ -561,8 +561,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			t3dm.mul(t3d);
 			l.tg.setTransform(t3dm);
 		}
-		calcForwardKinematics(l.daughter);
-		calcForwardKinematics(l.sister);
+		for (int i=0; i<l.daughters.length; i++){
+		    calcForwardKinematics(l.daughters[i]);
+		}
 	}
 
 	private void _updateCoM() {
@@ -615,7 +616,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		pos.scale(1.0 / totalMass);
 	}
 
-	public String[] getSensorNames(SensorType type) {
+	public String[] getSensorNames(String type) {
 		List<SensorInfoLocal> l = sensorMap_.get(type);
 		if (l == null)
 			return null;
@@ -838,9 +839,8 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 	public class LinkInfoLocal {
 		final public String name;
 		final public int jointId;
-		final public int mother;
-		final public int daughter;
-		final public int sister;
+		final public short mother;
+		final public short [] daughters;
 		final public String jointType;
 		final public double[] jointAxis;
 		final public double[] translation;
@@ -858,27 +858,26 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 		public TransformGroup tg;
 
 		public LinkInfoLocal(LinkInfo info) {
-			name = info.name();
-			jointId = info.jointId();
-			mother = info.mother();
-			daughter = info.daughter();
-			sister = info.sister();
+			name = info.name;
+			jointId = info.jointId;
+			mother = info.parentIndex;
+			daughters = info.childIndices;
 
-			jointType = info.jointType();
-			jointAxis = info.jointAxis();
-			translation    = info.translation();
-			rotation    = info.rotation();
-			centerOfMass = info.centerOfMass();
-			mass    = info.mass();
-			inertia = info.inertia();
-			ulimit  = info.ulimit();
-			llimit  = info.llimit();
-			uvlimit = info.uvlimit();
-			lvlimit = info.lvlimit();
+			jointType = info.jointType;
+			jointAxis = info.jointAxis;
+			translation    = info.translation;
+			rotation    = info.rotation;
+			centerOfMass = info.centerOfMass;
+			mass    = info.mass;
+			inertia = info.inertia;
+			ulimit  = info.ulimit;
+			llimit  = info.llimit;
+			uvlimit = info.uvlimit;
+			lvlimit = info.lvlimit;
 			
 			jointValue = 0.0;
 			
-			SensorInfo[] sinfo = info.sensors();
+			SensorInfo[] sinfo = info.sensors;
 			sensors = new SensorInfoLocal[sinfo.length];
 			for (int i=0; i<sensors.length; i++) {
 				sensors[i] = new SensorInfoLocal(sinfo[i], LinkInfoLocal.this);
@@ -889,7 +888,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				}
 				l.add(sensors[i]);
 				
-				if (sensors[i].type.equals(SensorType.VISION_SENSOR)) {
+				if (sensors[i].type.equals("Vision")) {
 					CameraParameter prm = new CameraParameter();
 					prm.defName = new String(sensors[i].name);
 					prm.sensorName = new String(sensors[i].name);
@@ -922,27 +921,27 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
 	private class SensorInfoLocal implements Comparable {
 		final String name;
-		final public SensorType type;
+		final public String type;
 		final int id;
 		final public double[] translation;
 		final public double[] rotation;
-		final public double[] maxValue;
+		final public float[] maxValue;
 		final public LinkInfoLocal parent_;
 		
 		public SensorInfoLocal(SensorInfo info, LinkInfoLocal parentLink) {
-			name = info.name();
-			type = info.type();
-			id = info.id();
-			translation = info.translation();
-			rotation = info.rotation();
-			maxValue = info.maxValue();
+			name = info.name;
+			type = info.type;
+			id = info.id;
+			translation = info.translation;
+			rotation = info.rotation;
+			maxValue = info.specValues;
 			parent_ = parentLink;
 		}
 
 		public int compareTo(Object o) {
 			if (o instanceof SensorInfoLocal) {
 				SensorInfoLocal s = (SensorInfoLocal) o;
-				if (type.value() < s.type.value())
+				if (type.compareTo(s.type)<0)
 					return -1;
 				else if (type == s.type && id < s.id)
 					return -1;

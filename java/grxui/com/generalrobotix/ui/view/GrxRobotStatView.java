@@ -34,7 +34,6 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 import jp.go.aist.hrp.simulator.SensorState;
-import jp.go.aist.hrp.simulator.SensorType;
 import jp.go.aist.hrp.simulator.LinkPosition;
 
 import com.generalrobotix.ui.GrxBaseItem;
@@ -232,7 +231,7 @@ public class GrxRobotStatView extends GrxBaseView {
 				}
 				
 				if (forceName_ == null) {
-					forceName_ = currentModel_.getSensorNames(SensorType.FORCE_SENSOR);
+					forceName_ = currentModel_.getSensorNames("Force");
 					_resizeTables();
 				}
 //				lastWorldState_ = state;
@@ -397,8 +396,11 @@ public class GrxRobotStatView extends GrxBaseView {
 						break;
 					LinkInfoLocal li = jointList_.get(row);
 					state_.value = FORMAT1.format(Math.toDegrees(li.jointValue));
-					if (li.llimit[0] < li.ulimit[0] && (
-							li.jointValue <= li.llimit[0] || li.ulimit[0]  <= li.jointValue)) {
+					if (li.llimit.length > 0 
+					    && li.ulimit.length > 0
+					    && li.llimit[0] < li.ulimit[0]
+					    && (
+						li.jointValue <= li.llimit[0] || li.ulimit[0]  <= li.jointValue)) {
 						state_.font = MONO_BOLD_12;
 						state_.fgColor = Color.red;
 					}

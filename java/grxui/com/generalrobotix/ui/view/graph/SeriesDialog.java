@@ -18,8 +18,6 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import jp.go.aist.hrp.simulator.SensorType;
-
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxModelItem.LinkInfoLocal;
@@ -302,13 +300,13 @@ public class SeriesDialog extends JDialog {
 						for (int i = 0; i < li.length; i++) 
 							comboLink_.addItem(li[i].name);
 					} else {
-						SensorType t = null;
+						String t = null;
 						if (type.equals("ForceSensor"))
-							t = SensorType.FORCE_SENSOR;
+							t = "Force";
 						else if (type.equals("Gyro"))
-							t = SensorType.RATE_GYRO;
+							t = "RateGyro";
 						else if (type.equals("AccelerationSensor"))
-							t = SensorType.ACCELERATION_SENSOR;
+							t = "Acceleration";
 						String[] snames = model.getSensorNames(t);
 						if (snames != null) {
 							for (int i=0; i<snames.length; i++) {
