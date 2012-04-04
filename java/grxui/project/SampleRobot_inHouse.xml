@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<grxui>
+    <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
+            <property name="logTimeStep" value="0.002"/>
+            <property name="integrate" value="true"/>
+            <property name="viewsimulate" value="false"/>
+            <property name="totalTime" value="25.0 "/>
+            <property name="timeStep" value="0.002"/>
+            <property name="method" value="RUNGE_KUTTA"/>
+            <property name="gravity" value="9.8 "/>
+            <property name="viewsimulationTimeStep" value="0.033 "/>
+        </item>
+		    <item class="com.generalrobotix.ui.item.GrxModelItem" name="house" select="true" url="$(OPENHRPHOME)/etc/house/house.main.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="WAIST.rotation" value="1.0 0.0 0.0 1.570796 "/>
+            <property name="WAIST.translation" value="0.0 2.5 0.0 "/>
+        </item>
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(OPENHRPHOME)/etc/house/floor.main.wrl">
+			<property name="isRobot" value="false"/>
+			<property name="WAIST.rotation" value="1.0 0.0 0.0 1.570796 "/>
+			<property name="WAIST.translation" value="0.0 2.5 0.0 "/>
+		</item>
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="table" select="true" url="$(OPENHRPHOME)/etc/house/table.main.wrl">
+			<property name="isRobot" value="false"/>
+			<property name="WAIST.rotation" value="1.0 0.0 0.0 1.570796 "/>
+			<property name="WAIST.translation" value="0.0 2.5 0.0 "/>
+		</item>
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="box" select="true" url="$(OPENHRPHOME)/etc/house/box.wrl">
+			<property name="isRobot" value="true"/>
+			<property name="WAIST.rotation" value="0.0 0.0 1.0 1.570796 "/>
+			<property name="WAIST.translation" value="2.18 0.55 0.89 "/>
+		</item>  
+		<item class="com.generalrobotix.ui.item.GrxModelItem" name="Robot" select="true" url="$(OPENHRPHOME)/etc/sample1.wrl">
+			<property name="isRobot" value="true"/>
+			<property name="controller" value="SampleController"/>
+			<property name="controlTime" value="0.002"/>
+			<property name="setupDirectory" value="$(OPENHRPHOME)/Controller/rtc/SampleController"/>
+			<property name="setupCommand" value="SampleController$(BIN_SFX)"/>
+			<property name="WAIST.translation" value="1.9 -0.798 0.7235 "/>
+			<property name="WAIST.rotation" value="0.0 0.0 1.0 1.570796 "/>
+			<property name="WAIST_P.angle" value="0.0 "/>
+			<property name="WAIST_R.angle" value="0.0 "/>
+			<property name="CHEST.angle" value="0.0 "/>
+			<property name="RLEG_HIP_R.angle" value="0.0 "/>
+			<property name="RLEG_HIP_P.angle" value="-0.0360373 "/>
+			<property name="RLEG_HIP_Y.angle" value="0.0 "/>
+			<property name="RLEG_KNEE.angle" value="0.0785047 "/>
+			<property name="RLEG_ANKLE_P.angle" value="-0.0424675 "/>
+			<property name="RLEG_ANKLE_R.angle" value="0.0 "/>
+			<property name="LLEG_HIP_P.angle" value="-0.0360373 "/>
+			<property name="LLEG_HIP_R.angle" value="0.0 "/>
+			<property name="LLEG_HIP_Y.angle" value="0.0 "/>
+			<property name="LLEG_KNEE.angle" value="0.0785047 "/>
+			<property name="LLEG_ANKLE_P.angle" value="-0.0424675 "/>
+			<property name="LLEG_ANKLE_R.angle" value="0.0 "/>
+			<property name="RARM_SHOULDER_P.angle" value="0.174533 "/>
+			<property name="RARM_SHOULDER_R.angle" value="-0.00349066 "/>
+			<property name="RARM_SHOULDER_Y.angle" value="0.0 "/>
+			<property name="RARM_ELBOW.angle" value="-1.5708 "/>
+			<property name="RARM_WRIST_P.angle" value="0.0 "/>
+			<property name="RARM_WRIST_R.angle" value="0.0 "/>
+			<property name="RARM_WRIST_Y.angle" value="0.0 "/>
+			<property name="LARM_SHOULDER_P.angle" value="0.174533 "/>
+			<property name="LARM_SHOULDER_R.angle" value="-0.00349066 "/>
+			<property name="LARM_SHOULDER_Y.angle" value="0.0 "/>
+			<property name="LARM_ELBOW.angle" value="-1.5708 "/>
+			<property name="LARM_WRIST_P.angle" value="0.0 "/>
+			<property name="LARM_WRIST_R.angle" value="0.0 "/>
+			<property name="LARM_WRIST_Y.angle" value="0.0 "/>
+        </item>
+		<item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#floor#Robot" select="true">
+			<property name="springConstant" value="0 0 0 0 0 0"/>
+			<property name="slidingFriction" value="0.5"/>
+			<property name="jointName2" value=""/>
+			<property name="jointName1" value=""/>
+			<property name="sprintDamperModel" value="false"/>
+			<property name="damperConstant" value="0 0 0 0 0 0"/>
+			<property name="objectName2" value="Robot"/>
+			<property name="objectName1" value="floor"/>
+			<property name="staticFriction" value="0.5"/>
+		</item>
+		<item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#table#box" select="true">
+			<property name="springConstant" value="0 0 0 0 0 0"/>
+			<property name="slidingFriction" value="0.5"/>
+			<property name="jointName2" value=""/>
+			<property name="jointName1" value=""/>
+			<property name="sprintDamperModel" value="false"/>
+			<property name="damperConstant" value="0 0 0 0 0 0"/>
+			<property name="objectName2" value="box"/>
+			<property name="objectName1" value="table"/>
+			<property name="staticFriction" value="0.5"/>
+		</item>
+		<item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#RobotR#box" select="true">
+			<property name="springConstant" value="0 0 0 0 0 0"/>
+			<property name="slidingFriction" value="0.5"/>
+			<property name="jointName2" value="RARM_WRIST_R"/>
+			<property name="jointName1" value="WAIST"/>
+			<property name="sprintDamperModel" value="false"/>
+			<property name="damperConstant" value="0 0 0 0 0 0"/>
+			<property name="objectName2" value="Robot"/>
+			<property name="objectName1" value="box"/>
+			<property name="staticFriction" value="0.5"/>
+		</item>
+		<item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#RobotP#box" select="true">
+			<property name="springConstant" value="0 0 0 0 0 0"/>
+			<property name="slidingFriction" value="0.5"/>
+			<property name="jointName2" value="RARM_WRIST_P"/>
+			<property name="jointName1" value="WAIST"/>
+			<property name="sprintDamperModel" value="false"/>
+			<property name="damperConstant" value="0 0 0 0 0 0"/>
+			<property name="objectName2" value="Robot"/>
+			<property name="objectName1" value="box"/>
+			<property name="staticFriction" value="0.5"/>
+		</item>
+    </mode>
+</grxui>

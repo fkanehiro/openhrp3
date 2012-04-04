@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grxui>
+    <processmanagerconfig>
+        <process dir="$(BIN_DIR)" nshost="$(NS_HOST)" nsport="$(NS_PORT)" waitcount="500"/>
+        <process com="$(NAMESERV)" id="NameService"/>
+        <process com="$(BIN_DIR)/ModelLoader$(BIN_SFX)" hasshutdown="true" id="ModelLoader"/>
+        <process com="$(BIN_DIR)/CollisionDetector$(BIN_SFX)" hasshutdown="true" id="CollisionDetectorFactory"/>
+        <process com="$(BIN_DIR)/DynamicsSimulator$(BIN_SFX)" hasshutdown="true" id="DynamicsSimulatorFactory"/> 
+    </processmanagerconfig>
+
+    <mode name="Simulation" select="true">
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem"/>
+        <item class="com.generalrobotix.ui.item.GrxModelItem"/>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem"/>
+        <item class="com.generalrobotix.ui.item.GrxGraphItem"/>
+        <item class="com.generalrobotix.ui.item.GrxPythonScriptItem"/>
+  
+        <view class="com.generalrobotix.ui.view.GrxItemView" name="Item View"/>
+        <view class="com.generalrobotix.ui.view.GrxJythonPromptView" name="Jython Prompt"/>
+        <view class="com.generalrobotix.ui.view.GrxLoggerView" name="Logger View"/>
+        <view class="com.generalrobotix.ui.view.GrxOpenHRPView" name="OpenHRP"/>
+        <view class="com.generalrobotix.ui.view.Grx3DView" name="3DView"/>
+        <view class="com.generalrobotix.ui.view.GrxRobotStatView" name="Robot State"/>
+        <view class="com.generalrobotix.ui.view.GrxGraphView" name="Graph"/>
+        <view class="com.generalrobotix.ui.view.GrxProcessManagerView" name="Process Manager"/>
+        <view class="com.generalrobotix.ui.view.GrxTextEditorView" name="Text Editor"/>
+        <view class="com.generalrobotix.ui.view.GrxPropertyView" name="Property"/>
+        <view class="com.generalrobotix.ui.view.GrxORBMonitorView" name="NameService Monitor"/>
+    
+        <windowconfig>
+            <window fullScreen="false" height="923" root="true" width="1207" x="5" y="41">
+                <layout position="Center" splitratio="0.601">
+                    <layout position="Center" splitratio="0.314">
+                        <layout position="Center" splitratio="0.313">
+                            <layout position="Center" splitratio="0.0">
+                                <tab name="Jython Prompt"/>
+                                <tab name="NameService Monitor"/>
+                                <tab name="Process Manager"/>
+                            </layout>
+                            <layout position="West" splitratio="0.0">
+                                <tab name="Item View"/>
+                            </layout>
+                        </layout>
+                        <layout position="South" splitratio="0.0">
+                            <tab name="3DView"/>
+                            <tab name="OpenHRP"/>
+                            <tab name="Text Editor"/>
+                        </layout>
+                    </layout>
+                        <layout position="East" splitratio="0.0">
+                            <tab name="Graph"/>
+                            <tab name="Robot State"/>
+                            <tab name="Property"/>
+                    </layout>
+                </layout>
+            </window>
+        </windowconfig>
+    </mode>
+</grxui>
