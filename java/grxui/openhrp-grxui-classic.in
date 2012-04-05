@@ -1,7 +1,6 @@
 #!/bin/sh
 
-#export OPENHRPHOME=@OPENHRP_DIR@
-export OPENHRPHOME=/home/kanehiro/openhrp3.0
+export OPENHRPHOME=@OPENHRP_SHARE_DIR@/sample
 export GRXUI_TEMP=/tmp/.grxui
 export JAVAVM=java
 export JYTHON_HOME=@JYTHON_HOME@
