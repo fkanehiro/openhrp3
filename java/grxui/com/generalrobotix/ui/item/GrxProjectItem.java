@@ -49,7 +49,7 @@ import com.generalrobotix.ui.util.GrxXmlUtil;
 @SuppressWarnings("unchecked")
 public class GrxProjectItem extends GrxBaseItem {
 	public static final String TITLE = "Project";
-	public static final String DEFAULT_DIR = "project";
+	public static final String DEFAULT_DIR = "../../sample/project";
 	public static final String FILE_EXTENSION = "xml";
 
     private static final String MODE_TAG = "mode";
