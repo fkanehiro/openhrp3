@@ -12,13 +12,23 @@ set(source_files
   com/generalrobotix/ui/view/simulation/*.java 
   com/generalrobotix/ui/view/vsensor/*.java)
 
-set(java_cflags 
-  -encoding EUCJIS 
-  -Xlint:unchecked 
-  -Djava.ext.dirs=JMF2.1.1e/unix/lib:Java3D/1.4.1/unix/lib/ext:Java3D/1.4.1/unix/lib/:/jre/lib/ext:/jre/lib/ 
-  -d ${CMAKE_CURRENT_BINARY_DIR} 
-  -cp ${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar:vrml97.jar:${JYTHON_JAR} 
-  -sourcepath ${CMAKE_CURRENT_SOURCE_DIR} ${source_files})
+if(UNIX)
+  set(java_cflags 
+    -encoding EUCJIS 
+    -Xlint:unchecked 
+    -Djava.ext.dirs=JMF2.1.1e/unix/lib:Java3D/1.4.1/unix/lib/ext:Java3D/1.4.1/unix/lib/:/jre/lib/ext:/jre/lib/ 
+    -d ${CMAKE_CURRENT_BINARY_DIR} 
+    -cp ${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar:vrml97.jar:${JYTHON_JAR} 
+    -sourcepath ${CMAKE_CURRENT_SOURCE_DIR} ${source_files})
+elseif(WIN32)
+  set(java_cflags 
+    -encoding EUCJIS 
+    -Xlint:unchecked 
+    "-Djava.ext.dirs=JMF2.1.1e/Windows/lib\;Java3D/1.4.1/Windows/lib/ext\;Java3D/1.4.1/Windows/lib/\;${JDK_DIR}/jre/lib/ext\;${JDK_DIR}/jre/lib/" 
+    -d ${CMAKE_CURRENT_BINARY_DIR} 
+    -cp "${OpenHRP_BINARY_DIR}/java/openhrpstubskel.jar\;vrml97.jar\;${JYTHON_JAR}" 
+    -sourcepath ${CMAKE_CURRENT_SOURCE_DIR} ${source_files})
+endif()
 
 add_custom_command(
     OUTPUT ${jarfile}
