@@ -428,7 +428,7 @@ public class GrxProcessManager {
 		}
 
 		public boolean stop() {
-			GrxDebugUtil.println("stop:stoping " + pi_.id);
+			GrxDebugUtil.println("stop:stopping " + pi_.id);
 			// StatusOut.append("\nStopping "+pi_.id+" ... ");
 			if (isRunning()) {
 				if (pi_.hasShutdown) {
