@@ -535,9 +535,11 @@ public class GrxOpenHRPView extends GrxBaseView {
 	private boolean initController() {
 		GrxDebugUtil.println("initializing controllers ...");
 		for (int i=controllers_.size()-1; i>=0; i--) {
+            /*
 			try {
 				controllers_.get(i).controller_.destroy();
 			} catch (Exception e) {}
+            */
 			controllers_.remove(i);
 		}
 
