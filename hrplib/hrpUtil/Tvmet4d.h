@@ -11,5 +11,9 @@
 #define OPENHRP_UTIL_TVMET4D_H_INCLUDED
 
 #include "Eigen4d.h"
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma message( "Tvmet4d.h is obsolete. Please replace it with Eigen4d.h" )
+#else
 #warning Tvmet4d.h is obsolete. Please replace it with Eigen4d.h
+#endif
 #endif
