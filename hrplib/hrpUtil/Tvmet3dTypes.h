@@ -37,7 +37,11 @@ using std::atan2;
 #endif
 
 #include <hrpUtil/EigenTypes.h>
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma message( "Tvmet3dTypes.h is obsolete. Please replace it with EigenTypes.h" )
+#else
 #warning Tvmet3dTypes.h is obsolete. Please replace it with EigenTypes.h
+#endif
 #include <hrpUtil/Tvmet2Eigen.h>
 
 #endif

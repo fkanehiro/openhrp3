@@ -12,7 +12,11 @@
 #define HRPUTIL_TVMET3D_H_INCLUDED
 
 #include "Eigen3d.h"
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#pragma message( "Tvmet3d.h is obsolete. Please replace it with Eigen3d.h" )
+#else
 #warning Tvmet3d.h is obsolete. Please replace it with Eigen3d.h
+#endif
 #include "Tvmet2Eigen.h"
 
 #endif
