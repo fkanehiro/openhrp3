@@ -1664,9 +1664,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                 xx=0.0;
             else{
                 double sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
-                }
+                sum += M.row(j)*x;
                 xx = (-b(j) - sum) / M(j, j);
             }
             if(xx < 0.0){
@@ -1684,9 +1682,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                 x(j) = 0.0;
             else{
                 double sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
-                }
+                sum += M.row(j)*x;
                 x(j) = r * (-b(j) - sum) / M(j, j);
             }
             r += rstep;
@@ -1702,9 +1698,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                     fx0 = 0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    for(int k=0; k < size; ++k){
-                        sum += M(j, k) * x(k);
-                    }
+                    sum += M.row(j)*x;
                     fx0 = (-b(j) - sum) / M(j, j);
                 }
                 double& fx = x(j);
@@ -1716,9 +1710,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                     fy0 = 0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    for(int k=0; k < size; ++k){
-                        sum += M(j, k) * x(k);
-                    }
+                    sum += M.row(j)*x;
                     fy0 = (-b(j) - sum) / M(j, j);
                 }
                 double& fy = x(j);
@@ -1748,9 +1740,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                     xx = 0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    for(int k=0; k < size; ++k){
-                        sum += M(j, k) * x(k);
-                    }
+                    sum += M.row(j)*x;
                     xx = (-b(j) - sum) / M(j, j);
                 }
 
@@ -1787,9 +1777,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                 xx=0.0;
             else{
                 double sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
-                }
+                sum += M.row(j)*x;
                 xx = (-b(j) - sum) / M(j, j);
             }
             if(xx < 0.0){
@@ -1806,9 +1794,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                 x(j)=0.0;
             else{
                 double sum = -M(j, j) * x(j);
-                for(int k=0; k < size; ++k){
-                    sum += M(j, k) * x(k);
-                }
+                sum += M.row(j)*x;
                 x(j) = (-b(j) - sum) / M(j, j);
             }
         }
@@ -1824,9 +1810,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                     fx0=0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    for(int k=0; k < size; ++k){
-                        sum += M(j, k) * x(k);
-                    }
+                    sum += M.row(j)*x;
                     fx0 = (-b(j) - sum) / M(j, j);
                 }
                 double& fx = x(j);
@@ -1838,9 +1822,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                     fy0=0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    for(int k=0; k < size; ++k){
-                        sum += M(j, k) * x(k);
-                    }
+                    sum += M.row(j)*x;
                     fy0 = (-b(j) - sum) / M(j, j);
                 }
                 double& fy = x(j);
@@ -1869,9 +1851,7 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                     xx=0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    for(int k=0; k < size; ++k){
-                        sum += M(j, k) * x(k);
-                    }
+                    sum += M.row(j)*x;
                     xx = (-b(j) - sum) / M(j, j);
                 }
 
@@ -1902,9 +1882,7 @@ double CFSImpl::solveMCPByProjectedGaussSeidelErrorCheck
     for(int j=0; j < globalNumConstraintVectors; ++j){
 
         double sum = -M(j, j) * x(j);
-        for(int k=0; k < size; ++k){
-            sum += M(j, k) * x(k);
-        }
+        sum += M.row(j)*x;
         double xx = (-b(j) - sum) / M(j, j);
 
         if(j < globalNumContactNormalVectors){
@@ -1929,18 +1907,14 @@ double CFSImpl::solveMCPByProjectedGaussSeidelErrorCheck
         for(int j=globalNumConstraintVectors; j < size; ++j, ++contactIndex){
 
             double sum = -M(j, j) * x(j);
-            for(int k=0; k < size; ++k){
-                sum += M(j, k) * x(k);
-            }
+            sum += M.row(j)*x;
             double fx0 = (-b(j) - sum) / M(j, j);
             double& fx = x(j);
 
             ++j;
 
             sum = -M(j, j) * x(j);
-            for(int k=0; k < size; ++k){
-                sum += M(j, k) * x(k);
-            }
+            sum += M.row(j)*x;
             double fy0 = (-b(j) - sum) / M(j, j);
             double& fy = x(j);
 
@@ -1980,9 +1954,7 @@ double CFSImpl::solveMCPByProjectedGaussSeidelErrorCheck
         for(int j=globalNumConstraintVectors; j < size; ++j, ++frictionIndex){
 
             double sum = -M(j, j) * x(j);
-            for(int k=0; k < size; ++k){
-                sum += M(j, k) * x(k);
-            }
+            sum += M.row(j)*x;
 
             double xx = (-b(j) - sum) / M(j, j);
 
