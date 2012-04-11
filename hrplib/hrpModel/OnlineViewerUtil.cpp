@@ -38,3 +38,22 @@ void initWorldState(WorldState& state,  WorldBase& world)
     }
 }
 
+void initWorldState(WorldState& state,  WorldBase& world,
+                    std::vector<ColdetLinkPairPtr>& pairs)
+{
+    initWorldState(state, world);
+
+    OpenHRP::CollisionSequence& collisions = state.collisions;
+
+    collisions.length(pairs.size());
+    for(size_t colIndex=0; colIndex < pairs.size(); ++colIndex){
+        hrp::ColdetLinkPairPtr linkPair = pairs[colIndex];
+        hrp::Link *link0 = linkPair->link(0);
+        hrp::Link *link1 = linkPair->link(1);
+        OpenHRP::LinkPair& pair = collisions[colIndex].pair;
+        pair.charName1 = CORBA::string_dup(link0->body->name().c_str());
+        pair.charName2 = CORBA::string_dup(link1->body->name().c_str());
+        pair.linkName1 = CORBA::string_dup(link0->name.c_str());
+        pair.linkName2 = CORBA::string_dup(link1->name.c_str());
+    }
+}
