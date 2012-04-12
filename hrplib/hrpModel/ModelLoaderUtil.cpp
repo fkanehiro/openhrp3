@@ -514,7 +514,7 @@ BodyInfo_var hrp::loadBodyInfo(const char* url, CORBA_ORB_var orb)
     return loadBodyInfo(url, cxt);
 }
 
-BodyInfo_var hrp::loadBodyInfo(const char* url, CosNaming::NamingContext_var cxt)
+ModelLoader_var hrp::getModelLoader(CosNaming::NamingContext_var cxt)
 {
     CosNaming::Name ncName;
     ncName.length(1);
@@ -538,11 +538,15 @@ BodyInfo_var hrp::loadBodyInfo(const char* url, CosNaming::NamingContext_var cxt
         return false;
     } catch(CosNaming::NamingContext::CannotProceed &exc) {
         std::cerr << "Resolve ModelLoader CannotProceed" << std::endl;
-        return false;
     } catch(CosNaming::NamingContext::AlreadyBound &exc) {
         std::cerr << "Resolve ModelLoader InvalidName" << std::endl;
-        return false;
     }
+    return modelLoader;
+}
+
+BodyInfo_var hrp::loadBodyInfo(const char* url, CosNaming::NamingContext_var cxt)
+{
+    ModelLoader_var modelLoader = getModelLoader(cxt);
 
     BodyInfo_var bodyInfo;
     try {        
