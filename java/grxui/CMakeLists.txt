@@ -1,4 +1,9 @@
-configure_file(openhrp-grxui-classic.in ${OpenHRP_BINARY_DIR}/bin/openhrp-grxui-classic @ONLY)
+if(UNIX)
+  configure_file(openhrp-grxui-classic.in ${OpenHRP_BINARY_DIR}/bin/openhrp-grxui-classic @ONLY)
+elseif(WIN32)
+  STRING(REPLACE "/" "\\" OPENHRP_SHARE_DIR_WIN "${OPENHRP_SHARE_DIR}")
+  configure_file(openhrp-grxui-classic.bat.in ${OpenHRP_BINARY_DIR}/bin/openhrp-grxui-classic.bat )
+endif()
 
 set(jarfile ${OpenHRP_BINARY_DIR}/java/grxui.jar)
 
@@ -44,7 +49,17 @@ install(PROGRAMS
   ${OpenHRP_BINARY_DIR}/bin/openhrp-grxui-classic 
   DESTINATION bin)
 install(FILES ${jarfile} vrml97.jar DESTINATION ${RELATIVE_JAVA_INSTALL_PATH})
-install(FILES grxuirc.xml DESTINATION ${RELATIVE_JAVA_INSTALL_PATH}/grxui)
+if(UNIX)
+  install(PROGRAMS 
+    ${OpenHRP_BINARY_DIR}/bin/openhrp-grxui-classic 
+    DESTINATION bin)
+  install(FILES grxuirc.xml DESTINATION ${RELATIVE_JAVA_INSTALL_PATH}/grxui)
+elseif(WIN32)
+  install(FILES grxuirc.xml.win DESTINATION ${RELATIVE_JAVA_INSTALL_PATH}/grxui RENAME grxuirc.xml)
+  install(PROGRAMS 
+    ${OpenHRP_BINARY_DIR}/bin/openhrp-grxui-classic.bat 
+    DESTINATION bin)
+endif()
 install(DIRECTORY Java3D  JMF2.1.1e
   DESTINATION ${RELATIVE_JAVA_INSTALL_PATH}
   PATTERN .svn EXCLUDE)
