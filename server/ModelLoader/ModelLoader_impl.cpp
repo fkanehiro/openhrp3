@@ -50,6 +50,8 @@ BodyInfo_ptr ModelLoader_impl::loadBodyInfo(const char* url)
 {
     OpenHRP::ModelLoader::ModelLoadOption option;
     option.readImage = false;
+    option.AABBdata.length(0);
+    option.AABBtype = OpenHRP::ModelLoader::AABB_NUM;
     BodyInfo_impl* bodyInfo = loadBodyInfoFromModelFile(url, option);
     return bodyInfo->_this();
 }
@@ -58,6 +60,15 @@ BodyInfo_ptr ModelLoader_impl::loadBodyInfoEx(const char* url, const OpenHRP::Mo
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
     BodyInfo_impl* bodyInfo = loadBodyInfoFromModelFile(url, option);
+    if(option.AABBdata.length()){
+        bodyInfo->setParam("AABBType", (int)option.AABBtype);
+        int length=option.AABBdata.length();
+        unsigned int* _AABBdata = new unsigned int[length];
+        for(int i=0; i<length; i++)
+            _AABBdata[i] = option.AABBdata[i];
+        bodyInfo->changetoBoundingBox(_AABBdata);
+        delete[] _AABBdata;
+    }
     return bodyInfo->_this();
 }
 
@@ -81,30 +92,19 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const OpenHRP::Mo
     UrlToBodyInfoMap::iterator p = urlToBodyInfoMap.find(url);
     if(p != urlToBodyInfoMap.end() && mtime == p->second->getLastUpdateTime() && p->second->checkInlineFileUpdateTime()){
         bodyInfo = p->second;
-        if(bodyInfo->getParam("readImage")==option.readImage){
-            cout << string("cache found for ") + url << endl;
-            if(option.AABBdata.length()){
-                bodyInfo->setParam("AABBType", (int)option.AABBtype);
-                int length=option.AABBdata.length();
-                unsigned int* _AABBdata = new unsigned int[length];
-                for(int i=0; i<length; i++)
-                    _AABBdata[i] = option.AABBdata[i];
-                bodyInfo->changetoBoundingBox(_AABBdata);
-                delete[] _AABBdata;
-                return bodyInfo->_this();
-            }else{
-                //bodyInfo->changetoOriginData();
-                return bodyInfo->_this();
-            }
-        }else{
-            urlToBodyInfoMap.erase(p);
+        cout << string("cache found for ") + url << endl;
+        if(option.AABBdata.length()){
+            bodyInfo->setParam("AABBType", (int)option.AABBtype);
+            int length=option.AABBdata.length();
+            unsigned int* _AABBdata = new unsigned int[length];
+            for(int i=0; i<length; i++)
+                _AABBdata[i] = option.AABBdata[i];
+            bodyInfo->changetoBoundingBox(_AABBdata);
+            delete[] _AABBdata;
         }
+        return bodyInfo->_this();
     } 
-
-    bodyInfo = loadBodyInfoFromModelFile(url, option);
-    bodyInfo->setLastUpdateTime( mtime );
-    
-    return bodyInfo->_this();
+    return loadBodyInfoEx(url0, option);
 }
 
 BodyInfo_ptr ModelLoader_impl::getBodyInfo(const char* url)
