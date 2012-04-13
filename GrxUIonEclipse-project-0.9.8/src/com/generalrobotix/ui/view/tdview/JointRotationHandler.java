@@ -123,6 +123,8 @@ class JointRotationHandler extends OperationHandler {
         //軸情報取り出す
 
         GrxLinkItem l = SceneGraphModifier.getLinkFromTG(tgTarget_);
+        if(l.jointAxis_==null)
+        	return;
   
         vw2view.mul(target2vw);
         vw2view.transform(point000);
