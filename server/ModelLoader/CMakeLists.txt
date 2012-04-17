@@ -1,6 +1,7 @@
 # @author Shin'ichiro Nakaoka
 
 set(program openhrp-model-loader)
+set(exporter export-collada)
 
 set(sources
   ShapeSetInfo_impl.cpp
@@ -10,6 +11,22 @@ set(sources
   VrmlUtil.cpp
   server.cpp )
 
+set(sources2
+  exportCollada.cpp
+  BodyInfo_impl.cpp
+  ShapeSetInfo_impl.cpp
+  VrmlUtil.cpp )
+
+if( COLLADA_DOM_FOUND )
+  set(sources ${sources} BodyInfoCollada_impl.cpp)
+  include_directories(${COLLADA_DOM_INCLUDE_DIRS})
+  link_directories(${COLLADA_DOM_LIBRARY_DIRS})
+  set(extralibraries  ${COLLADA_DOM_LIBRARIES} )
+  add_executable(${exporter} ${sources2})
+else( COLLADA_DOM_FOUND )
+  set(extralibraries)
+endif( COLLADA_DOM_FOUND )
+
 add_executable(${program} ${sources})
 
 if(UNIX)
@@ -17,7 +34,22 @@ if(UNIX)
     hrpUtil-${OPENHRP_LIBRARY_VERSION}
     hrpModel-${OPENHRP_LIBRARY_VERSION}
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-    ${OMNIORB_LIBRARIES})
+    #${OMNIORB_LIBRARIES}
+    ${OPENRTM_LIBRARIES}
+    ${extralibraries}
+    )
+
+  if( COLLADA_DOM_FOUND )
+    target_link_libraries(${exporter}
+      hrpUtil-${OPENHRP_LIBRARY_VERSION}
+      hrpModel-${OPENHRP_LIBRARY_VERSION}
+      hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+      #${OMNIORB_LIBRARIES}
+      ${OPENRTM_LIBRARIES}
+      ${extralibraries}
+      )
+    set_target_properties(${exporter} PROPERTIES COMPILE_FLAGS "${COLLADA_DOM_CXX_FLAGS}" LINK_FLAGS "${COLLADA_DOM_LINK_FLAGS}")
+  endif( COLLADA_DOM_FOUND )
 
 elseif(WIN32)
   set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d)
@@ -30,11 +62,34 @@ elseif(WIN32)
     debug hrpModel-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCollision-${OPENHRP_LIBRARY_VERSION}d
-    ${OMNIORB_LIBRARIES})
+    ${OMNIORB_LIBRARIES}
+    ${extralibraries})
+    
+  if( COLLADA_DOM_FOUND )
+    target_link_libraries(${exporter}
+    optimized hrpUtil-${OPENHRP_LIBRARY_VERSION} 
+    optimized hrpModel-${OPENHRP_LIBRARY_VERSION}
+    optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION} 
+    debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
+    debug hrpModel-${OPENHRP_LIBRARY_VERSION}d
+    debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
+    #${OMNIORB_LIBRARIES}
+    ${OPENRTM_LIBRARIES}
+    ${extralibraries}
+    )
+    set_target_properties(${exporter} PROPERTIES COMPILE_FLAGS "${COLLADA_DOM_CXX_FLAGS}" LINK_FLAGS "${COLLADA_DOM_LINK_FLAGS}")
+  endif( COLLADA_DOM_FOUND )
 endif()
+
+if( COLLADA_DOM_FOUND )
+  set_target_properties(${program} PROPERTIES COMPILE_FLAGS "${COLLADA_DOM_CXX_FLAGS}" LINK_FLAGS "${COLLADA_DOM_LINK_FLAGS}")
+endif( COLLADA_DOM_FOUND )
 
 if(WIN32)
   install(TARGETS ${program} DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release )
 endif()
 
 install(TARGETS ${program} DESTINATION bin CONFIGURATIONS Release Debug)
+if( COLLADA_DOM_FOUND )
+  install(TARGETS ${exporter} DESTINATION bin CONFIGURATIONS Release Debug)
+endif( COLLADA_DOM_FOUND )
