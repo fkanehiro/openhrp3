@@ -61,7 +61,7 @@ bool ModelLoaderHelper::createBody(BodyPtr body, ODE_World* world, BodyInfo_ptr 
     }
 
     if(rootIndex >= 0){ // root exists
-        Matrix44 T(tvmet::identity<Matrix44>());
+	Matrix44 T(Matrix44::Identity());
         ODE_Link* rootLink = createLink(rootIndex, 0, T);
         body->setRootLink(rootLink);
 
@@ -89,9 +89,9 @@ ODE_Link* ModelLoaderHelper::createLink(int index, dBodyID parentBodyId, const M
     link->jointId = jointId;
     
     Matrix33 parentRs;
-    parentRs = parentT(0,0), parentT(0,1), parentT(0,2),
-               parentT(1,0), parentT(1,1), parentT(1,2),
-               parentT(2,0), parentT(2,1), parentT(2,2);
+    parentRs << parentT(0,0), parentT(0,1), parentT(0,2),
+                parentT(1,0), parentT(1,1), parentT(1,2),
+                parentT(2,0), parentT(2,1), parentT(2,2);
     Vector3 relPos(linkInfo.translation[0], linkInfo.translation[1], linkInfo.translation[2]);
     link->b = parentRs * relPos;
 
@@ -103,9 +103,9 @@ ODE_Link* ModelLoaderHelper::createLink(int index, dBodyID parentBodyId, const M
     localT(2,3) = linkInfo.translation[2];
     Matrix44 T(parentT*localT);
     
-    link->Rs = T(0,0), T(0,1), T(0,2),
-               T(1,0), T(1,1), T(1,2),
-               T(2,0), T(2,1), T(2,2);
+    link->Rs << T(0,0), T(0,1), T(0,2),
+                T(1,0), T(1,1), T(1,2),
+                T(2,0), T(2,1), T(2,2);
     Vector3 p(T(0,3), T(1,3), T(2,3));
     const Matrix33& Rs = link->Rs;
     link->C = Vector3(linkInfo.centerOfMass[0], linkInfo.centerOfMass[1], linkInfo.centerOfMass[2]);
@@ -140,8 +140,8 @@ ODE_Link* ModelLoaderHelper::createLink(int index, dBodyID parentBodyId, const M
         link->jointType = ODE_Link::FREE_JOINT;
     }
 
-    link->a = 0.0;
-    link->d = 0.0;
+    link->a.setZero();
+    link->d.setZero();
     Vector3 axis( Rs * Vector3(linkInfo.jointAxis[0], linkInfo.jointAxis[1], linkInfo.jointAxis[2]));
 
     if(link->jointType == Link::ROTATIONAL_JOINT){
@@ -193,7 +193,7 @@ ODE_Link* ModelLoaderHelper::createLink(int index, dBodyID parentBodyId, const M
 
     Matrix33 Io;
     getMatrix33FromRowMajorArray(Io, linkInfo.inertia);
-    link->I = Rs * Io * trans(Rs);
+    link->I = Rs * Io * Rs.transpose();
 
     // a stack is used for keeping the same order of children
     stack<Link*> children;
@@ -233,9 +233,9 @@ void ModelLoaderHelper::createGeometry(ODE_Link* link, const LinkInfo& linkInfo)
         short shapeIndex = shapeIndices[i].shapeIndex;
         const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
         Matrix33 R0;
-        R0 = M[0],M[1],M[2],
-             M[4],M[5],M[6],
-             M[8],M[9],M[10];
+        R0 << M[0],M[1],M[2],
+              M[4],M[5],M[6],
+              M[8],M[9],M[10];
         if(isOrthogonalMatrix(R0)){
             switch(shapeInfo.primitiveType){
                 case OpenHRP::SP_BOX :{
@@ -304,9 +304,9 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ODE_Link* link, const LinkIn
         const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
         const DblArray12& M = tsi.transformMatrix;
         Matrix33 R0;
-        R0 = M[0],M[1],M[2],
-             M[4],M[5],M[6],
-             M[8],M[9],M[10];
+        R0 << M[0],M[1],M[2],
+              M[4],M[5],M[6],
+              M[8],M[9],M[10];
         if(isOrthogonalMatrix(R0) && 
             (shapeInfo.primitiveType == OpenHRP::SP_BOX ||
             shapeInfo.primitiveType == OpenHRP::SP_CYLINDER ||
@@ -314,10 +314,10 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ODE_Link* link, const LinkIn
             continue;
 
         Matrix44 T;
-        T = M[0], M[1], M[2],  M[3],
-            M[4], M[5], M[6],  M[7],
-            M[8], M[9], M[10], M[11],
-            0.0,  0.0,  0.0,   1.0;
+        T << M[0], M[1], M[2],  M[3],
+             M[4], M[5], M[6],  M[7],
+             M[8], M[9], M[10], M[11],
+             0.0,  0.0,  0.0,   1.0;
         const FloatSequence& vertices = shapeInfo.vertices;
         const LongSequence& triangles = shapeInfo.triangles;
         const int numTriangles = triangles.length() / 3;

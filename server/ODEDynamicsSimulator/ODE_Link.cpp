@@ -11,12 +11,12 @@
 
 void ODE_Link::getTransform(hrp::Vector3& pos_, hrp::Matrix33& R_){
     const dReal* R = dBodyGetRotation(bodyId);
-    R_ = R[0],R[1],R[2],
-         R[4],R[5],R[6],
-         R[8],R[9],R[10];
+    R_ << R[0],R[1],R[2],
+          R[4],R[5],R[6],
+          R[8],R[9],R[10];
     dVector3 result;
     dBodyGetRelPointPos(bodyId, -C[0], -C[1], -C[2], result);
-    pos_ = result[0], result[1], result[2];
+    pos_ << result[0], result[1], result[2];
 
 }
 
@@ -61,7 +61,7 @@ const dReal* ODE_Link::getAngularVel(){
 void ODE_Link::getLinearVel(hrp::Vector3& v){
     dVector3 result;
     dBodyGetRelPointVel(bodyId, -C[0], -C[1], -C[2], result);
-    v = result[0], result[1], result[2];
+    v << result[0], result[1], result[2];
 }
 
 void ODE_Link::setAbsVelocity(hrp::Vector3& v, hrp::Vector3& w){
@@ -70,7 +70,7 @@ void ODE_Link::setAbsVelocity(hrp::Vector3& v, hrp::Vector3& w){
     hrp::Matrix33 R;
     getTransform(p, R);
     hrp::Vector3 cpos(R*C);
-    hrp::Vector3 _v(v + cross(w, cpos));
+    hrp::Vector3 _v(v + w.cross(cpos));
     dBodySetLinearVel(bodyId, _v[0], _v[1], _v[2]);
 }
 

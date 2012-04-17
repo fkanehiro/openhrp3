@@ -15,7 +15,7 @@
 #include <hrpModel/World.h>
 #include <hrpModel/Body.h>
 #include <hrpModel/ForwardDynamics.h>
-#include <hrpUtil/Tvmet4d.h>
+#include <hrpUtil/Eigen4d.h>
 #include <string>
 #include <vector>
 

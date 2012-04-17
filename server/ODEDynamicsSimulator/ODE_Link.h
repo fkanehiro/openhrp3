@@ -13,7 +13,7 @@
 #include <ode/ode.h>
 #include <hrpModel/Link.h>
 #include <hrpModel/Sensor.h>
-#include <hrpUtil/Tvmet4d.h>
+#include <hrpUtil/Eigen4d.h>
 #include <vector>
 
 class ODE_Link : public hrp::Link{

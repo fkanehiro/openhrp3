@@ -136,9 +136,9 @@ void hrp::calcRotFromRpy(Matrix33& out_R, double r, double p, double y)
     out_R(2,2)= cr*cp;
 }
 
-
-#if 0
 bool hrp::isOrthogonalMatrix(Matrix33& m){
-    return all_elements( m * m.transpose() == Matrix33::Identity() );
+    Matrix33 w(m * m.transpose() - Matrix33::Identity());
+    return (abs(w.array())<1.0e-12).all();
+    //return all_elements( m * m.transpose() == Matrix33::Identity() );
 }
-#endif
+

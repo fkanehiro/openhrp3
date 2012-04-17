@@ -72,11 +72,13 @@ static void setLastUpdateTime(POA_OpenHRP::BodyInfo* bodyInfo, time_t time)
         pBodyInfo_impl->setLastUpdateTime(time);
         return;
     }
+#ifdef OPENHRP_COLLADA_FOUND
     BodyInfoCollada_impl* pBodyInfoCollada_impl = dynamic_cast<BodyInfoCollada_impl*>(bodyInfo);
     if( !!pBodyInfoCollada_impl ) {
         pBodyInfoCollada_impl->setLastUpdateTime(time);
         return;
     }
+#endif
     throw ModelLoader::ModelLoaderException("setLastUpdateTime invalid pointer");
 };
 
@@ -85,10 +87,12 @@ static time_t getLastUpdateTime(POA_OpenHRP::BodyInfo* bodyInfo) {
     if( !!pBodyInfo_impl ) {
         return pBodyInfo_impl->getLastUpdateTime();
     }
+#ifdef OPENHRP_COLLADA_FOUND
     BodyInfoCollada_impl* pBodyInfoCollada_impl = dynamic_cast<BodyInfoCollada_impl*>(bodyInfo);
     if( !!pBodyInfoCollada_impl ) {
         return pBodyInfoCollada_impl->getLastUpdateTime();
     }
+#endif
     throw ModelLoader::ModelLoaderException("getLastUpdateTime invalid pointer");
 }
 
