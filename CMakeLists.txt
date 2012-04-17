@@ -446,6 +446,15 @@ if(ENABLE_CPACK)
 
 endif(ENABLE_CPACK)
 
+# collada stuff
+option(OPT_COLLADASUPPORT "Enable COLLADA support" OFF)
+if( OPT_COLLADASUPPORT )
+  find_package(COLLADA_DOM 2.3 COMPONENTS 1.5)
+  if( COLLADA_DOM_FOUND )
+    add_definitions(-DOPENHRP_COLLADA_FOUND)
+  endif( COLLADA_DOM_FOUND )
+endif( OPT_COLLADASUPPORT )
+
 # Subdirectories
 add_subdirectory(idl)
 add_subdirectory(hrplib)
