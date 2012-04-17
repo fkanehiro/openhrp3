@@ -274,7 +274,7 @@ void ODE_ForwardDynamics::updateSensors(){
     for(int i=0; i<body->numLinks(); i++){
         ODE_Link* link = (ODE_Link*)body->link(i);
         const dReal* _w = link->getAngularVel();
-        link->w = _w[0], _w[1], _w[2];
+        link->w << _w[0], _w[1], _w[2];
         hrp::Matrix33 R;
         link->getTransform(link->p, R);
         link->setSegmentAttitude(R);
@@ -314,10 +314,10 @@ void ODE_ForwardDynamics::updateForceSensor(ODE_ForceSensor* sensor){
     hrp::Vector3 f(fb->f2[0], fb->f2[1], fb->f2[2]);
     hrp::Vector3 tau(fb->t2[0], fb->t2[1], fb->t2[2]);
     hrp::Matrix33 sensorR(link->R * sensor->localR);
-    hrp::Vector3 fs(trans(sensorR) * f);
+    hrp::Vector3 fs(sensorR.transpose() * f);
     //hrp::Vector3 sensorPos(link->p + link->R * sensor->localPos);
     hrp::Vector3 sensorPos(link->R * (sensor->localPos - link->parent->c));
-    hrp::Vector3 ts(trans(sensorR) * (tau - cross(sensorPos, f)));
+    hrp::Vector3 ts(sensorR.transpose() * (tau - sensorPos.cross(f)));
 
 	sensor->f   = fs;
 	sensor->tau = ts;

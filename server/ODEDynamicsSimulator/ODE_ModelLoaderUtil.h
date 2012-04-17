@@ -16,7 +16,7 @@
 
 #include <hrpCorba/ORBwrap.h>
 #include <hrpCorba/ModelLoader.hh>
-#include <hrpUtil/Tvmet4d.h>
+#include <hrpUtil/Eigen4d.h>
 #include <hrpModel/Body.h>
 #include <hrpModel/Sensor.h>
 
