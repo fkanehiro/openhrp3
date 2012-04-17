@@ -713,7 +713,7 @@ void DynamicsSimulator_impl::setCharacterLinkData
         link->w(0) = wdata[3];
         link->w(1) = wdata[4];
         link->w(2) = wdata[5];
-        // ABS_TRANSFORM‚ªæ‚ÉÀs‚³‚ê‚Ä‚¢‚é‚±‚Æ@//
+        // ABS_TRANSFORMãŒå…ˆã«å®Ÿè¡Œã•ã‚Œã¦ã„ã‚‹ã“ã¨ã€€//
         link->vo = link->v - link->w.cross(link->p);
     }
     break;
