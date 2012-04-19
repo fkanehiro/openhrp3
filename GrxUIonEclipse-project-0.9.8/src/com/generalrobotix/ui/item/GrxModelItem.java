@@ -51,7 +51,7 @@ import jp.go.aist.hrp.simulator.ModelLoaderPackage.ModelLoaderException;
 public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public static final String TITLE = "Model"; //$NON-NLS-1$
     public static final String DEFAULT_DIR = "/../model"; //$NON-NLS-1$
-    public static final String FILE_EXTENSION = "wrl"; //$NON-NLS-1$
+    public static final String FILE_EXTENSION = "*"; //$NON-NLS-1$
     private static final double DEFAULT_RADIUS = 0.05;
 
     // icons
