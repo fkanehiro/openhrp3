@@ -41,9 +41,14 @@
 #include <vector>
 #include <sstream>
 
-#if (BOOST_VERSION > 104400)
-#define BOOST_ENABLE_ASSERT_HANDLER
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#  if (BOOST_VERSION > 104400) 
+#    define BOOST_ENABLE_ASSERT_HANDLER
+#  endif
+#else
+#  define BOOST_ENABLE_ASSERT_HANDLER
 #endif
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/time_facet.hpp>
 #include <boost/algorithm/string.hpp>
