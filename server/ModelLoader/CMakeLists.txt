@@ -23,6 +23,14 @@ if( COLLADA_DOM_FOUND )
   link_directories(${COLLADA_DOM_LIBRARY_DIRS})
   set(extralibraries  ${COLLADA_DOM_LIBRARIES} )
   add_executable(${exporter} ${sources2})
+  if(WIN32)
+    find_package(Boost ${COLLADA_DOM_Boost_VERSION} EXACT COMPONENTS signals system)
+    set(extralibraries  ${extralibraries} 
+      ${Boost_DATE_TIME_LIBRARY}
+      ${Boost_THREAD_LIBRARY}
+      ${Boost_SIGNALS_LIBRARY}
+      ${Boost_SYSTEM_LIBRARY} )
+  endif(WIN32)
 else( COLLADA_DOM_FOUND )
   set(extralibraries)
 endif( COLLADA_DOM_FOUND )
@@ -63,7 +71,8 @@ elseif(WIN32)
     debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCollision-${OPENHRP_LIBRARY_VERSION}d
     ${OMNIORB_LIBRARIES}
-    ${extralibraries})
+    ${extralibraries}
+    )
     
   if( COLLADA_DOM_FOUND )
     target_link_libraries(${exporter}
@@ -73,6 +82,7 @@ elseif(WIN32)
     debug hrpUtil-${OPENHRP_LIBRARY_VERSION}d
     debug hrpModel-${OPENHRP_LIBRARY_VERSION}d
     debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d
+    debug hrpCollision-${OPENHRP_LIBRARY_VERSION}d
     #${OMNIORB_LIBRARIES}
     ${OPENRTM_LIBRARIES}
     ${extralibraries}
