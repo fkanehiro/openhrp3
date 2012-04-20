@@ -294,7 +294,7 @@ class ColladaReader : public daeErrorHandler
         if( !ias ) {
             return false;
         }
-        COLLADALOG_DEBUG(str(boost::format("instance articulated system sid %s")%ias->getSid()));
+        //COLLADALOG_DEBUG(str(boost::format("instance articulated system sid %s")%ias->getSid()));
         domArticulated_systemRef articulated_system = daeSafeCast<domArticulated_system> (ias->getUrl().getElement().cast());
         if( !articulated_system ) {
             return false;
