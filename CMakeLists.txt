@@ -449,7 +449,17 @@ endif(ENABLE_CPACK)
 # collada stuff
 option(OPT_COLLADASUPPORT "Enable COLLADA support" OFF)
 if( OPT_COLLADASUPPORT )
-  find_package(COLLADA_DOM 2.3 COMPONENTS 1.5)
+  if(UNIX)
+    find_package(COLLADA_DOM 2.3 COMPONENTS 1.5)
+  elseif(WIN32)
+    find_path(
+        COLLADA_DOM_DIR 
+        NAMES collada_dom-config.cmake
+        PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
+        PATH_SUFFIXES collada_dom-2.3.1/lib/cmake/collada_dom 
+        DOC "The directory containing a CMake configuration file for COLLADA_DOM")
+    find_package(COLLADA_DOM 2.3 COMPONENTS 1.5)
+  endif()
   if( COLLADA_DOM_FOUND )
     add_definitions(-DOPENHRP_COLLADA_FOUND)
   endif( COLLADA_DOM_FOUND )
