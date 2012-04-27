@@ -278,6 +278,7 @@ void EasyScanner::loadFile(const string& filename)
     FILE* file = fopen(filename.c_str(), "rb");
 
     if(!file){
+        this->lineNumber = -1;
 	string message;
 	switch(errno){
 	case ENOENT:
