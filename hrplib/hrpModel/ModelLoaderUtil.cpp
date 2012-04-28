@@ -514,6 +514,19 @@ BodyInfo_var hrp::loadBodyInfo(const char* url, CORBA_ORB_var orb)
     return loadBodyInfo(url, cxt);
 }
 
+ModelLoader_var hrp::getModelLoader(CORBA_ORB_var orb)
+{
+    CosNaming::NamingContext_var cxt;
+    try {
+        CORBA::Object_var nS = orb->resolve_initial_references("NameService");
+        cxt = CosNaming::NamingContext::_narrow(nS);
+    } catch(CORBA::SystemException& ex) {
+        std::cerr << "NameService doesn't exist" << std::endl;
+        return NULL;
+    }
+    return getModelLoader(cxt);
+}
+
 ModelLoader_var hrp::getModelLoader(CosNaming::NamingContext_var cxt)
 {
     CosNaming::Name ncName;
