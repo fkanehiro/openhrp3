@@ -121,17 +121,19 @@ namespace {
         return (limitseq.length() == 0) ? defaultValue : limitseq[0];
     }
     
-
+    static Link *createNewLink() { return new Link(); }
     class ModelLoaderHelper
     {
     public:
         ModelLoaderHelper() {
             collisionDetectionModelLoading = false;
+            createLinkFunc = createNewLink;
         }
 
         void enableCollisionDetectionModelLoading(bool isEnabled) {
             collisionDetectionModelLoading = isEnabled;
         };
+        void setLinkFactory(Link *(*f)()) { createLinkFunc = f; }
 
         bool createBody(BodyPtr& body,  BodyInfo_ptr bodyInfo);
         
@@ -140,6 +142,7 @@ namespace {
         LinkInfoSequence_var linkInfoSeq;
         ShapeInfoSequence_var shapeInfoSeq;
         bool collisionDetectionModelLoading;
+        Link *(*createLinkFunc)();
 
         Link* createLink(int index, const Matrix33& parentRs);
         void createSensors(Link* link, const SensorInfoSequence& sensorInfoSeq, const Matrix33& Rs);
@@ -197,7 +200,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
     const LinkInfo& linkInfo = linkInfoSeq[index];
     int jointId = linkInfo.jointId;
         
-    Link* link = new Link();
+    Link* link = (*createLinkFunc)();
         
     CORBA::String_var name0 = linkInfo.name;
     link->name = string( name0 );
@@ -483,10 +486,11 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel,
 #endif
 
 
-bool hrp::loadBodyFromBodyInfo(BodyPtr body, OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection)
+bool hrp::loadBodyFromBodyInfo(BodyPtr body, OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection, Link *(*f)())
 {
     if(!CORBA::is_nil(bodyInfo)){
         ModelLoaderHelper helper;
+        if (f) helper.setLinkFactory(f);
         if(loadGeometryForCollisionDetection){
             helper.enableCollisionDetectionModelLoading(true);
         }

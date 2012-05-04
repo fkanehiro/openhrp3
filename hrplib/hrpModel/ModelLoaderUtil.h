@@ -26,7 +26,7 @@
 
 namespace hrp
 {
-    HRPMODEL_API bool loadBodyFromBodyInfo(BodyPtr body, OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection = false);
+    HRPMODEL_API bool loadBodyFromBodyInfo(BodyPtr body, OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection = false, Link *(*f)()=NULL);
     HRPMODEL_API OpenHRP::BodyInfo_var loadBodyInfo(const char* url, int& argc, char* argv[]);
     HRPMODEL_API OpenHRP::BodyInfo_var loadBodyInfo(const char* url, CORBA_ORB_var orb);
     HRPMODEL_API OpenHRP::BodyInfo_var loadBodyInfo(const char* url, CosNaming::NamingContext_var cxt);
