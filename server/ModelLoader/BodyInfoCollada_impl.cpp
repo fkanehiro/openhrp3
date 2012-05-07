@@ -24,6 +24,8 @@
 
 #include <sys/stat.h> // for checkInlineFileUpdateTime
 
+#define FOREACH(it, v) for(typeof((v).begin())it = (v).begin(); it != (v).end(); (it)++)
+
 using namespace std;
 using namespace ColladaUtil;
 
@@ -64,12 +66,32 @@ class ColladaReader : public daeErrorHandler
         domMotion_axis_infoRef motion_axis_info;
     };
 
+    class LinkBinding
+    {
+    public:
+	domNodeRef node;
+	domLinkRef domlink;
+	domInstance_rigid_bodyRef irigidbody;
+	domRigid_bodyRef rigidbody;
+	domNodeRef nodephysicsoffset;
+    };
+
+    class ConstraintBinding
+    {
+    public:
+	domNodeRef node;
+	domInstance_rigid_constraintRef irigidconstraint;
+	domRigid_constraintRef rigidconstraint;
+    };
+
     /// \brief inter-collada bindings for a kinematics scene
     class KinematicsSceneBindings
     {
     public:
         std::list< std::pair<domNodeRef,domInstance_kinematics_modelRef> > listKinematicsVisualBindings;
         std::list<JointAxisBinding> listAxisBindings;
+        std::list<LinkBinding> listLinkBindings;
+        std::list<ConstraintBinding> listConstraintBindings;
 
         bool AddAxisInfo(const domInstance_kinematics_model_Array& arr, domKinematics_axis_infoRef kinematics_axis_info, domMotion_axis_infoRef motion_axis_info)
         {
@@ -195,6 +217,7 @@ class ColladaReader : public daeErrorHandler
             }
             boost::shared_ptr<KinematicsSceneBindings> bindings(new KinematicsSceneBindings());
             _ExtractKinematicsVisualBindings(allscene->getInstance_visual_scene(),kiscene,*bindings);
+	    _ExtractPhysicsBindings(allscene,*bindings);
             for(size_t ias = 0; ias < kscene->getInstance_articulated_system_array().getCount(); ++ias) {
                 if( ExtractArticulatedSystem(probot, kscene->getInstance_articulated_system_array()[ias], *bindings) && !!probot ) {
                     PostProcess(probot);
@@ -426,7 +449,7 @@ class ColladaReader : public daeErrorHandler
             pkinbody->name_ = CORBA::string_dup(ikm->getID());
         }
 
-        if (!ExtractKinematicsModel(pkinbody, kmodel, pvisualnode, pmodel, bindings.listAxisBindings)) {
+        if (!ExtractKinematicsModel(pkinbody, kmodel, pvisualnode, pmodel, bindings)) {
             COLLADALOG_WARN(str(boost::format("failed to load kinbody from kinematics model %s")%kmodel->getID()));
             return false;
         }
@@ -434,7 +457,7 @@ class ColladaReader : public daeErrorHandler
     }
 
     /// \brief extract one rigid link composed of the node hierarchy
-    bool ExtractKinematicsModel(BodyInfoCollada_impl* pkinbody, domNodeRef pdomnode, domPhysics_modelRef pmodel, const std::list<JointAxisBinding>& listAxisBindings, const std::vector<std::string>& vprocessednodes)
+    bool ExtractKinematicsModel(BodyInfoCollada_impl* pkinbody, domNodeRef pdomnode, domPhysics_modelRef pmodel, const KinematicsSceneBindings& bindings, const std::vector<std::string>& vprocessednodes)
     {
         if( !!pdomnode->getID() && find(vprocessednodes.begin(),vprocessednodes.end(),pdomnode->getID()) != vprocessednodes.end() ) {
             return false;
@@ -447,11 +470,11 @@ class ColladaReader : public daeErrorHandler
         boost::shared_ptr<LinkInfo> plink(new LinkInfo());
         _veclinks.push_back(plink);
         plink->jointId = -1;
-        plink->jointType = CORBA::string_dup("fixed");
+        plink->jointType = CORBA::string_dup("free");
         plink->parentIndex = -1;
         plink->name = CORBA::string_dup(name.c_str());
         DblArray12 tlink; PoseIdentity(tlink);
-        bool bhasgeometry = ExtractGeometry(pkinbody,plink,tlink,pdomnode,listAxisBindings,vprocessednodes);
+        bool bhasgeometry = ExtractGeometry(pkinbody,plink,tlink,pdomnode,bindings.listAxisBindings,vprocessednodes);
         if( !bhasgeometry ) {
             return false;
         }
@@ -462,8 +485,9 @@ class ColladaReader : public daeErrorHandler
     }
 
     /// \brief append the kinematics model to the kinbody
-    bool ExtractKinematicsModel(BodyInfoCollada_impl* pkinbody, domKinematics_modelRef kmodel, domNodeRef pnode, domPhysics_modelRef pmodel, const std::list<JointAxisBinding>& listAxisBindings)
+    bool ExtractKinematicsModel(BodyInfoCollada_impl* pkinbody, domKinematics_modelRef kmodel, domNodeRef pnode, domPhysics_modelRef pmodel, const KinematicsSceneBindings bindings)
     {
+        const std::list<JointAxisBinding>& listAxisBindings = bindings.listAxisBindings;
         vector<domJointRef> vdomjoints;
         if (!pkinbody) {
             _ResetRobotCache();
@@ -505,7 +529,7 @@ class ColladaReader : public daeErrorHandler
         DblArray12 identity;
         PoseIdentity(identity);
         for (size_t ilink = 0; ilink < ktec->getLink_array().getCount(); ++ilink) {
-            int linkindex = ExtractLink(pkinbody, ktec->getLink_array()[ilink], ilink == 0 ? pnode : domNodeRef(), identity, vdomjoints, listAxisBindings);
+            int linkindex = ExtractLink(pkinbody, ktec->getLink_array()[ilink], ilink == 0 ? pnode : domNodeRef(), identity, vdomjoints, bindings);
         }
 
         for (size_t iform = 0; iform < ktec->getFormula_array().getCount(); ++iform) {
@@ -638,7 +662,9 @@ class ColladaReader : public daeErrorHandler
     }
 
     ///  \brief Extract Link info and add it to an existing body
-    int  ExtractLink(BodyInfoCollada_impl* pkinbody, const domLinkRef pdomlink,const domNodeRef pdomnode, const DblArray12& tParentLink, const std::vector<domJointRef>& vdomjoints, const std::list<JointAxisBinding>& listAxisBindings) {
+    int  ExtractLink(BodyInfoCollada_impl* pkinbody, const domLinkRef pdomlink,const domNodeRef pdomnode, const DblArray12& tParentLink, const std::vector<domJointRef>& vdomjoints, const KinematicsSceneBindings bindings) {
+        const std::list<JointAxisBinding>& listAxisBindings = bindings.listAxisBindings;
+
         //  Set link name with the name of the COLLADA's Link
         std::string linkname;
         if( !!pdomlink ) {
@@ -666,13 +692,45 @@ class ColladaReader : public daeErrorHandler
         plink->inertia[0] = plink->inertia[4] = plink->inertia[8] = 1;
         plink->jointValue = 0;
         plink->name = CORBA::string_dup(linkname.c_str());
-        plink->jointType = CORBA::string_dup("fixed");
+        plink->jointType = CORBA::string_dup("free");
         int ilinkindex = (int)_veclinks.size();
         _veclinks.push_back(plink);
 
         if( !!pdomnode ) {
             COLLADALOG_VERBOSE(str(boost::format("Node Id %s and Name %s")%pdomnode->getId()%pdomnode->getName()));
         }
+
+        // physics
+        domInstance_rigid_bodyRef irigidbody;
+        domRigid_bodyRef rigidbody;
+        domInstance_rigid_constraintRef irigidconstraint;
+        bool bFoundBinding = false;
+        FOREACH(itlinkbinding, bindings.listLinkBindings) {
+            if( !!pdomnode->getID() && !!itlinkbinding->node->getID() && strcmp(pdomnode->getID(),itlinkbinding->node->getID()) == 0 ) {
+                bFoundBinding = true;
+                irigidbody = itlinkbinding->irigidbody;
+                rigidbody = itlinkbinding->rigidbody;
+            }
+        }
+	FOREACH(itconstraintbinding, bindings.listConstraintBindings) {
+	    if( !!pdomnode->getID() && !!itconstraintbinding->rigidconstraint->getName() && strcmp(linkname.c_str(),itconstraintbinding->rigidconstraint->getName()) == 0 ) {
+		plink->jointType = CORBA::string_dup("fixed");
+	    }
+	}
+
+	if( !!rigidbody && !!rigidbody->getTechnique_common() ) {
+	    domRigid_body::domTechnique_commonRef rigiddata = rigidbody->getTechnique_common();
+            if( !!rigiddata->getMass() ) {
+		plink->mass = rigiddata->getMass()->getValue();
+            }
+            if( !!rigiddata->getInertia() ) {
+		plink->inertia[0] = rigiddata->getInertia()->getValue()[0];
+		plink->inertia[4] = rigiddata->getInertia()->getValue()[1];
+		plink->inertia[8] = rigiddata->getInertia()->getValue()[2];
+            }
+	    if( !!rigiddata->getMass_frame() ) {
+	    }
+	}
 
         if (!pdomlink) {
             ExtractGeometry(pkinbody,plink,tParentLink,pdomnode,listAxisBindings,std::vector<std::string>());
@@ -760,7 +818,7 @@ class ColladaReader : public daeErrorHandler
                 
                 DblArray12 tnewparent;
                 PoseMult(tnewparent,tlink,tatt);
-                int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, tnewparent, vdomjoints, listAxisBindings);
+                int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, tnewparent, vdomjoints, bindings);
                 boost::shared_ptr<LinkInfo> pjoint = _veclinks.at(ijointindex);
                 int cindex = plink->childIndices.length();
                 plink->childIndices.length(cindex+1);
@@ -2043,6 +2101,37 @@ class ColladaReader : public daeErrorHandler
             }
             bindings.listAxisBindings.push_back(JointAxisBinding(pjtarget, pjointaxis, bindjoint->getValue(), NULL, NULL));
         }
+    }
+
+    static void _ExtractPhysicsBindings(domCOLLADA::domSceneRef allscene, KinematicsSceneBindings& bindings)
+    {
+	for(size_t iphysics = 0; iphysics < allscene->getInstance_physics_scene_array().getCount(); ++iphysics) {
+	    domPhysics_sceneRef pscene = daeSafeCast<domPhysics_scene>(allscene->getInstance_physics_scene_array()[iphysics]->getUrl().getElement().cast());
+	    for(size_t imodel = 0; imodel < pscene->getInstance_physics_model_array().getCount(); ++imodel) {
+		domInstance_physics_modelRef ipmodel = pscene->getInstance_physics_model_array()[imodel];
+		domPhysics_modelRef pmodel = daeSafeCast<domPhysics_model> (ipmodel->getUrl().getElement().cast());
+                domNodeRef nodephysicsoffset = daeSafeCast<domNode>(ipmodel->getParent().getElement().cast());
+                for(size_t ibody = 0; ibody < ipmodel->getInstance_rigid_body_array().getCount(); ++ibody) {
+                    LinkBinding lb;
+                    lb.irigidbody = ipmodel->getInstance_rigid_body_array()[ibody];
+                    lb.node = daeSafeCast<domNode>(lb.irigidbody->getTarget().getElement().cast());
+                    lb.rigidbody = daeSafeCast<domRigid_body>(daeSidRef(lb.irigidbody->getBody(),pmodel).resolve().elt);
+                    lb.nodephysicsoffset = nodephysicsoffset;
+                    if( !!lb.rigidbody && !!lb.node ) {
+                        bindings.listLinkBindings.push_back(lb);
+                    }
+                }
+                for(size_t iconst = 0; iconst < ipmodel->getInstance_rigid_constraint_array().getCount(); ++iconst) {
+                    ConstraintBinding cb;
+                    cb.irigidconstraint = ipmodel->getInstance_rigid_constraint_array()[iconst];
+                    cb.rigidconstraint = daeSafeCast<domRigid_constraint>(daeSidRef(cb.irigidconstraint->getConstraint(),pmodel).resolve().elt);
+		    cb.node = daeSafeCast<domNode>(cb.rigidconstraint->getAttachment()->getRigid_body().getElement());
+                    if( !!cb.rigidconstraint ) {
+                        bindings.listConstraintBindings.push_back(cb);
+                    }
+                }
+	    }
+	}
     }
 
     domTechniqueRef _ExtractOpenRAVEProfile(const domTechnique_Array& arr)
