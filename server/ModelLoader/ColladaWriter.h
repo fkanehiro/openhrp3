@@ -926,14 +926,19 @@ public:
         _nextsensorid++; domsensor->setAttribute("id",str(boost::format("sensor%d")%_nextsensorid).c_str());
 
         string vrmltype = tolowerstring(string(sensor.type));
+	domsensor->setAttribute("sid",str(boost::format("%d")%sensor.id).c_str());
         if( vrmltype == "force" ) {
             domsensor->setAttribute("type","base_force6d");
+            domsensor->add("load_range_force")->setCharData(str(boost::format("%f %f %f")%sensor.specValues[0]%sensor.specValues[1]%sensor.specValues[2]));
+            domsensor->add("load_range_torque")->setCharData(str(boost::format("%f %f %f")%sensor.specValues[3]%sensor.specValues[4]%sensor.specValues[5]));
         }
         else if( vrmltype == "rategyro") {
-            COLLADALOG_WARN("rategyro is treated as an IMU\n");
+            domsensor->setAttribute("type","base_imu");
+            domsensor->add("max_angular_velocity")->setCharData(str(boost::format("%f %f %f")%sensor.specValues[0]%sensor.specValues[1]%sensor.specValues[2]));
         }
         else if( vrmltype == "acceleration" ) {
             domsensor->setAttribute("type","base_imu");
+            domsensor->add("max_acceleration")->setCharData(str(boost::format("%f %f %f")%sensor.specValues[0]%sensor.specValues[1]%sensor.specValues[2]));
         }
         else if( vrmltype == "vision" ) {
             domsensor->setAttribute("type","base_pinhole_camera");
@@ -973,11 +978,16 @@ public:
                 simage_dimensions << 2;
                 break;
             }
+            domsensor->add("format")->setCharData(format);
             domsensor->add("image_dimensions")->setCharData(simage_dimensions.str());
             domsensor->add("measurement_time")->setCharData(str(boost::format("%f")%(1.0/sensor.specValues[6])));
         }
         else if( vrmltype == "range" ) {
             domsensor->setAttribute("type","base_laser2d");
+            domsensor->add("angle_range")->setCharData(str(boost::format("%f")%(sensor.specValues[0])));
+            domsensor->add("angle_increment")->setCharData(str(boost::format("%f")%(sensor.specValues[1])));
+            domsensor->add("measurement_time")->setCharData(str(boost::format("%f")%(1.0/sensor.specValues[2])));
+            domsensor->add("distance_range")->setCharData(str(boost::format("%f")%(sensor.specValues[3])));
         }
         return domsensor;
     }
@@ -999,6 +1009,9 @@ public:
         domactuator->add("starting_current")->setCharData("0");
         domactuator->add("terminal_resistance")->setCharData(str(boost::format("%f")%(plink.rotorResistor)));
         domactuator->add("torque_constant")->setCharData(str(boost::format("%f")%(plink.torqueConst)));
+	domactuator->add("gear_ratio")->setCharData(str(boost::format("%f")%(plink.gearRatio)));
+	domactuator->add("encoder_pulse")->setCharData(str(boost::format("%f")%(plink.encoderPulse)));
+
         return domactuator;
     }
 
