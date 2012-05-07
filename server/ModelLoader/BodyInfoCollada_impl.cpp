@@ -253,7 +253,6 @@ class ColladaReader : public daeErrorHandler
 	    // segments
 	    int numSegment = 1;
 	    probot->links_[i].segments.length(numSegment);
-	    probot->links_[i].inlinedShapeTransformMatrices.length(numSegment);
 	    for ( int s = 0; s < numSegment; ++s ) {
 	      SegmentInfo_var segmentInfo(new SegmentInfo());
 	      Matrix44 T;
@@ -264,7 +263,6 @@ class ColladaReader : public daeErrorHandler
 		  segmentInfo->transformMatrix[p++] = T(row, col);
 		}
 	      }
-	      memcpy(probot->links_[i].inlinedShapeTransformMatrices[s],segmentInfo->transformMatrix, sizeof(DblArray12));
 	      segmentInfo->name = CORBA::string_dup(probot->links_[i].name);
 	      segmentInfo->shapeIndices.length(probot->links_[i].shapeIndices.length());
 	      for(int j = 0; j < probot->links_[i].shapeIndices.length(); j++ ) {
@@ -2938,7 +2936,8 @@ class ColladaReader : public daeErrorHandler
     std::string _filename;
 };
 
-BodyInfoCollada_impl::BodyInfoCollada_impl(PortableServer::POA_ptr poa)
+BodyInfoCollada_impl::BodyInfoCollada_impl(PortableServer::POA_ptr poa) :
+    ShapeSetInfo_impl(poa)
 {
     lastUpdate_ = 0;
 }
@@ -2981,26 +2980,6 @@ LinkInfoSequence* BodyInfoCollada_impl::links()
 AllLinkShapeIndexSequence* BodyInfoCollada_impl::linkShapeIndices()
 {
     return new AllLinkShapeIndexSequence(linkShapeIndices_);
-}
-
-ShapeInfoSequence* BodyInfoCollada_impl::shapes()
-{
-    return new ShapeInfoSequence(shapes_);
-}
-
-AppearanceInfoSequence* BodyInfoCollada_impl::appearances()
-{
-    return new AppearanceInfoSequence(appearances_);
-}
-
-MaterialInfoSequence* BodyInfoCollada_impl::materials()
-{
-    return new MaterialInfoSequence(materials_);
-}
-
-TextureInfoSequence* BodyInfoCollada_impl::textures()
-{
-    return new TextureInfoSequence(textures_);
 }
 
 void BodyInfoCollada_impl::loadModelFile(const std::string& url)
@@ -3078,30 +3057,7 @@ void BodyInfoCollada_impl::setColdetModelTriangles
 
 void BodyInfoCollada_impl::changetoBoundingBox(unsigned int* inputData){
     const double EPS = 1.0e-6;
-    appearances_.length(1);
-    AppearanceInfo& appInfo = appearances_[0];
-    appInfo.normalPerVertex = false;
-    appInfo.colorPerVertex = false;
-    appInfo.solid = false;
-    appInfo.creaseAngle = 0.0;
-    appInfo.textureIndex = -1;
-    appInfo.normals.length(0);
-    appInfo.normalIndices.length(0);
-    appInfo.colors.length(0);
-    appInfo.colorIndices.length(0);
-    appInfo.materialIndex = 0;
-    appInfo.textureIndex = -1;
-
-    materials_.length(1);
-    MaterialInfo& material = materials_[0];
-    material.ambientIntensity = 0.2;
-    material.shininess = 0.2;
-    material.transparency = 0.0;
-    for(int j = 0 ; j < 3 ; j++){
-        material.diffuseColor[j]  = 0.8;
-        material.emissiveColor[j] = 0.0;
-        material.specularColor[j] = 0.0;
-    }
+    createAppearanceInfo();
     std::vector<Vector3> boxSizeMap;
     std::vector<Vector3> boundingBoxData;
     
@@ -3134,14 +3090,7 @@ void BodyInfoCollada_impl::changetoBoundingBox(unsigned int* inputData){
                     flg=true;
                 else{
                     boxSizeMap.push_back(boundingBoxData[j*2+1]);
-                    shapes_.length(k+1);
-                    ShapeInfo& shapeInfo = shapes_[k];
-                    shapeInfo.primitiveType = SP_BOX;
-                    FloatSequence& param = shapeInfo.primitiveParameters;
-                    param.length(3);
-                    for(int i=0; i < 3; ++i)
-                        param[i] = boundingBoxData[j*2+1][i];
-                    shapeInfo.appearanceIndex = 0;
+                    setBoundingBoxData(boundingBoxData[j*2+1],k);
                 }
 
                 if(flg){

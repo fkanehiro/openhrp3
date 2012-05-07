@@ -89,5 +89,8 @@ private:
     std::string getModelFileDirPath(const std::string& url);
     void setColdetModelTriangles(ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, int& vertexIndex, int& triangleIndex);
 
+    friend class ColladaReader;
+    friend class BodyInfo_impl;
+    friend class BodyInfoCollada_impl;
 };
 #endif
