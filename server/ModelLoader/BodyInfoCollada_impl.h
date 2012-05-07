@@ -32,6 +32,7 @@ class ColladaReader;
 
 /// \brief reads in collada files and initializes a BodyInfo struct
 class BodyInfoCollada_impl :
+    public virtual ShapeSetInfo_impl,
     public virtual POA_OpenHRP::BodyInfo
 {
   public:
@@ -44,11 +45,6 @@ class BodyInfoCollada_impl :
     virtual StringSequence* info();
     virtual LinkInfoSequence* links();
     virtual AllLinkShapeIndexSequence* linkShapeIndices();
-
-    virtual ShapeInfoSequence* shapes();
-    virtual AppearanceInfoSequence* appearances();
-    virtual MaterialInfoSequence* materials();
-    virtual TextureInfoSequence* textures();
 
     void loadModelFile(const std::string& filename);
     void setLastUpdateTime(time_t time) { lastUpdate_ = time;};
@@ -76,11 +72,6 @@ private:
     StringSequence info_;
     LinkInfoSequence links_;
     AllLinkShapeIndexSequence linkShapeIndices_;
-
-    ShapeInfoSequence  shapes_;
-    AppearanceInfoSequence appearances_;
-    MaterialInfoSequence materials_;
-    TextureInfoSequence textures_;
 
     std::vector<ColdetModelPtr> linkColdetModels;
 
