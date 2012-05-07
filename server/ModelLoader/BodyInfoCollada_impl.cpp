@@ -272,6 +272,9 @@ class ColladaReader : public daeErrorHandler
 	      segmentInfo->centerOfMass[0] = probot->links_[i].centerOfMass[0];
 	      segmentInfo->centerOfMass[1] = probot->links_[i].centerOfMass[1];
 	      segmentInfo->centerOfMass[2] = probot->links_[i].centerOfMass[2];
+              for(int j = 0; j < 9 ; j++ ) {
+                  segmentInfo->inertia[j] = probot->links_[i].inertia[j];
+              }
 	      probot->links_[i].segments[s] = segmentInfo;
 	    }
 	}
@@ -529,7 +532,13 @@ class ColladaReader : public daeErrorHandler
         DblArray12 identity;
         PoseIdentity(identity);
         for (size_t ilink = 0; ilink < ktec->getLink_array().getCount(); ++ilink) {
-            int linkindex = ExtractLink(pkinbody, ktec->getLink_array()[ilink], ilink == 0 ? pnode : domNodeRef(), identity, vdomjoints, bindings);
+            domLinkRef pdomlink = ktec->getLink_array()[ilink];
+            int linkindex = ExtractLink(pkinbody, pdomlink, ilink == 0 ? pnode : domNodeRef(), identity, vdomjoints, bindings);
+            // root link
+            DblArray12 tlocallink;
+            _ExtractFullTransform(tlocallink,pdomlink);
+	    boost::shared_ptr<LinkInfo> plink = _veclinks.at(linkindex);
+            AxisAngleTranslationFromPose(plink->rotation,plink->translation,tlocallink);
         }
 
         for (size_t iform = 0; iform < ktec->getFormula_array().getCount(); ++iform) {
@@ -718,20 +727,6 @@ class ColladaReader : public daeErrorHandler
 	    }
 	}
 
-	if( !!rigidbody && !!rigidbody->getTechnique_common() ) {
-	    domRigid_body::domTechnique_commonRef rigiddata = rigidbody->getTechnique_common();
-            if( !!rigiddata->getMass() ) {
-		plink->mass = rigiddata->getMass()->getValue();
-            }
-            if( !!rigiddata->getInertia() ) {
-		plink->inertia[0] = rigiddata->getInertia()->getValue()[0];
-		plink->inertia[4] = rigiddata->getInertia()->getValue()[1];
-		plink->inertia[8] = rigiddata->getInertia()->getValue()[2];
-            }
-	    if( !!rigiddata->getMass_frame() ) {
-	    }
-	}
-
         if (!pdomlink) {
             ExtractGeometry(pkinbody,plink,tParentLink,pdomnode,listAxisBindings,std::vector<std::string>());
         }
@@ -743,10 +738,31 @@ class ColladaReader : public daeErrorHandler
             PoseMult(tlink,tParentLink,tlocallink);
           
             // Get the geometry
-            ExtractGeometry(pkinbody,plink,tParentLink,pdomnode,listAxisBindings,std::vector<std::string>());
+            ExtractGeometry(pkinbody,plink,tlink,pdomnode,listAxisBindings,std::vector<std::string>());
             
             COLLADALOG_DEBUG(str(boost::format("After ExtractGeometry Attachment link elements: %d")%pdomlink->getAttachment_full_array().getCount()));
           
+            if( !!rigidbody && !!rigidbody->getTechnique_common() ) {
+                domRigid_body::domTechnique_commonRef rigiddata = rigidbody->getTechnique_common();
+                if( !!rigiddata->getMass() ) {
+		    plink->mass = rigiddata->getMass()->getValue();
+                }
+                if( !!rigiddata->getInertia() ) {
+                    plink->inertia[0] = rigiddata->getInertia()->getValue()[0];
+                    plink->inertia[4] = rigiddata->getInertia()->getValue()[1];
+                    plink->inertia[8] = rigiddata->getInertia()->getValue()[2];
+                }
+                if( !!rigiddata->getMass_frame() ) {
+                     DblArray12 tmass, tframe, tlocalmass;
+                     PoseInverse(tframe,tlink);
+                     _ExtractFullTransform(tmass, rigiddata->getMass_frame());
+                     PoseMult(tlocalmass,tframe,tmass);
+                     plink->centerOfMass[0] = tlocalmass[3];
+                     plink->centerOfMass[1] = tlocalmass[7];
+                     plink->centerOfMass[2] = tlocalmass[11];
+                }
+	    }
+
             //  Process all atached links
             for (size_t iatt = 0; iatt < pdomlink->getAttachment_full_array().getCount(); ++iatt) {
                 domLink::domAttachment_fullRef pattfull = pdomlink->getAttachment_full_array()[iatt];
@@ -825,8 +841,7 @@ class ColladaReader : public daeErrorHandler
                 plink->childIndices[cindex] = ijointindex;
                 pjoint->parentIndex = ilinkindex;
 
-                PoseMult(tnewparent,tlocallink,tatt);
-                AxisAngleTranslationFromPose(pjoint->rotation,pjoint->translation,tnewparent);
+                AxisAngleTranslationFromPose(pjoint->rotation,pjoint->translation,tatt);
 
                 bool bActive = true; // if not active, put into the passive list
 
