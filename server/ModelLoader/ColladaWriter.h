@@ -525,6 +525,17 @@ public:
             pirb->setTarget(xsAnyURI(*pirb,str(boost::format("#%s")%_GetNodeId(bodyInfo,i))));
         }
 
+	if ( pmout->vrigidbodysids.size() >= 0) {
+	    LinkInfoSequence_var links = bodyInfo->links();
+	    if ( links->length() > 0 ) {
+		LinkInfo& linkInfo = links[0];
+		string jointType(CORBA::String_var(linkInfo.jointType));
+		if ( jointType == "fixed" ) {
+		    domInstance_rigid_constraintRef pirc = daeSafeCast<domInstance_rigid_constraint>(ipmout->ipm->add(COLLADA_ELEMENT_INSTANCE_RIGID_CONSTRAINT));
+		    pirc->setConstraint("rigid_constraint0");
+		}
+	    }
+	}
         return ipmout;
     }
 
@@ -685,6 +696,7 @@ public:
             domRigid_bodyRef rigid_body = daeSafeCast<domRigid_body>(pmout->pmodel->add(COLLADA_ELEMENT_RIGID_BODY));
             string rigidsid = str(boost::format("rigid%d")%ilink);
             pmout->vrigidbodysids.push_back(rigidsid);
+            rigid_body->setId(rigidsid.c_str());
             rigid_body->setSid(rigidsid.c_str());
             rigid_body->setName(link.segments[0].name);
             domRigid_body::domTechnique_commonRef ptec = daeSafeCast<domRigid_body::domTechnique_common>(rigid_body->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
@@ -750,6 +762,16 @@ public:
                 pinstgeom->setUrl(xsAnyURI(*pinstgeom,string("#")+_GetGeometryId(bodyInfo, ilink,igeom)));
             }
         }
+        if ( links->length() > 0 && std::string(CORBA::String_var(links[0].jointType)) == std::string("fixed") ) {
+	    domRigid_constraintRef rigid_constraint = daeSafeCast<domRigid_constraint>(pmout->pmodel->add(COLLADA_ELEMENT_RIGID_CONSTRAINT));
+	    rigid_constraint->setSid("rigid_constraint0");
+	    rigid_constraint->setName(links[0].segments[0].name);
+            domRigid_constraint::domAttachmentRef patt = daeSafeCast<domRigid_constraint::domAttachment>(rigid_constraint->add(COLLADA_TYPE_ATTACHMENT));
+	    patt->setRigid_body("#rigid0");
+            domRigid_constraint::domRef_attachmentRef prefatt = daeSafeCast<domRigid_constraint::domRef_attachment>(rigid_constraint->add(COLLADA_TYPE_REF_ATTACHMENT));
+	    prefatt->setRigid_body("#visual1");
+	}
+
         return pmout;
     }
 
