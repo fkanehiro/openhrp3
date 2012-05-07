@@ -819,7 +819,13 @@ class ColladaReader : public daeErrorHandler
                 if( _mapJointIds.find(jointid) != _mapJointIds.end() ) {
                     COLLADALOG_WARN(str(boost::format("jointid '%s' is duplicated!")%jointid));
                 }
-                pjoint->jointId = ijointindex;
+		
+		int jointsid;
+		if ( sscanf(jointid.c_str(), "kmodel1/jointsid%d", &jointsid) ) {
+		    pjoint->jointId = jointsid;
+		} else {
+		    pjoint->jointId = ijointindex - 1;
+		}
                 _mapJointIds[jointid] = pjoint;
                 COLLADALOG_DEBUG(str(boost::format("joint %s (%d)")%pjoint->name%pjoint->jointId));
 

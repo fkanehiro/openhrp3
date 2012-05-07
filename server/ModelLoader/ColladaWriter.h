@@ -589,7 +589,7 @@ public:
             }
 
             domJointRef pdomjoint = daeSafeCast<domJoint>(ktec->add(COLLADA_ELEMENT_JOINT));
-            string jointsid = str(boost::format("jointsid%d")%ilink);
+            string jointsid = str(boost::format("jointsid%d")%linkInfo.jointId);
             pdomjoint->setSid( jointsid.c_str() );
             //pdomjoint->setName(str(boost::format("joint%d")%linkInfo.jointId).c_str());
             pdomjoint->setName(linkInfo.name); // changed
@@ -1056,7 +1056,7 @@ private:
             int ichild = plink.childIndices[_ichild];
             LinkInfo& childlink = (*bodyInfo->links())[ichild];
             domLink::domAttachment_fullRef pattfull = daeSafeCast<domLink::domAttachment_full>(pdomlink->add(COLLADA_TYPE_ATTACHMENT_FULL));
-            string jointid = str(boost::format("%s/jointsid%d")%strModelUri%ichild);
+            string jointid = str(boost::format("%s/jointsid%d")%strModelUri%childlink.jointId);
             pattfull->setJoint(jointid.c_str());
 
             LINKOUTPUT childinfo = _WriteLink(bodyInfo, ichild, pattfull, pnode, strModelUri);
