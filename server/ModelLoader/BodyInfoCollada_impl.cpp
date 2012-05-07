@@ -21,6 +21,7 @@
 #include "ColladaUtil.h"
 #include "BodyInfoCollada_impl.h"
 #include "hrpUtil/UrlUtil.h"
+#include "hrpCorba/ViewSimulator.hh"
 
 #include <sys/stat.h> // for checkInlineFileUpdateTime
 
@@ -126,7 +127,7 @@ class ColladaReader : public daeErrorHandler
     };
 
  public:
-    ColladaReader() : _dom(NULL), _nGlobalSensorId(0), _nGlobalManipulatorId(0), _nGlobalIndex(0) {
+    ColladaReader() : _dom(NULL), _nGlobalSensorId(0), _nGlobalActuatorId(0), _nGlobalManipulatorId(0), _nGlobalIndex(0) {
         daeErrorHandler::setErrorHandler(this);
         _bOpeningZAE = false;
     }
@@ -188,6 +189,7 @@ class ColladaReader : public daeErrorHandler
     {
         _mapJointUnits.clear();
         _mapJointIds.clear();
+        _mapLinkNames.clear();
         _veclinks.clear();
     }
 
@@ -402,6 +404,7 @@ class ColladaReader : public daeErrorHandler
 
         ExtractRobotManipulators(probot, articulated_system);
         ExtractRobotAttachedSensors(probot, articulated_system);
+        ExtractRobotAttachedActuators(probot, articulated_system);
         return true;
     }
 
@@ -700,6 +703,7 @@ class ColladaReader : public daeErrorHandler
         plink->centerOfMass[0] = plink->centerOfMass[1] = plink->centerOfMass[2] = 0;
         plink->inertia[0] = plink->inertia[4] = plink->inertia[8] = 1;
         plink->jointValue = 0;
+	_mapLinkNames[linkname] = plink;
         plink->name = CORBA::string_dup(linkname.c_str());
         plink->jointType = CORBA::string_dup("free");
         int ilinkindex = (int)_veclinks.size();
@@ -1118,6 +1122,7 @@ class ColladaReader : public daeErrorHandler
         pkinbody->shapes_.length(shapeIndex+1);
         ShapeInfo& shape = pkinbody->shapes_[shapeIndex];
         shape.primitiveType = SP_MESH;
+	//shape.url = "";
         int lsindex = plink->shapeIndices.length();
         plink->shapeIndices.length(lsindex+1);
         plink->shapeIndices[lsindex].shapeIndex = shapeIndex;
@@ -1698,21 +1703,38 @@ class ColladaReader : public daeErrorHandler
                     daeElement* pframe_origin = tec->getChild("frame_origin");
                     if( !!pframe_origin ) {
                         domLinkRef pdomlink = daeSafeCast<domLink>(daeSidRef(pframe_origin->getAttribute("link"), as).resolve().elt);
-//                        if( !!pdomlink ) {
-//                            pattachedsensor->pattachedlink = GetLink(_ExtractLinkName(pdomlink));
-//                        }
-//                        if( !pattachedsensor->pattachedlink.lock() ) {
-//                            COLLADALOG_WARN(str(boost::format("failed to find manipulator %s frame origin %s")%name%pframe_origin->getAttribute("link")));
-//                            continue;
-//                        }
-//                        pattachedsensor->trelative = _ExtractFullTransformFromChildren(pframe_origin);
-                    }
-//                    if( !_ExtractSensor(pattachedsensor->psensor,tec->getChild("instance_sensor")) ) {
-//                        COLLADALOG_WARN(str(boost::format("cannot find instance_sensor for attached sensor %s:%s")%probot->name%name));
-//                    }
-//                    else {
-//                        pattachedsensor->pdata = pattachedsensor->GetSensor()->CreateSensorData();
-//                    }
+			SensorInfo_var psensor(new SensorInfo());
+			psensor->name = CORBA::string_dup( name.c_str() );
+			boost::shared_ptr<LinkInfo> plink;
+			if( _mapLinkNames.find(_ExtractLinkName(pdomlink)) != _mapLinkNames.end() ) {
+			    plink = _mapLinkNames[_ExtractLinkName(pdomlink)];
+			} else {
+			    COLLADALOG_WARN(str(boost::format("unknown joint %s")%_ExtractLinkName(pdomlink)));
+			}
+
+			if( plink && _ExtractSensor(psensor,tec->getChild("instance_sensor")) ) {
+
+			    DblArray12 ttemp;
+			    _ExtractFullTransformFromChildren(ttemp, pframe_origin);
+			    //std::cerr << psensor->type << std::endl;
+			    if ( string(psensor->type) == "Vision" ) {
+				DblArray4 quat;
+				DblArray12 rotation, ttemp2;
+				QuatFromAxisAngle(quat, Vector4(1,0,0,M_PI));
+				PoseFromQuat(rotation,quat);
+				PoseMult(ttemp2,ttemp,rotation);
+				AxisAngleTranslationFromPose(psensor->rotation,psensor->translation,ttemp2);
+			    } else {
+				AxisAngleTranslationFromPose(psensor->rotation,psensor->translation,ttemp);
+			    }
+
+			    int numSensors = plink->sensors.length();
+			    plink->sensors.length(numSensors + 1);
+			    plink->sensors[numSensors] = psensor;
+			} else {
+			    COLLADALOG_WARN(str(boost::format("cannot find instance_sensor for attached sensor %s:%s")%probot->name_%name));
+			}
+		    }
                 }
                 else {
                     COLLADALOG_WARN(str(boost::format("cannot create robot attached sensor %s")%name));
@@ -1721,8 +1743,32 @@ class ColladaReader : public daeErrorHandler
         }
     }
 
+    /// \brief Extract Sensors attached to a Robot
+    void ExtractRobotAttachedActuators(BodyInfoCollada_impl* probot, const domArticulated_systemRef as)
+    {
+        for (size_t ie = 0; ie < as->getExtra_array().getCount(); ie++) {
+            domExtraRef pextra = as->getExtra_array()[ie];
+            if( strcmp(pextra->getType(), "attach_actuator") == 0 ) {
+                string name = pextra->getAttribute("name");
+                if( name.size() == 0 ) {
+                    name = str(boost::format("actuator%d")%_nGlobalActuatorId++);
+                }
+                domTechniqueRef tec = _ExtractOpenRAVEProfile(pextra->getTechnique_array());
+                if( !!tec ) {
+		    if ( GetLink(name) && _ExtractActuator(GetLink(name), tec->getChild("instance_actuator"))  ) {
+		    } else {
+                        COLLADALOG_WARN(str(boost::format("cannot find instance_actuator for attached sensor %s:%s")%probot->name_%name));
+		    }
+                }
+                else {
+                    COLLADALOG_WARN(str(boost::format("cannot create robot attached actuators %s")%name));
+                }
+	    }
+	}
+    }
+
     /// \brief Extract an instance of a sensor
-    bool _ExtractSensor(SensorInfo* psensor, daeElementRef instance_sensor)
+    bool _ExtractSensor(SensorInfo &psensor, daeElementRef instance_sensor)
     {
         if( !instance_sensor ) {
             return false;
@@ -1743,9 +1789,208 @@ class ColladaReader : public daeErrorHandler
             COLLADALOG_WARN("collada <sensor> needs type attribute");
             return false;
         }
+	psensor.id = boost::lexical_cast<int>(domsensor->getAttribute("sid"));
         std::string sensortype = domsensor->getAttribute("type");
+	if ( sensortype == "base_imu" ) {// AccelerationSensor  // GyroSeesor
+            psensor.specValues.length( CORBA::ULong(3) );
+	    daeElement *max_angular_velocity = domsensor->getChild("max_angular_velocity");
+	    daeElement *max_acceleration = domsensor->getChild("max_acceleration");
+	    if ( !! max_angular_velocity ) {
+		istringstream ins(max_angular_velocity->getCharData());
+		float f0,f1,f2,f3,f4,f5;
+		ins >> psensor.specValues[0] >> psensor.specValues[1] >> psensor.specValues[2];
+		psensor.type = CORBA::string_dup( "RateGyro" );
+	    } else if ( !! max_acceleration ) {
+		istringstream ins(max_acceleration->getCharData());
+		ins >> psensor.specValues[0] >> psensor.specValues[1] >> psensor.specValues[2];
+		psensor.type = CORBA::string_dup( "Acceleration" );
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find max_angular_velocity nor max_acceleration%s")%sensortype));
+	    }
+	    return true;
+	}
+	if ( sensortype == "base_pinhole_camera" ) { // VisionSensor
+            psensor.type = CORBA::string_dup( "Vision" );
+	    psensor.specValues.length( CORBA::ULong(7) );
+	    //psensor.specValues[0] = frontClipDistance
+	    //psensor.specValues[1] = backClipDistance
+	    psensor.specValues[1] = 10;
+	    //psensor.specValues[2] = fieldOfView
+	    //psensor.specValues[3] = OpenHRP::Camera::COLOR; // type
+	    //psensor.specValues[4] = width
+	    //psensor.specValues[5] = height
+	    //psensor.specValues[6] = frameRate
+	    daeElement *measurement_time = domsensor->getChild("measurement_time");
+	    if ( !! measurement_time ) {
+		psensor.specValues[6] = 1.0/(boost::lexical_cast<double>(measurement_time->getCharData()));
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find measurement_time %s")%sensortype));
+	    }
+	    daeElement *focal_length = domsensor->getChild("focal_length");
+	    if ( !! focal_length ) {
+		psensor.specValues[0] = boost::lexical_cast<double>(focal_length->getCharData());
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find focal_length %s")%sensortype));
+		psensor.specValues[0] = 0.1;
+	    }
+	    daeElement *image_format = domsensor->getChild("format");
+	    std::string string_format = "uint8";
+	    if ( !! image_format ) {
+		string_format = image_format->getCharData();
+	    }
+	    daeElement *intrinsic = domsensor->getChild("intrinsic");
+	    if ( !! intrinsic ) {
+		istringstream ins(intrinsic->getCharData());
+		float f0,f1,f2,f3,f4,f5;
+		ins >> f0 >> f1 >> f2 >> f3 >> f4 >> f5;
+		psensor.specValues[2] = atan( f2 / f0) * 2.0;
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find intrinsic %s")%sensortype));
+		psensor.specValues[2] = 0.785398;
+	    }
+	    daeElement *image_dimensions = domsensor->getChild("image_dimensions");
+	    if ( !! image_dimensions ) {
+		istringstream ins(image_dimensions->getCharData());
+		int ichannel;
+		ins >> psensor.specValues[4] >> psensor.specValues[5] >> ichannel;
+		switch (ichannel) {
+		    case 1:
+			if ( string_format == "uint8") {
+			    psensor.specValues[3] = OpenHRP::Camera::MONO;
+			} else if ( string_format == "float32") {
+			    psensor.specValues[3] = OpenHRP::Camera::DEPTH;
+			} else {
+			    COLLADALOG_WARN(str(boost::format("unknown image format %s %d")%string_format%ichannel));
+			}
+			break;
+		    case 2:
+			if ( string_format == "float32") {
+			    psensor.specValues[3] = OpenHRP::Camera::MONO_DEPTH;
+			} else {
+			    COLLADALOG_WARN(str(boost::format("unknown image format %s %d")%string_format%ichannel));
+			}
+			break;
+		    case 3:
+			if ( string_format == "uint8") {
+			    psensor.specValues[3] = OpenHRP::Camera::COLOR;
+			} else {
+			    COLLADALOG_WARN(str(boost::format("unknown image format %s %d")%string_format%ichannel));
+			}
+			break;
+		    case 4:
+			if ( string_format == "float32") {
+			    psensor.specValues[3] = OpenHRP::Camera::COLOR_DEPTH;
+			} else {
+			    COLLADALOG_WARN(str(boost::format("unknown image format %s %d")%string_format%ichannel));
+			}
+			break;
+		default:
+		    COLLADALOG_WARN(str(boost::format("unknown image format %s %d")%string_format%ichannel));
+		}
+
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find image_dimensions %s")%sensortype));
+		psensor.specValues[4] = 320;
+		psensor.specValues[5] = 240;
+	    }
+	    return true;
+	}
+	if ( sensortype == "base_force6d" ) { // ForceSensor
+            psensor.type = CORBA::string_dup( "Force" );
+	    psensor.specValues.length( CORBA::ULong(6) );
+	    daeElement *max_force = domsensor->getChild("load_range_force");
+	    if ( !! max_force ) {
+		istringstream ins(max_force->getCharData());
+		ins >> psensor.specValues[0] >> psensor.specValues[1] >> psensor.specValues[2];
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find load_range_force %s")%sensortype));
+	    }
+	    daeElement *max_torque = domsensor->getChild("load_range_torque");
+	    if ( !! max_torque ) {
+		istringstream ins(max_torque->getCharData());
+		ins >> psensor.specValues[3] >> psensor.specValues[4] >> psensor.specValues[5];
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't findload_range_torque %s")%sensortype));
+	    }
+	    return true;
+	}
+	if ( sensortype == "base_laser2d" ) { // RangeSensor
+            psensor.type = CORBA::string_dup( "Range" );
+	    psensor.specValues.length( CORBA::ULong(4) );
+	    daeElement *scan_angle = domsensor->getChild("angle_range");
+	    if ( !! scan_angle ) {
+		psensor.specValues[0] = boost::lexical_cast<double>(scan_angle->getCharData());
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find angle_range %s")%sensortype));
+	    }
+	    daeElement *scan_step = domsensor->getChild("angle_increment");
+	    if ( !! scan_step ) {
+		psensor.specValues[1] = boost::lexical_cast<double>(scan_step->getCharData());
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find angle_incremnet %s")%sensortype));
+	    }
+	    daeElement *scan_rate = domsensor->getChild("measurement_time");
+	    if ( !! scan_rate ) {
+		psensor.specValues[2] = 1.0/boost::lexical_cast<double>(scan_rate->getCharData());
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find measurement_time %s")%sensortype));
+	    }
+	    daeElement *max_distance = domsensor->getChild("distance_range");
+	    if ( !! max_distance ) {
+		psensor.specValues[3] = boost::lexical_cast<double>(max_distance->getCharData());
+	    } else {
+                COLLADALOG_WARN(str(boost::format("couldn't find distance_range %s")%sensortype));
+	    }
+	    return true;
+	}
         COLLADALOG_WARN(str(boost::format("need to create sensor type: %s")%sensortype));
-        return false;
+	return false;
+    }
+
+    /// \brief Extract an instance of a sensor
+    bool _ExtractActuator(boost::shared_ptr<LinkInfo> plink, daeElementRef instance_actuator)
+    {
+        if( !instance_actuator ) {
+            return false;
+        }
+        if( !instance_actuator->hasAttribute("url") ) {
+            COLLADALOG_WARN("instance_actuator has no url");
+            return false;
+        }
+
+        std::string instance_id = instance_actuator->getAttribute("id");
+        std::string instance_url = instance_actuator->getAttribute("url");
+        daeElementRef domactuator = _getElementFromUrl(daeURI(*instance_actuator,instance_url));
+        if( !domactuator ) {
+            COLLADALOG_WARN(str(boost::format("failed to find actuator id %s url=%s")%instance_id%instance_url));
+            return false;
+        }
+        if( !domactuator->hasAttribute("type") ) {
+            COLLADALOG_WARN("collada <actuator> needs type attribute");
+            return false;
+        }
+        std::string actuatortype = domactuator->getAttribute("type");
+        daeElement *rotor_inertia = domactuator->getChild("rotor_inertia");
+	if ( !! rotor_inertia ) {
+	    plink->rotorInertia =  boost::lexical_cast<double>(rotor_inertia->getCharData());
+	}
+        daeElement *rotor_resistor = domactuator->getChild("rotor_resistor");
+	if ( !! rotor_resistor ) {
+	    plink->rotorResistor = boost::lexical_cast<double>(rotor_resistor->getCharData());
+	}
+        daeElement *gear_ratio = domactuator->getChild("gear_ratio");
+	if ( !! gear_ratio ) {
+	    plink->gearRatio = boost::lexical_cast<double>(gear_ratio->getCharData());
+	}
+        daeElement *torque_const = domactuator->getChild("torque_constant");
+	if ( !! torque_const ) {
+	    plink->torqueConst = boost::lexical_cast<double>(torque_const->getCharData());
+	}
+        daeElement *encoder_pulse = domactuator->getChild("encoder_pulse");
+	if ( !! encoder_pulse ) {
+	    plink->encoderPulse = boost::lexical_cast<double>(encoder_pulse->getCharData());
+	}
+        return true;
     }
 
     inline daeElementRef _getElementFromUrl(const daeURI &uri)
@@ -2687,8 +2932,9 @@ class ColladaReader : public daeErrorHandler
     dReal _fGlobalScale;
     std::map<boost::shared_ptr<LinkInfo> , std::vector<dReal> > _mapJointUnits;
     std::map<std::string,boost::shared_ptr<LinkInfo> > _mapJointIds;
+    std::map<std::string,boost::shared_ptr<LinkInfo> > _mapLinkNames;
     std::vector<boost::shared_ptr<LinkInfo> > _veclinks;
-    int _nGlobalSensorId, _nGlobalManipulatorId, _nGlobalIndex;
+    int _nGlobalSensorId, _nGlobalActuatorId, _nGlobalManipulatorId, _nGlobalIndex;
     std::string _filename;
 };
 
