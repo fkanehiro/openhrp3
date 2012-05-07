@@ -765,7 +765,13 @@ public:
         string matid = parentid+string("_mat");
 
         AppearanceInfo& appearanceInfo = (*bodyInfo->appearances())[shapeInfo.appearanceIndex];
-        domEffectRef pdomeff = WriteEffect((*bodyInfo->materials())[appearanceInfo.materialIndex]);
+        domEffectRef pdomeff;
+        if ( appearanceInfo.materialIndex < 0 ) {
+            MaterialInfo matInfo;
+            pdomeff = WriteEffect(matInfo);
+        } else {
+            pdomeff = WriteEffect((*bodyInfo->materials())[appearanceInfo.materialIndex]);
+        }
         pdomeff->setId(effid.c_str());
 
         domMaterialRef pdommat = daeSafeCast<domMaterial>(_materialsLib->add(COLLADA_ELEMENT_MATERIAL));
