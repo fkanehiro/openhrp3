@@ -231,6 +231,18 @@ class ColladaReader : public daeErrorHandler
             }
         }
 
+	// add left-over visual objects
+	if (!!allscene->getInstance_visual_scene()) {
+            domVisual_sceneRef viscene = daeSafeCast<domVisual_scene>(allscene->getInstance_visual_scene()->getUrl().getElement().cast());
+            for (size_t node = 0; node < viscene->getNode_array().getCount(); node++) {
+		boost::shared_ptr<KinematicsSceneBindings> bindings(new KinematicsSceneBindings());
+		if ( ExtractKinematicsModel(probot, viscene->getNode_array()[node],*bindings,std::vector<std::string>()) ) {
+		    PostProcess(probot);
+		    return true;
+		}
+	    }
+        }
+
         for(std::list< pair<domInstance_kinematics_modelRef, boost::shared_ptr<KinematicsSceneBindings> > >::iterator it = listPossibleBodies.begin(); it != listPossibleBodies.end(); ++it) {
             if( ExtractKinematicsModel(probot, it->first, *it->second) ) {
                 PostProcess(probot);
@@ -461,7 +473,7 @@ class ColladaReader : public daeErrorHandler
     }
 
     /// \brief extract one rigid link composed of the node hierarchy
-    bool ExtractKinematicsModel(BodyInfoCollada_impl* pkinbody, domNodeRef pdomnode, domPhysics_modelRef pmodel, const KinematicsSceneBindings& bindings, const std::vector<std::string>& vprocessednodes)
+    bool ExtractKinematicsModel(BodyInfoCollada_impl* pkinbody, domNodeRef pdomnode, const KinematicsSceneBindings& bindings, const std::vector<std::string>& vprocessednodes)
     {
         if( !!pdomnode->getID() && find(vprocessednodes.begin(),vprocessednodes.end(),pdomnode->getID()) != vprocessednodes.end() ) {
             return false;
