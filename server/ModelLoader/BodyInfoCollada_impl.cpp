@@ -231,6 +231,14 @@ class ColladaReader : public daeErrorHandler
             }
         }
 
+        for(std::list< pair<domInstance_kinematics_modelRef, boost::shared_ptr<KinematicsSceneBindings> > >::iterator it = listPossibleBodies.begin(); it != listPossibleBodies.end(); ++it) {
+            if( ExtractKinematicsModel(probot, it->first, *it->second) ) {
+                PostProcess(probot);
+                return true;
+            }
+        }
+
+
 	// add left-over visual objects
 	if (!!allscene->getInstance_visual_scene()) {
             domVisual_sceneRef viscene = daeSafeCast<domVisual_scene>(allscene->getInstance_visual_scene()->getUrl().getElement().cast());
@@ -241,13 +249,6 @@ class ColladaReader : public daeErrorHandler
 		    return true;
 		}
 	    }
-        }
-
-        for(std::list< pair<domInstance_kinematics_modelRef, boost::shared_ptr<KinematicsSceneBindings> > >::iterator it = listPossibleBodies.begin(); it != listPossibleBodies.end(); ++it) {
-            if( ExtractKinematicsModel(probot, it->first, *it->second) ) {
-                PostProcess(probot);
-                return true;
-            }
         }
 
         return false;
@@ -490,6 +491,8 @@ class ColladaReader : public daeErrorHandler
         plink->parentIndex = -1;
         plink->name = CORBA::string_dup(name.c_str());
         DblArray12 tlink; PoseIdentity(tlink);
+        
+	//  Gets the geometry
         bool bhasgeometry = ExtractGeometry(pkinbody,plink,tlink,pdomnode,bindings.listAxisBindings,vprocessednodes);
         if( !bhasgeometry ) {
             return false;
@@ -1202,6 +1205,35 @@ class ColladaReader : public daeErrorHandler
                 break;
             }
         }
+
+        if( !!triRef->getMaterial() ) {
+            map<string,int>::const_iterator itmat = mapmaterials.find(triRef->getMaterial());
+            if( itmat != mapmaterials.end() ) {
+		AppearanceInfo& ainfo = pkinbody->appearances_[itmat->second];
+		ainfo.normals.length(itriangle);
+		for(size_t i=0; i < itriangle/3; ++i) {
+		    Vector3 a(shape.vertices[shape.triangles[i*3+0]*3+0]-
+			      shape.vertices[shape.triangles[i*3+2]*3+0], 
+			      shape.vertices[shape.triangles[i*3+0]*3+1]-
+			      shape.vertices[shape.triangles[i*3+2]*3+1],
+			      shape.vertices[shape.triangles[i*3+0]*3+2]-
+			      shape.vertices[shape.triangles[i*3+2]*3+2]);
+		    Vector3 b(shape.vertices[shape.triangles[i*3+1]*3+0]-
+			      shape.vertices[shape.triangles[i*3+2]*3+0],
+			      shape.vertices[shape.triangles[i*3+1]*3+1]-
+			      shape.vertices[shape.triangles[i*3+2]*3+1],
+			      shape.vertices[shape.triangles[i*3+1]*3+2]-
+			      shape.vertices[shape.triangles[i*3+2]*3+2]);
+		    a.normalize();
+		    b.normalize();
+		    Vector3 c = a.cross(b);
+		    ainfo.normals[i*3+0] = c[0];
+		    ainfo.normals[i*3+1] = c[1];
+		    ainfo.normals[i*3+2] = c[2];
+		}
+            }
+        }
+
         if( itriangle != 3*triRef->getCount() ) {
             COLLADALOG_WARN("triangles declares wrong count!");
         }
@@ -1668,6 +1700,19 @@ class ColladaReader : public daeErrorHandler
                     }
                     if( !!pphong->getDiffuse() && !!pphong->getDiffuse()->getColor() ) {
                         domFx_color c = pphong->getDiffuse()->getColor()->getValue();
+                        mat.diffuseColor[0] = c[0];
+                        mat.diffuseColor[1] = c[1];
+                        mat.diffuseColor[2] = c[2];
+                    }
+                }
+                domProfile_common::domTechnique::domLambertRef plambert = daeSafeCast<domProfile_common::domTechnique::domLambert>(peffect->getDescendant(daeElement::matchType(domProfile_common::domTechnique::domLambert::ID())));
+                if( !!plambert ) {
+                    if( !!plambert->getAmbient() && !!plambert->getAmbient()->getColor() ) {
+                        domFx_color c = plambert->getAmbient()->getColor()->getValue();
+                        mat.ambientIntensity = (fabs(c[0])+fabs(c[1])+fabs(c[2]))/3;
+                    }
+                    if( !!plambert->getDiffuse() && !!plambert->getDiffuse()->getColor() ) {
+                        domFx_color c = plambert->getDiffuse()->getColor()->getValue();
                         mat.diffuseColor[0] = c[0];
                         mat.diffuseColor[1] = c[1];
                         mat.diffuseColor[2] = c[2];
