@@ -1149,8 +1149,9 @@ class ColladaReader : public daeErrorHandler
             }
         }
 
-        size_t triangleIndexStride = 0, vertexoffset = -1;
-        domInput_local_offsetRef indexOffsetRef;
+        size_t triangleIndexStride = 0;
+	int vertexoffset = -1, normaloffset = -1;
+        domInput_local_offsetRef indexOffsetRef, normalOffsetRef;
 
         for (unsigned int w=0;w<triRef->getInput_array().getCount();w++) {
             size_t offset = triRef->getInput_array()[w]->getOffset();
@@ -1158,6 +1159,10 @@ class ColladaReader : public daeErrorHandler
             if (!strcmp(str,"VERTEX")) {
                 indexOffsetRef = triRef->getInput_array()[w];
                 vertexoffset = offset;
+            }
+            if (!strcmp(str,"NORMAL")) {
+                normalOffsetRef = triRef->getInput_array()[w];
+                normaloffset = offset;
             }
             if (offset> triangleIndexStride) {
                 triangleIndexStride = offset;
@@ -1168,7 +1173,8 @@ class ColladaReader : public daeErrorHandler
         const domList_of_uints& indexArray =triRef->getP()->getValue();
         shape.triangles.length(triRef->getCount()*3);
         shape.vertices.length(triRef->getCount()*9);
-        int itriangle = 0, ivertex = 0;
+
+        int itriangle = 0;
         for (size_t i=0;i<vertsRef->getInput_array().getCount();++i) {
             domInput_localRef localRef = vertsRef->getInput_array()[i];
             daeString str = localRef->getSemantic();
@@ -1183,6 +1189,7 @@ class ColladaReader : public daeErrorHandler
                     const domList_of_floats& listFloats = flArray->getValue();
                     int k=vertexoffset;
                     int vertexStride = 3;//instead of hardcoded stride, should use the 'accessor'
+		    int ivertex = 0;
                     for(size_t itri = 0; itri < triRef->getCount(); ++itri) {
                         if(k+2*triangleIndexStride < indexArray.getCount() ) {
                             for (int j=0;j<3;j++) {
@@ -1202,6 +1209,33 @@ class ColladaReader : public daeErrorHandler
                 else {
                     COLLADALOG_WARN("float array not defined!");
                 }
+
+		if ( shape.appearanceIndex >= 0 && normaloffset >= 0 ) {
+		    const domSourceRef normalNode = daeSafeCast<domSource>(normalOffsetRef->getSource().getElement());
+		    const domFloat_arrayRef normalArray = normalNode->getFloat_array();
+		    const domList_of_floats& normalFloats = normalArray->getValue();
+		    AppearanceInfo& ainfo = pkinbody->appearances_[shape.appearanceIndex];
+		    ainfo.normalPerVertex = 1;
+		    ainfo.normals.length(triRef->getCount()*9);
+		    int k = normaloffset;
+                    int vertexStride = 3;//instead of hardcoded stride, should use the 'accessor'
+		    int ivertex = 0;
+                    for(size_t itri = 0; itri < triRef->getCount(); ++itri) {
+                        if(k+2*triangleIndexStride < indexArray.getCount() ) {
+                            for (int j=0;j<3;j++) {
+                                int index0 = indexArray.get(k)*vertexStride;
+                                domFloat fl0 = normalFloats.get(index0);
+                                domFloat fl1 = normalFloats.get(index0+1);
+                                domFloat fl2 = normalFloats.get(index0+2);
+                                k+=triangleIndexStride;
+				ainfo.normals[ivertex++] = fl0;
+				ainfo.normals[ivertex++] = fl1;
+				ainfo.normals[ivertex++] = fl2;
+                            }
+                        }
+                    }
+		}
+
                 break;
             }
         }
@@ -1210,26 +1244,30 @@ class ColladaReader : public daeErrorHandler
             map<string,int>::const_iterator itmat = mapmaterials.find(triRef->getMaterial());
             if( itmat != mapmaterials.end() ) {
 		AppearanceInfo& ainfo = pkinbody->appearances_[itmat->second];
-		ainfo.normals.length(itriangle);
-		for(size_t i=0; i < itriangle/3; ++i) {
-		    Vector3 a(shape.vertices[shape.triangles[i*3+0]*3+0]-
-			      shape.vertices[shape.triangles[i*3+2]*3+0], 
-			      shape.vertices[shape.triangles[i*3+0]*3+1]-
-			      shape.vertices[shape.triangles[i*3+2]*3+1],
-			      shape.vertices[shape.triangles[i*3+0]*3+2]-
-			      shape.vertices[shape.triangles[i*3+2]*3+2]);
-		    Vector3 b(shape.vertices[shape.triangles[i*3+1]*3+0]-
-			      shape.vertices[shape.triangles[i*3+2]*3+0],
-			      shape.vertices[shape.triangles[i*3+1]*3+1]-
-			      shape.vertices[shape.triangles[i*3+2]*3+1],
-			      shape.vertices[shape.triangles[i*3+1]*3+2]-
-			      shape.vertices[shape.triangles[i*3+2]*3+2]);
-		    a.normalize();
-		    b.normalize();
-		    Vector3 c = a.cross(b);
-		    ainfo.normals[i*3+0] = c[0];
-		    ainfo.normals[i*3+1] = c[1];
-		    ainfo.normals[i*3+2] = c[2];
+		if ( ainfo.normals.length() == 0 ) {
+		    ainfo.normals.length(itriangle);
+		    ainfo.normalPerVertex = 0;
+		    for(size_t i=0; i < itriangle/2; ++i) {
+			Vector3 a(shape.vertices[shape.triangles[i*3+0]*3+0]-
+				  shape.vertices[shape.triangles[i*3+2]*3+0], 
+				  shape.vertices[shape.triangles[i*3+0]*3+1]-
+				  shape.vertices[shape.triangles[i*3+2]*3+1],
+				  shape.vertices[shape.triangles[i*3+0]*3+2]-
+				  shape.vertices[shape.triangles[i*3+2]*3+2]);
+			Vector3 b(shape.vertices[shape.triangles[i*3+0]*3+0]-
+				  shape.vertices[shape.triangles[i*3+1]*3+0],
+				  shape.vertices[shape.triangles[i*3+0]*3+1]-
+				  shape.vertices[shape.triangles[i*3+1]*3+1],
+				  shape.vertices[shape.triangles[i*3+0]*3+2]-
+				  shape.vertices[shape.triangles[i*3+1]*3+2]);
+			a.normalize();
+			b.normalize();
+			Vector3 c = a.cross(b);
+			c.normalize();
+			ainfo.normals[i*3+0] = c[0];
+			ainfo.normals[i*3+1] = c[1];
+			ainfo.normals[i*3+2] = c[2];
+		    }
 		}
             }
         }
