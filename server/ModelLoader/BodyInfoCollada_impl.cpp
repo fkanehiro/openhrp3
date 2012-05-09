@@ -1247,7 +1247,7 @@ class ColladaReader : public daeErrorHandler
 		if ( ainfo.normals.length() == 0 ) {
 		    ainfo.normals.length(itriangle);
 		    ainfo.normalPerVertex = 0;
-		    for(size_t i=0; i < itriangle/2; ++i) {
+		    for(size_t i=0; i < itriangle/3; ++i) {
 			Vector3 a(shape.vertices[shape.triangles[i*3+0]*3+0]-
 				  shape.vertices[shape.triangles[i*3+2]*3+0], 
 				  shape.vertices[shape.triangles[i*3+0]*3+1]-
