@@ -8,8 +8,11 @@
  */
 /**
    @author Shin'ichiro Nakaoka
+   @author Rafael Cisneros
 */
 
+#include <iostream>
+#include <math.h>
 #include "ColdetModelPair.h"
 #include "ColdetModelSharedDataSet.h"
 #include "CollisionPairInserter.h"
@@ -64,14 +67,31 @@ std::vector<collision_data>& ColdetModelPair::detectCollisionsSub(bool detectAll
     collisionPairInserter->clear();
 
     bool detected;
+	bool detectPlaneSphereCollisions(bool detectAllContacts);
     
     if ((models[0]->getPrimitiveType() == ColdetModel::SP_PLANE &&
          models[1]->getPrimitiveType() == ColdetModel::SP_CYLINDER)
         || (models[1]->getPrimitiveType() == ColdetModel::SP_PLANE &&
             models[0]->getPrimitiveType() == ColdetModel::SP_CYLINDER)){
         detected = detectPlaneCylinderCollisions(detectAllContacts);
-    }else{
+    }
+	
+	else if (models[0]->getPrimitiveType() == ColdetModel::SP_SPHERE
+			 && models[1]->getPrimitiveType() == ColdetModel::SP_SPHERE) {
+		detected = detectSphereSphereCollisions(detectAllContacts);
+	}
+	
+	else if (models[0]->getPrimitiveType() == ColdetModel::SP_SPHERE
+			 || models[1]->getPrimitiveType() == ColdetModel::SP_SPHERE) {
+		detected = detectSphereMeshCollisions(detectAllContacts);
+	}
+
+	else {
         detected = detectMeshMeshCollisions(detectAllContacts);
+    }
+
+    if(!detected){
+        collisionPairInserter->clear();
     }
 
     return collisionPairInserter->collisions();
@@ -101,21 +121,279 @@ bool ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
             collider.SetFirstContact(true);
         }
         
-        result = collider.Collide(colCache, models[1]->transform, models[0]->transform);
+        bool isOk = collider.Collide(colCache, models[1]->transform, models[0]->transform);
+		
+		if (!isOk)
+			std::cerr << "AABBTreeCollider::Collide() failed" << std::endl;
+		
+		result = collider.GetContactStatus();
         
         boxTestsCount = collider.GetNbBVBVTests();
         triTestsCount = collider.GetNbPrimPrimTests();
     }
 
-    if(!result)
-        collisionPairInserter->clear();
-
-    return !(collisionPairInserter->collisions().empty());
+    return result;
 }
 
+bool ColdetModelPair::detectSphereSphereCollisions(bool detectAllContacts) {
+	
+	bool result = false;
+	int sign = 1;
+	
+	if (models[0]->isValid() && models[1]->isValid()) {
+		
+		ColdetModelPtr sphereA, sphereB;
+		sphereA = models[0];
+		sphereB = models[1];
+		
+		IceMaths::Matrix4x4 sATrans = (*(sphereA->pTransform)) * (*(sphereA->transform));
+		IceMaths::Matrix4x4 sBTrans = (*(sphereB->pTransform)) * (*(sphereB->transform));
 
-bool ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts)
-{
+		float radiusA, radiusB;		
+		sphereA->getPrimitiveParam(0, radiusA);
+		sphereB->getPrimitiveParam(0, radiusB);
+
+		IceMaths::Point centerA = sATrans.GetTrans();
+		IceMaths::Point centerB = sBTrans.GetTrans();
+		
+		IceMaths::Point D = centerB - centerA;
+		
+		if (D.Magnitude() <= (radiusA + radiusB)) {
+
+			result = true;
+
+			float x = (pow(D.Magnitude(), 2) + pow(radiusA, 2) - pow(radiusB, 2)) / (2 * D.Magnitude());
+			float R = sqrt(pow(radiusA, 2) - pow(x, 2));
+			
+			IceMaths::Point n = D / D.Magnitude();
+			
+			IceMaths::Point q = centerA + n * x;
+
+			std::vector<collision_data>& cdata = collisionPairInserter->collisions();
+			cdata.clear();			
+			
+			collision_data col;
+			col.num_of_i_points = 1;
+			col.i_point_new[0] = 1;
+			col.i_point_new[1] = 0;
+			col.i_point_new[2] = 0;
+			col.i_point_new[3] = 0;
+			col.n_vector[0] = sign * n.x;
+			col.n_vector[1] = sign * n.y;
+			col.n_vector[2] = sign * n.z;
+			col.i_points[0][0] = q.x;
+			col.i_points[0][1] = q.y;
+			col.i_points[0][2] = q.z;
+			cdata.push_back(col);
+		}
+	}
+
+	return result;
+}
+
+bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
+	
+	bool result = false;
+	int sign = 1;
+
+	if (models[0]->isValid() && models[1]->isValid()) {
+		
+		ColdetModelPtr sphere, mesh;
+
+		if (models[0]->getPrimitiveType() == ColdetModel::SP_SPHERE) {
+			sphere = models[0];
+			mesh = models[1];
+			sign = -1;
+		}
+		else if (models[1]->getPrimitiveType() == ColdetModel::SP_SPHERE) {
+			sphere = models[1];
+			mesh = models[0];
+		}
+
+		if (!sphere || !mesh)
+			return false;
+
+		IceMaths::Matrix4x4 sTrans = (*(sphere->pTransform)) * (*(sphere->transform));
+		
+		float radius;
+		sphere->getPrimitiveParam(0, radius);
+
+		IceMaths::Sphere sphere_def(IceMaths::Point(0, 0, 0), radius);
+		
+		Opcode::SphereCache colCache;
+
+		Opcode::SphereCollider collider;
+		
+		if (!detectAllContacts) {
+			collider.SetFirstContact(true);
+		}
+		
+		bool isOk = collider.Collide(colCache, sphere_def, mesh->dataSet->model, &sTrans, mesh->transform);
+
+		if (isOk) {
+
+			if (collider.GetContactStatus()) {
+				
+				int TouchedPrimCount = collider.GetNbTouchedPrimitives();
+				const udword* TouchedPrim = collider.GetTouchedPrimitives();
+				
+				if (TouchedPrimCount) {
+				
+					result = true;
+					
+					std::vector< std::vector<IceMaths::Point> > triangle(TouchedPrimCount);		// Triangle of each face in world's coordinates
+					std::vector<IceMaths::Plane> face(TouchedPrimCount);				// Plane of each face in world's coordinates 
+					
+					std::vector<IceMaths::Point> q(TouchedPrimCount);
+					std::vector<float> A(TouchedPrimCount);
+					
+					IceMaths::Matrix4x4 sTransInv;
+					IceMaths::InvertPRMatrix(sTransInv, sTrans);
+					
+					std::vector<collision_data>& cdata = collisionPairInserter->collisions();
+					cdata.clear();
+
+					for (int i = 0; i < TouchedPrimCount; i++) {
+
+						int vertex_index[3];						
+						std::vector<IceMaths::Point> vertex(3);
+
+						float x, y, z;
+						float R;
+						
+						mesh->getTriangle(TouchedPrim[i], vertex_index[0], vertex_index[1], vertex_index[2]);
+
+						for (int j = 0; j < 3; j++) {
+							mesh->getVertex(vertex_index[j], x, y, z);
+							TransformPoint4x3(vertex[j], IceMaths::Point(x, y, z), *(mesh->transform));
+						}
+					
+						triangle[i] = std::vector<IceMaths::Point> (vertex);
+						
+						face[i] = IceMaths::Plane(vertex[0], vertex[1], vertex[2]);
+						face[i].Normalize();
+						
+						IceMaths::Plane face_s;		// Plane of each face in sphere's coordinates
+						IceMaths::TransformPlane(face_s, face[i], sTransInv);
+						face_s.Normalize();
+						
+						if (abs(face_s.d) > radius)
+							cout << "No intersection";
+						else {
+
+							R = sqrt(pow(radius, 2) - pow(face_s.d, 2));
+
+							IceMaths::Point U, V;
+
+							TransformPoint3x3(U, vertex[1] - vertex[0], sTransInv);
+							U.Normalize();
+							V = face_s.n ^ U;
+							V.Normalize();
+							
+							IceMaths::Matrix4x4 scTrans;							
+							scTrans.SetRow(0, U);
+							scTrans.SetRow(1, V);
+							scTrans.SetRow(2, face_s.n);
+							scTrans.SetRow(3, face_s.n * -face_s.d);
+							
+							IceMaths::Matrix4x4 scTransInv;
+							IceMaths::InvertPRMatrix(scTransInv, scTrans);
+
+							IceMaths::Point vertex_c[3];
+							std::vector<float> vx, vy;
+							
+							for (int j = 0; j < 3; j++) {
+								TransformPoint4x3(vertex_c[j], vertex[j], sTransInv * scTransInv);
+								vx.push_back(vertex_c[j].x);
+								vy.push_back(vertex_c[j].y);
+							}
+							
+							float cx, cy;
+							calculateCentroidIntersection(cx, cy, A[i], R, vx, vy);
+							
+							TransformPoint4x3(q[i], IceMaths::Point (cx, cy, 0), scTrans * sTrans);
+						}
+					}
+
+					std::vector<bool> considered_checklist(TouchedPrimCount, false);
+					std::vector<int> sameplane;
+					
+					std::vector<IceMaths::Point> new_q;
+					std::vector<IceMaths::Point> new_n;
+					
+					// The following procedure is needed to merge components from the same plane (but different triangles)
+
+					for (int i = 0; i < TouchedPrimCount; i++) {
+
+						if (!considered_checklist[i]) {
+
+							for (int j = i + 1; j < TouchedPrimCount; j++) {
+								IceMaths::Point normdiff(face[i].n - face[j].n);
+								if (normdiff.Magnitude() < LOCAL_EPSILON && (face[i].d - face[j].d) < LOCAL_EPSILON) {
+									if (!sameplane.size()) sameplane.push_back(i);	// In order to consider it just once
+									sameplane.push_back(j);
+								}
+							}
+							
+							if (!sameplane.size()) {
+								new_q.push_back(q[i]);
+								new_n.push_back(face[i].n);
+								considered_checklist[i] = true;
+							}
+							else {
+
+								float sum_xA, sum_yA, sum_zA, sum_A;
+								sum_xA = sum_yA = sum_zA = sum_A = 0;
+		
+								for (int k = 0; k < sameplane.size(); k++) {
+									sum_xA += q[sameplane[k]].x * A[sameplane[k]];
+									sum_yA += q[sameplane[k]].y * A[sameplane[k]];
+									sum_zA += q[sameplane[k]].z * A[sameplane[k]];
+									sum_A  += A[sameplane[k]];
+									considered_checklist[sameplane[k]] = true;
+								}
+							
+								IceMaths::Point q_temp;
+								q_temp.x = sum_xA / sum_A;
+								q_temp.y = sum_yA / sum_A;
+								q_temp.z = sum_zA / sum_A;
+								new_q.push_back(q_temp);
+								new_n.push_back(face[i].n);
+							
+								sameplane.clear();
+							}
+						}
+					}
+					
+					for (int i = 0; i < new_q.size(); i++) {
+						collision_data col;
+						col.num_of_i_points = 1;
+						col.i_point_new[0] = 1;
+						col.i_point_new[1] = 0;
+						col.i_point_new[2] = 0;
+						col.i_point_new[3] = 0;
+						col.n_vector[0] = sign * new_n[i].x;
+						col.n_vector[1] = sign * new_n[i].y;
+						col.n_vector[2] = sign * new_n[i].z;
+						col.i_points[0][0] = new_q[i].x;
+						col.i_points[0][1] = new_q[i].y;
+						col.i_points[0][2] = new_q[i].z;
+						cdata.push_back(col);
+					}
+				}
+			}
+		}
+		
+		else
+			std::cerr << "SphereCollider::Collide() failed" << std::endl;
+
+	}
+	
+	return result;
+}
+
+bool ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts) {
+
     ColdetModelPtr plane, cylinder;
     bool reversed=false;
     if (models[0]->getPrimitiveType() == ColdetModel::SP_PLANE){
@@ -307,4 +585,328 @@ void ColdetModelPair::setCollisionPairInserter(CollisionPairInserterBase *insert
     // inverse order because of historical background
     // this should be fixed.(note that the direction of normal is inversed when the order inversed 
     collisionPairInserter->set(models[1]->dataSet, models[0]->dataSet);
+}
+
+int ColdetModelPair::calculateCentroidIntersection(float &cx, float &cy, float &A, float radius, std::vector<float> vx, std::vector<float> vy) {
+	
+	int i;		// Vertex and Side
+	int j[5];	// Point ID
+	int k;		// Section
+	
+	int isOk = ColdetModelPair::makeCCW(vx, vy);
+	
+	if (isOk) {
+	
+		std::vector<pointStruct> point;
+		pointStruct p;
+		int numInter;
+		std::vector<float> x_int(2), y_int(2);
+		
+		for (i = 0; i < vx.size(); i++) {
+			
+			// Recording of the vertex
+			
+			p.x = vx[i];
+			p.y = vy[i];
+			p.angle = atan2(vy[i], vx[i]);
+			if (p.angle < 0) p.angle += TWOPI;
+			p.type = vertex;
+			
+			p.code = isInsideCircle(radius, p.x, p.y);
+			point.push_back(p);
+			
+			// Recording of the intersections
+
+			numInter = calculateIntersection(x_int, y_int, radius, vx[i], vy[i], vx[(i + 1) % vx.size()], vy[(i + 1) % vx.size()]);
+			
+			if (numInter)
+				for (k = 0; k < numInter; k++) {
+					p.x = x_int[k];
+					p.y = y_int[k];
+					p.angle = atan2(y_int[k], x_int[k]);					
+					if (p.angle < 0) p.angle += TWOPI;
+					p.type = inter;
+					p.code = i + 1;
+					point.push_back(p);
+				}
+			
+			numInter = 0;
+		}
+		
+		j[0] = 0;
+		
+		int start = -1;
+		bool finished = false;
+		int next1, next2, next3, next4;
+		
+		std::vector<figStruct> figure;
+		figStruct f;
+
+		while (!finished) {
+
+			for (int cont = 1; cont <= 4; cont++)
+				j[cont] = (j[0] + cont) % point.size();
+
+			if (point[j[0]].code) {
+				
+				if (start == -1) start = j[0];
+				
+				if (point[j[1]].code) {
+					
+					f.p1 = j[0];
+					f.p2 = j[1];
+					f.type = tri;
+					figure.push_back(f);
+					j[0] = f.p2;
+				}
+				
+				else if (point[j[2]].code || point[j[3]].code || point[j[4]].code) {
+					
+					f.type = sector;
+					f.p1 = j[0];
+					
+					if	(point[j[2]].code) f.p2 = j[2];
+					else if (point[j[3]].code) f.p2 = j[3];
+					else if (point[j[4]].code) f.p2 = j[4];
+										
+					figure.push_back(f);
+					j[0] = f.p2;
+				}
+				
+				else {
+					cout << "Error: No intersection detected" << endl;
+					return 0;
+				}
+			}
+			
+			else {
+				j[0] = j[1];
+			}
+			
+			if (((j[0] == 0) && (start == -1)) || (j[0] == start))
+				finished = true;
+		}
+		
+		if (figure.size()) {
+		
+			std::vector<float> x(3, 0);
+			std::vector<float> y(3, 0);
+			float sumx, sumy;
+			float th;
+		
+			for (k = 0; k < figure.size(); k++) {
+				if (figure[k].type == tri) {
+					x[1] = point[figure[k].p1].x;
+					y[1] = point[figure[k].p1].y;
+					x[2] = point[figure[k].p2].x;
+					y[2] = point[figure[k].p2].y;
+					figure[k].area = calculatePolygonArea(x, y);
+					sumx = sumy = 0;
+					for (int cont = 0; cont < 3; cont++) {
+						sumx += x[cont];
+						sumy += y[cont];
+					}
+					figure[k].cx = sumx / 3;
+					figure[k].cy = sumy / 3;
+				}
+				else if (figure[k].type == sector) {
+					th = point[figure[k].p2].angle - point[figure[k].p1].angle;
+					if (th < 0) th += TWOPI;
+					figure[k].area = pow(radius, 2) * th / 2;
+					calculateSectorCentroid(figure[k].cx, figure[k].cy, radius, point[figure[k].p1].angle, point[figure[k].p2].angle);
+				}
+			}
+
+			float sum_xA, sum_yA, sum_A;
+			sum_xA = sum_yA = sum_A = 0;
+		
+			for (k = 0; k < figure.size(); k++) {
+				sum_xA += figure[k].cx * figure[k].area;
+				sum_yA += figure[k].cy * figure[k].area;
+				sum_A  += figure[k].area;
+			}
+			
+			if ((figure.size() == 1) && (sum_A == 0)) {
+				cx = point[figure[0].p1].x;
+				cy = point[figure[0].p1].y;
+			}
+			else {
+				cx = sum_xA / sum_A;
+				cy = sum_yA / sum_A;
+			}
+
+			A = sum_A;
+			
+			return 1;
+		}
+
+		else {
+			if (isInsideTriangle(0, 0, vx, vy)) {
+				cx = cy = 0;
+				A = TWOPI * pow(radius, 2);
+				return 1;
+			}
+			else
+				return 0;
+		}
+	}
+
+	else
+		return 0;
+}
+
+int ColdetModelPair::makeCCW(std::vector<float> &vx, std::vector<float> &vy) {
+	
+	float vx_tmp, vy_tmp;
+
+	if ((vx.size() == 3) && (vy.size() == 3)) {
+		if (ColdetModelPair::calculatePolygonArea(vx, vy) < 0)	{
+			vx_tmp = vx[0];
+			vy_tmp = vy[0];
+			vx[0] = vx[1];
+			vy[0] = vy[1];
+		}
+		return 1;
+	}
+	else {
+		cout << "The number of vertices does not correspond to a triangle" << endl;
+		return 0;
+	}
+}
+
+float ColdetModelPair::calculatePolygonArea(const std::vector<float> &vx, const std::vector<float> &vy) {
+	
+	float area = 0;
+	
+	if (vx.size() == vy.size()) {
+		for (int i = 0; i < vx.size(); i++) {
+			area += vx[i] * vy[(i + 1) % vx.size()] - vy[i] * vx[(i + 1) % vx.size()];
+		}
+		return area / 2;
+	}
+	else {
+		cout << "The number of coordinates does not match" << endl;
+		return 0;
+	}
+}
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#define trunc(x) ((int)(x))
+#endif 
+void ColdetModelPair::calculateSectorCentroid(float &cx, float &cy, float radius, float th1, float th2) {
+	
+	float th, psi, phi, g;
+
+	th = th2 - th1;
+	if (th2 < th1) th += TWOPI;	
+	
+	g = (abs(th) > LOCAL_EPSILON) ? 4.0 / 3.0 * radius / th * sin(th / 2) : 2.0 / 3.0 * radius;
+	
+	psi = th1 + th2;
+	if (th2 < th1) psi += TWOPI;
+	
+	phi = psi / 2 - trunc(psi / 2 / TWOPI) * TWOPI;
+
+	cx = g * cos(phi);
+	cy = g * sin(phi);
+}
+
+bool ColdetModelPair::isInsideTriangle(float x, float y, const std::vector<float> &vx, const std::vector<float> &vy) {
+	
+	IceMaths::Point v1, v2;
+	double m1, m2;
+	double anglesum = 0;
+
+	for (int i = 0; i < 3; i++) {
+	
+		v1 = IceMaths::Point(vx[i], vy[i], 0) - IceMaths::Point(x, y, 0);
+		v2 = IceMaths::Point(vx[(i + 1) % vx.size()], vy[(i + 1) % vy.size()], 0) - IceMaths::Point(x, y, 0);
+	
+		m1 = v1.Magnitude();
+		m2 = v2.Magnitude();
+
+		if (m1 * m2 <= LOCAL_EPSILON) {
+			anglesum = TWOPI;
+			break;
+		}
+		else
+			anglesum += acos((v1 | v2) / (m1 * m2));
+	}
+
+	return (abs(TWOPI - anglesum) < LOCAL_EPSILON);
+}
+
+int ColdetModelPair::calculateIntersection(std::vector<float> &x, std::vector<float> &y, float radius, float x1, float y1, float x2, float y2) {
+	
+	int numint;
+
+	float x_test, y_test;
+	x.clear();
+	y.clear();
+
+	float xmin = min(x1, x2);
+	float xmax = max(x1, x2);
+	float ymin = min(y1, y2);
+	float ymax = max(y1, y2);
+
+	float v_norm, proy_norm;
+	float x_temp, y_temp;
+
+	std::vector<float> t;
+
+	if ((sqrt(pow(x1, 2) + pow(y1, 2)) != radius) && (sqrt(pow(x2, 2) + pow(y2, 2)) != radius)) {
+
+		float m, b;		
+		float D;
+
+		if (abs(x2 - x1) > LOCAL_EPSILON) {
+			
+			m = (y2 - y1) / (x2 - x1);
+			b = y1 - m * x1;
+
+			D = 4 * pow(m, 2) * pow(b, 2) - 4 * (1 + pow(m, 2)) * (pow(b, 2) - pow(radius, 2));
+		}
+		else
+			D = pow(radius, 2) - pow(x1, 2);
+
+		numint = D < 0 ? 0 : (D > 0 ? 2 : 1);
+
+		if (numint > 0) {
+
+			for (int i = 0; i < numint; i++) {
+
+				if (abs(x2 - x1) > LOCAL_EPSILON) {
+					x_test = (-2 * m * b + pow(-1.0, i) * sqrt(D)) / (2 * (1 + pow(m, 2)));
+					y_test = m * x_test + b;
+				}
+				else {
+					x_test = x1;
+					y_test = pow(-1.0, i) * sqrt(D);
+				}
+				
+				cout.flush();
+				
+				if ((xmin <= x_test) && (x_test <= xmax) && (ymin <= y_test) && (y_test <= ymax)) {
+					x.push_back(x_test);
+					y.push_back(y_test);
+					v_norm = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+					proy_norm = sqrt(pow(x_test - x1, 2) + pow(y_test - y1, 2));
+					t.push_back(proy_norm / v_norm);
+				}				
+			}
+
+			if (t.size() > 1) {
+				if (t[0] > t[1]) {
+					x_temp = x[0];
+					y_temp = y[0];
+					x[0] = x[1];
+					y[0] = y[1];
+					x[1] = x_temp;
+					y[1] = y_temp;
+				}
+			}
+		}
+	}
+
+	return t.size();
 }

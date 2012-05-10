@@ -688,7 +688,8 @@ public class GrxSimulationItem extends GrxBaseItem {
     					item.getDbl("slidingFriction", 0.5), //$NON-NLS-1$
     					item.getDblAry("springConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}),  //$NON-NLS-1$
     					item.getDblAry("damperConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}), //$NON-NLS-1$
-    					item.getDbl("cullingThresh", 0.01));  //$NON-NLS-1$
+    					item.getDbl("cullingThresh", 0.01),  //$NON-NLS-1$
+                        item.getDbl("Restitution", 0.0));
     		}
     		currentDynamics_.initSimulation();
 	            
@@ -907,7 +908,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 
     		if (j > WAIT_COUNT_ || (new Date().getTime() - before.getTime() > WAIT_COUNT_*1000)) {
     			GrxDebugUtil.println(" failed to setup controller:"+controllerName); //$NON-NLS-1$
-    			//タイトル画像をなしにするにはどうすればいいのか？とりあえずnullにしてみた
+    			//タイトル画像をなしにするにはどぁE��れ�EぁE��のか？とりあえずnullにしてみ�
     			MessageDialog dialog = new MessageDialog(GrxUIPerspectiveFactory.getCurrentShell(),MessageBundle.get("GrxOpenHRPView.dialog.title.setupController"),null,MessageBundle.get("GrxOpenHRPView.dialog.message.setupController0")+controllerName+").\n" +MessageBundle.get("GrxOpenHRPView.dialog.message.setupController1"),MessageDialog.QUESTION,new String[]{MessageBundle.get("GrxOpenHRPView.dialog.button.yes"),MessageBundle.get("GrxOpenHRPView.dialog.button.no"),MessageBundle.get("GrxOpenHRPView.dialog.button.cancel")}, 2); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
     			int ans = dialog.open();
     			if (ans == 0) {

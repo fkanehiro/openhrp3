@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
     K.length(0);
     C.length(0);
     dynamicsSimulator->registerCollisionCheckPair(floor->name(),"", body->name() ,"",
-		                                            statFric,slipFric,K,C,culling_thresh);
+		                                            statFric,slipFric,K,C,culling_thresh,0.0);
     dynamicsSimulator->initSimulation();
         
     // ==================  Controller setup ==========================

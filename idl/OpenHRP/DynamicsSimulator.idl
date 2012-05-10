@@ -8,7 +8,10 @@
  * @if jp
  * DynamicsSimulator サーバ関連インターフェース
  * @endif
- */
+ * @author Shin'ichiro Nakaoka
+ * @author Rafael Cisneros
+*/
+
 module OpenHRP {
 
 	/**
@@ -177,6 +180,7 @@ module OpenHRP {
 		 * @param	K ばね係数
 		 * @param	C ダンパ係数
          * @param   culling_thresh  この距離以下の点は同一接触点とみなす
+         * @param   Restitution  
 		 * @else
 		 * Add Collision Pairs
 		 * @param	char1	  Name of character for first link
@@ -188,6 +192,7 @@ module OpenHRP {
 		 * @param	K Parameters for Spring
 		 * @param	C Parameters for Damper
 		 * @param   culling_thresh
+         * @param   Restitution  
 		 * @note K and C should be of zero length for no Spring-Damper stuff.
 		 * @endif
 		 */
@@ -201,7 +206,8 @@ module OpenHRP {
 		 in double slipFriction,
 		 in DblSequence6 K,
 		 in DblSequence6 C,
-         in double culling_thresh
+         in double culling_thresh,
+		 in double Restitution
 		 );
   
 

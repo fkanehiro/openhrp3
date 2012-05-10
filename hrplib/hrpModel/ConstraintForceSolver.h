@@ -8,6 +8,7 @@
  */
 /** \file
     \author Shin'ichiro Nakaoka
+    \author Rafael Cisneros
 */
 
 #ifndef OPENHRP_CONSTRAINT_FORCE_SOLVER_H_INCLUDED
@@ -34,7 +35,7 @@ namespace hrp
         ~ConstraintForceSolver();
 		
         bool addCollisionCheckLinkPair
-		(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double epsilon);
+		(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double restitution, double epsilon);
 		void clearCollisionCheckLinkPairs();
 
 		void setGaussSeidelParameters(int maxNumIteration, int numInitialIteration, double maxRelError);

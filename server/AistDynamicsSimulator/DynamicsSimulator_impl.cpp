@@ -7,6 +7,11 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  * General Robotix Inc. 
  */
+/**
+ * @file DynamicsSimulator_impl.cpp
+ * @author Shin'ichiro Nakaoka
+ * @author Rafael Cisneros
+*/
 
 
 #include "DynamicsSimulator_impl.h"
@@ -245,7 +250,8 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
     const CORBA::Double slipFriction,
     const DblSequence6 & K,
     const DblSequence6 & C,
-    const double culling_thresh
+    const double culling_thresh,
+    const double restitution
     )
 {
     const double epsilon = 0.0;
@@ -254,7 +260,7 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
         cout << "DynamicsSimulator_impl::registerCollisionCheckPair("
              << charName1 << ", " << linkName1 << ", "
              << charName2 << ", " << linkName2 << ", "
-             << staticFriction << ", " << slipFriction;
+             << staticFriction << ", " << slipFriction << ", " << restitution;
         if((K.length() == 6) && (C.length() == 6)){
             cout << ",\n"
                  << "{ "
@@ -314,7 +320,7 @@ void DynamicsSimulator_impl::registerCollisionCheckPair
 
                 if(link1 && link2 && link1 != link2){
                     bool ok = world.constraintForceSolver.addCollisionCheckLinkPair
-                        (bodyIndex1, link1, bodyIndex2, link2, staticFriction, slipFriction, culling_thresh, epsilon);
+                        (bodyIndex1, link1, bodyIndex2, link2, staticFriction, slipFriction, culling_thresh, restitution, epsilon);
 
                     if(ok && !USE_INTERNAL_COLLISION_DETECTOR){
                         LinkPair_var linkPair = new LinkPair();
@@ -713,7 +719,7 @@ void DynamicsSimulator_impl::setCharacterLinkData
         link->w(0) = wdata[3];
         link->w(1) = wdata[4];
         link->w(2) = wdata[5];
-        // ABS_TRANSFORMが先に実行されていること　//
+        // ABS_TRANSFORMがE�に実行されてぁE��こと　//
         link->vo = link->v - link->w.cross(link->p);
     }
     break;

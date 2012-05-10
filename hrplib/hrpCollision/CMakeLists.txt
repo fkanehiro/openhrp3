@@ -25,6 +25,7 @@ set(sources
   Opcode/Ice/IceHPoint.cpp
   Opcode/Ice/IceRandom.cpp
   Opcode/Ice/IcePoint.cpp
+  Opcode/Ice/IcePlane.cpp
   Opcode/OPC_AABBTree.cpp
   Opcode/OPC_BaseModel.cpp
   Opcode/OPC_Collider.cpp

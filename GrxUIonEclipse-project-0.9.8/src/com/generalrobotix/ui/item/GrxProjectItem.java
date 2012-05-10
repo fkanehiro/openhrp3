@@ -578,7 +578,7 @@ public class GrxProjectItem extends GrxBaseItem {
 		ProgressMonitorDialog progressMonitorDlg = new ProgressMonitorDialog(GrxUIPerspectiveFactory.getCurrentShell());
 		try {
 			progressMonitorDlg.run(false,false, runnableProgress);
-			//ダイアログの影が残ってしまう対策　　//
+			//ダイアログの影が残ってしまぁE��策　　//
 			Grx3DView view3d =  (Grx3DView)manager_.getView( Grx3DView.class, true );
 			if(view3d!=null){
 				view3d.repaint();
@@ -617,8 +617,8 @@ public class GrxProjectItem extends GrxBaseItem {
 
 		if (minfo.itemList != null) {	
 			
-		//  古いプロジェクトファイルに対応　　//
-			//  ModeがSimulationでSimulationItemがない場合は自動的に作成し、WorldStateItemのプロパティをSimulationItemに設定　　//
+		//  古ぁE�Eロジェクトファイルに対応　　//
+			//  ModeがSimulationでSimulationItemがなぁE��合�E自動的に作�Eし、WorldStateItemのプロパティをSimulationItemに設定　　//
 			if(mode.equals("Simulation") && !containSimulationItem(minfo.itemList)){
 				Element simElement = doc_.createElement(ITEM_TAG);
 				simElement.setAttribute("class", PreferenceConstants.SIMULATIONITEM);
@@ -921,6 +921,7 @@ public class GrxProjectItem extends GrxBaseItem {
 				newItem.setProperty("slidingFriction", prop.getStr(header + "slidingFriction", "0.5")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				newItem.setProperty("staticFriction",  prop.getStr(header + "staticFriction", "0.5")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				newItem.setProperty("cullingThresh",  prop.getStr(header + "cullingThresh", "0.01")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				newItem.setProperty("Restitution",  prop.getStr(header + "Restitution", "0.0")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				newItem.setProperty("sprintDamperModel", prop.getStr(header + "springDamplerModel", "false")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				newItem.setProperty("springConstant", prop.getStr(header + "springConstant", "0.0 0.0 0.0 0.0 0.0 0.0")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				newItem.setProperty("damperConstant", prop.getStr(header + "damperConstant", "0.0 0.0 0.0 0.0 0.0 0.0")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
