@@ -983,7 +983,7 @@ public:
             domsensor->add("measurement_time")->setCharData(str(boost::format("%f")%(1.0/sensor.specValues[6])));
         }
         else if( vrmltype == "range" ) {
-            domsensor->setAttribute("type","base_laser2d");
+            domsensor->setAttribute("type","base_laser1d");
             domsensor->add("angle_range")->setCharData(str(boost::format("%f")%(sensor.specValues[0])));
             domsensor->add("angle_increment")->setCharData(str(boost::format("%f")%(sensor.specValues[1])));
             domsensor->add("measurement_time")->setCharData(str(boost::format("%f")%(1.0/sensor.specValues[2])));

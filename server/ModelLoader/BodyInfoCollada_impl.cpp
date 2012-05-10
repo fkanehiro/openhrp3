@@ -2014,7 +2014,7 @@ class ColladaReader : public daeErrorHandler
 	    }
 	    return true;
 	}
-	if ( sensortype == "base_laser2d" ) { // RangeSensor
+	if ( sensortype == "base_laser1d" ) { // RangeSensor
             psensor.type = CORBA::string_dup( "Range" );
 	    psensor.specValues.length( CORBA::ULong(4) );
 	    daeElement *scan_angle = domsensor->getChild("angle_range");
