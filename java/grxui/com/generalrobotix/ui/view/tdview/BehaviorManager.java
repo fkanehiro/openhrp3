@@ -238,7 +238,7 @@ public class BehaviorManager implements WorldReplaceListener {
 						pair.getDbl("slidingFriction", 0.5),
 						pair.getDblAry("springConstant", new double[]{0, 0, 0, 0, 0, 0}), 
 						pair.getDblAry("damperConstant", new double[]{0, 0, 0, 0, 0, 0}),
-						0
+						0,0
 				); 
 			}
 
