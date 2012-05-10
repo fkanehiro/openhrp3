@@ -2,7 +2,7 @@ IF (UNIX)
     FIND_PATH(
     EIGEN_INCLUDE_DIR
     Eigen/Core
-    PATHS /opt/local/include/eigen3 /usr/include/eigen3 /usr/local/include/eigen3 /usr/include/eigen
+    PATHS /opt/local/include/eigen3 /usr/include/eigen3 /usr/local/include/eigen3 /usr/include/eigen /usr/include/eigen2
     DOC "the top directory of Eigen/Core in Eigen")
 ELSE()
     IF (WIN32)
