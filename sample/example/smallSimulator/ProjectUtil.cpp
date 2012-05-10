@@ -65,7 +65,7 @@ void initWorld(Project& prj, BodyFactory &factory,
                     if(link1 && link2 && link1 != link2){
                         world.constraintForceSolver.addCollisionCheckLinkPair
                             (bodyIndex1, link1, bodyIndex2, link2, 
-                             cpi.staticFriction, cpi.slidingFriction, 0.01, 0.0);
+                             cpi.staticFriction, cpi.slidingFriction, 0.01, 0.0, 0.0);
                     }
                 }
             }
