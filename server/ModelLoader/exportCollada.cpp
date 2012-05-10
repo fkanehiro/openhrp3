@@ -129,6 +129,7 @@ int main(int argc, char* argv[])
 	  ColladaWriter cW(listmanipulators, sstm.str().c_str());
 	  cW.Write(&bI);
 	  cW.Save(outFileName);
+	  std::cout << argv[0] << " " << inFileName << " was successfully exported to " << outFileName << std::endl;
 	} 
       else
 	{
