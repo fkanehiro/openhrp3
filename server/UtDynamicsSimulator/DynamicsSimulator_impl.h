@@ -93,7 +93,8 @@ using namespace OpenHRP;
 				CORBA::Double slipFriction,
 				const DblSequence6& K,
 				const DblSequence6& C,
-                const double culling_thresh);
+                const double culling_thresh,
+				const double restitution);
 
 		virtual void registerIntersectionCheckPair(
                 const char* char1, 

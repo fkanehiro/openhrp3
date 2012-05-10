@@ -12,6 +12,7 @@
  *
  *
  * @author  Kernel Co.,Ltd.
+ * @author Rafael Cisneros
  * @version 1.0 (2001/3/1)
  */
 package com.generalrobotix.ui.view.simulation;
@@ -67,10 +68,12 @@ public class CollisionPairPanel extends Composite {
     private String defaultStaticFriction_;
     private String defaultSlidingFriction_;
     private String defaultCullingThresh_;
+	private String defaultRestitution_;
     
     private static final String ATTR_NAME_STATIC_FRICTION = "staticFriction"; //$NON-NLS-1$
     private static final String ATTR_NAME_SLIDING_FRICTION = "slidingFriction"; //$NON-NLS-1$
     private static final String ATTR_NAME_CULLING_THRESH = "cullingThresh"; //$NON-NLS-1$
+	private static final String ATTR_NAME_RESTITUTION = "Restitution";
     
     private final String[] clmName_ ={
         MessageBundle.get("panel.collision.table.obj1"), //$NON-NLS-1$
@@ -79,13 +82,14 @@ public class CollisionPairPanel extends Composite {
         MessageBundle.get("panel.collision.table.link2"), //$NON-NLS-1$
         MessageBundle.get("panel.collision.staticFriction"), //$NON-NLS-1$
         MessageBundle.get("panel.collision.slidingFriction"),
-        MessageBundle.get("panel.collision.cullingThresh")
+        MessageBundle.get("panel.collision.cullingThresh"),
+		MessageBundle.get("panel.collision.restitution")
     };
 
     private final String[] attrName_ ={
         "objectName1","jointName1", //$NON-NLS-1$ //$NON-NLS-2$
         "objectName2","jointName2", //$NON-NLS-1$ //$NON-NLS-2$
-        ATTR_NAME_STATIC_FRICTION, ATTR_NAME_SLIDING_FRICTION, ATTR_NAME_CULLING_THRESH
+        ATTR_NAME_STATIC_FRICTION, ATTR_NAME_SLIDING_FRICTION, ATTR_NAME_CULLING_THRESH, ATTR_NAME_RESTITUTION
     };
     
     private static final int BUTTONS_HEIGHT = 26;
@@ -120,6 +124,7 @@ public class CollisionPairPanel extends Composite {
         defaultStaticFriction_ = "0.5";//props.getProperty(ATTR_NAME_STATIC_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE); //$NON-NLS-1$
         defaultSlidingFriction_ = "0.5";//props.getProperty(ATTR_NAME_SLIDING_FRICTION,AttributeProperties.PROPERTY_DEFAULT_VALUE); //$NON-NLS-1$
         defaultCullingThresh_ = "0.01"; //$NON-NLS-1$
+		defaultRestitution_ = "0.0";
         
         vecCollision_ = new Vector<GrxCollisionPairItem>();
    
@@ -229,6 +234,7 @@ public class CollisionPairPanel extends Composite {
                                 	editorPanel_.txtStaticFric_.setText(defaultStaticFriction_);
                                 	editorPanel_.txtSlidingFric_.setText(defaultSlidingFriction_);
                                 	editorPanel_.txtCullingThresh_.setText(defaultCullingThresh_);
+									editorPanel_.txtRestitution_.setText(defaultRestitution_);
                                     _createItem(m1.getName(), m1.links_.get(k).getName(), m2.getName(), m2.links_.get(l).getName());
                                 }
                             }
@@ -280,8 +286,8 @@ public class CollisionPairPanel extends Composite {
         private JointSelectPanel pnlJoint2_;
         private Button btnOk_, btnCancel_;
         
-        private Text txtStaticFric_,txtSlidingFric_,txtCullingThresh_;
-        private Label lblFriction_,lblStaticFric_,lblSlidingFric_,lblCullingThresh_;
+        private Text txtStaticFric_,txtSlidingFric_,txtCullingThresh_,txtRestitution_;
+        private Label lblFriction_,lblStaticFric_,lblSlidingFric_,lblCullingThresh_,lblRestitution_;
         
         public CollisionPairEditorPanel(Composite parent,int style) {
             super(parent,style);
@@ -326,6 +332,13 @@ public class CollisionPairPanel extends Composite {
             txtCullingThresh_ = new Text(this,SWT.SINGLE | SWT.BORDER);
             txtCullingThresh_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             
+			lblRestitution_ = new Label(this,SWT.SHADOW_NONE);
+			lblRestitution_.setText(MessageBundle.get("panel.collision.restitution"));
+			lblRestitution_.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+			
+			txtRestitution_ = new Text(this,SWT.SINGLE | SWT.BORDER);
+			txtRestitution_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
             btnOk_ = new Button(this,SWT.PUSH);
             btnOk_.setText(MessageBundle.get("dialog.okButton")); //$NON-NLS-1$
             btnOk_.addSelectionListener(new SelectionListener(){
@@ -390,10 +403,12 @@ public class CollisionPairPanel extends Composite {
             	String sTxtStaticFric_ = txtStaticFric_.getText();
             	String sTxtSlidingFric_ = txtSlidingFric_.getText();
             	String sTxtCullingThresh_ = txtCullingThresh_.getText();
+				String sTxtRestitution_ = txtRestitution_.getText();
             	
                 node.setProperty( ATTR_NAME_STATIC_FRICTION, sTxtStaticFric_ );
                 node.setProperty( ATTR_NAME_SLIDING_FRICTION, sTxtSlidingFric_ );
                 node.setProperty( ATTR_NAME_CULLING_THRESH, sTxtCullingThresh_ );
+				node.setProperty( ATTR_NAME_RESTITUTION, sTxtRestitution_ );
             } catch (Exception ex) {
                 MessageDialog.openWarning(getShell(), "", MessageBundle.get("message.attributeerror")); //$NON-NLS-1$ //$NON-NLS-2$
                 return false;
@@ -409,6 +424,7 @@ public class CollisionPairPanel extends Composite {
                 txtStaticFric_.setText(defaultStaticFriction_);
                 txtSlidingFric_.setText(defaultSlidingFriction_);
                 txtCullingThresh_.setText(defaultCullingThresh_);
+				txtRestitution_.setText(defaultRestitution_);
                 node_ = null;
             }else{
                 doCancel();
@@ -426,6 +442,7 @@ public class CollisionPairPanel extends Composite {
             txtStaticFric_.setText(""); //$NON-NLS-1$
             txtSlidingFric_.setText(""); //$NON-NLS-1$
             txtCullingThresh_.setText(""); //$NON-NLS-1$
+			txtRestitution_.setText("");
         }
 
         public void setNode(GrxCollisionPairItem node) {
@@ -441,6 +458,7 @@ public class CollisionPairPanel extends Composite {
                 txtStaticFric_.setText(node.getStr(ATTR_NAME_STATIC_FRICTION, "")); //$NON-NLS-1$
                 txtSlidingFric_.setText(node.getStr(ATTR_NAME_SLIDING_FRICTION, "")); //$NON-NLS-1$
                 txtCullingThresh_.setText(node.getStr(ATTR_NAME_CULLING_THRESH, "")); //$NON-NLS-1$
+				txtRestitution_.setText(node.getStr(ATTR_NAME_RESTITUTION, ""));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -463,12 +481,15 @@ public class CollisionPairPanel extends Composite {
             lblStaticFric_.setEnabled(flag);
             lblSlidingFric_.setEnabled(flag);
             lblCullingThresh_.setEnabled(flag);
+			lblRestitution_.setEnabled(flag);
             txtStaticFric_.setEnabled(true);
             txtStaticFric_.setEditable(flag);
             txtSlidingFric_.setEnabled(true);
             txtSlidingFric_.setEditable(flag);
             txtCullingThresh_.setEnabled(true);
             txtCullingThresh_.setEditable(flag);
+			txtRestitution_.setEnabled(true);
+			txtRestitution_.setEditable(flag);
         }
 
         private class JointSelectPanel extends Composite {
@@ -477,7 +498,7 @@ public class CollisionPairPanel extends Composite {
             private Combo  boxLink_;
             boolean flag_ = false;
             
-            //modelItemList_はboxObject_と同期をとってboxObjectに入っている名前をもつGrxModelItemを保持する
+            //modelItemList_はboxObject_と同期をとってboxObjectに入ってぁE��名前をもつGrxModelItemを保持する
             private List<GrxModelItem> modelItemList_;
             
             public JointSelectPanel(Composite parent,int style,String title) {
@@ -634,7 +655,7 @@ public class CollisionPairPanel extends Composite {
       _repaint();
     }
     
-    //  TODO 動作確認必須 いろいろなものがリフレッシュされない可能性あり
+    //  TODO 動作確認忁E��EぁE��ぁE��なも�EがリフレチE��ュされなぁE��能性あり
     public void replaceWorld(GrxWorldStateItem world) {
         editorPanel_.doCancel();
         

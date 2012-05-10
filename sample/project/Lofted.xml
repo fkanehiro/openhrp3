@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<grxui>
+    <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxSimulationItem" name="newsimulation0" select="true">
+            <property name="integrate" value="true"/>
+            <property name="viewsimulate" value="false"/>
+            <property name="totalTime" value="0.03 "/>
+            <property name="timeStep" value="1.0E-5 "/>
+            <property name="realTime" value="false"/>
+            <property name="gravity" value="9.8 "/>
+            <property name="method" value="RUNGE_KUTTA"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(CURRENT_DIR)/../model/floor5.wrl">
+            <property name="isRobot" value="false"/>
+            <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
+            <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
+            <property name="WAIST.velocity" value="0.0 0.0 0.0 "/>
+            <property name="markRadius" value="0.05 "/>
+            <property name="WAIST.angularVelocity" value="0.0 0.0 0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="ball" select="true" url="$(CURRENT_DIR)/../model/ball4.wrl">
+            <property name="markRadius" value="0.05 "/>
+            <property name="root.rotation" value="0.0 1.0 0.0 0"/>
+            <property name="root.translation" value="0.0 0.0 0.0206"/>
+            <property name="root.velocity" value="0.0 0.0 0.0 "/>
+            <property name="root.mode" value="Torque"/>
+            <property name="isRobot" value="true"/>
+            <property name="root.angularVelocity" value="0.0 0.0 0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxModelItem" name="lofted" select="true" url="$(CURRENT_DIR)/../model/lofted.wrl">
+            <property name="markRadius" value="0.05 "/>
+            <property name="root.rotation" value="0.0 1.0 0.0 1.1345 "/>
+            <property name="root.translation" value="-0.2 0.0 0.0 "/>
+            <property name="root.velocity" value="30.0 0.0 0.0 "/>
+            <property name="root.mode" value="Torque"/>
+            <property name="isRobot" value="false"/>
+            <property name="root.angularVelocity" value="0.0 0.0 0.0 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="newworldstate0" select="true">
+            <property name="logTimeStep" value="1.0E-5 "/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#ball_root#floor_WAIST" select="true">
+            <property name="slidingFriction" value="0.5"/>
+            <property name="cullingThresh" value="0.01"/>
+            <property name="jointName2" value="WAIST"/>
+            <property name="jointName1" value="root"/>
+            <property name="Restitution" value="0.7"/>
+            <property name="objectName2" value="floor"/>
+            <property name="objectName1" value="ball"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxCollisionPairItem" name="CP#ball_root#lofted_root" select="true">
+            <property name="slidingFriction" value="0.5"/>
+            <property name="cullingThresh" value="0.001"/>
+            <property name="jointName2" value="root"/>
+            <property name="jointName1" value="root"/>
+            <property name="Restitution" value="0.7"/>
+            <property name="objectName2" value="lofted"/>
+            <property name="objectName1" value="ball"/>
+            <property name="staticFriction" value="0.5"/>
+        </item>
+        <item class="com.generalrobotix.ui.item.GrxGraphItem" name="newgraphcontents0" select="true">
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.object" value="ball"/>
+            <property name="Graph0.Graph0_ball_root_translation_1.legend" value="ball.root.translation.1"/>
+            <property name="timeRange" value="0.03 0.8 "/>
+            <property name="Graph0.Graph0_ball_root_translation_1.object" value="ball"/>
+            <property name="Graph0.Graph0_ball_root_translation_2.legend" value="ball.root.translation.2"/>
+            <property name="Graph0.Graph0_ball_root_translation_0.attr" value="translation"/>
+            <property name="Graph0.Graph0_ball_root_translation_1.color" value="255,255,0"/>
+            <property name="Graph0.Graph0_ball_root_translation_2.object" value="ball"/>
+            <property name="Graph0.Graph0_ball_root_translation_0.color" value="0,255,0"/>
+            <property name="Graph0.Graph0_ball_root_translation_2.attr" value="translation"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.attr" value="angularVelocity"/>
+            <property name="Graph0.Graph0_ball_root_translation_2.color" value="0,255,255"/>
+            <property name="Graph0.Graph0_ball_root_translation_1.index" value="1"/>
+            <property name="Graph0.Graph0_ball_root_translation_0.index" value="0"/>
+            <property name="Graph0.Graph0_ball_root_translation_2.index" value="2"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.color" value="0,255,0"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.color" value="0,255,255"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.color" value="255,255,0"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.index" value="0"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.index" value="2"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.index" value="1"/>
+            <property name="Graph0.Graph0_ball_root_translation_0.node" value="root"/>
+            <property name="Graph0.Graph0_ball_root_translation_2.node" value="root"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.node" value="gyrometer"/>
+            <property name="Graph0.dataItems" value="Graph0_ball_root_translation_2,Graph0_ball_root_translation_1,Graph0_ball_root_translation_0"/>
+            <property name="Graph0.Graph0_ball_root_translation_1.attr" value="translation"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.attr" value="angularVelocity"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.attr" value="angularVelocity"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.legend" value="ball.gyrometer.angularVelocity.0"/>
+            <property name="Graph0.vRange" value="-0.5 1.0 "/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.object" value="ball"/>
+            <property name="Graph0.Graph0_ball_root_translation_1.node" value="root"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.node" value="gyrometer"/>
+            <property name="Graph1.dataItems" value="Graph1_ball_gyrometer_angularVelocity_2,Graph1_ball_gyrometer_angularVelocity_0,Graph1_ball_gyrometer_angularVelocity_1"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.legend" value="ball.gyrometer.angularVelocity.1"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.node" value="gyrometer"/>
+            <property name="Graph1.vRange" value="-480.0 40.0 "/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.object" value="ball"/>
+            <property name="Graph0.Graph0_ball_root_translation_0.legend" value="ball.root.translation.0"/>
+            <property name="Graph0.Graph0_ball_root_translation_0.object" value="ball"/>
+            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.legend" value="ball.gyrometer.angularVelocity.2"/>
+        </item>
+
+</mode>
+</grxui>

@@ -8,10 +8,13 @@
  */
 /**
    @author Shin'ichiro Nakaoka
+   @author Rafael Cisneros
 */
 
 #ifndef HRPCOLLISION_COLDET_MODEL_PAIR_H_INCLUDED
 #define HRPCOLLISION_COLDET_MODEL_PAIR_H_INCLUDED
+
+#define LOCAL_EPSILON 0.0001f
 
 #include "config.h"
 #include "CollisionData.h"
@@ -66,9 +69,25 @@ namespace hrp {
 
         void setCollisionPairInserter(CollisionPairInserterBase *inserter); 
 
+	int calculateCentroidIntersection(float &cx, float &cy, float &A, float radius, std::vector<float> vx, std::vector<float> vy);
+		
+	int makeCCW(std::vector<float> &vx, std::vector<float> &vy);
+		
+	float calculatePolygonArea(const std::vector<float> &vx, const std::vector<float> &vy);
+	void calculateSectorCentroid(float &cx, float &cy, float radius, float th1, float th2);
+
+	inline bool isInsideCircle(float r, float x, float y) {
+		return sqrt(pow(x, 2) + pow(y, 2)) <= r;
+	}
+	bool isInsideTriangle(float x, float y, const std::vector<float> &vx, const std::vector<float> &vy);
+
+	int calculateIntersection(std::vector<float> &x, std::vector<float> &y, float radius, float x1, float y1, float x2, float y2);
+
       private:
         std::vector<collision_data>& detectCollisionsSub(bool detectAllContacts);
         bool detectMeshMeshCollisions(bool detectAllContacts);
+		bool detectSphereSphereCollisions(bool detectAllContacts);
+		bool detectSphereMeshCollisions(bool detectAllContacts);
         bool detectPlaneCylinderCollisions(bool detectAllContacts);
 
         ColdetModelPtr models[2];
@@ -78,6 +97,22 @@ namespace hrp {
 
         int boxTestsCount;
         int triTestsCount;
+	
+	enum pointType {vertex, inter};
+	enum figType {tri, sector};
+
+	struct pointStruct {
+		float x, y, angle;
+		pointType type;
+		int code;
+	};
+	
+	struct figStruct {
+		figType type;
+		int p1, p2;
+		float area;
+		float cx, cy;
+	};
     };
 
     typedef boost::intrusive_ptr<ColdetModelPair> ColdetModelPairPtr;

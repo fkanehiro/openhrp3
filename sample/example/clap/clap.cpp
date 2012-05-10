@@ -181,6 +181,7 @@ int main(int argc, char* argv[])
         0.5,
         dc,
         sc,
+        0.0,
         0.0);
 
     dynamicsSimulator->initSimulation();

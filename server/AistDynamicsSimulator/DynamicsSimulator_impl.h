@@ -7,6 +7,11 @@
  * National Institute of Advanced Industrial Science and Technology (AIST)
  * General Robotix Inc. 
  */
+/**
+ * @file DynamicsSimulator_impl.h
+ * @author Shin'ichiro Nakaoka
+ * @author Rafael Cisneros
+*/
 #ifndef OPENHRP_DYNAMICS_SIMULATOR_IMPL_H_INCLUDED
 #define OPENHRP_DYNAMICS_SIMULATOR_IMPL_H_INCLUDED
 
@@ -89,7 +94,8 @@ class DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator,
             CORBA::Double slipFriction,
             const DblSequence6& K,
             const DblSequence6& C,
-            const double culling_thresh);
+            const double culling_thresh,
+	    const double restitution);
 
     virtual void registerIntersectionCheckPair
         (

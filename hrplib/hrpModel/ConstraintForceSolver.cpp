@@ -10,6 +10,7 @@
 /** \file
     \brief Implementation of ConstraintForceSolver class
     \author Shin'ichiro Nakaoka
+    \author Rafael Cisneros
 */
 
 #ifdef __WIN32__
@@ -54,8 +55,8 @@ static const bool usePivotingLCP = false;
 
 static const double VEL_THRESH_OF_DYNAMIC_FRICTION = 1.0e-4;
 
-//static const bool ENABLE_STATIC_FRICTION = true;
-static const bool ENABLE_STATIC_FRICTION = false;
+static const bool ENABLE_STATIC_FRICTION = true;
+//static const bool ENABLE_STATIC_FRICTION = false;
 static const bool ONLY_STATIC_FRICTION_FORMULATION = (true && ENABLE_STATIC_FRICTION);
 static const bool STATIC_FRICTION_BY_TWO_CONSTRAINTS = true;
 static const bool IGNORE_CURRENT_VELOCITY_IN_STATIC_FRICTION = false;
@@ -79,7 +80,7 @@ static const double ALLOWED_PENETRATION_DEPTH = 0.0001;
 //static const double PENETRATION_A = 500.0;
 //static const double PENETRATION_B = 80.0;
 static const double DEFAULT_NEGATIVE_VELOCITY_RATIO_FOR_PENETRATION = 10.0;
-static const double COEFFICIENT_OF_RESTITUTION = 0.0;
+static const double COEFFICIENT_OF_RESTITUTION = 0.5;
 
 // test for mobile robots with wheels
 //static const double ALLOWED_PENETRATION_DEPTH = 0.005;
@@ -114,7 +115,7 @@ namespace hrp
         CFSImpl(WorldBase& world);
 
         bool addCollisionCheckLinkPair
-        (int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double epsilon);
+        (int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double restitution, double epsilon);
 
         void initialize(void);
         void solve(CollisionSequence& corbaCollisionSequence);
@@ -207,6 +208,7 @@ namespace hrp
             double muStatic;
             double muDynamic;
             double culling_thresh;
+			double restitution;
             double epsilon;
 
             Body::LinkConnection* connection;
@@ -383,7 +385,7 @@ CFSImpl::CFSImpl(WorldBase& world) :
 
 
 bool CFSImpl::addCollisionCheckLinkPair
-(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double epsilon)
+(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double restitution, double epsilon)
 {
     int index;
     int isRegistered;
@@ -412,6 +414,7 @@ bool CFSImpl::addCollisionCheckLinkPair
         linkPair->muStatic = muStatic;
         linkPair->muDynamic = muDynamic;
         linkPair->culling_thresh = culling_thresh;
+		linkPair->restitution = restitution;
         linkPair->epsilon = epsilon;
         linkPair->connection = 0;
     }
@@ -1518,9 +1521,11 @@ void CFSImpl::setConstantVectorAndMuBlock()
                     double extraNegativeVel;
                     double newDepth = allowedPenetrationDepth - constraint.depth;
                     extraNegativeVel = negativeVelocityRatioForPenetration * newDepth;
-                    b(globalIndex) = an0(globalIndex) + ((1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
+                    //b(globalIndex) = an0(globalIndex) + ((1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
+					b(globalIndex) = an0(globalIndex) + ((1 + linkPair.restitution)*constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
                 } else {
-                    b(globalIndex) = an0(globalIndex) + (1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 * dtinv;
+                    //b(globalIndex) = an0(globalIndex) + (1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 * dtinv;
+					b(globalIndex) = an0(globalIndex) + (1 + linkPair.restitution)*constraint.normalProjectionOfRelVelocityOn0 * dtinv;
                 }
 
                 contactIndexToMu[globalIndex] = constraint.mu;
@@ -2113,9 +2118,9 @@ ConstraintForceSolver::~ConstraintForceSolver()
 
 
 bool ConstraintForceSolver::addCollisionCheckLinkPair
-(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double epsilon)
+(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double restitution, double epsilon)
 {
-    return impl->addCollisionCheckLinkPair(bodyIndex1, link1, bodyIndex2, link2, muStatic, muDynamic, culling_thresh, epsilon);
+    return impl->addCollisionCheckLinkPair(bodyIndex1, link1, bodyIndex2, link2, muStatic, muDynamic, culling_thresh, restitution, epsilon);
 }
 
 

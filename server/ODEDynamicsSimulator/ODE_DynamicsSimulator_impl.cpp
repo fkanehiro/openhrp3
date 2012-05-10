@@ -239,7 +239,8 @@ void ODE_DynamicsSimulator_impl::registerCollisionCheckPair
     const CORBA::Double slipFriction,
     const DblSequence6 & K,
     const DblSequence6 & C,
-    const double culling_thresh
+    const double culling_thresh,
+    const double restitution
     )
 {
     const double epsilon = 0.0;
