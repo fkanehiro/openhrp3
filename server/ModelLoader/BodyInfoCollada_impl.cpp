@@ -1076,16 +1076,19 @@ class ColladaReader : public daeErrorHandler
                         int mindex = pkinbody->materials_.length();
                         pkinbody->materials_.length(mindex+1);
                         _FillMaterial(pkinbody->materials_[mindex],pdommat);
-                        int aindex = pkinbody->appearances_.length();
-                        pkinbody->appearances_.length(aindex+1);
-                        AppearanceInfo& ainfo = pkinbody->appearances_[aindex];
-                        ainfo.materialIndex = mindex;
-                        ainfo.normalPerVertex = 0;
-                        ainfo.solid = 0;
-                        ainfo.creaseAngle = 0;
-                        ainfo.colorPerVertex = 0;
-                        ainfo.textureIndex = -1;
-                        mapmaterials[matarray[imat]->getSymbol()] = aindex;
+			map<string,int>::const_iterator itmat = mapmaterials.find(matarray[imat]->getSymbol());
+			if( itmat == mapmaterials.end() ) {
+			    int aindex = pkinbody->appearances_.length();
+			    pkinbody->appearances_.length(aindex+1);
+			    AppearanceInfo& ainfo = pkinbody->appearances_[aindex];
+			    ainfo.materialIndex = mindex;
+			    ainfo.normalPerVertex = 0;
+			    ainfo.solid = 0;
+			    ainfo.creaseAngle = 0;
+			    ainfo.colorPerVertex = 0;
+			    ainfo.textureIndex = -1;
+			    mapmaterials[matarray[imat]->getSymbol()] = aindex;
+			}
                     }
                 }
             }
