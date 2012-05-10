@@ -1076,19 +1076,7 @@ class ColladaReader : public daeErrorHandler
                         int mindex = pkinbody->materials_.length();
                         pkinbody->materials_.length(mindex+1);
                         _FillMaterial(pkinbody->materials_[mindex],pdommat);
-			map<string,int>::const_iterator itmat = mapmaterials.find(matarray[imat]->getSymbol());
-			if( itmat == mapmaterials.end() ) {
-			    int aindex = pkinbody->appearances_.length();
-			    pkinbody->appearances_.length(aindex+1);
-			    AppearanceInfo& ainfo = pkinbody->appearances_[aindex];
-			    ainfo.materialIndex = mindex;
-			    ainfo.normalPerVertex = 0;
-			    ainfo.solid = 0;
-			    ainfo.creaseAngle = 0;
-			    ainfo.colorPerVertex = 0;
-			    ainfo.textureIndex = -1;
-			    mapmaterials[matarray[imat]->getSymbol()] = aindex;
-			}
+			mapmaterials[matarray[imat]->getSymbol()] = mindex;
                     }
                 }
             }
@@ -1143,14 +1131,22 @@ class ColladaReader : public daeErrorHandler
         plink->shapeIndices.length(lsindex+1);
         plink->shapeIndices[lsindex].shapeIndex = shapeIndex;
 
-        // resolve the material and assign correct colors to the geometry
-        shape.appearanceIndex = -1;
+	int aindex = pkinbody->appearances_.length();
+	pkinbody->appearances_.length(aindex+1);
+	AppearanceInfo& ainfo = pkinbody->appearances_[aindex];
+	ainfo.materialIndex = -1;
+	ainfo.normalPerVertex = 0;
+	ainfo.solid = 0;
+	ainfo.creaseAngle = 0;
+	ainfo.colorPerVertex = 0;
+	ainfo.textureIndex = -1;
         if( !!triRef->getMaterial() ) {
             map<string,int>::const_iterator itmat = mapmaterials.find(triRef->getMaterial());
             if( itmat != mapmaterials.end() ) {
-                shape.appearanceIndex = itmat->second;
+		ainfo.materialIndex = itmat->second;
             }
         }
+        shape.appearanceIndex = aindex;
 
         size_t triangleIndexStride = 0;
 	int vertexoffset = -1, normaloffset = -1;
@@ -1213,7 +1209,7 @@ class ColladaReader : public daeErrorHandler
                     COLLADALOG_WARN("float array not defined!");
                 }
 
-		if ( shape.appearanceIndex >= 0 && normaloffset >= 0 ) {
+		if ( normaloffset >= 0 ) {
 		    const domSourceRef normalNode = daeSafeCast<domSource>(normalOffsetRef->getSource().getElement());
 		    const domFloat_arrayRef normalArray = normalNode->getFloat_array();
 		    const domList_of_floats& normalFloats = normalArray->getValue();
