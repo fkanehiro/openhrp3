@@ -12,9 +12,11 @@
 
 cmake_minimum_required(VERSION 2.4)
 
-if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
+if( NOT WIN32)
+  if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 NEW)
+  endif(COMMAND cmake_policy)
+endif()
 
 project(OpenHRP)
 
@@ -286,7 +288,7 @@ if(ODE_DIR)
   if(UNIX)
     link_directories(${ODE_DIR}/lib/ReleaseSingleLib)
   elseif(WIN32)
-    link_directories(${ODE_DIR}/lib/ReleaseSingleLib, ${ODE_DIR}/lib/DebugSingleLib)
+    link_directories(${ODE_DIR}/lib/ReleaseSingleLib ${ODE_DIR}/lib/DebugSingleLib)
   endif()
 endif()
 
