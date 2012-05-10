@@ -1244,35 +1244,29 @@ class ColladaReader : public daeErrorHandler
             }
         }
 
-        if( !!triRef->getMaterial() ) {
-            map<string,int>::const_iterator itmat = mapmaterials.find(triRef->getMaterial());
-            if( itmat != mapmaterials.end() ) {
-		AppearanceInfo& ainfo = pkinbody->appearances_[itmat->second];
-		if ( ainfo.normals.length() == 0 ) {
-		    ainfo.normals.length(itriangle);
-		    ainfo.normalPerVertex = 0;
-		    for(size_t i=0; i < itriangle/3; ++i) {
-			Vector3 a(shape.vertices[shape.triangles[i*3+0]*3+0]-
-				  shape.vertices[shape.triangles[i*3+2]*3+0], 
-				  shape.vertices[shape.triangles[i*3+0]*3+1]-
-				  shape.vertices[shape.triangles[i*3+2]*3+1],
-				  shape.vertices[shape.triangles[i*3+0]*3+2]-
-				  shape.vertices[shape.triangles[i*3+2]*3+2]);
-			Vector3 b(shape.vertices[shape.triangles[i*3+0]*3+0]-
-				  shape.vertices[shape.triangles[i*3+1]*3+0],
-				  shape.vertices[shape.triangles[i*3+0]*3+1]-
-				  shape.vertices[shape.triangles[i*3+1]*3+1],
-				  shape.vertices[shape.triangles[i*3+0]*3+2]-
-				  shape.vertices[shape.triangles[i*3+1]*3+2]);
-			a.normalize();
-			b.normalize();
-			Vector3 c = a.cross(b);
-			c.normalize();
-			ainfo.normals[i*3+0] = c[0];
-			ainfo.normals[i*3+1] = c[1];
-			ainfo.normals[i*3+2] = c[2];
-		    }
-		}
+	if ( ainfo.normals.length() == 0 ) {
+	    ainfo.normals.length(itriangle);
+	    ainfo.normalPerVertex = 0;
+	    for(size_t i=0; i < itriangle/3; ++i) {
+		Vector3 a(shape.vertices[shape.triangles[i*3+0]*3+0]-
+			  shape.vertices[shape.triangles[i*3+2]*3+0], 
+			  shape.vertices[shape.triangles[i*3+0]*3+1]-
+			  shape.vertices[shape.triangles[i*3+2]*3+1],
+			  shape.vertices[shape.triangles[i*3+0]*3+2]-
+			  shape.vertices[shape.triangles[i*3+2]*3+2]);
+		Vector3 b(shape.vertices[shape.triangles[i*3+0]*3+0]-
+			  shape.vertices[shape.triangles[i*3+1]*3+0],
+			  shape.vertices[shape.triangles[i*3+0]*3+1]-
+			  shape.vertices[shape.triangles[i*3+1]*3+1],
+			  shape.vertices[shape.triangles[i*3+0]*3+2]-
+			  shape.vertices[shape.triangles[i*3+1]*3+2]);
+		a.normalize();
+		b.normalize();
+		Vector3 c = a.cross(b);
+		c.normalize();
+		ainfo.normals[i*3+0] = c[0];
+		ainfo.normals[i*3+1] = c[1];
+		ainfo.normals[i*3+2] = c[2];
             }
         }
 
