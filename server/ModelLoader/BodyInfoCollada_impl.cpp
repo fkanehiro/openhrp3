@@ -1885,7 +1885,11 @@ class ColladaReader : public daeErrorHandler
             COLLADALOG_WARN("collada <sensor> needs type attribute");
             return false;
         }
-	psensor.id = boost::lexical_cast<int>(domsensor->getAttribute("sid"));
+	if ( domsensor->hasAttribute("sid")) {
+	    psensor.id = boost::lexical_cast<int>(domsensor->getAttribute("sid"));
+	} else {
+	    psensor.id = 0;
+	}
         std::string sensortype = domsensor->getAttribute("type");
 	if ( sensortype == "base_imu" ) {// AccelerationSensor  // GyroSeesor
             psensor.specValues.length( CORBA::ULong(3) );
