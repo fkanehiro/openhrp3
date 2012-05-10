@@ -477,6 +477,7 @@ class ColladaReader : public daeErrorHandler
     bool ExtractKinematicsModel(BodyInfoCollada_impl* pkinbody, domNodeRef pdomnode, const KinematicsSceneBindings& bindings, const std::vector<std::string>& vprocessednodes)
     {
         if( !!pdomnode->getID() && find(vprocessednodes.begin(),vprocessednodes.end(),pdomnode->getID()) != vprocessednodes.end() ) {
+	    COLLADALOG_WARN(str(boost::format("could not create kinematics type pnode getid %s")%pdomnode->getID()));
             return false;
         }
         _ResetRobotCache();
@@ -495,6 +496,7 @@ class ColladaReader : public daeErrorHandler
 	//  Gets the geometry
         bool bhasgeometry = ExtractGeometry(pkinbody,plink,tlink,pdomnode,bindings.listAxisBindings,vprocessednodes);
         if( !bhasgeometry ) {
+	    COLLADALOG_WARN(str(boost::format("could not extract geometry %s")%name));
             return false;
         }
 
@@ -1024,9 +1026,11 @@ class ColladaReader : public daeErrorHandler
     bool ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo>  plink, const DblArray12& tlink, const domNodeRef pdomnode, const std::list<JointAxisBinding>& listAxisBindings,const std::vector<std::string>& vprocessednodes)
     {
         if( !pdomnode ) {
+	    COLLADALOG_WARN(str(boost::format("fail to ExtractGeometry(LinkInfo,plink,tlink,pdomnode) of %s")%plink->name));
             return false;
         }
         if( !!pdomnode->getID() && find(vprocessednodes.begin(),vprocessednodes.end(),pdomnode->getID()) != vprocessednodes.end() ) {
+	    COLLADALOG_WARN(str(boost::format("could not create geometry type pnode getid %s")%pdomnode->getID()));
             return false;
         }
 
@@ -1120,6 +1124,7 @@ class ColladaReader : public daeErrorHandler
     bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTrianglesRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials)
     {
         if( !triRef ) {
+	    COLLADALOG_WARN(str(boost::format("fail to _ExtractGeometry(LinkInfo,Triangles,Vertices) of %s")%plink->name));
             return false;
         }
         int shapeIndex = pkinbody->shapes_.length();
@@ -1285,6 +1290,7 @@ class ColladaReader : public daeErrorHandler
     bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTrifansRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials)
     {
         if( !triRef ) {
+	    COLLADALOG_WARN(str(boost::format("fail to _ExtractGeometry(LinkInfo,Trifans,Vertices) of %s")%plink->name));
             return false;
         }
         int shapeIndex = pkinbody->shapes_.length();
@@ -1379,6 +1385,7 @@ class ColladaReader : public daeErrorHandler
     bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTristripsRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials)
     {
         if( !triRef ) {
+	    COLLADALOG_WARN(str(boost::format("fail to _ExtractGeometry(LinkInfo,Tristrips,Vertices) of %s")%plink->name));
             return false;
         }
         int shapeIndex = pkinbody->shapes_.length();
@@ -1476,6 +1483,7 @@ class ColladaReader : public daeErrorHandler
     bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domPolylistRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials)
     {
         if( !triRef ) {
+	    COLLADALOG_WARN(str(boost::format("fail to _ExtractGeometry(LinkInfo,Polylist,VErtices) of %s")%plink->name));
             return false;
         }
         int shapeIndex = pkinbody->shapes_.length();
@@ -1565,6 +1573,7 @@ class ColladaReader : public daeErrorHandler
     bool ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domGeometryRef geom, const map<string,int>& mapmaterials)
     {
         if( !geom ) {
+	    COLLADALOG_WARN(str(boost::format("fail to ExtractGeometry(plink,geom) of %s")%plink->name));
             return false;
         }
         std::vector<Vector3> vconvexhull;
@@ -1863,6 +1872,7 @@ class ColladaReader : public daeErrorHandler
     bool _ExtractSensor(SensorInfo &psensor, daeElementRef instance_sensor)
     {
         if( !instance_sensor ) {
+            COLLADALOG_WARN("could not find instance_sensor");
             return false;
         }
         if( !instance_sensor->hasAttribute("url") ) {
