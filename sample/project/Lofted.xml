@@ -59,49 +59,107 @@
             <property name="objectName1" value="ball"/>
             <property name="staticFriction" value="0.5"/>
         </item>
-        <item class="com.generalrobotix.ui.item.GrxGraphItem" name="newgraphcontents0" select="true">
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.object" value="ball"/>
-            <property name="Graph0.Graph0_ball_root_translation_1.legend" value="ball.root.translation.1"/>
-            <property name="timeRange" value="0.03 0.8 "/>
-            <property name="Graph0.Graph0_ball_root_translation_1.object" value="ball"/>
-            <property name="Graph0.Graph0_ball_root_translation_2.legend" value="ball.root.translation.2"/>
-            <property name="Graph0.Graph0_ball_root_translation_0.attr" value="translation"/>
-            <property name="Graph0.Graph0_ball_root_translation_1.color" value="255,255,0"/>
-            <property name="Graph0.Graph0_ball_root_translation_2.object" value="ball"/>
-            <property name="Graph0.Graph0_ball_root_translation_0.color" value="0,255,0"/>
-            <property name="Graph0.Graph0_ball_root_translation_2.attr" value="translation"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.attr" value="angularVelocity"/>
-            <property name="Graph0.Graph0_ball_root_translation_2.color" value="0,255,255"/>
-            <property name="Graph0.Graph0_ball_root_translation_1.index" value="1"/>
-            <property name="Graph0.Graph0_ball_root_translation_0.index" value="0"/>
-            <property name="Graph0.Graph0_ball_root_translation_2.index" value="2"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.color" value="0,255,0"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.color" value="0,255,255"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.color" value="255,255,0"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.index" value="0"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.index" value="2"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.index" value="1"/>
-            <property name="Graph0.Graph0_ball_root_translation_0.node" value="root"/>
-            <property name="Graph0.Graph0_ball_root_translation_2.node" value="root"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.node" value="gyrometer"/>
-            <property name="Graph0.dataItems" value="Graph0_ball_root_translation_2,Graph0_ball_root_translation_1,Graph0_ball_root_translation_0"/>
-            <property name="Graph0.Graph0_ball_root_translation_1.attr" value="translation"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.attr" value="angularVelocity"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.attr" value="angularVelocity"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.legend" value="ball.gyrometer.angularVelocity.0"/>
-            <property name="Graph0.vRange" value="-0.5 1.0 "/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.object" value="ball"/>
-            <property name="Graph0.Graph0_ball_root_translation_1.node" value="root"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_0.node" value="gyrometer"/>
-            <property name="Graph1.dataItems" value="Graph1_ball_gyrometer_angularVelocity_2,Graph1_ball_gyrometer_angularVelocity_0,Graph1_ball_gyrometer_angularVelocity_1"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.legend" value="ball.gyrometer.angularVelocity.1"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.node" value="gyrometer"/>
-            <property name="Graph1.vRange" value="-480.0 40.0 "/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_1.object" value="ball"/>
-            <property name="Graph0.Graph0_ball_root_translation_0.legend" value="ball.root.translation.0"/>
-            <property name="Graph0.Graph0_ball_root_translation_0.object" value="ball"/>
-            <property name="Graph1.Graph1_ball_gyrometer_angularVelocity_2.legend" value="ball.gyrometer.angularVelocity.2"/>
-        </item>
-
+      <view class="com.generalrobotix.ui.view.Grx3DView" name="3DView">
+        <property name="view.mode" value="Right"/>
+        <property name="showCoM" value="false"/>
+        <property name="showCoMonFloor" value="false"/>
+        <property name="showDistance" value="false"/>
+        <property name="showIntersection" value="false"/>
+        <property name="eyeHomePosition" value="-0.70711 -0 0.70711 2 0.70711 -0 0.70711 2 0 1 0 0.8 0 0 0 1 "/>
+        <property name="showCollision" value="true"/>
+        <property name="showActualState" value="true"/>
+        <property name="showScale" value="true"/>
+      </view>
+      <perspective editorAreaTrimState="2" editorAreaVisible="0" fixed="0" version="0.016">
+        <descriptor descriptor="com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory" id="com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory.project" label="Lofted"/>
+        <window height="1037" width="1922" x="0" y="24"/>
+        <alwaysOnActionSet id="org.eclipse.ui.cheatsheets.actionSet"/>
+        <alwaysOnActionSet id="org.eclipse.search.searchActionSet"/>
+        <alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.annotationNavigation"/>
+        <alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.navigation"/>
+        <alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"/>
+        <alwaysOnActionSet id="org.eclipse.ui.externaltools.ExternalToolsSet"/>
+        <alwaysOnActionSet id="org.eclipse.ui.actionSet.keyBindings"/>
+        <alwaysOnActionSet id="org.eclipse.ui.actionSet.openFiles"/>
+        <alwaysOnActionSet id="org.eclipse.mylyn.context.ui.actionSet"/>
+        <alwaysOnActionSet id="org.eclipse.mylyn.tasks.ui.navigation"/>
+        <alwaysOnActionSet id="org.eclipse.rse.core.search.searchActionSet"/>
+        <alwaysOnActionSet id="com.generalrobotix.ui.actionSet"/>
+        <hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
+        <view id="com.generalrobotix.ui.view.GrxLoggerViewPart"/>
+        <view id="com.generalrobotix.ui.view.GrxPropertyViewPart"/>
+        <view id="com.generalrobotix.ui.view.GrxProcessManagerViewPart"/>
+        <view id="com.generalrobotix.ui.view.Grx3DViewPart"/>
+        <view id="com.generalrobotix.ui.view.GrxGraphViewPart"/>
+        <view id="com.generalrobotix.ui.view.GrxCollisionPairViewPart"/>
+        <view id="com.generalrobotix.ui.view.GrxItemViewPart"/>
+        <view id="com.generalrobotix.ui.view.GrxServerManagerViewPart"/>
+        <view id="com.generalrobotix.ui.view.GrxOpenHRPViewPart"/>
+        <fastViewBars/>
+        <layout>
+          <mainWindow>
+            <info folder="true" part="TopViews">
+              <folder activePageID="com.generalrobotix.ui.view.GrxLoggerViewPart" appearance="2" expanded="2">
+                <page content="com.generalrobotix.ui.view.GrxLoggerViewPart" label="Logger View"/>
+                <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+                  <part id="0"/>
+                </presentation>
+              </folder>
+            </info>
+            <info folder="true" part="org.eclipse.ui.internal.ViewStack@792357" ratio="0.75" ratioLeft="1074" ratioRight="358" relationship="2" relative="TopViews">
+              <folder appearance="2" expanded="2">
+                <page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
+                <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
+                <page content="org.eclipse.ui.cheatsheets.views.CheatSheetView" label="LabelNotFound"/>
+                <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
+              </folder>
+            </info>
+            <info folder="true" part="TopRightViews" ratio="0.10970464" ratioLeft="78" ratioRight="633" relationship="4" relative="TopViews">
+              <folder appearance="2" expanded="2">
+                <page content="com.generalrobotix.ui.view.GrxORBMonitorViewPart" label="LabelNotFound"/>
+                <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
+              </folder>
+            </info>
+            <info folder="true" part="org.eclipse.ui.internal.ViewStack@c8ace6" ratio="0.5998603" ratioLeft="859" ratioRight="573" relationship="2" relative="TopRightViews">
+              <folder activePageID="com.generalrobotix.ui.view.GrxItemViewPart" appearance="2" expanded="2">
+                <page content="com.generalrobotix.ui.view.GrxItemViewPart" label="Item View"/>
+                <page content="com.generalrobotix.ui.view.GrxServerManagerViewPart" label="Serve Manager"/>
+                <page content="com.generalrobotix.ui.view.GrxOpenHRPViewPart" label="Simulation"/>
+                <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+                  <part id="0"/>
+                  <part id="2"/>
+                  <part id="1"/>
+                </presentation>
+              </folder>
+            </info>
+            <info folder="true" part="RightMIDDLEViews" ratio="0.49920508" ratioLeft="314" ratioRight="315" relationship="4" relative="org.eclipse.ui.internal.ViewStack@c8ace6">
+              <folder activePageID="com.generalrobotix.ui.view.GrxPropertyViewPart" appearance="2" expanded="2">
+                <page content="com.generalrobotix.ui.view.GrxPropertyViewPart" label="Property View"/>
+                <page content="com.generalrobotix.ui.view.GrxProcessManagerViewPart" label="Process Manager"/>
+                <page content="com.generalrobotix.ui.view.GrxRobotStatViewPart" label="LabelNotFound"/>
+                <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+                  <part id="0"/>
+                  <part id="1"/>
+                </presentation>
+              </folder>
+            </info>
+            <info folder="true" part="MiddleViews" ratio="0.39968404" ratioLeft="253" ratioRight="380" relationship="4" relative="TopRightViews">
+              <folder activePageID="com.generalrobotix.ui.view.Grx3DViewPart" appearance="2" expanded="2">
+                <page content="com.generalrobotix.ui.view.Grx3DViewPart" label="3DView"/>
+                <page content="com.generalrobotix.ui.view.GrxGraphViewPart" label="Graph"/>
+                <page content="com.generalrobotix.ui.view.GrxCollisionPairViewPart" label="Collision Pair"/>
+                <page content="com.generalrobotix.ui.view.GrxControllerViewPart" label="LabelNotFound"/>
+                <page content="com.generalrobotix.ui.view.GrxTextEditorViewPart" label="LabelNotFound"/>
+                <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+                  <part id="0"/>
+                  <part id="1"/>
+                  <part id="2"/>
+                </presentation>
+              </folder>
+            </info>
+            <info part="org.eclipse.ui.editorss" ratio="0.59953433" ratioLeft="515" ratioRight="344" relationship="2" relative="TopRightViews"/>
+          </mainWindow>
+        </layout>
+      </perspective>
 </mode>
 </grxui>

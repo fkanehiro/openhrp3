@@ -184,6 +184,7 @@ bool ColdetModelPair::detectSphereSphereCollisions(bool detectAllContacts) {
 			col.i_points[0][0] = q.x;
 			col.i_points[0][1] = q.y;
 			col.i_points[0][2] = q.z;
+            col.depth = 0.0;
 			cdata.push_back(col);
 		}
 	}
@@ -378,6 +379,7 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 						col.i_points[0][0] = new_q[i].x;
 						col.i_points[0][1] = new_q[i].y;
 						col.i_points[0][2] = new_q[i].z;
+                        col.depth = 0.0;
 						cdata.push_back(col);
 					}
 				}
@@ -746,8 +748,11 @@ int ColdetModelPair::calculateCentroidIntersection(float &cx, float &cy, float &
 				A = TWOPI * pow(radius, 2);
 				return 1;
 			}
-			else
+            else{
+                cx = cy = 0;
+				A = TWOPI * pow(radius, 2);
 				return 0;
+            }
 		}
 	}
 
