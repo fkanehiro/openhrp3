@@ -25,7 +25,8 @@
 
 #include <sys/stat.h> // for checkInlineFileUpdateTime
 
-#define FOREACH(it, v) for(typeof((v).begin())it = (v).begin(); it != (v).end(); (it)++)
+#include <boost/typeof/typeof.hpp>
+#define FOREACH(it, v) for(BOOST_TYPEOF((v).begin()) it = (v).begin(); it != (v).end(); (it)++)
 
 using namespace std;
 using namespace ColladaUtil;
