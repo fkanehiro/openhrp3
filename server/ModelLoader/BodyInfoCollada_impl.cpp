@@ -488,7 +488,7 @@ class ColladaReader : public daeErrorHandler
         boost::shared_ptr<LinkInfo> plink(new LinkInfo());
         _veclinks.push_back(plink);
         plink->jointId = -1;
-        plink->jointType = CORBA::string_dup("free");
+        plink->jointType = CORBA::string_dup("fixed");
         plink->parentIndex = -1;
         plink->name = CORBA::string_dup(name.c_str());
         DblArray12 tlink; PoseIdentity(tlink);
