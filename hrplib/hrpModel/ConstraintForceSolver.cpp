@@ -592,7 +592,7 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
             debugPutVector(at0, "at0");
             debugPutMatrix(Mlcp, "Mlcp");
             debugPutVector(b.head(globalNumConstraintVectors), "b1");
-            debugPutVector(b.segment(globalNumConstraintVectors, globalNumConstraintVectors + globalNumFrictionVectors), "b2");
+            debugPutVector(b.segment(globalNumConstraintVectors, globalNumFrictionVectors), "b2");
         }
 
         bool isConverged;
