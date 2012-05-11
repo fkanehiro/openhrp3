@@ -1240,11 +1240,44 @@ class ColladaReader : public daeErrorHandler
                     }
 		}
 
-                break;
+	    } else if ( strcmp(str,"NORMAL") == 0 ) {
+		COLLADALOG_WARN("read normals from collada file");
+                const domSourceRef normalNode = daeSafeCast<domSource>(localRef->getSource().getElement());
+                if( !normalNode ) {
+                    continue;
+                }
+		const domFloat_arrayRef normalArray = normalNode->getFloat_array();
+                if (!!normalArray) {
+		    const domList_of_floats& normalFloats = normalArray->getValue();
+		    int k = 0;
+                    int vertexStride = 3;//instead of hardcoded stride, should use the 'accessor'
+		    int ivertex = 0;
+		    AppearanceInfo& ainfo = pkinbody->appearances_[shape.appearanceIndex];
+		    ainfo.normalPerVertex = 1;
+		    ainfo.normals.length(triRef->getCount()*9);
+                    for(size_t itri = 0; itri < triRef->getCount(); ++itri) {
+                        if(2*triangleIndexStride < indexArray.getCount() ) {
+                            for (int j=0;j<3;j++) {
+                                int index0 = indexArray.get(k)*vertexStride;
+                                domFloat fl0 = normalFloats.get(index0);
+                                domFloat fl1 = normalFloats.get(index0+1);
+                                domFloat fl2 = normalFloats.get(index0+2);
+                                k+=triangleIndexStride;
+                                ainfo.normals[ivertex++] = fl0;
+                                ainfo.normals[ivertex++] = fl1;
+                                ainfo.normals[ivertex++] = fl2;
+                            }
+                        }
+                    }
+                }
+                else {
+                    COLLADALOG_WARN("float array not defined!");
+                }
             }
         }
 
 	if ( ainfo.normals.length() == 0 ) {
+	    COLLADALOG_WARN("generate normals from vertices");
 	    ainfo.normals.length(itriangle);
 	    ainfo.normalPerVertex = 0;
 	    for(size_t i=0; i < itriangle/3; ++i) {
