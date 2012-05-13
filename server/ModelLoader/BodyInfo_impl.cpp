@@ -21,7 +21,9 @@
 #include <boost/bind.hpp>
 
 #include <hrpCorba/ViewSimulator.hh>
+#include <hrpUtil/EasyScanner.h>
 #include <hrpUtil/VrmlNodes.h>
+#include <hrpUtil/VrmlParser.h>
 #include <hrpUtil/ImageConverter.h>
 
 #include "VrmlUtil.h"
@@ -103,6 +105,8 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     url2 = filename;
     replace( url2, string("\\"), string("/") );
     filename = url2;
+    url_ = CORBA::string_dup(url2.c_str());
+    
 
     ModelNodeSet modelNodeSet;
     modelNodeSet.sigMessage.connect(boost::bind(&putMessage, _1));
@@ -119,15 +123,45 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     }
     catch(const ModelNodeSet::Exception& ex) {
         cout << ex.what() << endl;
-        throw ModelLoader::ModelLoaderException(ex.what());
+        cout << "Retrying to load the file as a standard VRML file" << endl;
+        try {
+            VrmlParser parser;
+            parser.load(filename);
+
+            links_.length(1);
+            LinkInfo &linfo = links_[0];
+            linfo.name = CORBA::string_dup("root");
+            linfo.parentIndex = -1;
+            linfo.jointId = -1;
+            linfo.jointType = CORBA::string_dup("fixed");
+            linfo.jointValue = 0;
+            for (int i=0; i<3; i++){
+                linfo.jointAxis[i] = 0;
+                linfo.translation[i] = 0;
+                linfo.rotation[i] = 0;
+            }
+            linfo.jointAxis[2] = 1; 
+            linfo.rotation[2] = 1; linfo.rotation[3] = 0;
+            
+            Matrix44 E(Matrix44::Identity());
+            
+            while(VrmlNodePtr node = parser.readNode()){
+                if(!node->isCategoryOf(PROTO_DEF_NODE)){
+                    applyTriangleMeshShaper(node);
+                    traverseShapeNodes(node.get(), E, linfo.shapeIndices, linfo.inlinedShapeTransformMatrices, &topUrl());
+                }
+            }
+            return;
+        } catch(EasyScanner::Exception& ex){
+            cout << ex.getFullMessage() << endl;
+            throw ModelLoader::ModelLoaderException(ex.getFullMessage().c_str());
+        }
     }
 
     if(!result){
         throw ModelLoader::ModelLoaderException("The model file cannot be loaded.");
     }
 
-    url_ = CORBA::string_dup(url2.c_str());
-    
     const string& humanoidName = modelNodeSet.humanoidNode()->defName;
     name_ = CORBA::string_dup(humanoidName.c_str());
     const MFString& info = modelNodeSet.humanoidNode()->fields["info"].mfString();
