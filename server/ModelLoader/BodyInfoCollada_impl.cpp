@@ -1279,29 +1279,61 @@ class ColladaReader : public daeErrorHandler
 
 	if ( ainfo.normals.length() == 0 ) {
 	    COLLADALOG_WARN("generate normals from vertices");
-	    ainfo.normals.length(itriangle);
-	    ainfo.normalPerVertex = 0;
+	    // compute face normals
+	    std::vector<Vector3> faceNormals(itriangle/3);
+	    std::vector<std::vector<int> > vertexFaceMapping(itriangle);
 	    for(size_t i=0; i < itriangle/3; ++i) {
-		Vector3 a(shape.vertices[shape.triangles[i*3+0]*3+0]-
-			  shape.vertices[shape.triangles[i*3+2]*3+0], 
-			  shape.vertices[shape.triangles[i*3+0]*3+1]-
-			  shape.vertices[shape.triangles[i*3+2]*3+1],
-			  shape.vertices[shape.triangles[i*3+0]*3+2]-
-			  shape.vertices[shape.triangles[i*3+2]*3+2]);
-		Vector3 b(shape.vertices[shape.triangles[i*3+0]*3+0]-
-			  shape.vertices[shape.triangles[i*3+1]*3+0],
-			  shape.vertices[shape.triangles[i*3+0]*3+1]-
-			  shape.vertices[shape.triangles[i*3+1]*3+1],
-			  shape.vertices[shape.triangles[i*3+0]*3+2]-
-			  shape.vertices[shape.triangles[i*3+1]*3+2]);
+		int vIndex1 = shape.triangles[i*3+0];
+		int vIndex2 = shape.triangles[i*3+1];
+		int vIndex3 = shape.triangles[i*3+2];
+		Vector3 a(shape.vertices[vIndex1*3+0]-
+			  shape.vertices[vIndex3*3+0],
+			  shape.vertices[vIndex1*3+1]-
+			  shape.vertices[vIndex3*3+1],
+			  shape.vertices[vIndex1*3+2]-
+			  shape.vertices[vIndex3*3+2]);
+		Vector3 b(shape.vertices[vIndex1*3+0]-
+			  shape.vertices[vIndex2*3+0],
+			  shape.vertices[vIndex1*3+1]-
+			  shape.vertices[vIndex2*3+1],
+			  shape.vertices[vIndex1*3+2]-
+			  shape.vertices[vIndex2*3+2]);
 		a.normalize();
 		b.normalize();
 		Vector3 c = a.cross(b);
-		c.normalize();
-		ainfo.normals[i*3+0] = c[0];
-		ainfo.normals[i*3+1] = c[1];
-		ainfo.normals[i*3+2] = c[2];
-            }
+		faceNormals[i] = c.normalized();
+		vertexFaceMapping[vIndex1].push_back(i);
+		vertexFaceMapping[vIndex2].push_back(i);
+		vertexFaceMapping[vIndex3].push_back(i);
+	    }
+	    // compute vertex normals
+	    ainfo.normalPerVertex = 1;
+	    ainfo.normals.length(itriangle*3); // number_of_tris*3*3
+	    double creaseAngle = M_PI/4;
+	    for (size_t i=0; i<itriangle/3; i++){ // each triangle
+		const Vector3 &currentFaceNormal = faceNormals[i];
+		for (int vertex=0; vertex<3; vertex++){ // each vertex
+		    bool normalIsFaceNormal = true;
+		    int vIndex = shape.triangles[i*3+vertex];
+		    Vector3 normal = currentFaceNormal;
+		    const std::vector<int>& faces = vertexFaceMapping[vIndex];
+		    for (size_t k=0; k<faces.size(); k++){
+			const Vector3& adjoingFaceNormal = faceNormals[k];
+			double angle = acos(currentFaceNormal.dot(adjoingFaceNormal) /
+					    (currentFaceNormal.norm() * adjoingFaceNormal.norm()));
+			if(angle > 1.0e-6 && angle < creaseAngle){
+			    normal += adjoingFaceNormal;
+			    normalIsFaceNormal = false;
+			}
+		    }
+		    if (!normalIsFaceNormal){
+			normal.normalize();
+		    }
+		    ainfo.normals[vIndex*3  ] = normal[0];
+		    ainfo.normals[vIndex*3+1] = normal[1];
+		    ainfo.normals[vIndex*3+2] = normal[2];
+		}
+	    }
         }
 
         if( itriangle != 3*triRef->getCount() ) {

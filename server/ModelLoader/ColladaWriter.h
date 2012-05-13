@@ -787,6 +787,7 @@ public:
         string matid = parentid+string("_mat");
 
         AppearanceInfo& appearanceInfo = (*bodyInfo->appearances())[shapeInfo.appearanceIndex];
+        const FloatSequence& normals = appearanceInfo.normals;
         domEffectRef pdomeff;
         if ( appearanceInfo.materialIndex < 0 ) {
             MaterialInfo matInfo;
@@ -851,6 +852,35 @@ public:
                     pvertinput->setSource(domUrifragment(*pvertsource, string("#")+parentid+string("_positions")));
                 }
 
+                domSourceRef pnormsource = daeSafeCast<domSource>(pdommesh->add(COLLADA_ELEMENT_SOURCE));
+		if ( normals.length() > 0 && appearanceInfo.normalIndices.length() > 0 )
+                {
+                    pnormsource->setId((parentid+string("_normals")).c_str());
+
+                    domFloat_arrayRef parray = daeSafeCast<domFloat_array>(pnormsource->add(COLLADA_ELEMENT_FLOAT_ARRAY));
+                    parray->setId((parentid+string("_normals-array")).c_str());
+                    parray->setCount(normals.length());
+                    parray->setDigits(6); // 6 decimal places
+                    parray->getValue().setCount(normals.length());
+
+                    for(size_t ind = 0; ind < normals.length(); ++ind) {
+                        parray->getValue()[ind] = normals[ind];
+                    }
+
+                    domSource::domTechnique_commonRef psourcetec = daeSafeCast<domSource::domTechnique_common>(pnormsource->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
+                    domAccessorRef pacc = daeSafeCast<domAccessor>(psourcetec->add(COLLADA_ELEMENT_ACCESSOR));
+                    pacc->setCount(vertices.length());
+                    pacc->setSource(xsAnyURI(*pacc, string("#")+parentid+string("_normals-array")));
+                    pacc->setStride(3);
+
+                    domParamRef px = daeSafeCast<domParam>(pacc->add(COLLADA_ELEMENT_PARAM));
+                    px->setName("X"); px->setType("float");
+                    domParamRef py = daeSafeCast<domParam>(pacc->add(COLLADA_ELEMENT_PARAM));
+                    py->setName("Y"); py->setType("float");
+                    domParamRef pz = daeSafeCast<domParam>(pacc->add(COLLADA_ELEMENT_PARAM));
+                    pz->setName("Z"); pz->setType("float");
+                }
+
                 domTrianglesRef ptris = daeSafeCast<domTriangles>(pdommesh->add(COLLADA_ELEMENT_TRIANGLES));
                 {
                     ptris->setCount(triangles.length()/3);
@@ -860,10 +890,36 @@ public:
                     pvertoffset->setSemantic("VERTEX");
                     pvertoffset->setOffset(0);
                     pvertoffset->setSource(domUrifragment(*pverts, string("#")+parentid+string("/vertices")));
-                    domPRef pindices = daeSafeCast<domP>(ptris->add(COLLADA_ELEMENT_P));
-                    pindices->getValue().setCount(triangles.length());
-                    for(size_t ind = 0; ind < triangles.length(); ++ind)
-                        pindices->getValue()[ind] = triangles[ind];
+                    domInput_local_offsetRef pnormoffset = daeSafeCast<domInput_local_offset>(ptris->add(COLLADA_ELEMENT_INPUT));
+
+		    if ( normals.length() == 0 || appearanceInfo.normalIndices.length() == 0 ){
+
+			domPRef pindices = daeSafeCast<domP>(ptris->add(COLLADA_ELEMENT_P));
+			pindices->getValue().setCount(triangles.length()*2);
+
+			for(size_t ind = 0; ind < triangles.length(); ++ind)
+			    pindices->getValue()[ind*2+0] = triangles[ind];
+
+		    } else {
+
+			pnormoffset->setSemantic("NORMAL");
+			pnormoffset->setOffset(1);
+			pnormoffset->setSource(domUrifragment(*pverts, string("#")+parentid+string("_normals")));
+			domPRef pindices = daeSafeCast<domP>(ptris->add(COLLADA_ELEMENT_P));
+			pindices->getValue().setCount(triangles.length()*2);
+
+			if ( appearanceInfo.normalPerVertex == 1 ) {
+			    for(size_t ind = 0; ind < triangles.length(); ++ind) {
+				pindices->getValue()[ind*2+0] = triangles[ind];
+				pindices->getValue()[ind*2+1] = appearanceInfo.normalIndices[ind];
+			    }
+			} else { // normal per triangles
+			    for(size_t ind = 0; ind < triangles.length(); ++ind) {
+				pindices->getValue()[ind*2+0] = triangles[ind];
+				pindices->getValue()[ind*2+1] = appearanceInfo.normalIndices[triangles[ind]];
+			    }
+			}
+		    }
                 }
             }
         }
