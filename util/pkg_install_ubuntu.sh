@@ -76,6 +76,7 @@ create_srclist () {
 	exit
     fi
     openrtm_repo="deb http://www.openrtm.org/pub/Linux/ubuntu/ $code_name main"
+    collada_repo="deb http://ppa.launchpad.net/openrave/release/ubuntu $code_name main"
 }
 
 #---------------------------------------
@@ -93,6 +94,7 @@ update_source_list () {
 	    echo $msg7
 	else
 	    echo $openrtm_repo >> /etc/apt/sources.list
+            echo $collada_repo >> /etc/apt/sources.list.d/openrave-release.list
 	fi
     fi
 }
@@ -138,5 +140,6 @@ check_lang
 check_root
 create_srclist
 update_source_list
-update_source_list_partner
+#update_source_list_partner
+apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 58E6B835EDC85D09
 apt-get update
