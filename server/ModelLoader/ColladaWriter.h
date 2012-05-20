@@ -192,6 +192,7 @@ public:
         _geometriesLib->setId("geometries");
         _effectsLib = daeSafeCast<domLibrary_effects>(_dom->add(COLLADA_ELEMENT_LIBRARY_EFFECTS));
         _effectsLib->setId("effects");
+        _imagesLib = daeSafeCast<domLibrary_images>(_dom->add(COLLADA_ELEMENT_LIBRARY_IMAGES));
         _materialsLib = daeSafeCast<domLibrary_materials>(_dom->add(COLLADA_ELEMENT_LIBRARY_MATERIALS));
         _materialsLib->setId("materials");
         _kinematicsModelsLib = daeSafeCast<domLibrary_kinematics_models>(_dom->add(COLLADA_ELEMENT_LIBRARY_KINEMATICS_MODELS));
@@ -785,17 +786,48 @@ public:
         const int numTriangles = triangles.length() / 3;
         string effid = parentid+string("_eff");
         string matid = parentid+string("_mat");
+        string texid = parentid+string("_tex");
 
         AppearanceInfo& appearanceInfo = (*bodyInfo->appearances())[shapeInfo.appearanceIndex];
         const FloatSequence& normals = appearanceInfo.normals;
+        const FloatSequence& textures = appearanceInfo.textureCoordinate;
         domEffectRef pdomeff;
         if ( appearanceInfo.materialIndex < 0 ) {
             MaterialInfo matInfo;
             pdomeff = WriteEffect(matInfo);
         } else {
             pdomeff = WriteEffect((*bodyInfo->materials())[appearanceInfo.materialIndex]);
-        }
+	}
         pdomeff->setId(effid.c_str());
+
+        if ( appearanceInfo.textureIndex >= 0 ) {
+	    TextureInfo texture = (*bodyInfo->textures())[appearanceInfo.textureIndex];
+
+	    domProfile_commonRef pprofile = daeSafeCast<domProfile_common>(pdomeff->getDescendant(daeElement::matchType(domProfile_common::ID())));
+
+	    domFx_common_newparamRef pparam = daeSafeCast<domFx_common_newparam>(pprofile->add(COLLADA_ELEMENT_NEWPARAM));
+	    pparam->setSid("file1-sampler");
+	    domFx_sampler2DRef psampler = daeSafeCast<domFx_sampler2D>(pparam->add(COLLADA_ELEMENT_SAMPLER2D));
+	    daeElementRef psurface = pparam->add("surface");
+	    daeSafeCast<domInstance_image>(psampler->add("instance_image"))->setUrl(string("#"+texid).c_str());
+	    psampler->add("minfilter")->setCharData("LINEAR_MIPMAP_LINEAR");
+	    psampler->add("magfilter")->setCharData("LINEAR");
+
+	    domProfile_common::domTechnique::domPhongRef pphong = daeSafeCast<domProfile_common::domTechnique::domPhong>(pdomeff->getDescendant(daeElement::matchType(domProfile_common::domTechnique::domPhong::ID())));
+	    {
+		domFx_common_color_or_textureRef pdiffuse = daeSafeCast<domFx_common_color_or_texture>(pphong->getDescendant(daeElement::matchType(domFx_common_color_or_texture::ID())));
+		pphong->removeFromParent(pphong->getDiffuse());
+	    }
+
+	    domFx_common_color_or_textureRef pdiffuse = daeSafeCast<domFx_common_color_or_texture>(pphong->add(COLLADA_ELEMENT_DIFFUSE));
+	    domFx_common_color_or_texture::domTextureRef pdiffusetexture = daeSafeCast<domFx_common_color_or_texture::domTexture>(pdiffuse->add(COLLADA_ELEMENT_TEXTURE));
+	    pdiffusetexture->setAttribute("texture", "file1-sampler");
+	    pdiffusetexture->setAttribute("texcoord", "TEX0");
+
+            domImageRef pdomtex;
+	    pdomtex = WriteTexture((*bodyInfo->textures())[appearanceInfo.textureIndex]);
+	    pdomtex->setId(texid.c_str());
+	}
 
         domMaterialRef pdommat = daeSafeCast<domMaterial>(_materialsLib->add(COLLADA_ELEMENT_MATERIAL));
         pdommat->setId(matid.c_str());
@@ -817,7 +849,7 @@ public:
 
                     domFloat_arrayRef parray = daeSafeCast<domFloat_array>(pvertsource->add(COLLADA_ELEMENT_FLOAT_ARRAY));
                     parray->setId((parentid+string("_positions-array")).c_str());
-                    parray->setCount(vertices.length()/3);
+                    parray->setCount(vertices.length());
                     parray->setDigits(6); // 6 decimal places
                     parray->getValue().setCount(vertices.length());
 
@@ -832,7 +864,7 @@ public:
 
                     domSource::domTechnique_commonRef psourcetec = daeSafeCast<domSource::domTechnique_common>(pvertsource->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
                     domAccessorRef pacc = daeSafeCast<domAccessor>(psourcetec->add(COLLADA_ELEMENT_ACCESSOR));
-                    pacc->setCount(vertices.length());
+                    pacc->setCount(vertices.length()/3);
                     pacc->setSource(xsAnyURI(*pacc, string("#")+parentid+string("_positions-array")));
                     pacc->setStride(3);
 
@@ -869,7 +901,7 @@ public:
 
                     domSource::domTechnique_commonRef psourcetec = daeSafeCast<domSource::domTechnique_common>(pnormsource->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
                     domAccessorRef pacc = daeSafeCast<domAccessor>(psourcetec->add(COLLADA_ELEMENT_ACCESSOR));
-                    pacc->setCount(vertices.length());
+                    pacc->setCount(normals.length()/3);
                     pacc->setSource(xsAnyURI(*pacc, string("#")+parentid+string("_normals-array")));
                     pacc->setStride(3);
 
@@ -881,43 +913,73 @@ public:
                     pz->setName("Z"); pz->setType("float");
                 }
 
+                domSourceRef ptexsource = daeSafeCast<domSource>(pdommesh->add(COLLADA_ELEMENT_SOURCE));
+		if ( textures.length() > 0 && appearanceInfo.textureCoordIndices.length() >= 0 )
+                {
+                    ptexsource->setId((parentid+string("_texcoords")).c_str());
+
+                    domFloat_arrayRef parray = daeSafeCast<domFloat_array>(ptexsource->add(COLLADA_ELEMENT_FLOAT_ARRAY));
+                    parray->setId((parentid+string("_texcoords-array")).c_str());
+                    parray->setCount(textures.length());
+                    parray->setDigits(6); // 6 decimal places
+                    parray->getValue().setCount(textures.length());
+
+                    for(size_t ind = 0; ind < textures.length(); ++ind) {
+                        parray->getValue()[ind] = textures[ind];
+                    }
+
+                    domSource::domTechnique_commonRef psourcetec = daeSafeCast<domSource::domTechnique_common>(ptexsource->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
+                    domAccessorRef pacc = daeSafeCast<domAccessor>(psourcetec->add(COLLADA_ELEMENT_ACCESSOR));
+                    pacc->setCount(vertices.length()/2);
+                    pacc->setSource(xsAnyURI(*pacc, string("#")+parentid+string("_textures-array")));
+                    pacc->setStride(2);
+
+                    domParamRef ps = daeSafeCast<domParam>(pacc->add(COLLADA_ELEMENT_PARAM));
+                    ps->setName("S"); ps->setType("float");
+                    domParamRef pt = daeSafeCast<domParam>(pacc->add(COLLADA_ELEMENT_PARAM));
+                    pt->setName("T"); pt->setType("float");
+                }
+
                 domTrianglesRef ptris = daeSafeCast<domTriangles>(pdommesh->add(COLLADA_ELEMENT_TRIANGLES));
                 {
+		    int offset = 0;
                     ptris->setCount(triangles.length()/3);
                     ptris->setMaterial("mat0");
 
                     domInput_local_offsetRef pvertoffset = daeSafeCast<domInput_local_offset>(ptris->add(COLLADA_ELEMENT_INPUT));
                     pvertoffset->setSemantic("VERTEX");
-                    pvertoffset->setOffset(0);
+                    pvertoffset->setOffset(offset++);
                     pvertoffset->setSource(domUrifragment(*pverts, string("#")+parentid+string("/vertices")));
-                    domInput_local_offsetRef pnormoffset = daeSafeCast<domInput_local_offset>(ptris->add(COLLADA_ELEMENT_INPUT));
 
-		    if ( normals.length() == 0 || appearanceInfo.normalIndices.length() == 0 ){
+		    domPRef pindices = daeSafeCast<domP>(ptris->add(COLLADA_ELEMENT_P));
 
-			domPRef pindices = daeSafeCast<domP>(ptris->add(COLLADA_ELEMENT_P));
-			pindices->getValue().setCount(triangles.length()*2);
-
-			for(size_t ind = 0; ind < triangles.length(); ++ind)
-			    pindices->getValue()[ind*2+0] = triangles[ind];
-
-		    } else {
-
+		    if ( normals.length() > 0 && appearanceInfo.normalIndices.length() > 0 ){
+			domInput_local_offsetRef pnormoffset = daeSafeCast<domInput_local_offset>(ptris->add(COLLADA_ELEMENT_INPUT));
 			pnormoffset->setSemantic("NORMAL");
-			pnormoffset->setOffset(1);
+			pnormoffset->setOffset(offset++);
 			pnormoffset->setSource(domUrifragment(*pverts, string("#")+parentid+string("_normals")));
-			domPRef pindices = daeSafeCast<domP>(ptris->add(COLLADA_ELEMENT_P));
-			pindices->getValue().setCount(triangles.length()*2);
 
-			if ( appearanceInfo.normalPerVertex == 1 ) {
-			    for(size_t ind = 0; ind < triangles.length(); ++ind) {
-				pindices->getValue()[ind*2+0] = triangles[ind];
-				pindices->getValue()[ind*2+1] = appearanceInfo.normalIndices[ind];
+		    }
+		    if ( textures.length() > 0 && appearanceInfo.textureCoordIndices.length() > 0 ){
+			domInput_local_offsetRef ptexoffset = daeSafeCast<domInput_local_offset>(ptris->add(COLLADA_ELEMENT_INPUT));
+			ptexoffset->setSemantic("TEXCOORD");
+			ptexoffset->setOffset(offset++);
+			ptexoffset->setSource(domUrifragment(*pverts, string("#")+parentid+string("_texcoords")));
+		    }
+		    pindices->getValue().setCount(triangles.length()*offset);
+
+		    for(size_t ind = 0; ind < triangles.length(); ++ind) {
+			int i = ind * offset;
+			pindices->getValue()[i++] = triangles[ind];
+			if ( normals.length() > 0 && appearanceInfo.normalIndices.length() > 0 ){
+			    if ( appearanceInfo.normalPerVertex == 1 ) {
+				pindices->getValue()[i++] = appearanceInfo.normalIndices[ind];
+			    } else {
+				pindices->getValue()[i++] = appearanceInfo.normalIndices[triangles[ind]];
 			    }
-			} else { // normal per triangles
-			    for(size_t ind = 0; ind < triangles.length(); ++ind) {
-				pindices->getValue()[ind*2+0] = triangles[ind];
-				pindices->getValue()[ind*2+1] = appearanceInfo.normalIndices[triangles[ind]];
-			    }
+			}
+			if (textures.length() > 0 && appearanceInfo.textureCoordIndices.length() > 0 ){
+			    pindices->getValue()[i++] = appearanceInfo.textureCoordIndices[ind];
 			}
 		    }
                 }
@@ -935,6 +997,7 @@ public:
         domEffectRef pdomeff = daeSafeCast<domEffect>(_effectsLib->add(COLLADA_ELEMENT_EFFECT));
 
         domProfile_commonRef pprofile = daeSafeCast<domProfile_common>(pdomeff->add(COLLADA_ELEMENT_PROFILE_COMMON));
+
         domProfile_common::domTechniqueRef ptec = daeSafeCast<domProfile_common::domTechnique>(pprofile->add(COLLADA_ELEMENT_TECHNIQUE));
 
         domProfile_common::domTechnique::domPhongRef pphong = daeSafeCast<domProfile_common::domTechnique::domPhong>(ptec->add(COLLADA_ELEMENT_PHONG));
@@ -948,12 +1011,12 @@ public:
         pambientcolor->getValue()[3] = 1;
 
         domFx_common_color_or_textureRef pdiffuse = daeSafeCast<domFx_common_color_or_texture>(pphong->add(COLLADA_ELEMENT_DIFFUSE));
-        domFx_common_color_or_texture::domColorRef pdiffusecolor = daeSafeCast<domFx_common_color_or_texture::domColor>(pdiffuse->add(COLLADA_ELEMENT_COLOR));
-        pdiffusecolor->getValue().setCount(4);
-        pdiffusecolor->getValue()[0] = material.diffuseColor[0];
-        pdiffusecolor->getValue()[1] = material.diffuseColor[1];
-        pdiffusecolor->getValue()[2] = material.diffuseColor[2];
-        pdiffusecolor->getValue()[3] = 1;
+	domFx_common_color_or_texture::domColorRef pdiffusecolor = daeSafeCast<domFx_common_color_or_texture::domColor>(pdiffuse->add(COLLADA_ELEMENT_COLOR));
+	pdiffusecolor->getValue().setCount(4);
+	pdiffusecolor->getValue()[0] = material.diffuseColor[0];
+	pdiffusecolor->getValue()[1] = material.diffuseColor[1];
+	pdiffusecolor->getValue()[2] = material.diffuseColor[2];
+	pdiffusecolor->getValue()[3] = 1;
 
         domFx_common_color_or_textureRef pspecular = daeSafeCast<domFx_common_color_or_texture>(pphong->add(COLLADA_ELEMENT_SPECULAR));
         domFx_common_color_or_texture::domColorRef pspecularcolor = daeSafeCast<domFx_common_color_or_texture::domColor>(pspecular->add(COLLADA_ELEMENT_COLOR));
@@ -974,6 +1037,19 @@ public:
         //domFx_common_color_or_textureRef ptransparency = daeSafeCast<domFx_common_color_or_texture>(pphong->add(COLLADA_ELEMENT_TRANSPARENCY));
         //ptransparency->setAttribute("opage","A_ZERO");  // 0 is opaque
         return pdomeff;
+    }
+
+    /// Write texture
+    virtual domImageRef WriteTexture(const TextureInfo& texture)
+    {
+        domImageRef pdomimg = daeSafeCast<domImage>(_imagesLib->add(COLLADA_ELEMENT_IMAGE));
+	pdomimg->setName(texture.url);
+	domImage::domInit_fromRef pdominitfrom = daeSafeCast<domImage::domInit_from>(pdomimg->add(COLLADA_ELEMENT_INIT_FROM));
+	if ( ! pdominitfrom->setCharData(string(texture.url)) ) {
+	    domImage_source::domRefRef pdomref = daeSafeCast<domImage_source::domRef>(pdominitfrom->add(COLLADA_ELEMENT_REF));
+	    pdomref->setValue(texture.url);
+	}
+        return pdomimg;
     }
 
     virtual daeElementRef WriteSensor(const SensorInfo& sensor, const string& parentid)
@@ -1335,6 +1411,7 @@ private:
     domLibrary_physics_modelsRef _physicsModelsLib;
     domLibrary_materialsRef _materialsLib;
     domLibrary_effectsRef _effectsLib;
+    domLibrary_imagesRef _imagesLib;
     domLibrary_geometriesRef _geometriesLib;
     domTechniqueRef _sensorsLib; ///< custom sensors library
     domTechniqueRef _actuatorsLib; ///< custom actuators library

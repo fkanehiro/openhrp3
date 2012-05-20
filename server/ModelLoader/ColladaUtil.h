@@ -29,6 +29,7 @@
 #include <dom/domTriangles.h>
 #include <dae/daeDocument.h>
 #include <dom/domTypes.h>
+#include <dom/domImage.h>
 #include <dom/domElements.h>
 #include <dom/domKinematics.h>
 #include <dae/daeStandardURIResolver.h>
