@@ -94,8 +94,11 @@ update_source_list () {
 	    echo $msg7
 	else
 	    echo $openrtm_repo >> /etc/apt/sources.list
-            echo $collada_repo >> /etc/apt/sources.list.d/openrave-release.list
 	fi
+    fi
+    colladasite=`grep http://ppa.launchpad.net/openrave/release/ubuntu /etc/apt/sources.list.d/openrave-release.list`
+    if test "x$colladasite" = "x" ; then
+        echo $collada_repo >> /etc/apt/sources.list.d/openrave-release.list
     fi
 }
 
