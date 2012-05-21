@@ -1,9 +1,8 @@
 # package list for ubuntu 11.04
 
 # java
-sun-java6-jdk
-sun-java6-fonts
-sun-java6-plugin
+openjdk-6-jdk
+openjdk-6-jre
 jython
 libreadline-java
 java-common
@@ -36,11 +35,11 @@ libomniorb4-dev
 libomnithread3-dev
 libomnithread3c2
 omnievents
-omniidl4
+omniidl
 omniidl-python
-omniorb4
-omniorb4-idl
-omniorb4-nameserver
+omniorb
+omniorb-idl
+omniorb-nameserver
 #python-omniorb2
 python-tk
 
@@ -79,6 +78,12 @@ openrtm-aist
 openrtm-aist-doc
 openrtm-aist-dev
 openrtm-aist-example
+
+#eigen3
+libeigen3-dev
+
+#collada
+libcollada15dom-dev
 
 # for hrpsys
 # libncurses5-dev
