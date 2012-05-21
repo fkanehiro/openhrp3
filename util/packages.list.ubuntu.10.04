@@ -79,6 +79,13 @@ openrtm-aist-doc
 openrtm-aist-dev
 openrtm-aist-example
 
+#eigen
+libeigen3-dev
+
+#collada
+libcollada15dom-dev
+
+
 # for hrpsys
 # libncurses5-dev
 # libreadline5-dev
