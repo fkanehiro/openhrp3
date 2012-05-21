@@ -1073,6 +1073,7 @@ class ColladaReader : public daeErrorHandler
 
             //  Gets materials
             map<string, int> mapmaterials;
+            map<string, int> maptextures;
             if (!!domigeom->getBind_material() && !!domigeom->getBind_material()->getTechnique_common()) {
                 const domInstance_material_Array& matarray = domigeom->getBind_material()->getTechnique_common()->getInstance_material_array();
                 for (size_t imat = 0; imat < matarray.getCount(); ++imat) {
@@ -1082,12 +1083,48 @@ class ColladaReader : public daeErrorHandler
                         pkinbody->materials_.length(mindex+1);
                         _FillMaterial(pkinbody->materials_[mindex],pdommat);
 			mapmaterials[matarray[imat]->getSymbol()] = mindex;
+
+			if( !!pdommat && !!pdommat->getInstance_effect() ) {
+			    domEffectRef peffect = daeSafeCast<domEffect>(pdommat->getInstance_effect()->getUrl().getElement().cast());
+			    if( !!peffect ) {
+				domProfile_common::domTechnique::domPhongRef pphong = daeSafeCast<domProfile_common::domTechnique::domPhong>(peffect->getDescendant(daeElement::matchType(domProfile_common::domTechnique::domPhong::ID())));
+				if( !!pphong && !!pphong->getDiffuse() && !!pphong->getDiffuse()->getTexture() ) {
+				    // search for newparam that matches sid
+				    daeElementRefArray psamplers = daeSidRef(pphong->getDiffuse()->getTexture()->getTexture(), peffect).resolve().elt->getChildren();
+				    daeElementRef psampler;
+				    for (size_t i = 0; i < psamplers.getCount(); ++i ) {
+					if ( strcmp(psamplers[i]->getElementName(),"sampler2D") == 0 ) {
+					    psampler = psamplers[i];
+					}
+				    }
+				    //
+				    domInstance_imageRef pinstanceimage;
+				    for (size_t i = 0; i < psampler->getChildren().getCount(); ++i ) {
+					if ( strcmp(psampler->getChildren()[i]->getElementName(), "instance_image") == 0 ) {
+					    pinstanceimage = daeSafeCast<domInstance_image>(psampler->getChildren()[i]);
+					}
+				    }
+				    domImageRef image = daeSafeCast<domImage>(pinstanceimage->getUrl().getElement());
+				    if ( image && image->getInit_from() && image->getInit_from()->getRef() ) {
+					int tindex = pkinbody->textures_.length();
+					pkinbody->textures_.length(tindex+1);
+					TextureInfo_var texture(new TextureInfo());
+					texture->repeatS = 1;
+					texture->repeatT = 1;
+					texture->url = string(image->getInit_from()->getRef()->getValue().path()).c_str();
+					pkinbody->textures_[tindex] = texture;
+					maptextures[matarray[imat]->getSymbol()] = tindex;
+
+				    }
+				}
+			    }
+			}
                     }
                 }
             }
 
             //  Gets the geometry
-            bhasgeometry |= ExtractGeometry(pkinbody, plink, domgeom, mapmaterials);
+            bhasgeometry |= ExtractGeometry(pkinbody, plink, domgeom, mapmaterials, maptextures);
         }
 
         if( !bhasgeometry ) {
@@ -1122,7 +1159,7 @@ class ColladaReader : public daeErrorHandler
     /// \param  vertsRef    Array of vertices of the COLLADA's model
     /// \param  mapmaterials    Materials applied to the geometry
     /// \param  plink   Link of the kinematics model
-    bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTrianglesRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials)
+    bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTrianglesRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials, const map<string,int>& maptextures)
     {
         if( !triRef ) {
 	    COLLADALOG_WARN(str(boost::format("fail to _ExtractGeometry(LinkInfo,Triangles,Vertices) of %s")%plink->name));
@@ -1155,8 +1192,8 @@ class ColladaReader : public daeErrorHandler
         shape.appearanceIndex = aindex;
 
         size_t triangleIndexStride = 0;
-	int vertexoffset = -1, normaloffset = -1;
-        domInput_local_offsetRef indexOffsetRef, normalOffsetRef;
+	int vertexoffset = -1, normaloffset = -1, texcoordoffset = -1;
+        domInput_local_offsetRef indexOffsetRef, normalOffsetRef, texcoordOffsetRef;
 
         for (unsigned int w=0;w<triRef->getInput_array().getCount();w++) {
             size_t offset = triRef->getInput_array()[w]->getOffset();
@@ -1168,6 +1205,10 @@ class ColladaReader : public daeErrorHandler
             if (!strcmp(str,"NORMAL")) {
                 normalOffsetRef = triRef->getInput_array()[w];
                 normaloffset = offset;
+            }
+            if (!strcmp(str,"TEXCOORD")) {
+		texcoordOffsetRef = triRef->getInput_array()[w];
+                texcoordoffset = offset;
             }
             if (offset> triangleIndexStride) {
                 triangleIndexStride = offset;
@@ -1241,6 +1282,42 @@ class ColladaReader : public daeErrorHandler
                     }
 		}
 
+		if ( texcoordoffset >= 0 ) {
+		    const domSourceRef texcoordNode = daeSafeCast<domSource>(texcoordOffsetRef->getSource().getElement());
+		    const domFloat_arrayRef texcoordArray = texcoordNode->getFloat_array();
+		    const domList_of_floats& texcoordFloats = texcoordArray->getValue();
+		    AppearanceInfo& ainfo = pkinbody->appearances_[shape.appearanceIndex];
+		    map<string,int>::const_iterator itmat = maptextures.find(triRef->getMaterial());
+		    if( itmat != mapmaterials.end() ) {
+			ainfo.textureIndex = itmat->second;
+		    } else {
+			ainfo.textureIndex = 0;
+		    }
+		    ainfo.textureCoordinate.length(texcoordArray->getCount());
+		    ainfo.textureCoordIndices.length(triRef->getCount()*3);
+		    int k = texcoordoffset;
+		    int itriangle = 0;
+                    for(size_t itex = 0; itex < texcoordArray->getCount() ; ++itex) {
+			ainfo.textureCoordinate[itex] = texcoordFloats.get(itex);
+		    }
+                    for(size_t itri = 0; itri < triRef->getCount(); ++itri) {
+                        if(k+2*triangleIndexStride < indexArray.getCount() ) {
+                            for (int j=0;j<3;j++) {
+                                int index0 = indexArray.get(k);
+                                k+=triangleIndexStride;
+				ainfo.textureCoordIndices[itriangle++]  = index0;
+                            }
+                        }
+                    }
+		    for(int i=0,k=0; i<3; i++) {
+			for(int j=0; j<3; j++) {
+			    if ( i==j )
+				ainfo.textransformMatrix[k++] = 1;
+			    else
+				ainfo.textransformMatrix[k++] = 0;
+			}
+		    }
+		}
 	    } else if ( strcmp(str,"NORMAL") == 0 ) {
 		COLLADALOG_WARN("read normals from collada file");
                 const domSourceRef normalNode = daeSafeCast<domSource>(localRef->getSource().getElement());
@@ -1347,7 +1424,7 @@ class ColladaReader : public daeErrorHandler
     /// \param  vertsRef    Array of vertices of the COLLADA's model
     /// \param  mapmaterials    Materials applied to the geometry
     /// \param  plink   Link of the kinematics model
-    bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTrifansRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials)
+    bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTrifansRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials, const map<string,int>& maptextures)
     {
         if( !triRef ) {
 	    COLLADALOG_WARN(str(boost::format("fail to _ExtractGeometry(LinkInfo,Trifans,Vertices) of %s")%plink->name));
@@ -1442,7 +1519,7 @@ class ColladaReader : public daeErrorHandler
     /// \param  vertsRef    Array of vertices of the COLLADA's model
     /// \param  mapmaterials    Materials applied to the geometry
     /// \param  plink   Link of the kinematics model
-    bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTristripsRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials)
+    bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domTristripsRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials, const map<string,int>& maptextures)
     {
         if( !triRef ) {
 	    COLLADALOG_WARN(str(boost::format("fail to _ExtractGeometry(LinkInfo,Tristrips,Vertices) of %s")%plink->name));
@@ -1540,7 +1617,7 @@ class ColladaReader : public daeErrorHandler
     /// \param  vertsRef    Array of vertices of the COLLADA's model
     /// \param  mapmaterials    Materials applied to the geometry
     /// \param  plink   Link of the kinematics model
-    bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domPolylistRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials)
+    bool _ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domPolylistRef triRef, const domVerticesRef vertsRef, const map<string,int>& mapmaterials, const map<string,int>& maptextures)
     {
         if( !triRef ) {
 	    COLLADALOG_WARN(str(boost::format("fail to _ExtractGeometry(LinkInfo,Polylist,VErtices) of %s")%plink->name));
@@ -1630,7 +1707,7 @@ class ColladaReader : public daeErrorHandler
     /// \param  geom    Geometry to extract of the COLLADA's model
     /// \param  mapmaterials    Materials applied to the geometry
     /// \param  plink   Link of the kinematics model
-    bool ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domGeometryRef geom, const map<string,int>& mapmaterials)
+    bool ExtractGeometry(BodyInfoCollada_impl* pkinbody, boost::shared_ptr<LinkInfo> plink, const domGeometryRef geom, const map<string,int>& mapmaterials, const map<string,int>& maptextures)
     {
         if( !geom ) {
 	    COLLADALOG_WARN(str(boost::format("fail to ExtractGeometry(plink,geom) of %s")%plink->name));
@@ -1640,16 +1717,16 @@ class ColladaReader : public daeErrorHandler
         if (geom->getMesh()) {
             const domMeshRef meshRef = geom->getMesh();
             for (size_t tg = 0;tg<meshRef->getTriangles_array().getCount();tg++) {
-                _ExtractGeometry(pkinbody, plink, meshRef->getTriangles_array()[tg], meshRef->getVertices(), mapmaterials);
+                _ExtractGeometry(pkinbody, plink, meshRef->getTriangles_array()[tg], meshRef->getVertices(), mapmaterials, maptextures);
             }
             for (size_t tg = 0;tg<meshRef->getTrifans_array().getCount();tg++) {
-                _ExtractGeometry(pkinbody, plink, meshRef->getTrifans_array()[tg], meshRef->getVertices(), mapmaterials);
+                _ExtractGeometry(pkinbody, plink, meshRef->getTrifans_array()[tg], meshRef->getVertices(), mapmaterials, maptextures);
             }
             for (size_t tg = 0;tg<meshRef->getTristrips_array().getCount();tg++) {
-                _ExtractGeometry(pkinbody, plink, meshRef->getTristrips_array()[tg], meshRef->getVertices(), mapmaterials);
+                _ExtractGeometry(pkinbody, plink, meshRef->getTristrips_array()[tg], meshRef->getVertices(), mapmaterials, maptextures);
             }
             for (size_t tg = 0;tg<meshRef->getPolylist_array().getCount();tg++) {
-                _ExtractGeometry(pkinbody, plink, meshRef->getPolylist_array()[tg], meshRef->getVertices(), mapmaterials);
+                _ExtractGeometry(pkinbody, plink, meshRef->getPolylist_array()[tg], meshRef->getVertices(), mapmaterials, maptextures);
             }
             if( meshRef->getPolygons_array().getCount()> 0 ) {
                 COLLADALOG_WARN("openrave does not support collada polygons");
