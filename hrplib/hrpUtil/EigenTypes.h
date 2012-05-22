@@ -8,6 +8,7 @@ namespace hrp{
     typedef Eigen::Matrix3d Matrix33;
     typedef Eigen::MatrixXd dmatrix;
     typedef Eigen::VectorXd dvector;
+    typedef Eigen::VectorXi ivector;
     typedef Eigen::Matrix<double, 6,1> dvector6;
 };
 
