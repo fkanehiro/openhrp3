@@ -26,6 +26,7 @@ using namespace std;
 #include <boost/foreach.hpp>
 #include "ColladaWriter.h"
 #include "BodyInfoCollada_impl.h"
+#include "SceneInfoCollada_impl.h"
 
 static bool IsColladaFile(const std::string& filename)
 {
@@ -307,10 +308,21 @@ SceneInfo_ptr ModelLoader_impl::loadSceneInfo(const char* url)
 {
     cout << "loading " << url << endl;
 
-    SceneInfo_impl* sceneInfo = new SceneInfo_impl(poa);
-
+    SceneInfo_impl* sceneInfo;
     try {
-	sceneInfo->load(url);
+#ifdef OPENHRP_COLLADA_FOUND
+        if( IsColladaFile(url) ) {
+            SceneInfoCollada_impl* p = new SceneInfoCollada_impl(poa);
+	    p->load(url);
+	    sceneInfo = p;
+	}
+	else
+#endif
+	{
+	    SceneInfo_impl* p = new SceneInfo_impl(poa);
+	    p->load(url);
+	    sceneInfo = p;
+	}
     }
     catch(OpenHRP::ModelLoader::ModelLoaderException& ex){
 	cout << "loading failed.\n";

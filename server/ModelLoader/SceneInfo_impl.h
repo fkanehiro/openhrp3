@@ -46,6 +46,10 @@ private:
     std::string url_;
     TransformedShapeIndexSequence shapeIndices_;
     DblArray12Sequence inlinedShapeTransformMatrices_;
+
+#ifdef OPENHRP_COLLADA_FOUND
+    friend class SceneInfoCollada_impl;
+#endif
 };
 
 
