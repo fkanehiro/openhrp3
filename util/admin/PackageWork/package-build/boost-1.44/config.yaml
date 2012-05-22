@@ -1,0 +1,5 @@
+HARVEST_PATH: ./temp      # リリース物件を格納するディレクトリ
+COLLECT_YAML_FILE: collect.yaml # OpenHRP以外のリリース物件のファイル定義
+TEMPLATE_FILE_E: boost.wxs.template    # wxsテンプレートファイル
+OUT_WXS_FILE_E: boost.wxs      # 出力わきのwxsファイル名
+INSTALL_DIR_NAME: boost_1_44    # インストール時のディレクトリ名 C:\Program Files\$(INSTALL_DIR_NAME)

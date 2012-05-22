@@ -1,0 +1,10 @@
+# OpenHRP以外のリリース物件のファイル定義
+- name: Boost-1.44
+  feature: true
+  description: Boost-1.44
+  path: C:\Program Files\boost\boost_1_44
+  files:
+    ./:
+      - lib/
+      - boost/
+
