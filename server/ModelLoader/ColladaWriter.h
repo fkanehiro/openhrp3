@@ -168,7 +168,7 @@ public:
 
             domAsset::domContributorRef contrib = daeSafeCast<domAsset::domContributor>( asset->add( COLLADA_TYPE_CONTRIBUTOR ) );
             domAsset::domContributor::domAuthoring_toolRef authoringtool = daeSafeCast<domAsset::domContributor::domAuthoring_tool>( contrib->add( COLLADA_ELEMENT_AUTHORING_TOOL ) );
-            authoringtool->setValue("OpenRAVE Collada Writer");
+            authoringtool->setValue("OpenHRP3 Collada Writer");
             domAsset::domContributor::domCommentsRef comments = daeSafeCast<domAsset::domContributor::domComments>( contrib->add( COLLADA_ELEMENT_COMMENTS ) );
             comments->setValue(comment_str);
 
