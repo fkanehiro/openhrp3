@@ -1,0 +1,8 @@
+# OpenHRP以外のリリース物件のファイル定義
+- name: eigen-3.0.2
+  feature: true
+  description: eigen-3.0.2
+  path: C:\Program Files\Eigen\include
+  files:
+    include/:
+      - eigen3/
