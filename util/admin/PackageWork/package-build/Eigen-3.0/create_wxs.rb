@@ -210,7 +210,7 @@ class Environment
   end
   
   def wxs_str(indentCount)
-    str = INDENT_STR * indentCount + %Q!<Environment Id='#{@id}' Action='#{@action}' Name='#{@name}' Part='#{@part}' System='#{system}' Permanent='no' Value='#{@value}' />\n!
+    str = INDENT_STR * indentCount + %Q!<Environment Id='#{@id}' Action='#{@action}' Name='#{@name}' Part='#{@part}' System='#{system}' Value='#{@value}' />\n!
     return str
   end
 end
@@ -346,6 +346,6 @@ for category in collectData
 end
 
 root.init("INSTALLLOCATION", $config['INSTALL_DIR_NAME'], $config['HARVEST_PATH'])
-root.addEnvironment("path", "[INSTALLLOCATION]\lib", "set", "last", "yes")
+#root.addEnvironment($config['ENV_ROOT_NAME'], "[INSTALLLOCATION]", "set", "all", "yes")
 
 create_wxs(root, $config['TEMPLATE_FILE_E'], $config['OUT_WXS_FILE_E'])

@@ -1,0 +1,23 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='eigen-3.0.2'
+           Id='{7341962E-DEC3-4a4b-A0E0-32D7BF4D0053}'
+           UpgradeCode='{5C9A03B5-1AE1-4e82-AD37-E5E0CAB4C8E2}'
+           Language='1033' Codepage='1252'
+           Version='3.0.2' Manufacturer='AIST'>
+    <Package Id='*' Keywords='Installer'
+             Description='eigen-3.0.2 Installer'
+             Comments='eigen-3.0.2 Installer'
+             Manufacturer='AIST' InstallerVersion='100'
+             Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+    <Media Id='1' Cabinet='eigen.cab' EmbedCab='yes' />
+<!-- %%Directory%% -->
+<!-- %%Component%% -->
+<!-- %%Feature%% -->
+    <UIRef Id="WixUI_InstallDir" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
+  </Product>
+</Wix>
