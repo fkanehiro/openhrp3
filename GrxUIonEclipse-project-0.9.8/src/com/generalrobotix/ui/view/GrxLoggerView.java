@@ -64,7 +64,7 @@ public class GrxLoggerView extends GrxBaseView {
 
 	private int current_ = 0;    // current position
 	private double playRate_ = 1.0; // playback rate
-	private int frameRate_ = maxFrameRate_;
+	private int frameRate_ = defaultFrameRate_;
 	private boolean isPlaying_ = false;
     private boolean isControlDisabled_ = false; 
     private boolean inSimulation_ = false;
@@ -110,6 +110,7 @@ public class GrxLoggerView extends GrxBaseView {
         "icond_fastfwd.png" }; //$NON-NLS-1$
 
     private final static int    maxFrameRate_ = 50;
+    private final static int    defaultFrameRate_ = 10;
 	private Label  lblPlayRate_;
 	
 	private static DecimalFormat FORMAT_FAST  =  new DecimalFormat("Play x ##;Play x-##"); //$NON-NLS-1$
@@ -293,7 +294,7 @@ public class GrxLoggerView extends GrxBaseView {
 		
 		// frame rate
 		lblFrameRate_ = new Label(composite_, SWT.NONE);
-		lblFrameRate_.setText(MessageBundle.get("GrxLoggerView.label.FPS")+maxFrameRate_); //$NON-NLS-1$
+		lblFrameRate_.setText(MessageBundle.get("GrxLoggerView.label.FPS")+defaultFrameRate_); //$NON-NLS-1$
 		
 		// フレームレート変更スライダ
 		sliderFrameRate_ = new Scale( composite_, SWT.HORIZONTAL );
@@ -301,7 +302,7 @@ public class GrxLoggerView extends GrxBaseView {
 		sliderFrameRate_.setSize(80, 27);
 		sliderFrameRate_.setMaximum(maxFrameRate_);
 		sliderFrameRate_.setMinimum(1);
-		sliderFrameRate_.setSelection(maxFrameRate_);
+		sliderFrameRate_.setSelection(defaultFrameRate_);
         sliderFrameRate_.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent e){
                 frameRate_ = sliderFrameRate_.getSelection();
