@@ -21,15 +21,17 @@ if( COLLADA_DOM_FOUND )
   set(sources ${sources} BodyInfoCollada_impl.cpp)
   include_directories(${COLLADA_DOM_INCLUDE_DIRS})
   link_directories(${COLLADA_DOM_LIBRARY_DIRS})
-  set(extralibraries  ${COLLADA_DOM_LIBRARIES} boost_system-mt)
   add_executable(${exporter} ${sources2})
   if(WIN32)
+    set(extralibraries  ${COLLADA_DOM_LIBRARIES})
     find_package(Boost ${COLLADA_DOM_Boost_VERSION} EXACT COMPONENTS signals system)
     set(extralibraries_win  optimized ${extralibraries} debug ${extralibraries}d
       ${Boost_DATE_TIME_LIBRARY}
       ${Boost_THREAD_LIBRARY}
       ${Boost_SIGNALS_LIBRARY}
       ${Boost_SYSTEM_LIBRARY} )
+  else(WIN32)
+    set(extralibraries  ${COLLADA_DOM_LIBRARIES} boost_system-mt)
   endif(WIN32)
 else( COLLADA_DOM_FOUND )
   set(extralibraries)
