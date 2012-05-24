@@ -1,0 +1,10 @@
+# OpenHRP以外のリリース物件のファイル定義
+- name: collada_dom-2.3.1
+  feature: true
+  description: collada_dom-2.3.1
+  path: C:\Program Files\collada_dom-2.3.1
+  files:
+    ./:
+      - lib/
+      - include/
+
