@@ -64,7 +64,7 @@ if(UNIX)
 set(javac_flags ${JAVAC_VFLAG} -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
   -classpath ${package_path}:${GrxUI_ON_ECLIPSE_DIR}/${rtm_stub_jar} -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
 elseif(WIN32)
-set(javac_flags ${JAVAC_VFLAG} -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
+set(javac_flags ${JAVAC_VFLAG} -d ${CMAKE_CURRENT_BINARY_DIR}
   -classpath "${package_path}\;${GrxUI_ON_ECLIPSE_DIR}/${rtm_stub_jar}" -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
 endif()
 
