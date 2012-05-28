@@ -1288,33 +1288,32 @@ class ColladaReader : public daeErrorHandler
 		    const domList_of_floats& texcoordFloats = texcoordArray->getValue();
 		    AppearanceInfo& ainfo = pkinbody->appearances_[shape.appearanceIndex];
 		    map<string,int>::const_iterator itmat = maptextures.find(triRef->getMaterial());
-		    if( itmat != mapmaterials.end() ) {
+		    if( itmat != maptextures.end() ) {
 			ainfo.textureIndex = itmat->second;
-		    } else {
-			ainfo.textureIndex = -1;
-		    }
-		    ainfo.textureCoordinate.length(texcoordArray->getCount());
-		    ainfo.textureCoordIndices.length(triRef->getCount()*3);
-		    int k = texcoordoffset;
-		    int itriangle = 0;
-                    for(size_t itex = 0; itex < texcoordArray->getCount() ; ++itex) {
-			ainfo.textureCoordinate[itex] = texcoordFloats.get(itex);
-		    }
-                    for(size_t itri = 0; itri < triRef->getCount(); ++itri) {
-                        if(k+2*triangleIndexStride < indexArray.getCount() ) {
-                            for (int j=0;j<3;j++) {
-                                int index0 = indexArray.get(k);
-                                k+=triangleIndexStride;
-				ainfo.textureCoordIndices[itriangle++]  = index0;
-                            }
-                        }
-                    }
-		    for(int i=0,k=0; i<3; i++) {
-			for(int j=0; j<3; j++) {
-			    if ( i==j )
-				ainfo.textransformMatrix[k++] = 1;
-			    else
-				ainfo.textransformMatrix[k++] = 0;
+
+			ainfo.textureCoordinate.length(texcoordArray->getCount());
+			ainfo.textureCoordIndices.length(triRef->getCount()*3);
+			int k = texcoordoffset;
+			int itriangle = 0;
+			for(size_t itex = 0; itex < texcoordArray->getCount() ; ++itex) {
+			    ainfo.textureCoordinate[itex] = texcoordFloats.get(itex);
+			}
+			for(size_t itri = 0; itri < triRef->getCount(); ++itri) {
+			    if(k+2*triangleIndexStride < indexArray.getCount() ) {
+				for (int j=0;j<3;j++) {
+				    int index0 = indexArray.get(k);
+				    k+=triangleIndexStride;
+				    ainfo.textureCoordIndices[itriangle++]  = index0;
+				}
+			    }
+			}
+			for(int i=0,k=0; i<3; i++) {
+			    for(int j=0; j<3; j++) {
+				if ( i==j )
+				    ainfo.textransformMatrix[k++] = 1;
+				else
+				    ainfo.textransformMatrix[k++] = 0;
+			    }
 			}
 		    }
 		}
