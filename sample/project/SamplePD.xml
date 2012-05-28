@@ -15,8 +15,8 @@
         <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
 	    <property name="SamplePD0.period" value="0.002"/>  
 	    <property name="sample.period" value="0.002"/>  
-	    <property name="sample.q" value="SamplePD0.angle"/>  
-	    <property name="SamplePD0.torque" value="sample.tau"/>  
+	    <property name="connection" value="sample.q:SamplePD0.angle"/>  
+	    <property name="connection" value="SamplePD0.torque:sample.tau"/>  
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/floor.wrl">
             <property name="isRobot" value="false"/>
