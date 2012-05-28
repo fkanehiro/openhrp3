@@ -1291,7 +1291,7 @@ class ColladaReader : public daeErrorHandler
 		    if( itmat != mapmaterials.end() ) {
 			ainfo.textureIndex = itmat->second;
 		    } else {
-			ainfo.textureIndex = 0;
+			ainfo.textureIndex = -1;
 		    }
 		    ainfo.textureCoordinate.length(texcoordArray->getCount());
 		    ainfo.textureCoordIndices.length(triRef->getCount()*3);
