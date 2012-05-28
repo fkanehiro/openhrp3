@@ -102,7 +102,7 @@ namespace hrp {
 	  //#include "OPC_OBBCollider.h"
 	  //#include "OPC_AABBCollider.h"
 	  //#include "OPC_LSSCollider.h"
-	  //#include "OPC_PlanesCollider.h"
+                #include "OPC_PlanesCollider.h"
 		// Usages
 		#include "OPC_Picking.h"
 		// Sweep-and-prune

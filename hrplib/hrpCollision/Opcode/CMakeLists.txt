@@ -16,6 +16,7 @@ set(headers
   OPC_RayCollider.h
   OPC_SphereCollider.h
   OPC_Picking.h
+  OPC_PlanesCollider.h
   )
 
 install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCollision/Opcode)
