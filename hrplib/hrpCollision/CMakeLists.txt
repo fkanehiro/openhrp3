@@ -39,6 +39,7 @@ set(sources
   Opcode/OPC_RayCollider.cpp
   Opcode/OPC_SphereCollider.cpp
   Opcode/OPC_Picking.cpp
+  Opcode/OPC_PlanesCollider.cpp
   )
 
 set(headers
