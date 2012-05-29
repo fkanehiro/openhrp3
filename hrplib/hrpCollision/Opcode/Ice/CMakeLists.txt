@@ -18,6 +18,7 @@ set(headers
   IceIndexedTriangle.h
   IceAABB.h
   IceBoundingSphere.h
+  IceOBB.h
   )
 
 install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCollision/Opcode/Ice)
