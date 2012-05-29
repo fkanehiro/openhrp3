@@ -66,27 +66,26 @@ std::vector<collision_data>& ColdetModelPair::detectCollisionsSub(bool detectAll
 {
     collisionPairInserter->clear();
 
+    int pt0 = models[0]->getPrimitiveType();
+    int pt1 = models[1]->getPrimitiveType();
     bool detected;
 	bool detectPlaneSphereCollisions(bool detectAllContacts);
     
-    if ((models[0]->getPrimitiveType() == ColdetModel::SP_PLANE &&
-         models[1]->getPrimitiveType() == ColdetModel::SP_CYLINDER)
-        || (models[1]->getPrimitiveType() == ColdetModel::SP_PLANE &&
-            models[0]->getPrimitiveType() == ColdetModel::SP_CYLINDER)){
+    if (( pt0 == ColdetModel::SP_PLANE && pt1 == ColdetModel::SP_CYLINDER)
+        || (pt1 == ColdetModel::SP_PLANE && pt0 == ColdetModel::SP_CYLINDER)){
         detected = detectPlaneCylinderCollisions(detectAllContacts);
     }
+    else if (pt0 == ColdetModel::SP_PLANE || pt1 == ColdetModel::SP_PLANE){
+        detected = detectPlaneMeshCollisions(detectAllContacts);
+    }
+    else if (pt0 == ColdetModel::SP_SPHERE && pt1 == ColdetModel::SP_SPHERE) {
+        detected = detectSphereSphereCollisions(detectAllContacts);
+    }
 	
-	else if (models[0]->getPrimitiveType() == ColdetModel::SP_SPHERE
-			 && models[1]->getPrimitiveType() == ColdetModel::SP_SPHERE) {
-		detected = detectSphereSphereCollisions(detectAllContacts);
-	}
-	
-	else if (models[0]->getPrimitiveType() == ColdetModel::SP_SPHERE
-			 || models[1]->getPrimitiveType() == ColdetModel::SP_SPHERE) {
-		detected = detectSphereMeshCollisions(detectAllContacts);
-	}
-
-	else {
+    else if (pt0 == ColdetModel::SP_SPHERE || pt1 == ColdetModel::SP_SPHERE) {
+        detected = detectSphereMeshCollisions(detectAllContacts);
+    }
+    else {
         detected = detectMeshMeshCollisions(detectAllContacts);
     }
 
@@ -97,6 +96,60 @@ std::vector<collision_data>& ColdetModelPair::detectCollisionsSub(bool detectAll
     return collisionPairInserter->collisions();
 }
 
+
+bool ColdetModelPair::detectPlaneMeshCollisions(bool detectAllContacts)
+{
+    bool result = false;
+
+    ColdetModelPtr plane, mesh;
+    bool reversed=false;
+    if (models[0]->getPrimitiveType() == ColdetModel::SP_PLANE){
+        plane = models[0];
+        mesh = models[1];
+    }
+    if (models[1]->getPrimitiveType() == ColdetModel::SP_PLANE){
+        plane = models[1];
+        mesh = models[0];
+        reversed = true;
+    }
+    if (!plane || !mesh || !mesh->dataSet->model.GetMeshInterface()) return false;
+    
+
+    PlanesCollider PC;
+    if(!detectAllContacts) PC.SetFirstContact(true);
+    PC.setCollisionPairInserter(collisionPairInserter);
+    IceMaths::Matrix4x4 mTrans = (*(mesh->pTransform)) * (*(mesh->transform));
+    for(udword i=0; i<3; i++){
+        for(udword j=0; j<3; j++){
+            collisionPairInserter->CD_Rot1(i,j) = mTrans[j][i];
+        }
+        collisionPairInserter->CD_Trans1[i] = mTrans[3][i];
+    }
+    collisionPairInserter->CD_s1 = 1.0;
+
+    PlanesCache Cache;
+    IceMaths::Matrix4x4 pTrans = (*(plane->pTransform)) * (*(plane->transform));
+    IceMaths::Point p, nLocal(0,0,1), n;
+    IceMaths::TransformPoint3x3(n, nLocal, pTrans);
+    pTrans.GetTrans(p);
+    Plane Planes[] = {Plane(p, n)};
+    bool IsOk = PC.Collide(Cache, Planes, 1, mesh->dataSet->model, 
+                           mesh->transform);
+    if (!IsOk){
+        std::cerr << "PlanesCollider::Collide() failed" << std::endl;
+    }else{
+        result = PC.GetContactStatus();
+    }
+    if (reversed){
+        std::vector<collision_data>& cdata 
+            = collisionPairInserter->collisions();
+        for (size_t i=0; i<cdata.size(); i++){
+            cdata[i].n_vector *= -1;
+        }
+    }
+
+    return result;
+}
 
 bool ColdetModelPair::detectMeshMeshCollisions(bool detectAllContacts)
 {

@@ -34,6 +34,9 @@
 											PlanesCollider();
 		virtual								~PlanesCollider();
 
+                inline void setCollisionPairInserter(hrp::CollisionPairInserterBase* collisionPairInserter) {
+                    this->collisionPairInserter = collisionPairInserter;
+                }
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/**
 		 *	Generic collision query for generic OPCODE models. After the call, access the results:
@@ -85,6 +88,7 @@
 		override(Collider)	const char*		ValidateSettings();
 
 		protected:
+                                                        hrp::CollisionPairInserterBase* collisionPairInserter;
 		// Planes in model space
 							udword			mNbPlanes;
 							Plane*			mPlanes;

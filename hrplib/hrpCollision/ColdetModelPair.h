@@ -89,6 +89,7 @@ namespace hrp {
 		bool detectSphereSphereCollisions(bool detectAllContacts);
 		bool detectSphereMeshCollisions(bool detectAllContacts);
         bool detectPlaneCylinderCollisions(bool detectAllContacts);
+        bool detectPlaneMeshCollisions(bool detectAllContacts);
 
         ColdetModelPtr models[2];
         double tolerance_;

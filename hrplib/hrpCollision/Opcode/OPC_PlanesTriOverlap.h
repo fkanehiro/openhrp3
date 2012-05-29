@@ -1,3 +1,5 @@
+#include "../CollisionData.h"
+#include "../CollisionPairInserter.h"
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  *	Planes-triangle overlap test.
@@ -23,6 +25,50 @@ inline_ BOOL PlanesCollider::PlanesTriOverlap(udword in_clip_mask)
 			float d2 = p->Distance(*mVP.Vertex[2]);
 			if(d0>0.0f && d1>0.0f && d2>0.0f)	return FALSE;
 //			if(!(IR(d0)&SIGN_BITMASK) && !(IR(d1)&SIGN_BITMASK) && !(IR(d2)&SIGN_BITMASK))	return FALSE;
+                        if (collisionPairInserter){
+                            hrp::CollisionPairInserterBase &c = *collisionPairInserter;
+                            hrp::collision_data cdata;
+                            cdata.num_of_i_points = 2;
+                            cdata.i_point_new[0] = cdata.i_point_new[1] = 1;
+                            cdata.i_point_new[2] = cdata.i_point_new[3] = 0;
+                            hrp::Vector3 relN; 
+                            hrp::getVector3(relN, p->n);
+                            cdata.n_vector = c.CD_Rot1*relN; 
+                            Point p1, p2;
+                            if (d0<=0 && d1>0 && d2>0){
+                                cdata.depth = -d0;
+                                p1 = ((*mVP.Vertex[0])*d1-(*mVP.Vertex[1])*d0)/(d1-d0);
+                                p2 = ((*mVP.Vertex[0])*d2-(*mVP.Vertex[2])*d0)/(d2-d0);
+                            }else if(d0>0 && d1<=0 && d2>0){
+                                cdata.depth = -d1;
+                                p1 = ((*mVP.Vertex[1])*d0-(*mVP.Vertex[0])*d1)/(d0-d1);
+                                p2 = ((*mVP.Vertex[1])*d2-(*mVP.Vertex[2])*d1)/(d2-d1);
+                            }else if(d0>0 && d1>0 && d2<=0){
+                                cdata.depth = -d2;
+                                p1 = ((*mVP.Vertex[2])*d0-(*mVP.Vertex[0])*d2)/(d0-d2);
+                                p2 = ((*mVP.Vertex[2])*d1-(*mVP.Vertex[1])*d2)/(d1-d2);
+                            }else if(d0<=0 && d1<=0 && d2>0){
+                                cdata.depth = d0 > d1 ? -d1 : -d0;
+                                p1 = ((*mVP.Vertex[0])*d2-(*mVP.Vertex[2])*d0)/(d2-d0);
+                                p2 = ((*mVP.Vertex[1])*d2-(*mVP.Vertex[2])*d1)/(d2-d1);
+                            }else if(d0<=0 && d1>0 && d2<=0){
+                                cdata.depth = d0 > d2 ? -d2 : -d0;
+                                p1 = ((*mVP.Vertex[0])*d1-(*mVP.Vertex[1])*d0)/(d1-d0);
+                                p2 = ((*mVP.Vertex[2])*d1-(*mVP.Vertex[1])*d2)/(d1-d2);
+                            }else if(d0>0 && d1<=0 && d2<=0){
+                                cdata.depth = d1 > d2 ? -d2 : -d1;
+                                p1 = ((*mVP.Vertex[1])*d0-(*mVP.Vertex[0])*d1)/(d0-d1);
+                                p2 = ((*mVP.Vertex[2])*d0-(*mVP.Vertex[0])*d2)/(d0-d2);
+                            }
+                            if (d0>0||d1>0||d2>0){
+                                hrp::Vector3 v1, v2;
+                                hrp::getVector3(v1, p1);
+                                hrp::getVector3(v2, p2);
+                                cdata.i_points[0] = c.CD_s1 * (c.CD_Rot1 * v1 + c.CD_Trans1);
+                                cdata.i_points[1] = c.CD_s1 * (c.CD_Rot1 * v2 + c.CD_Trans1);
+                                collisionPairInserter->collisions().push_back(cdata);
+                            }
+                        }
 		}
 		Mask+=Mask;
 		p++;
