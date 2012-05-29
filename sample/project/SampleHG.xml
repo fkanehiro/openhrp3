@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grxui>
     <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="SampleHG0.period" value="0.002"/>  
+	    <property name="sample.period" value="0.002"/>  
+	    <property name="connection" value="SampleHG0.angle:sample.qRef"/>  
+	    <property name="connection" value="SampleHG0.vel:sample.dqRef"/>  
+	    <property name="connection" value="SampleHG0.acc:sample.ddqRef"/>  
+        </item>
     	<item class="com.generalrobotix.ui.item.GrxSimulationItem" name="SampleSimulation" select="true">
     		<property name="integrate" value="true"/>
             <property name="viewsimulate" value="false"/>
