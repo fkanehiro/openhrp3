@@ -147,6 +147,9 @@ namespace {
         Link* createLink(int index, const Matrix33& parentRs);
         void createSensors(Link* link, const SensorInfoSequence& sensorInfoSeq, const Matrix33& Rs);
         void createColdetModel(Link* link, const LinkInfo& linkInfo);
+        void addLinkPrimitiveInfo(ColdetModelPtr& coldetModel, 
+                                  const double *R, const double *p,
+                                  const ShapeInfo& shapeInfo);
         void addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const LinkInfo& linkInfo, const Matrix33& Rs);
     };
 }
@@ -417,8 +420,15 @@ void ModelLoaderHelper::createColdetModel(Link* link, const LinkInfo& linkInfo)
     int totalNumTriangles = 0;
     int totalNumVertices = 0;
     const TransformedShapeIndexSequence& shapeIndices = linkInfo.shapeIndices;
+    unsigned int nshape = shapeIndices.length();
+    short shapeIndex;
+    double R[9], p[3];
     for(unsigned int i=0; i < shapeIndices.length(); i++){
-        short shapeIndex = shapeIndices[i].shapeIndex;
+        shapeIndex = shapeIndices[i].shapeIndex;
+        const DblArray12 &tform = shapeIndices[i].transformMatrix;
+        R[0] = tform[0]; R[1] = tform[1]; R[2] = tform[2]; p[0] = tform[3];
+        R[3] = tform[4]; R[4] = tform[5]; R[5] = tform[6]; p[1] = tform[7];
+        R[6] = tform[8]; R[7] = tform[9]; R[8] = tform[10]; p[2] = tform[11];
         const ShapeInfo& shapeInfo = shapeInfoSeq[shapeIndex];
         totalNumTriangles += shapeInfo.triangles.length() / 3;
         totalNumVertices += shapeInfo.vertices.length() / 3;
@@ -429,10 +439,43 @@ void ModelLoaderHelper::createColdetModel(Link* link, const LinkInfo& linkInfo)
     if(totalNumTriangles > 0){
         coldetModel->setNumVertices(totalNumVertices);
         coldetModel->setNumTriangles(totalNumTriangles);
+        if (nshape == 1){
+            addLinkPrimitiveInfo(coldetModel, R, p, shapeInfoSeq[shapeIndex]);
+        }
         addLinkVerticesAndTriangles(coldetModel, linkInfo, link->Rs);
         coldetModel->build();
     }
     link->coldetModel = coldetModel;
+}
+
+void ModelLoaderHelper::addLinkPrimitiveInfo(ColdetModelPtr& coldetModel, 
+                                             const double *R, const double *p,
+                                             const ShapeInfo& shapeInfo)
+{
+    switch(shapeInfo.primitiveType){
+    case SP_BOX:
+        coldetModel->setPrimitiveType(ColdetModel::SP_BOX);
+        break;
+    case SP_CYLINDER:
+        coldetModel->setPrimitiveType(ColdetModel::SP_CYLINDER);
+        break;
+    case SP_CONE:
+        coldetModel->setPrimitiveType(ColdetModel::SP_CONE);
+        break;
+    case SP_SPHERE:
+        coldetModel->setPrimitiveType(ColdetModel::SP_SPHERE);
+        break;
+    case SP_PLANE:
+        coldetModel->setPrimitiveType(ColdetModel::SP_PLANE);
+        break;
+    default:
+        break;
+    }
+    coldetModel->setNumPrimitiveParams(shapeInfo.primitiveParameters.length());
+    for (unsigned int i=0; i<shapeInfo.primitiveParameters.length(); i++){
+        coldetModel->setPrimitiveParam(i, shapeInfo.primitiveParameters[i]);
+    }
+    coldetModel->setPrimitivePosition(R, p);
 }
 
 
