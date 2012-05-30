@@ -29,6 +29,7 @@ namespace OpenHRP {
 namespace hrp {
 
     class Link;
+    class RangeSensor;
 
     class HRPMODEL_API WorldBase
     {
@@ -175,6 +176,9 @@ namespace hrp {
         bool sensorsAreEnabled;
 
     private:
+        void updateRangeSensors();
+        void updateRangeSensor(RangeSensor *sensor);
+
         typedef std::map<std::string, int> NameToIndexMap;
         NameToIndexMap nameToBodyIndexMap;
 

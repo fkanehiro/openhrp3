@@ -14,6 +14,7 @@
 #include <iostream>
 #include "World.h"
 #include "Link.h"
+#include "Sensor.h"
 #include "ForwardDynamicsABM.h"
 #include "ForwardDynamicsCBM.h"
 #include <string>
@@ -144,6 +145,7 @@ void WorldBase::calcNextState()
         BodyInfo& info = bodyInfoArray[i];
         info.forwardDynamics->calcNextState();
     }
+    if (sensorsAreEnabled) updateRangeSensors();
     currentTime_ += timeStep_;
 }
 
@@ -226,5 +228,47 @@ bool WorldBase::LinkPairKey::operator<(const LinkPairKey& pair2) const
         return (link2 < pair2.link2);
     } else {
         return false;
+    }
+}
+
+void WorldBase::updateRangeSensors()
+{
+    for (int bodyIndex = 0; bodyIndex<numBodies(); bodyIndex++){
+        BodyPtr bodyptr = body(bodyIndex);
+        int n = bodyptr->numSensors(Sensor::RANGE);
+        for(int i=0; i < n; ++i){
+            updateRangeSensor(bodyptr->sensor<RangeSensor>(i));
+        }
+    }
+}
+
+void WorldBase::updateRangeSensor(RangeSensor *sensor)
+{
+    if (currentTime() >= sensor->nextUpdateTime){
+        Vector3 p(sensor->link->p + (sensor->link->R)*sensor->localPos);
+        Matrix33 R(sensor->link->R*sensor->localR);
+        int scan_half = (int)(sensor->scanAngle/2/sensor->scanStep);
+        sensor->distances.resize(scan_half*2+1);
+        double th;
+        Vector3 v, dir;
+        v[1] = 0.0;
+        for (int i = -scan_half; i<= scan_half; i++){
+            th = i*sensor->scanStep;
+            v[0] = -sin(th); v[2] = -cos(th); 
+            dir = R*v;
+            double D, minD=0;
+            for (int bodyIndex=0; bodyIndex<numBodies(); bodyIndex++){
+                BodyPtr bodyptr = body(bodyIndex);
+                for (int linkIndex=0; linkIndex<bodyptr->numLinks(); linkIndex++){
+                    Link *link = bodyptr->link(linkIndex); 
+                    if (link->coldetModel){
+                        D = link->coldetModel->computeDistanceWithRay(p.data(), dir.data());
+                        if ((minD==0&&D>0)||(minD>0&&D>0&&minD>D)) minD = D;
+                    }
+                }
+            }
+            sensor->distances[i+scan_half] = minD;
+        }
+        sensor->nextUpdateTime += 1.0/sensor->scanRate;
     }
 }
