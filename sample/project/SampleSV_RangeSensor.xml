@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <grxui>
     <mode name="Simulation">
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="SampleSV0.period" value="0.002"/>  
+	    <property name="simple_vehicle.period" value="0.002"/>  
+	    <property name="connection" value="simple_vehicle.q:SampleSV0.steer"/>  
+	    <property name="connection" value="simple_vehicle.dq:SampleSV0.vel"/>  
+	    <property name="connection" value="SampleSV0.torque:simple_vehicle.tau"/>  
+        </item>
         <item class="com.generalrobotix.ui.item.GrxSimulationItem" name="simulationItem" select="true">
             <property name="method" value="RUNGE_KUTTA"/>
             <property name="totalTime" value="10.0 "/>
