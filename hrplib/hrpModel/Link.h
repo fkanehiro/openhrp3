@@ -31,6 +31,7 @@ HRPMODEL_API std::ostream& operator<<(std::ostream &out, hrp::Link& link);
 namespace hrp {
 
     class Body;
+    class Sensor;
 
     class ColdetModel;
     typedef boost::intrusive_ptr<ColdetModel> ColdetModelPtr;
@@ -185,6 +186,7 @@ namespace hrp {
 
         double  subm;			///< mass of subtree
         Vector3 submwc;			///< sum of m x wc of subtree
+        std::vector<Sensor *> sensors;  ///< sensors attached to this link
       private:
 
         Link& operator=(const Link& link); // no implementation is given to disable the copy operator

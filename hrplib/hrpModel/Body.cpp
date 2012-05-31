@@ -553,6 +553,7 @@ Sensor* Body::createSensor(Link* link, int sensorType, int id, const std::string
             sensor->link = link;
             sensor->name = name;
             nameToSensorMap[name] = sensor;
+            link->sensors.push_back(sensor);
         }
     }
 		
