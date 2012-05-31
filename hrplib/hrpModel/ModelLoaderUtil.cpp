@@ -348,7 +348,14 @@ void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sens
                 range->scanStep = sensorInfo.specValues[1];
                 range->scanRate = sensorInfo.specValues[2];
                 range->maxDistance = sensorInfo.specValues[3];
-            } 
+            }else if (sensorType == Sensor::VISION) {
+                VisionSensor *vision = dynamic_cast<VisionSensor *>(sensor);
+                vision->near   = sensorInfo.specValues[0];
+                vision->far    = sensorInfo.specValues[1];
+                vision->fovy   = sensorInfo.specValues[2];
+                vision->width  = sensorInfo.specValues[4];
+                vision->height = sensorInfo.specValues[5];
+            }
         }
     }
 }

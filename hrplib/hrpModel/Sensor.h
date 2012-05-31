@@ -123,6 +123,16 @@ namespace hrp {
         std::vector<double> distances;
         double nextUpdateTime;
     };
+
+    class HRPMODEL_API VisionSensor : public Sensor
+    {
+      public:
+        static const int TYPE = VISION;
+
+        VisionSensor();
+        int width, height;
+        double far, near, fovy;
+    };
 };
 
 

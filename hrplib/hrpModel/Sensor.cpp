@@ -41,13 +41,15 @@ Sensor* Sensor::create(int type)
 		sensor = new AccelSensor();
 		break;
 
-	case RANGE:
+    case RANGE:
 		sensor = new RangeSensor();
 		break;
+    case VISION:
+                sensor = new VisionSensor();
+                break;
 
     case PRESSURE:
     case PHOTO_INTERRUPTER:
-    case VISION:
     case TORQUE:
 		sensor = new Sensor();
 		break;
@@ -166,3 +168,12 @@ RangeSensor::RangeSensor()
 	maxDistance = 10;
 	nextUpdateTime = 0;
 }
+
+VisionSensor::VisionSensor()
+{
+    type = VISION;
+    near = 0.01;
+    far = 10.0;
+    width = 320;
+    height = 240;
+} 
