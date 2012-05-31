@@ -9,6 +9,12 @@
             <property name="gravity" value="9.8 "/>
             <property name="method" value="RUNGE_KUTTA"/>
         </item>
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="PA10Controller0.period" value="0.001"/>  
+	    <property name="pa10.period" value="0.002"/>  
+	    <property name="connection" value="pa10.q:PA10Controller0.angle"/>  
+	    <property name="connection" value="PA10Controller0.torque:pa10.tau"/>  
+        </item>
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="PA10" select="true">
             <property name="logTimeStep" value="0.0010 "/>
         </item>
