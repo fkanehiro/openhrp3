@@ -27,7 +27,8 @@ foreach(idl_basename ${IDL_FILE_BASENAMES})
   elseif(WIN32)
     add_custom_command(
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${idl_basename}.hh ${CMAKE_CURRENT_BINARY_DIR}/${idl_basename}Sk.cpp
-      COMMAND for %%A in \("${OMNIORB_DIR}/bin/x86_win32"\) do %%~sA\\omniidl ${idl_flags} ${idl_file}
+      COMMAND set PATH= "${OMNIORB_DIR}/bin/x86_win32"\;%PATH%
+      COMMAND omniidl ${idl_flags} ${idl_file}
       DEPENDS ${idl_files}
       )
   endif()
