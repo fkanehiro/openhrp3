@@ -155,7 +155,7 @@ class ColladaReader : public daeErrorHandler
 
         _dae.reset(new DAE);
         _bOpeningZAE = filename.find(".zae") == filename.size()-4;
-        _dom = _dae->open(filename);
+        _dom = daeSafeCast<domCOLLADA>(_dae->open(filename));
         _bOpeningZAE = false;
         if (!_dom) {
             return false;
@@ -168,7 +168,7 @@ class ColladaReader : public daeErrorHandler
     {
         COLLADALOG_DEBUG(str(boost::format("init COLLADA reader version: %s, namespace: %s")%COLLADA_VERSION%COLLADA_NAMESPACE));
         _dae.reset(new DAE);
-        _dom = _dae->openFromMemory(".",pdata.c_str());
+        _dom = daeSafeCast<domCOLLADA>(_dae->openFromMemory(".",pdata.c_str()));
         if (!_dom) {
             return false;
         }
