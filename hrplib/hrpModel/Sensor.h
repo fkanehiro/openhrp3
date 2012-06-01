@@ -124,6 +124,13 @@ namespace hrp {
         double nextUpdateTime;
     };
 
+#ifdef far
+#undef far
+#endif
+#ifdef near
+#undef near
+#endif
+
     class HRPMODEL_API VisionSensor : public Sensor
     {
       public:
