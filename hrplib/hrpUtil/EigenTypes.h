@@ -1,6 +1,9 @@
 #ifndef __EIGEN_TYPES_H__
 #define __EIGEN_TYPES_H__
 
+#ifdef random
+#undef random
+#endif
 #include <Eigen/Eigen>
 
 namespace hrp{
