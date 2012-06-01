@@ -23,15 +23,15 @@
 
 #include <dae.h>
 #include <dae/daeErrorHandler.h>
-#include <dom/domCOLLADA.h>
+#include <1.5/dom/domCOLLADA.h>
 #include <dae/domAny.h>
-#include <dom/domConstants.h>
-#include <dom/domTriangles.h>
+#include <1.5/dom/domConstants.h>
+#include <1.5/dom/domTriangles.h>
 #include <dae/daeDocument.h>
-#include <dom/domTypes.h>
-#include <dom/domImage.h>
-#include <dom/domElements.h>
-#include <dom/domKinematics.h>
+#include <1.5/dom/domTypes.h>
+#include <1.5/dom/domImage.h>
+#include <1.5/dom/domElements.h>
+#include <1.5/dom/domKinematics.h>
 #include <dae/daeStandardURIResolver.h>
 #include <locale>
 #include <string>
