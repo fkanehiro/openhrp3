@@ -118,7 +118,7 @@ bool ColdetModelPair::detectPlaneMeshCollisions(bool detectAllContacts)
     PlanesCollider PC;
     if(!detectAllContacts) PC.SetFirstContact(true);
     PC.setCollisionPairInserter(collisionPairInserter);
-    IceMaths::Matrix4x4 mTrans = (*(mesh->pTransform)) * (*(mesh->transform));
+    IceMaths::Matrix4x4 mTrans = *(mesh->transform);
     for(udword i=0; i<3; i++){
         for(udword j=0; j<3; j++){
             collisionPairInserter->CD_Rot1(i,j) = mTrans[j][i];
