@@ -758,7 +758,11 @@ class ColladaReader : public daeErrorHandler
             PoseMult(tlink,tParentLink,tlocallink);
           
             // Get the geometry
-            ExtractGeometry(pkinbody,plink,tlink,pdomnode,listAxisBindings,std::vector<std::string>());
+            if ( ilinkindex == 0 ){ // due to  ExtractKinematicsModel calls ExtractLink with identity
+                ExtractGeometry(pkinbody,plink,tlink,pdomnode,listAxisBindings,std::vector<std::string>());
+            } else {
+                ExtractGeometry(pkinbody,plink,tParentLink,pdomnode,listAxisBindings,std::vector<std::string>());
+            }
             
             COLLADALOG_DEBUG(str(boost::format("After ExtractGeometry Attachment link elements: %d")%pdomlink->getAttachment_full_array().getCount()));
           
@@ -773,8 +777,11 @@ class ColladaReader : public daeErrorHandler
                     plink->inertia[8] = rigiddata->getInertia()->getValue()[2];
                 }
                 if( !!rigiddata->getMass_frame() ) {
-                     DblArray12 tmass, tframe, tlocalmass;
-                     PoseInverse(tframe,tlink);
+                     DblArray12  tmass, ttemp1, ttemp2, tframe, tlocalmass;
+                     getNodeParentTransform(ttemp1,pdomnode);
+                     PoseMult(ttemp2,ttemp1,tlocallink);
+                     PoseMult(ttemp1,ttemp2,tParentLink);
+                     PoseInverse(tframe,ttemp1);
                      _ExtractFullTransform(tmass, rigiddata->getMass_frame());
                      PoseMult(tlocalmass,tframe,tmass);
                      plink->centerOfMass[0] = tlocalmass[3];
@@ -853,15 +860,21 @@ class ColladaReader : public daeErrorHandler
 
                 
                 DblArray12 tnewparent;
-                PoseMult(tnewparent,tlink,tatt);
-                int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, tnewparent, vdomjoints, bindings);
+                PoseMult(tnewparent,tParentLink,tatt);
+                int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, tatt, vdomjoints, bindings);
                 boost::shared_ptr<LinkInfo> pjoint = _veclinks.at(ijointindex);
                 int cindex = plink->childIndices.length();
                 plink->childIndices.length(cindex+1);
                 plink->childIndices[cindex] = ijointindex;
                 pjoint->parentIndex = ilinkindex;
 
-                AxisAngleTranslationFromPose(pjoint->rotation,pjoint->translation,tatt);
+                if ( ilinkindex == 0 ){ // due to  ExtractKinematicsModel calls ExtractLink with identity
+                    memcpy(tnewparent, tatt, sizeof(tatt));
+                } else {
+                    PoseMult(tnewparent,tlocallink,tatt);
+                }
+                AxisAngleTranslationFromPose(pjoint->rotation,pjoint->translation,tnewparent);
+                //AxisAngleTranslationFromPose(pjoint->rotation,pjoint->translation,tatt);
 
                 bool bActive = true; // if not active, put into the passive list
 
@@ -1132,9 +1145,7 @@ class ColladaReader : public daeErrorHandler
         }
 
         DblArray12 tmnodegeom, ttemp, ttemp2;
-        PoseInverse(tmnodegeom,tlink);
-        getNodeParentTransform(ttemp2,pdomnode);
-        PoseMult(ttemp,tmnodegeom,ttemp2);
+        PoseInverse(ttemp,tlink);
         _ExtractFullTransform(ttemp2, pdomnode);
         PoseMult(tmnodegeom,ttemp,ttemp2);
 
