@@ -783,6 +783,7 @@ class ColladaReader : public daeErrorHandler
                      PoseMult(ttemp1,ttemp2,tParentLink);
                      PoseInverse(tframe,ttemp1);
                      _ExtractFullTransform(tmass, rigiddata->getMass_frame());
+		     std::cerr << "mass " << tmass[3] << " " << tmass[7] << " " << tmass[11] << std::endl;
                      PoseMult(tlocalmass,tframe,tmass);
                      plink->centerOfMass[0] = tlocalmass[3];
                      plink->centerOfMass[1] = tlocalmass[7];
