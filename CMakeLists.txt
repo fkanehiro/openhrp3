@@ -453,7 +453,7 @@ if(ENABLE_CPACK)
 endif(ENABLE_CPACK)
 
 # collada stuff
-option(OPT_COLLADASUPPORT "Enable COLLADA support" OFF)
+option(OPT_COLLADASUPPORT "Enable COLLADA support" ON)
 if( OPT_COLLADASUPPORT )
   if(UNIX)
     find_package(COLLADA_DOM 2.3 COMPONENTS 1.5)
