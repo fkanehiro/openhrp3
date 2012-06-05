@@ -83,7 +83,7 @@ openrtm-aist-example
 libeigen3-dev
 
 #collada
-#libcollada15dom-dev
+collada-dom-dev
 
 # for hrpsys
 # libncurses5-dev
