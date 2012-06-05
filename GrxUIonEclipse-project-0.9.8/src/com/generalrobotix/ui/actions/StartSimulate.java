@@ -52,8 +52,10 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate, GrxItemCha
 			manager_.setSelectedItem(simItem_, true);
 		}
 		if(simItem_.isSimulating()){
+			action_.setEnabled(false);
 			simItem_.stopSimulation();
 		}else {
+			action_.setEnabled(false);
 			simItem_.startSimulation(true);
 		}
 	}
@@ -127,10 +129,13 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate, GrxItemCha
 
 	public void update(GrxBasePlugin plugin, Object... arg) {
 		if(simItem_==plugin){
-			if(arg[0].equals("StartSimulation"))
+			if(arg[0].equals("StartSimulation")){
 				setActionImage(true);
-			else if(arg[0].equals("StopSimulation"))
+				action_.setEnabled(true);
+			}else if(arg[0].equals("StopSimulation")){
 				setActionImage(false);	
+				action_.setEnabled(true);
+			}
 		}
 	}
 
