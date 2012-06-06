@@ -552,10 +552,10 @@ class ColladaReader : public daeErrorHandler
         PoseIdentity(identity);
         for (size_t ilink = 0; ilink < ktec->getLink_array().getCount(); ++ilink) {
             domLinkRef pdomlink = ktec->getLink_array()[ilink];
-            int linkindex = ExtractLink(pkinbody, pdomlink, ilink == 0 ? pnode : domNodeRef(), identity, vdomjoints, bindings);
-            // root link
             DblArray12 tlocallink;
             _ExtractFullTransform(tlocallink,pdomlink);
+            int linkindex = ExtractLink(pkinbody, pdomlink, ilink == 0 ? pnode : domNodeRef(), tlocallink, identity, vdomjoints, bindings);
+            // root link
 	    boost::shared_ptr<LinkInfo> plink = _veclinks.at(linkindex);
             AxisAngleTranslationFromPose(plink->rotation,plink->translation,tlocallink);
         }
@@ -690,7 +690,7 @@ class ColladaReader : public daeErrorHandler
     }
 
     ///  \brief Extract Link info and add it to an existing body
-    int  ExtractLink(BodyInfoCollada_impl* pkinbody, const domLinkRef pdomlink,const domNodeRef pdomnode, const DblArray12& tParentLink, const std::vector<domJointRef>& vdomjoints, const KinematicsSceneBindings bindings) {
+    int  ExtractLink(BodyInfoCollada_impl* pkinbody, const domLinkRef pdomlink,const domNodeRef pdomnode, const DblArray12& tBaseLink, const DblArray12& tParentLink, const std::vector<domJointRef>& vdomjoints, const KinematicsSceneBindings bindings) {
         const std::list<JointAxisBinding>& listAxisBindings = bindings.listAxisBindings;
 
         //  Set link name with the name of the COLLADA's Link
@@ -778,12 +778,11 @@ class ColladaReader : public daeErrorHandler
                 }
                 if( !!rigiddata->getMass_frame() ) {
                      DblArray12  tmass, ttemp1, ttemp2, tframe, tlocalmass;
-                     getNodeParentTransform(ttemp1,pdomnode);
-                     PoseMult(ttemp2,ttemp1,tlocallink);
-                     PoseMult(ttemp1,ttemp2,tParentLink);
+                     getNodeParentTransform(ttemp2,pdomnode);
+                     PoseMult(ttemp1,ttemp2,tlink);
                      PoseInverse(tframe,ttemp1);
-                     _ExtractFullTransform(tmass, rigiddata->getMass_frame());
-		     std::cerr << "mass " << tmass[3] << " " << tmass[7] << " " << tmass[11] << std::endl;
+                     _ExtractFullTransform(ttemp1, rigiddata->getMass_frame());
+                     PoseMult(tmass,tBaseLink,ttemp1);
                      PoseMult(tlocalmass,tframe,tmass);
                      plink->centerOfMass[0] = tlocalmass[3];
                      plink->centerOfMass[1] = tlocalmass[7];
@@ -862,7 +861,7 @@ class ColladaReader : public daeErrorHandler
                 
                 DblArray12 tnewparent;
                 PoseMult(tnewparent,tParentLink,tatt);
-                int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, tatt, vdomjoints, bindings);
+                int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, tBaseLink, tatt, vdomjoints, bindings);
                 boost::shared_ptr<LinkInfo> pjoint = _veclinks.at(ijointindex);
                 int cindex = plink->childIndices.length();
                 plink->childIndices.length(cindex+1);
