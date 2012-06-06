@@ -731,7 +731,7 @@ public:
             _WriteTransformation(mass_frame, rotation, link.centerOfMass);
             // add all the parents
             int icurlink = ilink;
-            while(icurlink >= 0) {
+            while(icurlink > 0) {
                 _WriteTransformation(mass_frame, links[icurlink].rotation, links[icurlink].translation);
                 icurlink = links[icurlink].parentIndex;
             }
