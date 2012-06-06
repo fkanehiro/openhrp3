@@ -1224,6 +1224,34 @@ private:
             pinstmat->setSymbol("mat0");
         }
 
+	// sensor shape
+	int igeomid = plink.shapeIndices.length();
+	for(size_t isensor = 0; isensor < plink.sensors.length(); ++isensor) {
+	    SensorInfo& sensor = plink.sensors[isensor];
+	    // shape
+	    for(int igeom = 0; igeom < sensor.shapeIndices.length(); ++igeom) {
+		string geomid = _GetGeometryId(bodyInfo, ilink, igeomid++);
+
+		const TransformedShapeIndex& tsi = sensor.shapeIndices[igeom];
+		DblArray12 sensorMatrix, transformMatrix,sensorgeomMatrix;
+		PoseFromAxisAngleTranslation(sensorMatrix,sensor.rotation, sensor.translation);
+		for(int i = 0; i < 12; ++i) {
+		    sensorgeomMatrix[i] = tsi.transformMatrix[i];
+		}
+		PoseMult(transformMatrix, sensorMatrix, sensorgeomMatrix);
+
+		domGeometryRef pdomgeom = WriteGeometry(bodyInfo,(*bodyInfo->shapes())[tsi.shapeIndex], transformMatrix, geomid);
+		domInstance_geometryRef pinstgeom = daeSafeCast<domInstance_geometry>(pnode->add(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
+		pinstgeom->setUrl((string("#")+geomid).c_str());
+
+		domBind_materialRef pmat = daeSafeCast<domBind_material>(pinstgeom->add(COLLADA_ELEMENT_BIND_MATERIAL));
+		domBind_material::domTechnique_commonRef pmattec = daeSafeCast<domBind_material::domTechnique_common>(pmat->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
+		domInstance_materialRef pinstmat = daeSafeCast<domInstance_material>(pmattec->add(COLLADA_ELEMENT_INSTANCE_MATERIAL));
+		pinstmat->setTarget(xsAnyURI(*pinstmat, string("#")+geomid+string("_mat")));
+		pinstmat->setSymbol("mat0");
+	    }
+	}
+
         // go through all children
         for(int _ichild = 0; _ichild < plink.childIndices.length(); ++_ichild) {
             int ichild = plink.childIndices[_ichild];
