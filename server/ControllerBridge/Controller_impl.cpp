@@ -585,8 +585,14 @@ void Controller_impl::deactiveComponents()
     for(RtcInfoVector::iterator p = rtcInfoVector.begin(); p != rtcInfoVector.end(); ++p){
         RtcInfoPtr& rtcInfo = *p;
         if(!CORBA::is_nil(rtcInfo->execContext)){
+#ifdef OPENRTM_VERISON110
             rtcInfo->execContext->deactivate_component(rtcInfo->rtcRef);
             vecExecContext.push_back(rtcInfo->execContext);
+#else
+            if ( RTC::RTC_OK == rtcInfo->execContext->deactivate_component(rtcInfo->rtcRef) ){
+                vecExecContext.push_back(rtcInfo->execContext);
+            }
+#endif
         }
     }
     RTC::ExecutionContextList_var eclist = virtualRobotRTC->get_owned_contexts();

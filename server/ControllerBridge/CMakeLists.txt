@@ -13,6 +13,9 @@ add_executable(${program} ${sources})
 if( NOT ADDITIONAL_SYMBOL STREQUAL "")
   add_definitions(-D${ADDITIONAL_SYMBOL})
 endif()
+if( OPENRTM_VERSION STREQUAL OPENRTM_VERSION110 )
+  add_definitions(-DOPENRTM_VERISON110)
+endif()
 
 if(UNIX)
   target_link_libraries(
