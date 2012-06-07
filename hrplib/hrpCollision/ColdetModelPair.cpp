@@ -211,6 +211,8 @@ bool ColdetModelPair::detectSphereSphereCollisions(bool detectAllContacts) {
 		
 		IceMaths::Point D = centerB - centerA;
 		
+		float depth = radiusA + radiusB - D.Magnitude();
+		
 		if (D.Magnitude() <= (radiusA + radiusB)) {
 
 			result = true;
@@ -226,6 +228,7 @@ bool ColdetModelPair::detectSphereSphereCollisions(bool detectAllContacts) {
 			cdata.clear();			
 			
 			collision_data col;
+			col.depth = depth;
 			col.num_of_i_points = 1;
 			col.i_point_new[0] = 1;
 			col.i_point_new[1] = 0;
@@ -237,7 +240,6 @@ bool ColdetModelPair::detectSphereSphereCollisions(bool detectAllContacts) {
 			col.i_points[0][0] = q.x;
 			col.i_points[0][1] = q.y;
 			col.i_points[0][2] = q.z;
-            col.depth = 0.0;
 			cdata.push_back(col);
 		}
 	}
@@ -298,6 +300,8 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 					std::vector< std::vector<IceMaths::Point> > triangle(TouchedPrimCount);		// Triangle of each face in world's coordinates
 					std::vector<IceMaths::Plane> face(TouchedPrimCount);				// Plane of each face in world's coordinates 
 					
+					std::vector<float> depth(TouchedPrimCount);
+					
 					std::vector<IceMaths::Point> q(TouchedPrimCount);
 					std::vector<float> A(TouchedPrimCount);
 					
@@ -336,6 +340,7 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 						else {
 
 							R = sqrt(pow(radius, 2) - pow(face_s.d, 2));
+							depth[i] = radius - abs(face_s.d);
 
 							IceMaths::Point U, V;
 
@@ -374,6 +379,7 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 					
 					std::vector<IceMaths::Point> new_q;
 					std::vector<IceMaths::Point> new_n;
+					std::vector<float> new_depth;
 					
 					// The following procedure is needed to merge components from the same plane (but different triangles)
 
@@ -392,6 +398,7 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 							if (!sameplane.size()) {
 								new_q.push_back(q[i]);
 								new_n.push_back(face[i].n);
+								new_depth.push_back(depth[i]);
 								considered_checklist[i] = true;
 							}
 							else {
@@ -413,6 +420,7 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 								q_temp.z = sum_zA / sum_A;
 								new_q.push_back(q_temp);
 								new_n.push_back(face[i].n);
+								new_depth.push_back(depth[i]);
 							
 								sameplane.clear();
 							}
@@ -421,6 +429,7 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 					
 					for (int i = 0; i < new_q.size(); i++) {
 						collision_data col;
+						col.depth = new_depth[i];
 						col.num_of_i_points = 1;
 						col.i_point_new[0] = 1;
 						col.i_point_new[1] = 0;
@@ -432,7 +441,6 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 						col.i_points[0][0] = new_q[i].x;
 						col.i_points[0][1] = new_q[i].y;
 						col.i_points[0][2] = new_q[i].z;
-                        col.depth = 0.0;
 						cdata.push_back(col);
 					}
 				}
