@@ -36,6 +36,13 @@ namespace {
     SensorTypeMap sensorTypeMap;
 }
 
+std::ostream& operator<<(std::ostream& os, const OpenHRP::DblArray12& ttemp) {
+    OpenHRP::DblArray4 quat;
+    QuatFromMatrix(quat, ttemp);
+    os << ttemp[3] << " " << ttemp[7] << " " << ttemp[11] << " / ";
+    os << quat[0] << " " << quat[1] << " " << quat[2] << " " << quat[3];
+}
+
 /// \brief The colladadom reader that fills in the BodyInfoCollada_impl class.
 ///
 /// It is separate from BodyInfoCollada_impl so that the colladadom resources do not have to remain allocated.
@@ -554,7 +561,7 @@ class ColladaReader : public daeErrorHandler
             domLinkRef pdomlink = ktec->getLink_array()[ilink];
             DblArray12 tlocallink;
             _ExtractFullTransform(tlocallink,pdomlink);
-            int linkindex = ExtractLink(pkinbody, pdomlink, ilink == 0 ? pnode : domNodeRef(), tlocallink, identity, vdomjoints, bindings);
+            int linkindex = ExtractLink(pkinbody, pdomlink, ilink == 0 ? pnode : domNodeRef(), tlocallink, tlocallink, vdomjoints, bindings);
             // root link
 	    boost::shared_ptr<LinkInfo> plink = _veclinks.at(linkindex);
             AxisAngleTranslationFromPose(plink->rotation,plink->translation,tlocallink);
@@ -758,11 +765,7 @@ class ColladaReader : public daeErrorHandler
             PoseMult(tlink,tParentLink,tlocallink);
           
             // Get the geometry
-            if ( ilinkindex == 0 ){ // due to  ExtractKinematicsModel calls ExtractLink with identity
-                ExtractGeometry(pkinbody,plink,tlink,pdomnode,listAxisBindings,std::vector<std::string>());
-            } else {
-                ExtractGeometry(pkinbody,plink,tParentLink,pdomnode,listAxisBindings,std::vector<std::string>());
-            }
+	    ExtractGeometry(pkinbody,plink,tParentLink,pdomnode,listAxisBindings,std::vector<std::string>());
             
             COLLADALOG_DEBUG(str(boost::format("After ExtractGeometry Attachment link elements: %d")%pdomlink->getAttachment_full_array().getCount()));
           
@@ -778,15 +781,17 @@ class ColladaReader : public daeErrorHandler
                 }
                 if( !!rigiddata->getMass_frame() ) {
                      DblArray12  tmass, ttemp1, ttemp2, tframe, tlocalmass;
-                     getNodeParentTransform(ttemp2,pdomnode);
-                     PoseMult(ttemp1,ttemp2,tlink);
-                     PoseInverse(tframe,ttemp1);
-                     _ExtractFullTransform(ttemp1, rigiddata->getMass_frame());
-                     PoseMult(tmass,tBaseLink,ttemp1);
-                     PoseMult(tlocalmass,tframe,tmass);
-                     plink->centerOfMass[0] = tlocalmass[3];
-                     plink->centerOfMass[1] = tlocalmass[7];
-                     plink->centerOfMass[2] = tlocalmass[11];
+		     // tmass uses tBaseLink frame
+		     _ExtractFullTransform(ttemp2, rigiddata->getMass_frame());
+		     PoseMult(tmass,tBaseLink,ttemp2);
+		     // convert to local frame
+		     getNodeParentTransform(ttemp2,pdomnode);
+		     PoseMult(ttemp1,ttemp2,tParentLink);
+		     PoseInverse(tframe,ttemp1);
+		     PoseMult(tlocalmass,tframe,tmass);
+		     plink->centerOfMass[0] = tlocalmass[3];
+		     plink->centerOfMass[1] = tlocalmass[7];
+		     plink->centerOfMass[2] = tlocalmass[11];
                 }
 	    }
 
@@ -860,7 +865,6 @@ class ColladaReader : public daeErrorHandler
 
                 
                 DblArray12 tnewparent;
-                PoseMult(tnewparent,tParentLink,tatt);
                 int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, tBaseLink, tatt, vdomjoints, bindings);
                 boost::shared_ptr<LinkInfo> pjoint = _veclinks.at(ijointindex);
                 int cindex = plink->childIndices.length();
