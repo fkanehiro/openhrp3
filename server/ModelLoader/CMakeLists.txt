@@ -17,6 +17,10 @@ set(sources2
   ShapeSetInfo_impl.cpp
   VrmlUtil.cpp )
 
+set(sources3
+  exportVrml.cpp
+  VrmlWriter.cpp )
+
 if( COLLADA_DOM_FOUND )
   set(sources ${sources} BodyInfoCollada_impl.cpp)
   include_directories(${COLLADA_DOM_INCLUDE_DIRS})
@@ -96,6 +100,13 @@ endif()
 if( COLLADA_DOM_FOUND )
   set_target_properties(${program} PROPERTIES COMPILE_FLAGS "${COLLADA_DOM_CXX_FLAGS}" LINK_FLAGS "${COLLADA_DOM_LINK_FLAGS}")
 endif( COLLADA_DOM_FOUND )
+
+add_executable(export-vrml ${sources3})
+
+target_link_libraries(export-vrml
+  hrpModel-${OPENHRP_LIBRARY_VERSION}
+  hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+  )
 
 if(WIN32)
   install(TARGETS ${program} DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release )
