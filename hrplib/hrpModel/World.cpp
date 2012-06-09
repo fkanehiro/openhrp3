@@ -270,5 +270,6 @@ void WorldBase::updateRangeSensor(RangeSensor *sensor)
             sensor->distances[i+scan_half] = minD;
         }
         sensor->nextUpdateTime += 1.0/sensor->scanRate;
+        sensor->isUpdated = true;
     }
 }
