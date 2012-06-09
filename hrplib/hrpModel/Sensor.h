@@ -134,11 +134,13 @@ namespace hrp {
     class HRPMODEL_API VisionSensor : public Sensor
     {
       public:
+        typedef enum {NONE, COLOR, MONO, DEPTH, COLOR_DEPTH, MONO_DEPTH} ImageType;
         static const int TYPE = VISION;
 
         VisionSensor();
         int width, height;
-        double far, near, fovy;
+        double far, near, fovy, frameRate;
+        ImageType imageType;
     };
 };
 

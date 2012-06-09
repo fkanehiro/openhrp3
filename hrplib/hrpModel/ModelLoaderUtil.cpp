@@ -18,6 +18,7 @@
 #include <hrpUtil/Eigen3d.h>
 #include <hrpUtil/Eigen4d.h>
 #include <hrpCorba/OpenHRPCommon.hh>
+#include <hrpCorba/ViewSimulator.hh>
 #include <hrpCollision/ColdetModel.h>
 #include <stack>
 
@@ -353,8 +354,29 @@ void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sens
                 vision->near   = sensorInfo.specValues[0];
                 vision->far    = sensorInfo.specValues[1];
                 vision->fovy   = sensorInfo.specValues[2];
+                switch((int)sensorInfo.specValues[3]){
+                case Camera::NONE: 
+                    vision->imageType = VisionSensor::NONE; 
+                    break;
+                case Camera::COLOR:
+                    vision->imageType = VisionSensor::COLOR;
+                    break;
+                case Camera::MONO:
+                    vision->imageType = VisionSensor::MONO;
+                    break;
+                case Camera::DEPTH:
+                    vision->imageType = VisionSensor::DEPTH;
+                    break;
+                case Camera::COLOR_DEPTH:
+                    vision->imageType = VisionSensor::COLOR_DEPTH;
+                    break;
+                case Camera::MONO_DEPTH:
+                    vision->imageType = VisionSensor::MONO_DEPTH;
+                    break;
+                }
                 vision->width  = sensorInfo.specValues[4];
                 vision->height = sensorInfo.specValues[5];
+                vision->frameRate = sensorInfo.specValues[6];
             }
         }
     }
