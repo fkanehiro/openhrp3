@@ -167,6 +167,7 @@ RangeSensor::RangeSensor()
 	scanRate = 10;
 	maxDistance = 10;
 	nextUpdateTime = 0;
+        isUpdated = false;
 }
 
 VisionSensor::VisionSensor()
@@ -176,4 +177,8 @@ VisionSensor::VisionSensor()
     far = 10.0;
     width = 320;
     height = 240;
+    imageType = NONE;
+    frameRate = 30.0;
+    nextUpdateTime = 0;
+    isUpdated = false;
 } 

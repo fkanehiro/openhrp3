@@ -122,6 +122,7 @@ namespace hrp {
         double scanAngle, scanStep, scanRate, maxDistance;  
         std::vector<double> distances;
         double nextUpdateTime;
+        bool isUpdated;
     };
 
 #ifdef far
@@ -141,6 +142,8 @@ namespace hrp {
         int width, height;
         double far, near, fovy, frameRate;
         ImageType imageType;
+        double nextUpdateTime;
+        bool isUpdated;
     };
 };
 
