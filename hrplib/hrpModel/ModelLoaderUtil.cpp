@@ -354,28 +354,36 @@ void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sens
                 vision->near   = sensorInfo.specValues[0];
                 vision->far    = sensorInfo.specValues[1];
                 vision->fovy   = sensorInfo.specValues[2];
+                vision->width  = sensorInfo.specValues[4];
+                vision->height = sensorInfo.specValues[5];
+                int npixel = vision->width*vision->height;
                 switch((int)sensorInfo.specValues[3]){
                 case Camera::NONE: 
                     vision->imageType = VisionSensor::NONE; 
                     break;
                 case Camera::COLOR:
                     vision->imageType = VisionSensor::COLOR;
+                    vision->image.resize(npixel*3);
                     break;
                 case Camera::MONO:
                     vision->imageType = VisionSensor::MONO;
+                    vision->image.resize(npixel);
                     break;
                 case Camera::DEPTH:
                     vision->imageType = VisionSensor::DEPTH;
+                    vision->depth.resize(npixel);
                     break;
                 case Camera::COLOR_DEPTH:
                     vision->imageType = VisionSensor::COLOR_DEPTH;
+                    vision->image.resize(npixel*3);
+                    vision->depth.resize(npixel);
                     break;
                 case Camera::MONO_DEPTH:
                     vision->imageType = VisionSensor::MONO_DEPTH;
+                    vision->image.resize(npixel);
+                    vision->depth.resize(npixel);
                     break;
                 }
-                vision->width  = sensorInfo.specValues[4];
-                vision->height = sensorInfo.specValues[5];
                 vision->frameRate = sensorInfo.specValues[6];
             }
         }
