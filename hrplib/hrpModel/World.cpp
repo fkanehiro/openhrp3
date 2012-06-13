@@ -237,7 +237,10 @@ void WorldBase::updateRangeSensors()
         BodyPtr bodyptr = body(bodyIndex);
         int n = bodyptr->numSensors(Sensor::RANGE);
         for(int i=0; i < n; ++i){
-            updateRangeSensor(bodyptr->sensor<RangeSensor>(i));
+            RangeSensor *s = bodyptr->sensor<RangeSensor>(i);
+            if (s->isEnabled){
+                updateRangeSensor(s);
+            }
         }
     }
 }

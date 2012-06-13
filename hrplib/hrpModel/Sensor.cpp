@@ -168,6 +168,7 @@ RangeSensor::RangeSensor()
 	maxDistance = 10;
 	nextUpdateTime = 0;
         isUpdated = false;
+        isEnabled = false;
 }
 
 VisionSensor::VisionSensor()
@@ -181,4 +182,5 @@ VisionSensor::VisionSensor()
     frameRate = 30.0;
     nextUpdateTime = 0;
     isUpdated = false;
+    isEnabled = false;
 } 
