@@ -134,8 +134,5 @@ else()
 endif()
 
 ADD_SUBDIRECTORY(corba)
-if(NOT WIN32)
-  ADD_SUBDIRECTORY(grxui)
-endif()
 
 # install(FILES vrml97.jar DESTINATION ${RELATIVE_JAVA_INSTALL_PATH})
