@@ -329,9 +329,9 @@ public class GrxSimulationItem extends GrxBaseItem {
 						isExecuting_ = false;
 						simulateTime_ += (System.currentTimeMillis() - startT - suspendT)/1000.0;
 	                        
-						for (ControllerAttribute i: controllers_) {
-							i.deactive();
-						}
+						//for (ControllerAttribute i: controllers_) {
+						//	i.deactive();
+						//}
 						simThreadState_ = STOP;
 					} catch (Exception e) {
 						GrxDebugUtil.printErr("Simulation Interrupted by Exception:",e); //$NON-NLS-1$
@@ -354,7 +354,10 @@ public class GrxSimulationItem extends GrxBaseItem {
 				isExecuting_ = false;
 		}
 	        
-		public void endOfSimulation(){            
+		public void endOfSimulation(){  
+			for (ControllerAttribute i: controllers_) {
+				i.deactive();
+			}
 			updateTimeMsg();
 			System.out.println(new java.util.Date()+timeMsg_.replace(" ", "").replace("\n", " : ")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			if (isInteractive_) {
@@ -830,6 +833,9 @@ public class GrxSimulationItem extends GrxBaseItem {
 	                    default:
 	                    	return false;
 	                    }
+	                }else{
+	                	if ((!com.equals("") || proc != null) && deactivatedController != null) 
+	                		deactivatedController.active();
 	                }
 
     		} catch (Exception e) {
@@ -908,7 +914,7 @@ public class GrxSimulationItem extends GrxBaseItem {
 
     		if (j > WAIT_COUNT_ || (new Date().getTime() - before.getTime() > WAIT_COUNT_*1000)) {
     			GrxDebugUtil.println(" failed to setup controller:"+controllerName); //$NON-NLS-1$
-    			//タイトル画像をなしにするにはどぁE��れ�EぁE��のか？とりあえずnullにしてみ�
+    			//タイトル画像をなしにするにはどぁE��れ�EぁE��のか？とりあえずnullにしてみ�
     			MessageDialog dialog = new MessageDialog(GrxUIPerspectiveFactory.getCurrentShell(),MessageBundle.get("GrxOpenHRPView.dialog.title.setupController"),null,MessageBundle.get("GrxOpenHRPView.dialog.message.setupController0")+controllerName+").\n" +MessageBundle.get("GrxOpenHRPView.dialog.message.setupController1"),MessageDialog.QUESTION,new String[]{MessageBundle.get("GrxOpenHRPView.dialog.button.yes"),MessageBundle.get("GrxOpenHRPView.dialog.button.no"),MessageBundle.get("GrxOpenHRPView.dialog.button.cancel")}, 2); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
     			int ans = dialog.open();
     			if (ans == 0) {
