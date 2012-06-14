@@ -33,8 +33,8 @@ namespace hrp
     HRPMODEL_API bool loadBodyFromModelLoader(BodyPtr body, const char* url, CORBA_ORB_var orb, bool loadGeometryForCollisionDetection = false);
     HRPMODEL_API bool loadBodyFromModelLoader(BodyPtr body, const char* url, CosNaming::NamingContext_var cxt,  bool loadGeometryForCollisionDetection = false);
     HRPMODEL_API bool loadBodyFromModelLoader(BodyPtr body, const char* url, int& argc, char* argv[],  bool loadGeometryForCollisionDetection = false);
-    OpenHRP::ModelLoader_var getModelLoader(CosNaming::NamingContext_var cxt);
-    OpenHRP::ModelLoader_var getModelLoader(CORBA_ORB_var orb);
+    HRPMODEL_API OpenHRP::ModelLoader_var getModelLoader(CosNaming::NamingContext_var cxt);
+    HRPMODEL_API OpenHRP::ModelLoader_var getModelLoader(CORBA_ORB_var orb);
 };
 
 
