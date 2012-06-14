@@ -36,7 +36,7 @@ namespace {
     SensorTypeMap sensorTypeMap;
 }
 
-std::ostream& operator<<(std::ostream& os, const OpenHRP::DblArray12& ttemp) {
+void operator<<(std::ostream& os, const OpenHRP::DblArray12& ttemp) {
     OpenHRP::DblArray4 quat;
     QuatFromMatrix(quat, ttemp);
     os << ttemp[3] << " " << ttemp[7] << " " << ttemp[11] << " / ";
