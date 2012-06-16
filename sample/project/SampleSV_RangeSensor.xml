@@ -4,9 +4,9 @@
         <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
 	    <property name="SampleSV0.period" value="0.002"/>  
 	    <property name="simple_vehicle.period" value="0.002"/>  
-	    <property name="connection" value="simple_vehicle.q:SampleSV0.steer"/>  
-	    <property name="connection" value="simple_vehicle.dq:SampleSV0.vel"/>  
-	    <property name="connection" value="SampleSV0.torque:simple_vehicle.tau"/>  
+	    <property name="connection" value="simple_vehicle.steer:SampleSV0.steer"/>  
+	    <property name="connection" value="simple_vehicle.vel:SampleSV0.vel"/>  
+	    <property name="connection" value="SampleSV0.torque:simple_vehicle.torque"/>  
         </item>
         <item class="com.generalrobotix.ui.item.GrxSimulationItem" name="simulationItem" select="true">
             <property name="method" value="RUNGE_KUTTA"/>
@@ -43,6 +43,10 @@
             <property name="WAIST.angularVelocity" value="0.0 0.0 0.0 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="simple_vehicle" select="true" url="$(CURRENT_DIR)/../model/simple_vehicle_with_rangesensor.wrl">
+	    <property name="outport" value="steer:JOINT_VALUE"/>
+	    <property name="outport" value="vel:JOINT_VELOCITY"/>
+	    <property name="outport" value="range:RANGE_SENSOR1:RANGE_SENSOR"/>
+	    <property name="inport" value="torque:JOINT_TORQUE"/>
             <property name="BODY.mode" value="Torque"/>
             <property name="setupCommand" value="SampleSV$(BIN_SFX)"/>
             <property name="FRONT_WHEEL.mode" value="Torque"/>

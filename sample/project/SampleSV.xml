@@ -12,12 +12,23 @@
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
             <property name="logTimeStep" value="0.0020 "/>
         </item>
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="SampleSV0.period" value="0.002"/>  
+	    <property name="simple_vehicle.period" value="0.002"/>  
+	    <property name="connection" value="simple_vehicle.steer:SampleSV0.steer"/>  
+	    <property name="connection" value="simple_vehicle.vel:SampleSV0.vel"/>  
+	    <property name="connection" value="SampleSV0.torque:simple_vehicle.torque"/>  
+        </item>
 		<item class="com.generalrobotix.ui.item.GrxModelItem" name="longfloor" select="true" url="$(PROJECT_DIR)/../model/longfloor.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="simple_vehicle" select="true" url="$(PROJECT_DIR)/../model/simple_vehicle_with_camera.wrl">
+	    <property name="outport" value="steer:JOINT_VALUE"/>
+	    <property name="outport" value="vel:JOINT_VELOCITY"/>
+	    <property name="outport" value="range:JOINT_VELOCITY"/>
+	    <property name="inport" value="torque:JOINT_TORQUE"/>
             <property name="isRobot" value="true"/>
             <property name="controller" value="SampleSVController"/>
             <property name="controlTime" value="0.002"/>

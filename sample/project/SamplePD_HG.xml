@@ -12,12 +12,26 @@
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
             <property name="logTimeStep" value="0.0020 "/>
         </item>
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="SamplePD_HG0.period" value="0.002"/>  
+	    <property name="sample.period" value="0.002"/>  
+	    <property name="connection" value="sample.angle_out:SamplePD_HG0.angle_in"/>  
+	    <property name="connection" value="sample.torque:SamplePD_HG0.torque"/>  
+	    <property name="connection" value="SamplePD_HG0.angle_out:sample.angle_in"/>  
+	    <property name="connection" value="SamplePD_HG0.vel:sample.vel"/>  
+	    <property name="connection" value="SamplePD_HG0.acc:sample.acc"/>  
+        </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/floor.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="sample" select="true" url="$(PROJECT_DIR)/../model/sample.wrl">
+	    <property name="outport" value="angle_out:JOINT_VALUE"/>
+	    <property name="inport" value="torque:WAIST_P,WAIST_R,CHEST,LARM_SHOULDER_P,LARM_SHOULDER_R,LARM_SHOULDER_Y,LARM_ELBOW,LARM_WRIST_Y,LARM_WRIST_P,LARM_WRIST_R,RARM_SHOULDER_P,RARM_SHOULDER_R,RARM_SHOULDER_Y,RARM_ELBOW,RARM_WRIST_Y,RARM_WRIST_P,RARM_WRIST_R:JOINT_TORQUE"/>
+	    <property name="inport" value="angle_in:LLEG_HIP_R,LLEG_HIP_P,LLEG_HIP_Y,LLEG_KNEE,LLEG_ANKLE_P,LLEG_ANKLE_R,RLEG_HIP_R,RLEG_HIP_P,RLEG_HIP_Y,RLEG_KNEE,RLEG_ANKLE_P,RLEG_ANKLE_R:JOINT_VALUE"/>
+	    <property name="inport" value="vel:LLEG_HIP_R,LLEG_HIP_P,LLEG_HIP_Y,LLEG_KNEE,LLEG_ANKLE_P,LLEG_ANKLE_R,RLEG_HIP_R,RLEG_HIP_P,RLEG_HIP_Y,RLEG_KNEE,RLEG_ANKLE_P,RLEG_ANKLE_R:JOINT_VELOCITY"/>
+	    <property name="inport" value="acc:LLEG_HIP_R,LLEG_HIP_P,LLEG_HIP_Y,LLEG_KNEE,LLEG_ANKLE_P,LLEG_ANKLE_R,RLEG_HIP_R,RLEG_HIP_P,RLEG_HIP_Y,RLEG_KNEE,RLEG_ANKLE_P,RLEG_ANKLE_R:JOINT_ACCELERATION"/>
             <property name="isRobot" value="true"/>
             <property name="controller" value="SamplePD_HGController"/>
             <property name="controlTime" value="0.002"/>

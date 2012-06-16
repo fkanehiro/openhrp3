@@ -12,13 +12,15 @@
         <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
 	    <property name="PA10Controller0.period" value="0.001"/>  
 	    <property name="pa10.period" value="0.002"/>  
-	    <property name="connection" value="pa10.q:PA10Controller0.angle"/>  
-	    <property name="connection" value="PA10Controller0.torque:pa10.tau"/>  
+	    <property name="connection" value="pa10.angle:PA10Controller0.angle"/>  
+	    <property name="connection" value="PA10Controller0.torque:pa10.torque"/>  
         </item>
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="PA10" select="true">
             <property name="logTimeStep" value="0.0010 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="pa10" select="true" url="$(PROJECT_DIR)/../model/PA10/pa10.main.wrl">
+	    <property name="inport" value="torque:JOINT_TORQUE"/> 
+	    <property name="outport" value="angle:JOINT_VALUE"/>
 			<property name="HAND_R.angle" value="0.02"/>
             <property name="J2.angle" value="0.8"/>
             <property name="J4.angle" value="0.8"/>

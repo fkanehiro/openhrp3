@@ -4,9 +4,9 @@
         <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
 	    <property name="SampleHG0.period" value="0.002"/>  
 	    <property name="sample.period" value="0.002"/>  
-	    <property name="connection" value="SampleHG0.angle:sample.qRef"/>  
-	    <property name="connection" value="SampleHG0.vel:sample.dqRef"/>  
-	    <property name="connection" value="SampleHG0.acc:sample.ddqRef"/>  
+	    <property name="connection" value="SampleHG0.angle:sample.angle"/>  
+	    <property name="connection" value="SampleHG0.vel:sample.vel"/>  
+	    <property name="connection" value="SampleHG0.acc:sample.acc"/>  
         </item>
     	<item class="com.generalrobotix.ui.item.GrxSimulationItem" name="SampleSimulation" select="true">
     		<property name="integrate" value="true"/>
@@ -25,6 +25,9 @@
             <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="sample" select="true" url="$(PROJECT_DIR)/../model/sample.wrl">
+	    <property name="inport" value="angle:JOINT_VALUE"/>
+	    <property name="inport" value="vel:JOINT_VELOCITY"/>
+	    <property name="inport" value="acc:JOINT_ACCELERATION"/>
             <property name="isRobot" value="true"/>
             <property name="controller" value="SampleHGController"/>
             <property name="controlTime" value="0.002"/>
