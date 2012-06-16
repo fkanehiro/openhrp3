@@ -9,10 +9,24 @@
             <property name="method" value="RUNGE_KUTTA"/>
             <property name="gravity" value="9.8 "/>
         </item>
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="PD_HGtest0.period" value="0.002"/>  
+	    <property name="testRobot.period" value="0.002"/>  
+	    <property name="connection" value="PD_HGtest0.torque0:testRobot.torque0"/>
+	    <property name="connection" value="PD_HGtest0.torque1:testRobot.torque1"/>
+	    <property name="connection" value="PD_HGtest0.root_trans:testRobot.root_trans"/>
+	    <property name="connection" value="PD_HGtest0.root_vel:testRobot.root_vel"/>
+	    <property name="connection" value="PD_HGtest0.root_acc:testRobot.root_acc"/>
+        </item>
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
             <property name="logTimeStep" value="0.0020 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="testRobot" select="true" url="$(PROJECT_DIR)/../model/PD_HGtest.wrl">
+	    <property name="inport" value="torque0:J0:JOINT_TORQUE"/>
+	    <property name="inport" value="torque1:J1:JOINT_TORQUE"/>
+	    <property name="inport" value="root_trans:ROOT:ABS_TRANSFORM"/>
+	    <property name="inport" value="root_vel:ROOT:ABS_VELOCITY"/>
+	    <property name="inport" value="root_acc:ROOT:ABS_ACCELERATION"/>
             <property name="isRobot" value="true"/>
             <property name="controller" value="PD_HGtestController"/>
             <property name="controlTime" value="0.002"/>

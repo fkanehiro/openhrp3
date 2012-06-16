@@ -12,12 +12,24 @@
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
             <property name="logTimeStep" value="0.0020 "/>
         </item>
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="SampleLF0.period" value="0.002"/>  
+	    <property name="sample.period" value="0.002"/>  
+	    <property name="connection" value="sample.angle:SampleLF0.angle"/>
+	    <property name="connection" value="sample.r_torque_out:SampleLF0.r_torque_out"/>
+	    <property name="connection" value="sample.l_torque_out:SampleLF0.l_torque_out"/>
+	    <property name="connection" value="SampleLF0.torque:sample.torque"/>  
+        </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/floor.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="0.0 1.0 0.0 0.0 "/>
             <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="sample" select="true" url="$(PROJECT_DIR)/../model/sample.wrl">
+	    <property name="outport" value="angle:JOINT_VALUE"/>
+	    <property name="outport" value="r_torque_out:RARM_WRIST_R:JOINT_TORQUE"/>
+	    <property name="outport" value="l_torque_out:LARM_WRIST_R:JOINT_TORQUE"/> 
+	    <property name="inport" value="torque:JOINT_TORQUE"/>
             <property name="isRobot" value="true"/>
             <property name="controller" value="SampleLFController"/>
             <property name="controlTime" value="0.002"/>

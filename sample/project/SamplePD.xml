@@ -15,8 +15,8 @@
         <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
 	    <property name="SamplePD0.period" value="0.002"/>  
 	    <property name="sample.period" value="0.002"/>  
-	    <property name="connection" value="sample.q:SamplePD0.angle"/>  
-	    <property name="connection" value="SamplePD0.torque:sample.tau"/>  
+	    <property name="connection" value="sample.angle:SamplePD0.angle"/>  
+	    <property name="connection" value="SamplePD0.torque:sample.torque"/>  
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="floor" select="true" url="$(PROJECT_DIR)/../model/floor.wrl">
             <property name="isRobot" value="false"/>
@@ -24,6 +24,8 @@
             <property name="WAIST.translation" value="0.0 0.0 -0.1 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="sample" select="true" url="$(PROJECT_DIR)/../model/sample.wrl">
+	    <property name="inport" value="torque:JOINT_TORQUE"/> 
+	    <property name="outport" value="angle:JOINT_VALUE"/>
             <property name="isRobot" value="true"/>
             <property name="controller" value="SamplePDController"/>
             <property name="controlTime" value="0.002"/>

@@ -12,6 +12,13 @@
         <item class="com.generalrobotix.ui.item.GrxWorldStateItem" name="untitled" select="true">
             <property name="logTimeStep" value="0.002"/>
         </item>
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="SampleController0.period" value="0.002"/>  
+	    <property name="Robot.period" value="0.002"/>  
+	    <property name="connection" value="Robot.angle:SampleController0.angle"/>  
+	    <property name="connection" value="Robot.rhsensor:SampleController0.rhsensor"/>  
+	    <property name="connection" value="SampleController0.torque:Robot.torque"/>  
+        </item>
 		    <item class="com.generalrobotix.ui.item.GrxModelItem" name="house" select="true" url="$(PROJECT_DIR)/../model/house/house.main.wrl">
             <property name="isRobot" value="false"/>
             <property name="WAIST.rotation" value="1.0 0.0 0.0 1.570796 "/>
@@ -33,6 +40,9 @@
 			<property name="WAIST.translation" value="2.18 0.55 0.895 "/>
 		</item>  
 		<item class="com.generalrobotix.ui.item.GrxModelItem" name="Robot" select="true" url="$(PROJECT_DIR)/../model/sample1.wrl">
+		        <property name="outport" value="angle:JOINT_VALUE"/>
+			<property name="outport" value="rhsensor:rhsensor:FORCE_SENSOR"/>
+			<property name="inport" value="torque:JOINT_TORQUE"/>
 			<property name="isRobot" value="true"/>
 			<property name="controller" value="SampleController"/>
 			<property name="controlTime" value="0.002"/>

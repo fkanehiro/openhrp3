@@ -9,6 +9,11 @@
             <property name="method" value="RUNGE_KUTTA"/>
             <property name="gravity" value="9.8 "/>
         </item>
+        <item class="com.generalrobotix.ui.item.GrxRTSItem" name="untitled" select="true">
+	    <property name="SampleRH20.period" value="0.005"/>  
+	    <property name="RH2_WithArm_withoutSensor.period" value="0.005"/>  
+	    <property name="connection" value="SampleRH20.root_trans:RH2_WithArm_withoutSensor.root_trans"/>  
+        </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="longfloor" select="true" url="$(PROJECT_DIR)/../model/longfloor.wrl">
             <property name="isRobot" value="false"/>
             <property name="name" value="longfloor"/>
@@ -20,6 +25,7 @@
             <property name="WAIST.angularVelocity" value="0.0 0.0 0.0 "/>
         </item>
         <item class="com.generalrobotix.ui.item.GrxModelItem" name="RH2_WithArm_withoutSensor" select="true" url="$(PROJECT_DIR)/../model/RH2/RH2_WithArm_withoutSensor.wrl">
+	    <property name="inport" value="root_trans:BODY:ABS_TRANSFORM"/>
             <property name="J1.angle" value="0"/>
             <property name="J3.angle" value="1.2"/>
             <property name="J2.angle" value="0.8"/>
