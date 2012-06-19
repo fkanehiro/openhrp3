@@ -143,7 +143,7 @@ namespace hrp {
         double far, near, fovy, frameRate;
         ImageType imageType;
         std::vector<unsigned char> image;
-        std::vector<float> depth;
+        std::vector<unsigned char> depth;
         double nextUpdateTime;
         bool isUpdated, isEnabled;
     };
