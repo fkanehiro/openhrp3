@@ -372,17 +372,14 @@ void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sens
                     break;
                 case Camera::DEPTH:
                     vision->imageType = VisionSensor::DEPTH;
-                    vision->depth.resize(npixel);
                     break;
                 case Camera::COLOR_DEPTH:
                     vision->imageType = VisionSensor::COLOR_DEPTH;
                     vision->image.resize(npixel*3);
-                    vision->depth.resize(npixel);
                     break;
                 case Camera::MONO_DEPTH:
                     vision->imageType = VisionSensor::MONO_DEPTH;
                     vision->image.resize(npixel);
-                    vision->depth.resize(npixel);
                     break;
                 }
                 vision->frameRate = sensorInfo.specValues[6];
