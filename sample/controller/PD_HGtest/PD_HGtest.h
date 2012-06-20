@@ -25,6 +25,7 @@
 #include <rtm/DataInPort.h>
 #include <rtm/DataOutPort.h>
 #include <rtm/idl/BasicDataTypeSkel.h>
+#include <rtm/idl/ExtendedDataTypesSkel.h>
 
 #include <vector>
 
@@ -114,8 +115,8 @@ class PD_HGtest
   TimedDoubleSeq m_torque1;
   OutPort<TimedDoubleSeq> m_torque1Out;
   
-  TimedDoubleSeq m_root_trans;
-  OutPort<TimedDoubleSeq> m_root_transOut;
+  TimedPose3D m_root_trans;
+  OutPort<TimedPose3D> m_root_transOut;
   TimedDoubleSeq m_root_vel;
   OutPort<TimedDoubleSeq> m_root_velOut;
   TimedDoubleSeq m_root_acc;

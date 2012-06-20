@@ -25,6 +25,7 @@
 #include <rtm/DataInPort.h>
 #include <rtm/DataOutPort.h>
 #include <rtm/idl/BasicDataTypeSkel.h>
+#include <rtm/idl/ExtendedDataTypesSkel.h>
 #include <rtm/CORBA_SeqUtil.h> 
 #include <vector>
 
@@ -110,8 +111,8 @@ class SampleRH2
   // DataOutPort declaration
   // <rtc-template block="outport_declare">
   
-  TimedDoubleSeq m_root_trans;
-  OutPort<TimedDoubleSeq> m_root_transOut;
+  TimedPose3D m_root_trans;
+  OutPort<TimedPose3D> m_root_transOut;
 
   // </rtc-template>
 

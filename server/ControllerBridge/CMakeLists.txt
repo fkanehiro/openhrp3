@@ -21,6 +21,7 @@ if(UNIX)
   target_link_libraries(
     ${program}
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    hrpUtil-${OPENHRP_LIBRARY_VERSION}
     ${OPENRTM_LIBRARIES}
     boost_filesystem-mt boost_program_options-mt boost_regex-mt
     boost_system-mt
@@ -29,8 +30,8 @@ elseif(WIN32)
   add_definitions(${OPENRTM_DEFINITIONS})
   set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d )
   target_link_libraries(${program}
-    optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-    debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d 
+    optimized hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION} hrpUtil-${OPENHRP_LIBRARY_VERSION}
+    debug hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}d hrpUtil-${OPENHRP_LIBRARY_VERSION}d
     ${OPENRTM_LIBRARIES})
 endif()
 

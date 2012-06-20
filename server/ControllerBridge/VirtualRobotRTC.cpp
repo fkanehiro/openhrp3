@@ -147,11 +147,13 @@ void VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
     case JOINT_VELOCITY:
     case JOINT_ACCELERATION:
     case JOINT_TORQUE:
-    case ABS_TRANSFORM:
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
     case CONSTRAINT_FORCE:
       registerOutPortHandler(new LinkDataOutPortHandler(portInfo));
+      break;
+    case ABS_TRANSFORM:
+      registerOutPortHandler(new AbsTransformOutPortHandler(portInfo));
       break;
 
     case FORCE_SENSOR:
@@ -190,12 +192,13 @@ void VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
     case JOINT_TORQUE:
       registerInPortHandler(new LinkDataInPortHandler(portInfo));
       break;
-    case ABS_TRANSFORM:
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
     case EXTERNAL_FORCE:
-      std::cout << "createInPortHandler()" << std::endl;
       registerInPortHandler(new LinkDataInPortHandler(portInfo));
+      break;
+    case ABS_TRANSFORM:
+      registerInPortHandler(new AbsTransformInPortHandler(portInfo));
       break;
     default:
       break;
@@ -246,11 +249,13 @@ bool VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
     case JOINT_VELOCITY:
     case JOINT_ACCELERATION:
     case JOINT_TORQUE:
-    case ABS_TRANSFORM:
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
     case CONSTRAINT_FORCE:
       ret = registerOutPortHandler(new LinkDataOutPortHandler(portInfo));
+      break;
+    case ABS_TRANSFORM:
+      ret = registerOutPortHandler(new AbsTransformOutPortHandler(portInfo));
       break;
 
     case FORCE_SENSOR:
@@ -296,10 +301,11 @@ bool VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
       ret = registerInPortHandler(new LinkDataInPortHandler(portInfo));
       break;
     case ABS_TRANSFORM:
+      ret = registerInPortHandler(new AbsTransformInPortHandler(portInfo));
+      break;
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
     case EXTERNAL_FORCE:
-      std::cout << "createInPortHandler()" << std::endl;
       ret = registerInPortHandler(new LinkDataInPortHandler(portInfo));
       break;
     default:

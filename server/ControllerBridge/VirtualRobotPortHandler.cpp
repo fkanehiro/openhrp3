@@ -12,6 +12,7 @@
    \author Shin'ichiro Nakaoka
 */
 
+#include "hrpUtil/Eigen3d.h"
 #include "VirtualRobotPortHandler.h"
 
 #include "Controller_impl.h"
@@ -135,6 +136,41 @@ void LinkDataOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 
 
 void LinkDataOutPortHandler::writeDataToPort()
+{
+  outPort.write();
+}
+
+AbsTransformOutPortHandler::AbsTransformOutPortHandler(PortInfo& info) :
+  OutPortHandler(info),
+  outPort(info.portName.c_str(), value),
+  linkName(info.dataOwnerName)
+{
+  linkDataType = toDynamicsSimulatorLinkDataType(info.dataTypeId);
+  stepTime = info.stepTime;
+}
+
+
+void AbsTransformOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
+{
+    CORBA::ULong m;
+    DblSequence_var data = controller->getLinkDataFromSimulator(linkName[0], linkDataType);       
+    m = data->length();
+    value.data.position.x = data[0];
+    value.data.position.y = data[1];
+    value.data.position.z = data[2];
+    hrp::Matrix33 R;
+    R << data[3], data[4], data[5], 
+        data[6], data[7], data[8], 
+        data[9], data[10], data[11];
+    hrp::Vector3 rpy = hrp::rpyFromRot(R);
+    value.data.orientation.r = rpy[0];
+    value.data.orientation.p = rpy[1];
+    value.data.orientation.y = rpy[2];
+    setTime(value, controller->controlTime);
+}
+
+
+void AbsTransformOutPortHandler::writeDataToPort()
 {
   outPort.write();
 }
@@ -375,5 +411,43 @@ void LinkDataInPortHandler::readDataFromPort(Controller_impl* controller)
   data.length(n);
   for(CORBA::ULong i=0; i < n; ++i){
     data[i] = values.data[i];
+  }
+}
+
+AbsTransformInPortHandler::AbsTransformInPortHandler(PortInfo& info) :
+  InPortHandler(info),
+  inPort(info.portName.c_str(), values),
+  linkName(info.dataOwnerName)
+{
+  linkDataType = toDynamicsSimulatorLinkDataType(info.dataTypeId);
+}
+
+
+void AbsTransformInPortHandler::outputDataToSimulator(Controller_impl* controller)
+{
+    if(!data.length())
+        return;
+    controller->flushLinkDataToSimulator(linkName[0], linkDataType, data);
+}
+
+
+void AbsTransformInPortHandler::readDataFromPort(Controller_impl* controller)
+{
+  if( inPort.isNew() == false ){
+      return;
+  }
+  inPort.read();
+
+  data.length(12);
+  data[0] = values.data.position.x;
+  data[1] = values.data.position.y;
+  data[2] = values.data.position.z;
+  hrp::Matrix33 R = hrp::rotFromRpy(values.data.orientation.r,
+                                    values.data.orientation.p,
+                                    values.data.orientation.y);
+  for (int i=0; i<3; i++){
+      for (int j=0; j<3; j++){
+          data[3+i*3+j] = R(i,j);
+      }
   }
 }

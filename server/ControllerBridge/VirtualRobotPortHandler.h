@@ -105,6 +105,19 @@ private:
     RTC::TimedDoubleSeq value;
 };
 
+class AbsTransformOutPortHandler : public OutPortHandler
+{
+public:
+    AbsTransformOutPortHandler(PortInfo& info);
+    virtual void inputDataFromSimulator(Controller_impl* controller);
+    virtual void writeDataToPort();
+    RTC::OutPort<RTC::TimedPose3D> outPort;
+private:
+    std::vector<std::string> linkName;
+    DynamicsSimulator::LinkDataType linkDataType;
+    RTC::TimedPose3D value;
+};
+
 
 class SensorDataOutPortHandler : public OutPortHandler
 {
@@ -207,5 +220,20 @@ private:
     DynamicsSimulator::LinkDataType linkDataType;
     DblSequence data;
 };
+
+class AbsTransformInPortHandler : public InPortHandler
+{
+public:
+    AbsTransformInPortHandler(PortInfo& info);
+    virtual void outputDataToSimulator(Controller_impl* controller);
+    virtual void readDataFromPort(Controller_impl* controller);
+    RTC::InPort<RTC::TimedPose3D> inPort;
+private:
+    RTC::TimedPose3D values;
+    std::vector<std::string> linkName;
+    DynamicsSimulator::LinkDataType linkDataType;
+    DblSequence data;
+};
+
 
 #endif
