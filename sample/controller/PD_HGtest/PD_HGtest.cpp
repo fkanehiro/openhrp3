@@ -105,7 +105,6 @@ RTC::ReturnCode_t PD_HGtest::onInitialize()
 
   m_torque0.data.length(1);
   m_torque1.data.length(1);
-  m_root_trans.data.length(12);
   m_root_vel.data.length(6);
   m_root_acc.data.length(6);
 
@@ -173,13 +172,12 @@ RTC::ReturnCode_t PD_HGtest::onExecute(RTC::UniqueId ec_id)
   m_torque0.data[0] = 0.0;
   m_torque1.data[0] = 0.0;
   
-  for(int i=0; i<12; i++)
-    m_root_trans.data[i] = 0;
-  m_root_trans.data[0] = root_x_p;    //x
-  m_root_trans.data[2] = 1.0;          //z
-  m_root_trans.data[3] = 1.0;
-  m_root_trans.data[7] = 1.0;
-  m_root_trans.data[11] = 1.0;
+  m_root_trans.data.position.x = root_x_p;
+  m_root_trans.data.position.y = 0;
+  m_root_trans.data.position.z = 1;
+  m_root_trans.data.orientation.r = 0;
+  m_root_trans.data.orientation.p = 0;
+  m_root_trans.data.orientation.y = 0;
   for(int i=0; i<6; i++)
     m_root_vel.data[i] = 0.0;
   m_root_vel.data[0] = root_x_v;

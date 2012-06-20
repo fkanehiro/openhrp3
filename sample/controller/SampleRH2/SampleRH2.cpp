@@ -91,8 +91,6 @@ RTC::ReturnCode_t SampleRH2::onInitialize()
   addOutPort("root_trans", m_root_transOut);
   // </rtc-template>
 
-  m_root_trans.data.length(12);
-
   return RTC::RTC_OK;
 }
 
@@ -150,15 +148,18 @@ RTC::ReturnCode_t SampleRH2::onExecute(RTC::UniqueId ec_id)
   if(!root.eof()){
     double time;
     root >> time;
-    for(int i=0; i<3; i++)
-        root >> m_root_trans.data[i]; 
+	root >> m_root_trans.data.position.x 
+		 >> m_root_trans.data.position.y
+		 >> m_root_trans.data.position.z; 
     double rotation[4];
     for(int i=0; i<4; i++)
         root >> rotation[i];
     hrp::Matrix33 T;
     hrp::calcRodrigues(T, hrp::Vector3(rotation[0], rotation[1], rotation[2]), rotation[3]);
-    for(int i=0; i<9; i++)
-        m_root_trans.data[i+3] = T(i/3,i%3);
+	hrp::Vector3 rpy = hrp::rpyFromRot(T);
+	m_root_trans.data.orientation.r = rpy[0];
+	m_root_trans.data.orientation.p = rpy[1];
+	m_root_trans.data.orientation.y = rpy[2];
   }
 
   m_root_transOut.write();
