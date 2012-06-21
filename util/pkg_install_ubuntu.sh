@@ -22,8 +22,8 @@ if test "$lang" = "jp" ;then
     msg1="ディストリビューションを確認してください。\nDebianかUbuntu以外のOSの可能性があります。"
     msg2="コードネーム :"
     msg3="このOSはサポートしておりません。"
-    msg4="OpenRTM-aist のリポジトリが登録されていません。"
-    msg5="Source.list に OpenRTM-aist のリポジトリ: "
+    msg4="OpenHRP のリポジトリが登録されていません。"
+    msg5="OpenHRP のリポジトリ: "
     msg6="を追加します。よろしいですか？(y/n)[y] "
     msg7="中断します。"
     msg8="ルートユーザーで実行してください。"
@@ -36,9 +36,9 @@ else
     msg1="This distribution may not be debian/ubuntu."
     msg2="The code name is : "
     msg3="This OS is not supported."
-    msg4="No repository entry for OpenRTM-aist is configured in your system."
-    msg5="repository entry for OpenrRTM-aist: "
-    msg6="Do you want to add new repository entry for OpenrRTM-aist in source.list? (y/n) [y] "
+    msg4="No repository entry for OpenHRP is configured in your system."
+    msg5="repository entry for OpenHRP: "
+    msg6="Do you want to add new repository entry for OpenHRP ? (y/n) [y] "
     msg7="Abort."
     msg8="This script should be run as root."
     msg9="Now installing: "
@@ -75,7 +75,8 @@ create_srclist () {
 	echo $msg3
 	exit
     fi
-    openrtm_repo="deb http://www.openrtm.org/pub/Linux/ubuntu/ $code_name main"
+    #openrtm_repo="deb http://www.openrtm.org/pub/Linux/ubuntu/ $code_name main"
+    hrg_repo="deb http://ppa.launchpad.net/hrg/stable/ubuntu $code_name main"
     collada_repo="deb http://ppa.launchpad.net/openrave/release/ubuntu $code_name main"
 }
 
@@ -83,17 +84,17 @@ create_srclist () {
 # ソースリスト更新関数の定義
 #---------------------------------------
 update_source_list () {
-    rtmsite=`grep openrtm /etc/apt/sources.list`
-    if test "x$rtmsite" = "x" ; then
+    hrgsite=`grep http://ppa.launchpad.net/hrg/stable/ubuntu /etc/apt/sources.list.d/hrg-stable.list`
+    if test "x$hrgsite" = "x" ; then
 	echo $msg4
 	echo $msg5
-	echo "  " $openrtm_repo
+	echo "  " $hrg_repo
 	read -p $msg6 kick_shell
 
 	if test "x$kick_shell" = "xn" ; then
 	    echo $msg7
 	else
-	    echo $openrtm_repo >> /etc/apt/sources.list
+	    echo $hrg_repo >> /etc/apt/sources.list.d/hrg-stable.list
 	fi
     fi
     colladasite=`grep http://ppa.launchpad.net/openrave/release/ubuntu /etc/apt/sources.list.d/openrave-release.list`

@@ -75,9 +75,6 @@ uuid-dev
 
 # openrtm
 openrtm-aist
-openrtm-aist-doc
-openrtm-aist-dev
-openrtm-aist-example
 
 #eigen
 libeigen3-dev
