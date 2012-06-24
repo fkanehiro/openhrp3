@@ -173,6 +173,7 @@ namespace hrp {
         double rotorResistor;
 
         bool isHighGainMode;
+        bool isCrawler;
 
         ColdetModelPtr coldetModel;
 

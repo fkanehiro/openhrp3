@@ -230,6 +230,9 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
         link->jointType = Link::ROTATIONAL_JOINT;
     } else if(jt == "slide" ){
         link->jointType = Link::SLIDE_JOINT;
+    } else if(jt == "crawler"){
+        link->jointType == Link::FIXED_JOINT;
+        link->isCrawler = true;
     } else {
         link->jointType = Link::FREE_JOINT;
     }
@@ -246,7 +249,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
 
     Vector3 axis( Rs * Vector3(linkInfo.jointAxis[0], linkInfo.jointAxis[1], linkInfo.jointAxis[2]));
 
-    if(link->jointType == Link::ROTATIONAL_JOINT){
+    if(link->jointType == Link::ROTATIONAL_JOINT || jt == "crawler"){
         link->a = axis;
     } else if(link->jointType == Link::SLIDE_JOINT){
         link->d = axis;

@@ -767,6 +767,20 @@ void CFSImpl::setContactConstraintPoints(LinkPair& linkPair, CollisionPointSeque
                     v[k].setZero();
                 } else {
                     v[k] = link->vo + link->w.cross(contact.point);
+                    if (link->isCrawler){
+                        // tentative
+                        // invalid depths should be fixed
+                        if (contact.depth > allowedPenetrationDepth*2){
+                            contact.depth = allowedPenetrationDepth*2;
+                        }
+                        Vector3 axis = link->R*link->a;
+                        Vector3 n;
+                        getVector3(n, collision.normal);
+                        Vector3 dir = axis.cross(n);
+                        if (k) dir *= -1;
+                        dir.normalize();
+                        v[k] += link->u*dir;
+                    }
                 }
             }
             contact.relVelocityOn0 = v[1] - v[0];
