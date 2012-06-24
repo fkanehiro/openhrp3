@@ -696,7 +696,7 @@ void DynamicsSimulator_impl::setCharacterLinkData
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_TORQUE:
-        if(link->jointType != Link::FIXED_JOINT)
+        if(link->jointType != Link::FIXED_JOINT || link->isCrawler)
             link->u = wdata[0];
         break;
 
@@ -967,7 +967,8 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
 
     case OpenHRP::DynamicsSimulator::JOINT_TORQUE:
         for(int i=0; i < n; ++i){
-            if(body->joint(i)->jointType != Link::FIXED_JOINT)
+            if(body->joint(i)->jointType != Link::FIXED_JOINT 
+               || body->joint(i)->isCrawler)
                 body->joint(i)->u = wdata[i];
         }
         break;

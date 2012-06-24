@@ -58,6 +58,7 @@ Link::Link()
     child = 0;
     
     isHighGainMode = false;
+    isCrawler = false;
 
     defaultJointValue = 0.0;
 }
@@ -110,6 +111,7 @@ Link::Link(const Link& org)
     rotorResistor = org.rotorResistor;
 
     isHighGainMode = org.isHighGainMode;
+    isCrawler = org.isCrawler;
 
     if(org.coldetModel){
         coldetModel = new ColdetModel(*org.coldetModel);
