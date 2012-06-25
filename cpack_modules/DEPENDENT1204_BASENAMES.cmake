@@ -31,18 +31,17 @@ set(DEPENDENT_BASENAMES
   libf2c2-dev 
   libgfortran3
   libgfortran3-dbg
-  libboost1.42-dev
-  libboost-filesystem1.42-dev 
-  libboost-program-options1.42-dev 
-  libboost-regex1.42-dev
-  libboost-signals1.42-dev
-  libboost-thread1.42-dev
-  xulrunner-1.9.2
+  libboost1.46-dev
+  libboost-filesystem1.46-dev 
+  libboost-program-options1.46-dev 
+  libboost-regex1.46-dev
+  libboost-signals1.46-dev
+  libboost-thread1.46-dev
   zlib1g-dev
   libjpeg62-dev
   libpng12-dev
   uuid-dev
   openrtm-aist
   libeigen3-dev
-  libcollada15dom-dev
+  collada-dom-dev
 )
