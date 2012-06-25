@@ -44,8 +44,7 @@ set(DEPENDENT_BASENAMES
   libpng12-dev
   uuid-dev
   openrtm-aist
-  openrtm-aist-dev
-  openrtm-aist-doc
-  openrtm-aist-example
   python-yaml
+  libeigen3-dev
+  libcollada15dom-dev
 )
