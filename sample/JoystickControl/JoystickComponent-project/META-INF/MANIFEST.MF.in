@@ -12,5 +12,5 @@ Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: commons-cli-1.1.jar,
  openhrpstubskel.jar,
- OpenRTM-aist-1.0.0.jar,
+ @rtm_stub_jar@,
  .
