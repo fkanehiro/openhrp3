@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-SRC_REPOSITORY_PATH = "https://openrtp.jp/svn/hrg/openhrp/3.1/trunk"
+SRC_REPOSITORY_PATH = "https://openrtp.jp/svn/hrg/openhrp/3.1/tags/"+ARGV[0]
 EXPORT_TMP_DIR = "tmp_exported"
 
 require "optparse"
@@ -52,7 +52,7 @@ if ARGV.size < 2
 end
 
 end_slash = %r|/$|
-archive_top_dir = ARGV[0].sub(end_slash, "")
+archive_top_dir = "OpenHRP-"+ARGV[0].sub(end_slash, "")
 
 filelists = ARGV[1..ARGV.size]
 
