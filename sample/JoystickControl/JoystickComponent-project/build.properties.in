@@ -6,6 +6,6 @@ bin.includes = plugin.xml,\
                icons/,\
                commons-cli-1.1.jar,\
                openhrpstubskel.jar,\
-               OpenRTM-aist-1.0.0.jar,\
+               @rtm_stub_jar@,\
                rtc.conf,\
                default_rtc.conf

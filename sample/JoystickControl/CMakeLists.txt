@@ -1,3 +1,11 @@
+if(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION100} OR ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION101} OR ${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION102} )
+  set(rtm_stub_jar OpenRTM-aist-1.0.0.jar)
+elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION110})
+  set(rtm_stub_jar OpenRTM-aist-1.1.0.jar)
+endif()
+CONFIGURE_FILE( JoystickComponent-project/META-INF/MANIFEST.MF.in JoystickComponent-project/META-INF/MANIFEST.MF)
+CONFIGURE_FILE( JoystickComponent-project/build.properties.in JoystickComponent-project/build.properties)
+
 install(FILES JoystickContorller.xml JoystickConnection.rtclink SimulationProject.xml
   DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/JoystickControl)
 
