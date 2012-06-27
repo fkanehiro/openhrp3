@@ -2766,6 +2766,14 @@ void VrmlParserImpl::setSymbols()
         { F_TITLE, "title" },
         { F_INFO, "info" },
 
+	{ F_LOCATION, "location" },
+	{ F_ON, "on" },
+	{ F_INTENSITY, "intensity" },
+	{ F_ATTENUATION, "attenuation" },
+	{ F_DIRECTION, "direction" },
+	{ F_BEAM_WIDTH, "beamWidth" },
+	{ F_CUT_OFF_RANGE, "cutOffAngle" },
+
         // event type
         { E_FIELD, "field" },
         { E_EXPOSED_FIELD, "exposedField" },
