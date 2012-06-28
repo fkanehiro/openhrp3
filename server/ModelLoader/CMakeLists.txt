@@ -112,7 +112,7 @@ if(WIN32)
   install(TARGETS ${program} DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release )
 endif()
 
-install(TARGETS ${program} DESTINATION bin CONFIGURATIONS Release Debug)
+install(TARGETS ${program} export-vrml DESTINATION bin CONFIGURATIONS Release Debug)
 if( COLLADA_DOM_FOUND )
   install(TARGETS ${exporter} DESTINATION bin CONFIGURATIONS Release Debug)
 endif( COLLADA_DOM_FOUND )
