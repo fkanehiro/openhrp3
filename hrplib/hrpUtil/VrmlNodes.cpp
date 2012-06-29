@@ -529,6 +529,7 @@ VrmlPointLight::VrmlPointLight()
 {
     categorySet.set(TOP_NODE);
     categorySet.set(CHILD_NODE);
+    categorySet.set(LIGHT_NODE);
 
     location[0] = location[1] = location[2] = 0.0f;
     on = true;
@@ -545,6 +546,7 @@ VrmlDirectionalLight::VrmlDirectionalLight()
 {
     categorySet.set(TOP_NODE);
     categorySet.set(CHILD_NODE);
+    categorySet.set(LIGHT_NODE);
 
     ambientIntensity = 0.0f;
     color[0] = color[1] = color[2] = 1.0f;
@@ -559,6 +561,7 @@ VrmlSpotLight::VrmlSpotLight()
 {
     categorySet.set(TOP_NODE);
     categorySet.set(CHILD_NODE);
+    categorySet.set(LIGHT_NODE);
 
     location[0] = location[1] = location[2] = 0.0f;
     direction[0] = direction[1] = 0.0f;
