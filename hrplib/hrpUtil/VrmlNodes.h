@@ -107,6 +107,8 @@ namespace hrp {
         SENSOR_NODE,
         INLINE_NODE,
 
+        LIGHT_NODE,
+
         NUM_VRML_NODE_CATEGORIES
     };
 
