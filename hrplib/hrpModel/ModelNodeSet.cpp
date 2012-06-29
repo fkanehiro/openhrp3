@@ -437,6 +437,8 @@ void ModelNodeSetImpl::extractChildNodes
             }
             extractChildNodes(jointNodeSet, groupNode->getChildren(), acceptableProtoIds, *pT);
 
+        } else if(childNode->isCategoryOf(LIGHT_NODE)){
+            jointNodeSet->lightNodes.push_back(std::make_pair(T,childNode));
         } else if(childNode->isCategoryOf(PROTO_INSTANCE_NODE)){
 
             VrmlProtoInstance* protoInstance = static_cast<VrmlProtoInstance*>(childNode);

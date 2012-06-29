@@ -16,6 +16,7 @@
 #include "Link.h"
 #include "JointPath.h"
 #include "Sensor.h"
+#include "Light.h"
 #include "BodyCustomizerInterface.h"
 #include <hrpCollision/ColdetModel.h>
 #include <map>
@@ -526,6 +527,13 @@ void Body::calcForwardKinematics(bool calcVelocity, bool calcAcceleration)
     linkTraverse_.calcForwardKinematics(calcVelocity, calcAcceleration);
 }
 
+
+Light* Body::createLight(Link* link, int lightType, const std::string& name)
+{
+    Light *light =  new Light(link, lightType, name);
+    nameToLightMap[name] = light;
+    return light;
+}
 
 Sensor* Body::createSensor(Link* link, int sensorType, int id, const std::string& name)
 {

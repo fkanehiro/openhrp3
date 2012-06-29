@@ -77,8 +77,11 @@ private:
     void setSegmentParameters(int linkInfoIndex, JointNodeSetPtr jointNodeSet);
     void setSensors(int linkInfoIndex, JointNodeSetPtr jointNodeSet);
     void setHwcs(int linkInfoIndex, JointNodeSetPtr jointNodeSet);
+    void setLights(int linkInfoIndex, JointNodeSetPtr jointNodeSet);
     void readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode);
     void readHwcNode(int linkInfoIndex, HwcInfo& hwcInfo, VrmlProtoInstancePtr hwcNode);
+    void readLightNode(int linkInfoIndex, LightInfo& LightInfo, 
+                       std::pair<Matrix44, VrmlNodePtr> &transformedLight);
 };
 
 

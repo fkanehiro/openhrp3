@@ -266,6 +266,7 @@ int BodyInfo_impl::readJointNodeSet(JointNodeSetPtr jointNodeSet, int& currentIn
         setSegmentParameters(index, jointNodeSet);
         setSensors(index, jointNodeSet);
         setHwcs(index, jointNodeSet);
+        setLights(index, jointNodeSet);
     }
     catch( ModelLoader::ModelLoaderException& ex ) {
         string name(linkInfo->name);
@@ -449,6 +450,22 @@ void BodyInfo_impl::setHwcs(int linkInfoIndex, JointNodeSetPtr jointNodeSet)
     }
 }
 
+void BodyInfo_impl::setLights(int linkInfoIndex, JointNodeSetPtr jointNodeSet)
+{
+    LinkInfo& linkInfo = links_[linkInfoIndex];
+
+    vector<pair<Matrix44, VrmlNodePtr> >& lightNodes = jointNodeSet->lightNodes;
+
+    int numLights = lightNodes.size();
+    linkInfo.lights.length(numLights);
+
+    for(int i = 0 ; i < numLights ; ++i) {
+        LightInfo_var lightInfo( new LightInfo() );
+        readLightNode( linkInfoIndex, lightInfo, lightNodes[i] );
+        linkInfo.lights[i] = lightInfo;
+    }
+}
+
 
 void BodyInfo_impl::readSensorNode(int linkInfoIndex, SensorInfo& sensorInfo, VrmlProtoInstancePtr sensorNode)
 {
@@ -610,6 +627,63 @@ void BodyInfo_impl::readHwcNode(int linkInfoIndex, HwcInfo& hwcInfo, VrmlProtoIn
                 traverseShapeNodes(children[i].get(), E, 
                                    hwcInfo.shapeIndices, hwcInfo.inlinedShapeTransformMatrices, &topUrl());
             }
+        }
+    } catch(ModelLoader::ModelLoaderException& ex) {
+        throw ModelLoader::ModelLoaderException( ex.description );
+    }
+}
+
+void BodyInfo_impl::readLightNode(int linkInfoIndex, LightInfo& lightInfo, 
+                                  std::pair<Matrix44, VrmlNodePtr> &transformedLight )
+{
+    VrmlNode *lightNode = transformedLight.second.get();
+    Matrix44 &T = transformedLight.first;
+    for (int i=0; i<3; i++){
+        for (int j=0; j<4; j++){
+            lightInfo.transformMatrix[i*4+j] =  T(i,j);
+        }
+    }
+    try	{
+        lightInfo.name = CORBA::string_dup( lightNode->defName.c_str() );
+        VrmlPointLight *plight = dynamic_cast<VrmlPointLight *>(lightNode);
+        VrmlDirectionalLight *dlight = dynamic_cast<VrmlDirectionalLight *>(lightNode);
+        VrmlSpotLight *slight = dynamic_cast<VrmlSpotLight *>(lightNode);
+        if (plight){
+            lightInfo.type = POINT;
+            lightInfo.ambientIntensity = plight->ambientIntensity;
+            lightInfo.intensity = plight->intensity;
+            lightInfo.on = plight->on;
+            lightInfo.radius = plight->radius;
+            for (int i=0; i<3; i++){
+                lightInfo.attenuation[i] = plight->attenuation[i];
+                lightInfo.color[i] = plight->color[i];
+                lightInfo.location[i] = plight->location[i];
+            }
+        }else if(dlight){
+            lightInfo.type = DIRECTIONAL;
+            lightInfo.ambientIntensity = dlight->ambientIntensity;
+            lightInfo.intensity = dlight->intensity;
+            lightInfo.on = dlight->on;
+            for (int i=0; i<3; i++){
+                lightInfo.color[i] = dlight->color[i];
+                lightInfo.direction[i] = dlight->direction[i];
+            }
+        }else if(slight){
+            lightInfo.type = SPOT;
+            lightInfo.ambientIntensity = slight->ambientIntensity;
+            lightInfo.intensity = slight->intensity;
+            lightInfo.on = slight->on;
+            lightInfo.radius = slight->radius;
+            lightInfo.beamWidth = slight->beamWidth;
+            lightInfo.cutOffAngle = slight->cutOffAngle;
+            for (int i=0; i<3; i++){
+                lightInfo.attenuation[i] = slight->attenuation[i];
+                lightInfo.color[i] = slight->color[i];
+                lightInfo.location[i] = slight->location[i];
+                lightInfo.direction[i] = slight->direction[i];
+            }
+        }else{
+            throw ModelLoader::ModelLoaderException("unknown light type");
         }
     } catch(ModelLoader::ModelLoaderException& ex) {
         throw ModelLoader::ModelLoaderException( ex.description );
