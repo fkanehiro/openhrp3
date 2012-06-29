@@ -15,6 +15,7 @@
 #include "ModelLoaderUtil.h"
 #include "Link.h"
 #include "Sensor.h"
+#include "Light.h"
 #include <hrpUtil/Eigen3d.h>
 #include <hrpUtil/Eigen4d.h>
 #include <hrpCorba/OpenHRPCommon.hh>
@@ -147,6 +148,7 @@ namespace {
 
         Link* createLink(int index, const Matrix33& parentRs);
         void createSensors(Link* link, const SensorInfoSequence& sensorInfoSeq, const Matrix33& Rs);
+        void createLights(Link* link, const LightInfoSequence& lightInfoSeq, const Matrix33& Rs);
         void createColdetModel(Link* link, const LinkInfo& linkInfo);
         void addLinkPrimitiveInfo(ColdetModelPtr& coldetModel, 
                                   const double *R, const double *p,
@@ -301,6 +303,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
     }
         
     createSensors(link, linkInfo.sensors, Rs);
+    createLights(link, linkInfo.lights, Rs);
 
     if(collisionDetectionModelLoading){
         createColdetModel(link, linkInfo);
@@ -309,6 +312,52 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
     return link;
 }
 
+
+void ModelLoaderHelper::createLights(Link* link, const LightInfoSequence& lightInfoSeq, const Matrix33& Rs)
+{
+    int numLights = lightInfoSeq.length();
+
+    for(int i=0 ; i < numLights ; ++i ) {
+        const LightInfo& lightInfo = lightInfoSeq[i];
+        std::string name(lightInfo.name);
+        Light *light = body->createLight(link, lightInfo.type, name);
+        const double *T = lightInfo.transformMatrix;
+        light->localPos << T[3], T[7], T[11];
+        light->localR << T[0], T[1], T[2], T[4], T[5], T[6], T[8], T[9], T[10]; 
+        switch (lightInfo.type){
+        case POINT:
+            light->ambientIntensity = lightInfo.ambientIntensity;
+            getVector3(light->attenuation, lightInfo.attenuation);
+            getVector3(light->color, lightInfo.color);
+            light->intensity = lightInfo.intensity;
+            getVector3(light->location, lightInfo.location);
+            light->on = lightInfo.on;
+            light->radius = lightInfo.radius;
+            break;
+        case DIRECTIONAL:
+            light->ambientIntensity = lightInfo.ambientIntensity;
+            getVector3(light->color, lightInfo.color);
+            light->intensity = lightInfo.intensity;
+            light->on = lightInfo.on;
+            getVector3(light->direction, lightInfo.color); 
+            break;
+        case SPOT:
+            light->ambientIntensity = lightInfo.ambientIntensity;
+            getVector3(light->attenuation, lightInfo.attenuation);
+            getVector3(light->color, lightInfo.color);
+            light->intensity = lightInfo.intensity;
+            getVector3(light->location, lightInfo.location);
+            light->on = lightInfo.on;
+            light->radius = lightInfo.radius;
+            getVector3(light->direction, lightInfo.direction);
+            light->beamWidth = lightInfo.beamWidth;
+            light->cutOffAngle = lightInfo.cutOffAngle;
+            break;
+        default:
+            std::cerr << "unknown light type" << std::endl;
+        }
+    }    
+}
 
 void ModelLoaderHelper::createSensors(Link* link, const SensorInfoSequence& sensorInfoSeq, const Matrix33& Rs)
 {

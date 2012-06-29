@@ -110,7 +110,32 @@ module OpenHRP {
   };
 
   typedef sequence<HwcInfo> HwcInfoSequence;
-  
+
+  /**
+     @if jp
+     ライトの情報を格納する構造体
+     @endif
+  */
+  enum LightType {POINT, DIRECTIONAL, SPOT};
+  struct LightInfo
+  {
+    string     name;            ///< 名称
+    LightType  type;            ///< ライトの種類
+    DblArray12 transformMatrix; ///< ライトの位置・姿勢（同時変換行列の上3行）
+    double     ambientIntensity;// s, p, d
+    DblArray3  attenuation;     // s, p
+    DblArray3  color;           // s, p, d
+    double     intensity;       // s, p, d
+    DblArray3  location;        // s, p
+    boolean    on;              // s, p, d
+    double     radius;          // s, p
+    DblArray3  direction;       // s,    d
+    double     beamWidth;       // s
+    double     cutOffAngle;     // s
+  };
+
+  typedef sequence<LightInfo> LightInfoSequence;
+
   /**
      @if jp
      セグメントの情報を格納する構造体
@@ -193,6 +218,7 @@ module OpenHRP {
     SensorInfoSequence sensors; ///< 本リンクに設置されたセンサの情報  
     HwcInfoSequence hwcs;
     SegmentInfoSequence segments;
+    LightInfoSequence lights;
 
     /**
        @if jp

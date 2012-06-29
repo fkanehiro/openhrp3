@@ -38,6 +38,7 @@ namespace hrp {
         std::vector<VrmlProtoInstancePtr> segmentNodes;
         std::vector<VrmlProtoInstancePtr> sensorNodes;
         std::vector<VrmlProtoInstancePtr> hwcNodes;
+        std::vector<std::pair<Matrix44, VrmlNodePtr> > lightNodes;
     };
     
     typedef std::vector<JointNodeSetPtr> JointNodeSetArray;

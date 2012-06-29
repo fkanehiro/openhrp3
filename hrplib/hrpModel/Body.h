@@ -24,6 +24,7 @@
 
 namespace hrp {
     class Sensor;
+    class Light;
     class Body;
     class JointPath;
     typedef boost::shared_ptr<JointPath> JointPathPtr;
@@ -142,6 +143,11 @@ namespace hrp {
         */
         inline Link* rootLink() const {
             return rootLink_;
+        }
+
+        Light *createLight(Link *link, int lightType, const std::string& name);
+        inline Light* light(const std::string& name) { 
+            return nameToLightMap[name];
         }
 
         // sensor access methods
@@ -274,6 +280,8 @@ namespace hrp {
 
         typedef std::map<std::string, Sensor*> NameToSensorMap;
         NameToSensorMap nameToSensorMap;
+        typedef std::map<std::string, Light*> NameToLightMap;
+        NameToLightMap nameToLightMap;
 
         double totalMass_;
 

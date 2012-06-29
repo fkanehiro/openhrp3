@@ -3,6 +3,7 @@ configure_file(Config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/Config.h)
 
 set(sources
   Sensor.cpp
+  Light.cpp
   Body.cpp
   BodyCustomizerInterface.cpp
   Link.cpp
@@ -37,6 +38,7 @@ set(headers
   ModelLoaderUtil.h
   OnlineViewerUtil.h
   Sensor.h
+  Light.h
   World.h
   Config.h
   )	
