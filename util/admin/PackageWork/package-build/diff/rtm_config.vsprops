@@ -2,7 +2,7 @@
 <VisualStudioPropertySheet
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="OpenRTM-aist-1.0"
+	Name="OpenRTM-aist-1.1"
 	>
 	<Tool
 		Name="VCCLCompilerTool"
@@ -27,15 +27,15 @@
 	/>
 	<UserMacro
 		Name="rtm_dllver"
-		Value="100"
+		Value="110"
 	/>
 	<UserMacro
 		Name="rtm_version"
-		Value="1.0.0"
+		Value="1.1.0"
 	/>
 	<UserMacro
 		Name="coil_dllver"
-		Value=""
+		Value="110"
 	/>
 	<!-- omniORB macros -->
 	<UserMacro
@@ -85,7 +85,7 @@
 	/>
 	<UserMacro
 		Name="rtm_idlflags"
-		Value="-bcxx -Wba -nf"
+		Value="-bcxx -Wba -nf -I&quot;$(SolutionDir)\rtm\idl&quot;"
 	/>
 	<!-- coil macros -->
 	<UserMacro
