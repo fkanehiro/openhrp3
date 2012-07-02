@@ -649,7 +649,7 @@ void BodyInfo_impl::readLightNode(int linkInfoIndex, LightInfo& lightInfo,
         VrmlDirectionalLight *dlight = dynamic_cast<VrmlDirectionalLight *>(lightNode);
         VrmlSpotLight *slight = dynamic_cast<VrmlSpotLight *>(lightNode);
         if (plight){
-			lightInfo.type =  LightType::POINT;
+            lightInfo.type = OpenHRP::POINT;
             lightInfo.ambientIntensity = plight->ambientIntensity;
             lightInfo.intensity = plight->intensity;
             lightInfo.on = plight->on;
@@ -660,7 +660,7 @@ void BodyInfo_impl::readLightNode(int linkInfoIndex, LightInfo& lightInfo,
                 lightInfo.location[i] = plight->location[i];
             }
         }else if(dlight){
-            lightInfo.type = DIRECTIONAL;
+            lightInfo.type = OpenHRP::DIRECTIONAL;
             lightInfo.ambientIntensity = dlight->ambientIntensity;
             lightInfo.intensity = dlight->intensity;
             lightInfo.on = dlight->on;
@@ -669,7 +669,7 @@ void BodyInfo_impl::readLightNode(int linkInfoIndex, LightInfo& lightInfo,
                 lightInfo.direction[i] = dlight->direction[i];
             }
         }else if(slight){
-            lightInfo.type = SPOT;
+            lightInfo.type = OpenHRP::SPOT;
             lightInfo.ambientIntensity = slight->ambientIntensity;
             lightInfo.intensity = slight->intensity;
             lightInfo.on = slight->on;
