@@ -325,7 +325,7 @@ void ModelLoaderHelper::createLights(Link* link, const LightInfoSequence& lightI
         light->localPos << T[3], T[7], T[11];
         light->localR << T[0], T[1], T[2], T[4], T[5], T[6], T[8], T[9], T[10]; 
         switch (lightInfo.type){
-		case  LightType::POINT:
+        case Light::POINT:
             light->ambientIntensity = lightInfo.ambientIntensity;
             getVector3(light->attenuation, lightInfo.attenuation);
             getVector3(light->color, lightInfo.color);
@@ -334,14 +334,14 @@ void ModelLoaderHelper::createLights(Link* link, const LightInfoSequence& lightI
             light->on = lightInfo.on;
             light->radius = lightInfo.radius;
             break;
-        case DIRECTIONAL:
+        case Light::DIRECTIONAL:
             light->ambientIntensity = lightInfo.ambientIntensity;
             getVector3(light->color, lightInfo.color);
             light->intensity = lightInfo.intensity;
             light->on = lightInfo.on;
             getVector3(light->direction, lightInfo.color); 
             break;
-        case SPOT:
+        case Light::SPOT:
             light->ambientIntensity = lightInfo.ambientIntensity;
             getVector3(light->attenuation, lightInfo.attenuation);
             getVector3(light->color, lightInfo.color);
