@@ -649,7 +649,7 @@ void BodyInfo_impl::readLightNode(int linkInfoIndex, LightInfo& lightInfo,
         VrmlDirectionalLight *dlight = dynamic_cast<VrmlDirectionalLight *>(lightNode);
         VrmlSpotLight *slight = dynamic_cast<VrmlSpotLight *>(lightNode);
         if (plight){
-            lightInfo.type = POINT;
+			lightInfo.type =  LightType::POINT;
             lightInfo.ambientIntensity = plight->ambientIntensity;
             lightInfo.intensity = plight->intensity;
             lightInfo.on = plight->on;
