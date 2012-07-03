@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set VERSION_STRING=3.1.2
+set VERSION_STRING=3.1.3
 
 rem ディレクトリ関連
 set SRC_DIR=src
@@ -9,21 +9,22 @@ set PACK_SRC_DIR=pack_src
 set INSTALL_DIR=pack_src\OpenHRP
 set PRODUCT_DIR=pack_src\GrxUI
 set PACKAGE_DIR=package-build
+set SDK_INSTALL_DIR=C:\Program Files\OpenHRPSDK
 
 rem SVN関連
 rem set IS_PLAIN_SVN=1
 set TORTOISESVN_COMMAND=C:\Program Files\TortoiseSVN\bin\TortoiseProc.exe
-set SVN_URL=https://openrtp.jp/svn/hrg/openhrp/3.1/trunk
+set SVN_URL=https://openrtp.jp/svn/hrg/openhrp/3.1/tags/3.1.3
 set SVN_USERID=
 set SVN_PASSWORD=
 set SVN_REVISION=HEAD
 
 rem VC関連
-rem set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/VCExpress.exe
-set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/devenv.exe
+set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/VCExpress.exe
+rem set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/devenv.exe
 
 rem ECLIPSE LAUNCHER
-set ECLIPSE_LAUNCHER="C:\Program Files\eclipse3.4\plugins\org.eclipse.equinox.launcher_1.0.101.R34x_v20081125.jar"
+set ECLIPSE_LAUNCHER="C:\Users\admin\eclipse_rtm1.1\eclipse\plugins\org.eclipse.equinox.launcher_1.0.101.R34x_v20081125.jar"
 
 rem Eclipse製品関連(基本的には設定不要)
 set ECLIPSE_ANT_XML=product.xml
@@ -59,6 +60,11 @@ call :Build
 goto :EndBatch
 )
 
+if /i "%1"=="CopyFile" (
+call :CopyFile
+goto :EndBatch
+)
+
 if /i "%1"=="plugin" (
 call :Plugin
 goto :EndBatch
@@ -84,6 +90,7 @@ echo Option List
 echo svnexport Subversionからソースのエクスポート
 echo cmake     ソリューションファイル作成
 echo build     VCによるビルド・OpenHRPのインストール
+echo CopyFile
 echo plugin    Eclipseプラグイン作成
 echo product   Eclipse製品作成
 echo package   msiファイル作成
@@ -171,6 +178,15 @@ echo VCによるビルドに失敗しました。
 exit /b 1
 )
 goto :EOF
+
+:CopyFile
+cd %SRC_DIR%
+call cmake -G "Visual Studio 9 2008" -DCMAKE_INSTALL_PREFIX:PATH="%SDK_INSTALL_DIR%"
+if errorlevel 1 set IS_ERROR=1
+copy hrplib\hrpModel\config.h ..\pack_src\OpenHRP\include\OpenHRP-3.1\hrpModel\config.h
+cd %BASE_DIR%
+exit /b %IS_ERROR%
+
 
 :Plugin
 call :PluginClean
@@ -297,7 +313,7 @@ if exist %PACKAGE_DIR%\OpenHRPj.wixobj del %PACKAGE_DIR%\OpenHRPj.wxs
 if exist %PACKAGE_DIR%\OpenHRPe.wixobj del %PACKAGE_DIR%\OpenHRPe.wxs
 if exist %PACKAGE_DIR%\OpenHRPj.wixobj del %PACKAGE_DIR%\OpenHRPj.wixobj
 if exist %PACKAGE_DIR%\OpenHRPe.wixobj del %PACKAGE_DIR%\OpenHRPe.wixobj
-if exist %PACKAGE_DIR%\OpenHRPSDK rmdir /s /q %PACKAGE_DIR%\OpenHRPSDK
+rem if exist %PACKAGE_DIR%\OpenHRPSDK rmdir /s /q %PACKAGE_DIR%\OpenHRPSDK
 if exist OpenHRPSDK%VERSION_STRING%-j.wixpdb del OpenHRPSDK%VERSION_STRING%-j.wixpdb
 if exist OpenHRPSDK%VERSION_STRING%-e.wixpdb del OpenHRPSDK%VERSION_STRING%-e.wixpdb
 exit /b 0

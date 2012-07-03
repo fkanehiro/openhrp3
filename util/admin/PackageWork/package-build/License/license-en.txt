@@ -17,17 +17,20 @@ agree with each of those software licenses, before you proceed.
 (These licenses are available to use, without having conflicts with the
  above-mentioned EPL that applied to the source package of OpenHRP3.)
 
-- OpenRTM-aist 1.0.0
+- OpenRTM-aist 1.1.0
   License text is available at (InstallDir)/License/OpenRTM-aist_COPYRIGHT
 
-- omniORB 4.1.2
+- omniORB 4.1.4
   License text is available at (InstallDir)/License/omniORB_COPYING
 
-- Boost 1.35.0
+- Boost 1.44
   License text is available at (InstallDir)/License/Boost_LICENSE_1_0.txt
 
 - clapack 3.1.1
   License text is available at (InstallDir)/License/clapack_COPYING
 
-- tvmet 1.7.2
-  License text is available at (InstallDir)/License/tvmet_LICENSE
+- Eigen 3.0
+  License text is available at (InstallDir)/License/Eigen_LICENSE
+
+- collada dom 2.3.1
+  License text is available at (InstallDir)/License/collada_dom_LICENSE

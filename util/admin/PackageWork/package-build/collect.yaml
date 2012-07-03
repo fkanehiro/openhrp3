@@ -1,22 +1,22 @@
 # OpenHRP以外のリリース物件のファイル定義
 - name: OpenRTM
-  path: C:/Program Files/OpenRTM-aist/1.0  # ソースディレクトリのパス
+  path: C:/Program Files/OpenRTM-aist/1.1  # ソースディレクトリのパス
   files: 
     bin:                 # インストール先のディレクトリ
-      - bin/coil.dll     # 収集するファイルorディレクトリ(pathからの相対パス)
-      - bin/coild.dll
-      - bin/RTC100.dll
-      - bin/RTC100d.dll
+      - bin/coil110.dll     # 収集するファイルorディレクトリ(pathからの相対パス)
+      - bin/coil110d.dll
+      - bin/RTC110.dll
+      - bin/RTC110d.dll
       - bin/rtcd.exe
       - bin/rtcprof.exe
     include:
       - coil/
       - rtm/
     lib:
-      - bin/coil.lib
-      - bin/coild.lib
-      - bin/RTC100.lib
-      - bin/RTC100d.lib
+      - bin/coil110.lib
+      - bin/coil110d.lib
+      - bin/RTC110.lib
+      - bin/RTC110d.lib
     utils/rtc-template:
       - utils/rtc-template/cxx_gen.py
       - utils/rtc-template/cxx_svc_impl.py
@@ -27,10 +27,11 @@
       - utils/rtc-template/rtc-template.py
       - utils/rtc-template/slntool.py
       - utils/rtc-template/uuid.py
+      - utils/rtc-template/vcproj_gen.py
       - utils/rtc-template/vcprojtool.py
       - utils/rtc-template/yat.py
 - name: omniORB
-  path: C:/Program Files/omniORB/4.1.4
+  path: C:/Program Files/OpenRTM-aist/1.1/omniORB/4.1.4
   files:
     bin:
       - bin/x86_win32/omniNames.exe
@@ -63,16 +64,17 @@
       - License/clapack_COPYING
       - License/omniORB_COPYING
       - License/OpenRTM-aist_COPYRIGHT
-      - License/tvmet_LICENSE
+      - License/Eigen_LICENSE.rtf
+      - License/collada_dom_LICENSE.rtf
 - name: GrxUI
   path: ../pack_src
   files:
     ./:
       - GrxUI/
-- name: Boost-1.35.0
+- name: Boost-1.44.0
   feature: true
-  description: Boost-1.35.0
-  path: C:/Program Files/Boost-1.35.0
+  description: Boost-1.44.0
+  path: C:/Program Files/boost_1_44
   files:
     include/:
       - boost/
@@ -106,10 +108,35 @@
       - LIB/Win32/tmglibd.lib
       - LIB/Win32/tmglibd_nowrap.lib
       - LIB/Win32/tmglib_nowrap.lib
-- name: tvmet-1.7.2
+- name: Eigen-3.0
   feature: true
-  description: tvmet-1.7.2
-  path: C:/Program Files/tvmet-1.7.2
+  description: Eigen-3.0
+  path: C:/Program Files/Eigen
   files:
     include/:
-      - include/tvmet
+      - include/eigen3/Eigen/
+      - include/eigen3/unsupported/
+      - include/eigen3/signature_of_eigen3_matrix_library
+- name: collada_dom-2.3.1
+  feature: true
+  description: collada_dom-2.3.1
+  path: C:/Program Files/collada_dom-2.3.1
+  files:
+    include/:
+      - include/collada-dom/1.5/
+      - include/collada-dom/dae/
+      - include/collada-dom/modules/
+      - include/collada-dom/dae.h
+      - include/collada-dom/dom.h
+    lib/:
+      - lib/collada15dom2-vc90-mt.lib
+      - lib/collada15dom2-vc90-mtd.lib
+    bin/:
+      - lib/collada15dom2-vc90-mt.dll
+      - lib/collada15dom2-vc90-mtd.dll
+      - lib/iconv.dll
+      - lib/libxml2.dll
+      - lib/libxml2-vc90-mt.dll
+      - lib/zlib1.dll
+
+
