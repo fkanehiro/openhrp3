@@ -1,6 +1,6 @@
 # OpenHRP以外のリリース物件のファイル定義
 - name: OpenRTM
-  path: C:/Program Files/OpenRTM-aist/1.1  # ソースディレクトリのパス
+  path: C:\Program Files\OpenRTM-aist\VC2010\1.1  # ソースディレクトリのパス
   files: 
     bin:                 # インストール先のディレクトリ
       - bin/coil110.dll     # 収集するファイルorディレクトリ(pathからの相対パス)
@@ -31,26 +31,26 @@
       - utils/rtc-template/vcprojtool.py
       - utils/rtc-template/yat.py
 - name: omniORB
-  path: C:/Program Files/OpenRTM-aist/1.1/omniORB/4.1.4
+  path: C:\Program Files\OpenRTM-aist\VC2010\1.1\omniORB\4.1.5
   files:
     bin:
       - bin/x86_win32/omniNames.exe
-      - bin/x86_win32/omniDynamic414_vc9_rt.dll
-      - bin/x86_win32/omniDynamic414_vc9_rtd.dll
-      - bin/x86_win32/omniORB414_vc9_rt.dll
-      - bin/x86_win32/omniORB414_vc9_rtd.dll
-      - bin/x86_win32/omnithread34_vc9_rt.dll
-      - bin/x86_win32/omnithread34_vc9_rtd.dll
+      - bin/x86_win32/omniDynamic415_vc10_rt.dll
+      - bin/x86_win32/omniDynamic415_vc10_rtd.dll
+      - bin/x86_win32/omniORB415_vc10_rt.dll
+      - bin/x86_win32/omniORB415_vc10_rtd.dll
+      - bin/x86_win32/omnithread34_vc10_rt.dll
+      - bin/x86_win32/omnithread34_vc10_rtd.dll
     include:
       - include/omniconfig.h
       - include/omnithread.h
       - include/omniORB4/
       - include/omnithread/
     lib:
-      - lib/x86_win32/omniDynamic414_rt.lib
-      - lib/x86_win32/omniDynamic414_rtd.lib
-      - lib/x86_win32/omniORB414_rt.lib
-      - lib/x86_win32/omniORB414_rtd.lib
+      - lib/x86_win32/omniDynamic415_rt.lib
+      - lib/x86_win32/omniDynamic415_rtd.lib
+      - lib/x86_win32/omniORB415_rt.lib
+      - lib/x86_win32/omniORB415_rtd.lib
       - lib/x86_win32/omnithread34_rt.lib
       - lib/x86_win32/omnithread34_rtd.lib
 - name: License
@@ -74,12 +74,72 @@
 - name: Boost-1.44.0
   feature: true
   description: Boost-1.44.0
-  path: C:/Program Files/boost_1_44
+  path: C:\Program Files\boost\boost_1_44
   files:
     include/:
       - boost/
-    ./:
-      - lib/
+    bin:
+      - lib/boost_date_time-vc100-mt-1_44.dll
+      - lib/boost_date_time-vc100-mt-gd-1_44.dll
+#      - lib/boost_date_time-vc90-mt-1_44.dll
+#      - lib/boost_date_time-vc90-mt-gd-1_44.dll
+      - lib/boost_filesystem-vc100-mt-1_44.dll
+      - lib/boost_filesystem-vc100-mt-gd-1_44.dll
+#      - lib/boost_filesystem-vc90-mt-1_44.dll
+#      - lib/boost_filesystem-vc90-mt-gd-1_44.dll
+      - lib/boost_signals-vc100-mt-1_44.dll
+      - lib/boost_signals-vc100-mt-gd-1_44.dll
+#      - lib/boost_signals-vc90-mt-1_44.dll
+#      - lib/boost_signals-vc90-mt-gd-1_44.dll
+      - lib/boost_system-vc100-mt-1_44.dll
+      - lib/boost_system-vc100-mt-gd-1_44.dll
+#      - lib/boost_system-vc90-mt-1_44.dll
+#      - lib/boost_system-vc90-mt-gd-1_44.dll
+      - lib/boost_thread-vc100-mt-1_44.dll
+      - lib/boost_thread-vc100-mt-gd-1_44.dll
+#      - lib/boost_thread-vc90-mt-1_44.dll
+#      - lib/boost_thread-vc90-mt-gd-1_44.dll
+    lib:
+      - lib/boost_date_time-vc100-mt-1_44.lib
+      - lib/boost_date_time-vc100-mt-gd-1_44.lib
+#      - lib/boost_date_time-vc90-mt-1_44.lib
+#      - lib/boost_date_time-vc90-mt-gd-1_44.lib
+      - lib/boost_filesystem-vc100-mt-1_44.lib
+      - lib/boost_filesystem-vc100-mt-gd-1_44.lib
+#      - lib/boost_filesystem-vc90-mt-1_44.lib
+#      - lib/boost_filesystem-vc90-mt-gd-1_44.lib
+      - lib/boost_signals-vc100-mt-1_44.lib
+      - lib/boost_signals-vc100-mt-gd-1_44.lib
+#      - lib/boost_signals-vc90-mt-1_44.lib
+#      - lib/boost_signals-vc90-mt-gd-1_44.lib
+      - lib/boost_system-vc100-mt-1_44.lib
+      - lib/boost_system-vc100-mt-gd-1_44.lib
+#      - lib/boost_system-vc90-mt-1_44.lib
+#      - lib/boost_system-vc90-mt-gd-1_44.lib
+      - lib/boost_thread-vc100-mt-1_44.lib
+      - lib/boost_thread-vc100-mt-gd-1_44.lib
+#      - lib/boost_thread-vc90-mt-1_44.lib
+#      - lib/boost_thread-vc90-mt-gd-1_44.lib
+      - lib/libboost_filesystem-vc100-mt-1_44.lib
+      - lib/libboost_filesystem-vc100-mt-gd-1_44.lib
+#      - lib/libboost_filesystem-vc90-mt-1_44.lib
+#      - lib/libboost_filesystem-vc90-mt-gd-1_44.lib
+      - lib/libboost_program_options-vc100-mt-1_44.lib
+      - lib/libboost_program_options-vc100-mt-gd-1_44.lib
+#      - lib/libboost_program_options-vc90-mt-1_44.lib
+#      - lib/libboost_program_options-vc90-mt-gd-1_44.lib
+      - lib/libboost_regex-vc100-mt-1_44.lib
+      - lib/libboost_regex-vc100-mt-gd-1_44.lib
+#      - lib/libboost_regex-vc90-mt-1_44.lib
+#      - lib/libboost_regex-vc90-mt-gd-1_44.lib
+      - lib/libboost_signals-vc100-mt-1_44.lib
+      - lib/libboost_signals-vc100-mt-gd-1_44.lib
+#      - lib/libboost_signals-vc90-mt-1_44.lib
+#      - lib/libboost_signals-vc90-mt-gd-1_44.lib
+      - lib/libboost_system-vc100-mt-1_44.lib
+      - lib/libboost_system-vc100-mt-gd-1_44.lib
+#      - lib/libboost_system-vc90-mt-1_44.lib
+#      - lib/libboost_system-vc90-mt-gd-1_44.lib
 - name: CLAPACK
   feature: true
   description: CLAPACK 3.1.1
@@ -131,12 +191,17 @@
     lib/:
       - lib/collada15dom2-vc90-mt.lib
       - lib/collada15dom2-vc90-mtd.lib
+      - lib/collada15dom2-vc100-mt.lib
+      - lib/collada15dom2-vc100-mtd.lib
     bin/:
       - lib/collada15dom2-vc90-mt.dll
       - lib/collada15dom2-vc90-mtd.dll
+      - lib/collada15dom2-vc100-mt.dll
+      - lib/collada15dom2-vc100-mtd.dll
       - lib/iconv.dll
       - lib/libxml2.dll
       - lib/libxml2-vc90-mt.dll
+      - lib/libxml2-vc100-mt.dll
       - lib/zlib1.dll
 
 
