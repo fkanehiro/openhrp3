@@ -2,7 +2,7 @@
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='boost-1.44'
            Id='{809822F8-7F32-4213-80E0-A1B8400E0CF5}'
-           UpgradeCode='{6AFEAD1B-0D3F-4123-AE8A-DDCDB792F884}'
+           UpgradeCode='{573286A0-34E3-4bfe-85DF-83806CAEAB65}'
            Language='1033' Codepage='1252'
            Version='1.44.0' Manufacturer='AIST'>
     <Package Id='*' Keywords='Installer'

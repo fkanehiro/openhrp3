@@ -2,7 +2,7 @@
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='collada_dom-2.3.1'
            Id='{2BB89E79-166C-43d5-B0F9-AA921E17DC1C}'
-           UpgradeCode='{17F4B0A9-66A7-4f48-8199-413594B69CC5}'
+           UpgradeCode='{3BCDE873-D08F-48a3-A315-459011BF3B95}'
            Language='1033' Codepage='1252'
            Version='1.44.0' Manufacturer='AIST'>
     <Package Id='*' Keywords='Installer'
