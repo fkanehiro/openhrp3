@@ -637,6 +637,7 @@ ModelLoader_var hrp::getModelLoader(CosNaming::NamingContext_var cxt)
     ModelLoader_var modelLoader = NULL;
     try {
         modelLoader = ModelLoader::_narrow(cxt->resolve(ncName));
+        modelLoader->_non_existent();
     } catch(const CosNaming::NamingContext::NotFound &exc) {
         std::cerr << "ModelLoader not found: ";
         switch(exc.why) {
@@ -649,11 +650,15 @@ ModelLoader_var hrp::getModelLoader(CosNaming::NamingContext_var cxt)
             std::cerr << "Not Object" << std::endl;
             break;
         }
-        return false;
+        modelLoader = ModelLoader::_nil();
     } catch(CosNaming::NamingContext::CannotProceed &exc) {
         std::cerr << "Resolve ModelLoader CannotProceed" << std::endl;
+        modelLoader = ModelLoader::_nil();
     } catch(CosNaming::NamingContext::AlreadyBound &exc) {
         std::cerr << "Resolve ModelLoader InvalidName" << std::endl;
+        modelLoader = ModelLoader::_nil();
+    } catch(...){
+        modelLoader = ModelLoader::_nil();
     }
     return modelLoader;
 }
