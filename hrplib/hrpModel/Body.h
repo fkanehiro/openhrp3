@@ -301,7 +301,7 @@ namespace hrp {
         friend class CustomizedJointPath;
     };
 
-    typedef boost::intrusive_ptr<Body> BodyPtr;
+    typedef boost::shared_ptr<Body> BodyPtr;
 
 };
 

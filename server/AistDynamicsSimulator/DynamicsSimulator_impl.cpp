@@ -187,7 +187,7 @@ void DynamicsSimulator_impl::registerCharacter
              << name << ", " << bodyInfo << " )" << std::endl;
     }
 
-    BodyPtr body = new Body();
+    BodyPtr body(new Body());
 
     if(loadBodyFromBodyInfo(body, bodyInfo, USE_INTERNAL_COLLISION_DETECTOR)){
         body->setName(name);
