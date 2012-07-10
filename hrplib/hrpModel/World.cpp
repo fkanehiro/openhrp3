@@ -56,7 +56,7 @@ int WorldBase::bodyIndex(const std::string& name)
 BodyPtr WorldBase::body(int index)
 {
     if(index < 0 || (int)bodyInfoArray.size() <= index)
-        return NULL;
+        return BodyPtr();
 
     return bodyInfoArray[index].body; 
 }
@@ -66,7 +66,7 @@ BodyPtr WorldBase::body(const std::string& name)
 {
     int idx = bodyIndex(name);
     if(idx < 0 || (int)bodyInfoArray.size() <= idx)
-        return NULL;
+        return BodyPtr();
 
     return bodyInfoArray[idx].body;
 }

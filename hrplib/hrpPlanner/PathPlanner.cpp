@@ -392,7 +392,7 @@ BodyPtr createBoundingBoxBody(BodyPtr body)
     root->Rs = Matrix33::Identity();
     root->coldetModel = coldetModel;
 
-    BodyPtr bboxBody = new Body();
+    BodyPtr bboxBody = BodyPtr(new Body());
     bboxBody->setRootLink(root);
 
     return bboxBody;
@@ -406,7 +406,7 @@ BodyPtr PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr c
         std::cerr << "PathPlanner::registerCharacter(" << name << ", " << cInfo << ")" << std::endl;
     }
 
-    BodyPtr body = new Body();
+    BodyPtr body(new Body());
 
     if(loadBodyFromBodyInfo(body, cInfo, USE_INTERNAL_COLLISION_DETECTOR)){
         body->setName(name);

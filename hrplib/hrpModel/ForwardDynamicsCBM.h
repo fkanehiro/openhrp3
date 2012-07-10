@@ -26,7 +26,7 @@ namespace hrp
 	class Link;
 	
     class Body;
-    typedef boost::intrusive_ptr<Body> BodyPtr;
+    typedef boost::shared_ptr<Body> BodyPtr;
 
     class LinkTraverse;
     class AccelSensor;
