@@ -147,12 +147,13 @@ void VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
     case JOINT_VELOCITY:
     case JOINT_ACCELERATION:
     case JOINT_TORQUE:
+    case ABS_TRANSFORM:
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
     case CONSTRAINT_FORCE:
       registerOutPortHandler(new LinkDataOutPortHandler(portInfo));
       break;
-    case ABS_TRANSFORM:
+    case ABS_TRANSFORM2:
       registerOutPortHandler(new AbsTransformOutPortHandler(portInfo));
       break;
 
@@ -192,12 +193,13 @@ void VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
     case JOINT_TORQUE:
       registerInPortHandler(new LinkDataInPortHandler(portInfo));
       break;
+    case ABS_TRANSFORM:
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
     case EXTERNAL_FORCE:
       registerInPortHandler(new LinkDataInPortHandler(portInfo));
       break;
-    case ABS_TRANSFORM:
+    case ABS_TRANSFORM2:
       registerInPortHandler(new AbsTransformInPortHandler(portInfo));
       break;
     default:
@@ -249,23 +251,26 @@ bool VirtualRobotRTC::createOutPortHandler(PortInfo& portInfo)
     case JOINT_VELOCITY:
     case JOINT_ACCELERATION:
     case JOINT_TORQUE:
+    case ABS_TRANSFORM:
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
     case CONSTRAINT_FORCE:
       ret = registerOutPortHandler(new LinkDataOutPortHandler(portInfo));
       break;
-    case ABS_TRANSFORM:
+    case ABS_TRANSFORM2:
       ret = registerOutPortHandler(new AbsTransformOutPortHandler(portInfo));
       break;
 
     case FORCE_SENSOR:
+    case RATE_GYRO_SENSOR:
+    case ACCELERATION_SENSOR:
     case RANGE_SENSOR:
       ret = registerOutPortHandler(new SensorDataOutPortHandler(portInfo));
       break;
-    case RATE_GYRO_SENSOR:
+    case RATE_GYRO_SENSOR2:
       ret = registerOutPortHandler(new GyroSensorOutPortHandler(portInfo));
       break;
-    case ACCELERATION_SENSOR:
+    case ACCELERATION_SENSOR2:
       ret = registerOutPortHandler(new AccelerationSensorOutPortHandler(portInfo));
       break;
 
@@ -300,9 +305,10 @@ bool VirtualRobotRTC::createInPortHandler(PortInfo& portInfo)
     case JOINT_TORQUE:
       ret = registerInPortHandler(new LinkDataInPortHandler(portInfo));
       break;
-    case ABS_TRANSFORM:
+    case ABS_TRANSFORM2:
       ret = registerInPortHandler(new AbsTransformInPortHandler(portInfo));
       break;
+    case ABS_TRANSFORM:
     case ABS_VELOCITY:
     case ABS_ACCELERATION:
     case EXTERNAL_FORCE:
