@@ -1,0 +1,35 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 11.0-b16 (Sun Microsystems Inc.)
+Bundle-ManifestVersion: 2
+Bundle-Name: Java3d 1.5.x Plug-in
+Bundle-SymbolicName: java3d;singleton:=true
+Bundle-Version: 1.5.1
+Bundle-Localization: plugin
+Export-Package: com.sun.j3d.audioengines,com.sun.j3d.audioengines,com.
+ sun.j3d.audioengines.javasound,com.sun.j3d.exp.swing,com.sun.j3d.exp.
+ swing.impl,com.sun.j3d.internal,com.sun.j3d.loaders,com.sun.j3d.loade
+ rs.lw3d,com.sun.j3d.loaders.objectfile,com.sun.j3d.utils.applet,com.s
+ un.j3d.utils.audio,com.sun.j3d.utils.behaviors.interpolators,com.sun.
+ j3d.utils.behaviors.keyboard,com.sun.j3d.utils.behaviors.mouse,com.su
+ n.j3d.utils.behaviors.picking,com.sun.j3d.utils.behaviors.sensor,com.
+ sun.j3d.utils.behaviors.vp,com.sun.j3d.utils.compression,com.sun.j3d.
+ utils.geometry,com.sun.j3d.utils.geometry.compression,com.sun.j3d.uti
+ ls.image,com.sun.j3d.utils.pickfast,com.sun.j3d.utils.pickfast.behavi
+ ors,com.sun.j3d.utils.picking,com.sun.j3d.utils.picking.behaviors,com
+ .sun.j3d.utils.scenegraph.io,com.sun.j3d.utils.scenegraph.io.retained
+ ,com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.behaviors.in
+ terpolators,com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.b
+ ehaviors.mouse,com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.util
+ s.geometry,com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.im
+ age,com.sun.j3d.utils.scenegraph.io.state.com.sun.j3d.utils.universe,
+ com.sun.j3d.utils.scenegraph.io.state.javax.media.j3d,com.sun.j3d.uti
+ ls.scenegraph.transparency,com.sun.j3d.utils.shader,com.sun.j3d.utils
+ .timer,com.sun.j3d.utils.universe,javax.media.j3d,javax.vecmath
+Eclipse-ExtensibleAPI: true
+Eclipse-LazyStart: true
+Bundle-Vendor: java3declipse.org
+Require-Bundle: jogl;resolution:=optional
+Bundle-ClassPath: lib/ext/j3dcore.jar,lib/ext/j3dutils.jar,lib/ext/vec
+ math.jar
+
