@@ -1,0 +1,25 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='OpenHRP-SDK 3.1.3 for VS2010'
+           Id='CDE0E7E5-1387-44e5-9560-DAEB2F9BBBCE'
+           UpgradeCode='AAA91FCC-245C-4c74-A70A-48CB436A1265'
+           Language='1033' Codepage='1252'
+           Version='3.1.3' Manufacturer='AIST'>
+    <Package Id='*' Keywords='Installer'
+             Description='OpenHRP-SDK 3.1.3 for VS2010 Installer'
+             Comments='This installer database contains the logic and data required to install OpenHRP-SDK 3.1.3.'
+             Manufacturer='AIST' InstallerVersion='100'
+             Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+    <Media Id='1' Cabinet='OpenHRPSDK.cab' EmbedCab='yes' />
+<!-- %%Directory%% -->
+<!-- %%Component%% -->
+<!-- %%Feature%% -->
+    <UIRef Id="WixUI_FeatureTree" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <Icon Id="OpenHRP_ICON" SourceFile="grxrobot.ico" />
+    <WixVariable Id="WixUILicenseRtf" Value="license-ja.rtf" />
+    <Property Id="ARPPRODUCTICON" Value="OpenHRP_ICON" />
+  </Product>
+</Wix>

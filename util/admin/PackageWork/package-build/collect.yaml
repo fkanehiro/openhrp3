@@ -67,7 +67,7 @@
       - License/Eigen_LICENSE.rtf
       - License/collada_dom_LICENSE.rtf
 - name: GrxUI
-  path: ../pack_src
+  path: ../
   files:
     ./:
       - GrxUI/
