@@ -59,16 +59,30 @@ endif(UNIX)
 
 if(WIN32)
   set(LAPACK_LIBRARIES clapack blas libf2c )
-  if(NOT LAPACK_TOP_DIR)
-      find_path(
-      LAPACK_TOP_DIR 
-      NAMES LIB/Win32/clapack.lib
-      PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
-      PATH_SUFFIXES CLAPACK CLAPACK3.1.1 CLAPACK-3.1.1
-      DOC "the top directory of clapack")
-  endif()
-  if(LAPACK_TOP_DIR)
-    set(LAPACK_LIBRARY_DIRS ${LAPACK_TOP_DIR}/LIB/Win32)
+  if( ${CMAKE_GENERATOR} MATCHES "Win64$" )
+	if(NOT LAPACK_TOP_DIR)
+		  find_path(
+		  LAPACK_TOP_DIR 
+		  NAMES LIB/x64/clapack.lib
+		  PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
+		  PATH_SUFFIXES CLAPACK CLAPACK3.1.1 CLAPACK-3.1.1
+		  DOC "the top directory of clapack")
+	  endif()
+	  if(LAPACK_TOP_DIR)
+		set(LAPACK_LIBRARY_DIRS ${LAPACK_TOP_DIR}/LIB/x64)
+	  endif()
+  else()
+	  if(NOT LAPACK_TOP_DIR)
+		  find_path(
+		  LAPACK_TOP_DIR 
+		  NAMES LIB/Win32/clapack.lib
+		  PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
+		  PATH_SUFFIXES CLAPACK CLAPACK3.1.1 CLAPACK-3.1.1
+		  DOC "the top directory of clapack")
+	  endif()
+	  if(LAPACK_TOP_DIR)
+		set(LAPACK_LIBRARY_DIRS ${LAPACK_TOP_DIR}/LIB/Win32)
+	  endif()
   endif()
 endif(WIN32)
   
