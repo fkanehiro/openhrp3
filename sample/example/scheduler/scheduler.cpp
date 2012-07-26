@@ -243,6 +243,7 @@ int main(int argc, char* argv[])
 
 	}
 
+	controller->stop();
 	log_file.close();
 	dynamicsSimulator->destroy();
 
