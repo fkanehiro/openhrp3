@@ -975,7 +975,7 @@ public:
 			    if ( appearanceInfo.normalPerVertex == 1 ) {
 				pindices->getValue()[i++] = appearanceInfo.normalIndices[ind];
 			    } else {
-				pindices->getValue()[i++] = appearanceInfo.normalIndices[triangles[ind]];
+				pindices->getValue()[i++] = appearanceInfo.normalIndices[triangles[ind]/3];
 			    }
 			}
 			if (textures.length() > 0 && appearanceInfo.textureCoordIndices.length() > 0 ){
