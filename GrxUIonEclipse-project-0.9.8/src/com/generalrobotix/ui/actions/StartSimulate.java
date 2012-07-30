@@ -56,7 +56,8 @@ public class StartSimulate implements IWorkbenchWindowActionDelegate, GrxItemCha
 			simItem_.stopSimulation();
 		}else {
 			action_.setEnabled(false);
-			simItem_.startSimulation(true);
+			if(!simItem_.startSimulation(true))
+				action_.setEnabled(true);
 		}
 	}
 
