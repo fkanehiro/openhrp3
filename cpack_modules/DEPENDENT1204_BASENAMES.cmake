@@ -38,7 +38,7 @@ set(DEPENDENT_BASENAMES
   libboost-signals1.46-dev
   libboost-thread1.46-dev
   zlib1g-dev
-  libjpeg62-dev
+  libjpeg-dev
   libpng12-dev
   uuid-dev
   openrtm-aist
