@@ -143,7 +143,7 @@ namespace {
         BodyPtr body;
         LinkInfoSequence_var linkInfoSeq;
         ShapeInfoSequence_var shapeInfoSeq;
-		ExtraJointInfoSequence_var extraJointInfoSeq;
+        ExtraJointInfoSequence_var extraJointInfoSeq;
         bool collisionDetectionModelLoading;
         Link *(*createLinkFunc)();
 
