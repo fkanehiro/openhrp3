@@ -3241,6 +3241,11 @@ AllLinkShapeIndexSequence* BodyInfoCollada_impl::linkShapeIndices()
     return new AllLinkShapeIndexSequence(linkShapeIndices_);
 }
 
+ExtraJointInfoSequence* BodyInfoCollada_impl::extraJoints()
+{
+	return new ExtraJointInfoSequence(extraJoints_);
+}
+
 void BodyInfoCollada_impl::loadModelFile(const std::string& url)
 {
     ColladaReader reader;

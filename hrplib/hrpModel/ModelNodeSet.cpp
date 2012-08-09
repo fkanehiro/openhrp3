@@ -60,15 +60,18 @@ namespace hrp {
 
         VrmlProtoPtr protoToCheck;
 
-        enum {
+		enum {
             PROTO_UNDEFINED = 0,
             PROTO_HUMANOID,
             PROTO_JOINT,
             PROTO_SEGMENT,
             PROTO_SENSOR,
             PROTO_HARDWARECOMPONENT,
+            PROTO_EXTRAJOINT,
             NUM_PROTOS
         };
+
+		std::vector<VrmlProtoInstancePtr> extraJointNodes;
 
         typedef std::bitset<NUM_PROTOS> ProtoIdSet;
     
@@ -86,6 +89,7 @@ namespace hrp {
         void checkSensorProtoCommon();
         void checkHardwareComponentProto();
         void extractJointNodes();
+		void checkExtraJointProto();
         JointNodeSetPtr addJointNodeSet(VrmlProtoInstancePtr jointNode);
         void extractChildNodes
             (JointNodeSetPtr jointNodeSet, MFNode& childNodes, const ProtoIdSet acceptableProtoIds, const Matrix44& T);
@@ -134,6 +138,9 @@ ModelNodeSetImpl::ModelNodeSetImpl(ModelNodeSet* self) : self(self)
         
         protoNameToInfoMap["HardwareComponent"]
             = ProtoInfo(PROTO_HARDWARECOMPONENT, &ModelNodeSetImpl::checkHardwareComponentProto);
+
+		protoNameToInfoMap["ExtraJoint"]
+            = ProtoInfo(PROTO_EXTRAJOINT, &ModelNodeSetImpl::checkExtraJointProto);
     }
 }
 
@@ -161,6 +168,15 @@ JointNodeSetPtr ModelNodeSet::rootJointNodeSet()
     return impl->rootJointNodeSet;
 }
 
+int ModelNodeSet::numExtraJointNodes()
+{
+    return impl->extraJointNodes.size();
+}
+
+VrmlProtoInstancePtr ModelNodeSet::extraJointNode(int index)
+{
+    return impl->extraJointNodes[index];
+}
 
 bool ModelNodeSet::loadModelFile(const std::string& filename)
 {
@@ -174,6 +190,7 @@ bool ModelNodeSetImpl::loadModelFile(const std::string& filename)
     humanoidNode = 0;
     rootJointNodeSet.reset();
     messageIndent = 0;
+	extraJointNodes.clear();
 
     try {
 	VrmlParser parser;
@@ -207,6 +224,8 @@ void ModelNodeSetImpl::extractHumanoidNode(VrmlParser& parser)
             VrmlProtoInstancePtr instance = static_pointer_cast<VrmlProtoInstance>(node);
             if(instance->proto->protoName == "Humanoid") {
                 humanoidNode = instance;
+            } else if(instance->proto->protoName == "ExtraJoint") {
+                extraJointNodes.push_back(instance);
             }
         }
     }
@@ -216,7 +235,7 @@ void ModelNodeSetImpl::extractHumanoidNode(VrmlParser& parser)
         extractJointNodes();
     } else {
         throw ModelNodeSet::Exception("Humanoid node is not found");
-    }
+	}
 }
 
 
@@ -368,6 +387,15 @@ void ModelNodeSetImpl::checkHardwareComponentProto()
     requireField("url", SFSTRING);
 }
 
+void ModelNodeSetImpl::checkExtraJointProto()
+{
+    requireField("link1Name", SFSTRING);
+    requireField("link2Name", SFSTRING);
+	requireField("link1LocalPos", SFVEC3F);
+    requireField("link2LocalPos", SFVEC3F);
+    requireField("jointType", SFSTRING);
+    requireField("jointAxis", SFVEC3F);
+}
 
 void ModelNodeSetImpl::extractJointNodes()
 {
