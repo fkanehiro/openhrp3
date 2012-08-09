@@ -503,11 +503,13 @@ VrmlNodePtr VrmlParserImpl::readNode(VrmlNodeCategory nodeCategory)
 {
     VrmlNodePtr node;
 
+    /* comment out this to allow empty proto instance node
     if(scanner->isEOF()){
         if(currentProtoInstance){
             scanner->throwException("Illegal proto instance node");
         }
     }
+    */
 
     if(!scanner->readWord()){
         return 0;
@@ -980,7 +982,9 @@ VrmlNodePtr VrmlParserImpl::evalProtoInstance(VrmlProtoInstancePtr protoInstance
     currentProtoInstance = protoInstance;
     
     VrmlNodePtr node = readNode(nodeCategory);
-    node->defName = protoInstance->defName;
+    if(node){
+        node->defName = protoInstance->defName;
+    }
     
     scanner = orgScanner;
     currentProtoInstance = orgProtoInstance;

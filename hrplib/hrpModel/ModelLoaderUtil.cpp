@@ -143,6 +143,7 @@ namespace {
         BodyPtr body;
         LinkInfoSequence_var linkInfoSeq;
         ShapeInfoSequence_var shapeInfoSeq;
+		ExtraJointInfoSequence_var extraJointInfoSeq;
         bool collisionDetectionModelLoading;
         Link *(*createLinkFunc)();
 
@@ -155,6 +156,7 @@ namespace {
                                   const ShapeInfo& shapeInfo);
         void addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const LinkInfo& linkInfo);
         void addLinkVerticesAndTriangles(ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, ShapeInfoSequence_var& shapes, int& vertexIndex, int& triangleIndex);
+		void setExtraJoints();
     };
 }
 
@@ -170,6 +172,7 @@ bool ModelLoaderHelper::createBody(BodyPtr& body, BodyInfo_ptr bodyInfo)
     int n = bodyInfo->links()->length();
     linkInfoSeq = bodyInfo->links();
     shapeInfoSeq = bodyInfo->shapes();
+	extraJointInfoSeq = bodyInfo->extraJoints();
 
     int rootIndex = -1;
 
@@ -194,6 +197,8 @@ bool ModelLoaderHelper::createBody(BodyPtr& body, BodyInfo_ptr bodyInfo)
 
         body->installCustomizer();
         body->initializeConfiguration();
+
+		setExtraJoints();
 
         return true;
     }
@@ -581,6 +586,32 @@ void ModelLoaderHelper::addLinkPrimitiveInfo(ColdetModelPtr& coldetModel,
         coldetModel->setPrimitiveParam(i, shapeInfo.primitiveParameters[i]);
     }
     coldetModel->setPrimitivePosition(R, p);
+}
+
+void ModelLoaderHelper::setExtraJoints()
+{
+    body->extraJoints.clear();
+    int n = extraJointInfoSeq->length();
+    
+    for(int i=0; i < n; ++i){
+		const ExtraJointInfo& extraJointInfo = extraJointInfoSeq[i];
+        Body::ExtraJoint joint;
+		joint.link[0] = body->link(string(extraJointInfo.link[0]));
+        joint.link[1] = body->link(string(extraJointInfo.link[1]));
+
+		ExtraJointType jointType = extraJointInfo.jointType;
+        if(jointType == OpenHRP::EJ_PISTON){
+            joint.type = Body::EJ_PISTON;
+			joint.axis = Vector3(extraJointInfo.axis[0], extraJointInfo.axis[1], extraJointInfo.axis[2] );
+        } else if(jointType == OpenHRP::EJ_BALL){
+            joint.type = Body::EJ_BALL;
+        }
+
+		joint.point[0] = Vector3(extraJointInfo.point[0][0], extraJointInfo.point[0][1], extraJointInfo.point[0][2] );
+		joint.point[1] = Vector3(extraJointInfo.point[1][0], extraJointInfo.point[1][1], extraJointInfo.point[1][2] );
+            
+        body->extraJoints.push_back(joint);
+    }
 }
 
 bool hrp::loadBodyFromBodyInfo(BodyPtr body, OpenHRP::BodyInfo_ptr bodyInfo, bool loadGeometryForCollisionDetection, Link *(*f)())

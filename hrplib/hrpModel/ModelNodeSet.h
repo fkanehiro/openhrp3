@@ -58,6 +58,9 @@ namespace hrp {
         VrmlProtoInstancePtr humanoidNode();
         JointNodeSetPtr rootJointNodeSet();
 
+		int numExtraJointNodes();
+        VrmlProtoInstancePtr extraJointNode(int index);
+
         /**
            @if jp
            読み込み進行状況のメッセージを出力するためのシグナル.

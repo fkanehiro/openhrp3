@@ -126,12 +126,12 @@ Body::Body(const Body& org)
         }
     }
 
-    // do deep copy of linkConnections
-    for(size_t i=0; i < org.linkConnections.size(); ++i){
-        const LinkConnection& orgConnection = org.linkConnections[i];
-        LinkConnection connection(orgConnection);
+    // do deep copy of extraJoint
+	for(size_t i=0; i < org.extraJoints.size(); ++i){
+		const ExtraJoint& orgExtraJoint = org.extraJoints[i];
+        ExtraJoint extraJoint(orgExtraJoint);
         for(int j=0; j < 2; ++j){
-            connection.link[j] = link(orgConnection.link[j]->index);
+			extraJoint.link[j] = link(orgExtraJoint.link[j]->index);
         }
     }
 

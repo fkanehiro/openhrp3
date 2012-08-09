@@ -45,6 +45,7 @@ class BodyInfoCollada_impl :
     virtual StringSequence* info();
     virtual LinkInfoSequence* links();
     virtual AllLinkShapeIndexSequence* linkShapeIndices();
+	virtual ExtraJointInfoSequence* extraJoints();
 
     void loadModelFile(const std::string& filename);
     void setLastUpdateTime(time_t time) { lastUpdate_ = time;};
@@ -72,6 +73,7 @@ private:
     StringSequence info_;
     LinkInfoSequence links_;
     AllLinkShapeIndexSequence linkShapeIndices_;
+	ExtraJointInfoSequence extraJoints_;
 
     std::vector<ColdetModelPtr> linkColdetModels;
 

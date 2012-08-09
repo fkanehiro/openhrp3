@@ -463,6 +463,27 @@ module OpenHRP {
 
   typedef sequence<TextureInfo> TextureInfoSequence;
 
+  
+  /**
+     @if jp
+     閉リンク機構のリンクの接続情報を格納する構造体。
+     @endif
+  */
+  enum ExtraJointType { EJ_PISTON, EJ_BALL };
+
+  struct ExtraJointInfo
+  {	
+	 /// Possible types are "piston" and "ball"
+	 ExtraJointType jointType;
+	 /// Constraint axes. Two or three orthogonal axes must be specifiedin the local coordinate of the first link
+     DblArray3		axis;	
+	 /// Name of the link
+     string			link[2];      
+	 /// Connection (joint) position in the local coordinate of the link
+     DblArray3		point[2];      
+  };
+
+  typedef sequence<ExtraJointInfo> ExtraJointInfoSequence;
 
   /**
      @if jp
@@ -560,6 +581,13 @@ module OpenHRP {
        @endif
     */
     readonly attribute AllLinkShapeIndexSequence linkShapeIndices;
+
+	/**
+       @if jp
+       閉リンク機構のリンク接続の全情報
+       @endif
+    */
+	readonly attribute ExtraJointInfoSequence extraJoints;
     
   };
 

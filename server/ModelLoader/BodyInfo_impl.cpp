@@ -19,6 +19,7 @@
 #include <vector>
 #include <iostream>
 #include <boost/bind.hpp>
+#include <boost/format.hpp>
 
 #include <hrpCorba/ViewSimulator.hh>
 #include <hrpUtil/EasyScanner.h>
@@ -87,6 +88,10 @@ AllLinkShapeIndexSequence* BodyInfo_impl::linkShapeIndices()
     return new AllLinkShapeIndexSequence(linkShapeIndices_);
 }
 
+ExtraJointInfoSequence* BodyInfo_impl::extraJoints()
+{
+	return new ExtraJointInfoSequence(extraJoints_);
+}
 
 /*!
   @if jp
@@ -218,6 +223,36 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     }
     //saveOriginalData();
     //originlinkShapeIndices_ = linkShapeIndices_;
+
+	int n = modelNodeSet.numExtraJointNodes();
+	extraJoints_.length(n);
+    for(int i=0; i < n; ++i){
+		
+        TProtoFieldMap& f = modelNodeSet.extraJointNode(i)->fields;
+        ExtraJointInfo_var extraJointInfo(new ExtraJointInfo());
+
+        string link1Name, link2Name;
+		copyVrmlField( f, "link1Name", link1Name );
+		copyVrmlField( f, "link2Name", link2Name );
+		extraJointInfo->link[0] = CORBA::string_dup(link1Name.c_str());
+		extraJointInfo->link[1] = CORBA::string_dup(link2Name.c_str());
+ 
+		string jointType;
+		copyVrmlField( f, "jointType", jointType);
+        if(jointType == "piston"){
+			extraJointInfo->jointType = EJ_PISTON;
+            copyVrmlField( f, "jointAxis", extraJointInfo->axis );
+        } else if(jointType == "ball"){
+           extraJointInfo->jointType = EJ_BALL;
+        } else {
+            throw ModelNodeSet::Exception(str(format("JointType \"%1%\" is not supported.") % jointType));
+        }
+            
+		copyVrmlField( f, "link1LocalPos", extraJointInfo->point[0] );
+		copyVrmlField( f, "link2LocalPos", extraJointInfo->point[1] );
+	
+		extraJoints_[i] = extraJointInfo;
+    }
 }
 
 

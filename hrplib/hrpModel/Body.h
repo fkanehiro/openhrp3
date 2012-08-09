@@ -241,15 +241,16 @@ namespace hrp {
         bool installCustomizer();
         bool installCustomizer(BodyCustomizerInterface* customizerInterface);
 
-        struct LinkConnection {
+		enum ExtraJointType { EJ_PISTON, EJ_BALL };
+
+        struct ExtraJoint {
+            ExtraJointType type;
+            Vector3 axis;
             Link* link[2];
             Vector3 point[2];
-            int numConstraintAxes;
-            Vector3 constraintAxes[3];
         };
-        typedef std::vector<LinkConnection> LinkConnectionArray;
 
-        LinkConnectionArray linkConnections;
+        std::vector<ExtraJoint> extraJoints;
 
         /**
            @brief compute CoM Jacobian

@@ -204,21 +204,26 @@ namespace hrp
             Link* link[2];
             LinkData* linkData[2];
             ConstraintPointArray constraintPoints;
-
+			bool isNonContactConstraint;
             double muStatic;
             double muDynamic;
             double culling_thresh;
 			double restitution;
             double epsilon;
-
-            Body::LinkConnection* connection;
-
         };
         typedef intrusive_ptr<LinkPair> LinkPairPtr;
         typedef std::vector<LinkPairPtr> LinkPairArray;
 
         LinkPairArray collisionCheckLinkPairs;
-        LinkPairArray connectedLinkPairs;
+
+        class ExtraJointLinkPair : public LinkPair
+        {
+        public:
+            Vector3 jointPoint[2];
+            Vector3 jointConstraintAxes[3];
+        };
+        typedef intrusive_ptr<ExtraJointLinkPair> ExtraJointLinkPairPtr;
+        vector<ExtraJointLinkPairPtr> extraJointLinkPairs;;
 
         std::vector<LinkPair*> constrainedLinkPairs;
 
@@ -269,9 +274,11 @@ namespace hrp
         int numGaussSeidelTotalLoops;
         int numGaussSeidelTotalCalls;
 
+		void initExtraJoints(int bodyIndex);
         void setConstraintPoints(CollisionSequence& collisions);
         void setContactConstraintPoints(LinkPair& linkPair, CollisionPointSequence& collisionPoints);
         void setFrictionVectors(ConstraintPoint& constraintPoint);
+		void setExtraJointConstraintPoints(ExtraJointLinkPairPtr& linkPair);
         bool setConnectionConstraintPoints(LinkPair& linkPair);
         void putContactPoints();
         void solveImpactConstraints();
@@ -411,18 +418,70 @@ bool CFSImpl::addCollisionCheckLinkPair
         linkPair->bodyIndex[1] = bodyIndex2;
         linkPair->link[1] = link2;
         linkPair->index = index;
+		linkPair->isNonContactConstraint = false;
         linkPair->muStatic = muStatic;
         linkPair->muDynamic = muDynamic;
         linkPair->culling_thresh = culling_thresh;
 		linkPair->restitution = restitution;
         linkPair->epsilon = epsilon;
-        linkPair->connection = 0;
     }
 
     return (index >= 0 && !isRegistered);
 }
 
+// initialize extra joints for making closed links
+void CFSImpl::initExtraJoints(int bodyIndex)
+{
+    BodyPtr body = world.body(bodyIndex);
+    BodyData& bodyData = bodiesData[bodyIndex];
+    int numExtraJoints = body->extraJoints.size();
+    for(size_t j=0; j < numExtraJoints; ++j){
 
+        Body::ExtraJoint& bodyExtraJoint = body->extraJoints[j];
+        ExtraJointLinkPairPtr linkPair;
+        if(bodyExtraJoint.type == Body::EJ_PISTON){
+            linkPair = new ExtraJointLinkPair();
+            linkPair->isSameBodyPair = true;
+            linkPair->isNonContactConstraint = true;
+        
+            // generate two vectors orthogonal to the joint axis
+            Vector3 u = Vector3::Zero();
+            int minElem = 0;
+            Vector3& axis = bodyExtraJoint.axis;
+            for(int k=1; k < 3; k++){
+                if(fabs(axis(k)) < fabs(axis(minElem))){
+                    minElem = k;
+                }
+            }
+            u(minElem) = 1.0;
+            linkPair->constraintPoints.resize(2);
+            const Vector3 t1 = axis.cross(u).normalized();
+            linkPair->jointConstraintAxes[0] = t1;
+            linkPair->jointConstraintAxes[1] = axis.cross(t1).normalized();
+            
+        } else if(bodyExtraJoint.type == Body::EJ_BALL){
+            
+        }
+        
+        if(linkPair){
+            int numConstraints = linkPair->constraintPoints.size();
+            for(int k=0; k < numConstraints; ++k){
+                ConstraintPoint& constraint = linkPair->constraintPoints[k];
+                constraint.numFrictionVectors = 0;
+                constraint.globalFrictionIndex = numeric_limits<int>::max();
+            }
+            for(int k=0; k < 2; ++k){
+                linkPair->bodyIndex[k] = bodyIndex;
+                linkPair->bodyData[k] = &bodiesData[bodyIndex];
+                Link* link = bodyExtraJoint.link[k];
+                linkPair->link[k] = link;
+                linkPair->linkData[k] = &(bodyData.linksData[link->index]);
+                linkPair->jointPoint[k] = bodyExtraJoint.point[k];
+            }
+            extraJointLinkPairs.push_back(linkPair);
+        }
+    }
+}    
 
 void CFSImpl::initialize(void)
 {
@@ -435,7 +494,7 @@ void CFSImpl::initialize(void)
 
     bodiesData.resize(numBodies);
 
-    connectedLinkPairs.clear();
+    extraJointLinkPairs.clear();
 
     for(int bodyIndex=0; bodyIndex < numBodies; ++bodyIndex){
 
@@ -471,32 +530,7 @@ void CFSImpl::initialize(void)
             linksData[link->index].parentIndex = link->parent ? link->parent->index : -1;
         }
 
-        // initialize link connection
-        Body::LinkConnectionArray& connections = body->linkConnections;
-        for(size_t j=0; j < connections.size(); ++j){
-
-            connectedLinkPairs.push_back(new LinkPair());
-            LinkPair& linkPair = *connectedLinkPairs.back();
-
-            Body::LinkConnection& connection = connections[j];
-            linkPair.connection = &connection;
-            linkPair.isSameBodyPair = true;
-            linkPair.constraintPoints.resize(connection.numConstraintAxes);
-
-            for(int k=0; k < connection.numConstraintAxes; ++k){
-                ConstraintPoint& constraint = linkPair.constraintPoints[k];
-                constraint.numFrictionVectors = 0;
-                constraint.globalFrictionIndex = numeric_limits<int>::max();
-            }
-
-            for(int k=0; k < 2; ++k){
-                linkPair.bodyIndex[k] = bodyIndex;
-                linkPair.bodyData[k] = &bodiesData[bodyIndex];
-                Link* link = connection.link[k];
-                linkPair.link[k] = link;
-                linkPair.linkData[k] = &(bodyData.linksData[link->index]);
-            }
-        }
+		initExtraJoints(bodyIndex);
     }
 
     int numLinkPairs = collisionCheckLinkPairs.size();
@@ -707,16 +741,10 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
 
     globalNumContactNormalVectors = globalNumConstraintVectors;
 
-    for(size_t i=0; i < connectedLinkPairs.size(); ++i){
-        LinkPair& linkPair = *connectedLinkPairs[i];
-        constrainedLinkPairs.push_back(&linkPair);
-        if(setConnectionConstraintPoints(linkPair)){
-            linkPair.bodyData[0]->hasConstrainedLinks = true;
-            linkPair.bodyData[1]->hasConstrainedLinks = true;
-        } else {
-            constrainedLinkPairs.pop_back();
-        }
+	for(size_t i=0; i < extraJointLinkPairs.size(); ++i){
+        setExtraJointConstraintPoints(extraJointLinkPairs[i]);
     }
+    
     globalNumConnectionVectors = globalNumConstraintVectors - globalNumContactNormalVectors;
 }
 
@@ -875,61 +903,62 @@ void CFSImpl::setFrictionVectors(ConstraintPoint& contact)
     }
 }
 
-
-bool CFSImpl::setConnectionConstraintPoints(LinkPair& linkPair)
+void CFSImpl::setExtraJointConstraintPoints(ExtraJointLinkPairPtr& linkPair)
 {
-    ConstraintPointArray& constraintPoints = linkPair.constraintPoints;
+    ConstraintPointArray& constraintPoints = linkPair->constraintPoints;
 
-    Body::LinkConnection* connection = linkPair.connection;
-
-    Link* link0 = connection->link[0];
-    Link* link1 = connection->link[1];
+    Link* link0 = linkPair->link[0];
+    Link* link1 = linkPair->link[1];
 
     Vector3 point[2];
-    point[0] = link0->p + link0->R * connection->point[0];
-    point[1] = link1->p + link1->R * connection->point[1];
-    Vector3 midPoint((point[0] + point[1]) / 2.0);
-    Vector3 error(midPoint - point[0]);
+	point[0].noalias() = link0->p + link0->attitude() * linkPair->jointPoint[0];
+    point[1].noalias() = link1->p + link1->attitude() * linkPair->jointPoint[1];
+    Vector3 midPoint = (point[0] + point[1]) / 2.0;
+    Vector3 error = midPoint - point[0];
 
-    if(error.dot(error) > (0.04 * 0.04)){
+    /*
+    if(error.squaredNorm() > (0.04 * 0.04)){
         return false;
     }
+    */
 
     // check velocities
     Vector3 v[2];
     for(int k=0; k < 2; ++k){
-        Link* link = connection->link[k];
+        Link* link = linkPair->link[k];
         if(link->isRoot() && link->jointType == Link::FIXED_JOINT){
             v[k].setZero();
         } else {
             v[k] = link->vo + link->w.cross(point[k]);
         }
     }
-    Vector3 relVelocityOn0(v[1] - v[0]);
+    Vector3 relVelocityOn0 = v[1] - v[0];
 
-    for(int i=0; i < connection->numConstraintAxes; ++i){
-        ConstraintPoint& constraint = constraintPoints[i];
+    int n = linkPair->constraintPoints.size();
+    for(int i=0; i < n; ++i){
+        ConstraintPoint& constraint = constraintPoints[i]; 
+		const Vector3 axis = link0->attitude() * linkPair->jointConstraintAxes[i];
         constraint.point = midPoint;
-        const Vector3 axis(link0->R * connection->constraintAxes[i]);
         constraint.normalTowardInside[0] =  axis;
         constraint.normalTowardInside[1] = -axis;
         constraint.depth = axis.dot(error);
         constraint.globalIndex = globalNumConstraintVectors++;
         constraint.normalProjectionOfRelVelocityOn0 = constraint.normalTowardInside[1].dot(relVelocityOn0);
     }
+    linkPair->bodyData[0]->hasConstrainedLinks = true;
+    linkPair->bodyData[1]->hasConstrainedLinks = true;
 
-    return true;
+    constrainedLinkPairs.push_back(linkPair.get());
 }
-
-
 
 void CFSImpl::putContactPoints()
 {
     std::cout << "Contact Points\n";
     for(size_t i=0; i < constrainedLinkPairs.size(); ++i){
         LinkPair* linkPair = constrainedLinkPairs[i];
+		ExtraJointLinkPair* ejLinkPair = dynamic_cast<ExtraJointLinkPair*>(linkPair);
 
-        if(!linkPair->connection){
+        if(!ejLinkPair){
 
             std::cout << " " << linkPair->link[0]->name << " of " << linkPair->bodyData[0]->body->modelName();
             std::cout << "<-->";
@@ -1516,7 +1545,7 @@ void CFSImpl::setConstantVectorAndMuBlock()
 
             // constraints for normal acceleration
 
-            if(linkPair.connection){
+            if(linkPair.isNonContactConstraint){
                 // connection constraint
 
                 const double& error = constraint.depth;
