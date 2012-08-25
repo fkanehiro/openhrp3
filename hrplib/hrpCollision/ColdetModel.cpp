@@ -85,6 +85,7 @@ int ColdetModel::getNumVertices() const
 void ColdetModel::setNumTriangles(int n)
 {
     dataSet->triangles.resize(n);
+    initNeighbor(n);
 }
 
 
@@ -121,6 +122,7 @@ void ColdetModel::setTriangle(int index, int v1, int v2, int v3)
     mVRef[0] = v1;
     mVRef[1] = v2;
     mVRef[2] = v3;
+    setNeighborTriangle(index, v1, v2, v3);
 }
 
 void ColdetModel::getTriangle(int index, int& v1, int& v2, int& v3) const
