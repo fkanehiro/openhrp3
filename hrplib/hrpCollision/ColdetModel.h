@@ -77,7 +77,7 @@ namespace hrp {
          * @brief set name of this model
          * @param name name of this model 
          */
-        void setName(const char* name) { name_ = name; }
+        void setName(const std::string& name) { name_ = name; }
 
         /**
          * @brief get name of this model
@@ -235,15 +235,15 @@ namespace hrp {
         int getAABBmaxNum();
         int numofBBtoDepth(int minNumofBB);
 
-        void setNeighborTriangle(int triangle, int vertex0, int vertex1, int vertex2);
-        void initNeighbor(int n);
-
         ColdetModelSharedDataSet *getDataSet() { return dataSet; }
       private:
         /**
          * @brief common part of constuctors
          */
         void initialize();
+        void setNeighborTriangle(int triangle, int vertex0, int vertex1, int vertex2);
+        void initNeighbor(int n);
+
         
         ColdetModelSharedDataSet* dataSet;
         IceMaths::Matrix4x4* transform;

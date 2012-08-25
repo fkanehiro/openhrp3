@@ -193,7 +193,7 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     linkColdetModels.resize(numJointNodes);    
     for(int linkIndex = 0; linkIndex < numJointNodes ; ++linkIndex){
         ColdetModelPtr coldetModel(new ColdetModel());
-        coldetModel->setName(links_[linkIndex].name);
+        coldetModel->setName(std::string(links_[linkIndex].name));
         int vertexIndex = 0;
         int triangleIndex = 0;
         

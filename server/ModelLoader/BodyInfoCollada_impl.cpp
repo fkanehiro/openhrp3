@@ -305,7 +305,7 @@ class ColladaReader : public daeErrorHandler
         probot->linkColdetModels.resize(_veclinks.size());
         for(size_t linkIndex = 0; linkIndex < _veclinks.size(); ++linkIndex) {
             ColdetModelPtr coldetModel(new ColdetModel());
-            coldetModel->setName(probot->links_[linkIndex].name);
+            coldetModel->setName(std::string(probot->links_[linkIndex].name));
             int vertexIndex = 0;
             int triangleIndex = 0;
         

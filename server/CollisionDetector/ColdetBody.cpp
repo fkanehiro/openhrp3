@@ -65,7 +65,7 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
         //int totalNumVertices = totalNumTriangles * 3;
 
         ColdetModelPtr coldetModel(new ColdetModel());
-        coldetModel->setName(linkInfo.name);
+        coldetModel->setName(std::string(linkInfo.name));
         
         if(totalNumTriangles > 0){
             coldetModel->setNumVertices(totalNumVertices);
@@ -137,13 +137,11 @@ void ColdetBody::addLinkVerticesAndTriangles
 
     const LongSequence& triangles = shapeInfo.triangles;
     const int numTriangles = triangles.length() / 3;
-    coldetModel->initNeighbor(numTriangles);
     for(int j=0; j < numTriangles; ++j){
        int t0 = triangles[j*3] + vertexIndexBase;
        int t1 = triangles[j*3+1] + vertexIndexBase;
        int t2 = triangles[j*3+2] + vertexIndexBase;
-       coldetModel->setTriangle( triangleIndex, t0, t1, t2);
-       coldetModel->setNeighborTriangle(triangleIndex++, t0, t1, t2);
+       coldetModel->setTriangle( triangleIndex++, t0, t1, t2);
     }
     
 }

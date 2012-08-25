@@ -913,6 +913,14 @@ void CFSImpl::setExtraJointConstraintPoints(ExtraJointLinkPairPtr& linkPair)
     Vector3 point[2];
 	point[0].noalias() = link0->p + link0->attitude() * linkPair->jointPoint[0];
     point[1].noalias() = link1->p + link1->attitude() * linkPair->jointPoint[1];
+#if 1
+    std::cout << "q:" << link1->q << std::endl;
+    std::cout << "p1:" << link1->p.transpose() << std::endl;
+    std::cout << "R1:" << link1->R << std::endl;
+    std::cout << "Rs:" << link1->Rs << std::endl;
+    std::cout << "v1:" << linkPair->jointPoint[1].transpose() << std::endl;
+    std::cout << "jp1:" << point[1].transpose() << std::endl; 
+#endif 
     Vector3 midPoint = (point[0] + point[1]) / 2.0;
     Vector3 error = midPoint - point[0];
 
