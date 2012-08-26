@@ -182,9 +182,9 @@ bool CollisionDetector_impl::detectAllCollisions
         }
 		
         collision.pair.charName1 = CORBA::string_dup(coldetPair.body0->name());
-        collision.pair.linkName1 = CORBA::string_dup(coldetPair.model(0)->name());
+        collision.pair.linkName1 = CORBA::string_dup(coldetPair.model(0)->name().c_str());
         collision.pair.charName2 = CORBA::string_dup(coldetPair.body1->name());
-        collision.pair.linkName2 = CORBA::string_dup(coldetPair.model(1)->name());
+        collision.pair.linkName2 = CORBA::string_dup(coldetPair.model(1)->name().c_str());
     }
 
     return detected;
@@ -375,9 +375,9 @@ bool CollisionDetector_impl::detectCollidedLinkPairs
         ColdetModelPairEx& coldetPair = *coldetPairs[pairIndex];
         LinkPair& linkPair = out_collidedPairs[i];
         linkPair.charName1 = CORBA::string_dup(coldetPair.body0->name());
-        linkPair.linkName1 = CORBA::string_dup(coldetPair.model(0)->name());
+        linkPair.linkName1 = CORBA::string_dup(coldetPair.model(0)->name().c_str());
         linkPair.charName2 = CORBA::string_dup(coldetPair.body1->name());
-        linkPair.linkName2 = CORBA::string_dup(coldetPair.model(1)->name());
+        linkPair.linkName2 = CORBA::string_dup(coldetPair.model(1)->name().c_str());
     }
 
     return detected;
@@ -409,9 +409,9 @@ bool CollisionDetector_impl::detectIntersectingLinkPairs
         ColdetModelPairEx& coldetPair = *coldetPairs[pairIndex];
         LinkPair& linkPair = out_collidedPairs[i];
         linkPair.charName1 = CORBA::string_dup(coldetPair.body0->name());
-        linkPair.linkName1 = CORBA::string_dup(coldetPair.model(0)->name());
+        linkPair.linkName1 = CORBA::string_dup(coldetPair.model(0)->name().c_str());
         linkPair.charName2 = CORBA::string_dup(coldetPair.body1->name());
-        linkPair.linkName2 = CORBA::string_dup(coldetPair.model(1)->name());
+        linkPair.linkName2 = CORBA::string_dup(coldetPair.model(1)->name().c_str());
     }
 
     return detected;
@@ -429,9 +429,9 @@ void CollisionDetector_impl::computeDistances
         dinfo.minD = coldetPair.computeDistance(dinfo.point0, dinfo.point1);
         LinkPair& linkPair = dinfo.pair;
         linkPair.charName1 = CORBA::string_dup(coldetPair.body0->name());
-        linkPair.linkName1 = CORBA::string_dup(coldetPair.model(0)->name());
+        linkPair.linkName1 = CORBA::string_dup(coldetPair.model(0)->name().c_str());
         linkPair.charName2 = CORBA::string_dup(coldetPair.body1->name());
-        linkPair.linkName2 = CORBA::string_dup(coldetPair.model(1)->name());
+        linkPair.linkName2 = CORBA::string_dup(coldetPair.model(1)->name().c_str());
     }
 }
 

@@ -83,7 +83,7 @@ namespace hrp {
          * @brief get name of this model
          * @return name name of this model 
          */
-        const char* name() const { return name_.c_str(); }
+        const std::string& name() const { return name_; }
 
         /**
          * @brief set the number of vertices
