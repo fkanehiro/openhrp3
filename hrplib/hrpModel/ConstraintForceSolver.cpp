@@ -227,13 +227,9 @@ namespace hrp
 
         std::vector<LinkPair*> constrainedLinkPairs;
 
-        /**
-           globalNumConstraintVectors = globalNumContactNormalVectors + globalNumConnectionVectors
-        */
         int globalNumConstraintVectors;
 
         int globalNumContactNormalVectors;
-        int globalNumConnectionVectors;
         int globalNumFrictionVectors;
 
         int prevGlobalNumConstraintVectors;
@@ -279,7 +275,6 @@ namespace hrp
         void setContactConstraintPoints(LinkPair& linkPair, CollisionPointSequence& collisionPoints);
         void setFrictionVectors(ConstraintPoint& constraintPoint);
 		void setExtraJointConstraintPoints(ExtraJointLinkPairPtr& linkPair);
-        bool setConnectionConstraintPoints(LinkPair& linkPair);
         void putContactPoints();
         void solveImpactConstraints();
         void initMatrices();
@@ -745,7 +740,6 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
         setExtraJointConstraintPoints(extraJointLinkPairs[i]);
     }
     
-    globalNumConnectionVectors = globalNumConstraintVectors - globalNumContactNormalVectors;
 }
 
 
@@ -1064,7 +1058,6 @@ void CFSImpl::setDefaultAccelerationVector()
             if(bodyData.forwardDynamicsMM){
 
                 bodyData.rootLinkPosRef = &(bodyData.body->rootLink()->p);
-                Vector3 zeroForce(Vector3::Zero());
                 bodyData.forwardDynamicsMM->sumExternalForces();
                 bodyData.forwardDynamicsMM->solveUnknownAccels();
                 calcAccelsMM(bodyData, numeric_limits<int>::max());
