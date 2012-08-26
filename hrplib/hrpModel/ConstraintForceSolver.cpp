@@ -33,6 +33,9 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/random.hpp>
 
+#include <fstream>
+#include <iomanip>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace boost;
@@ -56,7 +59,6 @@ static const bool usePivotingLCP = false;
 static const double VEL_THRESH_OF_DYNAMIC_FRICTION = 1.0e-4;
 
 static const bool ENABLE_STATIC_FRICTION = true;
-//static const bool ENABLE_STATIC_FRICTION = false;
 static const bool ONLY_STATIC_FRICTION_FORMULATION = (true && ENABLE_STATIC_FRICTION);
 static const bool STATIC_FRICTION_BY_TWO_CONSTRAINTS = true;
 static const bool IGNORE_CURRENT_VELOCITY_IN_STATIC_FRICTION = false;
@@ -71,6 +73,8 @@ static const int DEFAULT_MAX_NUM_GAUSS_SEIDEL_ITERATION = 500;
 static const int DEFAULT_NUM_GAUSS_SEIDEL_ITERATION_BLOCK = 10;
 static const int DEFAULT_NUM_GAUSS_SEIDEL_INITIAL_ITERATION = 0;
 static const double DEFAULT_GAUSS_SEIDEL_MAX_REL_ERROR = 1.0e-3;
+
+static const double THRESH_TO_SWITCH_REL_ERROR = 1.0e-8;
 static const bool USE_PREVIOUS_LCP_SOLUTION = true;
 
 static const bool ALLOW_SUBTLE_PENETRATION_FOR_STABILITY = true;
@@ -80,7 +84,6 @@ static const double ALLOWED_PENETRATION_DEPTH = 0.0001;
 //static const double PENETRATION_A = 500.0;
 //static const double PENETRATION_B = 80.0;
 static const double DEFAULT_NEGATIVE_VELOCITY_RATIO_FOR_PENETRATION = 10.0;
-static const double COEFFICIENT_OF_RESTITUTION = 0.5;
 
 // test for mobile robots with wheels
 //static const double ALLOWED_PENETRATION_DEPTH = 0.005;
@@ -113,6 +116,7 @@ namespace hrp
     public:
 
         CFSImpl(WorldBase& world);
+        ~CFSImpl();
 
         bool addCollisionCheckLinkPair
         (int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double restitution, double epsilon);
@@ -269,7 +273,9 @@ namespace hrp
 
         int numGaussSeidelTotalLoops;
         int numGaussSeidelTotalCalls;
+        int numGaussSeidelTotalLoopsMax;
 
+        void initBody(BodyPtr body, BodyData& bodyData);
 		void initExtraJoints(int bodyIndex);
         void setConstraintPoints(CollisionSequence& collisions);
         void setContactConstraintPoints(LinkPair& linkPair, CollisionPointSequence& collisionPoints);
@@ -311,8 +317,6 @@ namespace hrp
         (const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration);
         void solveMCPByProjectedGaussSeidelMain
         (const rmdmatrix& M, const dvector& b, dvector& x, const int numIteration);
-        double solveMCPByProjectedGaussSeidelErrorCheck
-        (const rmdmatrix& M, const dvector& b, dvector& x);
 
         void checkLCPResult(rmdmatrix& M, dvector& b, dvector& x);
         void checkMCPResult(rmdmatrix& M, dvector& b, dvector& x);
@@ -328,6 +332,38 @@ namespace hrp
         std::vector<double> m_ij;
 #endif
 
+        ofstream os;
+
+        template<class TMatrix>
+        void putMatrix(TMatrix& M, const char *name) {
+            if(M.cols() == 1){
+                os << "Vector " << name << M << std::endl;
+            } else {
+                os << "Matrix " << name << ": \n";
+                for(int i=0; i < M.rows(); i++){
+                    for(int j=0; j < M.cols(); j++){
+                        //os << boost::format(" %6.3f ") % M(i, j);
+                        os << boost::format(" %.50g ") % M(i, j);
+                    }
+                    os << std::endl;
+                }
+            }
+        }
+
+        template<class TVector>
+        void putVector(const TVector& M, const char *name) {
+            os << "Vector " << name << M << std::endl;
+        }
+
+        template<class TMatrix>
+        void debugPutMatrix(const TMatrix& M, const char *name) {
+            if(CFS_DEBUG_VERBOSE) putMatrix(M, name);
+        }
+
+        template<class TVector>
+        void debugPutVector(const TVector& M, const char *name) {
+            if(CFS_DEBUG_VERBOSE) putVector(M, name);
+        }
     };
 #ifdef __WIN32__
 
@@ -336,39 +372,6 @@ namespace hrp
 #endif
 };
 
-template<class TMatrix>
-static void putMatrix(TMatrix& M, const char *name)
-{
-    if(M.cols() == 1){
-        std::cout << "Vector " << name << M << std::endl;
-    } else {
-        std::cout << "Matrix " << name << ": \n";
-        for(size_t i=0; i < M.rows(); i++){
-            for(size_t j=0; j < M.cols(); j++){
-                std::cout << boost::format(" %6.3f ") % M(i, j);
-            }
-            std::cout << std::endl;
-        }
-    }
-}
-
-template<class TVector>
-static void putVector(const TVector& M, const char *name)
-{
-    std::cout << "Vector " << name << M << std::endl;
-}
-
-template<class TMatrix>
-static inline void debugPutMatrix(TMatrix& M, const char *name)
-{
-    if(CFS_DEBUG_VERBOSE) putMatrix(M, name);
-}
-
-template<class TVector>
-static inline void debugPutVector(const TVector& M, const char *name)
-{
-    if(CFS_DEBUG_VERBOSE) putVector(M, name);
-}
 
 
 CFSImpl::CFSImpl(WorldBase& world) :
@@ -383,6 +386,14 @@ CFSImpl::CFSImpl(WorldBase& world) :
     isConstraintForceOutputMode = false;
     useBuiltinCollisionDetector = false;
     allowedPenetrationDepth = ALLOWED_PENETRATION_DEPTH;
+}
+
+
+CFSImpl::~CFSImpl()
+{
+    if(CFS_DEBUG){
+        os.close();
+    }
 }
 
 
@@ -423,6 +434,26 @@ bool CFSImpl::addCollisionCheckLinkPair
 
     return (index >= 0 && !isRegistered);
 }
+
+
+void CFSImpl::initBody(BodyPtr body, BodyData& bodyData)
+{
+    body->clearExternalForces();
+    bodyData.body = body;
+    bodyData.linksData.resize(body->numLinks());
+    bodyData.hasConstrainedLinks = false;
+    bodyData.isTestForceBeingApplied = false;
+    bodyData.isStatic = body->isStaticModel();
+
+    LinkDataArray& linksData = bodyData.linksData;
+    const LinkTraverse& traverse = body->linkTraverse();
+    for(int j=0; j < traverse.numLinks(); ++j){
+        Link* link = traverse[j];
+        linksData[link->index].link = link;
+        linksData[link->index].parentIndex = link->parent ? link->parent->index : -1;
+    }
+}
+
 
 // initialize extra joints for making closed links
 void CFSImpl::initExtraJoints(int bodyIndex)
@@ -480,9 +511,17 @@ void CFSImpl::initExtraJoints(int bodyIndex)
 
 void CFSImpl::initialize(void)
 {
+    if(CFS_DEBUG || CFS_MCP_DEBUG){
+        static int ntest = 0;
+        os.close();
+        os.open((string("cfs-log-") + lexical_cast<string>(ntest++) + ".log").c_str());
+        //os << setprecision(50);
+    }
+
     if(CFS_MCP_DEBUG){
         numGaussSeidelTotalCalls = 0;
         numGaussSeidelTotalLoops = 0;
+        numGaussSeidelTotalLoopsMax = 0;
     }
 
     int numBodies = world.numBodies();
@@ -494,35 +533,20 @@ void CFSImpl::initialize(void)
     for(int bodyIndex=0; bodyIndex < numBodies; ++bodyIndex){
 
         BodyPtr body = world.body(bodyIndex);
-
-        body->clearExternalForces();
         BodyData& bodyData = bodiesData[bodyIndex];
-        bodyData.body = body;
-        bodyData.linksData.resize(body->numLinks());
-        bodyData.hasConstrainedLinks = false;
-        bodyData.isTestForceBeingApplied = false;
-        bodyData.isStatic = body->isStaticModel();
+
+        initBody(body, bodyData);
 
         bodyData.forwardDynamicsMM =
             dynamic_pointer_cast<ForwardDynamicsMM>(world.forwardDynamics(bodyIndex));
 
-        LinkDataArray& linksData = bodyData.linksData;
-
         if(bodyData.isStatic && !(bodyData.forwardDynamicsMM)){
-            int n = linksData.size();
-            for(int j=0; j < n; ++j){
+            LinkDataArray& linksData = bodyData.linksData;
+            for(size_t j=0; j < linksData.size(); ++j){
                 LinkData& linkData = linksData[j];
                 linkData.dw.setZero();
                 linkData.dvo.setZero();
             }
-        }
-
-        // initialize link data
-        const LinkTraverse& traverse = body->linkTraverse();
-        for(int j=0; j < traverse.numLinks(); ++j){
-            Link* link = traverse[j];
-            linksData[link->index].link = link;
-            linksData[link->index].parentIndex = link->parent ? link->parent->index : -1;
         }
 
 		initExtraJoints(bodyIndex);
@@ -560,7 +584,7 @@ inline void CFSImpl::clearExternalForces()
 void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
 {
     if(CFS_DEBUG)
-        std::cout << "Time: " << world.currentTime() << std::endl;
+        os << "Time: " << world.currentTime() << std::endl;
 
     for(size_t i=0; i < bodiesData.size(); ++i){
         bodiesData[i].hasConstrainedLinks = false;
@@ -590,7 +614,7 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
     if(globalNumConstraintVectors > 0){
 
         if(CFS_DEBUG){
-            std::cout << "Num Collisions: " << globalNumContactNormalVectors << std::endl;
+            os << "Num Collisions: " << globalNumContactNormalVectors << std::endl;
         }
         if(CFS_DEBUG_VERBOSE) putContactPoints();
 
@@ -638,10 +662,10 @@ void CFSImpl::solve(CollisionSequence& corbaCollisionSequence)
         if(!isConverged){
             ++numUnconverged;
             if(CFS_DEBUG)
-                std::cout << "LCP didn't converge" << numUnconverged << std::endl;
+                os << "LCP didn't converge" << numUnconverged << std::endl;
         } else {
             if(CFS_DEBUG)
-                std::cout << "LCP converged" << std::endl;
+                os << "LCP converged" << std::endl;
             if(CFS_DEBUG_LCPCHECK){
                 // checkLCPResult(Mlcp, b, solution);
                 checkMCPResult(Mlcp, b, solution);
@@ -739,7 +763,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
 	for(size_t i=0; i < extraJointLinkPairs.size(); ++i){
         setExtraJointConstraintPoints(extraJointLinkPairs[i]);
     }
-    
+
 }
 
 
@@ -947,38 +971,47 @@ void CFSImpl::setExtraJointConstraintPoints(ExtraJointLinkPairPtr& linkPair)
 
 void CFSImpl::putContactPoints()
 {
-    std::cout << "Contact Points\n";
+    os << "Contact Points\n";
     for(size_t i=0; i < constrainedLinkPairs.size(); ++i){
         LinkPair* linkPair = constrainedLinkPairs[i];
 		ExtraJointLinkPair* ejLinkPair = dynamic_cast<ExtraJointLinkPair*>(linkPair);
 
         if(!ejLinkPair){
 
-            std::cout << " " << linkPair->link[0]->name << " of " << linkPair->bodyData[0]->body->modelName();
-            std::cout << "<-->";
-            std::cout << " " << linkPair->link[1]->name << " of " << linkPair->bodyData[1]->body->modelName();
+            os << " " << linkPair->link[0]->name << " of " << linkPair->bodyData[0]->body->modelName();
+            os << "<-->";
+            os << " " << linkPair->link[1]->name << " of " << linkPair->bodyData[1]->body->modelName();
+            os << "\n";
+            os << " culling thresh: " << linkPair->culling_thresh << "\n";
 
             ConstraintPointArray& constraintPoints = linkPair->constraintPoints;
-            std::cout << "\n";
             for(size_t j=0; j < constraintPoints.size(); ++j){
                 ConstraintPoint& contact = constraintPoints[j];
-                std::cout << " index " << contact.globalIndex;
-                std::cout << " point: " << contact.point;
-                std::cout << " normal: " << contact.normalTowardInside[1];
-                std::cout << " rel velocity: " << contact.relVelocityOn0;
-                std::cout << " tangent: " << contact.frictionVector[0];
-                std::cout << "\n";
+                os << " index " << contact.globalIndex;
+                os << " point: " << contact.point;
+                os << " normal: " << contact.normalTowardInside[1];
+                os << " defaultAccel[0]: " << contact.defaultAccel[0];
+                os << " defaultAccel[1]: " << contact.defaultAccel[1];
+                os << " normal projectionOfRelVelocityOn0" << contact.normalProjectionOfRelVelocityOn0;
+                os << " depth" << contact.depth;
+                os << " mu" << contact.mu;
+                os << " rel velocity: " << contact.relVelocityOn0;
+                os << " friction[0][0]: " << contact.frictionVector[0][0];
+                os << " friction[0][1]: " << contact.frictionVector[0][1];
+                os << " friction[1][0]: " << contact.frictionVector[1][0];
+                os << " friction[1][1]: " << contact.frictionVector[1][1];
+                os << "\n";
             }
         }
     }
-    std::cout << std::endl;
+    os << std::endl;
 }
 
 
 void CFSImpl::solveImpactConstraints()
 {
     if(CFS_DEBUG)
-        std::cout << "Impacts !" << std::endl;
+        os << "Impacts !" << std::endl;
 }
 
 
@@ -1258,21 +1291,19 @@ void CFSImpl::calcAccelsABM(BodyData& bodyData, int constraintIndex)
 
     if(rootLink->jointType == Link::FREE_JOINT){
 
-        Vector3 pf  (rootData.pf0   + bodyData.dpf);
-        Vector3 ptau(rootData.ptau0 + bodyData.dptau);
+        Eigen::Matrix<double, 6, 6> M;
+        M << rootLink->Ivv, rootLink->Iwv.transpose(),
+             rootLink->Iwv, rootLink->Iww;
 
-        dmatrix Ia(6,6);
-        Ia << rootLink->Ivv, rootLink->Iwv.transpose(),
-            rootLink->Iwv, rootLink->Iww;
+        Eigen::Matrix<double, 6, 1> f;
+        f << (rootData.pf0   + bodyData.dpf),
+             (rootData.ptau0 + bodyData.dptau);
+        f *= -1.0;
 
-        dvector p(6);
-        p << pf, ptau;
-        p *= -1.0;
+        Eigen::Matrix<double, 6, 1> a(M.colPivHouseholderQr().solve(f));
 
-        dvector a(Ia.colPivHouseholderQr().solve(p));
-
-        rootData.dvo = a.head(3);
-        rootData.dw = a.tail(3);
+        rootData.dvo = a.head<3>();
+        rootData.dw  = a.tail<3>();
 
     } else {
         rootData.dw.setZero();
@@ -1429,7 +1460,7 @@ void CFSImpl::extractRelAccelsFromLinkPairCase2
         Vector3 dv(linkData->dvo - constraint.point.cross(linkData->dw) + link->w.cross(link->vo + link->w.cross(constraint.point)));
 
         if(CFS_DEBUG_VERBOSE_2)
-            std::cout << "dv " << constraintIndex << " = " << dv << "\n";
+            os << "dv " << constraintIndex << " = " << dv << "\n";
 
         Vector3 relAccel(constraint.defaultAccel[iDefault] - dv);
 
@@ -1508,9 +1539,9 @@ void CFSImpl::copySymmetricElementsOfAccelerationMatrix
 
 void CFSImpl::clearSingularPointConstraintsOfClosedLoopConnections()
 {
-    for(size_t i = 0; i < Mlcp.rows(); ++i){
+    for(int i = 0; i < Mlcp.rows(); ++i){
         if(Mlcp(i, i) < 1.0e-4){
-            for(size_t j=0; j < Mlcp.rows(); ++j){
+            for(int j=0; j < Mlcp.rows(); ++j){
                 Mlcp(j, i) = 0.0;
             }
             Mlcp(i, i) = numeric_limits<double>::max();
@@ -1557,10 +1588,8 @@ void CFSImpl::setConstantVectorAndMuBlock()
                     double extraNegativeVel;
                     double newDepth = allowedPenetrationDepth - constraint.depth;
                     extraNegativeVel = negativeVelocityRatioForPenetration * newDepth;
-                    //b(globalIndex) = an0(globalIndex) + ((1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
 					b(globalIndex) = an0(globalIndex) + ((1 + linkPair.restitution)*constraint.normalProjectionOfRelVelocityOn0 + extraNegativeVel) * dtinv;
                 } else {
-                    //b(globalIndex) = an0(globalIndex) + (1+COEFFICIENT_OF_RESTITUTION)*constraint.normalProjectionOfRelVelocityOn0 * dtinv;
 					b(globalIndex) = an0(globalIndex) + (1 + linkPair.restitution)*constraint.normalProjectionOfRelVelocityOn0 * dtinv;
                 }
 
@@ -1644,7 +1673,7 @@ void CFSImpl::addConstraintForceToLink(LinkPair* linkPair, int ipair)
 
 
     if(CFS_DEBUG){
-        std::cout << "Constraint force to " << link->name << ": f = " << f_total << ", tau = " << tau_total << std::endl;
+        os << "Constraint force to " << link->name << ": f = " << f_total << ", tau = " << tau_total << std::endl;
     }
 }
 
@@ -1661,29 +1690,59 @@ void CFSImpl::solveMCPByProjectedGaussSeidel(const rmdmatrix& M, const dvector& 
     int numBlockLoops = maxNumGaussSeidelIteration / loopBlockSize;
     if(numBlockLoops==0) numBlockLoops = 1;
 
-    if(CFS_MCP_DEBUG) cout << "Iteration ";
+    if(CFS_MCP_DEBUG) os << "Iteration ";
 
     double error = 0.0;
+    dvector x0;
     int i=0;
     while(i < numBlockLoops){
         i++;
         solveMCPByProjectedGaussSeidelMain(M, b, x, loopBlockSize - 1);
 
-        error = solveMCPByProjectedGaussSeidelErrorCheck(M, b, x);
+        x0 = x;
+        solveMCPByProjectedGaussSeidelMain(M, b, x, 1);
+
+        if(true){
+            double n = x.norm();
+            if(n > THRESH_TO_SWITCH_REL_ERROR){
+                error = (x - x0).norm() / x.norm();
+            } else {
+                error = (x - x0).norm();
+            }
+        } else {
+            error = 0.0;
+            for(int j=0; j < x.size(); ++j){
+                double d = fabs(x(j) - x0(j));
+                if(d > THRESH_TO_SWITCH_REL_ERROR){
+                    d /= x(j);
+                }
+                if(d > error){
+                    error = d;
+                }
+            }
+        }
+
         if(error < gaussSeidelMaxRelError){
-            if(CFS_MCP_DEBUG_SHOW_ITERATION_STOP) cout << "stopped at " << i * loopBlockSize << endl;
+            if(CFS_MCP_DEBUG_SHOW_ITERATION_STOP){
+                os << "stopped at " << (i * loopBlockSize) << ", error = " << error << endl;
+            }
             break;
         }
     }
 
     if(CFS_MCP_DEBUG){
+
+        if(i == numBlockLoops){
+            os << "not stopped" << ", error = " << error << endl;
+        }
+        
         int n = loopBlockSize * i;
         numGaussSeidelTotalLoops += n;
         numGaussSeidelTotalCalls++;
-        cout << n;
-        cout << ", avarage = " << (numGaussSeidelTotalLoops / numGaussSeidelTotalCalls);
-        cout << ", error = " << error;
-        cout << endl;
+        numGaussSeidelTotalLoopsMax = std::max(numGaussSeidelTotalLoopsMax, n);
+        os << ", avarage = " << (numGaussSeidelTotalLoops / numGaussSeidelTotalCalls);
+        os << ", max = " << numGaussSeidelTotalLoopsMax;
+        os << endl;
     }
 }
 
@@ -1705,7 +1764,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                 xx=0.0;
             else{
                 double sum = -M(j, j) * x(j);
-                sum += M.row(j)*x;
+                for(int k=0; k < size; ++k){
+                    sum += M(j, k) * x(k);
+                }
                 xx = (-b(j) - sum) / M(j, j);
             }
             if(xx < 0.0){
@@ -1723,7 +1784,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                 x(j) = 0.0;
             else{
                 double sum = -M(j, j) * x(j);
-                sum += M.row(j)*x;
+                for(int k=0; k < size; ++k){
+                    sum += M(j, k) * x(k);
+                }
                 x(j) = r * (-b(j) - sum) / M(j, j);
             }
             r += rstep;
@@ -1739,7 +1802,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                     fx0 = 0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    sum += M.row(j)*x;
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
                     fx0 = (-b(j) - sum) / M(j, j);
                 }
                 double& fx = x(j);
@@ -1751,7 +1816,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                     fy0 = 0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    sum += M.row(j)*x;
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
                     fy0 = (-b(j) - sum) / M(j, j);
                 }
                 double& fy = x(j);
@@ -1781,7 +1848,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelInitial
                     xx = 0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    sum += M.row(j)*x;
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
                     xx = (-b(j) - sum) / M(j, j);
                 }
 
@@ -1818,7 +1887,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                 xx=0.0;
             else{
                 double sum = -M(j, j) * x(j);
-                sum += M.row(j)*x;
+                for(int k=0; k < size; ++k){
+                    sum += M(j, k) * x(k);
+                }
                 xx = (-b(j) - sum) / M(j, j);
             }
             if(xx < 0.0){
@@ -1835,7 +1906,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                 x(j)=0.0;
             else{
                 double sum = -M(j, j) * x(j);
-                sum += M.row(j)*x;
+                for(int k=0; k < size; ++k){
+                    sum += M(j, k) * x(k);
+                }
                 x(j) = (-b(j) - sum) / M(j, j);
             }
         }
@@ -1851,7 +1924,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                     fx0=0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    sum += M.row(j)*x;
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
                     fx0 = (-b(j) - sum) / M(j, j);
                 }
                 double& fx = x(j);
@@ -1863,7 +1938,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                     fy0=0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    sum += M.row(j)*x;
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
                     fy0 = (-b(j) - sum) / M(j, j);
                 }
                 double& fy = x(j);
@@ -1892,7 +1969,9 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
                     xx=0.0;
                 else{
                     double sum = -M(j, j) * x(j);
-                    sum += M.row(j)*x;
+                    for(int k=0; k < size; ++k){
+                        sum += M(j, k) * x(k);
+                    }
                     xx = (-b(j) - sum) / M(j, j);
                 }
 
@@ -1913,193 +1992,82 @@ void CFSImpl::solveMCPByProjectedGaussSeidelMain
 }
 
 
-double CFSImpl::solveMCPByProjectedGaussSeidelErrorCheck
-(const rmdmatrix& M, const dvector& b, dvector& x)
-{
-    const int size = globalNumConstraintVectors + globalNumFrictionVectors;
-
-    double error = 0.0;
-
-    for(int j=0; j < globalNumConstraintVectors; ++j){
-
-        double sum = -M(j, j) * x(j);
-        sum += M.row(j)*x;
-        double xx = (-b(j) - sum) / M(j, j);
-
-        if(j < globalNumContactNormalVectors){
-            if(xx < 0.0){
-                xx = 0.0;
-            }
-            mcpHi[j] = contactIndexToMu[j] * xx;
-        }
-        double d = fabs(xx - x(j));
-        if(xx > numeric_limits<double>::epsilon()){
-            d /= xx;
-        }
-        if(d > error){
-            error = d;
-        }
-        x(j) = xx;
-    }
-
-    if(ENABLE_TRUE_FRICTION_CONE){
-
-        int contactIndex = 0;
-        for(int j=globalNumConstraintVectors; j < size; ++j, ++contactIndex){
-
-            double sum = -M(j, j) * x(j);
-            sum += M.row(j)*x;
-            double fx0 = (-b(j) - sum) / M(j, j);
-            double& fx = x(j);
-
-            ++j;
-
-            sum = -M(j, j) * x(j);
-            sum += M.row(j)*x;
-            double fy0 = (-b(j) - sum) / M(j, j);
-            double& fy = x(j);
-
-            const double fmax = mcpHi[contactIndex];
-            const double fmax2 = fmax * fmax;
-            const double fmag2 = fx0 * fx0 + fy0 * fy0;
-
-            if(fmag2 > fmax2){
-                const double s = fmax / sqrt(fmag2);
-                fx0 *= s;
-                fy0 *= s;
-            }
-			
-            double d = fabs(fx0 - fx);
-            const double afx0 = fabs(fx0);
-            if(afx0 > numeric_limits<double>::epsilon()){
-                d /= afx0;
-            }
-            if(d > error){
-                error = d;
-            }
-            d = fabs(fy0 - fy);
-            const double afy0 = fabs(fy0);
-            if(afy0 > numeric_limits<double>::epsilon()){
-                d /= afy0;
-            }
-            if(d > error){
-                error = d;
-            }
-            fx = fx0;
-            fy = fy0;
-        }
-
-    } else {
-
-        int frictionIndex = 0;
-        for(int j=globalNumConstraintVectors; j < size; ++j, ++frictionIndex){
-
-            double sum = -M(j, j) * x(j);
-            sum += M.row(j)*x;
-
-            double xx = (-b(j) - sum) / M(j, j);
-
-            const int contactIndex = frictionIndexToContactIndex[frictionIndex];
-            const double fmax = mcpHi[contactIndex];
-            const double fmin = (STATIC_FRICTION_BY_TWO_CONSTRAINTS ? -fmax : 0.0);
-
-            if(xx < fmin){
-                xx = fmin;
-            } else if(xx > fmax){
-                xx = fmax;
-            }
-            double d = fabs(xx - x(j));
-            if(xx > numeric_limits<double>::epsilon()){
-                d /= xx;
-            }
-            if(d > error){
-                error = d;
-            }
-            x(j) = xx;
-        }
-    }
-
-    return error;
-}
-
-
-
 void CFSImpl::checkLCPResult(rmdmatrix& M, dvector& b, dvector& x)
 {
-    std::cout << "check LCP result\n";
-    std::cout << "-------------------------------\n";
+    os << "check LCP result\n";
+    os << "-------------------------------\n";
 
-    dvector z = M*x + b;
+    dvector z = M * x + b;
 
     int n = x.size();
     for(int i=0; i < n; ++i){
-        std::cout << "(" << x(i) << ", " << z(i) << ")";
+        os << "(" << x(i) << ", " << z(i) << ")";
 
         if(x(i) < 0.0 || z(i) < 0.0 || x(i) * z(i) != 0.0){
-            std::cout << " - X";
+            os << " - X";
         }
-        std::cout << "\n";
+        os << "\n";
 
         if(i == globalNumConstraintVectors){
-            std::cout << "-------------------------------\n";
+            os << "-------------------------------\n";
         } else if(i == globalNumConstraintVectors + globalNumFrictionVectors){
-            std::cout << "-------------------------------\n";
+            os << "-------------------------------\n";
         }
     }
 
-    std::cout << "-------------------------------\n";
+    os << "-------------------------------\n";
 
 
-    std::cout << std::endl;
+    os << std::endl;
 }
 
 
 void CFSImpl::checkMCPResult(rmdmatrix& M, dvector& b, dvector& x)
 {
-    std::cout << "check MCP result\n";
-    std::cout << "-------------------------------\n";
+    os << "check MCP result\n";
+    os << "-------------------------------\n";
 
-    dvector z = M*x + b;
+    dvector z = M * x + b;
 
     for(int i=0; i < globalNumConstraintVectors; ++i){
-        std::cout << "(" << x(i) << ", " << z(i) << ")";
+        os << "(" << x(i) << ", " << z(i) << ")";
 
         if(x(i) < 0.0 || z(i) < -1.0e-6){
-            std::cout << " - X";
+            os << " - X";
         } else if(x(i) > 0.0 && fabs(z(i)) > 1.0e-6){
-            std::cout << " - X";
+            os << " - X";
         } else if(z(i) > 1.0e-6 && fabs(x(i)) > 1.0e-6){
-            std::cout << " - X";
+            os << " - X";
         }
 
 
-        std::cout << "\n";
+        os << "\n";
     }
 
-    std::cout << "-------------------------------\n";
+    os << "-------------------------------\n";
 
     int j = 0;
     for(int i=globalNumConstraintVectors; i < globalNumConstraintVectors + globalNumFrictionVectors; ++i, ++j){
-        std::cout << "(" << x(i) << ", " << z(i) << ")";
+        os << "(" << x(i) << ", " << z(i) << ")";
 
         int contactIndex = frictionIndexToContactIndex[j];
         double hi = contactIndexToMu[contactIndex] * x(contactIndex);
 
-        std::cout << " hi = " << hi;
+        os << " hi = " << hi;
 
         if(x(i) < 0.0 || x(i) > hi){
-            std::cout << " - X";
+            os << " - X";
         } else if(x(i) == hi && z(i) > -1.0e-6){
-            std::cout << " - X";
+            os << " - X";
         } else if(x(i) < hi && x(i) > 0.0 && fabs(z(i)) > 1.0e-6){
-            std::cout << " - X";
+            os << " - X";
         }
-        std::cout << "\n";
+        os << "\n";
     }
 
-    std::cout << "-------------------------------\n";
+    os << "-------------------------------\n";
 
-    std::cout << std::endl;
+    os << std::endl;
 }
 
 
