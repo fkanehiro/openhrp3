@@ -521,7 +521,11 @@ if(ENABLE_CPACK)
       DESTINATION ${RELATIVE_DOC_INSTALL_PATH} )
     if(EXISTS ${OpenHRP_SOURCE_DIR}/java/plugins)
       install( DIRECTORY ${OpenHRP_SOURCE_DIR}/java/plugins
-        DESTINATION ${RELATIVE_JAVA_INSTALL_PATH} )
+        DESTINATION ${RELATIVE_JAVA_INSTALL_PATH} 
+        FILES_MATCHING
+    	PATTERN "*.jar"
+    	PATTERN ".svn" EXCLUDE
+	)
     endif()
   else()
     install( FILES README-ja.txt LICENSE-ja.txt HISTORY-ja.txt README-en.txt LICENSE-en.txt HISTORY-en.txt
