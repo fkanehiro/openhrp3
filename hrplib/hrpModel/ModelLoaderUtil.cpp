@@ -594,6 +594,7 @@ void ModelLoaderHelper::setExtraJoints()
     for(int i=0; i < n; ++i){
 		const ExtraJointInfo& extraJointInfo = extraJointInfoSeq[i];
         Body::ExtraJoint joint;
+		joint.name = extraJointInfo.name;
 		joint.link[0] = body->link(string(extraJointInfo.link[0]));
         joint.link[1] = body->link(string(extraJointInfo.link[1]));
 

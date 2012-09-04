@@ -25,6 +25,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -65,6 +66,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
     public BranchGroup bgRoot_ = new BranchGroup();
     public Vector<GrxLinkItem> links_ = new Vector<GrxLinkItem>();
+    public Vector<GrxExtraJointItem> extraJoints_ = new Vector<GrxExtraJointItem>();
     // jontId -> link
     private int[] jointToLink_; 
     private Map<String, GrxLinkItem> nameToLink_ = new HashMap<String, GrxLinkItem>();
@@ -307,6 +309,17 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         	}
         });
 
+     // menu item : add ExtraJoint
+        setMenuItem(new Action(){
+        	public String getText() { return MessageBundle.get("GrxModelItem.menu.addExtraJoint"); } //$NON-NLS-1$
+        	public void run(){
+        		InputDialog dialog = new InputDialog( null, getText(),
+						MessageBundle.get("GrxModelItem.dialog.message.extraJointName"), null,null); //$NON-NLS-1$
+				if ( dialog.open() == InputDialog.OK && dialog.getValue() != null)
+					addExtraJoint( dialog.getValue() );
+        	}
+        });
+        
         /* disable copy and paste menus until they are implemented
         // menu item : copy
         setMenuItem( new Action(){
@@ -676,6 +689,14 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 }
             }
 
+            ExtraJointInfo[] extraJointList = bInfo_.extraJoints();
+            extraJoints_.clear();
+            for (int i = 0; i < extraJointList.length; i++) {
+            	GrxExtraJointItem extraJoint = new GrxExtraJointItem(extraJointList[i].name, manager_, this, extraJointList[i]);
+            	extraJoints_.add(extraJoint);
+            	manager_.itemChange(extraJoint, GrxPluginManager.ADD_ITEM);
+            }
+            
             long stime = System.currentTimeMillis();
             try {
 				_loadVrmlScene(linkInfoList);
@@ -1607,4 +1628,16 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         }
         return super.GetValueEditType(key);
     }
+
+	public void removeExtraJoint(GrxExtraJointItem extraJoint) {
+		extraJoints_.remove(extraJoint);
+		notifyModified();
+	}
+	
+	private void addExtraJoint(String name) {
+		GrxExtraJointItem extraJoint = new GrxExtraJointItem(name, manager_, this, null);
+    	this.extraJoints_.add(extraJoint);
+    	notifyModified();
+    	manager_.itemChange(extraJoint, GrxPluginManager.ADD_ITEM);
+	}
 }

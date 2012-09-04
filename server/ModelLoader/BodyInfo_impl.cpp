@@ -230,6 +230,7 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
 		
         TProtoFieldMap& f = modelNodeSet.extraJointNode(i)->fields;
         ExtraJointInfo_var extraJointInfo(new ExtraJointInfo());
+		extraJointInfo->name =  CORBA::string_dup( modelNodeSet.extraJointNode(i)->defName.c_str() );
 
         string link1Name, link2Name;
 		copyVrmlField( f, "link1Name", link1Name );

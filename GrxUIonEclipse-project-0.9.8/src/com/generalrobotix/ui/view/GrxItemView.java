@@ -51,6 +51,7 @@ import com.generalrobotix.ui.GrxBasePlugin;
 import com.generalrobotix.ui.GrxBaseViewPart;
 import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.grxui.Activator;
+import com.generalrobotix.ui.item.GrxExtraJointItem;
 import com.generalrobotix.ui.item.GrxHwcItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
@@ -242,7 +243,12 @@ public class GrxItemView extends GrxBaseView {
 			if (o instanceof GrxModelItem){
 				GrxModelItem model = (GrxModelItem)o;
 				if (model.rootLink() != null){
-					Object[] os = {((GrxModelItem)o).rootLink()};
+					//Object[] os = {((GrxModelItem)o).rootLink()};
+					Vector<GrxExtraJointItem> extraJointList = ((GrxModelItem)o).extraJoints_;
+					Object[] os = new Object[extraJointList.size() + 1];
+					os[0] = ((GrxModelItem)o).rootLink();
+					for(int i=0; i<extraJointList.size(); i++)
+						os[i+1] = extraJointList.get(i);				
 					return os;
 				}else{
 					return null;
