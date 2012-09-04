@@ -11,7 +11,7 @@ public class PreferenceConstants {
 	public static final String SERVER_DIR= "SERVER_DIR";
 
 	public static final String VERSION="GrxUI.version";
-	public static final String CURRENT_VERSION="1.0";
+	public static final String CURRENT_VERSION="1.1";
 	public static final String PROCESS = "ProcessManagerConfig";
 	public static final String ID = "Id";
 	public static final String COM = "Com";
@@ -46,6 +46,7 @@ public class PreferenceConstants {
 	public static final String SHAPEITEM="com.generalrobotix.ui.item.GrxShapeItem";
 	public static final String SENSORITEM="com.generalrobotix.ui.item.GrxSensorItem";
 	public static final String HWCITEM="com.generalrobotix.ui.item.GrxHwcItem";
+	public static final String EXTRAJOINTITEM="com.generalrobotix.ui.item.GrxExtraJointItem";
 	public static final String WORLDSTATEITEM="com.generalrobotix.ui.item.GrxWorldStateItem";
 	public static final String COLLISIONPAIRITEM="com.generalrobotix.ui.item.GrxCollisionPairItem";
 	public static final String GRAPHITEM="com.generalrobotix.ui.item.GrxGraphItem";

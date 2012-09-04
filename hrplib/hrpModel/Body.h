@@ -244,6 +244,7 @@ namespace hrp {
 		enum ExtraJointType { EJ_PISTON, EJ_BALL };
 
         struct ExtraJoint {
+			std::string name;
             ExtraJointType type;
             Vector3 axis;
             Link* link[2];

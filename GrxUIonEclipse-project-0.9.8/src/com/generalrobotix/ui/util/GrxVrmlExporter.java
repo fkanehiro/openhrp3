@@ -17,6 +17,7 @@ import com.generalrobotix.ui.item.GrxModelItem;
 import com.generalrobotix.ui.item.GrxSegmentItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.item.GrxShapeItem;
+import com.generalrobotix.ui.item.GrxExtraJointItem;
 
 public class GrxVrmlExporter {
 	/**
@@ -228,6 +229,18 @@ public class GrxVrmlExporter {
 	        writer.write("    size IS size\n");
 	        writer.write("  }\n");
 	        writer.write("}\n");
+	        writer.write("\n");
+	        writer.write("PROTO ExtraJoint [\n");
+	        writer.write("  exposedField SFString 	link1Name 		\"\"\n"); 
+	        writer.write("  exposedField SFString 	link2Name 		\"\"\n");
+	        writer.write("  exposedField SFVec3f  	link1LocalPos	0 0 0\n");	
+	        writer.write("  exposedField SFVec3f  	link2LocalPos	0 0 0\n");
+	        writer.write("  exposedField SFString 	jointType 		\"piston\"\n");
+	        writer.write("  exposedField SFVec3f	jointAxis 		1 0 0\n");
+	        writer.write("]\n");
+	        writer.write("{\n");
+	        writer.write("}\n"); 
+	        writer.write("\n");
 	        writer.write("NavigationInfo {\n");                                             
 	        writer.write("  avatarSize    0.5\n");                                          
 	        writer.write("  headlight     TRUE\n");                                         
@@ -242,7 +255,11 @@ public class GrxVrmlExporter {
 	        writer.write("  position    3 0 0.835\n");                                      
 	        writer.write("  orientation 0.5770 0.5775 0.5775 2.0935\n");                    
 	        writer.write("}\n");                                                            
-	        writer.write("\n");   
+	        writer.write("\n");
+	        for(int i=0; i<model.extraJoints_.size(); i++){
+	        	exportExtraJoint(writer, model.extraJoints_.get(i));
+	        	writer.write("\n");
+	        }
 	        writer.write("DEF "+model.getName()+" Humanoid{\n");
 	        writer.write("  humanoidBody [\n");
 	        Vector<GrxLinkItem> links = exportLink(writer, model.rootLink(), "    ", exportDir, model.getURL(false));
@@ -546,6 +563,21 @@ public class GrxVrmlExporter {
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
+	}
+	
+	public static void exportExtraJoint(BufferedWriter writer, GrxExtraJointItem extraJoint){
+		try{
+			writer.write("DEF "+extraJoint.getName()+" ExtraJoint{\n");
+			writer.write("  link1Name \""+extraJoint.getProperty("link1Name")+"\"\n");
+			writer.write("  link2Name \""+extraJoint.getProperty("link2Name")+"\"\n");
+			writer.write("  link1LocalPos "+extraJoint.getProperty("link1LocalPos")+"\n");
+			writer.write("  link2LocalPos "+extraJoint.getProperty("link2LocalPos")+"\n");
+			writer.write("  jointType \""+extraJoint.getProperty("jointType")+"\"\n");
+			writer.write("  jointAxis "+extraJoint.getProperty("jointAxis")+"\n");
+			writer.write("}\n");
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}	
 	}
 	
 	/**
