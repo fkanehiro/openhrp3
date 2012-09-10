@@ -469,8 +469,6 @@ module OpenHRP {
      閉リンク機構のリンクの接続情報を格納する構造体。
      @endif
   */
-  enum ExtraJointType { EJ_PISTON, EJ_BALL };
-
   struct ExtraJointInfo
   {	
 	 ///  Extra Joint name

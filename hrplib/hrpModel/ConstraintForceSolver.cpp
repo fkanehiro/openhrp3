@@ -120,6 +120,8 @@ namespace hrp
 
         bool addCollisionCheckLinkPair
         (int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double restitution, double epsilon);
+		bool addExtraJoint
+		(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, const double* link1LocalPos, const double* link2LocalPos, const short jointType, const double* jointAxis );
 
         void initialize(void);
         void solve(CollisionSequence& corbaCollisionSequence);
@@ -435,6 +437,57 @@ bool CFSImpl::addCollisionCheckLinkPair
     return (index >= 0 && !isRegistered);
 }
 
+bool CFSImpl::addExtraJoint(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, const double* link1LocalPos, const double* link2LocalPos, const short jointType, const double* jointAxis )
+{
+	BodyPtr body1 = world.body(bodyIndex1);
+	BodyPtr body2 = world.body(bodyIndex2);
+    BodyData& bodyData1 = bodiesData[bodyIndex1];
+	BodyData& bodyData2 = bodiesData[bodyIndex2];
+
+	ExtraJointLinkPairPtr linkPair;
+    if(jointType == Body::EJ_PISTON){
+		linkPair = new ExtraJointLinkPair();
+        linkPair->isSameBodyPair = false;
+        linkPair->isNonContactConstraint = true;
+        
+        // generate two vectors orthogonal to the joint axis
+        Vector3 u = Vector3::Zero();
+        int minElem = 0;
+        Vector3 axis( jointAxis[0], jointAxis[1], jointAxis[2] );
+        for(int k=1; k < 3; k++){
+            if(fabs(axis(k)) < fabs(axis(minElem))){
+                minElem = k;
+            }
+        }
+        u(minElem) = 1.0;
+        linkPair->constraintPoints.resize(2);
+        const Vector3 t1 = axis.cross(u).normalized();
+        linkPair->jointConstraintAxes[0] = t1;
+        linkPair->jointConstraintAxes[1] = axis.cross(t1).normalized();
+            
+    } else if(jointType == Body::EJ_BALL){
+        
+    }
+        
+    if(linkPair){
+        int numConstraints = linkPair->constraintPoints.size();
+        for(int k=0; k < numConstraints; ++k){
+            ConstraintPoint& constraint = linkPair->constraintPoints[k];
+            constraint.numFrictionVectors = 0;
+            constraint.globalFrictionIndex = numeric_limits<int>::max();
+        }
+		linkPair->bodyIndex[0] = bodyIndex1;
+		linkPair->bodyIndex[1] = bodyIndex2;
+		linkPair->link[0] = link1;
+		linkPair->link[1] = link2;
+		getVector3(linkPair->jointPoint[0], link1LocalPos);
+		getVector3(linkPair->jointPoint[1], link2LocalPos);
+        extraJointLinkPairs.push_back(linkPair);
+		return true;
+    }
+
+	return false;
+}
 
 void CFSImpl::initBody(BodyPtr body, BodyData& bodyData)
 {
@@ -498,10 +551,8 @@ void CFSImpl::initExtraJoints(int bodyIndex)
             }
             for(int k=0; k < 2; ++k){
                 linkPair->bodyIndex[k] = bodyIndex;
-                linkPair->bodyData[k] = &bodiesData[bodyIndex];
                 Link* link = bodyExtraJoint.link[k];
                 linkPair->link[k] = link;
-                linkPair->linkData[k] = &(bodyData.linksData[link->index]);
                 linkPair->jointPoint[k] = bodyExtraJoint.point[k];
             }
             extraJointLinkPairs.push_back(linkPair);
@@ -528,8 +579,6 @@ void CFSImpl::initialize(void)
 
     bodiesData.resize(numBodies);
 
-    extraJointLinkPairs.clear();
-
     for(int bodyIndex=0; bodyIndex < numBodies; ++bodyIndex){
 
         BodyPtr body = world.body(bodyIndex);
@@ -555,6 +604,16 @@ void CFSImpl::initialize(void)
     int numLinkPairs = collisionCheckLinkPairs.size();
     for(int i=0; i < numLinkPairs; ++i){
         LinkPair& linkPair = *collisionCheckLinkPairs[i];
+        for(int j=0; j < 2; ++j){
+            BodyData& bodyData = bodiesData[linkPair.bodyIndex[j]];
+            linkPair.bodyData[j] = &bodyData;
+            linkPair.linkData[j] = &(bodyData.linksData[linkPair.link[j]->index]);
+        }
+    }
+
+	numLinkPairs = extraJointLinkPairs.size();
+    for(int i=0; i < numLinkPairs; ++i){
+        LinkPair& linkPair = *extraJointLinkPairs[i];
         for(int j=0; j < 2; ++j){
             BodyData& bodyData = bodiesData[linkPair.bodyIndex[j]];
             linkPair.bodyData[j] = &bodyData;
@@ -2132,6 +2191,11 @@ void ConstraintForceSolver::clearCollisionCheckLinkPairs()
 {
     impl->world.clearCollisionPairs();
     impl->collisionCheckLinkPairs.clear();
+}
+
+bool ConstraintForceSolver::addExtraJoint(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, const double* link1LocalPos, const double* link2LocalPos, const short jointType, const double* jointAxis )
+{
+	return impl->addExtraJoint(bodyIndex1, link1, bodyIndex2, link2, link1LocalPos, link2LocalPos, jointType, jointAxis ); 
 }
 
 

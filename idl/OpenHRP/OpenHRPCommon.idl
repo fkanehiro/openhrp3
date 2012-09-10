@@ -269,6 +269,13 @@ module OpenHRP {
 		oneway void shutdown();
 	};
 
+	/**
+	 * @if jp
+	 * Extra Joint の型
+	 * @endif
+	 */
+	enum ExtraJointType { EJ_PISTON, EJ_BALL };
+
 };
 
 #endif

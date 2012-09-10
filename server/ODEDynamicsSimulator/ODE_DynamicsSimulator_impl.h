@@ -103,6 +103,18 @@ class ODE_DynamicsSimulator_impl : virtual public POA_OpenHRP::DynamicsSimulator
             const char* name2,
             const double tolerance);
 
+	virtual void registerExtraJoint
+		(
+			const char*	charName1,
+			const char*	linkName1,
+			const char*	charName2,
+			const char*	linkName2,
+			const DblSequence3&	link1LocalPos,
+			const DblSequence3&	link2LocalPos,
+			const ExtraJointType jointType,
+			const DblSequence3&	jointAxis,
+			const char*			extraJointName);
+
     virtual void registerVirtualLink
         (
             const char* char1,

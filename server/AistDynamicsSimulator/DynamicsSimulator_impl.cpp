@@ -404,6 +404,50 @@ void DynamicsSimulator_impl::registerIntersectionCheckPair
     }
 }
 
+void DynamicsSimulator_impl::registerExtraJoint
+(
+	const char*	charName1,
+	const char*	linkName1,
+	const char*	charName2,
+	const char*	linkName2,
+	const DblSequence3&	link1LocalPos,
+	const DblSequence3&	link2LocalPos,
+	const ExtraJointType jointType,
+	const DblSequence3&	jointAxis,
+	const char*			extraJointName
+	)
+{
+	if(debugMode){
+		cout << "DynamicsSimulator_impl::registerExtraJoint("
+			<< charName1 << ", " << linkName1 << ", "
+            << charName2 << ", " << linkName2 << "\n"
+			<< jointType << "\n"
+            << "{"
+            << link1LocalPos[CORBA::ULong(0)] << ", "
+            << link1LocalPos[CORBA::ULong(1)] << ", "
+            << link1LocalPos[CORBA::ULong(2)] << "}\n{"
+            << link2LocalPos[CORBA::ULong(0)] << ", "
+            << link2LocalPos[CORBA::ULong(1)] << ", "
+            << link2LocalPos[CORBA::ULong(2)] << "}\n{"
+            << jointAxis[CORBA::ULong(0)] << ", "
+            << jointAxis[CORBA::ULong(1)] << ", "
+            << jointAxis[CORBA::ULong(2)] << "}\n"
+            << extraJointName << ")\n";
+		cout << endl;
+	}
+
+	int bodyIndex1 = world.bodyIndex(charName1);
+    int bodyIndex2 = world.bodyIndex(charName2);
+	if(bodyIndex1 >= 0 && bodyIndex2 >= 0){
+		BodyPtr body1 = world.body(bodyIndex1);
+        BodyPtr body2 = world.body(bodyIndex2);
+		Link* link1 = body1->link(linkName1);
+		Link* link2 = body2->link(linkName2);
+
+		world.constraintForceSolver.addExtraJoint
+			(bodyIndex1, link1, bodyIndex2, link2, link1LocalPos.get_buffer(), link2LocalPos.get_buffer(), jointType, jointAxis.get_buffer() );
+	}
+}
 
 //! \todo implement this method
 void DynamicsSimulator_impl::registerVirtualLink

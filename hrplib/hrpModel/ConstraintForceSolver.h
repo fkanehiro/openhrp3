@@ -36,6 +36,7 @@ namespace hrp
 		
         bool addCollisionCheckLinkPair
 		(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, double muStatic, double muDynamic, double culling_thresh, double restitution, double epsilon);
+		bool addExtraJoint(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, const double* link1LocalPos, const double* link2LocalPos, const short jointType, const double* jointAxis );
 		void clearCollisionCheckLinkPairs();
 
 		void setGaussSeidelParameters(int maxNumIteration, int numInitialIteration, double maxRelError);

@@ -240,6 +240,45 @@ module OpenHRP {
 		 in double tolerance
 		 );
   
+		/**
+		 * @if jp
+		 * @brief 仮想リンクを追加します。
+		 *
+		 * @param	char1			 キャラクタ名
+		 * @param	link1			 リンク名
+		 * @param	char2			 もう一方のキャラクタ名
+		 * @param	link2			 リンク名
+		 * @param	link1LocalPos	 リンク１のローカル座標における拘束位置
+		 * @param   link2LocalPos    リンク２のローカル座標における拘束位置
+		 * @param	jointType		 拘束のタイプ（"piston"のみ実装）
+		 * @param	jointAxis		 リンク１のローカル座標における拘束軸座標
+		 * @param	extraJointName	 Extra Jointの名前
+		 *
+		 * @else
+		 * register Extra Joint
+		 * @param	char1			 Name of character for first link
+		 * @param	link1			 Name of first link
+		 * @param	char2			 Name of character for second link
+		 * @param	link2			 Name of second link
+		 * @param	link1LocalPos	 Constraint position in the local coordinate of the first link
+		 * @param   link2LocalPos    Constraint position in the local coordinate of the second link
+		 * @param	jointType		 Possible types are "piston"
+		 * @param	jointAxis		 Constraint axes in the local coordinate of the first link
+		 * @param	extraJointName	 Name for the extra joint
+		 * @endif
+		 */
+		void registerExtraJoint
+		(
+		 in string				char1,
+		 in string				link1,
+		 in string            	char2,
+		 in string				link2,
+		 in DblSequence3		link1LocalPos,
+		 in DblSequence3 		link2LocalPos,
+		 in ExtraJointType		jointType,
+		 in DblSequence3		jointAxis,
+		 in string				extraJointName
+		 );
 
 		/**
 		 * @if jp

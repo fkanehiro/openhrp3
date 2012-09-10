@@ -81,20 +81,32 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		//	のようにする。		//
 		store.setDefault(PreferenceConstants.ITEM+"."+PreferenceConstants.CLASS,
 				PreferenceConstants.SIMULATIONITEM+PreferenceConstants.SEPARATOR+
-				PreferenceConstants.MODELITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.LINKITEM+PreferenceConstants.SEPARATOR+
-				PreferenceConstants.SHAPEITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.SENSORITEM+PreferenceConstants.SEPARATOR+
-				PreferenceConstants.HWCITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.WORLDSTATEITEM+PreferenceConstants.SEPARATOR+
-				PreferenceConstants.COLLISIONPAIRITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.GRAPHITEM+PreferenceConstants.SEPARATOR+
-				PreferenceConstants.PYTHONSCRIPTITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.PATHPLANNINGALGORITHMITEM+PreferenceConstants.SEPARATOR+
-				PreferenceConstants.SEGMENTITEM+PreferenceConstants.SEPARATOR+PreferenceConstants.EXTRAJOINTITEM);
+				PreferenceConstants.MODELITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.LINKITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.SHAPEITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.SENSORITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.HWCITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.WORLDSTATEITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.COLLISIONPAIRITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.EXTRAJOINTITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.GRAPHITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.PYTHONSCRIPTITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.PATHPLANNINGALGORITHMITEM+PreferenceConstants.SEPARATOR+
+				PreferenceConstants.SEGMENTITEM);
 		store.setDefault(PreferenceConstants.ITEM+"."+PreferenceConstants.VISIBLE,
 				"true"+PreferenceConstants.SEPARATOR+
-				"true"+PreferenceConstants.SEPARATOR+"false"+PreferenceConstants.SEPARATOR+
-				"false"+PreferenceConstants.SEPARATOR+"false"+PreferenceConstants.SEPARATOR+
-				"false"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
-				"true"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
-				"true"+PreferenceConstants.SEPARATOR+"true"+PreferenceConstants.SEPARATOR+
-				"false"+PreferenceConstants.SEPARATOR+"false");
+				"true"+PreferenceConstants.SEPARATOR+
+				"false"+PreferenceConstants.SEPARATOR+
+				"false"+PreferenceConstants.SEPARATOR+
+				"false"+PreferenceConstants.SEPARATOR+
+				"false"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+
+				"true"+PreferenceConstants.SEPARATOR+
+				"false");
 		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASS,"");
 		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.CLASSPATH,"");
 		store.setDefault(PreferenceConstants.USERITEM+"."+PreferenceConstants.VISIBLE,"");
