@@ -54,7 +54,7 @@ void  ODE_World::getGravityAcceleration(dVector3& gravity)
 
 void ODE_World::addBody(OpenHRP::BodyInfo_ptr bodyInfo, const char *name)
 {
-    hrp::BodyPtr body = new hrp::Body();
+    hrp::BodyPtr body(new hrp::Body());
     ODE_loadBodyFromBodyInfo(body, this, bodyInfo);
     body->setName(name);
     

@@ -10,6 +10,11 @@
 
 package com.generalrobotix.ui.item;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -31,10 +36,18 @@ import com.generalrobotix.ui.util.MessageBundle;
 @SuppressWarnings("serial")
 
 public class GrxExtraJointItem extends GrxBaseItem {
-
+	public static final String TITLE = "ExtraJoint";
+	boolean isModel = true;
 	private GrxModelItem model_;
+	private GrxModelItem model1_, model2_;
 	static final String[] extrajointTypeComboItem_ = new String[] { "piston" };
-	private String[] linkComboItem_;
+	
+	public  GrxExtraJointItem(String name, GrxPluginManager manager) {
+		super(name, manager);
+		setIcon("extraJoint.png");
+		isModel = false;
+		model_ = null;
+	}
 	
 	public GrxExtraJointItem(String name, GrxPluginManager manager, GrxModelItem model, ExtraJointInfo extraJointInfo) {
 		super(name, manager);
@@ -93,8 +106,33 @@ public class GrxExtraJointItem extends GrxBaseItem {
 		{
 			return new ValueEditCombo(extrajointTypeComboItem_);
 		}else if( key.equals("link1Name") || key.equals("link2Name") ){
-			linkComboItem_ = model_.getJointNames();
-			return new ValueEditCombo(linkComboItem_);
+			String[] linkComboItem_ = null;
+			if(isModel){
+				if(model_!=null){
+					linkComboItem_ = model_.nameToLink_.keySet().toArray(new String[0]);
+				}
+			}else{
+				if( key.equals("link1Name") ){
+					if(model1_!=null){
+						linkComboItem_ = model1_.nameToLink_.keySet().toArray(new String[0]);
+					}
+				}
+				if( key.equals("link2Name") ){
+					if(model2_!=null){
+						linkComboItem_ = model2_.nameToLink_.keySet().toArray(new String[0]);
+					}
+				}
+			}
+			if(linkComboItem_!=null)
+				return new ValueEditCombo(linkComboItem_);
+			else
+				return super.GetValueEditType(key);
+		}else if( key.equals("object1Name") || key.equals("object2Name") ){
+			if(!isModel){
+				Map<?, ?> m = manager_.pluginMap_.get((GrxModelItem.class));
+			    String[] modelComboItem_ = m.keySet().toArray(new String[0]);
+				return new ValueEditCombo(modelComboItem_);
+			}
 		}
 		return super.GetValueEditType(key);
 	}
@@ -152,14 +190,32 @@ public class GrxExtraJointItem extends GrxBaseItem {
 			if (model_ != null) model_.notifyModified();
 		}else if(property.equals("jointAxis")){
 			jointAxis(value);
+		}else if(property.equals("object1Name")){
+			setProperty("object1Name", value);
+			model1_ = (GrxModelItem)(manager_.getItem( GrxModelItem.class, value ));
+		}else if(property.equals("object2Name")){
+			setProperty("object2Name", value);
+			model2_ = (GrxModelItem)(manager_.getItem( GrxModelItem.class, value ));
 		}else
 			return false;
 		return true;
 	}
 	
 	public void delete(){
-		model_.removeExtraJoint(this);
+		if(isModel && model_!=null)
+			model_.removeExtraJoint(this);
 		super.delete();
 	}
 	
+	public boolean create() {
+		setProperty("object1Name", "");
+		setProperty("object2Name", "");
+		setProperty("link1Name", "");
+		setProperty("link2Name", "");
+		setProperty("link1LocalPos", "0.0 0.0 0.0");
+		setProperty("link2LocalPos", "0.0 0.0 0.0");
+		setProperty("jointType", "piston");
+		setProperty("jointAxis", "0 0 1");
+		return true;
+	}
 }

@@ -393,6 +393,19 @@ void ODE_DynamicsSimulator_impl::registerIntersectionCheckPair
     }
 }
 
+void ODE_DynamicsSimulator_impl::registerExtraJoint
+		(
+			const char*	charName1,
+			const char*	linkName1,
+			const char*	charName2,
+			const char*	linkName2,
+			const DblSequence3&	link1LocalPos,
+			const DblSequence3&	link2LocalPos,
+			const ExtraJointType jointType,
+			const DblSequence3&	jointAxis,
+			const char*			extraJointName)
+{
+}
 
 //! \todo implement this method
 void ODE_DynamicsSimulator_impl::registerVirtualLink

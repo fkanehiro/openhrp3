@@ -31,6 +31,7 @@ import jp.go.aist.hrp.simulator.ControllerHelper;
 import jp.go.aist.hrp.simulator.DynamicsSimulator;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorFactory;
 import jp.go.aist.hrp.simulator.DynamicsSimulatorFactoryHelper;
+import jp.go.aist.hrp.simulator.ExtraJointType;
 import jp.go.aist.hrp.simulator.SensorStateHolder;
 import jp.go.aist.hrp.simulator.ViewSimulator;
 import jp.go.aist.hrp.simulator.ViewSimulatorHelper;
@@ -693,6 +694,26 @@ public class GrxSimulationItem extends GrxBaseItem {
     					item.getDblAry("damperConstant",new double[]{0.0,0.0,0.0,0.0,0.0,0.0}), //$NON-NLS-1$
     					item.getDbl("cullingThresh", 0.01),  //$NON-NLS-1$
                         item.getDbl("Restitution", 0.0));
+    		}
+    		// SET Extra Joint 
+    		List<GrxBaseItem> extraJoints = manager_.getSelectedItemList(GrxExtraJointItem.class);
+    		for (int i=0; i<extraJoints.size(); i++) {
+    			GrxExtraJointItem item = (GrxExtraJointItem) extraJoints.get(i);
+    			ExtraJointType jointType = ExtraJointType.EJ_PISTON;
+    			if(item.getStr("jointType","").equals("piston"))
+    				jointType = ExtraJointType.EJ_PISTON;
+    			else
+    				;
+    			currentDynamics_.registerExtraJoint(
+    					item.getStr("object1Name", ""),  //$NON-NLS-1$ //$NON-NLS-2$
+    					item.getStr("link1Name", ""),  //$NON-NLS-1$ //$NON-NLS-2$
+    					item.getStr("object2Name", ""), //$NON-NLS-1$ //$NON-NLS-2$
+    					item.getStr("link2Name", ""),  //$NON-NLS-1$ //$NON-NLS-2$
+    					item.getDblAry("link1LocalPos", new double[]{0.0,0.0,0.0}), //$NON-NLS-1$
+    					item.getDblAry("link2LocalPos", new double[]{0.0,0.0,0.0}), //$NON-NLS-1$
+    					jointType,
+    					item.getDblAry("jointAxis", new double[]{0.0,0.0,0.0}),
+    					item.getName());
     		}
     		currentDynamics_.initSimulation();
 	            

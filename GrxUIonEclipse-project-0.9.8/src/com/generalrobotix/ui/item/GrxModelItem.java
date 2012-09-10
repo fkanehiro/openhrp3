@@ -69,7 +69,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     public Vector<GrxExtraJointItem> extraJoints_ = new Vector<GrxExtraJointItem>();
     // jontId -> link
     private int[] jointToLink_; 
-    private Map<String, GrxLinkItem> nameToLink_ = new HashMap<String, GrxLinkItem>();
+    public Map<String, GrxLinkItem> nameToLink_ = new HashMap<String, GrxLinkItem>();
     
     // list of cameras
     private List<Camera_impl> cameraList_ = new ArrayList<Camera_impl>();
@@ -1290,6 +1290,17 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 				item.delete();
 			}
         }
+        m = manager_.pluginMap_.get((GrxExtraJointItem.class));
+        GrxExtraJointItem[] extraJointItems = m.values().toArray(new GrxExtraJointItem[0]);
+        for (int i=0; i<extraJointItems.length; i++) {
+			GrxExtraJointItem item = extraJointItems[i];
+			String name = getName();
+			if(name.equals(item.getStr("object1Name", ""))){ //$NON-NLS-1$ //$NON-NLS-2$
+				item.delete();
+			}else if(name.equals(item.getStr("object2Name", ""))){ //$NON-NLS-1$ //$NON-NLS-2$
+				item.delete();
+			}
+        }
         GrxLinkItem root = rootLink();
         if(root != null)
         	root.delete();
@@ -1614,6 +1625,20 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
         		if(oldName.equals(ci.getProperty("objectName2")))
         			ci.setProperty("objectName2", newName);
+        	}
+        }
+        mcoll = manager_.pluginMap_.get(GrxExtraJointItem.class);
+        if(mcoll != null)
+        {
+        	Iterator it = mcoll.values().iterator();
+        	while(it.hasNext())
+        	{
+        		GrxExtraJointItem extraJoint = (GrxExtraJointItem) it.next();
+        		if(oldName.equals(extraJoint.getProperty("object1Name")))
+        			extraJoint.setProperty("object1Name", newName);
+
+        		if(oldName.equals(extraJoint.getProperty("object2Name")))
+        			extraJoint.setProperty("object2Name", newName);
         	}
         }
 	}
