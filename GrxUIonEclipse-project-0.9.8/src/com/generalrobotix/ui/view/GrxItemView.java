@@ -27,10 +27,12 @@ import java.util.Iterator;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.IViewerLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -56,6 +58,7 @@ import com.generalrobotix.ui.item.GrxHwcItem;
 import com.generalrobotix.ui.item.GrxLinkItem;
 import com.generalrobotix.ui.item.GrxModeInfoItem;
 import com.generalrobotix.ui.item.GrxModelItem;
+import com.generalrobotix.ui.item.GrxProjectItem;
 import com.generalrobotix.ui.item.GrxSegmentItem;
 import com.generalrobotix.ui.item.GrxSensorItem;
 import com.generalrobotix.ui.item.GrxTransformItem;
@@ -91,10 +94,9 @@ public class GrxItemView extends GrxBaseView {
 		Tree t = tv.getTree();
 		
 		// When an item is left-clicked, the item becomes "current item".
-		t.addListener(SWT.Selection, new Listener() {
-			public void handleEvent (Event event){
-				try{
-					ISelection selection = tv.getSelection();
+		tv.addSelectionChangedListener(new ISelectionChangedListener() {
+			   public void selectionChanged(SelectionChangedEvent event) {
+				   ISelection selection = event.getSelection();
 					for (Object o : ((IStructuredSelection) selection).toArray() ){
 						if ( GrxBaseItem.class.isAssignableFrom(o.getClass()) ){
 							manager_.focusedItem((GrxBaseItem)o);
@@ -102,12 +104,8 @@ public class GrxItemView extends GrxBaseView {
 							manager_.focusedItem(manager_.getProject());
 						}
 					}
-				}catch(Exception ex){
-					ex.printStackTrace();
-				}
-			}
-		});
-		
+			   }		
+			});
 		// ダブルクリックでアイテムの選択状態をトグル
 		t.addListener ( SWT.DefaultSelection, new Listener () {
 			public void handleEvent (Event event) {
@@ -170,6 +168,7 @@ public class GrxItemView extends GrxBaseView {
 		Iterator<GrxBasePlugin> it0 = baseItems_.iterator();
 		while(it0.hasNext())
 			it0.next().deleteObserver(this);
+		baseItems_.clear();
 		GrxModeInfoItem mode = manager_.getMode();
         Iterator<Class<? extends GrxBaseItem>> it = mode.activeItemClassList_.listIterator();
         while (it.hasNext()){
@@ -191,7 +190,9 @@ public class GrxItemView extends GrxBaseView {
 	        	}
         	}
         }
-        manager_.getProject().addObserver(this);
+        GrxProjectItem projectItem = manager_.getProject();
+        if(!projectItem.getObserver().contains(this))
+        	projectItem.addObserver(this);
         updateTree();
 	}
 	

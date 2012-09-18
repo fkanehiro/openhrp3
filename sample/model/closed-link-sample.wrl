@@ -112,8 +112,8 @@ PROTO ExtraJoint [
  # in the local coordinate of the first link
  #exposedField MFVec3f  axes [ ]
  
- # Possible types are "piston" and "ball"
- exposedField SFString jointType "piston"
+ # Possible types are "xyz","xy","z"
+ exposedField SFString jointType "xyz"
  exposedField SFVec3f  jointAxis 1 0 0
 
 ]
@@ -127,7 +127,7 @@ DEF J1J3 ExtraJoint {
   link2Name "J3"
   link1LocalPos 0.2 0 0
   link2LocalPos 0 0.1 0
-  jointType "piston"
+  jointType "xy"
   jointAxis 0 0 1
 }
 

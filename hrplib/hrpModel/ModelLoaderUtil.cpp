@@ -599,13 +599,15 @@ void ModelLoaderHelper::setExtraJoints()
         joint.link[1] = body->link(string(extraJointInfo.link[1]));
 
 		ExtraJointType jointType = extraJointInfo.jointType;
-        if(jointType == OpenHRP::EJ_PISTON){
-            joint.type = Body::EJ_PISTON;
-			joint.axis = Vector3(extraJointInfo.axis[0], extraJointInfo.axis[1], extraJointInfo.axis[2] );
-        } else if(jointType == OpenHRP::EJ_BALL){
-            joint.type = Body::EJ_BALL;
-        }
+        if(jointType == OpenHRP::EJ_XY){
+            joint.type = Body::EJ_XY;	
+        }else if(jointType == OpenHRP::EJ_XYZ){
+            joint.type = Body::EJ_XYZ;
+        }else if(jointType == OpenHRP::EJ_Z){
+            joint.type = Body::EJ_Z;
+		}
 
+		joint.axis = Vector3(extraJointInfo.axis[0], extraJointInfo.axis[1], extraJointInfo.axis[2] );
 		joint.point[0] = Vector3(extraJointInfo.point[0][0], extraJointInfo.point[0][1], extraJointInfo.point[0][2] );
 		joint.point[1] = Vector3(extraJointInfo.point[1][0], extraJointInfo.point[1][1], extraJointInfo.point[1][2] );
             

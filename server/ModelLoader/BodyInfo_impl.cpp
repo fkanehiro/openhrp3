@@ -240,15 +240,16 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
  
 		string jointType;
 		copyVrmlField( f, "jointType", jointType);
-        if(jointType == "piston"){
-			extraJointInfo->jointType = EJ_PISTON;
-            copyVrmlField( f, "jointAxis", extraJointInfo->axis );
-        } else if(jointType == "ball"){
-           extraJointInfo->jointType = EJ_BALL;
-        } else {
+        if(jointType == "xy"){
+		   extraJointInfo->jointType = EJ_XY;
+        } else if(jointType == "xyz"){
+           extraJointInfo->jointType = EJ_XYZ;
+        } else if(jointType == "z"){
+           extraJointInfo->jointType = EJ_Z;
+        }else {
             throw ModelNodeSet::Exception(str(format("JointType \"%1%\" is not supported.") % jointType));
         }
-            
+        copyVrmlField( f, "jointAxis", extraJointInfo->axis );    
 		copyVrmlField( f, "link1LocalPos", extraJointInfo->point[0] );
 		copyVrmlField( f, "link2LocalPos", extraJointInfo->point[1] );
 	

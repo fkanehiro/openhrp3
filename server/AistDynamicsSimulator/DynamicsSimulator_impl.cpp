@@ -450,55 +450,16 @@ void DynamicsSimulator_impl::registerExtraJoint
 }
 
 //! \todo implement this method
-void DynamicsSimulator_impl::registerVirtualLink
-(
-    const char*			char1,
-    const char*			link1,
-    const char*			char2,
-    const char*			link2,
-    const LinkPosition&	relTransform,
-    CORBA::Short			transformDefined,
-    const DblSequence9&		constraint,
-    const char*			connectionName
-    )
-{
-    if(debugMode){
-        cout << "DynamicsSimulator_impl::registerVirtualLink("
-             << char1 << ", " << link1 << ", "
-             << char2 << ", " << link2 << ", ("
-             << relTransform.p[0] << ", "
-             << relTransform.p[1] << ", "
-             << relTransform.p[2] << ",\n"
-             << relTransform.R[0] << ", " << relTransform.R[1] << ", " << relTransform.R[2] << "\n "
-             << relTransform.R[3] << ", " << relTransform.R[4] << ", " << relTransform.R[5] << "\n "
-             << relTransform.R[6] << ", " << relTransform.R[7] << ", " << relTransform.R[8] << "),\n"
-             << transformDefined << ",\n{"
-             << constraint[CORBA::ULong(0)] << ", "
-             << constraint[CORBA::ULong(1)] << ", "
-             << constraint[CORBA::ULong(2)] << "}\n{"
-             << constraint[CORBA::ULong(3)] << ", "
-             << constraint[CORBA::ULong(4)] << ", "
-             << constraint[CORBA::ULong(5)] << "}\n{"
-             << constraint[CORBA::ULong(6)] << ", "
-             << constraint[CORBA::ULong(7)] << ", "
-             << constraint[CORBA::ULong(8)] << "}\n"
-             << connectionName << ")\n";
-        cout << "To Be Implemented" << endl;
-    }
-}
-
-
-//! \todo implement this method
-void DynamicsSimulator_impl::getConnectionConstraintForce
+void DynamicsSimulator_impl::getExtraJointConstraintForce
 (
     const char * characterName,
-    const char * connectionName,
+    const char * extraJointName,
     DblSequence6_out contactForce
     )
 {
     if(debugMode){
         cout << "DynamicsSimulator_impl::getConnectionConstraintForce("
-             << characterName << ", " << connectionName << ")" << endl;
+             << characterName << ", " << extraJointName << ")" << endl;
     }
 }
 

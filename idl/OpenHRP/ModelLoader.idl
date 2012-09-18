@@ -473,7 +473,7 @@ module OpenHRP {
   {	
 	 ///  Extra Joint name
 	 string        name;
-	 /// Possible types are "piston" and "ball"
+	 /// Possible types are "xyz","xy","z"
 	 ExtraJointType jointType;
 	 /// Constraint axes. Two or three orthogonal axes must be specifiedin the local coordinate of the first link
      DblArray3		axis;	

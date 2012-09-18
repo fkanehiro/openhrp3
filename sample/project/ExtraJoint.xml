@@ -80,7 +80,7 @@
             <property name="object2Name" value="sample"/>
             <property name="object1Name" value="rod"/>
             <property name="link2Name" value="LARM_WRIST_R"/>
-            <property name="jointType" value="piston"/>
+            <property name="jointType" value="xyz"/>
             <property name="link1Name" value="root"/>
             <property name="link2LocalPos" value="0 0 -0.2 "/>
         </item>
@@ -90,7 +90,7 @@
             <property name="object2Name" value="sample"/>
             <property name="object1Name" value="rod"/>
             <property name="link2Name" value="RARM_WRIST_R"/>
-            <property name="jointType" value="piston"/>
+            <property name="jointType" value="xyz"/>
             <property name="link1Name" value="root"/>
             <property name="link2LocalPos" value="0 0 -0.2 "/>
         </item>
