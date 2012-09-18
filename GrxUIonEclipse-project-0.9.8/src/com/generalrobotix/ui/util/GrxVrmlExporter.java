@@ -235,7 +235,7 @@ public class GrxVrmlExporter {
 	        writer.write("  exposedField SFString 	link2Name 		\"\"\n");
 	        writer.write("  exposedField SFVec3f  	link1LocalPos	0 0 0\n");	
 	        writer.write("  exposedField SFVec3f  	link2LocalPos	0 0 0\n");
-	        writer.write("  exposedField SFString 	jointType 		\"piston\"\n");
+	        writer.write("  exposedField SFString 	jointType 		\"xyz\"\n");
 	        writer.write("  exposedField SFVec3f	jointAxis 		1 0 0\n");
 	        writer.write("]\n");
 	        writer.write("{\n");

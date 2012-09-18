@@ -250,7 +250,7 @@ module OpenHRP {
 		 * @param	link2			 リンク名
 		 * @param	link1LocalPos	 リンク１のローカル座標における拘束位置
 		 * @param   link2LocalPos    リンク２のローカル座標における拘束位置
-		 * @param	jointType		 拘束のタイプ（"piston"のみ実装）
+		 * @param	jointType		 拘束のタイプ
 		 * @param	jointAxis		 リンク１のローカル座標における拘束軸座標
 		 * @param	extraJointName	 Extra Jointの名前
 		 *
@@ -262,7 +262,7 @@ module OpenHRP {
 		 * @param	link2			 Name of second link
 		 * @param	link1LocalPos	 Constraint position in the local coordinate of the first link
 		 * @param   link2LocalPos    Constraint position in the local coordinate of the second link
-		 * @param	jointType		 Possible types are "piston"
+		 * @param	jointType		 Constraint type
 		 * @param	jointAxis		 Constraint axes in the local coordinate of the first link
 		 * @param	extraJointName	 Name for the extra joint
 		 * @endif
@@ -282,66 +282,26 @@ module OpenHRP {
 
 		/**
 		 * @if jp
-		 * @brief 仮想リンクを追加します。
-		 *
-		 * @note 実装されていません。
-		 * @param	char1			 キャラクタ名
-		 * @param	link1			 リンク名
-		 * @param	char2			 もう一方のキャラクタ名
-		 * @param	link2			 リンク名
-		 * @param	relTransform	 ふたつのリンク関係の回転/位置のクォータニアン
-		 * @param   transformDefined どちらの変換が使用されるか
-		 * @param	constraint		 拘束する自由度
-		 * @param	connectionName	 仮想リンクの名前
-		 *
-		 * @else
-		 * register Virtual Link
-		 * @param	char1			 Name of character for first link
-		 * @param	link1			 Name of first link
-		 * @param	char2			 Name of character for second link
-		 * @param	link2			 Name of second link
-		 * @param	relTransform	 relative pos+att as quaternion transform
-		 * @param   transformDefined Flag for whether tranform is defined.
-		 * @param	constraint		 Constraints to be included in Link.
-		 * @param	connectionName	 Name for the virtual link.
-		 * Unimplemented
-		 * @endif
-		 */
-		void registerVirtualLink
-		(
-		 in string				char1,
-		 in string				link1,
-		 in string            	char2,
-		 in string				link2,
-		 in LinkPosition 		relTransform,
-		 in short				transformDefined,
-		 in DblSequence9		constraint,
-		 in string				connectionName
-		 );
-	
-
-		/**
-		 * @if jp
-		 * @brief registerVirtualLink() で登録した拘束にかかる力を取得します。
+		 * @brief registerExtraJoint() で登録した拘束にかかる力を取得します。
 		 *
 		 * @note 実装されていません
 		 * @param	characterName   キャラクタ名
-		 * @param	connectionName  コネクション名
+		 * @param	extraJointName  extraJoint名
 		 * @param	contactForce    拘束にかかる力
 		 *
 		 * @else
 		 * Get Connection Constraint Force
 		 *
 		 * @param	characterName   Character Name
-		 * @param	connectionName  Connection Name
+		 * @param	extraJointNamee extraJoint Name
 		 * @param	contactForce    Connection Contraint Force
 		 * unimplemented
 		 * @endif
 		 */
-		void getConnectionConstraintForce
+		void getExtraJointConstraintForce
 		(
 		 in  string		characterName,
-		 in  string		connectionName,
+		 in  string		extraJointName,
 		 out DblSequence6	contactForce
 		 );
 

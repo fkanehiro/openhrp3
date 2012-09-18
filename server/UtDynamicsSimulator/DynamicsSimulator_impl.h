@@ -115,20 +115,10 @@ using namespace OpenHRP;
 			const DblSequence3&	jointAxis,
 			const char*			extraJointName);
 
-		virtual void registerVirtualLink(
-				const char* char1,
-				const char* link1,
-				const char* char2,
-				const char* link2,
-				const LinkPosition& relTransform,
-				CORBA::Short transformDefined,
-				const DblSequence9& constraint,
-				const char* connectionName);
-
 		// TODO
-		virtual void getConnectionConstraintForce(
+		virtual void getExtraJointConstraintForce(
 				const char* characterName, 
-				const char* connectionName, 
+				const char* extraJointName, 
 				DblSequence6_out contactForce);
 
 		virtual void getCharacterSensorValues(

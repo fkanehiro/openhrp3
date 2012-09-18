@@ -699,11 +699,13 @@ public class GrxSimulationItem extends GrxBaseItem {
     		List<GrxBaseItem> extraJoints = manager_.getSelectedItemList(GrxExtraJointItem.class);
     		for (int i=0; i<extraJoints.size(); i++) {
     			GrxExtraJointItem item = (GrxExtraJointItem) extraJoints.get(i);
-    			ExtraJointType jointType = ExtraJointType.EJ_PISTON;
-    			if(item.getStr("jointType","").equals("piston"))
-    				jointType = ExtraJointType.EJ_PISTON;
-    			else
-    				;
+    			ExtraJointType jointType = ExtraJointType.EJ_XYZ;
+    			if(item.getStr("jointType","").equals("xyz"))
+    				jointType = ExtraJointType.EJ_XYZ;
+    			else if(item.getStr("jointType","").equals("xy"))
+    				jointType = ExtraJointType.EJ_XY;
+    			else if(item.getStr("jointType","").equals("z"))
+    				jointType = ExtraJointType.EJ_Z;
     			currentDynamics_.registerExtraJoint(
     					item.getStr("object1Name", ""),  //$NON-NLS-1$ //$NON-NLS-2$
     					item.getStr("link1Name", ""),  //$NON-NLS-1$ //$NON-NLS-2$

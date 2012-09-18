@@ -241,7 +241,7 @@ namespace hrp {
         bool installCustomizer();
         bool installCustomizer(BodyCustomizerInterface* customizerInterface);
 
-		enum ExtraJointType { EJ_PISTON, EJ_BALL };
+		enum ExtraJointType { EJ_XYZ, EJ_XY, EJ_Z };
 
         struct ExtraJoint {
 			std::string name;

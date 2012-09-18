@@ -439,17 +439,11 @@ bool CFSImpl::addCollisionCheckLinkPair
 
 bool CFSImpl::addExtraJoint(int bodyIndex1, Link* link1, int bodyIndex2, Link* link2, const double* link1LocalPos, const double* link2LocalPos, const short jointType, const double* jointAxis )
 {
-	BodyPtr body1 = world.body(bodyIndex1);
-	BodyPtr body2 = world.body(bodyIndex2);
-    BodyData& bodyData1 = bodiesData[bodyIndex1];
-	BodyData& bodyData2 = bodiesData[bodyIndex2];
-
 	ExtraJointLinkPairPtr linkPair;
-    if(jointType == Body::EJ_PISTON){
-		linkPair = new ExtraJointLinkPair();
-        linkPair->isSameBodyPair = false;
-        linkPair->isNonContactConstraint = true;
-        
+	linkPair = new ExtraJointLinkPair();
+	linkPair->isSameBodyPair = false;
+    linkPair->isNonContactConstraint = true;
+    if(jointType == Body::EJ_XY){ 
         // generate two vectors orthogonal to the joint axis
         Vector3 u = Vector3::Zero();
         int minElem = 0;
@@ -465,9 +459,15 @@ bool CFSImpl::addExtraJoint(int bodyIndex1, Link* link1, int bodyIndex2, Link* l
         linkPair->jointConstraintAxes[0] = t1;
         linkPair->jointConstraintAxes[1] = axis.cross(t1).normalized();
             
-    } else if(jointType == Body::EJ_BALL){
-        
-    }
+    } else if(jointType == Body::EJ_XYZ){
+		linkPair->constraintPoints.resize(3);
+		linkPair->jointConstraintAxes[0] = Vector3(1.0, 0.0, 0.0);
+        linkPair->jointConstraintAxes[1] = Vector3(0.0, 1.0, 0.0);
+		linkPair->jointConstraintAxes[2] = Vector3(0.0, 0.0, 1.0);
+    } else if(jointType == Body::EJ_Z){
+		linkPair->constraintPoints.resize(1);
+		linkPair->jointConstraintAxes[0] = Vector3(jointAxis[0], jointAxis[1], jointAxis[2]);
+	}
         
     if(linkPair){
         int numConstraints = linkPair->constraintPoints.size();
@@ -512,13 +512,12 @@ void CFSImpl::initBody(BodyPtr body, BodyData& bodyData)
 void CFSImpl::initExtraJoints(int bodyIndex)
 {
     BodyPtr body = world.body(bodyIndex);
-    BodyData& bodyData = bodiesData[bodyIndex];
     int numExtraJoints = body->extraJoints.size();
     for(size_t j=0; j < numExtraJoints; ++j){
 
         Body::ExtraJoint& bodyExtraJoint = body->extraJoints[j];
         ExtraJointLinkPairPtr linkPair;
-        if(bodyExtraJoint.type == Body::EJ_PISTON){
+        if(bodyExtraJoint.type == Body::EJ_XY){
             linkPair = new ExtraJointLinkPair();
             linkPair->isSameBodyPair = true;
             linkPair->isNonContactConstraint = true;
@@ -538,9 +537,15 @@ void CFSImpl::initExtraJoints(int bodyIndex)
             linkPair->jointConstraintAxes[0] = t1;
             linkPair->jointConstraintAxes[1] = axis.cross(t1).normalized();
             
-        } else if(bodyExtraJoint.type == Body::EJ_BALL){
-            
-        }
+        } else if(bodyExtraJoint.type == Body::EJ_XYZ){
+			linkPair->constraintPoints.resize(3);
+			linkPair->jointConstraintAxes[0] = Vector3(1.0, 0.0, 0.0);
+			linkPair->jointConstraintAxes[1] = Vector3(0.0, 1.0, 0.0);
+			linkPair->jointConstraintAxes[2] = Vector3(0.0, 0.0, 1.0);
+		} else if(bodyExtraJoint.type == Body::EJ_Z){
+			linkPair->constraintPoints.resize(1);
+			linkPair->jointConstraintAxes[0] = bodyExtraJoint.axis;
+		}
         
         if(linkPair){
             int numConstraints = linkPair->constraintPoints.size();
@@ -990,8 +995,6 @@ void CFSImpl::setExtraJointConstraintPoints(ExtraJointLinkPairPtr& linkPair)
     Vector3 point[2];
 	point[0].noalias() = link0->p + link0->attitude() * linkPair->jointPoint[0];
     point[1].noalias() = link1->p + link1->attitude() * linkPair->jointPoint[1];
-    Vector3 midPoint = (point[0] + point[1]) / 2.0;
-    Vector3 error = midPoint - point[0];
 
     /*
     if(error.squaredNorm() > (0.04 * 0.04)){
@@ -1015,10 +1018,10 @@ void CFSImpl::setExtraJointConstraintPoints(ExtraJointLinkPairPtr& linkPair)
     for(int i=0; i < n; ++i){
         ConstraintPoint& constraint = constraintPoints[i]; 
 		const Vector3 axis = link0->attitude() * linkPair->jointConstraintAxes[i];
-        constraint.point = midPoint;
+        constraint.point = point[1];
         constraint.normalTowardInside[0] =  axis;
         constraint.normalTowardInside[1] = -axis;
-        constraint.depth = axis.dot(error);
+        constraint.depth = axis.dot(point[1] - point[0]);
         constraint.globalIndex = globalNumConstraintVectors++;
         constraint.normalProjectionOfRelVelocityOn0 = constraint.normalTowardInside[1].dot(relVelocityOn0);
     }

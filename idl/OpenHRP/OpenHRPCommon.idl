@@ -274,7 +274,7 @@ module OpenHRP {
 	 * Extra Joint の型
 	 * @endif
 	 */
-	enum ExtraJointType { EJ_PISTON, EJ_BALL };
+	enum ExtraJointType { EJ_XYZ, EJ_XY, EJ_Z };
 
 };
 

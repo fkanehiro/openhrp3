@@ -40,7 +40,7 @@ public class GrxExtraJointItem extends GrxBaseItem {
 	boolean isModel = true;
 	private GrxModelItem model_;
 	private GrxModelItem model1_, model2_;
-	static final String[] extrajointTypeComboItem_ = new String[] { "piston" };
+	static final String[] extrajointTypeComboItem_ = new String[] { "xyz", "xy", "z" };
 	
 	public  GrxExtraJointItem(String name, GrxPluginManager manager) {
 		super(name, manager);
@@ -58,10 +58,12 @@ public class GrxExtraJointItem extends GrxBaseItem {
 			setProperty("link2Name", extraJointInfo.link[1]);
 			setDblAry("link1LocalPos", extraJointInfo.point[0], 4);
 			setDblAry("link2LocalPos", extraJointInfo.point[1], 4);
-			if(extraJointInfo.jointType == ExtraJointType.EJ_PISTON){
-				setProperty("jointType", "piston");
-			}else if(extraJointInfo.jointType == ExtraJointType.EJ_BALL){
-				setProperty("jointType", "ball");
+			if(extraJointInfo.jointType == ExtraJointType.EJ_XYZ){
+				setProperty("jointType", "xyz");
+			}else if(extraJointInfo.jointType == ExtraJointType.EJ_XY){
+				setProperty("jointType", "xy");
+			}else if(extraJointInfo.jointType == ExtraJointType.EJ_Z){
+				setProperty("jointType", "z");
 			}
 			setDblAry("jointAxis", extraJointInfo.axis, 4);
 		}else{
@@ -69,7 +71,7 @@ public class GrxExtraJointItem extends GrxBaseItem {
 			setProperty("link2Name", "");
 			setProperty("link1LocalPos", "0.0 0.0 0.0");
 			setProperty("link2LocalPos", "0.0 0.0 0.0");
-			setProperty("jointType", "piston");
+			setProperty("jointType", "xyz");
 			setProperty("jointAxis", "0 0 1");
 		}
     	
@@ -214,7 +216,7 @@ public class GrxExtraJointItem extends GrxBaseItem {
 		setProperty("link2Name", "");
 		setProperty("link1LocalPos", "0.0 0.0 0.0");
 		setProperty("link2LocalPos", "0.0 0.0 0.0");
-		setProperty("jointType", "piston");
+		setProperty("jointType", "xyz");
 		setProperty("jointAxis", "0 0 1");
 		return true;
 	}
