@@ -13,9 +13,9 @@ namespace hrp {
     
     class Link;
     
-    ColdetLinkPair::ColdetLinkPair(Link* link1, Link* link2)
-     : ColdetModelPair(link1->coldetModel, link2->coldetModel) {
-        links[0] = link1;
+	ColdetLinkPair::ColdetLinkPair(Link* link1, Link* link2, double tolerance)
+	 : ColdetModelPair(link1->coldetModel, link2->coldetModel, tolerance) {
+		links[0] = link1;
         links[1] = link2;
     }
     
