@@ -16,7 +16,7 @@ namespace hrp {
     class HRPMODEL_API ColdetLinkPair : public ColdetModelPair
     {
       public:
-        ColdetLinkPair(Link* link1, Link* link2);
+        ColdetLinkPair(Link* link1, Link* link2, double tolerance=0);
         
         ColdetLinkPair(const ColdetLinkPair& org);
         
