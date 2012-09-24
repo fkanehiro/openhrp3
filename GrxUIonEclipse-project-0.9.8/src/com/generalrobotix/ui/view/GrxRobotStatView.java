@@ -26,7 +26,10 @@ import java.util.Vector;
 
 import jp.go.aist.hrp.simulator.SensorState;
 
+import org.eclipse.jface.layout.AbstractColumnLayout;
+import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
@@ -105,10 +108,13 @@ public class GrxRobotStatView extends GrxBaseView {
     
     private static final int COMBO_WIDTH = 100;
     private int [][] columnWidth_ = new int[][]{
+    		{5,16,11,11,11,7,7,7,7,9,9},
+    		{22,13,13,13,13,13,13},
     		{30,90,60,60,60,40,40,40,40,50,50},
     		{110,75,75,75,75,75,75}
     };
-    private Composite viewPanel_;
+    private Composite[] viewPanel_ = new Composite[2];
+    private Composite mainPanel_;
     
     public GrxRobotStatView(String name, GrxPluginManager manager, GrxBaseViewPart vp, Composite parent) {
         super(name, manager,vp,parent);
@@ -120,14 +126,14 @@ public class GrxRobotStatView extends GrxBaseView {
         blue_ = Activator.getDefault().getColor("blue");
         yellow_ = Activator.getDefault().getColor("yellow");
         
-        Composite mainPanel = new Composite(composite_, SWT.NONE);
+        mainPanel_ = new Composite(composite_, SWT.NONE);
         GridLayout gridLayout = new GridLayout(1,false);
         gridLayout.marginHeight = 0;
         gridLayout.verticalSpacing = 0;
-        mainPanel.setLayout(gridLayout);
+        mainPanel_.setLayout(gridLayout);
         modelList_ = new ArrayList<GrxModelItem>();
 
-        comboModelName_ = new Combo(mainPanel,SWT.READ_ONLY);
+        comboModelName_ = new Combo(mainPanel_,SWT.READ_ONLY);
         GridData gridData = new GridData();
         gridData.widthHint = COMBO_WIDTH;
         comboModelName_.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -156,16 +162,19 @@ public class GrxRobotStatView extends GrxBaseView {
         		{ SWT.LEFT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT, SWT.RIGHT },
         };
 
-        viewPanel_ = new Composite(mainPanel, SWT.NONE);
-        viewPanel_.setLayoutData(new GridData(GridData.FILL_BOTH));
-        GridLayout gridLayout1 = new GridLayout();
-        gridLayout1.marginHeight = 0;
-        gridLayout1.marginWidth = 0;
-        gridLayout1.horizontalSpacing = 0;
-        gridLayout1.verticalSpacing = 0;
-        viewPanel_.setLayout(gridLayout1);
-        jointTV_ = new TableViewer(viewPanel_,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);
-        sensorTV_ = new TableViewer(viewPanel_,SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);    
+        for(int i=0; i<2; i++){
+	        viewPanel_[i] = new Composite(mainPanel_, SWT.NONE);
+	        viewPanel_[i].setLayoutData(new GridData(GridData.FILL_BOTH));
+	        GridLayout gridLayout1 = new GridLayout();
+	        gridLayout1.marginHeight = 0;
+	        gridLayout1.marginWidth = 0;
+	        gridLayout1.horizontalSpacing = 0;
+	        gridLayout1.verticalSpacing = 0;
+	        viewPanel_[i].setLayout(gridLayout1);
+        }
+             
+        jointTV_ = new TableViewer(viewPanel_[0],SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);
+        sensorTV_ = new TableViewer(viewPanel_[1],SWT.BORDER|SWT.FULL_SELECTION|SWT.VIRTUAL);    
 
         jointTV_.setContentProvider(new ArrayContentProvider());
         sensorTV_.setContentProvider(new ArrayContentProvider());
@@ -174,12 +183,14 @@ public class GrxRobotStatView extends GrxBaseView {
         sensorTV_.setLabelProvider(new SensorTableLabelProvider());
         
         viewers_ = new TableViewer[]{jointTV_,sensorTV_};
+        TableColumnLayout[] layout = new TableColumnLayout[2];
         for(int i=0;i<viewers_.length;i++){
+        	layout[i] = new TableColumnLayout();
             for(int j=0;j<header[i].length;j++){
                 TableColumn column = new TableColumn(viewers_[i].getTable(),SWT.NULL);
                 column.setText(header[i][j]);
                 column.setAlignment(alignment[i][j]);
-                column.setWidth(columnWidth_[i][j]);
+                layout[i].setColumnData(column, new ColumnWeightData(columnWidth_[i][j],columnWidth_[i+2][j]));
                 if(i==0)
 	                column.addControlListener(new ControlListener(){
 						public void controlMoved(ControlEvent e) {
@@ -191,7 +202,19 @@ public class GrxRobotStatView extends GrxBaseView {
 							setInt("jcolumnWidth"+i, width);
 						}
 	                });
+                else if(i==1)
+	                column.addControlListener(new ControlListener(){
+						public void controlMoved(ControlEvent e) {
+						}
+						public void controlResized(ControlEvent e) {
+							TableColumn column = (TableColumn)e.getSource();
+							int i = sensorTV_.getTable().indexOf(column);
+							int width = column.getWidth();
+							setInt("scolumnWidth"+i, width);
+						}
+	                });
             }
+            viewPanel_[i].setLayout(layout[i]);
             viewers_[i].getTable().setHeaderVisible(showheader[i]);
             viewers_[i].getTable().setLinesVisible(true);
             viewers_[i].getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -203,7 +226,7 @@ public class GrxRobotStatView extends GrxBaseView {
             	});
             }
         }
-        setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
+        //setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
         setUp();
         manager_.registerItemChangeListener(this, GrxModelItem.class);
@@ -281,21 +304,22 @@ public class GrxRobotStatView extends GrxBaseView {
         return input;
     }
     
-    public void restoreProperties() {
-        super.restoreProperties();
-        for(int i=0; i<columnWidth_[0].length; i++)
-        	if(getStr("jcolumnWidth"+i)==null) propertyChanged("jcolumnWidth"+i, Integer.toString(columnWidth_[0][i])); 
-        for(int i=0; i<columnWidth_[1].length; i++)
-        	if(getStr("scolumnWidth"+i)==null) propertyChanged("scolumnWidth"+i, Integer.toString(columnWidth_[1][i])); 
-    }
-
     public boolean propertyChanged(String key, String value){
     	if (super.propertyChanged(key, value)){
     		return true;
     	}else {
     		if (key.startsWith("jcolumnWidth")){
     			int i = Integer.parseInt(key.replace("jcolumnWidth", ""));
-    			jointTV_.getTable().getColumn(i).setWidth(Integer.parseInt(value.trim()));
+    			int width = Integer.parseInt(value.trim());
+    			int w = jointTV_.getTable().getSize().x;
+    			int width0 = width*100/w;
+    			int width1;
+    			if(width < columnWidth_[2][i])
+    				width1 = width;
+    			else
+    				width1 = columnWidth_[2][i];
+    			((AbstractColumnLayout) viewPanel_[0].getLayout()).setColumnData(jointTV_.getTable().getColumn(i), new ColumnWeightData(width0,width1));
+    			viewPanel_[0].layout(true);
     			final String key_ = key;
         		final String value_ = value;
     			syncExec(new Runnable(){
@@ -306,7 +330,16 @@ public class GrxRobotStatView extends GrxBaseView {
     			return true;
     		}else if (key.startsWith("scolumnWidth")){
     			int i = Integer.parseInt(key.replace("scolumnWidth", ""));
-    			sensorTV_.getTable().getColumn(i).setWidth(Integer.parseInt(value.trim()));
+    			int width = Integer.parseInt(value.trim());
+    			int w = sensorTV_.getTable().getSize().x;
+    			int width0 = width*100/w;
+    			int width1;
+    			if(width < columnWidth_[3][i])
+    				width1 = width;
+    			else
+    				width1 = columnWidth_[3][i];
+    			((AbstractColumnLayout) viewPanel_[1].getLayout()).setColumnData(sensorTV_.getTable().getColumn(i), new ColumnWeightData(width0,width1));
+    			viewPanel_[1].layout(true);
     			final String key_ = key;
         		final String value_ = value;
     			syncExec(new Runnable(){
@@ -465,8 +498,8 @@ public class GrxRobotStatView extends GrxBaseView {
 	    jointTV_.getTable().setSize(point);
 	    Point point1 = sensorTV_.getTable().computeSize(SWT.DEFAULT, SWT.DEFAULT);
 	    sensorTV_.getTable().setSize(point1);
-	    setScrollMinSize(point.x+point1.x, point.y+point1.y);
-        viewPanel_.layout(true);
+	   // setScrollMinSize(point.x+point1.x, point.y+point1.y);
+	    mainPanel_.layout(true);
     }
     
     private void _refresh(){
