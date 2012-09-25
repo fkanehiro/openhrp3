@@ -118,7 +118,7 @@ public class GrxShapeTransformItem extends GrxTransformItem {
             try {
                 ModelLoader mloader = ModelLoaderHelper.narrow(
                         GrxCorbaUtil.getReference("ModelLoader"));
-                    
+                mloader._non_existent();
                 SceneInfo sInfo = mloader.loadSceneInfo(fPath);
                 int n=children_.size();
                 GrxShapeItem shapeItem = new GrxShapeItem(getName()+"_shape_"+n, manager_, model_);
@@ -136,6 +136,9 @@ public class GrxShapeTransformItem extends GrxTransformItem {
                 System.out.println("Failed to load scene info:" + fPath);
                 me.printStackTrace();
             } catch(Exception ex){
+            	MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
+                        MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
+                        MessageBundle.get("GrxModelItem.dialog.message.NoModelLoader") ); 
                 System.out.println("Failed to load scene info:" + fPath);
                 ex.printStackTrace();
             }
