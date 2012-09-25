@@ -596,6 +596,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
         try {
             ModelLoader mloader = ModelLoaderHelper.narrow(
                 GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
+            mloader._non_existent();
             setURL(url);
             bInfo_ = mloader.loadBodyInfo(getURL(true));
             boolean ret = registerCharacter();
@@ -611,6 +612,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 			me.printStackTrace();
 			return false;
 		} catch (Exception ex) {
+			MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
+                    MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
+                    MessageBundle.get("GrxModelItem.dialog.message.NoModelLoader") ); 
 			System.out.println("Failed to load vrml model:" + url); //$NON-NLS-1$
 			ex.printStackTrace();
 			return false;
@@ -808,6 +812,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     	    GrxDebugUtil.println("Loading " + f.getCanonicalPath());
     		ModelLoader mloader = ModelLoaderHelper.narrow(
     				GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
+    		mloader._non_existent();
     		BodyInfo bInfo = mloader.loadBodyInfo(f.getCanonicalPath());
     		LinkInfo[] linkInfoList = bInfo.links();
     		int numOfLink = links_.size();
@@ -884,7 +889,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
                 }
             }
     	}catch(Exception ex){
-    		ex.printStackTrace();
+    		MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
+                    MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
+                    MessageBundle.get("GrxModelItem.dialog.message.NoModelLoader") ); 
     	}
     }
 
@@ -1546,6 +1553,7 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
     		depth[i] = links_.get(i).getInt("NumOfAABB", 1).shortValue();
     	try {
             ModelLoader mloader = ModelLoaderHelper.narrow(GrxCorbaUtil.getReference("ModelLoader")); //$NON-NLS-1$
+            mloader._non_existent();
             ModelLoadOption option = new ModelLoadOption();
             option.readImage = false;
             option.AABBtype = AABBdataType.AABB_NUM;
@@ -1553,6 +1561,9 @@ public class GrxModelItem extends GrxBaseItem implements Manipulatable {
 
             return mloader.getBodyInfoEx(getURL(false), option);
     	}catch(Exception e){
+    		MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
+                    MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
+                    MessageBundle.get("GrxModelItem.dialog.message.NoModelLoader") ); 
     		return null;
     	}
     }

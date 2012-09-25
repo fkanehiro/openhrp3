@@ -50,6 +50,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	}
 
 	public void postStartup(){
+		Activator.getDefault().checkServer();
 		Activator.getDefault().loadInitialProject();
 	}
 }

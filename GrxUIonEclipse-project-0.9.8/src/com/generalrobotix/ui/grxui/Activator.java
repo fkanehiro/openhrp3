@@ -47,7 +47,9 @@ import com.generalrobotix.ui.GrxPluginManager;
 import com.generalrobotix.ui.util.GrxCorbaUtil;
 import com.generalrobotix.ui.util.GrxDebugUtil;
 import com.generalrobotix.ui.util.GrxProcessManager;
+import com.generalrobotix.ui.util.GrxServerManager;
 import com.generalrobotix.ui.util.MessageBundle;
+import com.generalrobotix.ui.util.GrxProcessManager.ProcessInfo;
 import com.generalrobotix.ui.grxui.GrxUIPerspectiveFactory;
 
 /**
@@ -134,6 +136,7 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener, I
 
 	public void windowOpened(IWorkbenchWindow window) {
 		window.addPerspectiveListener(this);
+		checkServer();
 	}
     
 	public void perspectiveActivated(IWorkbenchPage page,
@@ -519,5 +522,19 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener, I
         
         return ret;
     }
+
+	public void checkServer() {
+		GrxServerManager server_ = (GrxServerManager) manager_.getItem("serverManager");
+		for(ProcessInfo pi : server_.getServerInfo()){
+        	try{
+        		GrxCorbaUtil.getReference(pi.id)._non_existent();
+        	}catch (Exception ex) {
+        		MessageDialog.openError(GrxUIPerspectiveFactory.getCurrentShell(),
+                    MessageBundle.get("GrxModelItem.dialog.title.error"), //$NON-NLS-1$
+                    pi.id + " " + MessageBundle.get("GrxItem.dialog.message.NoServer") );   
+           }
+        }
+		
+	}
 
 }
