@@ -174,6 +174,31 @@ int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyIn
             }
         }
     }
+#elif (BOOST_VERSION >= 105000)
+    filesystem::path pluginPath(pathString, (void *)filesystem::native);
+	
+    if(filesystem::exists(pluginPath)){
+
+        if(!filesystem::is_directory(pluginPath)){
+            if(loadCustomizerDll(bodyInterface, toNativePathString(pluginPath))){
+                numLoaded++;
+            }
+        } else {
+            regex pluginNamePattern(string(".+Customizer") + DLLSFX);
+            filesystem::directory_iterator end;
+			
+            for(filesystem::directory_iterator it(pluginPath); it != end; ++it){
+                const filesystem::path& filepath = *it;
+                if(!filesystem::is_directory(filepath)){
+                    if(regex_match(filepath.filename().string(), pluginNamePattern)){
+                        if(loadCustomizerDll(bodyInterface, toNativePathString(filepath))){
+                            numLoaded++;
+                        }
+                    }
+                }
+            }
+        }
+    }
 #else
     filesystem3::path pluginPath(pathString, (void *)filesystem3::native);
 	
