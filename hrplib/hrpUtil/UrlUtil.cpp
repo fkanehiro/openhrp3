@@ -68,6 +68,16 @@ void hrp::getPathFromUrl(string& refUrl, const string& rootDir, string srcUrl)
                 refUrl = system_complete(filepath).file_string();
             }
         }
+#elif (BOOST_VERSION >= 105000)
+        filesystem::path filepath( deleteURLScheme(srcUrl), (void *)filesystem::native);
+        if(exists(filepath)){    // 元が絶対パス //
+            refUrl = filesystem::system_complete(filepath).string();
+        }else{               // 元が相対パス //
+            filesystem::path filepath(rootDir + deleteURLScheme(srcUrl), (void *)filesystem::native);
+            if(filesystem::exists(filepath)){
+                refUrl = system_complete(filepath).string();
+            }
+        }
 #else
         filesystem3::path filepath( deleteURLScheme(srcUrl), (void *)filesystem3::native);
         if(exists(filepath)){    // 元が絶対パス //
