@@ -218,7 +218,7 @@ public class GrxRobotStatView extends GrxBaseView {
             viewers_[i].getTable().setHeaderVisible(showheader[i]);
             viewers_[i].getTable().setLinesVisible(true);
             viewers_[i].getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-            if (osName_ == "Linux") {
+            if (osName_.equals("Linux")) {
             	viewers_[i].getTable().addListener(SWT.MeasureItem, new Listener() {
             		public void handleEvent(Event event) {
             			event.height = 15;
