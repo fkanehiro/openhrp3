@@ -567,6 +567,8 @@ public:
         kmout->vaxissids.resize(0);
         kmout->vlinksids.resize(links->length());
 
+	// add root link	
+	kmout->mapjointnames[std::string(links[0].name)] = 1000;
         for(size_t ilink = 0; ilink < vdomjoints.size(); ++ilink) {
             LinkInfo& linkInfo = links[ilink];
             kmout->maplinknames[std::string(linkInfo.segments[0].name)] = ilink;
@@ -600,12 +602,17 @@ public:
                 }
             }
 
+	    if ( linkInfo.jointId >= 0 ) {
+                kmout->mapjointnames[std::string(linkInfo.name)] = linkInfo.jointId;
+            } else {
+                kmout->mapjointnames[std::string(linkInfo.name)] = 1000+ilink;
+            }
+
             domJointRef pdomjoint = daeSafeCast<domJoint>(ktec->add(COLLADA_ELEMENT_JOINT));
-            string jointsid = str(boost::format("jointsid%d")%linkInfo.jointId);
+            string jointsid = str(boost::format("jointsid%d")%kmout->mapjointnames[std::string(linkInfo.name)]);
             pdomjoint->setSid( jointsid.c_str() );
             //pdomjoint->setName(str(boost::format("joint%d")%linkInfo.jointId).c_str());
             pdomjoint->setName(linkInfo.name); // changed
-            kmout->mapjointnames[std::string(linkInfo.name)] = ilink;
             vector<domAxis_constraintRef> vaxes(dof);
             for(int ia = 0; ia < dof; ++ia) {
                 vaxes[ia] = daeSafeCast<domAxis_constraint>(pdomjoint->add(colladaelement));
@@ -642,7 +649,7 @@ public:
 
         while(listunusedlinks.size()>0) {
             int ilink = listunusedlinks.front();
-            LINKOUTPUT childinfo = _WriteLink(bodyInfo, ilink, ktec, pnoderoot, kmodel->getID());
+            LINKOUTPUT childinfo = _WriteLink(bodyInfo, ilink, ktec, pnoderoot, kmodel->getID(), kmout->mapjointnames);
             _WriteTransformation(childinfo.plink, links[ilink].rotation, links[ilink].translation);
             _WriteTransformation(childinfo.pnode, links[ilink].rotation, links[ilink].translation);
             for(list<pair<int,std::string> >::iterator itused = childinfo.listusedlinks.begin(); itused != childinfo.listusedlinks.end(); ++itused) {
@@ -1188,7 +1195,7 @@ private:
         \param strModelUri
         \param vjoints Vector of joints
      */
-    virtual LINKOUTPUT _WriteLink(BodyInfo_impl* bodyInfo, int ilink, daeElementRef pkinparent, domNodeRef pnodeparent, const string& strModelUri)
+    virtual LINKOUTPUT _WriteLink(BodyInfo_impl* bodyInfo, int ilink, daeElementRef pkinparent, domNodeRef pnodeparent, const string& strModelUri, std::map<std::string, int> mapjointnames)
     {
         LinkInfo& plink = (*bodyInfo->links())[ilink];
         LINKOUTPUT out;
@@ -1257,10 +1264,11 @@ private:
             int ichild = plink.childIndices[_ichild];
             LinkInfo& childlink = (*bodyInfo->links())[ichild];
             domLink::domAttachment_fullRef pattfull = daeSafeCast<domLink::domAttachment_full>(pdomlink->add(COLLADA_TYPE_ATTACHMENT_FULL));
-            string jointid = str(boost::format("%s/jointsid%d")%strModelUri%childlink.jointId);
+            // fixjoint does not have jointID
+            string jointid = str(boost::format("%s/jointsid%d")%strModelUri%mapjointnames[string(childlink.name)]);
             pattfull->setJoint(jointid.c_str());
 
-            LINKOUTPUT childinfo = _WriteLink(bodyInfo, ichild, pattfull, pnode, strModelUri);
+            LINKOUTPUT childinfo = _WriteLink(bodyInfo, ichild, pattfull, pnode, strModelUri, mapjointnames);
             out.listusedlinks.insert(out.listusedlinks.end(),childinfo.listusedlinks.begin(),childinfo.listusedlinks.end());
 
             _WriteTransformation(pattfull, childlink.rotation, childlink.translation);
