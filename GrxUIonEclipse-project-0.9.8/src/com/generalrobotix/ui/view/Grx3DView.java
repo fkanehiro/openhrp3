@@ -72,6 +72,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 import jp.go.aist.hrp.simulator.*;
+import jp.go.aist.hrp.simulator.OnlineViewerPackage.OnlineViewerException;
 
 import com.generalrobotix.ui.*;
 import com.generalrobotix.ui.util.*;
@@ -1672,6 +1673,7 @@ public class Grx3DView
         private boolean firstTime_ = true;
         private double logTimeStep_ = 0.0;
         private boolean updateTimer_ = false;
+        private GrxBaseItem newItem = null;
         
         public void clearLog() {
             if (currentWorld_ != null){
@@ -1685,14 +1687,15 @@ public class Grx3DView
             firstTime_ = true;
         }
 
-        public void load(final String name, String url) {
+        public void load(final String name, String url) throws OnlineViewerException{
             System.out.println(name+":"+url); //$NON-NLS-1$
+            final String url0 = url;
             try {
                 URL u = new URL(url);
                 final String url_ = u.getFile();
                 syncExec(new Runnable(){
                 	public void run(){
-                		GrxBaseItem newItem = manager_.loadItem(GrxModelItem.class, name, url_);
+                		newItem = manager_.loadItem(GrxModelItem.class, name, url_);
                 		if(newItem!=null){
 	                        manager_.itemChange(newItem, GrxPluginManager.ADD_ITEM);
 	                        manager_.setSelectedItem(newItem, true);
@@ -1701,6 +1704,20 @@ public class Grx3DView
                 });
             } catch (MalformedURLException e) {
                 e.printStackTrace();
+                syncExec(new Runnable(){
+                	public void run(){
+                		MessageDialog.openError( comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.error"), MessageBundle.get("OnlineViewer.dialog.message.MalformedURLException")); //$NON-NLS-1$ //$NON-NLS-2$
+                	}
+                });
+                throw new OnlineViewerException("Malformed URL Exception");
+            }
+            if(newItem==null){
+            	syncExec(new Runnable(){
+                	public void run(){
+                		MessageDialog.openError( comp.getShell(), MessageBundle.get("Grx3DView.dialog.title.error"), url0+MessageBundle.get("OnlineViewer.dialog.message.loadError")); //$NON-NLS-1$ //$NON-NLS-2$
+                	}
+            	});
+            	throw new OnlineViewerException(url+"cannot be loaded.");
             }
         }
         
