@@ -164,6 +164,7 @@ namespace hrp {
         double llimit;  ///< the lower limit of joint values
         double uvlimit; ///< the upper limit of joint velocities
         double lvlimit; ///< the lower limit of joint velocities
+        double tlimit; ///< the upper limit of joint torque
 
         double defaultJointValue;
         double torqueConst;
