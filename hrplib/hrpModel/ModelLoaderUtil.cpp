@@ -276,6 +276,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
     DblSequence llimit  = linkInfo.llimit;
     DblSequence uvlimit = linkInfo.uvlimit;
     DblSequence lvlimit = linkInfo.lvlimit;
+    DblSequence tlimit = linkInfo.tlimit;
 
     double maxlimit = (numeric_limits<double>::max)();
 
@@ -283,6 +284,7 @@ Link* ModelLoaderHelper::createLink(int index, const Matrix33& parentRs)
     link->llimit  = getLimitValue(llimit,  -maxlimit);
     link->uvlimit = getLimitValue(uvlimit, +maxlimit);
     link->lvlimit = getLimitValue(lvlimit, -maxlimit);
+    link->tlimit  = getLimitValue(tlimit,  +maxlimit);
 
     link->c = Rs * Vector3(linkInfo.centerOfMass[0], linkInfo.centerOfMass[1], linkInfo.centerOfMass[2]);
 

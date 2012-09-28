@@ -366,6 +366,13 @@ void BodyInfo_impl::setJointParameters(int linkInfoIndex, VrmlProtoInstancePtr j
     copyVrmlField( fmap, "uvlimit", linkInfo.uvlimit );
     copyVrmlField( fmap, "lvlimit", linkInfo.lvlimit );
 
+    if(fmap["tlimit"].typeId() != UNDETERMINED_FIELD_TYPE){
+        copyVrmlField( fmap, "tlimit", linkInfo.tlimit );
+    }else{
+        //std::cout << "No tlimit type. tlimit was ignored." << std::endl;        
+        linkInfo.tlimit.length((CORBA::ULong)0); // dummy
+    }
+
     copyVrmlField( fmap, "gearRatio",     linkInfo.gearRatio );
     copyVrmlField( fmap, "rotorInertia",  linkInfo.rotorInertia );
     copyVrmlField( fmap, "rotorResistor", linkInfo.rotorResistor );
