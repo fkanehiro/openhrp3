@@ -362,6 +362,8 @@ void JointDataSeqInPortHandler::outputDataToSimulator(Controller_impl* controlle
 void JointDataSeqInPortHandler::readDataFromPort(Controller_impl* controller)
 {
   if( inPort.isNew() == false ){
+	  DblSequence& data = controller->getJointDataSeqRef(linkDataType);
+	  data.length(0);
       return;
   }
   inPort.read();
