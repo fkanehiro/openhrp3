@@ -90,6 +90,11 @@ namespace PathEngine {
          * @brief ロードマップ
          */
         Roadmap *roadmap_;
+
+        /**
+         * @brief デバッグ出力の制御
+         */
+        bool verbose_;
     public:
         /**
          * @brief コンストラクタ
@@ -168,6 +173,12 @@ namespace PathEngine {
          * @return 初期位置もしくは目標位置が無効なものであった場合false、それ以外true
          */
         bool preparePlanning();
+
+        /**
+         * @brief デバッグ出力の制御
+         * @param b trueで出力が有効 
+         */
+        void verbose(bool b) { verbose_ = b; }
     };
 };
 

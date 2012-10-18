@@ -28,14 +28,19 @@ namespace PathEngine {
     };
 
     /**
-     * RRT-connect において、初期位置からのツリー
+     * @brief RRT-connect において、初期位置からのツリー
      */
-    Roadmap *Ta_;
+    Roadmap *Tstart_;
 
     /**
-     * RRT-connect において、終了位置からのツリー
+     * @brief RRT-connect において、終了位置からのツリー
      */
-    Roadmap *Tb_;
+    Roadmap *Tgoal_;
+
+    /**
+     * @brief ツリーの交換のために用いる変数。どちらか一方がTstart_をもう一方がTgoal_を指す
+     */
+    Roadmap *Ta_, *Tb_;
 
     /**
      * @brief ランダムな点に向かってツリーを伸ばす。
@@ -54,13 +59,6 @@ namespace PathEngine {
      * @return qNewにまで到達できなかった場合はTrapped, できた場合はReachedを返す
      */
     int connect(Roadmap *tree, const Configuration& qNew, bool reverse=false);
-
-    /**
-     * @brief 計画した経路を抽出し、path_にセットする
-     */
-    void path();
-
-    int extendOneStep();
 
     void swapTrees();
 
@@ -99,11 +97,57 @@ namespace PathEngine {
      */
     bool calcPath();
 
+    /**
+     * @brief スタートからツリーをのばすか否かを設定
+     * @param b trueでのばす
+     */
     void extendFromStart(bool b) { extendFromStart_ = b; }
 
+    /**
+     * @brief ゴールからツリーをのばすか否かを設定
+     * @param b trueでのばす
+     */
     void extendFromGoal(bool b) { extendFromGoal_ = b; }
 
+    /**
+     * @brief ゴールを追加する
+     * @param cfg ゴール
+     */
     void addExtraGoal(const Configuration &cfg) { extraGoals_.push_back(cfg); }
+
+    /**
+     * @brief 計画した経路を抽出し、path_にセットする
+     */
+    void extractPath();
+
+    /**
+     * @brief 計画した経路を抽出し、o_pathにセットする
+     */
+    void extractPath(std::vector<Configuration>& o_path);
+
+    /**
+     * @brief スタートからのツリーを取得する
+     * @return スタートからのツリー
+     */
+    Roadmap *getForwardTree() { return Tstart_; }
+
+    /**
+     * @brief ゴールからのツリーを取得する
+     * @return ゴールからのツリー
+     */
+    Roadmap *getBackwardTree() { return Tgoal_; }
+
+    /**
+     * @brief ツリーを伸ばす処理を1回だけ行う
+     * @return パスが見つかった場合true
+     */
+    bool extendOneStep();
+
+    /**
+     * @brief サンプリングしたコンフィギュレーションに向かって伸ばす距離を設定
+     * @param e サンプリングしたコンフィギュレーションに向かって伸ばす距離
+     */
+    void epsilon(double e) { eps_ = e; }
   };
 };
 
