@@ -14,8 +14,8 @@ RRT::RRT(PathPlanner* plan) : Algorithm(plan)
     properties_["max-trials"] = "10000";
     properties_["eps"] = "0.1";
 
-    Ta_ = roadmap_;
-    Tb_ = new Roadmap(planner_);
+    Tstart_ = Ta_ = roadmap_;
+    Tgoal_  = Tb_ = new Roadmap(planner_);
 
     extendFromStart_ = true;
     extendFromGoal_ = false;
@@ -23,7 +23,7 @@ RRT::RRT(PathPlanner* plan) : Algorithm(plan)
 
 RRT::~RRT() 
 {
-    delete Tb_;
+    delete Tgoal_;
 }
 
 int RRT::extend(Roadmap *tree, Configuration& qRand, bool reverse) {
@@ -107,19 +107,23 @@ int RRT::connect(Roadmap *tree,const Configuration &qNew, bool reverse) {
     return ret;
 }
 
-void RRT::path() {
-    //std::cout << "RRT::path" << std::endl;
-    RoadmapNode* startMidNode = Ta_->lastAddedNode();
-    RoadmapNode* goalMidNode  = Tb_->lastAddedNode();
+void RRT::extractPath() {
+    extractPath(path_);
+}
 
-    path_.clear();
+void RRT::extractPath(std::vector<Configuration>& o_path) {
+    //std::cout << "RRT::path" << std::endl;
+    RoadmapNode* startMidNode = Tstart_->lastAddedNode();
+    RoadmapNode* goalMidNode  = Tgoal_ ->lastAddedNode();
+
+    o_path.clear();
 
     RoadmapNode* node;
 
     if (extendFromStart_){
         node = startMidNode;
         do {
-            path_.insert(path_.begin(), node->position());
+            o_path.insert(o_path.begin(), node->position());
             node = node->parent(0);
         } while (node != NULL);
     }
@@ -127,7 +131,7 @@ void RRT::path() {
     if (extendFromGoal_){
         node = goalMidNode;
         do {
-            path_.push_back(node->position());
+            o_path.push_back(node->position());
             node = node->child(0);
         } while (node != NULL);
     }
@@ -137,9 +141,37 @@ void RRT::path() {
 #endif
 }
 
+bool RRT::extendOneStep()
+{
+    Configuration qNew = Configuration::random();
+    if (extendFromStart_ && extendFromGoal_){
+        
+        if (extend(Ta_, qNew, Tb_ == Tstart_) != Trapped) {
+            if (connect(Tb_, qNew, Ta_ == Tstart_) == Reached) {
+                return true;
+            }
+        }
+        swapTrees();
+    }else if (extendFromStart_ && !extendFromGoal_){
+        if (extend(Tstart_, qNew) != Trapped) {
+            Configuration p = goal_;
+            int ret;
+            do {
+                ret = extend(Tstart_, p);
+                p = goal_;
+            }while (ret == Advanced);
+            if (ret == Reached) return true;
+        }
+    }else if (!extendFromStart_ && extendFromGoal_){
+        std::cout << "this case is not implemented" << std::endl;
+        return false;
+    }
+    return false;
+}
+
 bool RRT::calcPath() 
 {
-    std::cout << "RRT::calcPath" << std::endl;
+    if (verbose_) std::cout << "RRT::calcPath" << std::endl;
 
     // 回数
     times_ = atoi(properties_["max-trials"].c_str());
@@ -147,69 +179,39 @@ bool RRT::calcPath()
     // eps
     eps_ = atof(properties_["eps"].c_str());
 
-    std::cout << "times:" << times_ << std::endl;
-    std::cout << "eps:" << eps_ << std::endl;
+    if (verbose_){
+        std::cout << "times:" << times_ << std::endl;
+        std::cout << "eps:" << eps_ << std::endl;
+    }
 
     RoadmapNode* startNode = new RoadmapNode(start_);
     RoadmapNode* goalNode  = new RoadmapNode(goal_);
 
-    Ta_->addNode(startNode);
-    Tb_->addNode(goalNode);
+    Tstart_->addNode(startNode);
+    Tgoal_ ->addNode(goalNode);
 
     for (unsigned int i=0; i<extraGoals_.size(); i++){
         RoadmapNode *node = new RoadmapNode(extraGoals_[i]);
-        Tb_->addNode(node);
+        Tgoal_->addNode(node);
     }
 
-    bool isTaStart = true;
     bool isSucceed = false;
   
     for (int i=0; i<times_; i++) {
-        if (!isRunning_) break;
-        printf("%5d/%5dtrials : %5d/%5dnodes\r", i+1, times_, Ta_->nNodes(),Tb_->nNodes());
-        fflush(stdout);
-    
-        Configuration qNew = Configuration::random();
-        if (extendFromStart_ && extendFromGoal_){
-
-            if (isTaStart){
-                if (extend(Ta_, qNew) != Trapped) {
-                    if (connect(Tb_, qNew, true) == Reached) {
-                        isSucceed = true;
-                        break;
-                    }
-                }
-            }else{
-                if (extend(Tb_, qNew, true) != Trapped) {
-                    if (connect(Ta_, qNew) == Reached) {
-                        isSucceed = true;
-                        break;
-                    }
-                }
-            }
-            isTaStart = !isTaStart;
-        }else if (extendFromStart_ && !extendFromGoal_){
-            if (extend(Ta_, qNew) != Trapped) {
-                Configuration p = goal_;
-                int ret;
-                do {
-                    ret = extend(Ta_, p);
-                    p = goal_;
-                }while (ret == Advanced);
-                if (ret == Reached){
-                    isSucceed = true;
-                    break;
-                }
-            }
-        }else if (!extendFromStart_ && extendFromGoal_){
-            std::cout << "this case is not implemented" << std::endl;
+        //if (!isRunning_) break;
+        if (verbose_){
+            printf("%5d/%5dtrials : %5d/%5dnodes\r", i+1, times_, Tstart_->nNodes(),Tgoal_->nNodes());
+            fflush(stdout);
         }
+        if (isSucceed = extendOneStep()) break;
     }
   
-    path();
-    Tb_->integrate(Ta_);
+    extractPath();
+    Tgoal_->integrate(Tstart_);
 
-    std::cout << std::endl << "fin.(calcPath), retval = " << isSucceed << std::endl;
+    if (verbose_) {
+        std::cout << std::endl << "fin.(calcPath), retval = " << isSucceed << std::endl;
+    }
     return isSucceed;
 }
 

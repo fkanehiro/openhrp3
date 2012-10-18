@@ -6,7 +6,7 @@
 using namespace PathEngine;
 
 Algorithm::Algorithm(PathPlanner* planner) 
-  : isRunning_(false), planner_(planner)
+  : isRunning_(false), planner_(planner), verbose_(false)
 {
   properties_["interpolation-distance"] = "0.1"; 
   roadmap_ = new Roadmap(planner_);
