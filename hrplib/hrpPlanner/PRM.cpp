@@ -2,6 +2,7 @@
 #include <cstdio>
 #include "Roadmap.h"
 #include "RoadmapNode.h"
+#include "ConfigurationSpace.h"
 #include "PRM.h"
 
 using namespace PathEngine;
@@ -23,6 +24,7 @@ bool PRM::buildRoadmap()
   
   // 現在の点の数
   unsigned long numPoints = 0, numTotalPoints = 0;
+  ConfigurationSpace *cspace = planner_->getConfigurationSpace();
   
   while (numPoints < maxPoints_) {
     if (!isRunning_) {
@@ -30,7 +32,7 @@ bool PRM::buildRoadmap()
     }
     
     // ランダムに与えた点
-    Configuration pos = Configuration::random();
+    Configuration pos = cspace->random();
     numTotalPoints++;
     
     // 干渉する位置でなければ追加

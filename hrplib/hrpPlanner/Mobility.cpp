@@ -29,7 +29,7 @@ bool Mobility::getPath(Configuration &from, Configuration &to,
     o_path.push_back(from);
     
     unsigned int n = (unsigned int)(distance(from, to)/interpolationDistance())+1;
-    Configuration pos;
+    Configuration pos(planner_->getConfigurationSpace()->size());
     for (unsigned int i=1; i<n; i++){
         pos = interpolate(from, to, ((double)i)/n);
         o_path.push_back(pos);

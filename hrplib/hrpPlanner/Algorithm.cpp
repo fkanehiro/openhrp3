@@ -2,11 +2,14 @@
 #include "PathPlanner.h"
 #include "Algorithm.h"
 #include "Roadmap.h"
+#include "ConfigurationSpace.h"
 
 using namespace PathEngine;
 
 Algorithm::Algorithm(PathPlanner* planner) 
-  : isRunning_(false), planner_(planner), verbose_(false)
+  : start_(planner->getConfigurationSpace()->size()),
+    goal_ (planner->getConfigurationSpace()->size()),
+    isRunning_(false), planner_(planner), verbose_(false)
 {
   properties_["interpolation-distance"] = "0.1"; 
   roadmap_ = new Roadmap(planner_);
@@ -80,7 +83,8 @@ bool Algorithm::preparePlanning()
   std::cout << "goal:" << goal_ << std::endl;
 
   // validity checks of start&goal configurations
-  if (!start_.isValid()){
+  ConfigurationSpace *cspace = planner_->getConfigurationSpace();
+  if (!cspace->isValid(start_)){
       std::cerr << "start configuration is invalid" << std::endl;
       return false;
   }
@@ -88,7 +92,7 @@ bool Algorithm::preparePlanning()
       std::cerr << "start configuration is not collision-free" << std::endl;
       return false;
   }
-  if (!goal_.isValid()){
+  if (!cspace->isValid(goal_)){
       std::cerr << "goal configuration is invalid" << std::endl;
       return false;
   }

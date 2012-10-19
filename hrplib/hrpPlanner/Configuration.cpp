@@ -16,68 +16,9 @@ namespace PathEngine{
 
 using namespace PathEngine;
 
-unsigned int Configuration::m_size=0;
-std::vector<double> Configuration::m_weights;
-std::vector<double> Configuration::m_ubounds;
-std::vector<double> Configuration::m_lbounds;
-std::vector<bool> Configuration::m_isUnboundedRotation;
-
-Configuration::Configuration()
+Configuration::Configuration(unsigned int i_size)
 {
-    if (size()==0){
-        std::cerr << "Configuration is created before its size is set"
-                  << std::endl;
-    }
-    m_values.resize(size());
-    for (unsigned int i=0; i<size(); i++){
-        m_values[i] = 0.0;
-    }
-}
-bool Configuration::isValid() const
-{
-    for (unsigned int i=0; i<size(); i++){
-        if (!weight(i)) continue;
-        double v = m_values[i];
-        if (!m_isUnboundedRotation[i]){
-            if (v > m_ubounds[i] || v < m_lbounds[i]) return false;
-        }
-    }
-    return true;
-}
-
-double &Configuration::weight(unsigned int i_rank)
-{
-    return m_weights[i_rank];
-}
-
-void Configuration::bounds(unsigned int i_rank, double min, double max)
-{
-    m_ubounds[i_rank] = max;
-    m_lbounds[i_rank] = min;
-}
-
-double& Configuration::lbound(unsigned int i_rank)
-{
-    return m_lbounds[i_rank];
-}
-
-double& Configuration::ubound(unsigned int i_rank)
-{
-    return m_ubounds[i_rank];
-}
-
-Configuration Configuration::random()
-{
-    Configuration cfg;
-    for (unsigned int i=0; i<size(); i++){
-        if (m_isUnboundedRotation[i]){
-            cfg.value(i) = (rand()/(double)RAND_MAX) * 2 * M_PI;
-        }else{
-            double delta = m_ubounds[i] - m_lbounds[i];
-            cfg.value(i) = (rand()/(double)RAND_MAX) * delta + m_lbounds[i];
-        }
-    }
-    return cfg;
+    m_values.resize(i_size);
 }
 
 const double Configuration::value(unsigned int i_rank) const
@@ -90,32 +31,7 @@ double &Configuration::value(unsigned int i_rank)
     return m_values[i_rank];
 }
 
-unsigned int Configuration::size()
+unsigned int Configuration::size() const
 {
-    return m_size;
-}
-
-void Configuration::size(unsigned int i_size)
-{
-    m_size = i_size;
-    m_weights.resize(m_size);
-    m_ubounds.resize(m_size);
-    m_lbounds.resize(m_size);
-    m_isUnboundedRotation.resize(m_size);
-
-    for (unsigned int i=0; i<m_size; i++){
-        m_weights[i] = 1.0;
-        m_ubounds[i] = m_lbounds[i] = 0.0;
-        m_isUnboundedRotation[i] = false;
-    }
-}
-
-void Configuration::unboundedRotation(unsigned int i_rank, bool i_flag)
-{
-    m_isUnboundedRotation[i_rank] = i_flag;
-}
-
-bool Configuration::unboundedRotation(unsigned int i_rank)
-{
-    return m_isUnboundedRotation[i_rank];
+    return m_values.size();
 }

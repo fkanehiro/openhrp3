@@ -1,6 +1,7 @@
 // -*- mode: c++; indent-tabs-mode: nil; c-basic-offset: 4; tab-width: 4; -*-
 #include "Roadmap.h"
 #include "RoadmapNode.h"
+#include "ConfigurationSpace.h"
 #include "RRT.h"
 
 using namespace PathEngine;
@@ -143,7 +144,7 @@ void RRT::extractPath(std::vector<Configuration>& o_path) {
 
 bool RRT::extendOneStep()
 {
-    Configuration qNew = Configuration::random();
+    Configuration qNew = planner_->getConfigurationSpace()->random();
     if (extendFromStart_ && extendFromGoal_){
         
         if (extend(Ta_, qNew, Tb_ == Tstart_) != Trapped) {
