@@ -10,6 +10,7 @@
 #include "ShortcutOptimizer.h"
 #include "RandomShortcutOptimizer.h"
 //
+#include "ConfigurationSpace.h"
 #include "PathPlanner.h"
 
 #include <hrpCorba/OpenHRPCommon.hh>
@@ -78,8 +79,8 @@ bool setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cf
 // ----------------------------------------------
 // コンストラクタ
 // ----------------------------------------------
-PathPlanner::PathPlanner(bool isDebugMode) 
-    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), debug_(isDebugMode), collidingPair_(NULL), customCollisionDetector_(NULL)
+PathPlanner::PathPlanner(unsigned int dim, bool isDebugMode) 
+    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), cspace_(dim), debug_(isDebugMode), collidingPair_(NULL), customCollisionDetector_(NULL)
 {
     if (isDebugMode) {
         std::cerr << "PathPlanner::PathPlanner() : debug mode" << std::endl;

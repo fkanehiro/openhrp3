@@ -12,6 +12,7 @@ set(sources
   RandomShortcutOptimizer.cpp 
   OmniWheel.cpp
   Configuration.cpp
+  ConfigurationSpace.cpp
   )
 
 set(headers
@@ -28,6 +29,7 @@ set(headers
   RandomShortcutOptimizer.h 
   OmniWheel.h
   Configuration.h
+  ConfigurationSpace.h
   Optimizer.h
   CollisionDetector.h
   exportdef.h

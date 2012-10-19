@@ -13,6 +13,7 @@
 #include "exportdef.h"
 #include "Algorithm.h"
 #include "Configuration.h"
+#include "ConfigurationSpace.h"
 #include "Mobility.h"
 #include "Optimizer.h"
 #include "CollisionDetector.h"
@@ -95,6 +96,11 @@ namespace PathEngine {
         Mobility* mobility_;
 
         /**
+         * @brief コンフィギュレーション空間
+         */
+        ConfigurationSpace cspace_;
+
+        /**
          * @brief 経路計画の対象とするロボット
          */
         hrp::BodyPtr model_;
@@ -171,9 +177,10 @@ namespace PathEngine {
         void setPointCloud(const std::vector<hrp::Vector3>& i_cloud, double i_radius);
         /**
          * @brief コンストラクタ
+         * @param dim コンフィギュレーション空間の次元
          * @param isDebugMode デバッグモードにするか否か
          */
-        PathPlanner(bool isDebugMode = false);
+        PathPlanner(unsigned int dim, bool isDebugMode = false);
 
         ~PathPlanner();
 
@@ -361,7 +368,17 @@ namespace PathEngine {
          */
         Mobility* getMobility() {return mobility_;}
 
+        /**
+         * @brief 計画アルゴリズムを取得する
+         * @return 計画アルゴリズム
+         */
         Algorithm* getAlgorithm() {return algorithm_;}
+
+        /**
+         * @brief コンフィギュレーション空間設定を取得する
+         * @return コンフィギュレーション空間設定
+         */
+        ConfigurationSpace* getConfigurationSpace() { return &cspace_; }
 
         /**
          * @brief 干渉検出を行う
