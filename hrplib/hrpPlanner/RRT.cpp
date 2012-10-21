@@ -118,6 +118,7 @@ void RRT::extractPath(std::vector<Configuration>& o_path) {
     RoadmapNode* goalMidNode  = Tgoal_ ->lastAddedNode();
 
     o_path.clear();
+    if (!startMidNode || !goalMidNode) return;
 
     RoadmapNode* node;
 
