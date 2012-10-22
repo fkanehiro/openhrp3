@@ -79,11 +79,17 @@ bool setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cf
 // ----------------------------------------------
 // コンストラクタ
 // ----------------------------------------------
-PathPlanner::PathPlanner(unsigned int dim, bool isDebugMode) 
-    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), cspace_(dim), debug_(isDebugMode), collidingPair_(NULL), customCollisionDetector_(NULL)
+PathPlanner::PathPlanner(unsigned int dim, 
+                         boost::shared_ptr<hrp::World<hrp::ConstraintForceSolver> > world,
+                         bool isDebugMode) 
+    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), cspace_(dim), debug_(isDebugMode), collidingPair_(NULL), world_(world), customCollisionDetector_(NULL)
 {
     if (isDebugMode) {
         std::cerr << "PathPlanner::PathPlanner() : debug mode" << std::endl;
+    }
+
+    if (!world_){
+        world_ = WorldPtr(new hrp::World<hrp::ConstraintForceSolver>);
     }
 
     // planning algorithms
@@ -260,7 +266,7 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
         return;
     }
 
-    world_.clearBodies();
+    world_->clearBodies();
     checkPairs_.clear();
 
 }
@@ -316,7 +322,7 @@ void PathPlanner::setCharacterPosition(const char* character,
                   << pos[0] << ", " << pos[1] << ", " << pos[2] << ")" 
                   << std::endl;
     }
-    BodyPtr body = world_.body(character);
+    BodyPtr body = world_->body(character);
     if (!body) std::cerr << "PathPlanner::setCharacterPosition() : character("
                          << character << ") not found" << std::endl;
     Link* l = body->rootLink();
@@ -423,7 +429,7 @@ BodyPtr PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr c
         if(!USE_INTERNAL_COLLISION_DETECTOR){
             collisionDetector_->registerCharacter(name, cInfo);
         }
-        world_.addBody(body);
+        world_->addBody(body);
     }
     return body;
 }
@@ -431,7 +437,7 @@ BodyPtr PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr c
 BodyPtr PathPlanner::registerCharacter(const char *name, BodyPtr i_body)
 {
     i_body->setName(name);
-    world_.addBody(i_body);
+    world_->addBody(i_body);
     return i_body;
 }
 
@@ -446,7 +452,7 @@ void PathPlanner::setRobotName(const std::string &name) {
         std::cerr << "PathPlanner::setRobotName(" << name << ")" << std::endl;
     }
 
-    model_ = world_.body(name);
+    model_ = world_->body(name);
     if (!model_) {
         std::cerr << "PathPlanner::setRobotName() : robot(" << name << ") not found" << std::endl;
         return;
@@ -492,13 +498,13 @@ void PathPlanner::registerIntersectionCheckPair(const char* charName1,
                   << ", " << linkName2
                   << ", " << tolerance << ")" << std::endl;
     }
-    int bodyIndex1 = world_.bodyIndex(charName1);
-    int bodyIndex2 = world_.bodyIndex(charName2);
+    int bodyIndex1 = world_->bodyIndex(charName1);
+    int bodyIndex2 = world_->bodyIndex(charName2);
 
     if(bodyIndex1 >= 0 && bodyIndex2 >= 0){
 
-        BodyPtr body1 = world_.body(bodyIndex1);
-        BodyPtr body2 = world_.body(bodyIndex2);
+        BodyPtr body1 = world_->body(bodyIndex1);
+        BodyPtr body2 = world_->body(bodyIndex2);
 
         std::string emptyString = "";
         std::vector<Link*> links1;
@@ -547,23 +553,23 @@ void PathPlanner::registerIntersectionCheckPair(const char* charName1,
 // 初期化
 // ----------------------------------------------
 void PathPlanner::initSimulation () {
-    world_.setTimeStep(0.002);
-    world_.setCurrentTime(0.0);
-    world_.setRungeKuttaMethod();
-    world_.enableSensors(true);
+    world_->setTimeStep(0.002);
+    world_->setCurrentTime(0.0);
+    world_->setRungeKuttaMethod();
+    world_->enableSensors(true);
   
-    int n = world_.numBodies();
+    int n = world_->numBodies();
     for(int i=0; i < n; ++i){
-        world_.body(i)->initializeConfiguration();
+        world_->body(i)->initializeConfiguration();
     }
   
     _setupCharacterData();
   
     Vector3 g;
     g[0] = g[1] = 0.0; g[2] = 9.8;
-    world_.setGravityAcceleration(g);
+    world_->setGravityAcceleration(g);
   
-    world_.initialize();
+    world_->initialize();
 }
 
 bool PathPlanner::setConfiguration(const Configuration &pos)
@@ -606,7 +612,7 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
 
     wstate = new OpenHRP::WorldState;
 
-    wstate->time = world_.currentTime();
+    wstate->time = world_->currentTime();
     wstate->characterPositions = allCharacterPositions_;
 
     if(debug_){
@@ -730,8 +736,8 @@ bool PathPlanner::calcPath()
     path_.clear();
     BodyPtr body;
     Link *l;
-    for (int i=0; i<world_.numBodies(); i++){
-        body = world_.body(i);
+    for (int i=0; i<world_->numBodies(); i++){
+        body = world_->body(i);
         body->calcForwardKinematics();
         for (int j=0; j<body->numLinks(); j++){
             l = body->link(j);
@@ -796,11 +802,11 @@ void PathPlanner::_setupCharacterData()
         std::cout << "PathPlanner::_setupCharacterData()\n";
     }
 
-    int n = world_.numBodies();
+    int n = world_->numBodies();
     allCharacterPositions_->length(n);
 
     for(int i=0; i < n; ++i){
-        BodyPtr body = world_.body(i);
+        BodyPtr body = world_->body(i);
 
         int numLinks = body->numLinks();
         OpenHRP::CharacterPosition& characterPosition = allCharacterPositions_[i];
@@ -825,12 +831,12 @@ void PathPlanner::_updateCharacterPositions()
         std::cout << "PathPlanner::_updateCharacterPositions()\n";
     }
 
-    int n = world_.numBodies();
+    int n = world_->numBodies();
 
     {	
 #pragma omp parallel for num_threads(3)
         for(int i=0; i < n; ++i){
-            BodyPtr body = world_.body(i);
+            BodyPtr body = world_->body(i);
             int numLinks = body->numLinks();
 			
             OpenHRP::CharacterPosition& characterPosition = allCharacterPositions_[i];
@@ -872,6 +878,11 @@ void PathPlanner::setApplyConfigFunc(applyConfigFunc i_func)
 BodyPtr PathPlanner::robot()
 {
     return model_;
+}
+
+WorldPtr PathPlanner::world()
+{
+    return world_;
 }
 
 void PathPlanner::setPointCloud(const std::vector<Vector3>& i_cloud, 

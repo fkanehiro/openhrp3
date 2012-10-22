@@ -16,7 +16,7 @@
  */
 OpenHRP_PathPlannerSVC_impl::OpenHRP_PathPlannerSVC_impl()
 {
-    path_ = new PathEngine::PathPlanner(3,false);
+    path_ = new PathEngine::PathPlanner(3);
     PathEngine::ConfigurationSpace *cspace 
         = path_->getConfigurationSpace();
     cspace->unboundedRotation(2, true);
