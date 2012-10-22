@@ -35,6 +35,7 @@ namespace PathEngine {
     class PathPlanner;
 
     typedef boost::function2<bool, PathPlanner *, const Configuration &> applyConfigFunc;
+    typedef boost::shared_ptr<hrp::World<hrp::ConstraintForceSolver> > WorldPtr;
     /**
      * @brief 計画経路エンジン
      *
@@ -106,13 +107,6 @@ namespace PathEngine {
         hrp::BodyPtr model_;
 
         /**
-         * @brief 経路計画の対象とするロボットのベースリンク名。
-         *
-         * 一番上のリンク名を指定する。このリンクを動かすことで、ロボット全体を動かす。
-         */
-        hrp::Link *baseLink_;
-
-        /**
          * @brief デバッグモード
          */
         bool debug_;
@@ -149,7 +143,7 @@ namespace PathEngine {
 
         CORBA::ORB_var orb_;
 
-        hrp::World<hrp::ConstraintForceSolver> world_;
+        WorldPtr world_;
 
         OpenHRP::CollisionDetector_var collisionDetector_;
         OpenHRP::CharacterPositionSequence_var allCharacterPositions_;
@@ -170,18 +164,56 @@ namespace PathEngine {
 
         bool defaultCheckCollision();
     public:
+        /**
+         * @brief 物理世界を取得する
+         * @return 物理世界
+         */
+        WorldPtr world();
+
+        /**
+         * @brief ロボットを取得する
+         * @return ロボット
+         */
         hrp::BodyPtr robot();
+
+        /**
+         * @brief コンフィギュレーションベクトルからロボットの姿勢をセットする関数をセットする
+         * @param i_func コンフィギュレーションベクトルからロボットの姿勢をセットする関数
+         */
         void setApplyConfigFunc(applyConfigFunc i_func);
+
+        /**
+         * @brief コンフィギュレーションをセットする
+         * @param pos コンフィギュレーション
+         */
         bool setConfiguration(const Configuration &pos);
+
+        /**
+         * @brief 物理世界の状況を取得する
+         * @param wstate 物理世界の状況
+         */
         void getWorldState(OpenHRP::WorldState_out wstate);
+
+        /**
+         * @brief 干渉チェック対象となるポイントクラウドを設定する
+         * @param i_cloud ポイントクラウド
+         * @param i_radius ポイントクラウドの各点に割り当てる球の半径
+         */
         void setPointCloud(const std::vector<hrp::Vector3>& i_cloud, double i_radius);
+
         /**
          * @brief コンストラクタ
          * @param dim コンフィギュレーション空間の次元
+         * @param world 物理世界
          * @param isDebugMode デバッグモードにするか否か
          */
-        PathPlanner(unsigned int dim, bool isDebugMode = false);
+        PathPlanner(unsigned int dim, 
+                    WorldPtr world = WorldPtr(),
+                    bool isDebugMode = false);
 
+        /**
+         * @brief デストラクタ
+         */
         ~PathPlanner();
 
         /**
@@ -360,6 +392,10 @@ namespace PathEngine {
          */
         std::vector<Configuration> getPath();
 
+        /**
+         * @brief 計画された経路を取得する
+         * @return 計画された経路
+         */
         std::vector<Configuration>& getWayPoints();
 
         /**
