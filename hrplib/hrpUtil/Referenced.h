@@ -9,14 +9,8 @@
 
 namespace hrp {
     class Referenced;
-}
-
-namespace boost{
-    void intrusive_ptr_add_ref(hrp::Referenced* obj);
-    void intrusive_ptr_release(hrp::Referenced* obj);
-}
-
-namespace hrp {
+    void intrusive_ptr_add_ref(Referenced* obj);
+    void intrusive_ptr_release(Referenced* obj);
     
     class Referenced
     {
@@ -28,15 +22,12 @@ namespace hrp {
         int refCounter() { return refCounter_; }
 
       private:
-        friend void boost::intrusive_ptr_add_ref(Referenced* obj);
-        friend void boost::intrusive_ptr_release(Referenced* obj);
+        friend void intrusive_ptr_add_ref(Referenced* obj);
+        friend void intrusive_ptr_release(Referenced* obj);
 
         int refCounter_;
     };
-}
 
-namespace boost
-{
     inline void intrusive_ptr_add_ref(hrp::Referenced* obj){
         obj->refCounter_++;
     }
