@@ -73,12 +73,14 @@ namespace PathEngine {
     int times_;
 
     /**
+     * スタートからツリーをのばすか否か
      */
     bool extendFromStart_;
 
+    /**
+     * ゴールからツリーをのばすか否か
+     */
     bool extendFromGoal_;
-
-    std::vector<Configuration> extraGoals_;
 
   public:
     /**
@@ -110,12 +112,6 @@ namespace PathEngine {
     void extendFromGoal(bool b) { extendFromGoal_ = b; }
 
     /**
-     * @brief ゴールを追加する
-     * @param cfg ゴール
-     */
-    void addExtraGoal(const Configuration &cfg) { extraGoals_.push_back(cfg); }
-
-    /**
      * @brief 計画した経路を抽出し、path_にセットする
      */
     void extractPath();
@@ -132,10 +128,22 @@ namespace PathEngine {
     Roadmap *getForwardTree() { return Tstart_; }
 
     /**
+     * @brief スタートからのツリーを設定する
+     * @param tree スタートからのツリー
+     */
+    void setForwardTree(Roadmap *tree);
+
+    /**
      * @brief ゴールからのツリーを取得する
      * @return ゴールからのツリー
      */
     Roadmap *getBackwardTree() { return Tgoal_; }
+
+    /**
+     * @brief ゴールからのツリーを設定する
+     * @param tree ゴールからのツリー
+     */
+    void setBackwardTree(Roadmap *tree);
 
     /**
      * @brief ツリーを伸ばす処理を1回だけ行う
