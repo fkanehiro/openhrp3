@@ -8,9 +8,9 @@
 
 #include "PathPlanner.h"
 #include "Algorithm.h"
+#include "Roadmap.h"
 
 namespace PathEngine {
-  class Roadmap;
 
   /**
    * @brief RRTアルゴリズム実装クラス
@@ -30,17 +30,17 @@ namespace PathEngine {
     /**
      * @brief RRT-connect において、初期位置からのツリー
      */
-    Roadmap *Tstart_;
+    RoadmapPtr Tstart_;
 
     /**
      * @brief RRT-connect において、終了位置からのツリー
      */
-    Roadmap *Tgoal_;
+    RoadmapPtr Tgoal_;
 
     /**
      * @brief ツリーの交換のために用いる変数。どちらか一方がTstart_をもう一方がTgoal_を指す
      */
-    Roadmap *Ta_, *Tb_;
+    RoadmapPtr Ta_, Tb_;
 
     /**
      * @brief ランダムな点に向かってツリーを伸ばす。
@@ -49,7 +49,7 @@ namespace PathEngine {
      * @param reverse ツリーから点に向かって移動を試みる場合false、点からツリーへ移動を試みる場合はtrue
      * @return 伸ばせなかった場合Trapped, eps_だけ伸ばせた場合Advanced, qRandに到達できた場合Readchedを返す。qRandは伸ばした先の点に書き換えられる
      */
-    int extend(Roadmap *tree, Configuration& qRand, bool reverse=false);
+    int extend(RoadmapPtr tree, Configuration& qRand, bool reverse=false);
 
     /**
      * @brief RRT-connect の connect 関数。伸ばせなくなるまで extend する
@@ -58,7 +58,7 @@ namespace PathEngine {
      * @param ツリーから点に向かって伸ばす場合はfalse、逆はtrue
      * @return qNewにまで到達できなかった場合はTrapped, できた場合はReachedを返す
      */
-    int connect(Roadmap *tree, const Configuration& qNew, bool reverse=false);
+    int connect(RoadmapPtr tree, const Configuration& qNew, bool reverse=false);
 
     void swapTrees();
 
@@ -125,25 +125,25 @@ namespace PathEngine {
      * @brief スタートからのツリーを取得する
      * @return スタートからのツリー
      */
-    Roadmap *getForwardTree() { return Tstart_; }
+    RoadmapPtr getForwardTree() { return Tstart_; }
 
     /**
      * @brief スタートからのツリーを設定する
      * @param tree スタートからのツリー
      */
-    void setForwardTree(Roadmap *tree);
+    void setForwardTree(RoadmapPtr tree);
 
     /**
      * @brief ゴールからのツリーを取得する
      * @return ゴールからのツリー
      */
-    Roadmap *getBackwardTree() { return Tgoal_; }
+    RoadmapPtr getBackwardTree() { return Tgoal_; }
 
     /**
      * @brief ゴールからのツリーを設定する
      * @param tree ゴールからのツリー
      */
-    void setBackwardTree(Roadmap *tree);
+    void setBackwardTree(RoadmapPtr tree);
 
     /**
      * @brief ツリーを伸ばす処理を1回だけ行う

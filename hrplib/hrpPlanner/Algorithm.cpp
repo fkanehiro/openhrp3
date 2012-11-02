@@ -12,7 +12,7 @@ Algorithm::Algorithm(PathPlanner* planner)
     isRunning_(false), planner_(planner), verbose_(false)
 {
   properties_["interpolation-distance"] = "0.1"; 
-  roadmap_ = new Roadmap(planner_);
+  roadmap_ = RoadmapPtr(new Roadmap(planner_));
 }
 
 Algorithm::~Algorithm()

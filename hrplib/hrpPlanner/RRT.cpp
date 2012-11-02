@@ -16,7 +16,7 @@ RRT::RRT(PathPlanner* plan) : Algorithm(plan)
     properties_["eps"] = "0.1";
 
     Tstart_ = Ta_ = roadmap_;
-    Tgoal_  = Tb_ = new Roadmap(planner_);
+    Tgoal_  = Tb_ = RoadmapPtr(new Roadmap(planner_));
 
     extendFromStart_ = true;
     extendFromGoal_ = false;
@@ -24,14 +24,13 @@ RRT::RRT(PathPlanner* plan) : Algorithm(plan)
 
 RRT::~RRT() 
 {
-    delete Tgoal_;
 }
 
-int RRT::extend(Roadmap *tree, Configuration& qRand, bool reverse) {
+int RRT::extend(RoadmapPtr tree, Configuration& qRand, bool reverse) {
     if (debug) std::cout << "RRT::extend("<< qRand << ", " << reverse << ")" 
                          << std::endl;
 
-    RoadmapNode* minNode;
+    RoadmapNodePtr minNode;
     double min;
     tree->findNearestNode(qRand, minNode, min);
     if (debug) std::cout << "nearest : pos = (" << minNode->position() 
@@ -57,7 +56,7 @@ int RRT::extend(Roadmap *tree, Configuration& qRand, bool reverse) {
 
         if (reverse){
             if (mobility->isReachable(qRand, minNode->position())){
-                RoadmapNode* newNode = new RoadmapNode(qRand);
+                RoadmapNodePtr newNode = RoadmapNodePtr(new RoadmapNode(qRand));
                 tree->addNode(newNode);
                 tree->addEdge(newNode, minNode);
                 if (min <= eps_) {
@@ -74,7 +73,7 @@ int RRT::extend(Roadmap *tree, Configuration& qRand, bool reverse) {
             }
         }else{
             if (mobility->isReachable(minNode->position(), qRand)){
-                RoadmapNode* newNode = new RoadmapNode(qRand);
+                RoadmapNodePtr newNode = RoadmapNodePtr(new RoadmapNode(qRand));
                 tree->addNode(newNode);
                 tree->addEdge(minNode, newNode);
                 if (min <= eps_) {
@@ -95,7 +94,7 @@ int RRT::extend(Roadmap *tree, Configuration& qRand, bool reverse) {
     return Trapped;
 }
 
-int RRT::connect(Roadmap *tree,const Configuration &qNew, bool reverse) {
+int RRT::connect(RoadmapPtr tree,const Configuration &qNew, bool reverse) {
     if (debug) std::cout << "RRT::connect(" << qNew << ")" << std::endl;
 
     int ret = Reached;
@@ -114,13 +113,13 @@ void RRT::extractPath() {
 
 void RRT::extractPath(std::vector<Configuration>& o_path) {
     //std::cout << "RRT::path" << std::endl;
-    RoadmapNode* startMidNode = Tstart_->lastAddedNode();
-    RoadmapNode* goalMidNode  = Tgoal_ ->lastAddedNode();
+    RoadmapNodePtr startMidNode = Tstart_->lastAddedNode();
+    RoadmapNodePtr goalMidNode  = Tgoal_ ->lastAddedNode();
 
     o_path.clear();
     if (!startMidNode || !goalMidNode) return;
 
-    RoadmapNode* node;
+    RoadmapNodePtr node;
 
     if (extendFromStart_){
         node = startMidNode;
@@ -186,8 +185,8 @@ bool RRT::calcPath()
         std::cout << "eps:" << eps_ << std::endl;
     }
 
-    RoadmapNode* startNode = new RoadmapNode(start_);
-    RoadmapNode* goalNode  = new RoadmapNode(goal_);
+    RoadmapNodePtr startNode = RoadmapNodePtr(new RoadmapNode(start_));
+    RoadmapNodePtr goalNode  = RoadmapNodePtr(new RoadmapNode(goal_));
 
     Tstart_->addNode(startNode);
     Tgoal_ ->addNode(goalNode);
@@ -214,17 +213,15 @@ bool RRT::calcPath()
 
 void RRT::swapTrees()
 {
-    Roadmap *tmp = Ta_;
+    RoadmapPtr tmp = Ta_;
     Ta_ = Tb_;
     Tb_ = tmp;
 }
 
-void RRT::setForwardTree(Roadmap *tree) { 
-    delete Tstart_;
+void RRT::setForwardTree(RoadmapPtr tree) { 
     Tstart_ = Ta_ = tree;
 }
 
-void RRT::setBackwardTree(Roadmap *tree) { 
-    delete Tgoal_;
+void RRT::setBackwardTree(RoadmapPtr tree) { 
     Tgoal_ = Tb_ = tree;
 }

@@ -8,11 +8,11 @@
 #include <iostream>
 
 #include "Configuration.h"
+#include "Roadmap.h"
 
 namespace PathEngine {
     class PathPlanner;
     class Algorithm;
-    class Roadmap;
 
     /**
      * 経路計画アルゴリズム生成関数
@@ -89,7 +89,7 @@ namespace PathEngine {
         /**
          * @brief ロードマップ
          */
-        Roadmap *roadmap_;
+        RoadmapPtr roadmap_;
 
         /**
          * @brief デバッグ出力の制御
@@ -166,7 +166,7 @@ namespace PathEngine {
          * @brief ロードマップを取得する
          * @return ロードマップ
          */
-        Roadmap *getRoadmap() { return roadmap_; } 
+        RoadmapPtr getRoadmap() { return roadmap_; } 
 
         /**
          * @brief 経路計画の準備をし、初期位置と目標位置が有効なものであることをチェックする

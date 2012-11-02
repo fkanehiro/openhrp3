@@ -42,14 +42,14 @@ void OpenHRP_PathPlannerSVC_impl::getRoadmap(OpenHRP::PathPlanner::Roadmap_out g
 {
     std::cout << "getRoadmap()" << std::endl;
 
-    PathEngine::Roadmap *roadmap = path_->getRoadmap();
+    PathEngine::RoadmapPtr roadmap = path_->getRoadmap();
 
     graph = new OpenHRP::PathPlanner::Roadmap;
     std::cout << "the number of nodes = " << roadmap->nNodes() << std::endl;
     graph->length(roadmap->nNodes());
   
     for (unsigned int i=0; i<roadmap->nNodes(); i++) {
-        PathEngine::RoadmapNode *node = roadmap->node(i);
+        PathEngine::RoadmapNodePtr node = roadmap->node(i);
         const PathEngine::Configuration& pos = node->position(); 
         graph[i].cfg[0] = pos.value(0);
         graph[i].cfg[1] = pos.value(1);
@@ -64,7 +64,7 @@ void OpenHRP_PathPlannerSVC_impl::getRoadmap(OpenHRP::PathPlanner::Roadmap_out g
 
 void OpenHRP_PathPlannerSVC_impl::clearRoadmap()
 {
-    PathEngine::Roadmap *rm = path_->getRoadmap();
+    PathEngine::RoadmapPtr rm = path_->getRoadmap();
     rm->clear();
 }
 

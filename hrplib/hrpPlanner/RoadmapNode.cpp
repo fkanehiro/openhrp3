@@ -2,15 +2,15 @@
 
 using namespace PathEngine;
 
-RoadmapNode *RoadmapNode::parent(unsigned int index)
+RoadmapNodePtr RoadmapNode::parent(unsigned int index)
 {
-  if (index >= parents_.size()) return NULL;
+  if (index >= parents_.size()) return RoadmapNodePtr();
   return parents_[index];
 }
 
-RoadmapNode *RoadmapNode::child(unsigned int index)
+RoadmapNodePtr RoadmapNode::child(unsigned int index)
 {
-  if (index >= children_.size()) return NULL;
+  if (index >= children_.size()) return RoadmapNodePtr();
   return children_[index];
 }
 

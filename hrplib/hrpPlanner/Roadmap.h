@@ -3,12 +3,15 @@
 #define __ROADMAP_H__
 
 #include <vector>
+#include <boost/shared_ptr.hpp>
 #include "Configuration.h"
+#include "RoadmapNode.h"
 #include "exportdef.h"
 
 namespace PathEngine{
     class PathPlanner;
-    class RoadmapNode;
+    class Roadmap;
+    typedef boost::shared_ptr<Roadmap> RoadmapPtr;
 
     /**
      * @brief ロードマップ
@@ -31,14 +34,14 @@ namespace PathEngine{
          * @brief ノードを追加する
          * @param node 追加されるノード
          */
-        void addNode(RoadmapNode *node) { nodes_.push_back(node); }
+        void addNode(RoadmapNodePtr node) { nodes_.push_back(node); }
 
         /**
          * @brief 有向エッジを追加する
          * @param from エッジの始点
          * @param to エッジの終点
          */
-        void addEdge(RoadmapNode *from, RoadmapNode *to);
+        void addEdge(RoadmapNodePtr from, RoadmapNodePtr to);
 
         /**
          * @brief このロードマップの内容を引数のロードマップに統合する
@@ -46,7 +49,7 @@ namespace PathEngine{
          * 統合の後、このロードマップの中身は空になる。
          * @param rdmp 統合先のロードマップ
          */
-        void integrate(Roadmap *rdmp);
+        void integrate(RoadmapPtr rdmp);
 
         /**
          * @brief ノード数を取得する
@@ -61,7 +64,7 @@ namespace PathEngine{
          * @param index ノードのインデックス
          * @return 不正なインデックスが渡された場合はNULL、それ以外はノードを返す
          */
-        RoadmapNode *node(unsigned int index);
+        RoadmapNodePtr node(unsigned int index);
 
         /**
          * @brief 最も距離の小さいノードを返す
@@ -69,20 +72,20 @@ namespace PathEngine{
          * @param node 最も近いノード。ノードが一つもない場合はNULL
          * @param distance 最も近いノードまでの距離
          */
-        void findNearestNode(const Configuration& cfg, RoadmapNode *&node, double &distance); 
+        void findNearestNode(const Configuration& cfg, RoadmapNodePtr &node, double &distance); 
 
         /**
          * @brief 最後に追加されたノードを取得する
          * @return 最後に追加されたノード。ノードが一つもない場合はNULL
          */
-        RoadmapNode *lastAddedNode();
+        RoadmapNodePtr lastAddedNode();
 
         /**
          * @brief 指定されたノードのインデックスを取得する
          * @param node ノード
          * @return ノードのインデックス。ノードがこのロードマップに存在しない場合は-1を返す
          */
-        int indexOfNode(RoadmapNode *node);
+        int indexOfNode(RoadmapNodePtr node);
 
         /**
          * @brief 深さ優先探索
@@ -90,7 +93,7 @@ namespace PathEngine{
          * @param goalNode 終了ノード
          * @return 探索結果を納めたパス
          */
-        std::vector<RoadmapNode *> DFS(RoadmapNode* startNode, RoadmapNode* goalNode);
+        std::vector<RoadmapNodePtr > DFS(RoadmapNodePtr startNode, RoadmapNodePtr goalNode);
 
         /**
          * @brief 2つのノードの接続を試み、接続できた場合はエッジを追加する
@@ -98,7 +101,7 @@ namespace PathEngine{
          * @param to 接続先
          * @param tryReversed trueの時逆向きの接続も試みる
          */
-        void tryConnection(RoadmapNode *from,  RoadmapNode *to, bool tryReversed=true);
+        void tryConnection(RoadmapNodePtr from,  RoadmapNodePtr to, bool tryReversed=true);
 
         /**
          * @brief ロードマップをクリアする
@@ -108,7 +111,7 @@ namespace PathEngine{
         /**
          * @brief ノードのリスト
          */
-        std::vector<RoadmapNode *> nodes_;
+        std::vector<RoadmapNodePtr> nodes_;
         PathPlanner *planner_;
         unsigned int m_nEdges;
     };
