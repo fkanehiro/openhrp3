@@ -37,7 +37,7 @@ bool PRM::buildRoadmap()
     
     // 干渉する位置でなければ追加
     if (!planner_->checkCollision(pos)) {
-      RoadmapNode* node = new RoadmapNode(pos);
+        RoadmapNodePtr node = RoadmapNodePtr(new RoadmapNode(pos));
       roadmap_->addNode(node);
       numPoints++;
     }
@@ -47,7 +47,7 @@ bool PRM::buildRoadmap()
   
   // エッジを作成
   Mobility* mobility = planner_->getMobility();
-  RoadmapNode *from, *to;
+  RoadmapNodePtr from, to;
   unsigned int n = roadmap_->nNodes();
   for (unsigned long i=0; i<n; i++) {
     if (!isRunning_) {
@@ -81,12 +81,12 @@ bool PRM::calcPath()
 
   // スタートとゴールを追加
   Mobility *mobility = planner_->getMobility();
-  RoadmapNode* startNode = new RoadmapNode(start_);
-  RoadmapNode* goalNode = new RoadmapNode(goal_);
+  RoadmapNodePtr startNode = RoadmapNodePtr(new RoadmapNode(start_));
+  RoadmapNodePtr goalNode = RoadmapNodePtr(new RoadmapNode(goal_));
   roadmap_->addNode(startNode);
   roadmap_->addNode(goalNode);
 
-  RoadmapNode* node;
+  RoadmapNodePtr node;
   for (unsigned long i=0; i<roadmap_->nNodes(); i++) {
     node = roadmap_->node(i);
     const Configuration& pos = node->position();
@@ -103,7 +103,7 @@ bool PRM::calcPath()
   std::cout << "goal node has " << goalNode->nParents()
 	    << " parents" << std::endl;
 
-  std::vector<RoadmapNode *> nodePath;
+  std::vector<RoadmapNodePtr> nodePath;
   nodePath = roadmap_->DFS(startNode, goalNode);
   for (unsigned int i=0; i<nodePath.size(); i++){
     path_.push_back(nodePath[i]->position());

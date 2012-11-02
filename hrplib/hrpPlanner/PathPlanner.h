@@ -384,7 +384,7 @@ namespace PathEngine {
          * @brief ロードマップを取得する
          * @return ロードマップ
          */
-        Roadmap *getRoadmap() { return algorithm_->getRoadmap();}
+        RoadmapPtr getRoadmap() { return algorithm_->getRoadmap();}
 
         /**
          * @brief 計画された経路の補間されたものを取得する

@@ -3,10 +3,14 @@
 #define __ROADMAP_NODE_H__
 
 #include <vector>
+#include <boost/shared_ptr.hpp>
 #include "Configuration.h"
 #include "exportdef.h"
 
 namespace PathEngine {
+  class RoadmapNode;
+  typedef boost::shared_ptr<RoadmapNode> RoadmapNodePtr;
+
   /**
    * @brief ロードマップのノード
    */
@@ -27,13 +31,13 @@ namespace PathEngine {
      * @brief 親ノードの追加
      * @param node 親ノード
      */
-    void addParent(RoadmapNode *node) { parents_.push_back(node); }
+    void addParent(RoadmapNodePtr node) { parents_.push_back(node); }
 
     /**
      * @brief 子ノードの追加
      * @param node 子ノード
      */
-    void addChild(RoadmapNode *node) { children_.push_back(node); }
+    void addChild(RoadmapNodePtr node) { children_.push_back(node); }
 
     /**
      * @brief 位置の取得
@@ -46,14 +50,14 @@ namespace PathEngine {
      * @param index 親ノードのインデックス
      * @return 不正なインデックスを指定した場合はNULL、それ以外は親ノード
      */
-    RoadmapNode *parent(unsigned int index);
+    RoadmapNodePtr parent(unsigned int index);
 
     /**
      * @brief 子ノードの取得
      * @param index 子ノードのインデックス
      * @return 不正なインデックスを指定した場合はNULL、それ以外は子ノード
      */
-    RoadmapNode *child(unsigned int index);
+    RoadmapNodePtr child(unsigned int index);
 
     /**
      * @brief 親ノードの数を取得
@@ -82,12 +86,12 @@ namespace PathEngine {
     /**
      * @brief 親ノードリスト
      */
-    std::vector<RoadmapNode*> parents_;
+    std::vector<RoadmapNodePtr> parents_;
 
     /**
      * @brief 子ノードリスト
      */
-    std::vector<RoadmapNode*> children_;
+    std::vector<RoadmapNodePtr> children_;
 
     /**
      * @brief このノードの座標

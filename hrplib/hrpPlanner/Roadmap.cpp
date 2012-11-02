@@ -8,9 +8,6 @@ using namespace PathEngine;
 
 void Roadmap::clear()
 {
-    for (unsigned int i=0; i<nodes_.size(); i++){
-        delete nodes_[i];
-    }
     nodes_.clear();
     m_nEdges = 0;
 }
@@ -20,14 +17,14 @@ Roadmap::~Roadmap()
     clear();
 }
 
-void Roadmap::addEdge(RoadmapNode *from, RoadmapNode *to)
+void Roadmap::addEdge(RoadmapNodePtr from, RoadmapNodePtr to)
 {
     from->addChild(to);
     to->addParent(from); 
     m_nEdges++;
 }
 
-void Roadmap::integrate(Roadmap *rdmp)
+void Roadmap::integrate(RoadmapPtr rdmp)
 {
     for (unsigned int i=0; i<nodes_.size(); i++){
         rdmp->addNode(nodes_[i]);
@@ -35,18 +32,18 @@ void Roadmap::integrate(Roadmap *rdmp)
     nodes_.clear();
 }
 
-RoadmapNode *Roadmap::node(unsigned int index)
+RoadmapNodePtr Roadmap::node(unsigned int index)
 {
-    if (index >= nodes_.size()) return NULL;
+    if (index >= nodes_.size()) return RoadmapNodePtr();
 
     return nodes_[index];
 }
 
 void Roadmap::findNearestNode(const Configuration& pos,
-                              RoadmapNode *& node, double &distance)
+                              RoadmapNodePtr & node, double &distance)
 {
     if (nodes_.size() == 0){
-        node = NULL;
+        node = RoadmapNodePtr();
         return;
     }
 
@@ -64,13 +61,13 @@ void Roadmap::findNearestNode(const Configuration& pos,
     }
 }
 
-RoadmapNode *Roadmap::lastAddedNode()
+RoadmapNodePtr Roadmap::lastAddedNode()
 {
-    if (nodes_.size() == 0) return NULL;
+    if (nodes_.size() == 0) return RoadmapNodePtr();
     return nodes_[nodes_.size()-1];
 }
 
-int Roadmap::indexOfNode(RoadmapNode *node)
+int Roadmap::indexOfNode(RoadmapNodePtr node)
 {
     for (unsigned int i=0; i<nodes_.size(); i++){
         if (nodes_[i] == node) return (int)i; 
@@ -78,22 +75,22 @@ int Roadmap::indexOfNode(RoadmapNode *node)
     return -1;
 }
 
-std::vector<RoadmapNode *> Roadmap::DFS(RoadmapNode* startNode, RoadmapNode* goalNode) 
+std::vector<RoadmapNodePtr > Roadmap::DFS(RoadmapNodePtr startNode, RoadmapNodePtr goalNode) 
 {
     for (unsigned int i=0; i<nodes_.size(); i++) {
         nodes_[i]->visited(false);
     }
 
-    std::vector<RoadmapNode*> path;
+    std::vector<RoadmapNodePtr> path;
     startNode->visited(true);
     path.push_back(startNode);
     while (path.size() > 0) {
-        RoadmapNode* node = path.back();
+        RoadmapNodePtr node = path.back();
 
         if (node == goalNode) {
             break;
         } else {
-            RoadmapNode* child = NULL;
+            RoadmapNodePtr child = RoadmapNodePtr();
             for (unsigned int i=0; i<node->nChildren(); i++) {
                 if (!node->child(i)->visited()) {
                     child = node->child(i);
@@ -112,7 +109,7 @@ std::vector<RoadmapNode *> Roadmap::DFS(RoadmapNode* startNode, RoadmapNode* goa
     return path;
 }
 
-void Roadmap::tryConnection(RoadmapNode *from, RoadmapNode *to, bool tryReverse)
+void Roadmap::tryConnection(RoadmapNodePtr from, RoadmapNodePtr to, bool tryReverse)
 {
     Mobility *mobility = planner_->getMobility();
     if (mobility->isReachable(from->position(), to->position())){
