@@ -9,7 +9,7 @@ using namespace PathEngine;
 static bool debug=false;
 //static bool debug=true;
 
-RRT::RRT(PathPlanner* plan) : Algorithm(plan) 
+RRT::RRT(PathPlanner* plan) : Algorithm(plan)
 {
     // set default properties
     properties_["max-trials"] = "10000";
@@ -192,11 +192,6 @@ bool RRT::calcPath()
     Tstart_->addNode(startNode);
     Tgoal_ ->addNode(goalNode);
 
-    for (unsigned int i=0; i<extraGoals_.size(); i++){
-        RoadmapNode *node = new RoadmapNode(extraGoals_[i]);
-        Tgoal_->addNode(node);
-    }
-
     bool isSucceed = false;
   
     for (int i=0; i<times_; i++) {
@@ -222,4 +217,14 @@ void RRT::swapTrees()
     Roadmap *tmp = Ta_;
     Ta_ = Tb_;
     Tb_ = tmp;
+}
+
+void RRT::setForwardTree(Roadmap *tree) { 
+    delete Tstart_;
+    Tstart_ = Ta_ = tree;
+}
+
+void RRT::setBackwardTree(Roadmap *tree) { 
+    delete Tgoal_;
+    Tgoal_ = Tb_ = tree;
 }
