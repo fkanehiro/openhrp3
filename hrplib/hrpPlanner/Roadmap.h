@@ -44,6 +44,14 @@ namespace PathEngine{
         void addEdge(RoadmapNodePtr from, RoadmapNodePtr to);
 
         /**
+         * @brief 有向エッジを削除する
+         * @param from エッジの始点
+         * @param to エッジの終点
+         * @return 削除できたらtrue
+         */
+        bool removeEdge(RoadmapNodePtr from, RoadmapNodePtr to);
+
+        /**
          * @brief このロードマップの内容を引数のロードマップに統合する
          *
          * 統合の後、このロードマップの中身は空になる。
