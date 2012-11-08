@@ -123,4 +123,7 @@ void Roadmap::tryConnection(RoadmapNodePtr from, RoadmapNodePtr to, bool tryReve
     }
 }
 
-
+bool Roadmap::removeEdge(RoadmapNodePtr from, RoadmapNodePtr to)
+{
+    return from->removeChild(to) && to->removeParent(from);
+}

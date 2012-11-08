@@ -40,6 +40,20 @@ namespace PathEngine {
     void addChild(RoadmapNodePtr node) { children_.push_back(node); }
 
     /**
+     * @brief 親ノードの削除
+     * @param node 親ノード
+     * @return 削除できたらtrue
+     */
+    bool removeParent(RoadmapNodePtr node);
+
+    /**
+     * @brief 子ノードの削除
+     * @param node 子ノード
+     * @return 削除できたらtrue
+     */
+    bool removeChild(RoadmapNodePtr node);
+
+    /**
      * @brief 位置の取得
      * @return 位置
      */
