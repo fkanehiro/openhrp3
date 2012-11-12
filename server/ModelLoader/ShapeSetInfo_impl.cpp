@@ -237,6 +237,21 @@ int ShapeSetInfo_impl::createShapeInfo(VrmlShape* shapeNode, const SFString* url
         shapeInfo.appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, triangleMesh, url);
         shapeInfoIndexMap.insert(make_pair(shapeNode, shapeInfoIndex));
     }
+
+    VrmlPointSet* pointSet = dynamic_node_cast<VrmlPointSet>(shapeNode->geometry).get();
+
+    if (pointSet){
+        
+        shapeInfoIndex = shapes_.length();
+        shapes_.length(shapeInfoIndex + 1);
+        ShapeInfo& shapeInfo = shapes_[shapeInfoIndex];
+
+        if ( url ) shapeInfo.url = CORBA::string_dup( url->c_str() );
+        setPointSet(shapeInfo, pointSet);
+        setPrimitiveProperties(shapeInfo, shapeNode);
+        shapeInfo.appearanceIndex = createAppearanceInfo(shapeInfo, shapeNode, pointSet, url);
+        shapeInfoIndexMap.insert(make_pair(shapeNode, shapeInfoIndex));
+    }
         
     return shapeInfoIndex;
 }
@@ -267,6 +282,22 @@ void ShapeSetInfo_impl::setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet
         shapeInfo.triangles[dpos++] = indices[spos++];
         shapeInfo.triangles[dpos++] = indices[spos++];
         spos++; // skip a terminater '-1'
+    }
+}
+
+
+void ShapeSetInfo_impl::setPointSet(ShapeInfo& shapeInfo, VrmlPointSet* pointSet)
+{
+    const MFVec3f& vertices = pointSet->coord->point;
+    size_t numVertices = vertices.size();
+    shapeInfo.vertices.length(numVertices * 3);
+
+    size_t pos = 0;
+    for(size_t i=0; i < numVertices; ++i){
+        const SFVec3f& v = vertices[i];
+        shapeInfo.vertices[pos++] = v[0];
+        shapeInfo.vertices[pos++] = v[1];
+        shapeInfo.vertices[pos++] = v[2];
     }
 }
 
@@ -375,6 +406,35 @@ int ShapeSetInfo_impl::createAppearanceInfo
 }
 
 
+int ShapeSetInfo_impl::createAppearanceInfo
+(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlPointSet* pointSet,
+ const SFString *url)
+{
+    int appearanceIndex = appearances_.length();
+    appearances_.length(appearanceIndex + 1);
+    AppearanceInfo& appInfo = appearances_[appearanceIndex];
+
+    appInfo.normalPerVertex = false;
+    appInfo.colorPerVertex = true;
+    appInfo.solid = false;
+    appInfo.creaseAngle = 0;
+    appInfo.materialIndex = -1;
+    appInfo.textureIndex = -1;
+
+    if(pointSet->color){
+        setColors(appInfo, pointSet);
+    }
+
+    VrmlAppearancePtr& appNode = shapeNode->appearance;
+
+    if(appNode) {
+        appInfo.materialIndex = createMaterialInfo(appNode->material);
+    }
+
+    return appearanceIndex;
+}
+
+
 void ShapeSetInfo_impl::setColors(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh)
 {
     const MFColor& colors = triangleMesh->color->color;
@@ -408,6 +468,22 @@ void ShapeSetInfo_impl::setColors(AppearanceInfo& appInfo, VrmlIndexedFaceSet* t
             for(int i=0; i < numOrgIndices; ++i){
                 appInfo.colorIndices[i] = orgIndices[i];
             }
+        }
+    }
+}
+
+
+void ShapeSetInfo_impl::setColors(AppearanceInfo& appInfo, VrmlPointSet* pointSet)
+{
+    const MFColor& colors = pointSet->color->color;
+    int numColors = colors.size();
+    appInfo.colors.length(numColors * 3);
+
+    int pos = 0;
+    for(int i=0; i < numColors; ++i){
+        const SFColor& color = colors[i];
+        for(int j=0; j < 3; ++j){
+            appInfo.colors[pos++] = color[j];
         }
     }
 }

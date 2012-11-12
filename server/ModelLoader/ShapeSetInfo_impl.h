@@ -78,9 +78,12 @@ private:
 
     int createShapeInfo(VrmlShape* shapeNode, const SFString* url);
     void setTriangleMesh(ShapeInfo& shapeInfo, VrmlIndexedFaceSet* triangleMesh);
+    void setPointSet(ShapeInfo& shapeInfo, VrmlPointSet* pointSet);
     void setPrimitiveProperties(ShapeInfo& shapeInfo, VrmlShape* shapeNode);
     int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlIndexedFaceSet* faceSet, const SFString *url);
+    int createAppearanceInfo(ShapeInfo& shapeInfo, VrmlShape* shapeNode, VrmlPointSet* pointSet, const SFString *url);
     void setColors(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
+    void setColors(AppearanceInfo& appInfo, VrmlPointSet* pointSet);
     void setNormals(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     void setTexCoords(AppearanceInfo& appInfo, VrmlIndexedFaceSet* triangleMesh);
     int createMaterialInfo(VrmlMaterialPtr& materialNode);
