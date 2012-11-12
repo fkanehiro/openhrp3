@@ -71,6 +71,7 @@ namespace hrp {
         
         bool convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh);
         bool convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& triangleMesh);
+        bool convertPointSet(VrmlPointSet* pointSet, VrmlIndexedFaceSetPtr& triangleMesh);
         bool convertCylinder(VrmlCylinder* cylinder, VrmlIndexedFaceSetPtr& triangleMesh);
         bool convertSphere(VrmlSphere* sphere, VrmlIndexedFaceSetPtr& triangleMesh);
         bool convertElevationGrid(VrmlElevationGrid* grid, VrmlIndexedFaceSetPtr& triangleMesh);
@@ -247,6 +248,8 @@ bool TMSImpl::convertShapeNode(VrmlShape* shapeNode)
             
         } else if(VrmlExtrusion* extrusion = dynamic_cast<VrmlExtrusion*>(geometry)){
             result = convertExtrusion(extrusion, triangleMesh);
+        } else if(VrmlPointSet* pointSet = dynamic_cast<VrmlPointSet*>(geometry)){
+            result = convertPointSet(pointSet, triangleMesh);
         }
         if(result){
             shapeToOriginalGeometryMap[shapeNode] = node;
@@ -545,6 +548,15 @@ bool TMSImpl::convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh)
         indices[di++] = triangles[si++];
         indices[di++] = -1;
     }
+
+    return true;
+}
+
+
+bool TMSImpl::convertPointSet(VrmlPointSet* pointSet, VrmlIndexedFaceSetPtr& triangleMesh)
+{
+    triangleMesh->coord = pointSet->coord;
+    triangleMesh->color = pointSet->color;
 
     return true;
 }
