@@ -221,13 +221,11 @@ void ShapeSetInfo_impl::traverseShapeNodes
 */
 int ShapeSetInfo_impl::createShapeInfo(VrmlShape* shapeNode, const SFString* url)
 {
-    std::cout << "createShapeInfo" << std::endl;
     int shapeInfoIndex = -1;
 
     VrmlIndexedFaceSet* triangleMesh = dynamic_node_cast<VrmlIndexedFaceSet>(shapeNode->geometry).get();
 
     if(triangleMesh){
-        std::cout << "triangleMesh" << std::endl;
 
         shapeInfoIndex = shapes_.length();
         shapes_.length(shapeInfoIndex + 1);
