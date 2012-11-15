@@ -1,0 +1,88 @@
+# package list for ubuntu 12.10
+
+# java
+openjdk-6-jdk
+openjdk-6-jre
+jython
+libreadline-java
+java-common
+
+# japanese font
+ttf-sazanami-gothic
+ttf-sazanami-mincho
+ttf-kochi-gothic
+ttf-kochi-mincho
+
+# compiler & build tools
+gcc
+g++
+make
+build-essential
+cmake
+cmake-qt-gui
+cmake-curses-gui
+doxygen
+graphviz
+pkg-config
+python-yaml
+
+
+# omniORB
+libcos4-dev
+libomnievents-dev
+libomniorb4-1
+libomniorb4-dev
+libomnithread3-dev
+libomnithread3c2
+omnievents
+omniidl
+omniidl-python
+omniorb
+omniorb-idl
+omniorb-nameserver
+python-omniorb
+python-tk
+
+# math 
+liblapack3gf
+liblapack-dev
+libatlas-base-dev
+libatlas-dev
+libblas3gf
+libblas-dev
+f2c
+libf2c2
+libf2c2-dev
+libgfortran3
+libgfortran3-dbg
+
+# boost
+libboost1.49-dev
+libboost-filesystem1.49-dev 
+libboost-program-options1.49-dev 
+libboost-regex1.49-dev
+libboost-signals1.49-dev
+libboost-thread1.49-dev
+
+# eclipse3.4.2
+#xulrunner-1.9.2
+
+# etc
+zlib1g-dev
+libjpeg62-dev
+libpng12-dev
+uuid-dev
+
+# openrtm
+openrtm-aist
+
+
+#eigen3
+libeigen3-dev
+
+#collada
+collada-dom-dev
+
+# for hrpsys
+# libncurses5-dev
+# libreadline5-dev
