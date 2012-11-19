@@ -13,6 +13,7 @@ namespace hrp{
     typedef Eigen::VectorXd dvector;
     typedef Eigen::VectorXi ivector;
     typedef Eigen::Matrix<double, 6,1> dvector6;
+    typedef Eigen::Quaternion<double> dquaternion;
 };
 
 #endif
