@@ -31,14 +31,14 @@ set(DEPENDENT_BASENAMES
   libf2c2-dev 
   libgfortran3
   libgfortran3-dbg
-  libboost1.46-dev
-  libboost-filesystem1.46-dev 
-  libboost-program-options1.46-dev 
-  libboost-regex1.46-dev
-  libboost-signals1.46-dev
-  libboost-thread1.46-dev
+  libboost1.49-dev
+  libboost-filesystem1.49-dev 
+  libboost-program-options1.49-dev 
+  libboost-regex1.49-dev
+  libboost-signals1.49-dev
+  libboost-thread1.49-dev
   zlib1g-dev
-  libjpeg-dev
+  libjpeg62-dev
   libpng12-dev
   uuid-dev
   openrtm-aist

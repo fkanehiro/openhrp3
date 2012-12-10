@@ -101,7 +101,7 @@ endif()
         BOOST_ROOT
         NAMES boost/algorithm boost/bind boost/regex boost/thread boost/numeric
         PATHS $ENV{HOMEDRIVE}/Program Files $ENV{HOMEDRIVE}/
-        PATH_SUFFIXES Boost-1.41.0 Boost-1.40.0 Boost-1.39.0 Boost-1.38.0 Boost-1.37.0 Boost-1.36.0 Boost-1.35.0
+        PATH_SUFFIXES Boost_1_44 Boost-1.41.0 Boost-1.40.0 Boost-1.39.0 Boost-1.38.0 Boost-1.37.0 Boost-1.36.0 Boost-1.35.0
         DOC "The root directory of boost")
     else()
       set(BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "The root directory of boost")
