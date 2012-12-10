@@ -498,7 +498,7 @@ public class GrxRobotStatView extends GrxBaseView {
 	    jointTV_.getTable().setSize(point);
 	    Point point1 = sensorTV_.getTable().computeSize(SWT.DEFAULT, SWT.DEFAULT);
 	    sensorTV_.getTable().setSize(point1);
-	   // setScrollMinSize(point.x+point1.x, point.y+point1.y);
+	    setScrollMinSize(0, point.y+point1.y);
 	    mainPanel_.layout(true);
     }
     
