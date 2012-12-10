@@ -218,13 +218,6 @@ public class GrxRobotStatView extends GrxBaseView {
             viewers_[i].getTable().setHeaderVisible(showheader[i]);
             viewers_[i].getTable().setLinesVisible(true);
             viewers_[i].getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-            if (osName_.equals("Linux")) {
-            	viewers_[i].getTable().addListener(SWT.MeasureItem, new Listener() {
-            		public void handleEvent(Event event) {
-            			event.height = 15;
-            		}
-            	});
-            }
         }
         //setScrollMinSize(SWT.DEFAULT,SWT.DEFAULT);
         
@@ -493,7 +486,9 @@ public class GrxRobotStatView extends GrxBaseView {
         }
 	    jointTV_.setInput(_createJointTVInput());
 	    sensorTV_.setInput(_createSensorTVInput());	
-
+	    viewPanel_[0].layout();
+	    viewPanel_[1].layout();
+	    
 	    Point point = jointTV_.getTable().computeSize(SWT.DEFAULT, SWT.DEFAULT);
 	    jointTV_.getTable().setSize(point);
 	    Point point1 = sensorTV_.getTable().computeSize(SWT.DEFAULT, SWT.DEFAULT);
