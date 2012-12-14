@@ -1,6 +1,6 @@
-start "JoystickControllerComp" "components\JoystickControllerComp.exe"
+start "JoystickControllerComp" "JoystickControllerComp.exe"
 
-set PATH=%PATH%;"C:\Program Files\OpenHRP\bin"
+set PATH=%PATH%;"@CMAKE_INSTALL_PREFIX@/bin"
 openhrp-controller-bridge ^
 --server-name JoystickController ^
 --out-port angle:JOINT_VALUE ^
