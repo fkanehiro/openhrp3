@@ -5,6 +5,8 @@ elseif(${OPENRTM_VERSION} STREQUAL ${OPENRTM_VERSION110})
 endif()
 CONFIGURE_FILE( JoystickComponent-project/META-INF/MANIFEST.MF.in JoystickComponent-project/META-INF/MANIFEST.MF)
 CONFIGURE_FILE( JoystickComponent-project/build.properties.in JoystickComponent-project/build.properties)
+CONFIGURE_FILE( Controller/JoystickControllerAutomated.bat.in Controller/JoystickControllerAutomated.bat)
+CONFIGURE_FILE( Controller/JoystickController.bat.in Controller/JoystickControlle.bat)
 
 install(FILES JoystickContorller.xml JoystickConnection.rtclink SimulationProject.xml
   DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/JoystickControl)
