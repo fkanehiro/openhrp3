@@ -160,7 +160,7 @@ class JoystickController
 
 extern "C"
 {
-  void JoystickControllerInit(RTC::Manager* manager);
+  DLL_EXPORT void JoystickControllerInit(RTC::Manager* manager);
 };
 
 #endif // JOYSTICKCONTROLLER_H
