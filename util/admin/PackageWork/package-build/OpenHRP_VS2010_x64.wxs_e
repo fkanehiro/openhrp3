@@ -1,12 +1,12 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-  <Product Name='OpenHRP-SDK 3.1.4 for VS2010'
-           Id='CDE0E7E5-1387-44e5-9560-DAEB2F9BBBCE'
-           UpgradeCode='{773A89C4-DA59-495C-84C6-F2EF92967EC0}'
+  <Product Name='OpenHRP-SDK 3.1.4 for VS2010 64bit'
+           Id='{75F80013-F1D9-47DE-AEAC-1736AE1BBFAD}'
+           UpgradeCode='{2993DB18-17DF-410D-A3BA-AC7D5130D50A}'
            Language='1033' Codepage='1252'
            Version='3.1.4' Manufacturer='AIST'>
     <Package Id='*' Keywords='Installer'
-             Description='OpenHRP-SDK 3.1.4 for VS2010 Installer'
+             Description='OpenHRP-SDK 3.1.4 for VS2010 64bit Installer'
              Comments='This installer database contains the logic and data required to install OpenHRP-SDK 3.1.4.'
              Manufacturer='AIST' InstallerVersion='100'
              Languages='1033' Compressed='yes' SummaryCodepage='1252' />

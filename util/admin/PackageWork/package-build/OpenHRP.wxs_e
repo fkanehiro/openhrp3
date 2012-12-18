@@ -1,13 +1,13 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-  <Product Name='OpenHRP-SDK 3.1.3'
+  <Product Name='OpenHRP-SDK 3.1.4'
            Id='B9741C26-A1D9-48fd-BAD9-14927D2BF03E'
-           UpgradeCode='CD1A1B06-6F05-4aec-B927-6DD8FB22A3BC'
+           UpgradeCode='{C6ABA52E-A0DF-412B-A8C6-BE09E85581B6}'
            Language='1033' Codepage='1252'
-           Version='3.1.3' Manufacturer='AIST'>
+           Version='3.1.4' Manufacturer='AIST'>
     <Package Id='*' Keywords='Installer'
-             Description='OpenHRP-SDK 3.1.3 Installer'
-             Comments='This installer database contains the logic and data required to install OpenHRP-SDK 3.1.3.'
+             Description='OpenHRP-SDK 3.1.4 Installer'
+             Comments='This installer database contains the logic and data required to install OpenHRP-SDK 3.1.4.'
              Manufacturer='AIST' InstallerVersion='100'
              Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
