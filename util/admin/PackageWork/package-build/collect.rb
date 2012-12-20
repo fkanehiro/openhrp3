@@ -5,7 +5,8 @@ require 'FileUtils'
 require 'pp'
 
 
-CONFIG_YAML_FILE = 'config.yaml'
+#CONFIG_YAML_FILE = 'config.yaml'
+CONFIG_YAML_FILE = ARGV[0]
 $config = YAML.load(open(CONFIG_YAML_FILE).read)
 
 
@@ -58,4 +59,6 @@ end
   
 copyFiles()
 collectFiles()
-margeFiles()
+if ARGV[1] == "marge" then
+	margeFiles()
+end
