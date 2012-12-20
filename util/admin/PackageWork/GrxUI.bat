@@ -1,2 +1,2 @@
-..\GrxUI\GrxUI.exe -data %TEMP%\grxui
+..\GrxUI\GrxUI.exe -data %TEMP%\grxui -clean
 

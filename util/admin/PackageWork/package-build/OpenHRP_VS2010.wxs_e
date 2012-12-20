@@ -19,7 +19,7 @@
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" />
     <UIRef Id="WixUI_ErrorProgressText" />
     <Icon Id="OpenHRP_ICON" SourceFile="grxrobot.ico" />
-    <WixVariable Id="WixUILicenseRtf" Value="license-ja.rtf" />
+    <WixVariable Id="WixUILicenseRtf" Value="license-en.rtf" />
     <Property Id="ARPPRODUCTICON" Value="OpenHRP_ICON" />
   </Product>
 </Wix>
