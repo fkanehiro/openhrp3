@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set VERSION_STRING=3.1.3
+set VERSION_STRING=3.1.4
 
 rem ディレクトリ関連
 set SRC_DIR=src
@@ -14,7 +14,7 @@ set SDK_INSTALL_DIR=C:\Program Files\OpenHRPSDK
 rem SVN関連
 rem set IS_PLAIN_SVN=1
 set TORTOISESVN_COMMAND=C:\Program Files\TortoiseSVN\bin\TortoiseProc.exe
-set SVN_URL=https://openrtp.jp/svn/hrg/openhrp/3.1/tags/3.1.3
+set SVN_URL=https://openrtp.jp/svn/hrg/openhrp/3.1/tags/3.1.4
 set SVN_USERID=
 set SVN_PASSWORD=
 set SVN_REVISION=HEAD
@@ -24,7 +24,7 @@ set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/VCExpres
 rem set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/devenv.exe
 
 rem ECLIPSE LAUNCHER
-set ECLIPSE_LAUNCHER="C:\Users\admin\eclipse_rtm1.1\eclipse\plugins\org.eclipse.equinox.launcher_1.0.101.R34x_v20081125.jar"
+rem set ECLIPSE_LAUNCHER="C:\Users\admin\eclipse_rtm1.1\eclipse\plugins\org.eclipse.equinox.launcher_1.0.101.R34x_v20081125.jar"
 
 rem Eclipse製品関連(基本的には設定不要)
 set ECLIPSE_ANT_XML=product.xml
@@ -72,6 +72,11 @@ goto :EndBatch
 
 if /i "%1"=="package" (
 call :Package
+goto :EndBatch
+)
+
+if /i "%1"=="MakeMsi" (
+call :MakeMsi
 goto :EndBatch
 )
 
@@ -139,6 +144,7 @@ cd %SRC_DIR%
 if defined INSTALL_DIR (
 echo %BASE_DIR%\%INSTALL_DIR% にインストールするソリューションファイルを作成します。
 call cmake -G "Visual Studio 9 2008" -DCMAKE_INSTALL_PREFIX:PATH=%BASE_DIR%\%INSTALL_DIR%
+rem -DJDK_DIR="C:\Program Files\Java\jdk1.6.0_32"
 ) else (
 echo %ProgramFiles%\OpenHRP にインストールするソリューションファイルを作成します。
 call cmake -G "Visual Studio 9 2008"
@@ -185,6 +191,8 @@ call cmake -G "Visual Studio 9 2008" -DCMAKE_INSTALL_PREFIX:PATH="%SDK_INSTALL_D
 if errorlevel 1 set IS_ERROR=1
 copy hrplib\hrpModel\config.h ..\pack_src\OpenHRP\include\OpenHRP-3.1\hrpModel\config.h
 cd %BASE_DIR%
+copy %SRC_INITIALIZER_ORIGIN% %SRC_INITIALIZER_TMP%
+copy %SRC_INITIALIZER_WINRCP% %SRC_INITIALIZER_ORIGIN%
 exit /b %IS_ERROR%
 
 
@@ -204,22 +212,22 @@ call :PluginTmpClean
 goto :EOF
 
 :Product
-call :ProductClean
-echo Eclipseプラグイン作成を行います。
+rem call :ProductClean
+rem echo Eclipseプラグイン作成を行います。
 
 copy %SRC_INITIALIZER_ORIGIN% %SRC_INITIALIZER_TMP%
 copy %SRC_INITIALIZER_WINRCP% %SRC_INITIALIZER_ORIGIN%
 
-java -jar %ECLIPSE_LAUNCHER% -application org.eclipse.ant.core.antRunner -data "%ECLIPSE_WORKSPACE%" -buildfile %ECLIPSE_ANT_XML%
-if not exist %PRODUCT_ZIP% (
-echo Eclipseプラグイン作成に失敗しました。
-exit /b 1
-)
-unzip %PRODUCT_ZIP%
+rem java -jar %ECLIPSE_LAUNCHER% -application org.eclipse.ant.core.antRunner -data "%ECLIPSE_WORKSPACE%" -buildfile %ECLIPSE_ANT_XML%
+rem if not exist %PRODUCT_ZIP% (
+rem echo Eclipseプラグイン作成に失敗しました。
+rem exit /b 1
+rem )
+rem unzip %PRODUCT_ZIP%
 
-move /Y %PRODUCT_DIRNAME% %PACK_SRC_DIR%
-move /Y %SRC_INITIALIZER_TMP% %SRC_INITIALIZER_ORIGIN%
-call :ProductTmpClean
+rem move /Y %PRODUCT_DIRNAME% %PACK_SRC_DIR%
+rem move /Y %SRC_INITIALIZER_TMP% %SRC_INITIALIZER_ORIGIN%
+rem call :ProductTmpClean
 goto :EOF
 
 :Package
@@ -227,10 +235,13 @@ call :PackageClean
 cd %PACKAGE_DIR%
 
 echo インストーラパッケージに含まれる内容を収集します。
-call ruby collect.rb
+call ruby collect.rb config.yaml
 if errorlevel 1 exit /b 1
+cd %BASE_DIR%
+goto :EOF
 
-
+:MakeMsi
+cd %PACKAGE_DIR%
 echo 収集した内容からXMLファイルを作成します。
 call ruby create_wxs.rb
 if errorlevel 1 exit /b 1
