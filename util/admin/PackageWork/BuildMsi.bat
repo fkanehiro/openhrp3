@@ -235,7 +235,7 @@ call :PackageClean
 cd %PACKAGE_DIR%
 
 echo インストーラパッケージに含まれる内容を収集します。
-call ruby collect.rb config.yaml
+call ruby collect.rb config.yaml marge
 if errorlevel 1 exit /b 1
 cd %BASE_DIR%
 goto :EOF
@@ -243,7 +243,7 @@ goto :EOF
 :MakeMsi
 cd %PACKAGE_DIR%
 echo 収集した内容からXMLファイルを作成します。
-call ruby create_wxs.rb
+call ruby create_wxs.rb config.yaml
 if errorlevel 1 exit /b 1
 
 echo WiXを使用してXMLファイルをコンパイルします。(日本語)
