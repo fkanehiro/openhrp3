@@ -1,12 +1,12 @@
 - src: diff/rtm_config.vsprops
   comp: diff/origin/rtm_config.vsprops
-  origin: C:/Program Files/OpenRTM-aist/1.1/etc/rtm_config.vsprops
+  origin: C:\Program Files\OpenRTM-aist\vs2008\1.1\etc\rtm_config.vsprops
   dest: etc/
 - src: diff/rtc-template.py
   comp: diff/origin/rtc-template.py
-  origin: C:/Program Files/OpenRTM-aist/1.1/utils/rtc-template/rtc-template.py
+  origin: C:\Program Files\OpenRTM-aist\vs2008\1.1\utils\rtc-template\rtc-template.py
   dest: utils/rtc-template
 - src: diff/vcproj_gen.py
   comp: diff/origin/vcproj_gen.py
-  origin: C:/Program Files/OpenRTM-aist/1.1/utils/rtc-template/vcproj_gen.py
+  origin: C:\Program Files\OpenRTM-aist\vs2008\1.1\utils\rtc-template\vcproj_gen.py
   dest: utils/rtc-template

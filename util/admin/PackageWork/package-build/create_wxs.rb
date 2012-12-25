@@ -324,7 +324,8 @@ def create_wxs(root, template_file, out_wxs_file)
   }
 end
 
-CONFIG_YAML_FILE = 'config.yaml'
+#CONFIG_YAML_FILE = 'config.yaml'
+CONFIG_YAML_FILE = ARGV[0]
 $config = YAML.load(open(CONFIG_YAML_FILE).read)
 
 root = RootDir.instance

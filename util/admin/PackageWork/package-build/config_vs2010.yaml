@@ -1,0 +1,10 @@
+SOURCE_PATH: ../pack_src/OpenHRP # コンパイル済みのOpenHRPのディレクトリ
+HARVEST_PATH: ./OpenHRPSDK      # リリース物件を格納するディレクトリ
+COLLECT_YAML_FILE: collect_vs2010.yaml # OpenHRP以外のリリース物件のファイル定義
+MARGE_YAML_FILE:      # オリジナルから変更するファイル定義
+TEMPLATE_FILE_E: OpenHRP_VS2010.wxs_e    # wxsテンプレートファイル
+OUT_WXS_FILE_E: OpenHRPe.wxs      # 出力わきのwxsファイル名
+TEMPLATE_FILE_J: OpenHRP_VS2010.wxs_j    # wxsテンプレートファイル
+OUT_WXS_FILE_J: OpenHRPj.wxs      # 出力わきのwxsファイル名
+INSTALL_DIR_NAME: OpenHRPSDK    # インストール時のディレクトリ名 C:\Program Files\$(INSTALL_DIR_NAME)
+ENV_ROOT_NAME: OPENHRP_SDK_ROOT # 環境変数に追加するOpenHRPルートの環境変数名

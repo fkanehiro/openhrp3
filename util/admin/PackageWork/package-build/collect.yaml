@@ -1,6 +1,6 @@
 # OpenHRP以外のリリース物件のファイル定義
 - name: OpenRTM
-  path: C:/Program Files/OpenRTM-aist/1.1  # ソースディレクトリのパス
+  path: C:/Program Files/OpenRTM-aist/vs2008/1.1  # ソースディレクトリのパス
   files: 
     bin:                 # インストール先のディレクトリ
       - bin/coil110.dll     # 収集するファイルorディレクトリ(pathからの相対パス)
@@ -31,7 +31,7 @@
       - utils/rtc-template/vcprojtool.py
       - utils/rtc-template/yat.py
 - name: omniORB
-  path: C:/Program Files/OpenRTM-aist/1.1/omniORB/4.1.4
+  path: C:/Program Files/OpenRTM-aist/vs2008/1.1/omniORB/4.1.4
   files:
     bin:
       - bin/x86_win32/omniNames.exe

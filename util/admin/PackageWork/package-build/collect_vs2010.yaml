@@ -1,0 +1,207 @@
+# OpenHRP以外のリリース物件のファイル定義
+- name: OpenRTM
+  path: C:\Program Files\OpenRTM-aist\vs2010\1.1  # ソースディレクトリのパス
+  files: 
+    bin:                 # インストール先のディレクトリ
+      - bin/coil110.dll     # 収集するファイルorディレクトリ(pathからの相対パス)
+      - bin/coil110d.dll
+      - bin/RTC110.dll
+      - bin/RTC110d.dll
+      - bin/rtcd.exe
+      - bin/rtcprof.exe
+    include:
+      - coil/
+      - rtm/
+    lib:
+      - bin/coil110.lib
+      - bin/coil110d.lib
+      - bin/RTC110.lib
+      - bin/RTC110d.lib
+    utils/rtc-template:
+      - utils/rtc-template/cxx_gen.py
+      - utils/rtc-template/cxx_svc_impl.py
+      - utils/rtc-template/gen_base.py
+      - utils/rtc-template/profile_gen.py
+      - utils/rtc-template/python_gen.py
+      - utils/rtc-template/README_gen.py
+      - utils/rtc-template/rtc-template.py
+      - utils/rtc-template/slntool.py
+      - utils/rtc-template/uuid.py
+      - utils/rtc-template/vcproj_gen.py
+      - utils/rtc-template/vcprojtool.py
+      - utils/rtc-template/yat.py
+- name: omniORB
+  path: C:\Program Files\OpenRTM-aist\vs2010\1.1\omniORB\4.1.5
+  files:
+    bin:
+      - bin/x86_win32/omniNames.exe
+      - bin/x86_win32/omniDynamic415_vc10_rt.dll
+      - bin/x86_win32/omniDynamic415_vc10_rtd.dll
+      - bin/x86_win32/omniORB415_vc10_rt.dll
+      - bin/x86_win32/omniORB415_vc10_rtd.dll
+      - bin/x86_win32/omnithread34_vc10_rt.dll
+      - bin/x86_win32/omnithread34_vc10_rtd.dll
+    include:
+      - include/omniconfig.h
+      - include/omnithread.h
+      - include/omniORB4/
+      - include/omnithread/
+    lib:
+      - lib/x86_win32/omniDynamic415_rt.lib
+      - lib/x86_win32/omniDynamic415_rtd.lib
+      - lib/x86_win32/omniORB415_rt.lib
+      - lib/x86_win32/omniORB415_rtd.lib
+      - lib/x86_win32/omnithread34_rt.lib
+      - lib/x86_win32/omnithread34_rtd.lib
+- name: License
+  path: ./
+  files:
+    ./:
+      - License/epl-v10.html
+      - License/license-en.txt
+      - License/license-ja.txt
+    License/:
+      - License/clapack_COPYING
+      - License/omniORB_COPYING
+      - License/OpenRTM-aist_COPYRIGHT
+      - License/Eigen_LICENSE.rtf
+      - License/collada_dom_LICENSE.rtf
+- name: GrxUI
+  path: ../
+  files:
+    ./:
+      - GrxUI/
+- name: Boost-1.44.0
+  feature: true
+  description: Boost-1.44.0
+  path: C:\Program Files\boost_1_44
+  files:
+    include/:
+      - boost/
+    bin:
+      - lib/boost_date_time-vc100-mt-1_44.dll
+      - lib/boost_date_time-vc100-mt-gd-1_44.dll
+#      - lib/boost_date_time-vc90-mt-1_44.dll
+#      - lib/boost_date_time-vc90-mt-gd-1_44.dll
+      - lib/boost_filesystem-vc100-mt-1_44.dll
+      - lib/boost_filesystem-vc100-mt-gd-1_44.dll
+#      - lib/boost_filesystem-vc90-mt-1_44.dll
+#      - lib/boost_filesystem-vc90-mt-gd-1_44.dll
+      - lib/boost_signals-vc100-mt-1_44.dll
+      - lib/boost_signals-vc100-mt-gd-1_44.dll
+#      - lib/boost_signals-vc90-mt-1_44.dll
+#      - lib/boost_signals-vc90-mt-gd-1_44.dll
+      - lib/boost_system-vc100-mt-1_44.dll
+      - lib/boost_system-vc100-mt-gd-1_44.dll
+#      - lib/boost_system-vc90-mt-1_44.dll
+#      - lib/boost_system-vc90-mt-gd-1_44.dll
+      - lib/boost_thread-vc100-mt-1_44.dll
+      - lib/boost_thread-vc100-mt-gd-1_44.dll
+#      - lib/boost_thread-vc90-mt-1_44.dll
+#      - lib/boost_thread-vc90-mt-gd-1_44.dll
+    lib:
+      - lib/boost_date_time-vc100-mt-1_44.lib
+      - lib/boost_date_time-vc100-mt-gd-1_44.lib
+#      - lib/boost_date_time-vc90-mt-1_44.lib
+#      - lib/boost_date_time-vc90-mt-gd-1_44.lib
+      - lib/boost_filesystem-vc100-mt-1_44.lib
+      - lib/boost_filesystem-vc100-mt-gd-1_44.lib
+#      - lib/boost_filesystem-vc90-mt-1_44.lib
+#      - lib/boost_filesystem-vc90-mt-gd-1_44.lib
+      - lib/boost_signals-vc100-mt-1_44.lib
+      - lib/boost_signals-vc100-mt-gd-1_44.lib
+#      - lib/boost_signals-vc90-mt-1_44.lib
+#      - lib/boost_signals-vc90-mt-gd-1_44.lib
+      - lib/boost_system-vc100-mt-1_44.lib
+      - lib/boost_system-vc100-mt-gd-1_44.lib
+#      - lib/boost_system-vc90-mt-1_44.lib
+#      - lib/boost_system-vc90-mt-gd-1_44.lib
+      - lib/boost_thread-vc100-mt-1_44.lib
+      - lib/boost_thread-vc100-mt-gd-1_44.lib
+#      - lib/boost_thread-vc90-mt-1_44.lib
+#      - lib/boost_thread-vc90-mt-gd-1_44.lib
+      - lib/libboost_filesystem-vc100-mt-1_44.lib
+      - lib/libboost_filesystem-vc100-mt-gd-1_44.lib
+#      - lib/libboost_filesystem-vc90-mt-1_44.lib
+#      - lib/libboost_filesystem-vc90-mt-gd-1_44.lib
+      - lib/libboost_program_options-vc100-mt-1_44.lib
+      - lib/libboost_program_options-vc100-mt-gd-1_44.lib
+#      - lib/libboost_program_options-vc90-mt-1_44.lib
+#      - lib/libboost_program_options-vc90-mt-gd-1_44.lib
+      - lib/libboost_regex-vc100-mt-1_44.lib
+      - lib/libboost_regex-vc100-mt-gd-1_44.lib
+#      - lib/libboost_regex-vc90-mt-1_44.lib
+#      - lib/libboost_regex-vc90-mt-gd-1_44.lib
+      - lib/libboost_signals-vc100-mt-1_44.lib
+      - lib/libboost_signals-vc100-mt-gd-1_44.lib
+#      - lib/libboost_signals-vc90-mt-1_44.lib
+#      - lib/libboost_signals-vc90-mt-gd-1_44.lib
+      - lib/libboost_system-vc100-mt-1_44.lib
+      - lib/libboost_system-vc100-mt-gd-1_44.lib
+#      - lib/libboost_system-vc90-mt-1_44.lib
+#      - lib/libboost_system-vc90-mt-gd-1_44.lib
+- name: CLAPACK
+  feature: true
+  description: CLAPACK 3.1.1
+  path: C:/Program Files/CLAPACK-3.1.1
+  files:
+    include/:
+      - INCLUDE/blaswrap.h
+      - INCLUDE/clapack.h
+      - INCLUDE/f2c.h
+    lib/:
+      - LIB/Win32/BLAS.lib
+      - LIB/Win32/BLASd.lib
+      - LIB/Win32/BLASd_nowrap.lib
+      - LIB/Win32/BLAS_nowrap.lib
+      - LIB/Win32/cblaswrap.lib
+      - LIB/Win32/cblaswrapd.lib
+      - LIB/Win32/clapack.lib
+      - LIB/Win32/clapackd.lib
+      - LIB/Win32/clapackd_nowrap.lib
+      - LIB/Win32/clapack_nowrap.lib
+      - LIB/Win32/f77blaswrap.lib
+      - LIB/Win32/f77blaswrapd.lib
+      - LIB/Win32/libf2c.lib
+      - LIB/Win32/libf2cd.lib
+      - LIB/Win32/tmglib.lib
+      - LIB/Win32/tmglibd.lib
+      - LIB/Win32/tmglibd_nowrap.lib
+      - LIB/Win32/tmglib_nowrap.lib
+- name: Eigen-3.0
+  feature: true
+  description: Eigen-3.0
+  path: C:/Program Files/Eigen
+  files:
+    include/:
+      - include/eigen3/Eigen/
+      - include/eigen3/unsupported/
+      - include/eigen3/signature_of_eigen3_matrix_library
+- name: collada_dom-2.3.1
+  feature: true
+  description: collada_dom-2.3.1
+  path: C:/Program Files/collada_dom-2.3.1
+  files:
+    include/:
+      - include/collada-dom/1.5/
+      - include/collada-dom/dae/
+      - include/collada-dom/modules/
+      - include/collada-dom/dae.h
+      - include/collada-dom/dom.h
+    lib/:
+#      - lib/collada15dom2-vc90-mt.lib
+#      - lib/collada15dom2-vc90-mtd.lib
+      - lib/collada15dom2-vc100-mt.lib
+      - lib/collada15dom2-vc100-mtd.lib
+    bin/:
+#      - lib/collada15dom2-vc90-mt.dll
+#      - lib/collada15dom2-vc90-mtd.dll
+      - lib/collada15dom2-vc100-mt.dll
+      - lib/collada15dom2-vc100-mtd.dll
+      - lib/iconv.dll
+      - lib/libxml2.dll
+#      - lib/libxml2-vc90-mt.dll
+      - lib/libxml2-vc100-mt.dll
+      - lib/zlib1.dll
+
+

@@ -20,7 +20,7 @@ set SVN_PASSWORD=
 set SVN_REVISION=HEAD
 
 rem VC関連
-set VC_COMMAND=C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE/VCExpress.exe
+set VC_COMMAND=C:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE\VCExpress.exe
 rem set VC_COMMAND=C:/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/devenv.exe
 
 rem ECLIPSE LAUNCHER
@@ -143,10 +143,11 @@ exit /b 1
 cd %SRC_DIR%
 if defined INSTALL_DIR (
 echo %BASE_DIR%\%INSTALL_DIR% にインストールするソリューションファイルを作成します。
-call "C:\Program Files (x86)\CMake 2.8\bin\cmake" -G "Visual Studio 10 Win64" -DCMAKE_INSTALL_PREFIX:PATH=%BASE_DIR%\%INSTALL_DIR%
+call cmake -G "Visual Studio 10" -DCMAKE_INSTALL_PREFIX:PATH=%BASE_DIR%\%INSTALL_DIR% -DOMNIORB_DIR="C:\Program Files\OpenRTM-aist\vs2010\1.1\omniORB\4.1.5" -DOPENRTM_DIR="C:\Program Files\OpenRTM-aist\vs2010\1.1" -DOPENRTM_VERSION=1.1.0
+rem -DJDK_DIR="C:\Program Files\Java\jdk1.6.0_32"
 ) else (
 echo %ProgramFiles%\OpenHRP にインストールするソリューションファイルを作成します。
-call "C:\Program Files (x86)\CMake 2.8\bin\cmake" -G "Visual Studio 10 Win64"
+call cmake -G "Visual Studio 10"
 )
 if errorlevel 1 set IS_ERROR=1
 cd %BASE_DIR%
@@ -186,11 +187,10 @@ goto :EOF
 
 :CopyFile
 cd %SRC_DIR%
-call "C:\Program Files (x86)\CMake 2.8\bin\cmake" -G "Visual Studio 10 Win64" -DCMAKE_INSTALL_PREFIX:PATH="%SDK_INSTALL_DIR%"
+call cmake -G "Visual Studio 10" -DCMAKE_INSTALL_PREFIX:PATH="%SDK_INSTALL_DIR%"
 if errorlevel 1 set IS_ERROR=1
 copy hrplib\hrpModel\config.h ..\pack_src\OpenHRP\include\OpenHRP-3.1\hrpModel\config.h
 cd %BASE_DIR%
-copy %SRC_DIR%\GrxUIonEclipse-project-0.9.8\grxui_x64.product  %SRC_DIR%\GrxUIonEclipse-project-0.9.8\grxui.product
 copy %SRC_INITIALIZER_ORIGIN% %SRC_INITIALIZER_TMP%
 copy %SRC_INITIALIZER_WINRCP% %SRC_INITIALIZER_ORIGIN%
 exit /b %IS_ERROR%
@@ -235,7 +235,7 @@ call :PackageClean
 cd %PACKAGE_DIR%
 
 echo インストーラパッケージに含まれる内容を収集します。
-call ruby collect.rb config_vs2010_x64.yaml
+call ruby collect.rb config_vs2010.yaml
 if errorlevel 1 exit /b 1
 cd %BASE_DIR%
 goto :EOF
@@ -243,23 +243,23 @@ goto :EOF
 :MakeMsi
 cd %PACKAGE_DIR%
 echo 収集した内容からXMLファイルを作成します。
-call ruby create_wxs_x64.rb config_vs2010_x64.yaml
+call ruby create_wxs.rb config_vs2010.yaml
 if errorlevel 1 exit /b 1
 
 echo WiXを使用してXMLファイルをコンパイルします。(日本語)
-candle -arch x64 OpenHRPj.wxs -out OpenHRPj.wixobj
+candle OpenHRPj.wxs -out OpenHRPj.wixobj
 if errorlevel 1 exit /b 1
 
 echo WiXを使用してmsiファイルを作成します。(日本語)
-light -ext WixUIExtension -cultures:ja-jp -loc WixUI_Alt_ja-jp.wxl -out %BASE_DIR%/OpenHRPSDK%VERSION_STRING%-j_vc10_x64.msi OpenHRPj.wixobj
+light -ext WixUIExtension -cultures:ja-jp -loc WixUI_Alt_ja-jp.wxl -out %BASE_DIR%/OpenHRPSDK%VERSION_STRING%-j_vc10.msi OpenHRPj.wixobj
 if errorlevel 1 exit /b 1
 
 echo WiXを使用してXMLファイルをコンパイルします。(英語)
-candle -arch x64 OpenHRPe.wxs -out OpenHRPe.wixobj
+candle OpenHRPe.wxs -out OpenHRPe.wixobj
 if errorlevel 1 exit /b 1
 
 echo WiXを使用してmsiファイルを作成します。(英語)
-light -ext WixUIExtension -out %BASE_DIR%/OpenHRPSDK%VERSION_STRING%-e_vc10_x64.msi OpenHRPe.wixobj
+light -ext WixUIExtension -out %BASE_DIR%/OpenHRPSDK%VERSION_STRING%-e_vc10.msi OpenHRPe.wixobj
 if errorlevel 1 exit /b 1
 
 cd %BASE_DIR%
@@ -314,8 +314,8 @@ if exist %PRODUCT_DIRNAME% rmdir /s /q %PRODUCT_DIRNAME%
 exit /b 0
 
 :PackageClean
-if exist OpenHRPSDK%VERSION_STRING%-j_vc10_amd64.msi del OpenHRPSDK%VERSION_STRING%-j_vc10_amd64.msi
-if exist OpenHRPSDK%VERSION_STRING%-e_vc10_amd64.msi del OpenHRPSDK%VERSION_STRING%-e_vc10_amd64.msi
+if exist OpenHRPSDK%VERSION_STRING%-j_vc10.msi del OpenHRPSDK%VERSION_STRING%-j_vc10.msi
+if exist OpenHRPSDK%VERSION_STRING%-e_vc10.msi del OpenHRPSDK%VERSION_STRING%-e_vc10.msi
 call :PackageTmpClean
 exit /b 0
 
