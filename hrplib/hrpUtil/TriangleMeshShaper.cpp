@@ -979,7 +979,6 @@ void TMSImpl::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
         Vector3Ref v1(getVector3Ref(vertices[triangles[faceIndex * 4 + 1]].data()));
         Vector3Ref v2(getVector3Ref(vertices[triangles[faceIndex * 4 + 2]].data()));
         Vector3 normal((v1 - v0).cross(v2 - v0));
-        normal.normalize();
 	if ( ! normal.isZero() ) {
 		normal.normalize();
 	}
