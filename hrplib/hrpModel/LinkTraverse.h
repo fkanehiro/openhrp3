@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <ostream>
+#include <hrpUtil/config.h>
 #include "Config.h"
 
 namespace hrp {

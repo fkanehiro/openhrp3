@@ -11,7 +11,7 @@ if(UNIX)
     hrpUtil-${OPENHRP_LIBRARY_VERSION}
     hrpModel-${OPENHRP_LIBRARY_VERSION}
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-    ${OMNIORB_LIBRARIES})
+    ${OMNIORB_LIBRARIES} ${BOOST_LIBRARIES})
 elseif(WIN32)
   set_target_properties(${program} PROPERTIES DEBUG_POSTFIX d)
   target_link_libraries(${program}

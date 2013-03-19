@@ -54,14 +54,26 @@ set_target_properties(${target} PROPERTIES VERSION ${HRPMODEL_VERSION} SOVERSION
 
 
 if(UNIX)
-  target_link_libraries(${target}
-    hrpUtil-${OPENHRP_LIBRARY_VERSION}
-    hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-    hrpCollision-${OPENHRP_LIBRARY_VERSION}
-    ${OMNIORB_LIBRARIES}
-    boost_filesystem-mt boost_regex-mt
-    #${Boost_LIBRARIES}
-    dl)
+  if(NOT QNXNTO)
+    target_link_libraries(${target}
+      hrpUtil-${OPENHRP_LIBRARY_VERSION}
+      hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+      hrpCollision-${OPENHRP_LIBRARY_VERSION}
+      ${OMNIORB_LIBRARIES}
+      boost_filesystem-mt boost_regex-mt
+      #${Boost_LIBRARIES}
+      dl)
+  else(NOT QNXNTO)
+    target_link_libraries(${target}
+      hrpUtil-${OPENHRP_LIBRARY_VERSION}
+      hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+      hrpCollision-${OPENHRP_LIBRARY_VERSION}
+      #${OMNIORB_LIBRARIES}
+      ${OPENRTM_LIBRARIES}
+      #boost_filesystem boost_regex boost_system boost_signals
+      ${Boost_LIBRARIES}
+      )
+  endif(NOT QNXNTO)
 elseif(WIN32)
   add_definitions(-DHRPMODEL_MAKE_DLL)
   target_link_libraries(${target}
