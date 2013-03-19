@@ -22,6 +22,7 @@
 #include "CollisionPairInserterBase.h"
 #include <vector>
 #include <hrpUtil/Referenced.h>
+#include <hrpUtil/config.h>
 
 namespace hrp {
 

@@ -62,13 +62,25 @@ set(HRPUTIL_VERSION ${HRPSOVERSION}.0.0 )
 set_target_properties(${target} PROPERTIES VERSION ${HRPUTIL_VERSION} SOVERSION ${HRPSOVERSION})
 
 if(UNIX)
-  target_link_libraries(${target}
-    hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-    boost_filesystem-mt boost_signals-mt
-    #${Boost_LIBRARIES}
-    ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
-    ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
-    )
+  if(NOT QNXNTO)
+    target_link_libraries(${target}
+      hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+      boost_filesystem-mt boost_signals-mt
+      #${Boost_LIBRARIES}
+      ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
+      ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}
+      )
+  else(NOT QNXNTO)
+    target_link_libraries(${target}
+      hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+      #boost_filesystem boost_signals
+      ${Boost_LIBRARIES}
+      ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
+      #${OMNIORB_LIBRARIES}
+      ${OPENRTM_LIBRARIES}
+      ${LAPACK_LIBRARIES}
+      )
+  endif(NOT QNXNTO)
   if(APPLE)
   target_link_libraries(${target} boost_system-mt)
   endif() 

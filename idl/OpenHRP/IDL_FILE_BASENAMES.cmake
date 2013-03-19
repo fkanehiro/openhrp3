@@ -9,6 +9,8 @@ set(IDL_FILE_BASENAMES
   ViewSimulator
   OnlineViewer
   ClockGenerator
-  PathPlanner
 )
 
+if (NOT QNXNTO)
+set(IDL_FILE_BASENAMES ${IDL_FILE_BASENAMES} PathPlanner)
+endif (NOT QNXNTO)
