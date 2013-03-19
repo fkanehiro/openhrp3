@@ -55,8 +55,17 @@ endforeach()
 set(jarDirs OpenRTM RTM RTC _SDOPackage jp)
 
 if(UNIX)
-set(javac_flags ${JAVAC_VFLAG} -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
-  -classpath ${package_path} -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
+  find_package(Java)
+  if (NOT DEFINED Java_VERSION_MAJOR)
+    execute_process(COMMAND ${JAVAC} -version ERROR_VARIABLE jvar ERROR_STRIP_TRAILING_WHITESPACE)
+    # following regex pulled from cmake-2.8 FindJava.cmake
+    STRING( REGEX REPLACE "javac " "" Java_VERSION_STRING "${jvar}" )
+    STRING( REGEX REPLACE "([0-9]+).*"          "\\1" Java_VERSION_MAJOR "${Java_VERSION_STRING}" )
+    STRING( REGEX REPLACE "[0-9]+\\.([0-9]+).*" "\\1" Java_VERSION_MINOR "${Java_VERSION_STRING}" )
+  endif()
+
+  set(javac_flags ${JAVAC_VFLAG} -target ${Java_VERSION_MAJOR}.${Java_VERSION_MINOR} -d ${CMAKE_CURRENT_BINARY_DIR}
+    -classpath ${package_path} -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
 elseif(WIN32)
 set(javac_flags ${JAVAC_VFLAG} -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR}
   -classpath "${package_path}" -sourcepath ${CMAKE_CURRENT_BINARY_DIR}/src)
