@@ -297,9 +297,6 @@ if(ODE_DIR)
 endif()
 
 if (NOT QNXNTO) 
-  set(JDK_DIR ${JDK_DIR} CACHE PATH "JDK path")
-  string(REGEX REPLACE "/$" "" JDK_DIR ${JDK_DIR})
-
   # check Java
   if(NOT JDK_DIR)
     find_package(Java)
