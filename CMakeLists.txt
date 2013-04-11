@@ -298,7 +298,8 @@ if(ODE_DIR)
   endif()
 endif()
 
-if (NOT QNXNTO) 
+option(COMPILE_JAVA_STUFF "Compile java stuff" ON)
+if(COMPILE_JAVA_STUFF)
   # check Java
   if(NOT JDK_DIR)
     find_package(Java)
@@ -327,18 +328,18 @@ if (NOT QNXNTO)
   endif()
 
   message(STATUS "JDK: ${JDK_DIR}")
-else (NOT QNXNTO)
-  message(STATUS "QNX dones not support Java")
-endif(NOT QNXNTO)
+else(COMPILE_JAVA_STUFF)
+  message(STATUS "Not support Java")
+endif(COMPILE_JAVA_STUFF)
 
 
 # jython
-if (NOT QNXNTO)
+if(COMPILE_JAVA_STUFF)
   find_package(Jython REQUIRED)
   if(JYTHON_JAR)
     set(SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}${CPSEP}${JYTHON_JAR}")
   endif()
-endif(NOT QNXNTO)
+endif(COMPILE_JAVA_STUFF)
 
 if(SYSTEM_CLASSPATH)
     string(REGEX REPLACE "^${CPSEP}" "" SYSTEM_CLASSPATH "${SYSTEM_CLASSPATH}" )
@@ -350,9 +351,10 @@ if(JAVA_LD_LIBRARY_PATH)
   message(STATUS "Additional Java LD_LIBRARY_PATH is ${JAVA_LD_LIBRARY_PATH}")
 endif()
 
-if(NOT QNXNTO)
+option(ENABLE_DOXYGEN "Use Doxygen" ON)
+if(ENABLE_DOXYGEN)
   find_package(Doxygen)
-endif(NOT QNXNTO)
+endif(ENABLE_DOXYGEN)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(
@@ -504,7 +506,6 @@ if(COMPILE_EXECUTABLES)
   add_subdirectory(script)
 endif()
 
-option(COMPILE_JAVA_STUFF "Compile java stuff" ON)
 if(COMPILE_JAVA_STUFF)
   add_subdirectory(java)
 endif()
