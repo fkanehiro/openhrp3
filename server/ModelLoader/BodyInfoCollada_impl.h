@@ -26,6 +26,8 @@
 #include <hrpCorba/ModelLoader.hh>
 #include <hrpCollision/ColdetModel.h>
 
+#include <boost/thread/thread.hpp>
+
 #include "ShapeSetInfo_impl.h"
 
 class ColladaReader;
@@ -79,6 +81,8 @@ private:
 
     void setColdetModel(ColdetModelPtr& coldetModel, TransformedShapeIndexSequence shapeIndices, const Matrix44& Tparent, int& vertexIndex, int& triangleIndex);
     void setColdetModelTriangles(ColdetModelPtr& coldetModel, const TransformedShapeIndex& tsi, const Matrix44& Tparent, int& vertexIndex, int& triangleIndex);
+
+    static boost::mutex lock_;
 
     friend class ColladaReader;
 };
