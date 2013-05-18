@@ -3246,8 +3246,10 @@ ExtraJointInfoSequence* BodyInfoCollada_impl::extraJoints()
 	return new ExtraJointInfoSequence(extraJoints_);
 }
 
+boost::mutex BodyInfoCollada_impl::lock_;
 void BodyInfoCollada_impl::loadModelFile(const std::string& url)
 {
+    boost::mutex::scoped_lock lock(lock_);
     ColladaReader reader;
     if( !reader.InitFromURL(url) ) {
         throw ModelLoader::ModelLoaderException("The model file cannot be found.");
