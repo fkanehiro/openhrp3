@@ -316,7 +316,7 @@ DEF SampleRobot Humanoid {
         DEF WAIST_LINK0 Segment {
           centerOfMass  0 0 0.0375
           mass    27.0
-          momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+          momentsOfInertia [ 0.096482 0 0 0 0.096482 0 0 0 0.0288 ]
           children [
             Shape {
               appearance DEF WAIST_APP Appearance {
@@ -342,9 +342,9 @@ DEF SampleRobot Humanoid {
           jointId  26
           children [
             DEF WAIST_LINK1 Segment {
-              centerOfMass  0 0 -0.1
+              centerOfMass  0 0 0
               mass    6.0
-              momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+              momentsOfInertia [ 0.002187 0 0 0 0.001875 0 0 0 0.002187 ]
               children [
                 Shape {
                   appearance  DEF WAIST_LINK1_APP Appearance {
@@ -363,9 +363,9 @@ DEF SampleRobot Humanoid {
               jointId  27
               children [
                 DEF WAIST_LINK2 Segment {
-                  centerOfMass  0.11 0 0.25
+                  centerOfMass  0 0 0.16
                   mass    30.0
-                  momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                  momentsOfInertia [ 0.27 0 0 0 0.27 0 0 0 0.0125 ]
                   children [
                     Transform {
                       rotation 0 0 1 1.5708
@@ -394,9 +394,9 @@ DEF SampleRobot Humanoid {
                   translation 0 0 0.35
                   children [
                     DEF WAIST_LINK3 Segment {
-                      centerOfMass  0 0 0
+                      centerOfMass  0 0 0.08
                       mass    13.0
-                      momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                      momentsOfInertia [ 0.17 0 0 0 0.215 0 0 0 0.2026 ]
                       children [
                         Transform {
                           rotation 1 0 0 1.5708
@@ -480,12 +480,14 @@ DEF SampleRobot Humanoid {
                       jointType "rotate"
                   jointAxis 0 1 0
                       jointId  19
+                      ulimit 1.5708
+                      llimit -3.14159
                       translation   0 0.21 0
                       children [
                         DEF LARM_LINK1 Segment {
-                          centerOfMass  0.1 0 0
-                          mass    3.0
-                          momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                          centerOfMass  0 -0.05 0.0
+                          mass    0.4
+                          momentsOfInertia [ 0.000125 0 0 0 0.000146 0 0 0 0.000125 ]
                           children Transform {
                             translation 0 -0.05 0
                             children DEF ARM_SHAPE1 Shape {
@@ -502,11 +504,13 @@ DEF SampleRobot Humanoid {
                           jointType "rotate"
               jointAxis 1 0 0
                           jointId  20
+                          ulimit 2.0944
+                          llimit -0.261799
                           children [
                             DEF LARM_LINK2 Segment {
                               centerOfMass  0 0 -0.1
-                              mass    0.6
-                              momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                              mass    2.2
+                              momentsOfInertia [ 0.008776 0 0 0 0.008776 0 0 0 0.000917 ]
                               children DEF ARM_SHAPE2 Transform {
                                 children [
                                   Transform {
@@ -534,12 +538,14 @@ DEF SampleRobot Humanoid {
                             DEF LARM_SHOULDER_Y Joint {
                               jointType "rotate"
                               jointId  21
+                              ulimit 2.0944
+                              llimit -2.0944
                               translation     0 0 -0.263
                               children [
                                 DEF LARM_LINK3 Segment {
-                                  centerOfMass  0 0 0
-                                  mass    1.0
-                                  momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                                  centerOfMass  0 0 0.05
+                                  mass    0.4
+                                  momentsOfInertia [ 0.000146 0 0 0 0.000146 0 0 0 0.000125 ]
                                   children DEF ARM_SHAPE3 Transform {
                                     translation 0 0 0.05
                                     rotation 1 0 0 1.5708
@@ -557,11 +563,13 @@ DEF SampleRobot Humanoid {
                                   jointType "rotate"
                   jointAxis 0 1 0
                                   jointId  22
+                                  ulimit 0.174533
+                                  llimit -2.61799
                                   children [
                                     DEF LARM_LINK4 Segment {
-                                      centerOfMass  0 0 -0.3
-                                      mass    0.6
-                                      momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                                      centerOfMass  0 0 -0.1
+                                      mass    2.2
+                                      momentsOfInertia [ 0.007573 0 0 0 0.007573 0 0 0 0.000917 ]
                                       children DEF ARM_SHAPE4 Transform {
                                         children [
                                           Shape {
@@ -587,12 +595,14 @@ DEF SampleRobot Humanoid {
                                       jointType "rotate"
                       jointAxis 0 0 1
                                       jointId  23
+                                      ulimit 2.0944
+                                      llimit -2.0944
                                       translation       0 0 -0.247
                                       children [
                                         DEF LARM_LINK5 Segment {
-                                          centerOfMass  0 0 0.1
+                                          centerOfMass  0 0 0.05
                                           mass    0.4
-                                          momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                                          momentsOfInertia [ 0.000146 0 0 0 0.000146 0 0 0 0.000125 ]
                                           children DEF ARM_SHAPE5 Transform {
                                             translation 0 0 0.05
                                             rotation 1 0 0 1.5708
@@ -610,11 +620,13 @@ DEF SampleRobot Humanoid {
                                           jointType "rotate"
                       jointAxis 0 1 0
                                           jointId  24
+                                          ulimit 2.0944
+                                          llimit -2.0944
                                           children [
                                             DEF LARM_LINK6 Segment {
-                                              centerOfMass  -0.1 0 0
+                                              centerOfMass  0 0.01 -0.09
                                               mass    0.4
-                                              momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                                              momentsOfInertia [ 0.001851 0 0 0 0.001771 0 0 0 0.000247 ]
                                                children [
                                                   DEF lhsensor ForceSensor {
                                                         translation 0 0 0
@@ -653,12 +665,14 @@ DEF SampleRobot Humanoid {
                                               jointType "rotate"
                                               jointAxis 1 0 0
                                               jointId  25
+                                              ulimit 0.122173
+                                              llimit -1.309
                                               children [
                                                 DEF LARM_LINK7 Segment {
 #                                                  centerOfMass  0 0 -0.1
                                                   centerOfMass  0 -0.03 -0.1
                                                   mass    0.4
-                                                  momentsOfInertia [ 1 0 0 0 1 0 0 0 1 ]
+                                                  momentsOfInertia [ 0.00078 0 0 0 0.000833 0 0 0 0.000113 ]
                                                   children DEF ARM_SHAPE7 Transform {
                                                     children [
                                                       
@@ -693,12 +707,14 @@ DEF SampleRobot Humanoid {
                       jointType "rotate"
               jointAxis 0 1 0
                       jointId 6
+                      ulimit 1.5708
+                      llimit -3.14159
                       translation   0 -0.21 0
                       children [
                         DEF RARM_LINK1 Segment {
-                          centerOfMass          0.1 0 0
-                          mass                  3.0
-                          momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                          centerOfMass          0 0.05 0
+                          mass                  0.4
+                          momentsOfInertia      [ 0.000125 0 0 0 0.000146 0 0 0 0.000125 ]
                           children Transform {
                             translation 0 0.05 0
                             children USE ARM_SHAPE1
@@ -709,11 +725,13 @@ DEF SampleRobot Humanoid {
                           jointType "rotate"
               jointAxis 1 0 0
                           jointId 7
+                          ulimit 0.261799
+                          llimit -2.0944
                           children [
                             DEF RARM_LINK2 Segment {
                               centerOfMass          0 0 -0.1
-                              mass                  0.6
-                              momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                              mass                  2.2
+                              momentsOfInertia      [ 0.008776 0 0 0 0.008776 0 0 0 0.000917 ]
                               children [
                                 USE ARM_SHAPE2
                               ]
@@ -722,12 +740,14 @@ DEF SampleRobot Humanoid {
                             DEF RARM_SHOULDER_Y Joint {
                               jointType "rotate"
                               jointId 8
+                              ulimit 2.0944
+                              llimit -2.0944
                               translation     0 0 -0.263
                               children [
                                 DEF RARM_LINK3 Segment {
-                                  centerOfMass          0 0 0
-                                  mass                  1.0
-                                  momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                                  centerOfMass          0 0 0.05
+                                  mass                  0.4
+                                  momentsOfInertia      [ 0.000146 0 0 0 0.000146 0 0 0 0.000125 ]
                                   children USE ARM_SHAPE3
                                 }
 
@@ -735,11 +755,13 @@ DEF SampleRobot Humanoid {
                                   jointType "rotate"
                   jointAxis 0 1 0
                                   jointId 9
+                                  ulimit 0.174533
+                                  llimit -2.61799
                                   children [
                                     DEF RARM_LINK4 Segment {
-                                      centerOfMass          0 0 -0.3
-                                      mass                  0.6
-                                      momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                                      centerOfMass          0 0 -0.1
+                                      mass                  2.2
+                                      momentsOfInertia      [ 0.007573 0 0 0 0.007573 0 0 0 0.000917 ]
                                       children USE ARM_SHAPE4 
                                     } # Segment RARM_LINK4
 
@@ -747,12 +769,14 @@ DEF SampleRobot Humanoid {
                                       jointType "rotate"
                       jointAxis 0 0 1
                                       jointId 10
+                                      ulimit 2.0944
+                                      llimit -2.0944
                                       translation  0 0 -0.247
                                       children [
                                         DEF RARM_LINK5 Segment {
-                                          centerOfMass          0 0 0.1
+                                          centerOfMass          0 0 0.05
                                           mass                  0.4
-                                          momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                                          momentsOfInertia      [ 0.000146 0 0 0 0.000146 0 0 0 0.000125 ]
                                           children USE ARM_SHAPE5
                                         }
                                         
@@ -760,12 +784,13 @@ DEF SampleRobot Humanoid {
                                           jointType "rotate"
                       jointAxis 0 1 0
                                           jointId 11
+                                          ulimit 2.0944
+                                          llimit -2.0944
                                           children [
                                             DEF RARM_LINK6 Segment {
-                                              centerOfMass          -0.1 0 0                                            
+                                              centerOfMass          0 -0.01 -0.09
                                               mass                  0.4
-#                                              momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
-                                              momentsOfInertia      [ 0.01 0 0 0 0.01 0 0 0 0.01 ]
+                                              momentsOfInertia      [ 0.001851 0 0 0 0.001771 0 0 0 0.000247 ]
                                               children [
                                                 DEF rhsensor ForceSensor {
                                                         translation 0 0 0
@@ -804,12 +829,13 @@ DEF SampleRobot Humanoid {
                                               jointType "rotate"
                                               jointAxis 1 0 0
                                               jointId 12
+                                              ulimit 1.309
+                                              llimit -0.122173
                                               children [
                                                 DEF RARM_LINK7 Segment {
                                                   centerOfMass  0 0.03 -0.1
                                                   mass                  0.4
- #                                                 momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
-                                                   momentsOfInertia      [ 0.01 0 0 0 0.01 0 0 0 0.01 ]
+                                                  momentsOfInertia      [ 0.00078 0 0 0 0.000833 0 0 0 0.000113 ]
                                                   children [
                                                     Transform {
                                                         translation 0 0.03 -0.075
@@ -859,9 +885,9 @@ DEF SampleRobot Humanoid {
           translation   0 0.09 0
           children [
             DEF LLEG_LINK1 Segment {
-              centerOfMass          0 0.1 0
+              centerOfMass          0 0 0
               mass                  2.5
-              momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+              momentsOfInertia      [ 0.003125 0 0 0 0.003646 0 0 0 0.003646 ]
               children DEF LEG_SHAPE1 Transform {
                 rotation 0 0 1 1.5708
                 children Shape {
@@ -880,9 +906,9 @@ DEF SampleRobot Humanoid {
               jointId 14
               children    [
                    DEF LLEG_LINK2 Segment {
-                     centerOfMass          0 0 -0.15
+                     centerOfMass          0 0 0
                      mass                  2.0
-                     momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                     momentsOfInertia      [ 0.002917 0 0 0 0.0025 0 0 0 0.002917 ]
                      children DEF LEG_SHAPE2 Shape {
                        appearance Appearance {
                          material Material {
@@ -898,9 +924,9 @@ DEF SampleRobot Humanoid {
                      translation     0 0 -0.3535
                      children [
                        DEF LLEG_LINK3 Segment {
-                         centerOfMass          0 0.04 0
+                         centerOfMass          0 0 0.18
                          mass                  5.1
-                         momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                         momentsOfInertia      [ 0.03156 0 0 0 0.03156 0 0 0 0.0085 ]
                          children DEF LEG_SHAPE3 Transform {
                            children [
                              Transform {
@@ -933,9 +959,9 @@ DEF SampleRobot Humanoid {
                          children [
                                    
                            DEF LLEG_LINK4 Segment {
-                             centerOfMass          0 0 -0.3
+                             centerOfMass          0 0 -0.12
                              mass                  7.0
-                             momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                             momentsOfInertia      [ 0.05833 0 0 0 0.05833 0 0 0 0.01167 ]
                              children DEF LEG_SHAPE4 Transform {
                                children [
                                  Shape {
@@ -964,9 +990,9 @@ DEF SampleRobot Humanoid {
                              translation       0 0 -0.3
                              children [
                                DEF LLEG_LINK5 Segment {
-                                 centerOfMass          -0.15 0 0
+                                 centerOfMass          0 0 0
                                  mass                  2.5
-                                 momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                                 momentsOfInertia      [ 0.003646 0 0 0 0.003125 0 0 0 0.003646 ]
                                  children DEF LEG_SHAPE5 Shape {
                                    appearance Appearance {
                                      material Material {
@@ -981,9 +1007,9 @@ DEF SampleRobot Humanoid {
                                  jointId 18
                                  children [
                                    DEF LLEG_LINK6 Segment {
-                                     centerOfMass          0.28 0 -0.2
+                                     centerOfMass          0.080 0 -0.03
                                      mass                  1.9
-                                     momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                                     momentsOfInertia      [ 0.005291 0 0 0 0.012084 0 0 0 0.013 ]
                                      children[ 
                                        DEF lfsensor ForceSensor {
                                          translation 0 0 -0.07
@@ -1037,9 +1063,9 @@ DEF SampleRobot Humanoid {
           translation   0 -0.09 0
           children [
             DEF RLEG_LINK1 Segment {
-              centerOfMass          0 -0.1 0
+              centerOfMass          0 0 0
               mass                  2.5
-              momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+              momentsOfInertia      [ 0.003125 0 0 0 0.003646 0 0 0 0.003646 ]
               children USE LEG_SHAPE1
             }
 
@@ -1049,9 +1075,9 @@ DEF SampleRobot Humanoid {
               jointId 1
               children [
                 DEF RLEG_LINK2 Segment {
-                  centerOfMass          0 0 -0.15
+                  centerOfMass          0 0 0
                   mass                  2.0
-                  momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                  momentsOfInertia      [ 0.002917 0 0 0 0.0025 0 0 0 0.002917 ]
                   children USE LEG_SHAPE2
                 }
                 DEF RLEG_HIP_Y Joint {
@@ -1060,9 +1086,9 @@ DEF SampleRobot Humanoid {
                   translation     0 0 -0.3535
                   children [
                     DEF RLEG_LINK3 Segment {
-                      centerOfMass          0 -0.04 0
+                      centerOfMass          0 0 0.18
                       mass                  5.1
-                      momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                      momentsOfInertia      [ 0.03156 0 0 0 0.03156 0 0 0 0.0085 ]
                       children [
                         USE LEG_SHAPE3
                       ]
@@ -1074,9 +1100,9 @@ DEF SampleRobot Humanoid {
                       jointId 3
                       children [
                         DEF RLEG_LINK4 Segment {
-                          centerOfMass          0 0 -0.3
+                          centerOfMass          0 0 -0.12
                           mass                  7.0
-                          momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                          momentsOfInertia      [ 0.05833 0 0 0 0.05833 0 0 0 0.01167 ]
                           children [
                             USE LEG_SHAPE4
                           ]
@@ -1089,9 +1115,9 @@ DEF SampleRobot Humanoid {
                           translation     0 0 -0.3
                           children [
                             DEF RLEG_LINK5 Segment {
-                              centerOfMass          -0.15 0 0
+                              centerOfMass          0 0 0
                               mass                  2.5
-                              momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                              momentsOfInertia      [ 0.003646 0 0 0 0.003125 0 0 0 0.003646 ]
                               children USE LEG_SHAPE5
                             }
 
@@ -1101,9 +1127,9 @@ DEF SampleRobot Humanoid {
                               jointId 5
                               children [
                                 DEF RLEG_LINK6 Segment {
-                                  centerOfMass          0.28 0 -0.2
+                                  centerOfMass          0.080 0 -0.03
                                   mass                  1.9
-                                  momentsOfInertia      [ 1 0 0 0 1 0 0 0 1 ]
+                                  momentsOfInertia      [ 0.005291 0 0 0 0.012084 0 0 0 0.013 ]
                                   children [
                                     DEF rfsensor ForceSensor {
                                          translation 0 0 -0.07
