@@ -721,13 +721,16 @@ public:
             evec.resize(3,3);
             eval.resize(3);
             hrp::calcEigenVectors(inertia,evec,eval);
-            if (det(evec) < 0.0) /* fix for right-handed coordinates */
-                evec(0,2) *= -1.0; evec(1,2) *= -1.0; evec(2,2) *= -1.0;
+            if (det(evec) < 0.0) {/* fix for right-handed coordinates */
+                // hrp::calcEigenVectors return row majored matrix??
+                evec(2,0) *= -1.0; evec(2,1) *= -1.0; evec(2,2) *= -1.0;
+            }
             DblArray12 tinertiaframe;
             for(int j = 0; j < 3; ++j) {
-                tinertiaframe[4*0+j] = evec(0,j);
-                tinertiaframe[4*1+j] = evec(1,j);
-                tinertiaframe[4*2+j] = evec(2,j);
+                // hrp::calcEigenVectors return row majored matrix??
+                tinertiaframe[4*0+j] = evec(j, 0);
+                tinertiaframe[4*1+j] = evec(j, 1);
+                tinertiaframe[4*2+j] = evec(j, 2);
             }
             DblArray4 quat, rotation;
             DblArray3 translation;
