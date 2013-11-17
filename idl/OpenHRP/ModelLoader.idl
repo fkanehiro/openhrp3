@@ -176,7 +176,7 @@ module OpenHRP {
     DblSequence   llimit;       ///< 最小関節値
     DblSequence   uvlimit;      ///< 最大関節速度値
     DblSequence   lvlimit;      ///< 最小関節速度値
-    DblSequence   tlimit;       ///< 最大関節トルク値
+    DblSequence   climit;       ///< 最大関節電流値 (tlimit = climit x grarRatio x torqueConst)
 
     DblArray3     translation;  ///< ローカル座標系原点(親リンク相対)
 
