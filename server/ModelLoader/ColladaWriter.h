@@ -326,9 +326,9 @@ public:
                 domCommon_float_or_paramRef speed = daeSafeCast<domCommon_float_or_param>(mai->add(COLLADA_ELEMENT_SPEED));
                 daeSafeCast<domCommon_float_or_param::domFloat>(speed->add(COLLADA_ELEMENT_FLOAT))->setValue(pjoint.uvlimit[0]);
             }
-            if( pjoint.tlimit.length() > 0 ) {
+            if( pjoint.climit.length() > 0 ) {
                 domCommon_float_or_paramRef accel = daeSafeCast<domCommon_float_or_param>(mai->add(COLLADA_ELEMENT_ACCELERATION));
-                daeSafeCast<domCommon_float_or_param::domFloat>(accel->add(COLLADA_ELEMENT_FLOAT))->setValue(pjoint.tlimit[0]);
+                daeSafeCast<domCommon_float_or_param::domFloat>(accel->add(COLLADA_ELEMENT_FLOAT))->setValue(pjoint.climit[0]);
             }
         }
 
@@ -1142,7 +1142,7 @@ public:
         double max_speed = plink.uvlimit.length()/2*M_PI > 0 ? plink.uvlimit[0] : 0;
         domactuator->add("max_speed")->setCharData(str(boost::format("%f")%max_speed));
         domactuator->add("no_load_speed")->setCharData(str(boost::format("%f")%max_speed));
-        double max_torque = plink.tlimit.length() > 0 ? plink.tlimit[0] : 0;
+        double max_torque = (plink.climit.length() > 0 ? plink.climit[0] : 0)*plink.gearRatio*plink.torqueConst;
         domactuator->add("nominal_torque")->setCharData(str(boost::format("%f")%max_torque));
         domactuator->add("nominal_voltage")->setCharData("0");
         domactuator->add("rotor_inertia")->setCharData(str(boost::format("%f")%(plink.rotorInertia)));
