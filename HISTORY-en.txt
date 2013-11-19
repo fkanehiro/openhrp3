@@ -1,5 +1,21 @@
 OpenHRP3 Updates History (Release Notes)
 
+Ver.3.1.5
+=========================
+* support QNX
+
+* support java 1.7
+
+* fix thread safe problem for loading collada
+
+* rename tlimit -> climit in ModelLoader.idl
+
+* fix inertia matrix of ColladaWriter
+
+* fix inertia matrix of SampleRobot
+
+* check if normal.isZero() before normal.normalize()
+
 Ver.3.1.4
 =========================
 * OpenHRP3 now officially supports Ubuntu 12.10.

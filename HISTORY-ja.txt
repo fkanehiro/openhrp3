@@ -1,5 +1,21 @@
 ﻿OpenHRP3 改版リスト (リリースノート)
 
+Ver.3.1.5
+=========================
+・QNXでコンパイルできるようにしました
+
+・java 1.7に対応しました
+
+・colladaモデルを読みこむ際にthread-safeにしました
+
+・ModelLoader.idlでtlimit を climit に改名しました
+
+・ColladaWriter で書きだされる慣性行列を修正しました
+
+・SampleRobotの慣性行列を修正しました
+
+・normal.normalize()　の前に normal.isZero() を確認するようにしました．
+
 Ver.3.1.4
 =========================
 ・ubuntu12.10に対応いたしました。
