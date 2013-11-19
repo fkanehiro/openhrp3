@@ -1,3 +1,13 @@
+openhrp3.1 (3.1.5-0) Ubuntu; urgency=low
+
+  * support QNX(#2156)
+  * support java 1.7(#2157)
+  * fix thread safe problem for loading collada (#2159)
+  * rename tlimit -> climit in ModelLoader.idl (#2162)
+  * fix inertia matrix of ColladaWriter (#2163)
+  * fix inertia matrix of SampleRobot(#2164)
+  * check if normal.isZero() before normal.normalize()
+
 openhrp3.1 (3.1.4-0) Ubuntu; urgency=low
 
   * Resolved some miscellaneous problems in OpenHRP.
