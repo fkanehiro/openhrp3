@@ -792,6 +792,23 @@ class ColladaReader : public daeErrorHandler
 		     plink->centerOfMass[0] = tlocalmass[3];
 		     plink->centerOfMass[1] = tlocalmass[7];
 		     plink->centerOfMass[2] = tlocalmass[11];
+                     if( !!rigiddata->getInertia() ) {
+                       DblArray12 temp_i, temp_a, m_inertia, m_result;
+                       for (int i = 0; i < 12; i++) { m_inertia[i] = 0.0; }
+                       m_inertia[4*0 + 0] = plink->inertia[0];
+                       m_inertia[4*1 + 1] = plink->inertia[4];
+                       m_inertia[4*2 + 2] = plink->inertia[8];
+                       tlocalmass[3] = 0; tlocalmass[7] = 0; tlocalmass[11] = 0;
+                       PoseInverse(temp_i, tlocalmass);
+                       PoseMult(temp_a, tlocalmass, m_inertia);
+                       PoseMult(m_result, temp_a, temp_i);
+
+                       for(int i = 0; i < 3; i++) {
+                         for(int j = 0; j < 3; j++) {
+                           plink->inertia[3*i + j] = m_result[4*i + j];
+                         }
+                       }
+                     }
                 }
 	    }
 
