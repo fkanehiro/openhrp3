@@ -7,6 +7,7 @@
 #include <Eigen/Eigen>
 
 namespace hrp{
+    typedef Eigen::Vector2d Vector2;
     typedef Eigen::Vector3d Vector3;
     typedef Eigen::Matrix3d Matrix33;
     typedef Eigen::MatrixXd dmatrix;
