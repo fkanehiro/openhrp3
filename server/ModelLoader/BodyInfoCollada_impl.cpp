@@ -43,6 +43,15 @@ void operator<<(std::ostream& os, const OpenHRP::DblArray12& ttemp) {
     os << quat[0] << " " << quat[1] << " " << quat[2] << " " << quat[3];
 }
 
+#define printArrayWARN(name, ary) \
+  COLLADALOG_WARN(str(boost::format(name": %f\t%f\t%f\t%f")%ary[0]%ary[1]%ary[2]%ary[3])); \
+  COLLADALOG_WARN(str(boost::format(name": %f\t%f\t%f\t%f")%ary[4]%ary[5]%ary[6]%ary[7])); \
+  COLLADALOG_WARN(str(boost::format(name": %f\t%f\t%f\t%f")%ary[8]%ary[9]%ary[10]%ary[11]));
+#define printArrayDEBUG(name, ary) \
+  COLLADALOG_DEBUG(str(boost::format(name": %f\t%f\t%f\t%f")%ary[0]%ary[1]%ary[2]%ary[3])); \
+  COLLADALOG_DEBUG(str(boost::format(name": %f\t%f\t%f\t%f")%ary[4]%ary[5]%ary[6]%ary[7])); \
+  COLLADALOG_DEBUG(str(boost::format(name": %f\t%f\t%f\t%f")%ary[8]%ary[9]%ary[10]%ary[11]));
+#define printArray printArrayDEBUG
 /// \brief The colladadom reader that fills in the BodyInfoCollada_impl class.
 ///
 /// It is separate from BodyInfoCollada_impl so that the colladadom resources do not have to remain allocated.
@@ -697,7 +706,7 @@ class ColladaReader : public daeErrorHandler
     }
 
     ///  \brief Extract Link info and add it to an existing body
-    int  ExtractLink(BodyInfoCollada_impl* pkinbody, const domLinkRef pdomlink,const domNodeRef pdomnode, const DblArray12& tBaseLink, const DblArray12& tParentLink, const std::vector<domJointRef>& vdomjoints, const KinematicsSceneBindings bindings) {
+    int  ExtractLink(BodyInfoCollada_impl* pkinbody, const domLinkRef pdomlink,const domNodeRef pdomnode, const DblArray12& tParentWorldLink, const DblArray12& tParentLink, const std::vector<domJointRef>& vdomjoints, const KinematicsSceneBindings bindings) {
         const std::list<JointAxisBinding>& listAxisBindings = bindings.listAxisBindings;
 
         //  Set link name with the name of the COLLADA's Link
@@ -760,13 +769,15 @@ class ColladaReader : public daeErrorHandler
         else {
             COLLADALOG_DEBUG(str(boost::format("Attachment link elements: %d")%pdomlink->getAttachment_full_array().getCount()));
             // use the kinematics coordinate system for each link
-            DblArray12 tlink,tlocallink;
-            _ExtractFullTransform(tlocallink,pdomlink);
-            PoseMult(tlink,tParentLink,tlocallink);
-          
-            // Get the geometry
-	    ExtractGeometry(pkinbody,plink,tParentLink,pdomnode,listAxisBindings,std::vector<std::string>());
-            
+            DblArray12 tlink;
+            _ExtractFullTransform(tlink, pdomlink);
+            {
+              DblArray12 tgeomlink;
+              PoseMult(tgeomlink, tParentWorldLink, tlink);
+              COLLADALOG_DEBUG(str(boost::format("geom_link:%s")%linkname.c_str()));
+              printArray("geom", tgeomlink);
+              ExtractGeometry(pkinbody,plink,tgeomlink,pdomnode,listAxisBindings,std::vector<std::string>());
+            }
             COLLADALOG_DEBUG(str(boost::format("After ExtractGeometry Attachment link elements: %d")%pdomlink->getAttachment_full_array().getCount()));
           
             if( !!rigidbody && !!rigidbody->getTechnique_common() ) {
@@ -780,15 +791,11 @@ class ColladaReader : public daeErrorHandler
                     plink->inertia[8] = rigiddata->getInertia()->getValue()[2];
                 }
                 if( !!rigiddata->getMass_frame() ) {
-                     DblArray12  tmass, ttemp1, ttemp2, tframe, tlocalmass;
-		     // tmass uses tBaseLink frame
-		     _ExtractFullTransform(ttemp2, rigiddata->getMass_frame());
-		     PoseMult(tmass,tBaseLink,ttemp2);
-		     // convert to local frame
-		     getNodeParentTransform(ttemp2,pdomnode);
-		     PoseMult(ttemp1,ttemp2,tParentLink);
-		     PoseInverse(tframe,ttemp1);
-		     PoseMult(tlocalmass,tframe,tmass);
+                     DblArray12 atemp1,atemp2,tlocalmass;
+                     PoseMult(atemp1, tParentWorldLink, tlink);
+                     PoseInverse(atemp2, atemp1);
+                     _ExtractFullTransform(atemp1, rigiddata->getMass_frame());
+                     PoseMult(tlocalmass, atemp2, atemp1);
 		     plink->centerOfMass[0] = tlocalmass[3];
 		     plink->centerOfMass[1] = tlocalmass[7];
 		     plink->centerOfMass[2] = tlocalmass[11];
@@ -882,7 +889,14 @@ class ColladaReader : public daeErrorHandler
 
                 
                 DblArray12 tnewparent;
-                int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode, tBaseLink, tatt, vdomjoints, bindings);
+                {
+                  DblArray12 ttemp;
+                  PoseMult(ttemp, tParentWorldLink, tlink);
+                  PoseMult(tnewparent, ttemp, tatt);
+                }
+                int ijointindex = ExtractLink(pkinbody, pattfull->getLink(), pchildnode,
+                                              tnewparent,
+                                              tatt, vdomjoints, bindings);
                 boost::shared_ptr<LinkInfo> pjoint = _veclinks.at(ijointindex);
                 int cindex = plink->childIndices.length();
                 plink->childIndices.length(cindex+1);
@@ -892,10 +906,11 @@ class ColladaReader : public daeErrorHandler
                 if ( ilinkindex == 0 ){ // due to  ExtractKinematicsModel calls ExtractLink with identity
                     memcpy(tnewparent, tatt, sizeof(tatt));
                 } else {
-                    PoseMult(tnewparent,tlocallink,tatt);
+                    DblArray12 ttemp;
+                    _ExtractFullTransform(ttemp, pattfull->getLink());
+                    PoseMult(tnewparent, tatt, ttemp);
                 }
                 AxisAngleTranslationFromPose(pjoint->rotation,pjoint->translation,tnewparent);
-                //AxisAngleTranslationFromPose(pjoint->rotation,pjoint->translation,tatt);
 
                 bool bActive = true; // if not active, put into the passive list
 
@@ -975,9 +990,13 @@ class ColladaReader : public daeErrorHandler
                 }
                 if( len2 > 0 ) {
                     len2 = 1/len2;
-                    pjoint->jointAxis[0] = pdomaxis->getAxis()->getValue()[0]*len2;
-                    pjoint->jointAxis[1] = pdomaxis->getAxis()->getValue()[1]*len2;
-                    pjoint->jointAxis[2] = pdomaxis->getAxis()->getValue()[2]*len2;
+                    double ax = pdomaxis->getAxis()->getValue()[0]*len2;
+                    double ay = pdomaxis->getAxis()->getValue()[1]*len2;
+                    double az = pdomaxis->getAxis()->getValue()[2]*len2;
+                    pjoint->jointAxis[0] = tatt[0] * ax + tatt[1] * ay + tatt[2] * az;
+                    pjoint->jointAxis[1] = tatt[4] * ax + tatt[5] * ay + tatt[6] * az;
+                    pjoint->jointAxis[2] = tatt[8] * ax + tatt[9] * ay + tatt[10] * az;
+                    COLLADALOG_DEBUG(str(boost::format("axis: %f %f %f -> %f %f %f")%ax%ay%az%pjoint->jointAxis[0]%pjoint->jointAxis[1]%pjoint->jointAxis[2]));
                 }
                 else {
                     pjoint->jointAxis[0] = 0;
@@ -986,7 +1005,7 @@ class ColladaReader : public daeErrorHandler
                 }
                 //  Rotate axis from the parent offset
                 //PoseRotateVector(pjoint->jointAxis,tatt,pjoint->jointAxis);
-                COLLADALOG_DEBUG(str(boost::format("joint %s has axis: %f %f %f")%jointname%pjoint->jointAxis[0]%pjoint->jointAxis[1]%pjoint->jointAxis[2]));
+                COLLADALOG_WARN(str(boost::format("joint %s has axis: %f %f %f")%jointname%pjoint->jointAxis[0]%pjoint->jointAxis[1]%pjoint->jointAxis[2]));
 
                 if( !motion_axis_info ) {
                     COLLADALOG_WARN(str(boost::format("No motion axis info for joint %s")%pjoint->name));
@@ -1165,11 +1184,13 @@ class ColladaReader : public daeErrorHandler
             return false;
         }
 
-        DblArray12 tmnodegeom, ttemp, ttemp2;
-        PoseInverse(ttemp,tlink);
-        _ExtractFullTransform(ttemp2, pdomnode);
-        PoseMult(tmnodegeom,ttemp,ttemp2);
-
+        DblArray12 tmnodegeom, ttemp, ttemp2, ttemp3;
+        PoseInverse(ttemp, tlink);
+        getNodeParentTransform(ttemp2, pdomnode);
+        PoseMult(ttemp3, ttemp, ttemp2);
+        _ExtractFullTransform(ttemp, pdomnode);
+        PoseMult(tmnodegeom, ttemp3, ttemp);
+        printArray("tmnodegeom", tmnodegeom);
         // there is a weird bug with the viewer, but should try to normalize the rotation!
         DblArray4 quat;
         double x=tmnodegeom[3],y=tmnodegeom[7],z=tmnodegeom[11];
