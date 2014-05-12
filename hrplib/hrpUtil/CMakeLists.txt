@@ -65,7 +65,8 @@ if(UNIX)
   if(NOT QNXNTO)
     target_link_libraries(${target}
       hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-      boost_filesystem-mt boost_signals-mt
+      #boost_filesystem-mt boost_signals-mt
+      ${Boost_FILESYSTEM_LIBRARY} ${Boost_SIGNALS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
       #${Boost_LIBRARIES}
       ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
       ${OMNIORB_LIBRARIES} ${LAPACK_LIBRARIES}

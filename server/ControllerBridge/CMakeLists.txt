@@ -23,8 +23,9 @@ if(UNIX)
     hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
     hrpUtil-${OPENHRP_LIBRARY_VERSION}
     ${OPENRTM_LIBRARIES}
-    boost_filesystem-mt boost_program_options-mt boost_regex-mt
-    boost_system-mt
+    ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_REGEX_LIBRARY}
+    #boost_filesystem-mt boost_program_options-mt boost_regex-mt
+    #boost_system-mt
     )
 elseif(WIN32)
   add_definitions(${OPENRTM_DEFINITIONS})
