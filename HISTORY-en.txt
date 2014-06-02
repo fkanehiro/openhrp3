@@ -1,5 +1,13 @@
 OpenHRP3 Updates History (Release Notes)
 
+Ver.3.1.6
+=========================
+* fix inertia matrix conversion of ModelLoader
+
+* fix segment's name of ModelLoader
+
+* fix link's rotation of ModelLoader
+
 Ver.3.1.5
 =========================
 * support QNX
