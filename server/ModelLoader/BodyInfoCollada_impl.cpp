@@ -208,6 +208,7 @@ class ColladaReader : public daeErrorHandler
         _mapJointIds.clear();
         _mapLinkNames.clear();
         _veclinks.clear();
+        _veclinknames.clear();
     }
 
     /// \extract the first possible robot in the scene
@@ -293,7 +294,7 @@ class ColladaReader : public daeErrorHandler
 		  segmentInfo->transformMatrix[p++] = T(row, col);
 		}
 	      }
-	      segmentInfo->name = CORBA::string_dup(probot->links_[i].name);
+              segmentInfo->name = _veclinknames[i].c_str();
 	      segmentInfo->shapeIndices.length(probot->links_[i].shapeIndices.length());
 	      for(int j = 0; j < probot->links_[i].shapeIndices.length(); j++ ) {
 		segmentInfo->shapeIndices[j] = j;
@@ -740,6 +741,7 @@ class ColladaReader : public daeErrorHandler
         plink->jointType = CORBA::string_dup("free");
         int ilinkindex = (int)_veclinks.size();
         _veclinks.push_back(plink);
+        _veclinknames.push_back(linkname);
 
         if( !!pdomnode ) {
             COLLADALOG_VERBOSE(str(boost::format("Node Id %s and Name %s")%pdomnode->getId()%pdomnode->getName()));
@@ -3229,6 +3231,7 @@ class ColladaReader : public daeErrorHandler
     std::map<std::string,boost::shared_ptr<LinkInfo> > _mapJointIds;
     std::map<std::string,boost::shared_ptr<LinkInfo> > _mapLinkNames;
     std::vector<boost::shared_ptr<LinkInfo> > _veclinks;
+    std::vector<std::string> _veclinknames;
     int _nGlobalSensorId, _nGlobalActuatorId, _nGlobalManipulatorId, _nGlobalIndex;
     std::string _filename;
 };
