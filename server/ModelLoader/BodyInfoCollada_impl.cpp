@@ -569,12 +569,28 @@ class ColladaReader : public daeErrorHandler
         PoseIdentity(identity);
         for (size_t ilink = 0; ilink < ktec->getLink_array().getCount(); ++ilink) {
             domLinkRef pdomlink = ktec->getLink_array()[ilink];
-            DblArray12 tlocallink;
-            _ExtractFullTransform(tlocallink,pdomlink);
-            int linkindex = ExtractLink(pkinbody, pdomlink, ilink == 0 ? pnode : domNodeRef(), tlocallink, tlocallink, vdomjoints, bindings);
-            // root link
-	    boost::shared_ptr<LinkInfo> plink = _veclinks.at(linkindex);
-            AxisAngleTranslationFromPose(plink->rotation,plink->translation,tlocallink);
+            //
+            _ExtractFullTransform(rootOrigin, pdomlink);
+            printArray("rootOrigin", rootOrigin);
+            domNodeRef pvisualnode;
+            FOREACH(it, bindings.listKinematicsVisualBindings) {
+              if(strcmp(it->first->getName() ,pdomlink->getName()) == 0) {
+                pvisualnode = it->first;
+                break;
+              }
+            }
+            if (!!pvisualnode) {
+              getNodeParentTransform(visualRootOrigin, pvisualnode);
+              printArray("visualRootOrigin", visualRootOrigin);
+            }
+            //
+            DblArray12 identity;
+            PoseIdentity(identity);
+            int linkindex = ExtractLink(pkinbody, pdomlink, ilink == 0 ? pnode : domNodeRef(),
+                                        identity, identity, vdomjoints, bindings);
+
+            boost::shared_ptr<LinkInfo> plink = _veclinks.at(linkindex);
+            AxisAngleTranslationFromPose(plink->rotation,plink->translation,rootOrigin);
         }
 
         for (size_t iform = 0; iform < ktec->getFormula_array().getCount(); ++iform) {
@@ -793,11 +809,17 @@ class ColladaReader : public daeErrorHandler
                     plink->inertia[8] = rigiddata->getInertia()->getValue()[2];
                 }
                 if( !!rigiddata->getMass_frame() ) {
-                     DblArray12 atemp1,atemp2,tlocalmass;
+                     DblArray12 atemp1,atemp2,atemp3,tlocalmass;
+                     printArray("tlink", tlink);
+                     printArray("plink", tParentWorldLink);
                      PoseMult(atemp1, tParentWorldLink, tlink);
-                     PoseInverse(atemp2, atemp1);
-                     _ExtractFullTransform(atemp1, rigiddata->getMass_frame());
-                     PoseMult(tlocalmass, atemp2, atemp1);
+                     PoseInverse(atemp2, rootOrigin);
+                     PoseMult(atemp3, atemp2, atemp1);
+                     PoseInverse(atemp1, atemp3);
+                     _ExtractFullTransform(atemp2, rigiddata->getMass_frame());
+                     PoseMult(tlocalmass, atemp1, atemp2);
+                     printArray("i_org", tlocalmass);
+
 		     plink->centerOfMass[0] = tlocalmass[3];
 		     plink->centerOfMass[1] = tlocalmass[7];
 		     plink->centerOfMass[2] = tlocalmass[11];
@@ -1186,13 +1208,16 @@ class ColladaReader : public daeErrorHandler
             return false;
         }
 
-        DblArray12 tmnodegeom, ttemp, ttemp2, ttemp3;
-        PoseInverse(ttemp, tlink);
+        DblArray12 tmnodegeom, ttemp1, ttemp2, ttemp3;
+        PoseInverse(ttemp1, visualRootOrigin);
         getNodeParentTransform(ttemp2, pdomnode);
-        PoseMult(ttemp3, ttemp, ttemp2);
-        _ExtractFullTransform(ttemp, pdomnode);
-        PoseMult(tmnodegeom, ttemp3, ttemp);
+        PoseMult(ttemp3, ttemp1, ttemp2);
+        _ExtractFullTransform(ttemp1, pdomnode);
+        PoseMult(ttemp2, ttemp3, ttemp1);
+        PoseInverse(ttemp1, tlink);
+        PoseMult(tmnodegeom, ttemp1, ttemp2);
         printArray("tmnodegeom", tmnodegeom);
+
         // there is a weird bug with the viewer, but should try to normalize the rotation!
         DblArray4 quat;
         double x=tmnodegeom[3],y=tmnodegeom[7],z=tmnodegeom[11];
@@ -3234,6 +3259,8 @@ class ColladaReader : public daeErrorHandler
     std::vector<std::string> _veclinknames;
     int _nGlobalSensorId, _nGlobalActuatorId, _nGlobalManipulatorId, _nGlobalIndex;
     std::string _filename;
+    DblArray12 rootOrigin;
+    DblArray12 visualRootOrigin;
 };
 
 BodyInfoCollada_impl::BodyInfoCollada_impl(PortableServer::POA_ptr poa) :
