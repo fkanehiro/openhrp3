@@ -328,7 +328,7 @@ public:
             }
             if( pjoint.climit.length() > 0 ) {
                 domCommon_float_or_paramRef accel = daeSafeCast<domCommon_float_or_param>(mai->add(COLLADA_ELEMENT_ACCELERATION));
-                daeSafeCast<domCommon_float_or_param::domFloat>(accel->add(COLLADA_ELEMENT_FLOAT))->setValue(pjoint.climit[0]);
+                daeSafeCast<domCommon_float_or_param::domFloat>(accel->add(COLLADA_ELEMENT_FLOAT))->setValue(pjoint.climit[0] * pjoint.torqueConst * pjoint.gearRatio);
             }
         }
 
