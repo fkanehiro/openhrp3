@@ -2312,6 +2312,11 @@ class ColladaReader : public daeErrorHandler
 	if ( !! encoder_pulse ) {
 	    plink->encoderPulse = boost::lexical_cast<double>(encoder_pulse->getCharData());
 	}
+        daeElement *nom_torque = domactuator->getChild("nominal_torque");
+        if ( !! nom_torque ) {
+            if(plink->climit.length() < 1) plink->climit.length(1);
+            plink->climit[0] = boost::lexical_cast<double>(nom_torque->getCharData()) / ( plink->gearRatio * plink->torqueConst );
+        }
         return true;
     }
 
