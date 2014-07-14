@@ -1,4 +1,7 @@
 #include <rtm/CorbaNaming.h>
+#if !defined(OPENRTM_VERSION042) && !defined(OPENRTM_VERSION110)
+#include <rtm/Manager.h>
+#endif
 #include "SimulationExecutionContext.h"
 
 namespace RTC
@@ -18,6 +21,7 @@ namespace RTC
 
   ReturnCode_t SimulationExecutionContext::stop() throw (CORBA::SystemException)
   {
+#if defined(OPENRTM_VERSION042) || defined(OPENRTM_VERSION110)
     if (!m_running) return RTC::PRECONDITION_NOT_MET;
 
      OpenRTM::ExtTrigExecutionContextService_var extTrigExecContext =
@@ -31,13 +35,22 @@ namespace RTC
     std::for_each(m_comps.begin(), m_comps.end(), invoke_on_shutdown());
 
     // change EC thread state
-#ifdef OPENRTM_VERSION_042
+  #ifdef OPENRTM_VERSION_042
     m_state = false;
-#else
+  #else
     //m_running = false;
     m_svc = false;
-#endif
+  #endif
     return RTC::RTC_OK;
+#else
+    ReturnCode_t ret = OpenHRPExecutionContext::stop();
+    if (ret == RTC_OK){
+        OpenRTM::ExtTrigExecutionContextService_var extTrigExecContext =
+                    		OpenRTM::ExtTrigExecutionContextService::_narrow(this->getObjRef());
+        m_cg->unsubscribe(extTrigExecContext);
+    }
+    return RTC::RTC_OK;
+#endif
   }
 
   OpenHRP::ClockGenerator_var SimulationExecutionContext::m_cg;
@@ -51,10 +64,20 @@ void SimulationECInit(RTC::Manager* manager)
   try{
     CORBA::Object_ptr obj = cn.resolve("ClockGenerator");
     RTC::SimulationExecutionContext::m_cg = OpenHRP::ClockGenerator::_narrow(obj);
-
+    
+#if defined(OPENRTM_VERSION042) || defined(OPENRTM_VERSION110)
     manager->registerECFactory("SimulationEC",
 			       RTC::ECCreate<RTC::SimulationExecutionContext>,
 			       RTC::ECDelete<RTC::OpenHRPExecutionContext>);
+#else
+	RTC::ExecutionContextFactory::
+            instance().addFactory("SimulationEC",
+                            ::coil::Creator< ::RTC::ExecutionContextBase,
+                            ::RTC::SimulationExecutionContext>,
+                            ::coil::Destructor< ::RTC::ExecutionContextBase,
+                            ::RTC::OpenHRPExecutionContext>);
+#endif
+		       
   }catch(RTC::CorbaNaming::NotFound& ex){
     std::cerr << "SimultationExecutionContext: can not find ClockGenerator"
 	      << std::endl;
