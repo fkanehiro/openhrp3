@@ -82,7 +82,7 @@ bool setConfigurationToBaseXYTheta(PathPlanner *planner, const Configuration& cf
 PathPlanner::PathPlanner(unsigned int dim, 
                          boost::shared_ptr<hrp::World<hrp::ConstraintForceSolver> > world,
                          bool isDebugMode) 
-    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), cspace_(dim), debug_(isDebugMode), collidingPair_(NULL), world_(world), customCollisionDetector_(NULL)
+    : m_applyConfigFunc(setConfigurationToBaseXYTheta), algorithm_(NULL), mobility_(NULL), cspace_(dim), debug_(isDebugMode), world_(world), customCollisionDetector_(NULL)
 {
     if (isDebugMode) {
         std::cerr << "PathPlanner::PathPlanner() : debug mode" << std::endl;
@@ -629,6 +629,7 @@ bool PathPlanner::checkCollision()
         timeCollisionCheck_.begin();
         bool ret = customCollisionDetector_->checkCollision();
         timeCollisionCheck_.end();
+	if (ret) collidingPair_ = customCollisionDetector_->collidingPair();
         return ret;
     }else{
         return defaultCheckCollision();
@@ -638,8 +639,6 @@ bool PathPlanner::checkCollision()
 bool PathPlanner::defaultCheckCollision()
 {
     timeForwardKinematics_.begin();
-
-    collidingPair_ = NULL;
 
     if (USE_INTERNAL_COLLISION_DETECTOR){
         Link *l;
@@ -656,7 +655,8 @@ bool PathPlanner::defaultCheckCollision()
         for (unsigned int i=0; i<checkPairs_.size(); i++){
             if (checkPairs_[i].tolerance() == 0){
                 if (checkPairs_[i].checkCollision()){
-                    collidingPair_ = &checkPairs_[i];
+		    collidingPair_.first  = checkPairs_[i].model(0)->name();
+		    collidingPair_.second = checkPairs_[i].model(1)->name();
                     timeCollisionCheck_.end();
                     return true;
                 }

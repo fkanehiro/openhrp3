@@ -158,7 +158,7 @@ namespace PathEngine {
         std::vector<hrp::Vector3> pointCloud_; 
         double radius_; ///< radius of spheres assigned to points
 
-        hrp::ColdetModelPair *collidingPair_;
+	std::pair<std::string, std::string> collidingPair_;
 
         CollisionDetector *customCollisionDetector_;
 
@@ -464,7 +464,7 @@ namespace PathEngine {
 
         void boundingBoxMode(bool mode) { bboxMode_ = mode; } 
 
-        hrp::ColdetModelPair *collidingPair() { return collidingPair_; }
+	const std::pair<std::string, std::string> &collidingPair() { return collidingPair_; }
 
         void setCollisionDetector(CollisionDetector *i_cd){
             customCollisionDetector_ = i_cd; 
