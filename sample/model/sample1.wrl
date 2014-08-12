@@ -340,6 +340,8 @@ DEF SampleRobot Humanoid {
           jointType "rotate"
       jointAxis 0 1 0
           jointId  26
+          rotorInertia 3.0E-4
+          gearRatio 200
           children [
             DEF WAIST_LINK1 Segment {
               centerOfMass  0 0 0
@@ -361,6 +363,8 @@ DEF SampleRobot Humanoid {
               jointType "rotate"
           jointAxis 1 0 0
               jointId  27
+              rotorInertia 3.0E-4
+              gearRatio 200
               children [
                 DEF WAIST_LINK2 Segment {
                   centerOfMass  0 0 0.16
@@ -392,6 +396,8 @@ DEF SampleRobot Humanoid {
                   jointType "rotate"
                   jointId  28
                   translation 0 0 0.35
+                  rotorInertia 3.0E-4
+                  gearRatio 200
                   children [
                     DEF WAIST_LINK3 Segment {
                       centerOfMass  0 0 0.08
@@ -483,6 +489,8 @@ DEF SampleRobot Humanoid {
                       ulimit 1.5708
                       llimit -3.14159
                       translation   0 0.21 0
+                      rotorInertia 3.0E-4
+                      gearRatio 200
                       children [
                         DEF LARM_LINK1 Segment {
                           centerOfMass  0 -0.05 0.0
@@ -506,6 +514,8 @@ DEF SampleRobot Humanoid {
                           jointId  20
                           ulimit 2.0944
                           llimit -0.261799
+                          rotorInertia 3.0E-4
+                          gearRatio 200
                           children [
                             DEF LARM_LINK2 Segment {
                               centerOfMass  0 0 -0.1
@@ -541,6 +551,8 @@ DEF SampleRobot Humanoid {
                               ulimit 2.0944
                               llimit -2.0944
                               translation     0 0 -0.263
+                              rotorInertia 3.0E-4
+                              gearRatio 200
                               children [
                                 DEF LARM_LINK3 Segment {
                                   centerOfMass  0 0 0.05
@@ -565,6 +577,8 @@ DEF SampleRobot Humanoid {
                                   jointId  22
                                   ulimit 0.174533
                                   llimit -2.61799
+                                  rotorInertia 3.0E-4
+                                  gearRatio 200
                                   children [
                                     DEF LARM_LINK4 Segment {
                                       centerOfMass  0 0 -0.1
@@ -598,6 +612,8 @@ DEF SampleRobot Humanoid {
                                       ulimit 2.0944
                                       llimit -2.0944
                                       translation       0 0 -0.247
+                                      rotorInertia 3.0E-4
+                                      gearRatio 200
                                       children [
                                         DEF LARM_LINK5 Segment {
                                           centerOfMass  0 0 0.05
@@ -622,6 +638,8 @@ DEF SampleRobot Humanoid {
                                           jointId  24
                                           ulimit 2.0944
                                           llimit -2.0944
+                                          rotorInertia 3.0E-4
+                                          gearRatio 200
                                           children [
                                             DEF LARM_LINK6 Segment {
                                               centerOfMass  0 0.01 -0.09
@@ -667,6 +685,8 @@ DEF SampleRobot Humanoid {
                                               jointId  25
                                               ulimit 0.122173
                                               llimit -1.309
+                                              rotorInertia 3.0E-4
+                                              gearRatio 200
                                               children [
                                                 DEF LARM_LINK7 Segment {
 #                                                  centerOfMass  0 0 -0.1
@@ -710,6 +730,8 @@ DEF SampleRobot Humanoid {
                       ulimit 1.5708
                       llimit -3.14159
                       translation   0 -0.21 0
+                      rotorInertia 3.0E-4
+                      gearRatio 200
                       children [
                         DEF RARM_LINK1 Segment {
                           centerOfMass          0 0.05 0
@@ -727,6 +749,8 @@ DEF SampleRobot Humanoid {
                           jointId 7
                           ulimit 0.261799
                           llimit -2.0944
+                          rotorInertia 3.0E-4
+                          gearRatio 200
                           children [
                             DEF RARM_LINK2 Segment {
                               centerOfMass          0 0 -0.1
@@ -743,6 +767,8 @@ DEF SampleRobot Humanoid {
                               ulimit 2.0944
                               llimit -2.0944
                               translation     0 0 -0.263
+                              rotorInertia 3.0E-4
+                              gearRatio 200
                               children [
                                 DEF RARM_LINK3 Segment {
                                   centerOfMass          0 0 0.05
@@ -757,6 +783,8 @@ DEF SampleRobot Humanoid {
                                   jointId 9
                                   ulimit 0.174533
                                   llimit -2.61799
+                                  rotorInertia 3.0E-4
+                                  gearRatio 200
                                   children [
                                     DEF RARM_LINK4 Segment {
                                       centerOfMass          0 0 -0.1
@@ -772,6 +800,8 @@ DEF SampleRobot Humanoid {
                                       ulimit 2.0944
                                       llimit -2.0944
                                       translation  0 0 -0.247
+                                      rotorInertia 3.0E-4
+                                      gearRatio 200
                                       children [
                                         DEF RARM_LINK5 Segment {
                                           centerOfMass          0 0 0.05
@@ -786,6 +816,8 @@ DEF SampleRobot Humanoid {
                                           jointId 11
                                           ulimit 2.0944
                                           llimit -2.0944
+                                          rotorInertia 3.0E-4
+                                          gearRatio 200
                                           children [
                                             DEF RARM_LINK6 Segment {
                                               centerOfMass          0 -0.01 -0.09
@@ -831,6 +863,8 @@ DEF SampleRobot Humanoid {
                                               jointId 12
                                               ulimit 1.309
                                               llimit -0.122173
+                                              rotorInertia 3.0E-4
+                                              gearRatio 200
                                               children [
                                                 DEF RARM_LINK7 Segment {
                                                   centerOfMass  0 0.03 -0.1
@@ -883,6 +917,8 @@ DEF SampleRobot Humanoid {
       jointAxis 1 0 0
           jointId 13
           translation   0 0.09 0
+          rotorInertia 3.0E-4
+          gearRatio 200
           children [
             DEF LLEG_LINK1 Segment {
               centerOfMass          0 0 0
@@ -904,6 +940,8 @@ DEF SampleRobot Humanoid {
               jointType "rotate"
           jointAxis 0 1 0
               jointId 14
+              rotorInertia 3.0E-4
+              gearRatio 200
               children    [
                    DEF LLEG_LINK2 Segment {
                      centerOfMass          0 0 0
@@ -922,6 +960,8 @@ DEF SampleRobot Humanoid {
                      jointType "rotate"
                      jointId 15
                      translation     0 0 -0.3535
+                     rotorInertia 3.0E-4
+                     gearRatio 200
                      children [
                        DEF LLEG_LINK3 Segment {
                          centerOfMass          0 0 0.18
@@ -956,6 +996,8 @@ DEF SampleRobot Humanoid {
                          jointType "rotate"
              jointAxis 0 1 0
                          jointId 16
+                         rotorInertia 3.0E-4
+                         gearRatio 200
                          children [
                                    
                            DEF LLEG_LINK4 Segment {
@@ -988,6 +1030,8 @@ DEF SampleRobot Humanoid {
                  jointAxis 0 1 0
                              jointId 17
                              translation       0 0 -0.3
+                             rotorInertia 3.0E-4
+                             gearRatio 200
                              children [
                                DEF LLEG_LINK5 Segment {
                                  centerOfMass          0 0 0
@@ -1005,6 +1049,8 @@ DEF SampleRobot Humanoid {
                                  jointType "rotate"
                  jointAxis 1 0 0
                                  jointId 18
+                                 rotorInertia 3.0E-4
+                                 gearRatio 200
                                  children [
                                    DEF LLEG_LINK6 Segment {
                                      centerOfMass          0.080 0 -0.03
@@ -1061,6 +1107,8 @@ DEF SampleRobot Humanoid {
       jointAxis 1 0 0
           jointId 0
           translation   0 -0.09 0
+          rotorInertia 3.0E-4
+          gearRatio 200
           children [
             DEF RLEG_LINK1 Segment {
               centerOfMass          0 0 0
@@ -1073,6 +1121,8 @@ DEF SampleRobot Humanoid {
               jointType "rotate"
           jointAxis 0 1 0
               jointId 1
+              rotorInertia 3.0E-4
+              gearRatio 200
               children [
                 DEF RLEG_LINK2 Segment {
                   centerOfMass          0 0 0
@@ -1084,6 +1134,8 @@ DEF SampleRobot Humanoid {
                   jointType "rotate"
                   jointId 2
                   translation     0 0 -0.3535
+                  rotorInertia 3.0E-4
+                  gearRatio 200
                   children [
                     DEF RLEG_LINK3 Segment {
                       centerOfMass          0 0 0.18
@@ -1098,6 +1150,8 @@ DEF SampleRobot Humanoid {
                       jointType "rotate"
               jointAxis 0 1 0
                       jointId 3
+                      rotorInertia 3.0E-4
+                      gearRatio 200
                       children [
                         DEF RLEG_LINK4 Segment {
                           centerOfMass          0 0 -0.12
@@ -1113,6 +1167,8 @@ DEF SampleRobot Humanoid {
               jointAxis 0 1 0
                           jointId 4
                           translation     0 0 -0.3
+                          rotorInertia 3.0E-4
+                          gearRatio 200
                           children [
                             DEF RLEG_LINK5 Segment {
                               centerOfMass          0 0 0
@@ -1125,6 +1181,8 @@ DEF SampleRobot Humanoid {
                               jointType "rotate"
                   jointAxis 1 0 0
                               jointId 5
+                              rotorInertia 3.0E-4
+                              gearRatio 200
                               children [
                                 DEF RLEG_LINK6 Segment {
                                   centerOfMass          0.080 0 -0.03
