@@ -1,0 +1,12 @@
+<launch>
+  <!-- BEGIN:common setting -->
+  <env name="LANG" value="C" />
+  <env name="ORBgiopMaxMsgSize" value="2147483648" />
+  <!-- END:common setting -->
+
+  <node name="start_omninames" pkg="openhrp3" type="start_omninames.sh" args="2809" />
+
+  <node name="modelloader" pkg="openhrp3" type="openhrp-model-loader" />
+
+  <test test-name="test_modelloader" pkg="openhrp3" type="test_modelloader.py" />
+</launch>

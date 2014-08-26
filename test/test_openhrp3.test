@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="test_openhrp3" pkg="openhrp3" type="test_openhrp3.py" />
+</launch>
