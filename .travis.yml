@@ -1,0 +1,30 @@
+language:
+  - cpp
+  - python
+python:
+  - "2.7"
+compiler:
+  - gcc
+before_install: # Use this to prepare the system to install prerequisites or dependencies
+  # Define some config vars
+  - export CI_SOURCE_PATH=$(pwd)
+  - export REPOSITORY_NAME=${PWD##*/}
+  - echo "Testing branch $TRAVIS_BRANCH of $REPOSITORY_NAME"
+  - sudo sh -c 'echo "deb http://packages.ros.org/ros-shadow-fixed/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
+  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+  - sudo apt-get update -qq
+install: # Use this to install any prerequisites or dependencies necessary to run your build
+  - sudo apt-get install -qq -y f2c libf2c2 libf2c2-dev doxygen cmake libeigen3-dev libjpeg-dev collada-dom-dev git jython libatlas-base-dev libboost-all-dev libpng12-dev
+  - sudo apt-get install -qq -y ros-hydro-openrtm-aist ros-hydro-openrtm-aist-python ros-hydro-mk ros-hydro-rosbuild ros-hydro-rostest ros-hydro-roslang
+  - cd $CI_SOURCE_PATH
+before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
+  - source /opt/ros/hydro/setup.bash
+script: # All commands must exit with code 0 on success. Anything else is considered failure.
+  - mkdir -p ~/ws/src
+  - ln -sf ${CI_SOURCE_PATH} ~/ws/src/${REPOSITORY_NAME}
+  - cd ~/ws
+  - sudo ln -sf /opt/ros/hydro/lib/openrtm_aist/bin/rtm-config /opt/ros/hydro/bin/rtm-config ## temp code
+  - catkin_make
+  - catkin_make test
+  - catkin_make install
+after_failure:
