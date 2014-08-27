@@ -48,7 +48,7 @@
 			<property name="controlTime" value="0.002"/>
 			<property name="setupDirectory" value="$(PROJECT_DIR)/../controller/SampleController"/>
 			<property name="setupCommand" value="SampleController$(BIN_SFX)"/>
-			<property name="WAIST.translation" value="1.9 -0.798 0.7235 "/>
+			<property name="WAIST.translation" value="2.305 -0.798 0.7235 "/>
 			<property name="WAIST.rotation" value="0.0 0.0 1.0 1.570796 "/>
 			<property name="WAIST_P.angle" value="0.0 "/>
 			<property name="WAIST_R.angle" value="0.0 "/>
