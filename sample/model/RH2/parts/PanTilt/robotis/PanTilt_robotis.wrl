@@ -350,7 +350,7 @@ DEF HRP1 Humanoid {
 		          momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
 		          children [
 		            Inline {
-		              url "parts/PanTilt/robotis/pan_base.wrl"
+		              url "pan_base.wrl"
 		            }
 		          ]
 		        }
@@ -374,7 +374,7 @@ DEF HRP1 Humanoid {
 						      momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
 						      children [
 						        Inline {
-						          url "parts/PanTilt/robotis/pan.wrl"
+						          url "pan.wrl"
 						        }
 						      ]
 						    }
@@ -398,7 +398,7 @@ DEF HRP1 Humanoid {
 										  momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
 										  children [
 										    Inline {
-										      url "parts/PanTilt/robotis/tilt.wrl"
+										      url "tilt.wrl"
 										    }
 										  ]
 										}
@@ -416,7 +416,7 @@ DEF HRP1 Humanoid {
 													momentsOfInertia [ 0.1 0 0 0 0.1 0 0 0 0.1 ]
 													children [
 														Inline {
-															url "parts/sensor/URG_Sensor.wrl"
+															url "../../sensor/URG_Sensor.wrl"
 														}
 													]
 												}
