@@ -212,13 +212,13 @@ Viewpoint {
   orientation 0.5770 0.5775 0.5775 2.0935
 }
 
-LinkConnection {
-	linkName1
-	linkName2
-	connectionPoint1
-	connectionPoint2
-	axes
-}
+#LinkConnection {
+#	linkName1
+#	linkName2
+#	connectionPoint1
+#	connectionPoint2
+#	axes
+#}
 
 
 #********************************  START ROBOT DEFINITION  *********************************
