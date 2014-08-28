@@ -1,0 +1,52 @@
+<package>
+  <name>openhrp3</name>
+  <version>3.1.5</version>
+  <description>
+   <p>This package does not only wrap <a href = "http://www.openrtp.jp/openhrp3/en/index.html">OpenHRP3</a> but actually provides the built artifact from the code from its <a href = "https://openrtp.jp/svn/hrg/openhrp">mainstream repository</a>. Being ROS-agnostic by itself, you can also use this via ROS together with the packages in <a href = "http://www.ros.org/wiki/rtmros_common">rtmros_common</a> that bridge between two framework.</p>
+   <p><i>OpenHRP3 (Open Architecture Human-centered Robotics Platform version 3) is an integrated software platform for robot simulations and software developments. It allows the users to inspect an original robot model and control program by dynamics simulation. In addition, OpenHRP3 provides various software components and calculation libraries that can be used for robotics related software developments</i> (<a href = "http://www.openrtp.jp/openhrp3/en/about.html">excerpts from here</a>). </p>
+   <p>The package version number is synchronized to that of mainstream, based on <a href = "http://code.google.com/p/rtm-ros-robotics/issues/detail?id=165#c5">this decision</a>.</p>
+  </description>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <maintainer email="iisaito@kinugarage.com">Isao Isaac Saito</maintainer>
+  <author>AIST</author>
+  <author>General Robotix Inc.</author>
+  <author>Nakamura Lab of Dept. of Mechano Informatics at University of Tokyo</author>
+  <license>EPL</license>
+
+  <url type="website">https://openrtp.jp/svn/hrg/openhrp/</url>
+  <url type="bugtracker">https://openrtp.jp/redmine/</url>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <build_depend>atlas</build_depend>
+  <build_depend>boost</build_depend>
+  <build_depend>collada-dom</build_depend>
+  <build_depend>doxygen</build_depend>
+  <build_depend>eigen</build_depend>
+  <build_depend>f2c</build_depend>
+  <build_depend>jython</build_depend>
+  <build_depend>libjpeg</build_depend>
+  <build_depend>libpng12-dev</build_depend>
+  <build_depend>openrtm_aist</build_depend>
+  <build_depend>openrtm_aist_python</build_depend>
+  <build_depend>git</build_depend>
+  <build_depend>mk</build_depend>
+  <build_depend>rosbuild</build_depend>
+  <build_depend>rostest</build_depend>
+  <build_depend>roslang</build_depend>
+
+  <run_depend>atlas</run_depend>
+  <run_depend>boost</run_depend>
+  <run_depend>collada-dom</run_depend>
+  <run_depend>eigen</run_depend>
+  <run_depend>f2c</run_depend>
+  <run_depend>jython</run_depend>
+  <run_depend>libjpeg</run_depend>
+  <run_depend>libpng12-dev</run_depend>
+  <run_depend>openrtm_aist</run_depend>
+  <run_depend>openrtm_aist_python</run_depend>
+
+  <export>
+
+  </export>
+</package>
