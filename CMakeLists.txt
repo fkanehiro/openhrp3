@@ -591,8 +591,10 @@ if(CATKIN_DEVEL_PREFIX) # for catkin_make
     COMMAND cmake -E copy_directory idl    share/OpenHRP-3.1/idl
     COMMAND cmake -E copy_directory java   share/OpenHRP-3.1/java
     COMMAND cmake -E copy_directory sample share/OpenHRP-3.1/sample
+    DEPENDS export_collada_models
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
   add_custom_target(copy_devel_bin ALL
+    COMMAND cmake -E make_directory bin/
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/bin/openhrp-model-loader bin/
     COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/bin/export-collada bin/
     DEPENDS bin/openhrp-model-loader bin/export-collada
