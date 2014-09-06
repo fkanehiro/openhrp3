@@ -148,7 +148,7 @@ class TestModelLoader(TestModelLoaderBase):
         self.checkModels("sample.wrl","sample.dae")
 
     def test_pa10(self):
-        self.checkModels("PA10/pa10.main.wrl","PA10/pa10.dae")
+        self.checkModels("PA10/pa10.main.wrl","PA10/pa10.main.dae")
 
     #def test_3dof_arm(self):
     #    self.checkModels("sample3dof.wrl","sample3dof.dae")
