@@ -27,4 +27,6 @@ script: # All commands must exit with code 0 on success. Anything else is consid
   - catkin_make
   - catkin_make test
   - catkin_make install
+  - source install/setup.bash
+  - export EXIT_STATUS=0; [ "`find install/share/openhrp3 -iname '*.test'`" == "" ] && echo "[openhrp3] No tests ware found!!!"  || find install/share/openhrp3 -iname "*.test" -print0 | xargs -0 -n1 rostest || export EXIT_STATUS=$?; [ $EXIT_STATUS == 0 ]
 after_failure:
