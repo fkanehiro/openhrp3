@@ -558,9 +558,45 @@ endif(ENABLE_CPACK)
 if(CATKIN_DEVEL_PREFIX) # for catkin_make
   message("[openhrp3] compile under catkin environment")
 
-  # create symlink for share
-  execute_process(COMMAND cmake -E make_directory share WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-  execute_process(COMMAND cmake -E create_symlink ${PROJECT_SOURCE_DIR} share/OpenHRP-3.1 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  # create symlink for devel/share
+  add_custom_target(copy_include ALL
+    COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpCollision
+    COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpModel
+    COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpPlanner
+    COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpUtil
+    COMMAND find hrpCollision -name *.h   | xargs -i cp {} ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpCollision
+    COMMAND find hrpModel -name *.h   | xargs -i cp {} ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpModel
+    COMMAND find hrpPlanner -name *.h | xargs -i cp {} ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpPlanner
+    COMMAND find hrpUtil -name *.h    | xargs -i cp {} ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpUtil
+    DEPENDS hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/hrplib)
+  add_custom_target(copy_hrpcorba ALL
+    COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpCorba
+    COMMAND find hrpCorba -name *.hh  | xargs -i cp {} ${CATKIN_DEVEL_PREFIX}/include/OpenHRP-3.1/hrpCorba
+    DEPENDS hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/hrplib/)
+  add_custom_target(copy_python ALL
+    COMMAND cmake -E make_directory lib/python2.7/dist-packages/OpenHRP3/
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/hrplib/hrpCorba/OpenHRP/__init__.py lib/python2.7/dist-packages/OpenHRP3/
+    COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/hrplib/hrpCorba/*.py                lib/python2.7/dist-packages/OpenHRP3/
+    DEPENDS hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    WORKING_DIRECTORY ${CATKIN_DEVEL_PREFIX})
+  add_custom_target(copy_pkgconfig ALL
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/openhrp3.1.pc lib/pkgconfig/openhrp3.1.pc
+    COMMAND sed -i -e 's@/install@/devel@' lib/pkgconfig/openhrp3.1.pc
+    COMMAND sed -i -e \"s@idl_dir=\\\$\${prefix}@idl_dir=${PROJECT_SOURCE_DIR}@\" lib/pkgconfig/openhrp3.1.pc
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/openhrp3.1.pc
+    WORKING_DIRECTORY ${CATKIN_DEVEL_PREFIX})
+  add_custom_target(copy_devel_share ALL
+    COMMAND cmake -E copy_directory idl    share/OpenHRP-3.1/idl
+    COMMAND cmake -E copy_directory java   share/OpenHRP-3.1/java
+    COMMAND cmake -E copy_directory sample share/OpenHRP-3.1/sample
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  add_custom_target(copy_devel_bin ALL
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/bin/openhrp-model-loader bin/
+    COMMAND cmake -E copy ${CMAKE_CURRENT_BINARY_DIR}/bin/export-collada bin/
+    DEPENDS bin/openhrp-model-loader bin/export-collada
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
   ## rostest
   find_package(rostest)
@@ -573,7 +609,7 @@ if(CATKIN_DEVEL_PREFIX) # for catkin_make
   install(FILES package.xml DESTINATION share/openhrp3/)
   install(DIRECTORY test DESTINATION share/openhrp3 USE_SOURCE_PERMISSIONS)
   install(DIRECTORY sample idl java DESTINATION share/openhrp3/share/OpenHRP-3.1 USE_SOURCE_PERMISSIONS)
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/server/ModelLoader/openhrp-model-loader DESTINATION lib/openhrp3)
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/server/ModelLoader/export-collada       DESTINATION lib/openhrp3)
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/openhrp-model-loader DESTINATION lib/openhrp3)
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/export-collada       DESTINATION lib/openhrp3)
 
 endif()
