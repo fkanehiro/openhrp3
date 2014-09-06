@@ -20,6 +20,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
   - source /opt/ros/hydro/setup.bash
 script: # All commands must exit with code 0 on success. Anything else is considered failure.
+  - export ROS_PARALLEL_JOBS="-j2 -l2"
   - mkdir -p ~/ws/src
   - ln -sf ${CI_SOURCE_PATH} ~/ws/src/${REPOSITORY_NAME}
   - cd ~/ws
