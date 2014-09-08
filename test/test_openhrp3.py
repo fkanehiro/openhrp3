@@ -49,13 +49,13 @@ class TestCompile(unittest.TestCase):
         pkg_ret = os.path.exists(pkg_path)
         self.assertTrue(pkg_ret, "`rospack find openhrp3`(%s) returns %r"%(pkg_path, pkg_ret))
 
-    def check_if_file_exites_from_prefix(self, fname):
+    def check_if_file_exists_from_prefix(self, fname):
         self.check_if_file_exists("prefix", fname)
 
     def test_files_for_hrpsys(self):
         # https://github.com/start-jsk/hrpsys/blob/master/catkin.cmake#L125
         # self.check_if_file_exists_from_rospack("share/OpenHRP-3.1/sample/project")
-        self.check_if_file_exites_from_prefix("share/OpenHRP-3.1/sample/project")
+        self.check_if_file_exists_from_prefix("share/OpenHRP-3.1/sample/project")
 
         # https://code.google.com/p/hrpsys-base/source/browse/trunk/idl/CMakeLists.txt#118
         self.check_if_file_exists("idl_dir",            "OpenHRP/OpenHRPCommon.idl")
