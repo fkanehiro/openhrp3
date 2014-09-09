@@ -6,6 +6,7 @@ endif()
 
 if( COLLADA_DOM_FOUND )
   file(GLOB_RECURSE _wrlfiles *.wrl)
+  set(_daefiles)
   foreach(_wrlfile ${_wrlfiles})
     string(REGEX REPLACE ".wrl$" ".dae" _daefile ${_wrlfile})
     file(STRINGS ${_wrlfile} _robotmodel REGEX "DEF .* Humanoid")
@@ -14,10 +15,10 @@ if( COLLADA_DOM_FOUND )
         COMMAND ../bin/export-collada -i ${_wrlfile} -o ${_daefile}
         DEPENDS ../bin/export-collada ${_wrlfile})
       string(REGEX REPLACE "\\." "_" _daefile_target ${_daefile})
-      string(REGEX REPLACE "/" "_" _daefile_target ${_daefile_target})
-      add_custom_target(export_collada_${_daefile_target} ALL DEPENDS ${_daefile})
+      list(APPEND _daefiles ${_daefile})
     endif()
   endforeach()
+  add_custom_target(export_collada_models ALL DEPENDS ${_daefiles})
 endif()
 
 install(DIRECTORY model project script
