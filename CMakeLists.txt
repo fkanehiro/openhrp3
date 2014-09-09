@@ -305,7 +305,7 @@ if(ODE_DIR)
   endif()
 endif()
 
-option(COMPILE_JAVA_STUFF "Compile java stuff" ON)
+option(COMPILE_JAVA_STUFF "Compile java stuff" OFF)
 if(COMPILE_JAVA_STUFF)
   # check Java
   if(NOT JDK_DIR)
