@@ -29,9 +29,6 @@
   <build_depend>openrtm_aist_python</build_depend>
   <build_depend>git</build_depend>
   <build_depend>mk</build_depend>
-  <build_depend>rosbuild</build_depend>
-  <build_depend>rostest</build_depend>
-  <build_depend>roslang</build_depend>
 
   <run_depend>atlas</run_depend>
   <run_depend>boost</run_depend>
