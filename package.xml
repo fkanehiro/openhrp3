@@ -16,8 +16,6 @@
   <url type="website">https://openrtp.jp/svn/hrg/openhrp/</url>
   <url type="bugtracker">https://openrtp.jp/redmine/</url>
 
-  <buildtool_depend>cmake</buildtool_depend>
-
   <build_depend>atlas</build_depend>
   <build_depend>boost</build_depend>
   <build_depend>collada-dom</build_depend>
@@ -47,6 +45,6 @@
   <run_depend>openrtm_aist_python</run_depend>
 
   <export>
-
+    <build_type>cmake</build_type>
   </export>
 </package>

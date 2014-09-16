@@ -305,7 +305,7 @@ if(ODE_DIR)
   endif()
 endif()
 
-option(COMPILE_JAVA_STUFF "Compile java stuff" ON)
+option(COMPILE_JAVA_STUFF "Compile java stuff" OFF)
 if(COMPILE_JAVA_STUFF)
   # check Java
   if(NOT JDK_DIR)
@@ -555,25 +555,9 @@ if(ENABLE_CPACK)
 endif(ENABLE_CPACK)
 
 #if catkin environment
-if(CATKIN_DEVEL_PREFIX) # for catkin_make
-  message("[openhrp3] compile under catkin environment")
-
-  # create symlink for share
-  execute_process(COMMAND cmake -E make_directory share WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-  execute_process(COMMAND cmake -E create_symlink ${PROJECT_SOURCE_DIR} share/OpenHRP-3.1 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-
-  ## rostest
-  find_package(rostest)
-  if(rostest_FOUND)
-    add_rostest(test/test_openhrp3.test)
-    add_rostest(test/test_modelloader.test)
-  endif()
-
-  # install
+if(EXISTS "$ENV{PWD}/.catkin_workspace")
   install(FILES package.xml DESTINATION share/openhrp3/)
   install(DIRECTORY test DESTINATION share/openhrp3 USE_SOURCE_PERMISSIONS)
-  install(DIRECTORY sample idl java DESTINATION share/openhrp3/share/OpenHRP-3.1 USE_SOURCE_PERMISSIONS)
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/server/ModelLoader/openhrp-model-loader DESTINATION lib/openhrp3)
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/server/ModelLoader/export-collada       DESTINATION lib/openhrp3)
-
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/openhrp-model-loader DESTINATION share/openhrp3/)
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/export-collada       DESTINATION share/openhrp3/)
 endif()
