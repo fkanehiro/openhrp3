@@ -13,7 +13,7 @@ except:
 from omniORB import CORBA, any, cdrUnmarshal, cdrMarshal
 import CosNaming
 
-import sys, os, socket
+import sys, os, socket, subprocess
 
 import OpenRTM_aist
 from OpenHRP3 import *
@@ -81,8 +81,9 @@ class TestModelLoaderBase(unittest.TestCase):
 
     def loadFiles(self, wrl_file, dae_file):
         """ Override this method for loading model files from another directory """
-        self.wrl_url = rospkg.RosPack().get_path("openhrp3")+"/share/OpenHRP-3.1/sample/model/"+wrl_file
-        self.dae_url = rospkg.RosPack().get_path("openhrp3")+"/share/OpenHRP-3.1/sample/model/"+dae_file
+        openhrp3_prefix=subprocess.check_output('pkg-config openhrp3.1 --variable=prefix', shell=True).rstrip()
+        self.wrl_url = openhrp3_prefix+"/share/OpenHRP-3.1/sample/model/"+wrl_file
+        self.dae_url = openhrp3_prefix+"/share/OpenHRP-3.1/sample/model/"+dae_file
         self.wrl_binfo = self.ml.getBodyInfo(self.wrl_url)
         self.dae_binfo = self.ml.getBodyInfo(self.dae_url)
         self.wrl_links = self.wrl_binfo._get_links()
@@ -148,7 +149,7 @@ class TestModelLoader(TestModelLoaderBase):
         self.checkModels("sample.wrl","sample.dae")
 
     def test_pa10(self):
-        self.checkModels("PA10/pa10.main.wrl","PA10/pa10.dae")
+        self.checkModels("PA10/pa10.main.wrl","PA10/pa10.main.dae")
 
     #def test_3dof_arm(self):
     #    self.checkModels("sample3dof.wrl","sample3dof.dae")
