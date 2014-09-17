@@ -119,10 +119,12 @@ Body::Body(const Body& org)
     for(int sensorType = 0; sensorType < n; ++sensorType){
         for(int i=0; i < org.numSensors(sensorType); ++i){
             Sensor* orgSensor = org.sensor(sensorType, i);
-            int linkIndex = linkToIndexMap[orgSensor->link];
-            Link* newLink = linkTraverse_[linkIndex];
-            Sensor* cloneSensor = createSensor(newLink, sensorType, orgSensor->id, orgSensor->name);
-            *cloneSensor = *orgSensor;
+	    if (orgSensor){
+	        int linkIndex = linkToIndexMap[orgSensor->link];
+		Link* newLink = linkTraverse_[linkIndex];
+		Sensor* cloneSensor = createSensor(newLink, sensorType, orgSensor->id, orgSensor->name);
+		*cloneSensor = *orgSensor;
+	    }
         }
     }
 
