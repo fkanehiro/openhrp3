@@ -1,5 +1,27 @@
 OpenHRP3 Updates History (Release Notes)
 
+Ver.3.1.7
+=========================
+・add package.xml and CMakeLists.txt for catkin compile
+
+・disable java IDL compile by defualt
+
+・disable java python compile by defualt
+
+・convert wrl file into COLLADA file during compile
+
+・add sample3dof robot model
+
+・add .travis.yml file
+
+・fix servo gain in PD controller 
+
+・add CollisionDetector::colldingPairs()
+
+・support OpenRTM 1.1.1
+
+・fix bug in COLLADA loading
+
 Ver.3.1.6
 =========================
 * fix inertia matrix conversion of ModelLoader
