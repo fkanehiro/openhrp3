@@ -1,5 +1,35 @@
 ﻿OpenHRP3 改版リスト (リリースノート)
 
+Ver.3.1.7
+=========================
+・catkinでコンパイルできるようpackage.xmlの追加とCMakeLists.txtの改変を行いました．
+
+・java用IDLコンパイルをデフォルトでオフにしました．
+
+・pyton用IDLコンパイルをデフォルトでオンにしました．
+
+・コンパイル時にwrlファイルをCOLLADAフアイルに変換するようにしました．
+
+・sample3dofロボットモデルを追加しました
+
+・.travis.ymlファイルを追加しました
+
+・PDコントローラのサーボゲインを修正しました
+
+・CollisionDetector::colldingPairs()を追加しました
+
+・OpenRTM 1.1.1 対応しました
+
+・COLLADAファイル読み込み時のバグを修正しました
+
+Ver.3.1.6
+=========================
+・ModelLoaderでcollada形式のモデルファイルを読み込んだ時の慣性行列の変換を修正しました
+
+・ModelLoaderでcollada形式のモデルファイルを読み込んだ時のsegmentsの名前を修正しました
+
+・ModelLoaderでcollada形式のモデルファイルを読み込んだ時のLinkの回転行列を修正しました
+
 Ver.3.1.6
 =========================
 ・ModelLoaderでcollada形式のモデルファイルを読み込んだ時の慣性行列の変換を修正しました
