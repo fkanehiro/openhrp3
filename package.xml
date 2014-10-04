@@ -26,9 +26,6 @@
   <build_depend>libjpeg</build_depend>
   <build_depend>libpng12-dev</build_depend>
   <build_depend>openrtm_aist</build_depend>
-  <build_depend>openrtm_aist_python</build_depend>
-  <build_depend>git</build_depend>
-  <build_depend>mk</build_depend>
 
   <run_depend>atlas</run_depend>
   <run_depend>boost</run_depend>
@@ -39,7 +36,6 @@
   <run_depend>libjpeg</run_depend>
   <run_depend>libpng12-dev</run_depend>
   <run_depend>openrtm_aist</run_depend>
-  <run_depend>openrtm_aist_python</run_depend>
 
   <export>
     <build_type>cmake</build_type>
