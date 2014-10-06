@@ -24,8 +24,8 @@ if(UNIX)
     hrpUtil-${OPENHRP_LIBRARY_VERSION}
     ${OPENRTM_LIBRARIES}
     ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_REGEX_LIBRARY}
-    #boost_filesystem-mt boost_program_options-mt boost_regex-mt
-    #boost_system-mt
+    #boost_filesystem boost_program_options boost_regex
+    #boost_system
     )
 elseif(WIN32)
   add_definitions(${OPENRTM_DEFINITIONS})
