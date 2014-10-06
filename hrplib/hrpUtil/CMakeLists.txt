@@ -65,7 +65,7 @@ if(UNIX)
   if(NOT QNXNTO)
     target_link_libraries(${target}
       hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
-      #boost_filesystem-mt boost_signals-mt
+      #boost_filesystem boost_signals
       ${Boost_FILESYSTEM_LIBRARY} ${Boost_SIGNALS_LIBRARY} ${Boost_SYSTEM_LIBRARY}
       #${Boost_LIBRARIES}
       ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARY}
@@ -83,7 +83,7 @@ if(UNIX)
       )
   endif(NOT QNXNTO)
   if(APPLE)
-  target_link_libraries(${target} boost_system-mt)
+  target_link_libraries(${target} boost_system)
   endif() 
 elseif(WIN32)
   add_definitions(-DHRP_UTIL_MAKE_DLL)
