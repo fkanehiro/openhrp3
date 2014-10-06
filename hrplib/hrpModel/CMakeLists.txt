@@ -60,7 +60,7 @@ if(UNIX)
       hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
       hrpCollision-${OPENHRP_LIBRARY_VERSION}
       ${OMNIORB_LIBRARIES}
-      #boost_filesystem-mt boost_regex-mt
+      #boost_filesystem boost_regex
       ${Boost_REGEX_LIBRARY}
       #${Boost_LIBRARIES}
       dl)
