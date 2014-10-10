@@ -34,6 +34,6 @@ if(ODE_DIR)
   install(TARGETS ${program} DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release)
   endif()
 
-  install(TARGETS ${program} DESTINATION bin CONFIGURATIONS Release Debug)
+  install(TARGETS ${program} DESTINATION bin CONFIGURATIONS Release Debug RelWithDebInfo)
 
 endif()

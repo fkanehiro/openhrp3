@@ -111,7 +111,7 @@ if(OPENHRP_3_0_CUSTOMIZERS)
         DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug)
     else()
       install(TARGETS ${customizer}
-        LIBRARY DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug)
+        LIBRARY DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug RelWithDebInfo)
     endif()
   endforeach()
 endif()
