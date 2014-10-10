@@ -18,7 +18,7 @@ if(WIN32)
   install(TARGETS ${program} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURATIONS Release )
 endif()
 
-install(TARGETS ${program} DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/SampleSimulationEC CONFIGURATIONS Release Debug)
+install(TARGETS ${program} DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/SampleSimulationEC CONFIGURATIONS Release Debug RelWithDebInfo)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rtc.conf DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/SampleSimulationEC)
 
 if(CMAKE_INSTALL_PREFIX)

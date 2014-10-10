@@ -16,4 +16,4 @@ elseif(WIN32)
     )
 endif()
 
-install(TARGETS ${libname} DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug)
+install(TARGETS ${libname} DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug RelWithDebInfo)

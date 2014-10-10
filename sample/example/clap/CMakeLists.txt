@@ -27,4 +27,4 @@ if(WIN32)
   install(TARGETS ${program} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURATIONS Release )
 endif()
 
-install(TARGETS ${program} DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/clap CONFIGURATIONS Release Debug)
+install(TARGETS ${program} DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/clap CONFIGURATIONS Release Debug RelWithDebInfo)
