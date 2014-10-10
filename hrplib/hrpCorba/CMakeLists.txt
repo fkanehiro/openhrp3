@@ -69,9 +69,9 @@ install(TARGETS ${target}
 endif()
 
 install(TARGETS ${target}
-	RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
-	LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
-	ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug
+	RUNTIME DESTINATION bin CONFIGURATIONS Release Debug RelWithDebInfo
+	LIBRARY DESTINATION lib CONFIGURATIONS Release Debug RelWithDebInfo
+	ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug RelWithDebInfo
 )
 
 set(given_headers ORBwrap.h)

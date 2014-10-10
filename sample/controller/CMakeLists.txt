@@ -17,7 +17,7 @@ macro(create_simple_controller CONTROLLER_NAME)
 
   set(controller_install_path ${RELATIVE_SAMPLE_INSTALL_PATH}/controller/${CONTROLLER_NAME})
 
-  install(TARGETS ${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp DESTINATION ${controller_install_path} CONFIGURATIONS Release)
+  install(TARGETS ${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp DESTINATION ${controller_install_path} CONFIGURATIONS Release Debug RelWithDebInfo)
   
   if(WIN32)
     install(TARGETS ${CONTROLLER_NAME} ${CONTROLLER_NAME}Comp
