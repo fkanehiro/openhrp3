@@ -7,9 +7,9 @@ macro(hrplib_install_macro HRPLIB_TARGET HRPLIB_VERSION)
       )
   endif()
   install(TARGETS ${HRPLIB_TARGET}
-    RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
-    LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
-    ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug
+    RUNTIME DESTINATION bin CONFIGURATIONS Release Debug RelWithDebInfo None
+    LIBRARY DESTINATION lib CONFIGURATIONS Release Debug RelWithDebInfo None
+    ARCHIVE DESTINATION lib CONFIGURATIONS Release Debug RelWithDebInfo None
   )
 endmacro()
 

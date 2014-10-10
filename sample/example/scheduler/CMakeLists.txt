@@ -30,5 +30,5 @@ elseif(UNIX)
   configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/scheduler.sh.in ${CMAKE_CURRENT_BINARY_DIR}/scheduler.sh )
 endif()
 
-install(TARGETS ${program} DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/scheduler CONFIGURATIONS Release Debug)
+install(TARGETS ${program} DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/scheduler CONFIGURATIONS Release Debug RelWithDebInfo)
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${program}.${SH_SFX} DESTINATION ${RELATIVE_SAMPLE_INSTALL_PATH}/example/scheduler)
