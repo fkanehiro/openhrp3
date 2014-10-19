@@ -556,7 +556,7 @@ endif(ENABLE_CPACK)
 
 #if catkin environment
 string(REGEX MATCH "catkin" need_catkin $ENV{_})
-if(need_catkin)
+if(need_catkin OR "${CATKIN_BUILD_BINARY_PACKAGE}")
   install(FILES package.xml DESTINATION share/openhrp3/)
   install(DIRECTORY test DESTINATION share/openhrp3 USE_SOURCE_PERMISSIONS)
   install(CODE "execute_process(COMMAND cmake -E create_symlink ../../bin/openhrp-model-loader openhrp-model-loader WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/openhrp3)")
