@@ -2,6 +2,25 @@
 Changelog for package openhrp3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.7-0 (2014-10-10)
+--------------------
+・add package.xml and CMakeLists.txt for catkin compile
+・disable java IDL compile by defualt
+・enable java python compile by defualt
+・convert wrl file into COLLADA file during compile
+・add sample3dof robot model
+・add .travis.yml file
+・fix servo gain in PD controller 
+・add CollisionDetector::colldingPairs()
+・support OpenRTM 1.1.1
+・fix bug in COLLADA loading
+
+3.1.6-0 (2014-06-21)
+--------------------
+* fix inertia matrix conversion of ModelLoader
+* fix segment's name of ModelLoader
+* fix link's rotation of ModelLoader
+
 3.1.5-6 (2014-04-15)
 --------------------
 * remove installed file if openhrp3_FOUND is not found
