@@ -6,5 +6,5 @@ class MyRunnable(Runnable):
 		print "a"
 		return None
 
-syncExec.exec(MyRunnable())
+syncExec.Exec(MyRunnable())
 
