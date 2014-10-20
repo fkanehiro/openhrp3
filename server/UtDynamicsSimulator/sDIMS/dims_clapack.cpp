@@ -29,11 +29,11 @@ typedef double doublereal;
 #undef USE_CLAPACK_INTERFACE
 #include <blaswrap.h>
 #else
-#ifdef __darwin__
+#if defined(__darwin__) || defined(__linux__)
 extern "C"{
 #endif
 #include <cblas.h>
-#ifdef __darwin__
+#if defined(__darwin__) || defined(__linux__)
 }
 #endif
 #endif
