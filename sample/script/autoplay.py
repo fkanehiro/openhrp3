@@ -15,7 +15,7 @@ if n > 0:
 
 	c = 0
 	while 1:
-		syncExec.exec(MyRunnable())
+		syncExec.Exec(MyRunnable())
     		c = c + 100
 		if c > n:
 			c = 0

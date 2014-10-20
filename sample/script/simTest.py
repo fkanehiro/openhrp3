@@ -14,9 +14,9 @@ class SetTime(Runnable):
 		return None
 
 sim   = uimanager.getSelectedItem(GrxSimulationItem, None)
-syncExec.exec(SetTime())
+syncExec.Exec(SetTime())
 
 for i in range(3):
-	syncExec.exec(StartSim())
+	syncExec.Exec(StartSim())
 	sim.waitStopSimulation()
 
