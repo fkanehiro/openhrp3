@@ -1,6 +1,6 @@
 import org.eclipse.swt.widgets.Display as Display
 
-def exec(r):
+def Exec(r):
 	display = Display.getDefault()	
 	display.syncExec(r)
 	return None
