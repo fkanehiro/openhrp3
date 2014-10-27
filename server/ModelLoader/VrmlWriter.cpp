@@ -67,7 +67,11 @@ void VrmlWriter::writeLink(int index, std::ostream &ofs)
     }
     indent(ofs); ofs << "children [" << std::endl;
     m_indent += 2;
-    indent(ofs); ofs << "DEF " << linfo.name << "_s Segment {" << std::endl;
+    if (linfo.segments.length() > 0) {
+      indent(ofs); ofs << "DEF " << linfo.segments[0].name << " Segment {" << std::endl;
+    } else {
+      indent(ofs); ofs << "DEF " << linfo.name << "_s Segment {" << std::endl;
+    }
     m_indent += 2;
     indent(ofs); ofs << "mass " << linfo.mass << std::endl;
     indent(ofs); ofs << "centerOfMass " << linfo.centerOfMass[0] << " "
@@ -122,7 +126,11 @@ void VrmlWriter::writeLink(int index, std::ostream &ofs)
     m_indent -=2;
     indent(ofs); ofs << "]" << std::endl;
     m_indent -= 2;
-    indent(ofs); ofs << "} #Segment " << linfo.name << "_s" << std::endl;
+    if (linfo.segments.length() > 0) {
+      indent(ofs); ofs << "} #Segment " << linfo.segments[0].name  << std::endl;
+    } else {
+      indent(ofs); ofs << "} #Segment " << linfo.name << "_s" << std::endl;
+    }
     for (size_t i=0; i<linfo.childIndices.length(); i++){
         writeLink(linfo.childIndices[i], ofs);
     }
@@ -365,7 +373,11 @@ void VrmlWriter::writeHumanoidNode(OpenHRP::BodyInfo_var binfo,
     ofs << "  ]" << std::endl;
     ofs << "  segments [" << std::endl;
     for (size_t i=0; i<links->length(); i++){
-        ofs << "    USE " << links[i].name << "_s," << std::endl;
+        if (links[i].segments.length() > 0) {
+          ofs << "    USE " << links[i].segments[0].name << "," << std::endl;
+        } else {
+          ofs << "    USE " << links[i].name << "_s," << std::endl;
+        }
     }
     ofs << "  ]" << std::endl;
     ofs << "  name \"" << binfo->name() << "\"" << std::endl;
