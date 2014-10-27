@@ -425,7 +425,7 @@ JointNodeSetPtr ModelNodeSetImpl::addJointNodeSet(VrmlProtoInstancePtr jointNode
 {
     numJointNodes++;
 
-    putMessage(string("Joint node") + jointNode->defName);
+    putMessage(string("Joint node ") + jointNode->defName);
 
     JointNodeSetPtr jointNodeSet(new JointNodeSet());
 
