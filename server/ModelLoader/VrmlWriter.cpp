@@ -137,7 +137,7 @@ void VrmlWriter::writeLink(int index, std::ostream &ofs)
     m_indent -= 2;
     indent(ofs); ofs << "]" << std::endl;
     m_indent -= 2;
-    indent(ofs); ofs << "} #Joint" << linfo.name << std::endl;
+    indent(ofs); ofs << "} #Joint " << linfo.name << std::endl;
 }
 
 void VrmlWriter::writeShape(TransformedShapeIndex &tsi, std::ostream &ofs)
