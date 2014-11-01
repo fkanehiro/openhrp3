@@ -363,7 +363,7 @@ if(ENABLE_DOXYGEN)
   find_package(Doxygen)
 endif(ENABLE_DOXYGEN)
 
-if(NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL None)
   set(
     CMAKE_BUILD_TYPE Release CACHE STRING
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
