@@ -559,8 +559,13 @@ string(REGEX MATCH "catkin" need_catkin $ENV{_})
 if(need_catkin OR "${CATKIN_BUILD_BINARY_PACKAGE}")
   install(FILES package.xml DESTINATION share/openhrp3/)
   install(DIRECTORY test DESTINATION share/openhrp3 USE_SOURCE_PERMISSIONS)
+  # this script is just for backwards compatibility. the roslaunch $(find ...) 
+  # expects the script to be in the package directory, and in catkin
+  # the package direcory is the share directory
   install(CODE "execute_process(COMMAND cmake -E make_directory \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/openhrp3)")
+  install(CODE "execute_process(COMMAND cmake -E create_symlink ../../bin/openhrp-model-loader openhrp-model-loader WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/openhrp3)")
   install(CODE "execute_process(COMMAND cmake -E create_symlink ../../bin/openhrp-model-loader openhrp-model-loader WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/openhrp3)")
+  install(CODE "execute_process(COMMAND cmake -E create_symlink ../../bin/export-collada       export-collada       WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/openhrp3)")
   install(CODE "execute_process(COMMAND cmake -E create_symlink ../../bin/export-collada       export-collada       WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/openhrp3)")
 endif()
 
