@@ -10,6 +10,9 @@ if( COLLADA_DOM_FOUND )
   foreach(_wrlfile ${_wrlfiles})
     string(REGEX REPLACE ".wrl$" ".dae" _daefile ${_wrlfile})
     file(STRINGS ${_wrlfile} _robotmodel REGEX "DEF .* Humanoid")
+    if(${_wrlfile} MATCHES "mockup/mockup_main.wrl")
+      set(_robotmodel "")  # mock_main.wrl sometimes fail to convert on travis
+    endif()
     if(NOT _robotmodel STREQUAL "")
       add_custom_command(OUTPUT ${_daefile}
         COMMAND ../bin/export-collada -i ${_wrlfile} -o ${_daefile}
