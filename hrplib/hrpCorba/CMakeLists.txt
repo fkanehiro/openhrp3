@@ -4,7 +4,7 @@
 include(${OPENHRP_IDL_DIR}/OpenHRP/IDL_FILE_BASENAMES.cmake)
 
 set(idl_flags_cpp ${VERBOSE_FLAG} -bcxx -Wbuse_quotes -Wbh=.hh -Wbs=Sk.cpp -I${OPENRTM_IDL_DIR})
-set(idl_flags_py  ${VERBOSE_FLAG} -bpython -Wbuse_quotes -I${OPENRTM_IDL_DIR})
+set(idl_flags_py  ${VERBOSE_FLAG} -bpython -I${OPENRTM_IDL_DIR})
 
 if( NOT ADDITIONAL_SYMBOL STREQUAL "")
   set(idl_flags_cpp ${idl_flags_cpp} -D ${ADDITIONAL_SYMBOL})
@@ -84,7 +84,4 @@ execute_process(
 
 
 set(idl_py_files ${idl_py_files} ${CMAKE_CURRENT_BINARY_DIR}/OpenHRP/__init__.py)
-install(FILES ${idl_py_files} DESTINATION lib/python${python_version}/dist-packages/OpenHRP3)
-
-
-
+install(FILES ${idl_py_files} DESTINATION lib/python${python_version}/dist-packages/OpenHRP)
