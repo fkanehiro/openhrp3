@@ -16,7 +16,7 @@ import CosNaming
 import sys, os, socket, subprocess
 
 import OpenRTM_aist
-from OpenHRP3 import *
+from OpenHRP import *
 
 import rospkg
 import unittest
