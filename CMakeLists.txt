@@ -555,7 +555,7 @@ if(ENABLE_CPACK)
 endif(ENABLE_CPACK)
 
 #if catkin environment
-string(REGEX MATCH "catkin" need_catkin $ENV{_})
+string(REGEX MATCH "catkin" need_catkin "$ENV{_}")
 if(need_catkin OR "${CATKIN_BUILD_BINARY_PACKAGE}")
   install(FILES package.xml DESTINATION share/openhrp3/)
   install(DIRECTORY test DESTINATION share/openhrp3 USE_SOURCE_PERMISSIONS)
