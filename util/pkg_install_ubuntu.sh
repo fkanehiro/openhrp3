@@ -147,6 +147,7 @@ check_root
 #update_source_list_partner
 #apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 58E6B835EDC85D09
 #apt-key adv --recv-keys --keyserver keyserver.ubuntu.com C320E95B222576BE
-add-apt-repository ppa:hrg/stable
-add-apt-repository ppa:openrave/release
+#add-apt-repository ppa:hrg/stable
+#add-apt-repository ppa:openrave/release
+add-apt-repository ppa:hrg/daily
 apt-get update
