@@ -72,14 +72,14 @@ libpng12-dev
 uuid-dev
 
 # openrtm
-openrtm-aist
+openrtm-aist-dev
 
 
 #eigen3
 libeigen3-dev
 
 #collada
-#collada-dom-dev
+collada-dom-dev
 
 # for hrpsys
 # libncurses5-dev
