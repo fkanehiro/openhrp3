@@ -567,5 +567,9 @@ if(need_catkin OR "${CATKIN_BUILD_BINARY_PACKAGE}")
   install(CODE "execute_process(COMMAND cmake -E create_symlink ../../bin/openhrp-model-loader openhrp-model-loader WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/openhrp3)")
   install(CODE "execute_process(COMMAND cmake -E create_symlink ../../bin/export-collada       export-collada       WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/openhrp3)")
   install(CODE "execute_process(COMMAND cmake -E create_symlink ../../bin/export-collada       export-collada       WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/openhrp3)")
+  install(CODE "
+execute_process(COMMAND cmake -E make_directory share WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/openhrp3)
+execute_process(COMMAND cmake -E create_symlink ../../OpenHRP-3.1 share/OpenHRP-3.1 WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/openhrp3)
+")
 endif()
 
