@@ -149,5 +149,5 @@ check_root
 #apt-key adv --recv-keys --keyserver keyserver.ubuntu.com C320E95B222576BE
 #add-apt-repository ppa:hrg/stable
 #add-apt-repository ppa:openrave/release
-add-apt-repository ppa:hrg/daily
+add-apt-repository -y ppa:hrg/daily
 apt-get update
