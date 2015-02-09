@@ -142,7 +142,7 @@ void ForwardDynamics::updateAccelSensor(AccelSensor* sensor)
     Vector3 o_Agsens(x[0](1), x[1](1), x[2](1));
     o_Agsens += g;
 
-    sensor->dv.noalias() = link->R.transpose() * o_Agsens;
+    sensor->dv.noalias() = sensor->localR.transpose() * link->R.transpose() * o_Agsens;
 }
 
 
