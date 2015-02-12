@@ -24,7 +24,6 @@ script: # All commands must exit with code 0 on success. Anything else is consid
   - mkdir -p ~/ws/src
   - ln -sf ${CI_SOURCE_PATH} ~/ws/src/${REPOSITORY_NAME}
   - cd ~/ws
-  - sudo ln -sf /opt/ros/hydro/lib/openrtm_aist/bin/rtm-config /opt/ros/hydro/bin/rtm-config ## temp code
   - catkin_make_isolated
   - source devel_isolated/setup.bash
   - export ROS_PACKAGE_PATH=`pwd`/devel_isolated:$ROS_PACKAGE_PATH
