@@ -338,6 +338,31 @@ namespace hrp {
 		}
 
 
+		//--- Calculation of SR-Inverse ---
+		int calcSRInverse(const dmatrix& _a, dmatrix &_a_sr, double _sr_ratio, dmatrix _w) {
+		    // J# = W Jt(J W Jt + kI)-1 (Weighted SR-Inverse)
+		    // SR-inverse :
+		    // Y. Nakamura and H. Hanafusa : "Inverse Kinematic Solutions With
+		    // Singularity Robustness for Robot Manipulator Control"
+		    // J. Dyn. Sys., Meas., Control  1986. vol 108, Issue 3, pp. 163--172.
+		
+		    const int c = _a.rows(); // 6
+		    const int n = _a.cols(); // n
+		
+		    if ( _w.cols() != n || _w.rows() != n ) {
+		        _w = dmatrix::Identity(n, n);
+		    }
+		
+		    dmatrix at = _a.transpose();
+		    dmatrix a1(c, c);
+		    a1 = (_a * _w * at +  _sr_ratio * dmatrix::Identity(c,c)).inverse();
+		
+		    //if (DEBUG) { dmatrix aat = _a * at; std::cerr << " a*at :" << std::endl << aat; }
+		
+		    _a_sr  = _w * at * a1;
+		    //if (DEBUG) { dmatrix ii = _a * _a_sr; std::cerr << "    i :" << std::endl << ii; }
+		}
+
 		//--- Calculation of determinamt ---
 		double det(const dmatrix &_a)
 		{
