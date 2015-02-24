@@ -18,26 +18,6 @@ namespace hrp{
 };
 
 #include <iostream>
-inline std::ostream& operator<<(std::ostream& out, hrp::dmatrix &a) {
-    const int c = a.rows();
-    const int n = a.cols();
-
-    for(int i = 0; i < c; i++){
-        out << "      :";
-        for(int j = 0; j < n; j++){
-            out << " " << std::setw(7) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << (a)(i,j);
-        }
-        out << std::endl;
-    }
-}
-
-inline std::ostream& operator<<(std::ostream& out, hrp::dvector &a) {
-    const int n = a.size();
-
-    for(int i = 0; i < n; i++){
-        out << std::setw(7) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << a(i) << " ";
-    }
-    out << std::endl;
-}
+#include <iomanip>
 
 #endif

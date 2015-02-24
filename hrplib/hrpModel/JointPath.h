@@ -89,7 +89,6 @@ namespace hrp {
         virtual bool setManipulabilityLimit(double l) { manipulability_limit = l; }
         virtual bool setManipulabilityGain(double l) { manipulability_gain = l; }
         virtual void setMaxIKError(double epos, double erot);
-        virtual void setMaxIKError(double e);
         virtual void setMaxIKIteration(int iter);
 
       protected:
@@ -101,7 +100,6 @@ namespace hrp {
 		
         double maxIKPosErrorSqr, maxIKRotErrorSqr;
         int maxIKIteration;
-        std::vector<Link*> joints;
         std::vector<double> avoid_weight_gain;
 	double sr_gain, manipulability_limit, manipulability_gain;
 

@@ -17,10 +17,18 @@
 #include "Link.h"
 #include <hrpUtil/MatrixSolvers.h>
 #include <algorithm>
+#include <limits.h>
+#include <float.h>
 
 using namespace std;
 using namespace hrp;
 
+
+//#define DEBUG true
+#define DEBUG false
+#define deg2rad(x)((x)*M_PI/180)
+#define rad2deg(rad) (rad * 180 / M_PI)
+#define eps_eq(a, b, c)  (fabs((a)-(b)) <= c)
 
 JointPath::JointPath()
 {
@@ -52,7 +60,7 @@ void JointPath::initialize()
     manipulability_limit = 0.1;
     manipulability_gain = 0.001;
     maxIKPosErrorSqr = 1.0e-8;
-    maxIKRotErrorSqr = 1.0e-6:
+    maxIKRotErrorSqr = 1.0e-6;
     maxIKIteration = 50;
     isBestEffortIKMode = false;
     avoid_weight_gain.resize(numJoints());
@@ -295,11 +303,6 @@ bool JointPath::hasAnalyticalIK()
 void JointPath::setMaxIKError(double epos, double erot) {
   maxIKPosErrorSqr = epos*epos;
   maxIKRotErrorSqr = erot*erot;
-}
-
-void JointPath::setMaxIKError(double e)
-{
-    maxIKErrorSqr = e * e;
 }
 
 void JointPath::setMaxIKIteration(int iter) {
@@ -571,7 +574,7 @@ bool JointPath::calcInverseKinematics2(const Vector3& end_p, const Matrix33& end
       }
         
       Vector3 dp(end_p - target->p);
-      Vector3 omega(target->R * omegaFromRotEx(target->R.transpose() * end_R));
+      Vector3 omega(target->R * omegaFromRot(target->R.transpose() * end_R));
       if ( dp.norm() > 0.1 ) dp = dp*0.1/dp.norm();
       if ( omega.norm() > 0.5 ) omega = omega*0.5/omega.norm();
 
@@ -607,7 +610,7 @@ bool JointPath::calcInverseKinematics2(const Vector3& end_p, const Matrix33& end
     if(!converged){
       std::cerr << "IK Fail, iter = " << iter << std::endl;
       Vector3 dp(end_p - target->p);
-      Vector3 omega(target->R * omegaFromRotEx(target->R.transpose() * end_R));
+      Vector3 omega(target->R * omegaFromRot(target->R.transpose() * end_R));
       const double errsqr = dp.dot(dp) + omega.dot(omega);
       if(isBestEffortIKMode){
         std::cerr << "  err : fabs(" << errsqr << " - " << errsqr0 << ") = " << fabs(errsqr-errsqr0) << " < " << maxIKErrorSqr << " BestEffortIKMode" << std::endl;
