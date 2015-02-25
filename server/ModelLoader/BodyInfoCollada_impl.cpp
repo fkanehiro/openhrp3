@@ -1014,12 +1014,17 @@ class ColladaReader : public daeErrorHandler
                 }
                 if( len2 > 0 ) {
                     len2 = 1/len2;
+                    DblArray12  trans_joint_to_child;
+                    _ExtractFullTransform(trans_joint_to_child, pattfull->getLink());
+                    DblArray12 patt;
+                    PoseInverse(patt, trans_joint_to_child);
+                    len2 = 1/len2;
                     double ax = pdomaxis->getAxis()->getValue()[0]*len2;
                     double ay = pdomaxis->getAxis()->getValue()[1]*len2;
                     double az = pdomaxis->getAxis()->getValue()[2]*len2;
-                    pjoint->jointAxis[0] = tatt[0] * ax + tatt[1] * ay + tatt[2] * az;
-                    pjoint->jointAxis[1] = tatt[4] * ax + tatt[5] * ay + tatt[6] * az;
-                    pjoint->jointAxis[2] = tatt[8] * ax + tatt[9] * ay + tatt[10] * az;
+                    pjoint->jointAxis[0] = patt[0] * ax + patt[1] * ay + patt[2] * az;
+                    pjoint->jointAxis[1] = patt[4] * ax + patt[5] * ay + patt[6] * az;
+                    pjoint->jointAxis[2] = patt[8] * ax + patt[9] * ay + patt[10] * az;
                     COLLADALOG_DEBUG(str(boost::format("axis: %f %f %f -> %f %f %f")%ax%ay%az%pjoint->jointAxis[0]%pjoint->jointAxis[1]%pjoint->jointAxis[2]));
                 }
                 else {
