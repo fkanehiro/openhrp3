@@ -14,7 +14,7 @@ before_install: # Use this to prepare the system to install prerequisites or dep
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
 install: # Use this to install any prerequisites or dependencies necessary to run your build
-  - sudo apt-get install -qq -y f2c libf2c2 libf2c2-dev doxygen cmake libeigen3-dev libjpeg-dev collada-dom-dev git jython libatlas-base-dev libboost-all-dev libpng12-dev
+  - sudo apt-get install -y f2c libf2c2 libf2c2-dev doxygen cmake libeigen3-dev libjpeg-dev collada-dom-dev git jython libatlas-base-dev libboost-all-dev libpng12-dev
   - sudo apt-get install -qq -y ros-hydro-openrtm-aist ros-hydro-openrtm-aist-python ros-hydro-mk ros-hydro-rosbuild ros-hydro-rostest ros-hydro-roslang
   - cd $CI_SOURCE_PATH
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
