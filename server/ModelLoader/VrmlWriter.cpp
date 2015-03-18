@@ -1,5 +1,6 @@
 #include <hrpUtil/Eigen3d.h>
 #include "VrmlWriter.h"
+#include <fstream>
 
 using namespace hrp;
 using namespace OpenHRP;
@@ -14,6 +15,11 @@ void VrmlWriter::write(OpenHRP::BodyInfo_var binfo, std::ostream &ofs)
 void VrmlWriter::indent(std::ostream &ofs)
 {
     for (int i=0; i<m_indent; i++) ofs << " ";
+}
+
+void VrmlWriter::useInlineShape(bool use_inline)
+{
+    m_use_inline_shape = use_inline;
 }
 
 void VrmlWriter::writeLink(int index, std::ostream &ofs)
@@ -83,8 +89,19 @@ void VrmlWriter::writeLink(int index, std::ostream &ofs)
     indent(ofs); ofs << "children [" << std::endl;
     m_indent +=2;
     TransformedShapeIndexSequence &tsis = linfo.shapeIndices;
-    for (size_t i=0; i<tsis.length(); i++){
-        writeShape(tsis[i], ofs);
+    if (m_use_inline_shape) {
+        std::string fname ( linfo.segments.length() > 0?linfo.segments[0].name:linfo.name );
+        fname += ".wrl";
+        indent(ofs); ofs << "Inline { url \"" << fname << "\" }" << std::endl;
+        std::ofstream sofs(fname.c_str());
+        for (size_t i=0; i<tsis.length(); i++){
+            writeShape(tsis[i], sofs);
+        }
+        sofs.close();
+    } else {
+        for (size_t i=0; i<tsis.length(); i++){
+            writeShape(tsis[i], ofs);
+        }
     }
     for (size_t i=0; i<linfo.sensors.length(); i++){
         SensorInfo &si = linfo.sensors[i];
@@ -114,8 +131,19 @@ void VrmlWriter::writeLink(int index, std::ostream &ofs)
         if (si.shapeIndices.length()){
             indent(ofs); ofs << "children[" << std::endl;
             m_indent += 2;
-            for (size_t j=0; j<si.shapeIndices.length(); j++){
-                writeShape(si.shapeIndices[j], ofs);
+            if (m_use_inline_shape) {
+                std::string fname (si.name);
+                fname += ".wrl";
+                indent(ofs); ofs << "inline {url \"" << fname << "\" }" << std::endl;
+                std::ofstream sofs( fname.c_str() );
+                for (size_t j=0; j<si.shapeIndices.length(); j++){
+                    writeShape(si.shapeIndices[j], sofs);
+                }
+                sofs.close();
+            } else {
+                for (size_t j=0; j<si.shapeIndices.length(); j++){
+                    writeShape(si.shapeIndices[j], ofs);
+                }
             }
             m_indent -= 2;
             indent(ofs); ofs << "]" << std::endl;
