@@ -28,6 +28,7 @@
   <build_depend>jython</build_depend>
   <build_depend>libjpeg</build_depend>
   <build_depend>libpng12-dev</build_depend>
+  <build_depend>libxml2</build_depend>
   <build_depend>openrtm_aist</build_depend>
   <build_depend>python-omniorb</build_depend>
 
@@ -39,6 +40,7 @@
   <run_depend>jython</run_depend>
   <run_depend>libjpeg</run_depend>
   <run_depend>libpng12-dev</run_depend>
+  <run_depend>libxml2</run_depend>
   <run_depend>openrtm_aist</run_depend>
   <run_depend>python-omniorb</run_depend>
 

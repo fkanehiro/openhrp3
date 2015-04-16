@@ -1,7 +1,12 @@
 # @author Shin'ichiro Nakaoka
+find_package(LibXml2)
+if(LIBXML2_FOUND)
+  include_directories(${LIBXML2_INCLUDE_DIR})
+endif()
 
 set(program openhrp-model-loader)
-set(exporter export-collada)
+set(exporter openhrp-export-collada)
+set(generator openhrp-project-generator)
 
 set(sources
   ShapeSetInfo_impl.cpp
@@ -20,6 +25,12 @@ set(sources2
 set(sources3
   exportVrml.cpp
   VrmlWriter.cpp )
+
+set(sources4
+  projectGenerator.cpp
+  BodyInfo_impl.cpp
+  ShapeSetInfo_impl.cpp
+  VrmlUtil.cpp )
 
 if( COLLADA_DOM_FOUND )
   set(sources ${sources} BodyInfoCollada_impl.cpp)
@@ -108,6 +119,24 @@ target_link_libraries(export-vrml
   hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
   )
 
+if(LIBXML2_FOUND)
+  if( COLLADA_DOM_FOUND )
+    set(sources4 ${sources4} BodyInfoCollada_impl.cpp)
+  endif()
+  add_executable(${generator} ${sources4})
+  target_link_libraries(${generator}
+    hrpUtil-${OPENHRP_LIBRARY_VERSION}
+    hrpModel-${OPENHRP_LIBRARY_VERSION}
+    hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION}
+    ${LIBXML2_LIBRARIES} ${OPENRTM_LIBRARIES}
+    ${extralibraries}
+    )
+  if( COLLADA_DOM_FOUND )
+    set_target_properties(${generator} PROPERTIES COMPILE_FLAGS "${COLLADA_DOM_CXX_FLAGS}" LINK_FLAGS "${COLLADA_DOM_LINK_FLAGS}")
+  endif( COLLADA_DOM_FOUND )
+  install(TARGETS ${generator} DESTINATION bin CONFIGURATIONS Release Debug RelWithDebInfo)
+endif()
+
 if(WIN32)
   install(TARGETS ${program} DESTINATION ${PROJECT_BINARY_DIR}/bin CONFIGURATIONS Release )
 endif()
@@ -115,4 +144,5 @@ endif()
 install(TARGETS ${program} export-vrml DESTINATION bin CONFIGURATIONS Release Debug RelWithDebInfo)
 if( COLLADA_DOM_FOUND )
   install(TARGETS ${exporter} DESTINATION bin CONFIGURATIONS Release Debug RelWithDebInfo)
+  install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E copy ${exporter} export-collada WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin)") # for backword compatibility
 endif( COLLADA_DOM_FOUND )

@@ -15,8 +15,8 @@ if( COLLADA_DOM_FOUND )
     endif()
     if(NOT _robotmodel STREQUAL "")
       add_custom_command(OUTPUT ${_daefile}
-        COMMAND ../bin/export-collada -i ${_wrlfile} -o ${_daefile}
-        DEPENDS ../bin/export-collada ${_wrlfile})
+        COMMAND ../bin/openhrp-export-collada -i ${_wrlfile} -o ${_daefile}
+        DEPENDS ../bin/openhrp-export-collada ${_wrlfile})
       string(REGEX REPLACE "\\." "_" _daefile_target ${_daefile})
       list(APPEND _daefiles ${_daefile})
     endif()
