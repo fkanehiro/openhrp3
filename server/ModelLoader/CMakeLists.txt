@@ -5,7 +5,7 @@ if(LIBXML2_FOUND)
 endif()
 
 set(program openhrp-model-loader)
-set(exporter export-collada)
+set(exporter openhrp-export-collada)
 set(generator openhrp-project-generator)
 
 set(sources
@@ -144,4 +144,5 @@ endif()
 install(TARGETS ${program} export-vrml DESTINATION bin CONFIGURATIONS Release Debug RelWithDebInfo)
 if( COLLADA_DOM_FOUND )
   install(TARGETS ${exporter} DESTINATION bin CONFIGURATIONS Release Debug RelWithDebInfo)
+  install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E copy ${exporter} export-collada WORKING_DIRECTORY \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin)") # for backword compatibility
 endif( COLLADA_DOM_FOUND )
