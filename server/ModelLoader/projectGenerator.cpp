@@ -18,7 +18,10 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <stack>
+#include "BodyInfo_impl.h"
 
+using namespace std;
 void xmlTextWriterWriteProperty(const xmlTextWriterPtr writer, const std::string name, const std::string value) {
   xmlTextWriterStartElement(writer, BAD_CAST "property");
   xmlTextWriterWriteAttribute(writer, BAD_CAST "name", BAD_CAST name.c_str());
@@ -31,6 +34,263 @@ std::string basename(const std::string name){
   return ret.substr(0,ret.find_last_of('.'));
 }
 
+// COPY FROM openhrp3/hrplib/hrpModel/ModelLoaderUtil.cpp
+class ModelLoaderHelper2
+{
+public:
+  ModelLoaderHelper2() {
+  }
+
+  void createSensors(Link* link, const SensorInfoSequence& sensorInfoSeq, const Matrix33& Rs)
+  {
+    int numSensors = sensorInfoSeq.length();
+
+    for(int i=0 ; i < numSensors ; ++i ) {
+        const SensorInfo& sensorInfo = sensorInfoSeq[i];
+
+        int id = sensorInfo.id;
+        if(id < 0) {
+            std::cerr << "Warning:  sensor ID is not given to sensor " << sensorInfo.name
+                      << "of model " << body->modelName() << "." << std::endl;
+        } else {
+            int sensorType = Sensor::COMMON;
+
+            CORBA::String_var type0 = sensorInfo.type;
+            string type(type0);
+
+            if(type == "Force")             { sensorType = Sensor::FORCE; }
+            else if(type == "RateGyro")     { sensorType = Sensor::RATE_GYRO; }
+            else if(type == "Acceleration")	{ sensorType = Sensor::ACCELERATION; }
+            else if(type == "Vision")       { sensorType = Sensor::VISION; }
+            else if(type == "Range")        { sensorType = Sensor::RANGE; }
+
+            CORBA::String_var name0 = sensorInfo.name;
+            string name(name0);
+
+            Sensor* sensor = body->createSensor(link, sensorType, id, name);
+
+            if(sensor) {
+                const DblArray3& p = sensorInfo.translation;
+                sensor->localPos = Rs * Vector3(p[0], p[1], p[2]);
+
+                const Vector3 axis(sensorInfo.rotation[0], sensorInfo.rotation[1], sensorInfo.rotation[2]);
+                const Matrix33 R(rodrigues(axis, sensorInfo.rotation[3]));
+                sensor->localR = Rs * R;
+            }
+#if 0
+            if ( sensorType == Sensor::RANGE ) {
+                RangeSensor *range = dynamic_cast<RangeSensor *>(sensor);
+                range->scanAngle = sensorInfo.specValues[0];
+                range->scanStep = sensorInfo.specValues[1];
+                range->scanRate = sensorInfo.specValues[2];
+                range->maxDistance = sensorInfo.specValues[3];
+            }else if (sensorType == Sensor::VISION) {
+                VisionSensor *vision = dynamic_cast<VisionSensor *>(sensor);
+                vision->near   = sensorInfo.specValues[0];
+                vision->far    = sensorInfo.specValues[1];
+                vision->fovy   = sensorInfo.specValues[2];
+                vision->width  = sensorInfo.specValues[4];
+                vision->height = sensorInfo.specValues[5];
+                int npixel = vision->width*vision->height;
+                switch((int)sensorInfo.specValues[3]){
+                case Camera::NONE: 
+                    vision->imageType = VisionSensor::NONE; 
+                    break;
+                case Camera::COLOR:
+                    vision->imageType = VisionSensor::COLOR;
+                    vision->image.resize(npixel*3);
+                    break;
+                case Camera::MONO:
+                    vision->imageType = VisionSensor::MONO;
+                    vision->image.resize(npixel);
+                    break;
+                case Camera::DEPTH:
+                    vision->imageType = VisionSensor::DEPTH;
+                    break;
+                case Camera::COLOR_DEPTH:
+                    vision->imageType = VisionSensor::COLOR_DEPTH;
+                    vision->image.resize(npixel*3);
+                    break;
+                case Camera::MONO_DEPTH:
+                    vision->imageType = VisionSensor::MONO_DEPTH;
+                    vision->image.resize(npixel);
+                    break;
+                }
+                vision->frameRate = sensorInfo.specValues[6];
+            }
+#endif
+        }
+    }
+  }
+
+  inline double getLimitValue(DblSequence limitseq, double defaultValue)
+  {
+        return (limitseq.length() == 0) ? defaultValue : limitseq[0];
+  }
+
+  Link* createLink(int index, const Matrix33& parentRs)
+  {
+    const LinkInfo& linkInfo = linkInfoSeq[index];
+    int jointId = linkInfo.jointId;
+        
+    Link* link = new Link(); //(*createLinkFunc)();
+        
+    CORBA::String_var name0 = linkInfo.name;
+    link->name = string( name0 );
+    link->jointId = jointId;
+        
+    Vector3 relPos(linkInfo.translation[0], linkInfo.translation[1], linkInfo.translation[2]);
+    link->b = parentRs * relPos;
+
+    Vector3 rotAxis(linkInfo.rotation[0], linkInfo.rotation[1], linkInfo.rotation[2]);
+    Matrix33 R = rodrigues(rotAxis, linkInfo.rotation[3]);
+    link->Rs = (parentRs * R);
+    const Matrix33& Rs = link->Rs;
+
+    CORBA::String_var jointType = linkInfo.jointType;
+    const std::string jt( jointType );
+
+    if(jt == "fixed" ){
+        link->jointType = Link::FIXED_JOINT;
+    } else if(jt == "free" ){
+        link->jointType = Link::FREE_JOINT;
+    } else if(jt == "rotate" ){
+        link->jointType = Link::ROTATIONAL_JOINT;
+    } else if(jt == "slide" ){
+        link->jointType = Link::SLIDE_JOINT;
+    } else if(jt == "crawler"){
+        link->jointType == Link::FIXED_JOINT;
+        link->isCrawler = true;
+    } else {
+        link->jointType = Link::FREE_JOINT;
+    }
+
+    if(jointId < 0){
+        if(link->jointType == Link::ROTATIONAL_JOINT || link->jointType == Link::SLIDE_JOINT){
+            std::cerr << "Warning:  Joint ID is not given to joint " << link->name
+                      << " of model " << body->modelName() << "." << std::endl;
+        }
+    }
+
+    link->a.setZero();
+    link->d.setZero();
+
+    Vector3 axis( Rs * Vector3(linkInfo.jointAxis[0], linkInfo.jointAxis[1], linkInfo.jointAxis[2]));
+
+    if(link->jointType == Link::ROTATIONAL_JOINT || jt == "crawler"){
+        link->a = axis;
+    } else if(link->jointType == Link::SLIDE_JOINT){
+        link->d = axis;
+    }
+
+    link->m  = linkInfo.mass;
+    link->Ir = linkInfo.rotorInertia;
+
+    link->gearRatio     = linkInfo.gearRatio;
+    link->rotorResistor = linkInfo.rotorResistor;
+    link->torqueConst   = linkInfo.torqueConst;
+    link->encoderPulse  = linkInfo.encoderPulse;
+
+    link->Jm2 = link->Ir * link->gearRatio * link->gearRatio;
+
+    DblSequence ulimit  = linkInfo.ulimit;
+    DblSequence llimit  = linkInfo.llimit;
+    DblSequence uvlimit = linkInfo.uvlimit;
+    DblSequence lvlimit = linkInfo.lvlimit;
+    DblSequence climit = linkInfo.climit;
+
+    double maxlimit = (numeric_limits<double>::max)();
+
+    link->ulimit  = getLimitValue(ulimit,  +maxlimit);
+    link->llimit  = getLimitValue(llimit,  -maxlimit);
+    link->uvlimit = getLimitValue(uvlimit, +maxlimit);
+    link->lvlimit = getLimitValue(lvlimit, -maxlimit);
+    link->climit  = getLimitValue(climit,  +maxlimit);
+
+    link->c = Rs * Vector3(linkInfo.centerOfMass[0], linkInfo.centerOfMass[1], linkInfo.centerOfMass[2]);
+
+    Matrix33 Io;
+    getMatrix33FromRowMajorArray(Io, linkInfo.inertia);
+    link->I = Rs * Io * Rs.transpose();
+
+    // a stack is used for keeping the same order of children
+    std::stack<Link*> children;
+	
+    //##### [Changed] Link Structure (convert NaryTree to BinaryTree).
+    int childNum = linkInfo.childIndices.length();
+    for(int i = 0 ; i < childNum ; i++) {
+        int childIndex = linkInfo.childIndices[i];
+        Link* childLink = createLink(childIndex, Rs);
+        if(childLink) {
+            children.push(childLink);
+        }
+    }
+    while(!children.empty()){
+        link->addChild(children.top());
+        children.pop();
+    }
+        
+    createSensors(link, linkInfo.sensors, Rs);
+    //createLights(link, linkInfo.lights, Rs);
+#if 0
+    if(collisionDetectionModelLoading){
+        createColdetModel(link, linkInfo);
+    }
+#endif
+    return link;
+  }
+
+  bool createBody(BodyPtr& body, BodyInfo_impl& bodyInfo)
+  {
+    this->body = body;
+
+    const char* name = bodyInfo.name();
+    body->setModelName(name);
+    body->setName(name);
+
+    int n = bodyInfo.links()->length();
+    linkInfoSeq = bodyInfo.links();
+    shapeInfoSeq = bodyInfo.shapes();
+	extraJointInfoSeq = bodyInfo.extraJoints();
+
+    int rootIndex = -1;
+
+    for(int i=0; i < n; ++i){
+        if(linkInfoSeq[i].parentIndex < 0){
+            if(rootIndex < 0){
+                rootIndex = i;
+            } else {
+                 // more than one root !
+                rootIndex = -1;
+                break;
+            }
+        }
+    }
+
+    if(rootIndex >= 0){ // root exists
+
+        Matrix33 Rs(Matrix33::Identity());
+        Link* rootLink = createLink(rootIndex, Rs);
+        body->setRootLink(rootLink);
+        body->setDefaultRootPosition(rootLink->b, rootLink->Rs);
+
+        body->installCustomizer();
+        body->initializeConfiguration();
+#if 0
+		setExtraJoints();
+#endif
+        return true;
+    }
+
+    return false;
+  }
+private:
+  BodyPtr body;
+  LinkInfoSequence_var linkInfoSeq;
+  ShapeInfoSequence_var shapeInfoSeq;
+  ExtraJointInfoSequence_var extraJointInfoSeq;
+};
+
 int main (int argc, char** argv)
 {
   std::string output;
@@ -38,10 +298,6 @@ int main (int argc, char** argv)
   std::string conf_file_option, robothardware_conf_file_option, integrate("true"), dt("0.005"), timeStep(dt), joint_properties;
   bool use_highgain_mode(true);
 
-  int rtmargc=0;
-  std::vector<char *> rtmargv;
-  rtmargv.push_back(argv[0]);
-  rtmargc++;
   for (int i = 1; i < argc; ++ i) {
     std::string arg(argv[i]);
     coil::normalize(arg);
@@ -62,26 +318,31 @@ int main (int argc, char** argv)
     } else if ( arg == "--use-highgain-mode" ) {
       if (++i < argc) use_highgain_mode = (std::string(argv[i])==std::string("true")?true:false);
     } else if ( arg.find("--gtest_output") == 0  ||arg.find("--text") == 0 || arg.find("__log") == 0 || arg.find("__name") == 0 ) { // skip
-    } else if ( arg[0] == '-'  ) {
-      rtmargv.push_back(argv[i]);
-      rtmargv.push_back(argv[i+1]);
-      rtmargc+=2;
-      ++i;
     } else {
       inputs.push_back(argv[i]);
     }
   }
 
-  RTC::Manager* manager;
-  manager = RTC::Manager::init(rtmargc, rtmargv.data());
+  CORBA::ORB_var orb = CORBA::ORB::_nil();
 
-  std::string nameServer = manager->getConfig()["corba.nameservers"];
-  int comPos = nameServer.find(",");
-  if (comPos < 0){
-    comPos = nameServer.length();
-  }
-  nameServer = nameServer.substr(0, comPos);
-  RTC::CorbaNaming naming(manager->getORB(), nameServer.c_str());
+  try
+    {
+      orb = CORBA::ORB_init(argc, argv);
+
+      CORBA::Object_var obj;
+
+      obj = orb->resolve_initial_references("RootPOA");
+      PortableServer::POA_var poa = PortableServer::POA::_narrow(obj);
+      if(CORBA::is_nil(poa))
+	{
+	  throw string("error: failed to narrow root POA.");
+	}
+
+      PortableServer::POAManager_var poaManager = poa->the_POAManager();
+      if(CORBA::is_nil(poaManager))
+	{
+	  throw string("error: failed to narrow root POA manager.");
+	}
 
   xmlTextWriterPtr writer;
   writer = xmlNewTextWriterFilename(output.c_str(), 0);
@@ -124,12 +385,12 @@ int main (int argc, char** argv)
           coil::stringTo(WAIST_offset_rot.angle(), filename_arg_str[1+3+3].c_str());
         }
 	hrp::BodyPtr body(new hrp::Body());
-	if (!loadBodyFromModelLoader(body, filename.c_str(),
-				     CosNaming::NamingContext::_duplicate(naming.getRootContext()),
-				     true)){
-	  std::cerr << "failed to load model[" << filename << "]" << std::endl;
-	  return 1;
-	}
+
+        BodyInfo_impl bI(poa);
+        bI.loadModelFile(filename.c_str());
+        ModelLoaderHelper2 helper;
+        helper.createBody(body, bI);
+
 	std::string name = body->name();
 
 	xmlTextWriterStartElement(writer, BAD_CAST "item");
@@ -347,6 +608,7 @@ int main (int argc, char** argv)
 
   xmlFreeTextWriter(writer);
 
+  std::cerr << "Writing project files to .... " << output << std::endl;
   {
       std::string conf_file = output.substr(0,output.find_last_of('.'))+".conf";
       std::fstream s(conf_file.c_str(), std::ios::out);
@@ -354,6 +616,7 @@ int main (int argc, char** argv)
       s << "model: file://" << filenames[0] << std::endl;
       s << "dt: " << dt << std::endl;
       s << conf_file_option << std::endl;
+      std::cerr << "Writing conf files to ....... " << conf_file << std::endl;
   }
 
   {
@@ -364,7 +627,27 @@ int main (int argc, char** argv)
       s << "exec_cxt.periodic.type: hrpExecutionContext" << std::endl;
       s << "exec_cxt.periodic.rate: " << static_cast<size_t>(1/atof(dt.c_str())+0.5) << std::endl; // rounding to specify integer rate value
       s << robothardware_conf_file_option << std::endl;
+      std::cerr << "Writing hardware files to ... " << conf_file << std::endl;
   }
+
+    }
+  catch (CORBA::SystemException& ex)
+    {
+      cerr << ex._rep_id() << endl;
+    }
+  catch (const string& error)
+    {
+      cerr << error << endl;
+    }
+
+  try
+    {
+      orb->destroy();
+    }
+  catch(...)
+    {
+
+    }
 
   return 0;
 }
