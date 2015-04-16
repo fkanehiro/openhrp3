@@ -311,8 +311,6 @@ DEF SampleRobot Humanoid {
       jointType "free"
       translation 0 0 0.7235
       children [
-        DEF gsensor AccelerationSensor { sensorId 0 }
-        DEF gyrometer Gyro { sensorId 0 }
         DEF WAIST_LINK0 Segment {
           centerOfMass  0 0 0.0375
           mass    27.0
@@ -399,6 +397,14 @@ DEF SampleRobot Humanoid {
                   rotorInertia 3.0E-4
                   gearRatio 200
                   children [
+                    DEF gsensor AccelerationSensor {
+                      sensorId 0
+                      rotation 0.0 0.707107 0.707107 3.14159
+                    }
+                    DEF gyrometer Gyro {
+                      sensorId 0
+                      rotation 0.0 0.707107 0.707107 3.14159
+                    }
                     DEF WAIST_LINK3 Segment {
                       centerOfMass  0 0 0.08
                       mass    13.0
