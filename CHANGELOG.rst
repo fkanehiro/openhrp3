@@ -2,6 +2,47 @@
 Changelog for package openhrp3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
+* IMU
+
+  * [sample/model/sample1.wrl] rotate imu mount coordinate for debug
+  * [hrplib/hrpModel/ForwardDynamics.cpp] Fix accel sensor frame discussed in https://github.com/fkanehiro/hrpsys-base/issues/472
+
+* modelloader / projectGenerator
+
+  * [server/modelLoader] rename export-collada to openhrp-export-collada
+  * [server/modelLoader] fix ProjectGenerator to load BodyInfo and create ProjectFiles
+  * [server/modelLoader] copy ProjectGenerator from hrpsys-base/util/ProjectGenerator
+
+* export collada
+
+  * [export-vrml] add --use-inline-shape option to output separate mesh files
+
+* Solvers
+
+  * [Eigen3d.h] use 1.0e-12 instaed of 1.0e-6 for error check
+  * [hrplib/hrpUtil/MatrixSolvers] add calcSRInverse
+  * [BodyInfoCollada_impl.cpp] fix for wrong collada interpretation,
+    joint axis is in child frame
+
+* misc
+
+  * [sample/CMakeLists.txt] need to change command name from export-collada to openhrp-export-collada
+  * super ugry hack for catkin build
+  * Update .travis.yml
+  * adds ppa repository without confirmation
+  * create symlink for share directory for backword compatibility
+  * changes openrtm-aist to openrtm-aist-dev and adds collada-dom-dev
+  * changes PPA repository
+  * fix problem when environment variable "_" not set
+  * add dependency for ubuntu trusty
+  * Fix test to match change python stub install location (fixes #36)
+  * Change python stub install location (fixes #36)
+
+
+
 3.1.7-0 (2014-10-10)
 --------------------
 ・add package.xml and CMakeLists.txt for catkin compile
