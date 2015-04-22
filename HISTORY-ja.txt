@@ -1,5 +1,44 @@
 ﻿OpenHRP3 改版リスト (リリースノート)
 
+Ver.3.1.8
+=========================
+・ sample/model/sample1.wrl　でimuの座標系を変更しました．
+
+・ hrplib/hrpModel/ForwardDynamics.cpp で accel sensor frame を変更しました．https://github.com/fkanehiro/hrpsys-base/issues/472
+
+・ modelloader / projectGenerator openhrp-project-generator を hrpsysから移行しました．
+
+・ export-colladaをopenhrp-export-colladaに名前を変えました
+
+・ export-vrml　に --use-inline-shape を追加しました
+
+・ Eigen3d.h で閾値を1.0e-12 にしました．(1.0e-6から変更)
+
+・ hrplib/hrpUtil/MatrixSolvers calcSRInverseを追加しました．
+
+・ BodyInfoCollada_impl.cpp   joint axis のパースを変更しました．
+
+・ catkin build 対応
+
+・ .travis.yml の更新
+
+・ ppa repository の追加
+
+・ share へのシンボリックリンクの追加（後方互換のため)kr share directory for backword compatibility
+
+・ openrtm-aist から openrtm-aist-dev への変更．collada-dom-dev　の追加
+
+・ PPA repositoryの変更
+
+・ 環境変数"_"が定義されていない時の対応
+
+・ ubuntu trustyへの対応
+
+・ python stub のインストール場所の変更に対するたい対応 (fixes #36)
+
+・ python stub のインストール場所の変更 (fixes #36)
+
+
 Ver.3.1.7
 =========================
 ・catkinでコンパイルできるようpackage.xmlの追加とCMakeLists.txtの改変を行いました．

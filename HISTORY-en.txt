@@ -1,5 +1,43 @@
 OpenHRP3 Updates History (Release Notes)
 
+Ver.3.1.8
+=========================
+・ sample/model/sample1.wrl rotate imu mount coordinate for debug
+
+・ hrplib/hrpModel/ForwardDynamics.cpp Fix accel sensor frame
+discussed in https://github.com/fkanehiro/hrpsys-base/issues/472
+・ modelloader / projectGenerator move openhrp-project-generator from hrpsys-base
+
+・ export-collada has been renamed to openhrp-export-collada
+
+・ export-vrml　: add --use-inline-shape to output separate mesh files
+
+・ Eigen3d.h use 1.0e-12 instaed of 1.0e-6 for error check
+
+・ hrplib/hrpUtil/MatrixSolvers user calcSRInverse
+
+・ BodyInfoCollada_impl.cpp  fix for wrong collada interpretation, joint axis is in child frame
+
+・ super ugry hack for catkin build
+
+・ update .travis.yml
+
+・ adds ppa repository without confirmation
+
+・ create symlink for share directory for backword compatibility
+
+・ changes openrtm-aist to openrtm-aist-dev and adds collada-dom-dev
+
+・ changes PPA repository
+
+・ fix problem when environment variable "_" not set
+
+・ add dependency for ubuntu trusty
+
+・ Fix test to match change python stub install location (fixes #36)
+
+・ Change python stub install location (fixes #36)
+
 Ver.3.1.7
 =========================
 ・add package.xml and CMakeLists.txt for catkin compile
