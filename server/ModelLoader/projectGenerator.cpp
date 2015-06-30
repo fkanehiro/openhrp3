@@ -291,6 +291,8 @@ private:
   ExtraJointInfoSequence_var extraJointInfoSeq;
 };
 
+// NOTE
+// This program generate xxx.xml, xxx.conf and xxx.RobotHardware.conf at the same time.
 int main (int argc, char** argv)
 {
   std::string output;
