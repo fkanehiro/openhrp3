@@ -20,6 +20,7 @@
 #include <fstream>
 #include <stack>
 #include "BodyInfo_impl.h"
+#include <sys/stat.h>
 
 using namespace std;
 void xmlTextWriterWriteProperty(const xmlTextWriterPtr writer, const std::string name, const std::string value) {
@@ -297,6 +298,8 @@ int main (int argc, char** argv)
   std::vector<std::string> inputs, filenames; // filenames is for conf file
   std::string conf_file_option, robothardware_conf_file_option, integrate("true"), dt("0.005"), timeStep(dt), joint_properties;
   bool use_highgain_mode(true);
+  struct stat st;
+  bool file_exist_flag = false;
 
   for (int i = 1; i < argc; ++ i) {
     std::string arg(argv[i]);
@@ -345,6 +348,9 @@ int main (int argc, char** argv)
 	}
 
   xmlTextWriterPtr writer;
+  if (stat(output.c_str(), &st) == 0) {
+    file_exist_flag = true;
+  }
   writer = xmlNewTextWriterFilename(output.c_str(), 0);
   xmlTextWriterSetIndent(writer, 4);
   xmlTextWriterStartElement(writer, BAD_CAST "grxui");
@@ -608,9 +614,15 @@ int main (int argc, char** argv)
 
   xmlFreeTextWriter(writer);
 
+  if (file_exist_flag) {
+    std::cerr << "\033[1;31mOver\033[0m";
+  }
   std::cerr << "Writing project files to .... " << output << std::endl;
   {
       std::string conf_file = output.substr(0,output.find_last_of('.'))+".conf";
+      if (stat(conf_file.c_str(), &st) == 0) {
+        std::cerr << "\033[1;31mOver\033[0m";
+      }
       std::fstream s(conf_file.c_str(), std::ios::out);
   
       s << "model: file://" << filenames[0] << std::endl;
@@ -621,6 +633,9 @@ int main (int argc, char** argv)
 
   {
       std::string conf_file = output.substr(0,output.find_last_of('.'))+".RobotHardware.conf";
+      if (stat(conf_file.c_str(), &st) == 0) {
+        std::cerr << "\033[1;31mOver\033[0m";
+      }
       std::fstream s(conf_file.c_str(), std::ios::out);
   
       s << "model: file://" << filenames[0] << std::endl;
