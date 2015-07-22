@@ -1216,6 +1216,7 @@ private:
         string nodesid = str(boost::format("node%d")%ilink);
         pnode->setSid(nodesid.c_str());
         pnode->setName(plink.segments[0].name);
+	ShapeInfoSequence* curShapeInfoSeq = bodyInfo->shapes();
 
         for(int igeom = 0; igeom < plink.shapeIndices.length(); ++igeom) {
             string geomid = _GetGeometryId(bodyInfo, ilink,igeom);
@@ -1225,8 +1226,7 @@ private:
             for(int i = 0; i < 12; ++i) {
                 transformMatrix[i] = tsi.transformMatrix[i];
             }
-
-            domGeometryRef pdomgeom = WriteGeometry(bodyInfo,(*bodyInfo->shapes())[tsi.shapeIndex], transformMatrix, geomid);
+            domGeometryRef pdomgeom = WriteGeometry(bodyInfo,(*curShapeInfoSeq)[tsi.shapeIndex], transformMatrix, geomid);
             domInstance_geometryRef pinstgeom = daeSafeCast<domInstance_geometry>(pnode->add(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
             pinstgeom->setUrl((string("#")+geomid).c_str());
 
