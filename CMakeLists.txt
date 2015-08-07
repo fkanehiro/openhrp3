@@ -20,6 +20,12 @@ endif()
 
 project(OpenHRP)
 
+option(BUILD_GOOGLE_TEST "Build google test." OFF)
+if(BUILD_GOOGLE_TEST)
+  enable_testing()
+  add_subdirectory(/usr/src/gtest ${CMAKE_CURRENT_BINARY_DIR}/gtest)
+endif()
+
 set(OPENHRP_VERSION_MAJOR 3)
 set(OPENHRP_VERSION_MINOR 1)
 set(OPENHRP_VERSION_MICRO 8)
@@ -598,4 +604,3 @@ else()
 endif()
 ")
 endif()
-
