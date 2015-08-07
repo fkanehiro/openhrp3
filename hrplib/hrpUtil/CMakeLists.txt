@@ -102,3 +102,10 @@ endif()
 hrplib_install_macro(${target} ${HRPUTIL_VERSION})
 
 install(FILES ${headers} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpUtil)
+
+if(BUILD_GOOGLE_TEST)
+  add_executable(testEigen3d testEigen3d.cpp Eigen3d.cpp)
+  target_link_libraries(testEigen3d gtest gtest_main pthread)
+  set_target_properties(testEigen3d PROPERTIES COMPILE_FLAGS "-g -O0 -coverage" LINK_FLAGS "-g -O0 -coverage")
+  add_test(testEigen3d ${EXECUTABLE_OUTPUT_PATH}/testEigen3d)
+endif()
