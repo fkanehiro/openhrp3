@@ -17,4 +17,7 @@ namespace hrp{
     typedef Eigen::Quaternion<double> dquaternion;
 };
 
+#include <iostream>
+#include <iomanip>
+
 #endif

@@ -80,6 +80,17 @@ namespace hrp {
         bool calcInverseKinematics(
             const Vector3& base_p, const Matrix33& base_R, const Vector3& end_p, const Matrix33& end_R);
 		
+        virtual bool calcJacobianInverseNullspace(dmatrix &J, dmatrix &Jinv, dmatrix &Jnull);
+        virtual bool calcInverseKinematics2Loop(const Vector3& dp, const Vector3& omega, const double LAMBDA, const double avoid_gain = 0.0, const double reference_gain = 0.0, const dvector* reference_q = NULL);
+        virtual bool calcInverseKinematics2(const Vector3& end_p, const Matrix33& end_R, const double avoid_gain = 0.0, const double reference_gain = 0.0, const dvector* reference_q = NULL);
+        double getSRGain() { return sr_gain; }
+        virtual bool setSRGain(double g) { sr_gain = g; }
+        virtual double getManipulabilityLimit() { return manipulability_limit; }
+        virtual bool setManipulabilityLimit(double l) { manipulability_limit = l; }
+        virtual bool setManipulabilityGain(double l) { manipulability_gain = l; }
+        virtual void setMaxIKError(double epos, double erot);
+        virtual void setMaxIKIteration(int iter);
+
       protected:
 		
         virtual void onJointPathUpdated();
@@ -87,6 +98,11 @@ namespace hrp {
         double maxIKErrorSqr;
         bool isBestEffortIKMode;
 		
+        double maxIKPosErrorSqr, maxIKRotErrorSqr;
+        int maxIKIteration;
+        std::vector<double> avoid_weight_gain;
+	double sr_gain, manipulability_limit, manipulability_gain;
+
       private:
 		
         void initialize();
