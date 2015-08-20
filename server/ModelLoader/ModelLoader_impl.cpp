@@ -28,6 +28,16 @@ using namespace std;
 #include "BodyInfoCollada_impl.h"
 #include "SceneInfoCollada_impl.h"
 
+std::string replaceProjectDir(std::string url) {
+  std::string path = url;
+  if ( path.find("$(PROJECT_DIR)") != std::string::npos ) {
+    std::string shdir = OPENHRP_SHARE_DIR;
+    std::string pjdir = shdir + "/sample/project";
+    path.replace(path.find("$(PROJECT_DIR)"),14, pjdir);
+  }
+  return path;
+}
+
 static bool IsColladaFile(const std::string& filename)
 {
     size_t len = filename.size();
@@ -185,14 +195,14 @@ BodyInfo_ptr ModelLoader_impl::loadBodyInfo(const char* url)
     option.readImage = false;
     option.AABBdata.length(0);
     option.AABBtype = OpenHRP::ModelLoader::AABB_NUM;
-    POA_OpenHRP::BodyInfo* bodyInfo = loadBodyInfoFromModelFile(url, option);
+    POA_OpenHRP::BodyInfo* bodyInfo = loadBodyInfoFromModelFile(replaceProjectDir(std::string(url)), option);
     return bodyInfo->_this();
 }
 
 BodyInfo_ptr ModelLoader_impl::loadBodyInfoEx(const char* url, const OpenHRP::ModelLoader::ModelLoadOption& option)
     throw (CORBA::SystemException, OpenHRP::ModelLoader::ModelLoaderException)
 {
-    POA_OpenHRP::BodyInfo* bodyInfo = loadBodyInfoFromModelFile(url, option);
+    POA_OpenHRP::BodyInfo* bodyInfo = loadBodyInfoFromModelFile(replaceProjectDir(std::string(url)), option);
     if(option.AABBdata.length()){
         setParam(bodyInfo,"AABBType", (int)option.AABBtype);
         int length=option.AABBdata.length();
@@ -211,7 +221,7 @@ BodyInfo_ptr ModelLoader_impl::getBodyInfoEx(const char* url0, const OpenHRP::Mo
     string url(url0);
 
     BodyInfo_ptr bodyInfo = 0;
-    string filename(deleteURLScheme(url));
+    string filename(deleteURLScheme(replaceProjectDir(url)));
     struct stat statbuff;
     time_t mtime = 0;
 
