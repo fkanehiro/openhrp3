@@ -18,3 +18,4 @@ compile_customizer(SampleBushCustomizer bush_customizer.cpp)
 set(libnames SampleCustomizer SampleBushCustomizer)
 
 install(TARGETS ${libnames} DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug RelWithDebInfo)
+install(FILES sample1_bush_customizer_param.conf DESTINATION ${RELATIVE_SHARE_INSTALL_PATH}/customizer CONFIGURATIONS Release Debug RelWithDebInfo)
