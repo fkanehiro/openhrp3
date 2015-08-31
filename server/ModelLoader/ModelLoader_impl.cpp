@@ -28,16 +28,6 @@ using namespace std;
 #include "BodyInfoCollada_impl.h"
 #include "SceneInfoCollada_impl.h"
 
-std::string replaceProjectDir(std::string url) {
-  std::string path = url;
-  if ( path.find("$(PROJECT_DIR)") != std::string::npos ) {
-    std::string shdir = OPENHRP_SHARE_DIR;
-    std::string pjdir = shdir + "/sample/project";
-    path.replace(path.find("$(PROJECT_DIR)"),14, pjdir);
-  }
-  return path;
-}
-
 static bool IsColladaFile(const std::string& filename)
 {
     size_t len = filename.size();
@@ -54,6 +44,16 @@ static bool IsColladaFile(const std::string& filename)
 }
 
 #endif
+
+std::string replaceProjectDir(std::string url) {
+  std::string path = url;
+  if ( path.find("$(PROJECT_DIR)") != std::string::npos ) {
+    std::string shdir = OPENHRP_SHARE_DIR;
+    std::string pjdir = shdir + "/sample/project";
+    path.replace(path.find("$(PROJECT_DIR)"),14, pjdir);
+  }
+  return path;
+}
 
 ModelLoader_impl::ModelLoader_impl(CORBA::ORB_ptr orb, PortableServer::POA_ptr poa)
     :
