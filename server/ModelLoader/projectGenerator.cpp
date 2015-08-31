@@ -441,6 +441,7 @@ int main (int argc, char** argv)
           xmlTextWriterWriteProperty(writer, "inport", "tauRef:JOINT_TORQUE");
         }
 	xmlTextWriterWriteProperty(writer, "outport", "q:JOINT_VALUE");
+    xmlTextWriterWriteProperty(writer, "outport", "dq:JOINT_VELOCITY");
     xmlTextWriterWriteProperty(writer, "outport", "tau:JOINT_TORQUE");
 
     // set outport for sensros
