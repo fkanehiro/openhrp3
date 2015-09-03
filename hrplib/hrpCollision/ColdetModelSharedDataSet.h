@@ -29,6 +29,35 @@ namespace hrp {
     class ColdetModelSharedDataSet
     {
     public:
+         struct NeighborTriangleSet {
+             int triangles[3];
+             NeighborTriangleSet(){
+                 triangles[0] = triangles[1] = triangles[2] = -1;
+             }
+             void addNeighbor(int neighbor){
+                 for(int i=0; i < 3; ++i){
+                     if(triangles[i] < 0){
+                         triangles[i] = neighbor;
+                         break;
+                     }
+                 }
+             }
+             void deleteNeighbor(int neighbor){
+                 for(int i=0; i<3; i++){
+                     if(triangles[i]==neighbor){
+                         for(int j=i+1; j<3; j++){
+                             triangles[j-1] = triangles[j];
+                         }
+                         triangles[2] = -1;
+                     }
+                     break;
+                 }
+             }
+             int operator[](int index) const { return triangles[index]; }
+         };
+
+         typedef std::vector<NeighborTriangleSet> NeighborTriangleSetArray;
+
         ColdetModelSharedDataSet();
 
         bool build();
@@ -44,7 +73,7 @@ namespace hrp {
         ColdetModel::PrimitiveType pType;
         std::vector<float> pParams;
 
-        std::vector<triangle3> neighbor;
+        NeighborTriangleSetArray neighbor;
 
         int getAABBTreeDepth() {
             return AABBTreeMaxDepth;

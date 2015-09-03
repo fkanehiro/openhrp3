@@ -27,7 +27,7 @@ ColdetModel::ColdetModel()
     isValid_ = false;
     initialize();
     dataSet->neighbor.clear();
-    vertex2TriangleMap.clear();
+    triangleMap.clear();
 }
 
 
@@ -354,42 +354,37 @@ void ColdetModel::setNeighborTriangle(int triangle, int vertex0, int vertex1, in
     setNeighborTriangleSub(triangle, vertex2, vertex0);
 }
 
-void ColdetModel::setNeighborTriangleSub(int triangle, int vertex0, int vertex1){
-    VertexIndexPair indexPair(vertex1, vertex0);
-    std::map<VertexIndexPair, int>::iterator it = vertex2TriangleMap.find(indexPair);
-    if(it==vertex2TriangleMap.end()){
-        VertexIndexPair reIndexPair(vertex0, vertex1);
-        it = vertex2TriangleMap.find(reIndexPair);
-        if(it==vertex2TriangleMap.end()){
-            vertex2TriangleMap.insert(std::make_pair(indexPair,triangle));
-            return;
+bool ColdetModel::setNeighborTriangleSub(int triangle, int vertex0, int vertex1){
+    Edge edge(vertex0, vertex1);
+    EdgeToTriangleMap::iterator p = triangleMap.find(edge);
+    if(p == triangleMap.end()){
+        triangleMap[edge].t[0] = triangle;
+        triangleMap[edge].t[1] = -1;
+        return true;
+    } else {
+        trianglePair& triangles = p->second;
+        if( triangles.t[1] != -1 ){
+            dataSet->neighbor[triangles.t[0]].deleteNeighbor(triangles.t[1]);
+            dataSet->neighbor[triangles.t[1]].deleteNeighbor(triangles.t[0]);
+            //cout << "neighbors[" << triangles.t[0] << "] " << neighbors[triangles.t[0]][0] << " " << neighbors[triangles.t[0]][1] << " " << neighbors[triangles.t[0]][2] << endl;
+            //cout << "neighbors[" << triangles.t[1] << "] " << neighbors[triangles.t[1]][0] << " " << neighbors[triangles.t[1]][1] << " " << neighbors[triangles.t[1]][2] << endl;
+            return false;
+        }else{
+            dataSet->neighbor[triangle].addNeighbor(triangles.t[0]);
+            dataSet->neighbor[triangles.t[0]].addNeighbor(triangle);
+            triangles.t[1] = triangle;
+            //cout << "neighbors[" << triangle << "] " << neighbors[triangle][0] << " " << neighbors[triangle][1] << " " << neighbors[triangle][2] << endl;
+            //cout << "neighbors[" << triangles.t[0] << "] " << neighbors[triangles.t[0]][0] << " " << neighbors[triangles.t[0]][1] << " " << neighbors[triangles.t[0]][2] << endl;
+            return true;
         }
     }
-    setNeighbor(triangle, it->second);
 }
 
 void ColdetModel::initNeighbor(int n){
-    for(int i=0; i<n; i++){
-        triangle3 init;
-        init.triangles[0] = init.triangles[1] = init.triangles[2] = -1;
-        dataSet->neighbor.push_back(init);
-    }
+    dataSet->neighbor.resize(n);
 }
 
 void ColdetModel::setNeighbor(int triangle0, int triangle1 ){
-    triangle3* t0 = &(dataSet->neighbor.at(triangle0));
-    for(int i=0; i<3; i++){
-        if(t0->triangles[i] == -1){
-            t0->triangles[i] = triangle1;
-            break;
-        }
-    }
-    t0 = &(dataSet->neighbor.at(triangle1));
-    for(int i=0; i<3; i++){
-        if(t0->triangles[i] == -1){
-            t0->triangles[i] = triangle0;
-            break;
-        }
-    }
+
 }
 
