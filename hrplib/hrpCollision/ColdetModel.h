@@ -28,28 +28,35 @@ namespace IceMaths {
 namespace hrp {
 
     class ColdetModelSharedDataSet;
-    class VertexIndexPair
+    class Edge
     {
-    public :
-        VertexIndexPair(int i0, int i1){
-            vertex[0] = i0;
-            vertex[1] = i1;
-        }
-
-        bool operator<(const VertexIndexPair& vertexIndexPair) const {
-            if(vertex[0] < vertexIndexPair.vertex[0])
-                return true;
-            else if(vertex[0] == vertexIndexPair.vertex[0])
-                if(vertex[1] < vertexIndexPair.vertex[1])
-                    return true;
-                else
-                    return false;
-            else
-                return false;
-        }
-    private :
         int vertex[2];
+    public :
+        Edge(int vertexIndex1, int vertexIndex2){
+            if(vertexIndex1 < vertexIndex2){
+                vertex[0] = vertexIndex1;
+                vertex[1] = vertexIndex2;
+            } else {
+                vertex[0] = vertexIndex2;
+                vertex[1] = vertexIndex1;
+            }
+        }
+        bool operator<(const Edge& rhs) const {
+            if(vertex[0] < rhs.vertex[0]){
+                return true;
+            } else if(vertex[0] == rhs.vertex[0]){
+                return (vertex[1] < rhs.vertex[1]);
+            } else {
+                return false;
+            }
+        }
     };
+
+    struct trianglePair {
+        int t[2];
+    };
+
+    typedef std::map< Edge, trianglePair > EdgeToTriangleMap;
 
     class HRP_COLLISION_EXPORT ColdetModel : public Referenced
     {
@@ -250,9 +257,9 @@ namespace hrp {
         IceMaths::Matrix4x4* pTransform; ///< transform of primitive
         std::string name_;
         bool isValid_;
-        std::map<VertexIndexPair, int> vertex2TriangleMap;
+        EdgeToTriangleMap triangleMap;
 
-        void setNeighborTriangleSub(int triangle, int vertex0, int vertex1);
+        bool setNeighborTriangleSub(int triangle, int vertex0, int vertex1);
         void setNeighbor(int triangle0, int triangle1);
 
         friend class ColdetModelPair;

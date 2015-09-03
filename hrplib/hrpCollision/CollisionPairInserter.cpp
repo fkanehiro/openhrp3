@@ -31,7 +31,7 @@ HRP_COLLISION_EXPORT int tri_tri_overlap(
 
 namespace {
     const bool COLLIDE_DEBUG = false;
-    // ƒRƒ“ƒpƒCƒ‹Žž‚É@-DDEPTH_CHECK‚Æ‚·‚ê‚ÎAdepth’l‚É‚æ‚éÚG“_‘I‘ð‚ª—LŒø‚É‚È‚è‚Ü‚·B@@//
+    // ï¿½Rï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½É@-DDEPTH_CHECKï¿½Æ‚ï¿½ï¿½ï¿½ÎAdepthï¿½lï¿½É‚ï¿½ï¿½ÚGï¿½_ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½É‚È‚ï¿½Ü‚ï¿½ï¿½Bï¿½@ï¿½@//
 #ifdef  DEPTH_CHECK
     const double MAX_DEPTH = 0.1;
 #endif
@@ -146,6 +146,17 @@ void CollisionPairInserter::get_triangles_in_convex_neighbor(ColdetModelSharedDa
         triangleIndexToPoint(model, nei, tri_nei); 
 
         if(is_convex_neighbor( &tri_nei, &tri_convex_neighbor[k])){
+            if(k!=0){
+                Vector3 p1 = tri_nei.p1 - tri_convex_neighbor[0].p1;
+                if(p1.dot(tri_convex_neighbor[0].n) > 0)
+                    continue;
+                Vector3 p2 = tri_nei.p2 - tri_convex_neighbor[0].p1;
+                if(p2.dot(tri_convex_neighbor[0].n) > 0)
+                    continue;
+                Vector3 p3 = tri_nei.p3 - tri_convex_neighbor[0].p1;
+                if(p3.dot(tri_convex_neighbor[0].n) > 0)
+                    continue;
+            }
             foundTriangles.push_back(nei);
             tri_convex_neighbor[count].status = 0;
             copy_tri(&tri_convex_neighbor[count++], &tri_nei);
@@ -165,7 +176,7 @@ int CollisionPairInserter::get_triangles_in_convex_neighbor(ColdetModelSharedDat
     int end = 1;
 
     int j=0;
-    while(count < min_num && j<3){
+    while(count < min_num && j<2){
         for(int i=start; i< end; i++)
             get_triangles_in_convex_neighbor(model, foundTriangles[i], tri_convex_neighbor, foundTriangles, count);
         start = end;
