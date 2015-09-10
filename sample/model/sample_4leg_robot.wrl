@@ -338,7 +338,7 @@ DEF Sample4LegRobot Humanoid {
             jointType "rotate"
             jointAxis 1 0 0
             jointId 0
-            translation   0 0.19 0
+            translation   0 -0.19 0
             rotorInertia 3.0E-4
             gearRatio 200
             lvlimit -40.0
@@ -540,7 +540,7 @@ DEF Sample4LegRobot Humanoid {
             jointType "rotate"
             jointAxis 1 0 0
             jointId 6
-            translation   0 -0.19 0
+            translation   0 0.19 0
             rotorInertia 3.0E-4
             gearRatio 200
             lvlimit -40.0
@@ -661,7 +661,7 @@ DEF Sample4LegRobot Humanoid {
             jointType "rotate"
             jointAxis 1 0 0
             jointId 12
-            translation   0.70 0.19 0
+            translation   0.70 -0.19 0
             rotorInertia 3.0E-4
             gearRatio 200
             lvlimit -40.0
@@ -784,7 +784,7 @@ DEF Sample4LegRobot Humanoid {
             jointType "rotate"
             jointAxis 1 0 0
             jointId 18
-            translation   0.70 -0.19 0
+            translation   0.70 0.19 0
             rotorInertia 3.0E-4
             gearRatio 200
             lvlimit -40.0
