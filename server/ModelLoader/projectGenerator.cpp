@@ -296,7 +296,7 @@ int main (int argc, char** argv)
 {
   std::string output;
   std::vector<std::string> inputs, filenames; // filenames is for conf file
-  std::string conf_file_option, robothardware_conf_file_option, integrate("true"), dt("0.005"), timeStep(dt), joint_properties;
+  std::string conf_file_option, robothardware_conf_file_option, integrate("true"), dt("0.005"), timeStep(dt), joint_properties, method("EULER");
   bool use_highgain_mode(true);
   struct stat st;
   bool file_exist_flag = false;
@@ -320,6 +320,8 @@ int main (int argc, char** argv)
       if (++i < argc) joint_properties = argv[i];
     } else if ( arg == "--use-highgain-mode" ) {
       if (++i < argc) use_highgain_mode = (std::string(argv[i])==std::string("true")?true:false);
+    } else if ( arg == "--method" ) {
+      if (++i < argc) method = std::string(argv[i]);
     } else if ( arg.find("--gtest_output") == 0  ||arg.find("--text") == 0 || arg.find("__log") == 0 || arg.find("__name") == 0 ) { // skip
     } else {
       inputs.push_back(argv[i]);
@@ -365,7 +367,7 @@ int main (int argc, char** argv)
 	xmlTextWriterWriteProperty(writer, "integrate", integrate);
 	xmlTextWriterWriteProperty(writer, "timeStep", timeStep);
         xmlTextWriterWriteProperty(writer, "totalTime", "2000000.0");
-	xmlTextWriterWriteProperty(writer, "method", "EULER");
+	xmlTextWriterWriteProperty(writer, "method", method);
       }
       xmlTextWriterEndElement(writer); // item
       // default WAIST offset
