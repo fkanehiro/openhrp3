@@ -34,6 +34,9 @@ input files shold be VRML or COLLADA files.
 * ``--use-highgain-mode [true or false]``  
    Use HighGain mode for robot's joints or Torque mode (by default, use true, use HighGain mode).
 
+* ``--method [EULER or RUNGE_KUTTA]``  
+   Integration method (EULER by default).
+
 #### example
 
 ```bash
