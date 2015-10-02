@@ -666,42 +666,91 @@ DEF SampleRobot Humanoid {
                                           uvlimit 40.0
                                           children [
                                             DEF LARM_LINK6 Segment {
-                                              centerOfMass  0 0.01 -0.09
-                                              mass    0.4
-                                              momentsOfInertia [ 0.001851 0 0 0 0.001771 0 0 0 0.000247 ]
+                                              centerOfMass  0 0 0
+                                              mass    0
+                                              momentsOfInertia [ 0 0 0 0 0 0 0 0 0 ]
                                                children [
                                                   DEF lhsensor ForceSensor {
                                                         translation 0 0 0
                                                         rotation 1 0 0 0
                                                         sensorId 2
                                                   }
-                                                 DEF ARM_SHAPE6 Shape {
-                                                    appearance Appearance {
-                                                      material Material {
-                                                      }
-                                                    }
-                                                    geometry Cylinder { radius 0.025 height 0.05 }
-                                                  }
-                                                  Transform {
-                                                        rotation 0 0 1 1.5708
-                                                        children Shape {
-                                                          appearance DEF ARM_APP7 Appearance {
-                                                            material      Material {
-                                                              diffuseColor 0.7 0.9 0.7
-                                                            }
-                                                          }
-                                                          geometry Cylinder { radius 0.025 height 0.05 }
-                                                        }
-                                                      }
-                                                      Transform {
-                                                        translation 0 0.03 -0.1125
-                                                        children  Shape {
-                                                          appearance USE ARM_APP7
-                                                          geometry Box { size 0.05 0.03 0.175 }
-                                                        }
-                                                  }# Transform
                                                ]
                                             }
+                                             DEF LARM_BUSH_X Joint {
+                                                jointType "slide"
+                                                jointAxis 1 0 0
+                                                llimit [-1.0]
+                                                ulimit [ 1.0]
+                                                rotorInertia 0.1
+                                                children [
+                                                   DEF LARM_BUSH_Y Joint {
+                                                      jointType "slide"
+                                                      jointAxis 0 1 0
+                                                      llimit [-1.0]
+                                                      ulimit [ 1.0]
+                                                      rotorInertia 0.1
+                                                      children [
+                                                         DEF LARM_BUSH_Z Joint {
+                                                            jointType "slide"
+                                                            jointAxis 0 0 1
+                                                            llimit [-1.0]
+                                                            ulimit [ 1.0]
+                                                            rotorInertia 0.1
+                                                            children [
+                                                               DEF LARM_BUSH_ROLL Joint {
+                                                                  jointType "rotate"
+                                                                  jointAxis 1 0 0
+                                                                  llimit [-3.14]
+                                                                  ulimit [ 3.14]
+                                                                  rotorInertia 0.014
+                                                                  children [
+                                                                     DEF LARM_BUSH_PITCH Joint {
+                                                                        jointType "rotate"
+                                                                        jointAxis 0 1 0
+                                                                        llimit [-3.14]
+                                                                        ulimit [ 3.14]
+                                                                        rotorInertia 0.014
+                                                                        children [
+                                                                           DEF LARM_BUSH_YAW Joint {
+                                                                              jointType "rotate"
+                                                                              jointAxis 0 0 1
+                                                                              llimit [-3.14]
+                                                                              ulimit [ 3.14]
+                                                                              rotorInertia 0.014
+                                                                              children [
+                                                                                 DEF LARM_LINK6_LOWER Segment {
+                                                                                    centerOfMass  0 0.01 -0.09
+                                                                                    mass    0.4
+                                                                                    momentsOfInertia [ 0.001851 0 0 0 0.001771 0 0 0 0.000247 ]
+                                                                                    children [
+                                                                                       DEF ARM_SHAPE6 Shape {
+                                                                                          appearance Appearance {
+                                                                                             material Material {
+                                                                                             }
+                                                                                          }
+                                                                                          geometry Cylinder { radius 0.025 height 0.05 }
+                                                                                       }
+                                                                                       Transform {
+                                                                                          rotation 0 0 1 1.5708
+                                                                                          children Shape {
+                                                                                             appearance DEF ARM_APP7 Appearance {
+                                                                                                material      Material {
+                                                                                                   diffuseColor 0.7 0.9 0.7
+                                                                                                }
+                                                                                             }
+                                                                                             geometry Cylinder { radius 0.025 height 0.05 }
+                                                                                          }
+                                                                                       }
+                                                                                       Transform {
+                                                                                          translation 0 0.03 -0.1125
+                                                                                          children  Shape {
+                                                                                             appearance USE ARM_APP7
+                                                                                             geometry Box { size 0.05 0.03 0.175 }
+                                                                                          }
+                                                                                       }# Transform
+                                                                                    ]
+                                                                                 } # LARM_LINK6_LOWER
 
                                             DEF LARM_WRIST_R Joint {
                                               jointType "rotate"
@@ -734,6 +783,18 @@ DEF SampleRobot Humanoid {
                                                 } # Segment LARM_LINK7
                                               ]
                                             } # Joint LARM_WRIST_R
+                                                                                 ]
+                                                                           } # Joint LARM_BUSH_YAW
+                                                                        ]
+                                                                     } # Joint LARM_BUSH_PITCH
+                                                                  ]
+                                                               } # Joint LARM_BUSH_ROLL
+                                                            ]
+                                                         } # Joint LARM_BUSH_Z
+                                                      ]
+                                                   } # Joint LARM_BUSH_Y
+                                                ]
+                                             } # Joint LARM_BUSH_X
                                           ]
                                         } # Joint LARM_WRIST_P
                                       ]
@@ -858,42 +919,92 @@ DEF SampleRobot Humanoid {
                                           uvlimit 40.0
                                           children [
                                             DEF RARM_LINK6 Segment {
-                                              centerOfMass          0 -0.01 -0.09
-                                              mass                  0.4
-                                              momentsOfInertia      [ 0.001851 0 0 0 0.001771 0 0 0 0.000247 ]
+                                              centerOfMass          0 0 0
+                                              mass                  0
+                                              momentsOfInertia      [ 0 0 0 0 0 0 0 0 0 ]
                                               children [
                                                 DEF rhsensor ForceSensor {
                                                         translation 0 0 0
                                                         rotation 1 0 0 0
                                                         sensorId 3
                                                 }
-                                                Shape {
-                                                    appearance Appearance {
-                                                      material Material {
-                                                      }
-                                                    }
-                                                    geometry Cylinder { radius 0.025 height 0.05 }
-                                                  }
-                                                  Transform {
-                                                        rotation 0 0 1 1.5708
-                                                        children Shape {
-                                                          appearance DEF ARM_APP7 Appearance {
-                                                            material      Material {
-                                                              diffuseColor 0.7 0.9 0.7
-                                                            }
-                                                          }
-                                                          geometry Cylinder { radius 0.025 height 0.05 }
-                                                        }
-                                                      }
-                                                      Transform {
-                                                        translation 0 -0.03 -0.1125
-                                                        children  Shape {
-                                                          appearance USE ARM_APP7
-                                                          geometry Box { size 0.05 0.03 0.175 }
-                                                        }
-                                                  }# Transform
                                               ]  
                                             }
+                                             DEF RARM_BUSH_X Joint {
+                                                jointType "slide"
+                                                jointAxis 1 0 0
+                                                llimit [-1.0]
+                                                ulimit [ 1.0]
+                                                rotorInertia 0.1
+                                                children [
+                                                   DEF RARM_BUSH_Y Joint {
+                                                      jointType "slide"
+                                                      jointAxis 0 1 0
+                                                      llimit [-1.0]
+                                                      ulimit [ 1.0]
+                                                      rotorInertia 0.1
+                                                      children [
+                                                         DEF RARM_BUSH_Z Joint {
+                                                            jointType "slide"
+                                                            jointAxis 0 0 1
+                                                            llimit [-1.0]
+                                                            ulimit [ 1.0]
+                                                            rotorInertia 0.1
+                                                            children [
+                                                               DEF RARM_BUSH_ROLL Joint {
+                                                                  jointType "rotate"
+                                                                  jointAxis 1 0 0
+                                                                  llimit [-3.14]
+                                                                  ulimit [ 3.14]
+                                                                  rotorInertia 0.014
+                                                                  children [
+                                                                     DEF RARM_BUSH_PITCH Joint {
+                                                                        jointType "rotate"
+                                                                        jointAxis 0 1 0
+                                                                        llimit [-3.14]
+                                                                        ulimit [ 3.14]
+                                                                        rotorInertia 0.014
+                                                                        children [
+                                                                           DEF RARM_BUSH_YAW Joint {
+                                                                              jointType "rotate"
+                                                                              jointAxis 0 0 1
+                                                                              llimit [-3.14]
+                                                                              ulimit [ 3.14]
+                                                                              rotorInertia 0.014
+                                                                              children [
+                                                                                 DEF RARM_LINK6_LOWER Segment {
+                                                                                    centerOfMass          0 -0.01 -0.09
+                                                                                    mass                  0.4
+                                                                                    momentsOfInertia      [ 0.001851 0 0 0 0.001771 0 0 0 0.000247 ]
+                                                                                    children [
+                                                                                       Shape {
+                                                                                          appearance Appearance {
+                                                                                             material Material {
+                                                                                             }
+                                                                                          }
+                                                                                          geometry Cylinder { radius 0.025 height 0.05 }
+                                                                                       }
+                                                                                       Transform {
+                                                                                          rotation 0 0 1 1.5708
+                                                                                          children Shape {
+                                                                                             appearance DEF ARM_APP7 Appearance {
+                                                                                                material      Material {
+                                                                                                   diffuseColor 0.7 0.9 0.7
+                                                                                                }
+                                                                                             }
+                                                                                             geometry Cylinder { radius 0.025 height 0.05 }
+                                                                                          }
+                                                                                       }
+                                                                                       Transform {
+                                                                                          translation 0 -0.03 -0.1125
+                                                                                          children  Shape {
+                                                                                             appearance USE ARM_APP7
+                                                                                             geometry Box { size 0.05 0.03 0.175 }
+                                                                                          }
+                                                                                       }# Transform
+                                                                                    ]  
+                                                                                 } # RARM_LINK6_LOWER
+
 
                                             DEF RARM_WRIST_R Joint {
                                               jointType "rotate"
@@ -931,6 +1042,18 @@ DEF SampleRobot Humanoid {
                                                 } # Segment RARM_LINK7
                                               ]
                                             } # Joint RARM_WRIST_R
+                                                                              ]
+                                                                           } # Joint RARM_BUSH_YAW
+                                                                        ]
+                                                                     } # Joint RARM_BUSH_PITCH
+                                                                  ]
+                                                               } # Joint RARM_BUSH_ROLL
+                                                            ]
+                                                         } # Joint RARM_BUSH_Z
+                                                      ]
+                                                   } # Joint RARM_BUSH_Y
+                                                ]
+                                             } # Joint RARM_BUSH_X
                                           ]
                                         } # Joint RARM_WRIST_P
                                       ]
@@ -1395,6 +1518,7 @@ DEF SampleRobot Humanoid {
     USE LARM_LINK4,
     USE LARM_LINK5,
     USE LARM_LINK6,
+    USE LARM_LINK6_LOWER,
     USE LARM_LINK7,
     
     USE RARM_LINK1,
@@ -1403,6 +1527,7 @@ DEF SampleRobot Humanoid {
     USE RARM_LINK4,
     USE RARM_LINK5,
     USE RARM_LINK6,
+    USE RARM_LINK6_LOWER,
     USE RARM_LINK7,
     
     USE LLEG_LINK1,
