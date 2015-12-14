@@ -8,8 +8,10 @@
  * General Robotix Inc. 
  */
 
+#include <iostream>
 #include "Eigen3d.h"
 
+using namespace std;
 using namespace hrp;
 
 
@@ -62,6 +64,13 @@ Vector3 hrp::omegaFromRot(const Matrix33& r)
     using ::std::numeric_limits;
 
     double alpha = (r(0,0) + r(1,1) + r(2,2) - 1.0) / 2.0;
+
+    if (alpha > 1.0) {
+        if (alpha > 1.0 + 1.0e-6) {
+            cout << scientific << "alpha exceeded the upper limit=" << alpha << endl;
+        }
+        alpha = 1.0;
+    }
 
     if(fabs(alpha - 1.0) < 1.0e-12) {   //th=0,2PI;
         return Vector3::Zero();
