@@ -9,6 +9,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include "Eigen3d.h"
 
 using namespace std;
@@ -67,7 +68,10 @@ Vector3 hrp::omegaFromRot(const Matrix33& r)
 
     if (alpha > 1.0) {
         if (alpha > 1.0 + 1.0e-6) {
-            cout << scientific << "alpha exceeded the upper limit=" << alpha << endl;
+            cerr << scientific << setprecision(16);
+            cerr << "alpha exceeded the upper limit in omegaFromRot" << endl;
+            cerr << "alpha=" << alpha << endl;
+            cerr << "r=" << r << endl;
         }
         alpha = 1.0;
     }
