@@ -144,9 +144,13 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
                 linfo.jointAxis[i] = 0;
                 linfo.translation[i] = 0;
                 linfo.rotation[i] = 0;
+		linfo.centerOfMass[i] = 0;
             }
             linfo.jointAxis[2] = 1; 
             linfo.rotation[2] = 1; linfo.rotation[3] = 0;
+	    linfo.mass = 0;
+	    for (int i=0; i<9; i++) linfo.inertia[i] = 0;
+
             
             Matrix44 E(Matrix44::Identity());
             
