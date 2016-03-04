@@ -370,6 +370,14 @@ public:
 
         // write manipulators
         for(std::list<ManipulatorInfo>::const_iterator itmanip = _listmanipulators.begin(); itmanip != _listmanipulators.end(); ++itmanip) {
+	    if (kmout->maplinknames.find(itmanip->basename) == kmout->maplinknames.end()){
+	      std::cerr << "can't find a link named " << itmanip->basename << ", manipulator " << itmanip->name << " is not defined" << std::endl;
+	      continue;
+	    }
+	    if (kmout->maplinknames.find(itmanip->effectorname) == kmout->maplinknames.end()){
+	      std::cerr << "can't find a link named " << itmanip->effectorname << ", manipulator " << itmanip->name << " is not defined" << std::endl;
+	      continue;
+	    }
             domExtraRef pextra = daeSafeCast<domExtra>(articulated_system_motion->add(COLLADA_ELEMENT_EXTRA));
             pextra->setName(itmanip->name.c_str());
             pextra->setType("manipulator");
