@@ -902,7 +902,7 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
         }
         default:
             std::cerr << "calcCMJacobian() : unsupported jointType("
-                      << j->jointType << std::endl;
+                      << j->jointType << ")" << std::endl;
         }
     }
     if (!base){
