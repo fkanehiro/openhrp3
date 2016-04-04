@@ -818,7 +818,7 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
             calcForwardKinematics();
 
             Vector3 dp(end_p - targetLink->p);
-            Vector3 omega(omegaFromRot(targetLink->R.transpose() * end_R));
+            Vector3 omega(omegaFromRot((targetLink->R*targetLink->Rs).transpose() * end_R));
 			
             double errsqr = dp.dot(dp) + omega.dot(omega);
 			
@@ -908,7 +908,7 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
 	}
         default:
             std::cerr << "calcCMJacobian() : unsupported jointType("
-                      << j->jointType << std::endl;
+                      << j->jointType << ")" << std::endl;
         }
     }
     if (!base){
