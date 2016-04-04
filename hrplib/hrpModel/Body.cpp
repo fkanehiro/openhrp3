@@ -900,6 +900,12 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
             J.col(j->jointId) = dp;
             break;
         }
+	case Link::SLIDE_JOINT:
+	{
+	    Vector3 dp((j->subm/totalMass_)*sgn[j->jointId]*j->R*j->d);
+	    J.col(j->jointId) = dp;
+	    break;
+	}
         default:
             std::cerr << "calcCMJacobian() : unsupported jointType("
                       << j->jointType << std::endl;
