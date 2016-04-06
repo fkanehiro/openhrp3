@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 arg=$1
 if [ "$arg" = "" ]; then
   echo
@@ -14,13 +14,13 @@ pkgnames=`apt-cache pkgnames`
 for package in `sed -e '/^#/D' $arg | xargs`
 do
   if echo "$pkgnames" | grep "^$package$" >/dev/null; then
-    if [ -n ok_pkgs ]; then
+    if [ -n "$ok_pkgs" ]; then
       ok_pkgs="$ok_pkgs $package"
     else
       ok_pkgs=$package
     fi
   else
-    if [ -n ng_pkgs ]; then
+    if [ -n "$ng_pkgs" ]; then
       ng_pkgs="$ng_pkgs $package"
     else
       ng_pkgs=$package
@@ -32,7 +32,7 @@ sudo apt-get --force-yes install $ok_pkgs
 if [ $? -eq 0 ]; then
   sudo update-java-alternatives -s java-6-openjdk
 
-  if [ -n ng_pkgs ]; then
+  if [ -n "$ng_pkgs" ]; then
     echo "Package installation is incomplete."
     echo "Please download and install these packages:"
     echo $ng_pkgs
