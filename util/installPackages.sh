@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 arg=$1
 if [ "$arg" = "" ]; then
   echo
