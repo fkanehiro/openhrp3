@@ -309,3 +309,23 @@ void Link::calcSubMassCM()
               << ", subCM = " << vector3(submwc/subm) << std::endl;
     */
 }
+
+void Link::calcSubMassInertia(Matrix33& subIw)
+{
+      subIw = R*I*R.transpose();
+      if (subm!=0.0) subIw +=  m*hat(wc - submwc/subm).transpose()*hat(wc - submwc/subm);
+      if (child){
+        Matrix33 childsubIw;
+        child->calcSubMassInertia(childsubIw);
+        subIw += childsubIw;
+        if (child->subm!=0.0) subIw += child->subm*hat(child->submwc/child->subm - submwc/subm).transpose()*hat(child->submwc/child->subm - submwc/subm);
+        Link *l = child->sibling;
+        while (l){
+          Matrix33 lsubIw;
+          l->calcSubMassInertia(lsubIw);
+          subIw += lsubIw;
+          if (l->subm!=0.0) subIw += l->subm*hat(l->submwc/l->subm - submwc/subm).transpose()*hat(l->submwc/l->subm - submwc/subm);
+          l = l->sibling;
+        }
+      }
+}

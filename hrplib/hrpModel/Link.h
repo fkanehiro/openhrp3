@@ -61,6 +61,12 @@ namespace hrp {
         void calcSubMassCM();
 
         /**
+           @brief compute sum of I of subtree
+           @note assuming wc,submw,submwc is already computed by Body::calcCM(),Link::calcSubMassCM()
+        */
+        void calcSubMassInertia(Matrix33& subIw);
+
+        /**
            @deprecated use setAttitude().
         */
         void setSegmentAttitude(const Matrix33& R) { this->R = R * Rs.transpose(); }
