@@ -20,7 +20,7 @@
 #ifndef __OPC_OPTIMIZEDTREE_H__
 #define __OPC_OPTIMIZEDTREE_H__
 
-#ifdef __x86_64
+#if (defined __x86_64) || (defined __aarch64__)
 #define EXWORD uqword
 #else
 #define EXWORD udword
