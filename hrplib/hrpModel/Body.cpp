@@ -523,6 +523,29 @@ void Body::calcTotalMomentum(Vector3& out_P, Vector3& out_L)
     }
 }
 
+void Body::calcTotalMomentumFromJacobian(Vector3& out_P, Vector3& out_L)
+{
+    out_P.setZero();
+    out_L.setZero();
+
+    dmatrix J,H;
+    calcCMJacobian(false,J);
+    calcAngularMomentumJacobian(false,H);
+
+    dvector dq;
+    int n = numJoints();
+    dq.resize(n);
+    for(int i=0; i < n; i++){
+      Link* link = joint(i);
+      dq[i] = link->dq;
+    }
+    dvector v;
+    v.resize(n+3+3);
+    v << dq, rootLink_->v, rootLink_->w;
+
+    out_P = totalMass_ * J * v;
+    out_L = H * v;
+}
 
 void Body::calcForwardKinematics(bool calcVelocity, bool calcAcceleration)
 {
@@ -921,5 +944,101 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
         J(0, c+3) =    0.0; J(0, c+4) =  dp(2); J(0, c+5) = -dp(1);
         J(1, c+3) = -dp(2); J(1, c+4) =    0.0; J(1, c+5) =  dp(0);
         J(2, c+3) =  dp(1); J(2, c+4) = -dp(0); J(2, c+5) =    0.0;
+    }
+}
+
+void Body::calcAngularMomentumJacobian(Link *base, dmatrix &H)
+{
+    // prepare subm, submwc
+    JointPathPtr jp;
+
+    dmatrix M;
+    calcCMJacobian(base, M);
+    M.conservativeResize(3, numJoints());
+    M *= totalMass();
+
+    if (base){
+        jp = getJointPath(rootLink(), base);
+        Link *skip = jp->joint(0);
+        skip->subm = rootLink()->m;
+        skip->submwc = rootLink()->m*rootLink()->wc;
+        Link *l = rootLink()->child;
+        if (l){
+            if (l != skip) {
+                l->calcSubMassCM();
+                skip->subm += l->subm;
+                skip->submwc += l->submwc;
+            }
+            l = l->sibling;
+            while(l){
+                if (l != skip){
+                    l->calcSubMassCM();
+                    skip->subm += l->subm;
+                    skip->submwc += l->submwc;
+                }
+                l = l->sibling;
+            }
+        }
+        
+        // assuming there is no branch between base and root
+        for (int i=1; i<jp->numJoints(); i++){
+            l = jp->joint(i);
+            l->subm = l->parent->m + l->parent->subm;
+            l->submwc = l->parent->m*l->parent->wc + l->parent->submwc;
+        }
+        
+        H.resize(3, numJoints());
+    }else{
+        rootLink()->calcSubMassCM();
+        H.resize(3, numJoints()+6);
+    }
+    
+    // compute Jacobian
+    std::vector<int> sgn(numJoints(), 1);
+    if (jp) {
+        for (int i=0; i<jp->numJoints(); i++) sgn[jp->joint(i)->jointId] = -1;
+    }
+    
+    for (int i=0; i<numJoints(); i++){
+        Link *j = joint(i);
+        switch(j->jointType){
+        case Link::ROTATIONAL_JOINT:
+        {
+            Vector3 omega(sgn[j->jointId]*j->R*j->a);
+            Vector3 Mcol = M.col(j->jointId);
+            Matrix33 jsubIw;
+            j->calcSubMassInertia(jsubIw);
+            Vector3 dp = jsubIw*omega;
+            if (j->subm!=0) dp += (j->submwc/j->subm).cross(Mcol);
+            H.col(j->jointId) = dp;
+            break;
+        }
+        case Link::SLIDE_JOINT:
+        {
+          if(j->subm!=0){
+            Vector3 Mcol =M.col(j->jointId);
+            Vector3 dp = (j->submwc/j->subm).cross(Mcol);
+            H.col(j->jointId) = dp;
+          }
+          break;
+        }
+        default:
+            std::cerr << "calcCMJacobian() : unsupported jointType("
+                      << j->jointType << ")" << std::endl;
+        }
+    }
+    if (!base){
+        int c = numJoints();
+        H.block(0, c, 3, 3).setZero();
+        Matrix33 Iw;
+        rootLink_->calcSubMassInertia(Iw);
+        H.block(0, c+3, 3, 3) = Iw;
+        Vector3 cm = calcCM();
+        Matrix33 cm_cross;
+        cm_cross <<
+          0.0, -cm(2), cm(1),
+          cm(2), 0.0, -cm(0),
+          -cm(1), cm(0), 0.0;
+        H.block(0,0,3,c) -= cm_cross * M;
     }
 }
