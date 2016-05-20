@@ -529,8 +529,8 @@ void Body::calcTotalMomentumFromJacobian(Vector3& out_P, Vector3& out_L)
     out_L.setZero();
 
     dmatrix J,H;
-    calcCMJacobian(false,J);
-    calcAngularMomentumJacobian(false,H);
+    calcCMJacobian(NULL,J);
+    calcAngularMomentumJacobian(NULL,H);
 
     dvector dq;
     int n = numJoints();
