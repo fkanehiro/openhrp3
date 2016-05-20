@@ -644,7 +644,7 @@ BodyInfo_var hrp::loadBodyInfo(const char* url, CORBA_ORB_var orb)
         cxt = CosNaming::NamingContext::_narrow(nS);
     } catch(CORBA::SystemException& ex) {
         std::cerr << "NameService doesn't exist" << std::endl;
-        return false;
+        return BodyInfo::_nil();
     }
     return loadBodyInfo(url, cxt);
 }
