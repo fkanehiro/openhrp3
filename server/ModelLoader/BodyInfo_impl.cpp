@@ -502,7 +502,8 @@ void BodyInfo_impl::setLights(int linkInfoIndex, JointNodeSetPtr jointNodeSet)
 {
     LinkInfo& linkInfo = links_[linkInfoIndex];
 
-    vector<pair<Matrix44, VrmlNodePtr> >& lightNodes = jointNodeSet->lightNodes;
+    vector<pair<Matrix44, VrmlNodePtr>,
+	   Eigen::aligned_allocator<pair<Matrix44, VrmlNodePtr> > >& lightNodes = jointNodeSet->lightNodes;
 
     int numLights = lightNodes.size();
     linkInfo.lights.length(numLights);
