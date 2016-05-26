@@ -16,6 +16,10 @@
 
 #include "fMatrix3.h"
 
+class fLineVec;
+int intersection(const fLineVec& lv1, const fLineVec& lv2,
+                 fVec3& c1, fVec3& c2, double& d, double eps=1e-8);
+
 class fLineVec
 {
 public:
@@ -111,7 +115,7 @@ public:
 	 * lv2.Org() onto lv1 and returns -1
 	 */	
 	friend int intersection(const fLineVec& lv1, const fLineVec& lv2,
-							fVec3& c1, fVec3& c2, double& d, double eps=1e-8);
+							fVec3& c1, fVec3& c2, double& d, double eps);
 
 	/*
 	 * distance from a point
