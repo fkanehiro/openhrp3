@@ -353,7 +353,6 @@ int Chain::GetJointNameList(char**& jnames)
 
 void Joint::get_joint_name_list(char** jnames)
 {
-	if(!this) return;
 	if(i_joint >= 0)
 	{
 		jnames[i_joint] = new char [strlen(name) + 1];
@@ -381,7 +380,6 @@ int Chain::GetJointList(Joint**& joints)
 
 void Joint::get_joint_list(Joint** joints)
 {
-	if(!this) return;
 	if(i_joint >= 0 && !real)
 	{
 		joints[i_joint] = this;
@@ -397,7 +395,6 @@ Joint* Chain::FindJoint(const char* n, const char* charname)
 
 Joint* Joint::find_joint(const char* n, const char* charname)
 {
-	if(!this) return NULL;
 	if(charname)
 	{
 		char* mych = CharName();
@@ -422,7 +419,6 @@ Joint* Chain::FindJoint(int _id)
 
 Joint* Joint::find_joint(int _id)
 {
-	if(!this) return NULL;
 	if(i_joint == _id) return this;
 	Joint* ret;
 	if((ret = child->find_joint(_id))) return ret;
@@ -449,7 +445,6 @@ int Joint::DescendantDOF()
 
 int Joint::descendant_dof()
 {
-	if(!this) return 0;
 	int ret1 = brother->descendant_dof();
 	int ret2 = child->descendant_dof();
 	return (ret1 + ret2 + n_dof);
@@ -462,7 +457,6 @@ int Joint::DescendantNumJoints()
 
 int Joint::descendant_num_joints()
 {
-	if(!this) return 0;
 	int ret1 = brother->descendant_num_joints();
 	int ret2 = child->descendant_num_joints();
 	return (ret1 + ret2 + 1);
