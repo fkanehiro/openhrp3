@@ -11,7 +11,8 @@
  * Create: Katsu Yamane, Univ. of Tokyo, 03.10.21
  */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include "chain.h"
 
 double Chain::ComJacobian(fMat& J, fVec3& com, const char* charname)
@@ -103,6 +104,10 @@ double Joint::com_jacobian(fMat& J, fVec3& com, const char* charname)
 					J(2, i_dof+3+i) = msXatt(2, i);
 				}
 				break;
+			case JFIXED:
+				break;
+			case JUNKNOWN:
+				abort ();
 			}
 		}
 	}
