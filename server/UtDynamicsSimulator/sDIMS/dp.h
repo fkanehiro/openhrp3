@@ -137,7 +137,7 @@ protected:
 		if(!this) return 0;
 		if(depth >= refnode->depth && active) return this;
 		dpNode* ret = 0;
-		if(ret = brother->next_breadth(refnode)) return ret;
+		if((ret = brother->next_breadth(refnode))) return ret;
 		return child->next_breadth(refnode);
 	}
 
