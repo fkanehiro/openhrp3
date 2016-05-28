@@ -30,6 +30,13 @@ using namespace std;
 #include <assert.h>
 
 class fVec;
+class fMat;
+
+fMat inv_svd(const fMat& mat, int lwork = -1);
+fMat p_inv_svd(const fMat& mat, int lwork = -1);
+fMat sr_inv_svd(const fMat& mat, fVec& w_err, fVec& w_norm, double k, int lwork = -1);
+fMat lineq_svd(const fMat& A, const fMat& b, int lwork = -1);
+
 
 /*!
  * @class  fMat fMatrix.h
@@ -294,13 +301,13 @@ public:
 	 */
 	 /*@{*/
 	//! inverse
-	friend fMat inv_svd(const fMat& mat, int lwork = -1);
+	friend fMat inv_svd(const fMat& mat, int lwork);
 	//! pseudo inverse
-	friend fMat p_inv_svd(const fMat& mat, int lwork = -1);
+	friend fMat p_inv_svd(const fMat& mat, int lwork);
 	//! SR-inverse
-	friend fMat sr_inv_svd(const fMat& mat, fVec& w_err, fVec& w_norm, double k, int lwork = -1);
+	friend fMat sr_inv_svd(const fMat& mat, fVec& w_err, fVec& w_norm, double k, int lwork);
 	//! solve linear equation Ax = b
-	friend fMat lineq_svd(const fMat& A, const fMat& b, int lwork = -1);
+	friend fMat lineq_svd(const fMat& A, const fMat& b, int lwork);
 	/*@}*/
 	/*!
 	 * @name friend

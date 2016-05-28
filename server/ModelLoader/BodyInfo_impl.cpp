@@ -747,10 +747,14 @@ void BodyInfo_impl::setParam(std::string param, bool value){
 }
 
 bool BodyInfo_impl::getParam(std::string param){
+    // FIXME: should this be an assert?
+    // pros for assert: can be turned off on release builds
+    // cons for assert: can lead to unpredictable behavior in
+    // release builds if the assertion is violated
     if(param == "readImage")
         return readImage;
     else
-        ;
+        abort ();
 }
 
 void BodyInfo_impl::setParam(std::string param, int value){

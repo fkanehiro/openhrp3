@@ -130,6 +130,7 @@ Configuration TGT::interpolate(const Configuration& from, const Configuration& t
         }else{
             std::cout << "TGT::interpolate() : invalid ratio(" << ratio << ")"
                       << std::endl;
+            abort ();
         }
     }
 }

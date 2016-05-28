@@ -199,7 +199,7 @@ bool RRT::calcPath()
             printf("%5d/%5dtrials : %5d/%5dnodes\r", i+1, times_, Tstart_->nNodes(),Tgoal_->nNodes());
             fflush(stdout);
         }
-        if (isSucceed = extendOneStep()) break;
+        if ((isSucceed = extendOneStep())) break;
     }
   
     extractPath();

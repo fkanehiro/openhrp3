@@ -134,7 +134,6 @@ void Chain::apply_geom_scale(SceneGraph* sg, Joint* cur)
 
 void Joint::init()
 {
-	if(!this) return;
 //	if(!realname)
 	{
 	if(parent) n_root_dof = parent->n_root_dof;
@@ -204,7 +203,6 @@ void Joint::init()
 
 void Joint::init_arrays()
 {
-	if(!this) return;
 //	if(!realname)
 	{
 		
@@ -272,7 +270,6 @@ void Joint::init_arrays()
 
 void Joint::init_virtual()
 {
-	if(!this) return;
 	_init_virtual();
 	brother->init_virtual();
 	child->init_virtual();

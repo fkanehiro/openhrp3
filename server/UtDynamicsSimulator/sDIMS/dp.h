@@ -134,22 +134,19 @@ protected:
 	}
 
 	dpNode* next_breadth(dpNode* refnode) {
-		if(!this) return 0;
 		if(depth >= refnode->depth && active) return this;
 		dpNode* ret = 0;
-		if(ret = brother->next_breadth(refnode)) return ret;
+		if((ret = brother->next_breadth(refnode))) return ret;
 		return child->next_breadth(refnode);
 	}
 
 	virtual void dump(ostream& ost) {
 	}
 	void dump_trajectory(ostream& ost) {
-		if(!this) return;
 		parent->dump_trajectory(ost);
 		dump(ost);
 	}
 	void dump_all(ostream& ost) {
-		if(!this) return;
 		for(int i=0; i<depth; i++) ost << " " << flush;
 		dump(ost);
 		child->dump_all(ost);
@@ -267,7 +264,6 @@ protected:
 	}
 	
 	void dump(ostream& ost) {
-		if(!this) return;
 		ost << "--- id = " << node->id << endl;
 		ost << " cost = " << node->total_cost << ", goal = " << node->is_goal() << endl;
 		ost << " smaller = " << (smaller_child ? smaller_child->node->id : -1) << ", larger = " << (larger_child ? larger_child->node->id : -1) << endl;

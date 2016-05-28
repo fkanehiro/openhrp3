@@ -22,7 +22,6 @@ void Chain::InvDyn(fVec& tau)
 
 void Joint::inv_dyn()
 {
-	if(!this) return;
 	inv_dyn_1();
 	child->inv_dyn();
 	brother->inv_dyn();
@@ -73,7 +72,6 @@ void Joint::inv_dyn_2()
 
 void Joint::calc_joint_force(fVec& tau)
 {
-	if(!this) return;
 	double t;
 //	cerr << name << ": force = " << joint_f << joint_n << endl;
 	if(i_dof >= 0)

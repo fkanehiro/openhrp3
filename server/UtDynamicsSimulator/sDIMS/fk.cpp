@@ -20,7 +20,6 @@ void Chain::CalcPosition()
 
 void Joint::calc_position()
 {
-	if(!this) return;
 	if(parent)
 	{
 #if 0
@@ -46,7 +45,6 @@ void Chain::CalcVelocity()
 
 void Joint::calc_velocity()
 {
-	if(!this) return;
 	if(parent)
 	{
 		static fMat33 t_rel_att;
@@ -81,7 +79,6 @@ void Chain::CalcAcceleration()
 
 void Joint::calc_acceleration()
 {
-	if(!this) return;
 	if(parent)
 	{
 		static fMat33 t_rel_att;
@@ -139,7 +136,6 @@ double Chain::TotalCOM(fVec3& com, const char* chname)
 
 double Joint::total_com(fVec3& com, const char* chname)
 {
-	if(!this) return 0.0;
 	int is_target = false;
 	if(!chname)
 	{
