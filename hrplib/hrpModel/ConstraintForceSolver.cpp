@@ -15,6 +15,7 @@
 
 #ifdef __WIN32__
 #define NOMINMAX
+#define _USE_MATH_DEFINES       // for M_PI
 #endif
 
 #include "World.h"
@@ -128,15 +129,12 @@ namespace hrp
         inline void clearExternalForces();
 
 #undef PI
-#ifdef __WIN32__       // Visual C++ bug
+#if defined(M_PI) && defined (M_PI_2)
+#define PI M_PI
+#define PI_2 M_PI_2
+#else
         static const double PI;
         static const double PI_2;
-#elif defined(__APPLE__)
-#define PI M_PI
-#define PI_2 M_PI/2
-#else
-        static const double PI   = 3.14159265358979323846;
-        static const double PI_2 = 1.57079632679489661923;
 #endif
 
         WorldBase& world;
@@ -367,7 +365,7 @@ namespace hrp
             if(CFS_DEBUG_VERBOSE) putVector(M, name);
         }
     };
-#ifdef __WIN32__
+#if !defined(M_PI) || !defined(M_PI_2)
 
     const double CFSImpl::PI   = 3.14159265358979323846;
     const double CFSImpl::PI_2 = 1.57079632679489661923;

@@ -11,7 +11,8 @@
  * Create: Katsu Yamane, Univ. of Tokyo, 03.10.21
  */
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include "chain.h"
 
 double Chain::ComJacobian(fMat& J, fVec3& com, const char* charname)
@@ -28,7 +29,6 @@ double Chain::ComJacobian(fMat& J, fVec3& com, const char* charname)
 
 double Joint::com_jacobian(fMat& J, fVec3& com, const char* charname)
 {
-	if(!this) return 0.0;
 	double b_mass, c_mass;
 	fVec3 b_com(0,0,0), c_com(0,0,0);
 //	cerr << name << ": " << i_chain_dof << endl;
@@ -104,6 +104,10 @@ double Joint::com_jacobian(fMat& J, fVec3& com, const char* charname)
 					J(2, i_dof+3+i) = msXatt(2, i);
 				}
 				break;
+			case JFIXED:
+				break;
+			case JUNKNOWN:
+				abort ();
 			}
 		}
 	}
@@ -122,7 +126,6 @@ int Joint::CalcJacobian(fMat& J)
 
 int Joint::calc_jacobian(fMat& J, Joint* target)
 {
-	if(!this) return 0;
 	switch(j_type)
 	{
 	case JROTATE:
@@ -306,7 +309,6 @@ int Joint::CalcJacobian2(fMat* J)
 // compute J[*](1...6, i_dof)
 int Joint::calc_jacobian_2(fMat* J, Joint* target)
 {
-	if(!this) return 0;
 	if(j_type == JROTATE)
 	{
 		target->calc_jacobian_2_rotate_sub(J, target, this);
@@ -331,7 +333,6 @@ int Joint::calc_jacobian_2(fMat* J, Joint* target)
 // compute J[i_dof](1...6, j1->i_dof)
 int Joint::calc_jacobian_2_rotate_sub(fMat* J, Joint* target, Joint* j1)
 {
-	if(!this) return 0;
 	assert(j1->j_type == JROTATE);
 	static fVec3 x(1, 0, 0), y(0, 1, 0), z(0, 0, 1);
 	if(j_type == JROTATE)
@@ -363,7 +364,6 @@ int Joint::calc_jacobian_2_rotate_sub(fMat* J, Joint* target, Joint* j1)
 
 int Joint::calc_jacobian_2_slide_sub(fMat* J, Joint* target, Joint* j1)
 {
-	if(!this) return 0;
 	assert(j1->j_type == JSLIDE);
 	static fVec3 x(1, 0, 0), y(0, 1, 0), z(0, 0, 1);
 	if(j_type == JROTATE)
@@ -391,7 +391,6 @@ int Joint::calc_jacobian_2_slide_sub(fMat* J, Joint* target, Joint* j1)
 
 int Joint::calc_jacobian_2_sphere_sub(fMat* J, Joint* target, Joint* j1)
 {
-	if(!this) return 0;
 	assert(j1->j_type == JSPHERE);
 	static fVec3 x(1, 0, 0), y(0, 1, 0), z(0, 0, 1);
 	if(j_type == JROTATE)
@@ -454,7 +453,6 @@ int Joint::calc_jacobian_2_sphere_sub(fMat* J, Joint* target, Joint* j1)
 
 int Joint::calc_jacobian_2_free_sub(fMat* J, Joint* target, Joint* j1)
 {
-	if(!this) return 0;
 	assert(j1->j_type == JFREE);
 	static fVec3 x(1, 0, 0), y(0, 1, 0), z(0, 0, 1);
 	if(j_type == JROTATE)

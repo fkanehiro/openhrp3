@@ -130,7 +130,6 @@ int Chain::GetJointValue(fVec& values)
 
 int Joint::get_joint_value(fVec& values)
 {
-	if(!this) return 0;
 	static fVec3 p;
 	static fMat33 r;
 	static fEulerPara ep;
@@ -179,7 +178,6 @@ int Chain::GetJointVel(fVec& vels)
 
 int Joint::get_joint_vel(fVec& vels)
 {
-	if(!this) return 0;
 	static fVec3 pd, rd;
 	if(i_dof >= 0)
 	{
@@ -222,7 +220,6 @@ int Chain::GetJointAcc(fVec& accs)
 
 int Joint::get_joint_acc(fVec& accs)
 {
-	if(!this) return 0;
 	static fVec3 pdd, rdd;
 	if(i_dof >= 0)
 	{
@@ -428,7 +425,6 @@ int Chain::SetJointValue(const fVec& values)
 
 int Joint::set_joint_value(const fVec& values)
 {
-	if(!this) return 0;
 	static fVec3 p;
 	static fEulerPara ep;
 	if(i_value >= 0)
@@ -470,7 +466,6 @@ int Chain::SetJointVel(const fVec& vels)
 
 int Joint::set_joint_vel(const fVec& vels)
 {
-	if(!this) return 0;
 	static fVec3 pd;
 	static fVec3 rd;
 	if(i_dof >= 0)
@@ -512,7 +507,6 @@ int Chain::SetJointAcc(const fVec& accs)
 
 int Joint::set_joint_acc(const fVec& accs)
 {
-	if(!this) return 0;
 	static fVec3 pdd;
 	static fVec3 rdd;
 	if(i_dof >= 0)
@@ -762,7 +756,6 @@ int Chain::SetJointForce(const fVec& forces)
 
 int Joint::set_joint_force(const fVec& forces)
 {
-	if(!this) return 0;
 	if(i_dof >= 0)
 	{
 		switch(j_type)
@@ -883,7 +876,6 @@ int Chain::GetJointForce(fVec& forces)
 
 int Joint::get_joint_force(fVec& forces)
 {
-	if(!this) return 0;
 	if(i_dof >= 0)
 	{
 		switch(j_type)
@@ -925,7 +917,6 @@ int Chain::ClearJointForce()
 
 int Joint::clear_joint_force()
 {
-	if(!this) return 0;
 	tau = 0.0;
 	tau_f.zero();
 	tau_n.zero();
@@ -942,7 +933,6 @@ int Chain::ClearExtForce()
 
 int Joint::clear_ext_force()
 {
-	if(!this) return 0;
 	ext_force.zero();
 	ext_moment.zero();
 	brother->clear_ext_force();

@@ -280,7 +280,6 @@ int Chain::IntegrateRK4(double timestep, int step)
 
 int Joint::pre_integrate()
 {
-	if(!this) return 0;
 	// compute p_lin_vel, p_ep_dot, p_ang_vel, p_lin_acc, p_ang_acc
 	switch(j_type)
 	{
@@ -309,7 +308,6 @@ int Joint::pre_integrate()
 
 int Joint::post_integrate()
 {
-	if(!this) return 0;
 	// compute rel_att, rel_lin_vel, rel_ang_vel,
 	fMat33 ratt;
 	switch(j_type)

@@ -1417,9 +1417,10 @@ void TriangleMeshShaper::defaultTextureMappingCylinder(VrmlIndexedFaceSet* trian
         int center=-1;
         for(int j=0; j<3; j++){
             point[j] = triangleMesh->coord->point[triangleMesh->coordIndex[i++]];
-            if(j)
+            if(j){
                 if(point[0][1] == point[j][1] ) notside &= true;
                 else   notside &= false;
+            }
             if(point[j][0] == 0.0 && point[j][2] == 0.0) center = j;
         }
         if(!notside){         //side
