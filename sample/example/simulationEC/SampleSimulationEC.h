@@ -10,6 +10,7 @@
 #ifndef SAMPLESIMULATIONEC_H
 #define SAMPLESIMULATIONEC_H
 
+#include <rtm/idl/BasicDataType.hh>
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
 #include <rtm/CorbaPort.h>

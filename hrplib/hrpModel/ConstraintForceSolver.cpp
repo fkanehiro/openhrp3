@@ -258,7 +258,7 @@ namespace hrp
         dvector solution;
 
         // random number generator
-        variate_generator<mt19937, uniform_real<> > randomAngle;
+        variate_generator<boost::mt19937, uniform_real<> > randomAngle;
 
         // for special version of gauss sidel iterative solver
         std::vector<int> frictionIndexToContactIndex;
@@ -376,7 +376,7 @@ namespace hrp
 
 CFSImpl::CFSImpl(WorldBase& world) :
     world(world),
-    randomAngle(mt19937(), uniform_real<>(0.0, 2.0 * PI))
+    randomAngle(boost::mt19937(), uniform_real<>(0.0, 2.0 * PI))
 {
     maxNumGaussSeidelIteration = DEFAULT_MAX_NUM_GAUSS_SEIDEL_ITERATION;
     numGaussSeidelInitialIteration = DEFAULT_NUM_GAUSS_SEIDEL_INITIAL_ITERATION;
