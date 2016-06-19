@@ -16,7 +16,12 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include <boost/version.hpp>
+#if (BOOST_VERSION >= 103900)
+#include <boost/signals2/signal.hpp>
+#else
 #include <boost/signals.hpp>
+#endif
 #include <hrpUtil/VrmlNodes.h>
 #include <hrpUtil/Eigen4d.h>
 #include "Config.h"
@@ -68,7 +73,11 @@ namespace hrp {
            @note エラー発生時のメッセージはこのシグナルではなく例外によって処理される。
            @endif
         */
+#if (BOOST_VERSION >= 103900)
+        boost::signals2::signal<void(const std::string& message)> sigMessage;
+#else
         boost::signal<void(const std::string& message)> sigMessage;
+#endif
 
         class Exception {
         public:
