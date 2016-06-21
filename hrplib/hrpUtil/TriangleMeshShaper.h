@@ -17,7 +17,12 @@
 #include "config.h"
 #include "VrmlNodes.h"
 #include <string>
+#include <boost/version.hpp>
+#if (BOOST_VERSION >= 103900)
+#include <boost/signals2/signal.hpp>
+#else
 #include <boost/signal.hpp>
+#endif
 
 namespace hrp
 {
@@ -36,7 +41,11 @@ namespace hrp
         SFNode getOriginalGeometry(VrmlShapePtr shapeNode);
         void defaultTextureMapping(VrmlShape* shapeNode);
         
+#if (BOOST_VERSION >= 103900)
+        boost::signals2::signal<void(const std::string& message)> sigMessage;
+#else
         boost::signal<void(const std::string& message)> sigMessage;
+#endif
         
         bool convertBox(VrmlBox* box, VrmlIndexedFaceSetPtr& triangleMesh);
 
