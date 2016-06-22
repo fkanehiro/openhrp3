@@ -1,5 +1,5 @@
 #include <rtm/CorbaNaming.h>
-#if !defined(OPENRTM_VERSION042) && !defined(OPENRTM_VERSION110)
+#if (!defined(OPENRTM_VERSION042) && !defined(OPENRTM_VERSION110)) || defined(OPENRTM_VERSION_TRUNK)
 #include <rtm/Manager.h>
 #endif
 #include "SimulationExecutionContext.h"
@@ -21,7 +21,7 @@ namespace RTC
 
   ReturnCode_t SimulationExecutionContext::stop() throw (CORBA::SystemException)
   {
-#if defined(OPENRTM_VERSION042) || defined(OPENRTM_VERSION110)
+#if (defined(OPENRTM_VERSION042) || defined(OPENRTM_VERSION110)) && !defined(OPENRTM_VERSION_TRUNK)
     if (!m_running) return RTC::PRECONDITION_NOT_MET;
 
      OpenRTM::ExtTrigExecutionContextService_var extTrigExecContext =
