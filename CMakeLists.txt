@@ -268,6 +268,9 @@ set(OMNIORB_CFLAGS ${OMNIORB_CFLAGS} CACHE STRING "Compile flags for omniORB")
 
 # OpenRTM-aist
 find_package(OpenRTM REQUIRED)
+if(EXISTS "${OPENRTM_DIR}/include/openrtm-1.1/rtm/RTObjectStateMachine.h")
+add_definitions(-DOPENRTM_VERSION_TRUNK)
+endif()
 set(ADDITIONAL_SYMBOL "")
 include_directories(${OPENRTM_INCLUDE_DIRS})
 link_directories(${OPENRTM_LIBRARY_DIRS})
