@@ -1038,8 +1038,15 @@ void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
             for(int j=0; j < facesOfVertex.size(); ++j){
                 int adjoingFaceIndex = facesOfVertex[j];
                 const Vector3& adjoingFaceNormal = faceNormals[adjoingFaceIndex];
-                double angle = acos(currentFaceNormal.dot(adjoingFaceNormal)
-                                    / (currentFaceNormal.norm() * adjoingFaceNormal.norm()));
+		double currentFaceNormalLen = currentFaceNormal.norm();
+		if (currentFaceNormalLen == 0) continue;
+		double adjoingFaceNormalLen = adjoingFaceNormal.norm();
+		if (adjoingFaceNormalLen == 0) continue;
+		double cosAngle = currentFaceNormal.dot(adjoingFaceNormal)
+		  / (currentFaceNormalLen * adjoingFaceNormalLen);
+		if (cosAngle >  1.0) cosAngle =  1.0;
+		if (cosAngle < -1.0) cosAngle = -1.0;
+                double angle = acos(cosAngle);
                 if(angle > 1.0e-6 && angle < triangleMesh->creaseAngle){
                     normal += adjoingFaceNormal;
                     normalIsFaceNormal = false;
