@@ -1036,12 +1036,19 @@ void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
 
             // avarage normals of the faces whose crease angle is below the 'creaseAngle' variable
             for(int j=0; j < facesOfVertex.size(); ++j){
-                int adjoingFaceIndex = facesOfVertex[j];
-                const Vector3& adjoingFaceNormal = faceNormals[adjoingFaceIndex];
-                double angle = acos(currentFaceNormal.dot(adjoingFaceNormal)
-                                    / (currentFaceNormal.norm() * adjoingFaceNormal.norm()));
+                int adjoiningFaceIndex = facesOfVertex[j];
+                const Vector3& adjoiningFaceNormal = faceNormals[adjoiningFaceIndex];
+		double currentFaceNormalLen = currentFaceNormal.norm();
+		if (currentFaceNormalLen == 0) continue;
+		double adjoiningFaceNormalLen = adjoiningFaceNormal.norm();
+		if (adjoiningFaceNormalLen == 0) continue;
+		double cosAngle = currentFaceNormal.dot(adjoiningFaceNormal)
+		  / (currentFaceNormalLen * adjoiningFaceNormalLen);
+		if (cosAngle >  1.0) cosAngle =  1.0;
+		if (cosAngle < -1.0) cosAngle = -1.0;
+                double angle = acos(cosAngle);
                 if(angle > 1.0e-6 && angle < triangleMesh->creaseAngle){
-                    normal += adjoingFaceNormal;
+                    normal += adjoiningFaceNormal;
                     normalIsFaceNormal = false;
                 }
                 
