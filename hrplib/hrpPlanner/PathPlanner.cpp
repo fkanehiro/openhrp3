@@ -662,6 +662,8 @@ bool PathPlanner::defaultCheckCollision()
                 }
             } else{
                 if (checkPairs_[i].detectIntersection()) {
+                    collidingPair_.first  = checkPairs_[i].model(0)->name();
+                    collidingPair_.second = checkPairs_[i].model(1)->name();
                     timeCollisionCheck_.end();
                     return true;
                 }
