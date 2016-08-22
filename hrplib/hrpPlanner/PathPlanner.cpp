@@ -220,7 +220,7 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
         if (is_nil(cxT)) {
             std::cerr << "name serivce not found" << std::endl;
         }else{
-            std::cout << "NameService OK." << std::endl;
+            std::cerr << "NameService OK." << std::endl;
         }
 
         if (!USE_INTERNAL_COLLISION_DETECTOR){
@@ -231,7 +231,7 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
             if (CORBA::is_nil(cdFactory)) {
                 std::cerr << "not found" << std::endl;
             }else{
-                std::cout << "OK." << std::endl;
+                std::cerr << "OK." << std::endl;
             }
             try{
                 collisionDetector_ = cdFactory->create();
@@ -248,7 +248,7 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
         if (CORBA::is_nil(modelLoader_)) {
             std::cerr << "not found" << std::endl;
         }else{
-            std::cout << "OK." << std::endl;
+            std::cerr << "OK." << std::endl;
         }
 
         if (debug_) {
@@ -358,7 +358,7 @@ void computeBoundingBox(BodyPtr body, double min[3], double max[3])
             }
         }
     }
-    std::cout << "bounding box of " << body->name() << ": ("
+    std::cerr << "bounding box of " << body->name() << ": ("
               << min[0] << ", " << min[1] << ", " << min[2] << ") - ("
               << max[0] << ", " << max[1] << ", " << max[2] << ")" 
               << std::endl;
@@ -418,7 +418,7 @@ BodyPtr PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr c
     if(loadBodyFromBodyInfo(body, cInfo, USE_INTERNAL_COLLISION_DETECTOR)){
         body->setName(name);
         if(debug_){
-            //std::cout << "Loaded Model:\n" << *body << std::endl;
+            //std::cerr << "Loaded Model:\n" << *body << std::endl;
         }
 
         if (bboxMode_ && USE_INTERNAL_COLLISION_DETECTOR){
@@ -493,7 +493,7 @@ void PathPlanner::registerIntersectionCheckPair(const char* charName1,
                                                 const char* linkName2,
                                                 CORBA::Double tolerance) {
     if (debug_){
-        std::cout << "PathPlanner::registerIntersectionCheckPair("
+        std::cerr << "PathPlanner::registerIntersectionCheckPair("
                   << charName1 << ", " << linkName1 << ", " << charName2 
                   << ", " << linkName2
                   << ", " << tolerance << ")" << std::endl;
@@ -605,7 +605,7 @@ bool PathPlanner::checkCollision (const Configuration &pos) {
 void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
 {
     if(debug_){
-        std::cout << "DynamicsSimulator_impl::getWorldState()\n";
+        std::cerr << "DynamicsSimulator_impl::getWorldState()\n";
     }
 
     _updateCharacterPositions();
@@ -616,7 +616,7 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
     wstate->characterPositions = allCharacterPositions_;
 
     if(debug_){
-        std::cout << "getWorldState - exit" << std::endl;
+        std::cerr << "getWorldState - exit" << std::endl;
     }
 }
 
@@ -727,7 +727,7 @@ bool PathPlanner::checkCollision(const std::vector<Configuration> &path) {
         div++;
     }
     if (checked != path.size()-1) {
-        std::cout << "checkCollision() : there are unchecked configurations."
+        std::cerr << "checkCollision() : there are unchecked configurations."
                   << " path.size() = " << path.size() << ", checked = " 
                   << checked << std::endl;
     }
@@ -746,18 +746,18 @@ bool PathPlanner::calcPath()
             l->coldetModel->setPosition(l->R, l->p);
         }
     }
-    std::cout << "The number of collision check pairs = " << checkPairs_.size() << std::endl;
+    std::cerr << "The number of collision check pairs = " << checkPairs_.size() << std::endl;
     if (!algorithm_->preparePlanning()){
-        std::cout << "preparePlanning() failed" << std::endl;
+        std::cerr << "preparePlanning() failed" << std::endl;
         return false;
     }
 
     if (algorithm_->tryDirectConnection()){
         path_ = algorithm_->getPath();
-        std::cout << "connected directly" << std::endl;
+        std::cerr << "connected directly" << std::endl;
         return true;
     }
-    std::cout << "failed direct connection" << std::endl;
+    std::cerr << "failed direct connection" << std::endl;
 
     if (algorithm_->calcPath()){
         path_ = algorithm_->getPath();
@@ -801,7 +801,7 @@ std::vector<Configuration> PathPlanner::getPath()
 void PathPlanner::_setupCharacterData()
 {
     if(debug_){
-        std::cout << "PathPlanner::_setupCharacterData()\n";
+        std::cerr << "PathPlanner::_setupCharacterData()\n";
     }
 
     int n = world_->numBodies();
@@ -817,12 +817,12 @@ void PathPlanner::_setupCharacterData()
         linkPositions.length(numLinks);
 
         if(debug_){
-            std::cout << "character[" << i << "], nlinks = " << numLinks << "\n";
+            std::cerr << "character[" << i << "], nlinks = " << numLinks << "\n";
         }
     }
 
     if(debug_){
-        std::cout << "_setupCharacterData() - exit" << std::endl;;
+        std::cerr << "_setupCharacterData() - exit" << std::endl;;
     }
 }
 
@@ -830,7 +830,7 @@ void PathPlanner::_setupCharacterData()
 void PathPlanner::_updateCharacterPositions()
 {
     if(debug_){
-        std::cout << "PathPlanner::_updateCharacterPositions()\n";
+        std::cerr << "PathPlanner::_updateCharacterPositions()\n";
     }
 
     int n = world_->numBodies();
@@ -844,7 +844,7 @@ void PathPlanner::_updateCharacterPositions()
             OpenHRP::CharacterPosition& characterPosition = allCharacterPositions_[i];
 			
             if(debug_){
-                std::cout << "character[" << i << "], nlinks = " << numLinks << "\n";
+                std::cerr << "character[" << i << "], nlinks = " << numLinks << "\n";
             }
 			
             for(int j=0; j < numLinks; ++j) {
@@ -857,7 +857,7 @@ void PathPlanner::_updateCharacterPositions()
     }
 
     if(debug_){
-        std::cout << "_updateCharacterData() - exit" << std::endl;
+        std::cerr << "_updateCharacterData() - exit" << std::endl;
     }
 }
 
