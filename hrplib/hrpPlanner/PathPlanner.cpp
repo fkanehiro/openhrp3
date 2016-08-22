@@ -644,7 +644,7 @@ bool PathPlanner::defaultCheckCollision()
         Link *l;
             for (int j=0; j<model_->numLinks(); j++){
                 l = model_->link(j);
-                l->coldetModel->setPosition(l->R, l->p);
+                l->coldetModel->setPosition(l->attitude(), l->p);
             }
     }else{
         _updateCharacterPositions();
@@ -743,7 +743,7 @@ bool PathPlanner::calcPath()
         body->calcForwardKinematics();
         for (int j=0; j<body->numLinks(); j++){
             l = body->link(j);
-            l->coldetModel->setPosition(l->R, l->p);
+            l->coldetModel->setPosition(l->attitude(), l->p);
         }
     }
     std::cerr << "The number of collision check pairs = " << checkPairs_.size() << std::endl;
