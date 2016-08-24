@@ -95,6 +95,17 @@ namespace PathEngine {
          * @brief デバッグ出力の制御
          */
         bool verbose_;
+
+        /**
+	 * スタートでの干渉を許容するか否か
+	 */
+        bool ignoreCollisionAtStart_;
+
+        /**
+	 * ゴールでの干渉を許容するか否か
+	 */
+        bool ignoreCollisionAtGoal_;
+
     public:
         /**
          * @brief コンストラクタ
@@ -179,6 +190,16 @@ namespace PathEngine {
          * @param b trueで出力が有効 
          */
         void verbose(bool b) { verbose_ = b; }
+
+        /**
+	 * @brief ゴールでの干渉を許容する場合はtrue、それ以外の場合はfalseを設定する。初期状態では許容しない。
+	 */
+        void ignoreCollisionAtGoal(bool b) { ignoreCollisionAtGoal_ = b; }
+
+        /**
+	 * @brief スタートでの干渉を許容する場合はtrue、それ以外の場合はfalseを設定する。初期状態では許容しない。
+	 */
+        void ignoreCollisionAtStart(bool b) { ignoreCollisionAtStart_ = b; }
     };
 };
 
