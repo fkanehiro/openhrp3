@@ -704,13 +704,14 @@ void PathPlanner::registerOptimizer(const std::string &optimizerName, OptimizerN
     optimizerFactory_.insert(OptimizerFactoryValueType(optimizerName, std::make_pair(newFunc, deleteFunc)));
 }
 bool PathPlanner::checkCollision(const std::vector<Configuration> &path) {
-    unsigned int checked = 0;
+    unsigned int checked = 1;
     unsigned int div = 2;
 
     std::vector<bool> isVisited;
-    for (unsigned int i=0; i<path.size(); i++) {
+    for (unsigned int i=0; i<path.size()-1; i++) {
         isVisited.push_back(false);
     }
+    isVisited.push_back(true); // the last Configuration is not checked
 
  
     while (checked < (path.size()-1) || path.size()/div > 0) {
@@ -731,7 +732,7 @@ bool PathPlanner::checkCollision(const std::vector<Configuration> &path) {
                   << " path.size() = " << path.size() << ", checked = " 
                   << checked << std::endl;
     }
-    return checkCollision(path[0]);
+    return false; // the first Configuration is not checked
 }
 bool PathPlanner::calcPath()
 {

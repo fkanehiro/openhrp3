@@ -417,7 +417,7 @@ namespace PathEngine {
         ConfigurationSpace* getConfigurationSpace() { return &cspace_; }
 
         /**
-         * @brief 干渉検出を行う
+         * @brief 現在の状態で干渉検出を行う
          * @return 干渉している場合true, それ以外false
          */
         bool checkCollision();
@@ -431,7 +431,7 @@ namespace PathEngine {
         /**
          * @brief パスの干渉検出を行う
          * @param path パス
-         * @return 一点でも干渉しているとtrue
+         * @return 一点でも干渉しているとtrue。ただし視点と終点はチェックしない
          */
         bool checkCollision(const std::vector<Configuration> &path);
 

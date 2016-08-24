@@ -20,6 +20,9 @@ RRT::RRT(PathPlanner* plan) : Algorithm(plan)
 
     extendFromStart_ = true;
     extendFromGoal_ = false;
+
+    ignoreCollisionAtStart_ = false;
+    ignoreCollisionAtGoal_ = false;
 }
 
 RRT::~RRT() 
@@ -53,6 +56,8 @@ int RRT::extend(RoadmapPtr tree, Configuration& qRand, bool reverse) {
                 getchar();
             }
         }
+
+        if (planner_->checkCollision(qRand)) return Trapped;
 
         if (reverse){
             if (mobility->isReachable(qRand, minNode->position())){
