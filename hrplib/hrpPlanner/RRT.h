@@ -21,7 +21,7 @@ namespace PathEngine {
     /**
      * スタートからのツリーとゴールからのツリーが接続できたかの追加チェックを行うユーザ関数。通常のチェックで接続できたとみなされるスタート側のコンフィギュレーションとゴール側のコンフィギュレーションを引数にとり、接続可能である場合にはtrueを、それ以外の場合はfalseを返す。
      */
-    typedef boost::function2<bool, const Configuration &, const Configuration &> extraConnectionCheckFunc;
+    typedef boost::function1<bool, const Configuration &> extraConnectionCheckFunc;
 
   private:
     /**

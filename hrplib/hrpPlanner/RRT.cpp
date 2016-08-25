@@ -157,8 +157,7 @@ bool RRT::extendOneStep()
         if (extend(Ta_, qNew, Tb_ == Tstart_) != Trapped) {
             if (connect(Tb_, qNew, Ta_ == Tstart_) == Reached) {
                 if (extraConnectionCheckFunc_){
-                    return extraConnectionCheckFunc_(Tstart_->lastAddedNode()->position(),
-                                                      Tgoal_->lastAddedNode()->position());
+                    return extraConnectionCheckFunc_(Tstart_->lastAddedNode()->position());
                 }else{
                     return true;
                 }
