@@ -37,6 +37,18 @@ namespace PathEngine {
          */
         unsigned int size() const;
 
+        /**
+           @brief compare configurations
+           @return true if not equal, false otherwise
+         */
+        bool operator!=(const Configuration& cfg);
+
+        /**
+           @brief compare configurations
+           @return true if equal, false otherwise
+         */
+        bool operator==(const Configuration& cfg);
+
     private:    
         std::vector<double> m_values;
     };
