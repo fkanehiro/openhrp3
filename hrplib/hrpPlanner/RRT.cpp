@@ -9,7 +9,7 @@ using namespace PathEngine;
 static bool debug=false;
 //static bool debug=true;
 
-RRT::RRT(PathPlanner* plan) : Algorithm(plan)
+RRT::RRT(PathPlanner* plan) : Algorithm(plan), extraConnectionCheckFunc_(NULL)
 {
     // set default properties
     properties_["max-trials"] = "10000";
@@ -17,6 +17,7 @@ RRT::RRT(PathPlanner* plan) : Algorithm(plan)
 
     Tstart_ = Ta_ = roadmap_;
     Tgoal_  = Tb_ = RoadmapPtr(new Roadmap(planner_));
+    TlastExtended_ = RoadmapPtr();
 
     extendFromStart_ = true;
     extendFromGoal_ = false;
@@ -32,6 +33,7 @@ RRT::~RRT()
 int RRT::extend(RoadmapPtr tree, Configuration& qRand, bool reverse) {
     if (debug) std::cout << "RRT::extend("<< qRand << ", " << reverse << ")" 
                          << std::endl;
+    TlastExtended_ = tree;
 
     RoadmapNodePtr minNode;
     double min;
@@ -154,7 +156,12 @@ bool RRT::extendOneStep()
         
         if (extend(Ta_, qNew, Tb_ == Tstart_) != Trapped) {
             if (connect(Tb_, qNew, Ta_ == Tstart_) == Reached) {
-                return true;
+                if (extraConnectionCheckFunc_){
+                    return extraConnectionCheckFunc_(Tstart_->lastAddedNode()->position(),
+                                                      Tgoal_->lastAddedNode()->position());
+                }else{
+                    return true;
+                }
             }
         }
         swapTrees();
@@ -229,4 +236,9 @@ void RRT::setForwardTree(RoadmapPtr tree) {
 
 void RRT::setBackwardTree(RoadmapPtr tree) { 
     Tgoal_ = Tb_ = tree;
+}
+
+void RRT::setExtraConnectionCheckFunc(extraConnectionCheckFunc i_func)
+{
+    extraConnectionCheckFunc_ = i_func;
 }
