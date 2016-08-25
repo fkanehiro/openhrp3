@@ -137,7 +137,9 @@ void RRT::extractPath(std::vector<Configuration>& o_path) {
     }
 
     if (extendFromGoal_){
-        node = goalMidNode;
+        // note: If trees are extend from both of start and goal,
+        //       goalMidNode == startMidNode.
+        node = extendFromStart_ ? goalMidNode->child(0) : goalMidNode;
         do {
             o_path.push_back(node->position());
             node = node->child(0);
