@@ -137,7 +137,9 @@ void RRT::extractPath(std::vector<Configuration>& o_path) {
     }
 
     if (extendFromGoal_){
-        node = goalMidNode;
+        // note: If trees are extend from both of start and goal,
+        //       goalMidNode == startMidNode.
+        node = extendFromStart_ ? goalMidNode->child(0) : goalMidNode;
         do {
             o_path.push_back(node->position());
             node = node->child(0);
@@ -157,8 +159,7 @@ bool RRT::extendOneStep()
         if (extend(Ta_, qNew, Tb_ == Tstart_) != Trapped) {
             if (connect(Tb_, qNew, Ta_ == Tstart_) == Reached) {
                 if (extraConnectionCheckFunc_){
-                    return extraConnectionCheckFunc_(Tstart_->lastAddedNode()->position(),
-                                                      Tgoal_->lastAddedNode()->position());
+                    return extraConnectionCheckFunc_(Tstart_->lastAddedNode()->position());
                 }else{
                     return true;
                 }
