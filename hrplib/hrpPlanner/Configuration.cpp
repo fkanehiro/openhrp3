@@ -35,3 +35,21 @@ unsigned int Configuration::size() const
 {
     return m_values.size();
 }
+
+bool Configuration::operator!=(const Configuration& cfg)
+{
+    if (size() != cfg.size()) return true;
+    for (unsigned int i=0; i<size(); i++){
+        if (value(i) != cfg.value(i)) return true;
+    }
+    return false;
+}
+
+bool Configuration::operator==(const Configuration& cfg)
+{
+    if (size() != cfg.size()) return false;
+    for (unsigned int i=0; i<size(); i++){
+        if (value(i) != cfg.value(i)) return false;
+    }
+    return true;
+}
