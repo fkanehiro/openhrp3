@@ -18,12 +18,12 @@
 #include <boost/shared_ptr.hpp>
 
 #include <rtm/idl/BasicDataType.hh>
+#include <rtm/idl/ExtendedDataTypes.hh>
 #include <rtm/RTC.h>
 #include <rtm/PortBase.h>
 #include <rtm/OutPort.h>
 #include <rtm/InPort.h>
 #include <rtm/idl/BasicDataTypeStub.h>
-#include <rtm/idl/ExtendedDataTypes.hh>
 
 #include <hrpCorba/DynamicsSimulator.hh>
 

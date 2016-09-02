@@ -172,7 +172,7 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     }
 
     const string& humanoidName = modelNodeSet.humanoidNode()->defName;
-    name_ = CORBA::string_dup(humanoidName.c_str());
+    name_ = humanoidName.c_str();
     const MFString& info = modelNodeSet.humanoidNode()->fields["info"].mfString();
     info_.length(info.size());
     for (unsigned int i=0; i<info_.length(); i++){
@@ -443,7 +443,7 @@ void BodyInfo_impl::setSegmentParameters(int linkInfoIndex, JointNodeSetPtr join
         segmentInfo.name = CORBA::string_dup( segmentNodes[i]->defName.c_str() );
     }
     if(linkInfo.mass <=0.0 )
-        std::cerr << "Warning: Mass is zero. <Model>" << this->name() << " <Link>" << linkInfo.name << std::endl;
+        std::cerr << "Warning: Mass is zero. <Model>" << name_ << " <Link>" << linkInfo.name << std::endl;
 
     for(int i = 0 ; i < numSegment ; ++i){
         Vector4 c( centerOfMassArray.at(i) );

@@ -78,7 +78,8 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
         }
 
         linkColdetModels[linkIndex] = coldetModel;
-        linkNameToColdetModelMap.insert(make_pair(linkInfo.name, coldetModel));
+        linkNameToColdetModelMap.insert(make_pair(std::string (linkInfo.name),
+                                                  coldetModel));
 
         cout << linkInfo.name << " has "<< totalNumTriangles << " triangles." << endl;
     }
