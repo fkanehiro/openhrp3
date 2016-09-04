@@ -207,14 +207,16 @@ RayCollider::RayCollider() :
 	mHitCallback		(null),
 	mUserData			(0),
 #else
+	mStabbedFaces		(null),
+#endif
 	mNbRayBVTests		(0),
 	mNbRayPrimTests		(0),
 	mNbIntersections	(0),
+	mMaxDist			(MAX_FLOAT),
+#ifndef OPC_RAYHIT_CALLBACK
 	mClosestHit			(false),
-	mCulling			(true),
-	mStabbedFaces		(null),
 #endif
-	mMaxDist			(MAX_FLOAT)
+	mCulling			(true)
 {
 }
 
