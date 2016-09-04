@@ -96,8 +96,8 @@ Body::Body()
 
 
 Body::Body(const Body& org)
-    : modelName_(org.modelName_),
-      name_(org.name_),
+    : name_(org.name_),
+      modelName_(org.modelName_),
       allSensors(Sensor::NUM_SENSOR_TYPES)
 {
     initialize();
