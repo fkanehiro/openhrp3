@@ -84,7 +84,7 @@ namespace hrp {
            In other words, the value represents the size of the link sequence
            obtained by joint() function.
         */
-        inline int numJoints() const {
+        inline unsigned int numJoints() const {
             return jointIdToLinkArray.size();
         }
 
@@ -109,7 +109,7 @@ namespace hrp {
            The number of all the links the body has.
            The value corresponds to the size of the sequence obtained by link() function.
         */
-        inline int numLinks() const {
+        inline unsigned int numLinks() const {
             return linkTraverse_.numLinks();
         }
 
@@ -159,11 +159,11 @@ namespace hrp {
             return allSensors[sensorType][sensorId];
         }
 
-        inline int numSensors(int sensorType) const {
+        inline unsigned int numSensors(int sensorType) const {
             return allSensors[sensorType].size();
         }
 
-        inline int numSensorTypes() const {
+        inline unsigned int numSensorTypes() const {
             return allSensors.size();
         }
 
