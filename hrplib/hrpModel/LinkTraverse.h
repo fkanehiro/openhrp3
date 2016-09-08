@@ -37,7 +37,7 @@ namespace hrp {
 
         virtual void find(Link* root, bool doUpward = false, bool doDownward = true);
 
-        inline int numLinks() const {
+        inline unsigned int numLinks() const {
             return links.size();
         }
 
