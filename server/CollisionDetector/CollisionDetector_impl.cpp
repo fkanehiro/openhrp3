@@ -172,7 +172,7 @@ bool CollisionDetector_impl::detectAllCollisions
     out_collisions = new CollisionSequence;
     out_collisions->length(numColdetPairs);
 	
-    for(CORBA::ULong i=0; i < numColdetPairs; ++i){
+    for(int i=0; i < numColdetPairs; ++i){
 
         ColdetModelPairEx& coldetPair = *coldetPairs[i];
         Collision& collision = out_collisions[i];
@@ -199,7 +199,7 @@ bool CollisionDetector_impl::detectCollisionsOfLinkPair
     vector<collision_data>& cdata = coldetPair.detectCollisions();
 
     int npoints = 0;
-    for(int i=0; i < cdata.size(); i++) {
+    for(unsigned int i=0; i < cdata.size(); i++) {
         for(int j=0; j < cdata[i].num_of_i_points; j++){
             if(cdata[i].i_point_new[j]){
                 npoints ++;
@@ -211,7 +211,7 @@ bool CollisionDetector_impl::detectCollisionsOfLinkPair
         if(addCollisionPoints){
             out_collisionPoints.length(npoints);
             int index = 0;
-            for(int i=0; i < cdata.size(); i++) {
+            for(unsigned int i=0; i < cdata.size(); i++) {
                 collision_data& cd = cdata[i];
                 for(int j=0; j < cd.num_of_i_points; j++){
                     if (cd.i_point_new[j]){

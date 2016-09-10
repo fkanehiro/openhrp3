@@ -19,7 +19,6 @@ std::vector<Configuration> RandomShortcutOptimizer::optimize(const std::vector<C
     do {
         index2 = ((float)random())/RAND_MAX*nSegment; 
     }while(index1 == index2);
-    int tmp;
     if (index2 < index1) std::swap(index1, index2);
 
     double ratio1 = ((double)random())/RAND_MAX;
@@ -33,7 +32,7 @@ std::vector<Configuration> RandomShortcutOptimizer::optimize(const std::vector<C
         for (int i=0; i<=index1; i++) optimized.push_back(path[i]);
         optimized.push_back(cfg1);
         optimized.push_back(cfg2);
-        for (int i=index2+1; i<path.size(); i++) optimized.push_back(path[i]);
+        for (unsigned int i=index2+1; i<path.size(); i++) optimized.push_back(path[i]);
         return optimized;
     }else{
         return path;

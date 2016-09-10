@@ -361,6 +361,7 @@ namespace hrp {
 		
 		    _a_sr  = _w * at * a1;
 		    //if (DEBUG) { dmatrix ii = _a * _a_sr; std::cerr << "    i :" << std::endl << ii; }
+		    return 0;
 		}
 
 		//--- Calculation of determinamt ---

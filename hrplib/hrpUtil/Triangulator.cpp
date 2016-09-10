@@ -21,7 +21,7 @@ int Triangulator::apply(const vector<int>& polygon)
 {
     triangles_.clear();
 
-    int numOrgVertices = polygon.size();
+    unsigned int numOrgVertices = polygon.size();
 
     if(numOrgVertices > earMask.size()){
         earMask.resize(numOrgVertices);
@@ -39,13 +39,13 @@ int Triangulator::apply(const vector<int>& polygon)
     orgPolygon = &polygon;
 
     workPolygon.resize(numOrgVertices);
-    for(int i=0; i < numOrgVertices; ++i){
+    for(unsigned int i=0; i < numOrgVertices; ++i){
         workPolygon[i] = i;
     }
     
     ccs << 0.0, 0.0, 0.0;
     const Vector3Ref o(vertex(0));
-    for(int i=1; i < numOrgVertices - 1; ++i){
+    for(unsigned int i=1; i < numOrgVertices - 1; ++i){
         ccs += (vertex(i) - o).cross(vertex((i+1) % numOrgVertices) - o);
     }
 
@@ -122,7 +122,7 @@ bool Triangulator::checkIfEarContainsOtherVertices(int ear)
 
         earMask[prev] = earMask[ear] = earMask[next] = 1;
 
-        for(int i=0; i < workPolygon.size(); ++i){
+        for(unsigned int i=0; i < workPolygon.size(); ++i){
             if(!earMask[i]){
                 const Vector3Ref p(workVertex(i));
                 if((a - p).cross(b - p).dot(ccs) <= 0){

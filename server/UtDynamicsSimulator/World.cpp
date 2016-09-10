@@ -428,7 +428,7 @@ void World::setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::Li
 
 void World::_set_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, const OpenHRP::DblSequence& wdata)
 {
-	if(index < wdata.length() &&
+	if(index < (int)wdata.length() &&
 	   (cur->j_type == ::JROTATE || cur->j_type == ::JSLIDE))
 	{
 //		logfile << "set[" << index << "]: " << cur->name << ": " << wdata[index] << endl;

@@ -455,7 +455,7 @@ protected:
 #endif
 
 		nodes = new dpNode* [js_cand.size()];
-		for(int j=0; j<js_cand.size(); j++)
+		for(unsigned int j=0; j<js_cand.size(); j++)
 		{
 			LCPNode* node = new LCPNode(lcp, this, q, max_error, w2a, w2g, z2a, z2g, n_steps+1, js_cand[j], new_jr, -js_cost[j]);
 			nodes[j] = (dpNode*)node;
@@ -678,7 +678,7 @@ int LCP::SolvePivot2(fVec& g, fVec& a, double _max_error, int _max_nodes, int* n
 	cerr << "a = " << tran(a) << endl;
 	cerr << "g = " << tran(g) << endl;
 #endif
-	if(_g2w.size() == n_vars)
+	if((int)_g2w.size() == n_vars)
 	{
 		for(int i=0; i<n_vars; i++)
 		{
@@ -1043,7 +1043,7 @@ int LCP::SolvePivot(fVec& g, fVec& a, double _max_error, int _max_iteration, int
 #endif
 	}
 	if(n_iteration) *n_iteration = n_iter;
-	if(_g2w.size() == n_vars)
+	if((int)_g2w.size() == n_vars)
 	{
 		for(int i=0; i<n_vars; i++)
 		{

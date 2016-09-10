@@ -122,7 +122,7 @@ ImageConverter::loadPNG(
         png_byte    header[8];
         int         is_png;
 
-        size_t n = fread( header, 1, number, fp );
+        fread( header, 1, number, fp );
         is_png = !png_sig_cmp( header, 0, number );
         if( !is_png )   throw "File is not png.";
 
@@ -208,7 +208,7 @@ ImageConverter::loadPNG(
         row_pointers = (png_bytepp)malloc(height * sizeof(png_bytep)); 
         png_uint_32 rowbytes = png_get_rowbytes(pPng, pInfo);
         image->pixels.resize(rowbytes*height);
-        for(int i=0; i<height; i++)
+        for(unsigned int i=0; i<height; i++)
             row_pointers[i] = &(image->pixels[i*rowbytes]);
 
 	    png_read_image(pPng, row_pointers);  

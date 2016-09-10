@@ -406,7 +406,7 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 								float sum_xA, sum_yA, sum_zA, sum_A;
 								sum_xA = sum_yA = sum_zA = sum_A = 0;
 		
-								for (int k = 0; k < sameplane.size(); k++) {
+								for (unsigned int k = 0; k < sameplane.size(); k++) {
 									sum_xA += q[sameplane[k]].x * A[sameplane[k]];
 									sum_yA += q[sameplane[k]].y * A[sameplane[k]];
 									sum_zA += q[sameplane[k]].z * A[sameplane[k]];
@@ -427,7 +427,7 @@ bool ColdetModelPair::detectSphereMeshCollisions(bool detectAllContacts) {
 						}
 					}
 					
-					for (int i = 0; i < new_q.size(); i++) {
+					for (unsigned int i = 0; i < new_q.size(); i++) {
 						collision_data col;
 						col.depth = new_depth[i];
 						col.num_of_i_points = 1;
@@ -504,7 +504,7 @@ bool ColdetModelPair::detectPlaneCylinderCollisions(bool detectAllContacts) {
     if (contactsCount){
         std::vector<collision_data>& cdata = collisionPairInserter->collisions();
         cdata.resize(contactsCount);
-        for (unsigned int i=0; i<contactsCount; i++){
+        for (int i=0; i<contactsCount; i++){
             cdata[i].num_of_i_points = 1;
             cdata[i].i_point_new[0]=1; 
             cdata[i].i_point_new[1]=0; 
@@ -652,9 +652,9 @@ void ColdetModelPair::setCollisionPairInserter(CollisionPairInserterBase *insert
 
 int ColdetModelPair::calculateCentroidIntersection(float &cx, float &cy, float &A, float radius, std::vector<float> vx, std::vector<float> vy) {
 	
-	int i;		// Vertex and Side
+	unsigned int i;		// Vertex and Side
 	int j[5];	// Point ID
-	int k;		// Section
+	unsigned int k;		// Section
 	
 	int isOk = ColdetModelPair::makeCCW(vx, vy);
 	
@@ -662,7 +662,7 @@ int ColdetModelPair::calculateCentroidIntersection(float &cx, float &cy, float &
 	
 		std::vector<pointStruct> point;
 		pointStruct p;
-		int numInter;
+		unsigned int numInter;
 		std::vector<float> x_int(2), y_int(2);
 		
 		for (i = 0; i < vx.size(); i++) {
@@ -700,7 +700,6 @@ int ColdetModelPair::calculateCentroidIntersection(float &cx, float &cy, float &
 		
 		int start = -1;
 		bool finished = false;
-		int next1, next2, next3, next4;
 		
 		std::vector<figStruct> figure;
 		figStruct f;
@@ -823,12 +822,8 @@ int ColdetModelPair::calculateCentroidIntersection(float &cx, float &cy, float &
 
 int ColdetModelPair::makeCCW(std::vector<float> &vx, std::vector<float> &vy) {
 	
-	float vx_tmp, vy_tmp;
-
 	if ((vx.size() == 3) && (vy.size() == 3)) {
 		if (ColdetModelPair::calculatePolygonArea(vx, vy) < 0)	{
-			vx_tmp = vx[0];
-			vy_tmp = vy[0];
 			vx[0] = vx[1];
 			vy[0] = vy[1];
 		}
@@ -845,7 +840,7 @@ float ColdetModelPair::calculatePolygonArea(const std::vector<float> &vx, const 
 	float area = 0;
 	
 	if (vx.size() == vy.size()) {
-		for (int i = 0; i < vx.size(); i++) {
+		for (unsigned int i = 0; i < vx.size(); i++) {
 			area += vx[i] * vy[(i + 1) % vx.size()] - vy[i] * vx[(i + 1) % vx.size()];
 		}
 		return area / 2;

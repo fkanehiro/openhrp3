@@ -283,7 +283,6 @@ public:
             string axis_infosid = str(boost::format("axis_info_inst%d")%idof);
             LinkInfo& pjoint = links[ikmout->kmout->vaxissids.at(idof).ijoint];
             string jointType(CORBA::String_var(pjoint.jointType));
-            int iaxis = ikmout->kmout->vaxissids.at(idof).iaxis;
 
             //  Kinematics axis info
             domKinematics_axis_infoRef kai = daeSafeCast<domKinematics_axis_info>(kt->add(COLLADA_ELEMENT_AXIS_INFO));
@@ -653,7 +652,7 @@ public:
         }
 
         list<int> listunusedlinks;
-        for(int i = 0; i < links->length(); ++i) {
+        for(unsigned int i = 0; i < links->length(); ++i) {
             listunusedlinks.push_back(i);
         }
 
@@ -709,7 +708,7 @@ public:
         pmout->pmodel->setId(pmodelid.c_str());
         pmout->pmodel->setName(bodyInfo->name());
         LinkInfoSequence_var links = bodyInfo->links();
-        for(int ilink = 0; ilink < links->length(); ++ilink) {
+        for(unsigned int ilink = 0; ilink < links->length(); ++ilink) {
             LinkInfo& link = links[ilink];
             domRigid_bodyRef rigid_body = daeSafeCast<domRigid_body>(pmout->pmodel->add(COLLADA_ELEMENT_RIGID_BODY));
             string rigidsid = str(boost::format("rigid%d")%ilink);
@@ -757,7 +756,7 @@ public:
             }
             //daeSafeCast<domRigid_body::domTechnique_common::domDynamic>(ptec->add(COLLADA_ELEMENT_DYNAMIC))->setValue(xsBoolean(dynamic));
             // create a shape for every geometry
-            for(int igeom = 0; igeom < link.shapeIndices.length(); ++igeom) {
+            for(unsigned int igeom = 0; igeom < link.shapeIndices.length(); ++igeom) {
                 const TransformedShapeIndex& tsi = link.shapeIndices[igeom];
                 DblArray12 transformMatrix;
                 if( tsi.inlinedShapeTransformMatrixIndex >= 0 ) {
@@ -803,7 +802,6 @@ public:
     {
         const FloatSequence& vertices = shapeInfo.vertices;
         const LongSequence& triangles = shapeInfo.triangles;
-        const int numTriangles = triangles.length() / 3;
         string effid = parentid+string("_eff");
         string matid = parentid+string("_mat");
         string texid = parentid+string("_tex");
@@ -1226,7 +1224,7 @@ private:
         pnode->setName(plink.segments[0].name);
 	ShapeInfoSequence* curShapeInfoSeq = bodyInfo->shapes();
 
-        for(int igeom = 0; igeom < plink.shapeIndices.length(); ++igeom) {
+        for(unsigned int igeom = 0; igeom < plink.shapeIndices.length(); ++igeom) {
             string geomid = _GetGeometryId(bodyInfo, ilink,igeom);
             const TransformedShapeIndex& tsi = plink.shapeIndices[igeom];
             DblArray12 transformMatrix;
@@ -1250,7 +1248,7 @@ private:
 	for(size_t isensor = 0; isensor < plink.sensors.length(); ++isensor) {
 	    SensorInfo& sensor = plink.sensors[isensor];
 	    // shape
-	    for(int igeom = 0; igeom < sensor.shapeIndices.length(); ++igeom) {
+	    for(unsigned int igeom = 0; igeom < sensor.shapeIndices.length(); ++igeom) {
 		string geomid = _GetGeometryId(bodyInfo, ilink, igeomid++);
 
 		const TransformedShapeIndex& tsi = sensor.shapeIndices[igeom];
@@ -1274,7 +1272,7 @@ private:
 	}
 
         // go through all children
-        for(int _ichild = 0; _ichild < plink.childIndices.length(); ++_ichild) {
+        for(unsigned int _ichild = 0; _ichild < plink.childIndices.length(); ++_ichild) {
             int ichild = plink.childIndices[_ichild];
             LinkInfo& childlink = (*bodyInfo->links())[ichild];
             domLink::domAttachment_fullRef pattfull = daeSafeCast<domLink::domAttachment_full>(pdomlink->add(COLLADA_TYPE_ATTACHMENT_FULL));
