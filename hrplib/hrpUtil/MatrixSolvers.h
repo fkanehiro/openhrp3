@@ -28,7 +28,7 @@ namespace hrp {
     HRP_UTIL_EXPORT int calcPseudoInverse(const dmatrix &_a, dmatrix &_a_pseu, double _sv_ratio=1.0e-3);
 
     HRP_UTIL_EXPORT int calcEigenVectors(const dmatrix &_a, dmatrix  &_evec, dvector &_eval);
-    HRP_UTIL_EXPORT void calcSRInverse(const dmatrix& _a, dmatrix &_a_sr, double _sr_ratio, dmatrix _w);
+    HRP_UTIL_EXPORT int calcSRInverse(const dmatrix& _a, dmatrix &_a_sr, double _sr_ratio, dmatrix _w);
     HRP_UTIL_EXPORT double det(const dmatrix &a);
 
     /**
