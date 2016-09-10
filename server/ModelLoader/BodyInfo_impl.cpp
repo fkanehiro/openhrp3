@@ -189,7 +189,7 @@ void BodyInfo_impl::loadModelFile(const std::string& url)
     }
 
     linkShapeIndices_.length(numJointNodes); 
-    for(size_t i = 0 ; i < numJointNodes ; ++i) {
+    for(int i = 0 ; i < numJointNodes ; ++i) {
         linkShapeIndices_[i] = links_[i].shapeIndices;
     }
     
@@ -770,7 +770,7 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
     std::vector<Vector3> boxSizeMap;
     std::vector<Vector3> boundingBoxData;
     
-    for(int i=0; i<links_.length(); i++){
+    for(unsigned int i=0; i<links_.length(); i++){
         int _depth;
         if( AABBdataType_ == OpenHRP::ModelLoader::AABB_NUM )
             _depth = linkColdetModels[i]->numofBBtoDepth(inputData[i]);
@@ -788,10 +788,10 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
                 sensor.shapeIndices.length(0);
             }
 
-            for(int j=0; j<boundingBoxData.size()/2; j++){
+            for(unsigned int j=0; j<boundingBoxData.size()/2; j++){
 
                 bool flg=false;
-                int k=0;
+                unsigned int k=0;
                 for( ; k<boxSizeMap.size(); k++)
                     if((boxSizeMap[k] - boundingBoxData[j*2+1]).norm() < EPS)
                         break;
@@ -803,10 +803,10 @@ void BodyInfo_impl::changetoBoundingBox(unsigned int* inputData){
                 }
 
                 if(flg){
-                    int l=0;
+                    unsigned int l=0;
                     for( ; l<tsiMap.size(); l++){
                         Vector3 p(tsiMap[l].transformMatrix[3],tsiMap[l].transformMatrix[7],tsiMap[l].transformMatrix[11]);
-                        if((p - boundingBoxData[j*2]).norm() < EPS && tsiMap[l].shapeIndex == k)
+                        if((p - boundingBoxData[j*2]).norm() < EPS && tsiMap[l].shapeIndex == (int)k)
                             break;
                     }
                     if( l==tsiMap.size() )

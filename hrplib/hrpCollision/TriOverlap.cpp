@@ -338,7 +338,7 @@ static int find_common_perpendicular(
     double& dp)
 {
     const double eps = 1.0e-3; // threshold to consider two edges are parallel
-    const double vn = 1.0e-2;  // threshold to judge an intersecting point is near a vertex
+    //const double vn = 1.0e-2;  // threshold to judge an intersecting point is near a vertex
 
     const Vector3 e(p2 - p1);
     const Vector3 f(q2 - q1);

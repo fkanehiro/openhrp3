@@ -339,7 +339,7 @@ namespace hrp {
 
 
 		//--- Calculation of SR-Inverse ---
-		int calcSRInverse(const dmatrix& _a, dmatrix &_a_sr, double _sr_ratio, dmatrix _w) {
+		void calcSRInverse(const dmatrix& _a, dmatrix &_a_sr, double _sr_ratio, dmatrix _w) {
 		    // J# = W Jt(J W Jt + kI)-1 (Weighted SR-Inverse)
 		    // SR-inverse :
 		    // Y. Nakamura and H. Hanafusa : "Inverse Kinematic Solutions With

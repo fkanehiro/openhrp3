@@ -298,7 +298,7 @@ void EasyScanner::loadFile(const string& filename)
     rewind(file);
     if(textBuf) delete[] textBuf;
     textBuf = new char[size+1];
-    size_t s = fread(textBuf, sizeof(char), size, file);
+    fread(textBuf, sizeof(char), size, file);
     textBuf[size] = 0;
     fclose(file);
     text = textBuf;

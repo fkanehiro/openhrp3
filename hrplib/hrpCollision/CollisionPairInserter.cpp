@@ -125,7 +125,7 @@ void CollisionPairInserter::triangleIndexToPoint(ColdetModelSharedDataSet* model
 
 void CollisionPairInserter::get_triangles_in_convex_neighbor(ColdetModelSharedDataSet* model, int id, col_tri* tri_convex_neighbor, std::vector<int>& foundTriangles, int& count){
     int k;
-    for(int i=0; i<foundTriangles.size(); i++)
+    for(unsigned int i=0; i<foundTriangles.size(); i++)
         if(foundTriangles[i] == id){
             k = i;
             break;
@@ -135,7 +135,7 @@ void CollisionPairInserter::get_triangles_in_convex_neighbor(ColdetModelSharedDa
         int nei = model->neighbor[id].triangles[i];
         if(nei < 0)
             continue;
-        int j=0;
+        unsigned int j=0;
         for(; j<foundTriangles.size(); j++)
             if(foundTriangles[j] == nei)
                 break;

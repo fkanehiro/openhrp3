@@ -538,7 +538,7 @@ double dpScheduleNode::calc_min_subchain_cost_sub(Joint* cur, const p_joint_list
 		}
 	}
 	double ret = 0.0;
-	int done = false, descend = false;
+	int descend = false;
 	int my_outer = n_outer_child_side[cur->i_joint];
 	if(n_outer_parent_side[cur->i_joint] < n_outer_child_side[cur->i_joint])
 	{

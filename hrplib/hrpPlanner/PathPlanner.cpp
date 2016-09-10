@@ -341,7 +341,7 @@ void computeBoundingBox(BodyPtr body, double min[3], double max[3])
     Link *l, *root=body->rootLink();
     Matrix33 Rt = root->R.transpose();
     float x, y, z;
-    for (int i=0; i<body->numLinks(); i++){
+    for (unsigned int i=0; i<body->numLinks(); i++){
         l = body->link(i);
         for (int j=0; j<l->coldetModel->getNumVertices(); j++){
             l->coldetModel->getVertex(j, x, y, z);
@@ -642,7 +642,7 @@ bool PathPlanner::defaultCheckCollision()
 
     if (USE_INTERNAL_COLLISION_DETECTOR){
         Link *l;
-            for (int j=0; j<model_->numLinks(); j++){
+            for (unsigned int j=0; j<model_->numLinks(); j++){
                 l = model_->link(j);
                 l->coldetModel->setPosition(l->attitude(), l->p);
             }
@@ -670,7 +670,7 @@ bool PathPlanner::defaultCheckCollision()
             } 
         } 
         if (pointCloud_.size() > 0){
-            for (int i=0; i<model_->numLinks(); i++){
+            for (unsigned int i=0; i<model_->numLinks(); i++){
                 Link *l = model_->link(i);
                 if (l->coldetModel->checkCollisionWithPointCloud(pointCloud_,
                                                                  radius_)){
@@ -739,10 +739,10 @@ bool PathPlanner::calcPath()
     path_.clear();
     BodyPtr body;
     Link *l;
-    for (int i=0; i<world_->numBodies(); i++){
+    for (unsigned int i=0; i<world_->numBodies(); i++){
         body = world_->body(i);
         body->calcForwardKinematics();
-        for (int j=0; j<body->numLinks(); j++){
+        for (unsigned int j=0; j<body->numLinks(); j++){
             l = body->link(j);
             l->coldetModel->setPosition(l->attitude(), l->p);
         }

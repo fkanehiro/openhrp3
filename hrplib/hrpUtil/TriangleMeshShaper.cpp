@@ -65,7 +65,7 @@ namespace hrp {
         template <class TArray>
             bool remapDirectMapObjectsPerFaces(TArray& objects, const char* objectName);
         
-        bool checkAndRemapIndices(RemapType type, int numElements, MFInt32& indices, bool perVertex,
+        bool checkAndRemapIndices(RemapType type, unsigned int numElements, MFInt32& indices, bool perVertex,
                                   VrmlIndexedFaceSet* triangleMesh);
         void putError1(const char* valueName);
         
@@ -330,7 +330,7 @@ bool TMSImpl::convertIndexedFaceSet(VrmlIndexedFaceSet* faceSet)
     if(numNormals > 0 && !faceSet->ccw){
         // flip normal vectors
          MFVec3f& normals = faceSet->normal->vector;
-         for(int i=0; i < normals.size(); ++i){
+         for(unsigned int i=0; i < normals.size(); ++i){
              SFVec3f& n = normals[i];
              n[0] = -n[0];
              n[1] = -n[1];
@@ -365,7 +365,7 @@ bool TMSImpl::remapDirectMapObjectsPerFaces(TArray& values, const char* valueNam
 
 
 bool TMSImpl::checkAndRemapIndices
-(RemapType type, int numElements, MFInt32& indices, bool perVertex, VrmlIndexedFaceSet* triangleMesh)
+(RemapType type, unsigned int numElements, MFInt32& indices, bool perVertex, VrmlIndexedFaceSet* triangleMesh)
 {
     const char* valueName = (type==REMAP_COLOR) ? "colors" : "normals" ;
     
@@ -406,7 +406,7 @@ bool TMSImpl::checkAndRemapIndices
                         indices[i] = -1;
                     } else {
                         int index = orgIndices[orgPosition];
-                        if(index < numElements){
+                        if(index < (int)numElements){
                             indices[i] = index;
                         } else {
                             putError1(valueName);
@@ -420,7 +420,7 @@ bool TMSImpl::checkAndRemapIndices
                 for(int i=0; i < numNewIndices; ++i){
                     int orgFaceIndex = faceIndexMap[i];
                     int index = orgIndices[orgFaceIndex];
-                    if(index < numElements){
+                    if(index < (int)numElements){
                         indices[i] = index;
                     } else {
                         putError1(valueName);
@@ -584,7 +584,6 @@ bool TMSImpl::convertCone(VrmlCone* cone, VrmlIndexedFaceSetPtr& triangleMesh)
 
     MFInt32& indices = triangleMesh->coordIndex;
     indices.reserve((divisionNumber * 2) * 4);
-    const int offset = divisionNumber * 2;
 
     for(int i=0; i < divisionNumber; ++i){
         // side faces
@@ -912,7 +911,7 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
             polygon.push_back(i);
         triangulator.apply(polygon);
         const vector<int>& triangles = triangulator.triangles();
-        for(int i=0; i<triangles.size(); i+=3 )
+        for(unsigned int i=0; i<triangles.size(); i+=3 )
             if(extrusion->ccw){
                 addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+2]], polygon[triangles[i+1]]);
             }else{
@@ -927,7 +926,7 @@ bool TMSImpl::convertExtrusion(VrmlExtrusion* extrusion, VrmlIndexedFaceSetPtr& 
             polygon.push_back(numcross*(numSpine-1)+i);
         triangulator.apply(polygon);
         const vector<int>& triangles = triangulator.triangles();
-        for(int i=0; i<triangles.size(); i+=3 )
+        for(unsigned int i=0; i<triangles.size(); i+=3 )
             if(extrusion->ccw){
                 addTriangle(indices, polygon[triangles[i]], polygon[triangles[i+1]], polygon[triangles[i+2]]);
             }else{
@@ -989,7 +988,7 @@ void TMSImpl::calculateFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
                 int vertexIndex = triangles[faceIndex * 4 + i];
                 vector<int>& facesOfVertex = vertexIndexToFaceIndicesMap[vertexIndex];
                 bool isSameNormalFaceFound = false;
-                for(int j=0; j < facesOfVertex.size(); ++j){
+                for(unsigned int j=0; j < facesOfVertex.size(); ++j){
                     const Vector3& otherNormal = faceNormals[facesOfVertex[j]];
                     const Vector3 d(otherNormal - normal);
                     // the same face is not appended
@@ -1035,7 +1034,7 @@ void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
             bool normalIsFaceNormal = true;
 
             // avarage normals of the faces whose crease angle is below the 'creaseAngle' variable
-            for(int j=0; j < facesOfVertex.size(); ++j){
+            for(unsigned int j=0; j < facesOfVertex.size(); ++j){
                 int adjoiningFaceIndex = facesOfVertex[j];
                 const Vector3& adjoiningFaceNormal = faceNormals[adjoiningFaceIndex];
 		double currentFaceNormalLen = currentFaceNormal.norm();
@@ -1062,7 +1061,7 @@ void TMSImpl::setVertexNormals(VrmlIndexedFaceSetPtr& triangleMesh)
             for(int j=0; j < 3; ++j){
                 int vertexIndex2 = triangles[faceIndex * 4 + j];
                 vector<int>& normalIndicesOfVertex = vertexIndexToNormalIndicesMap[vertexIndex2];
-                for(int k=0; k < normalIndicesOfVertex.size(); ++k){
+                for(unsigned int k=0; k < normalIndicesOfVertex.size(); ++k){
                     int index = normalIndicesOfVertex[k];
                     const SFVec3f& norg = normals[index];
                     const Vector3 d(Vector3(norg[0], norg[1], norg[2]) - normal);
@@ -1111,7 +1110,7 @@ void TMSImpl::setFaceNormals(VrmlIndexedFaceSetPtr& triangleMesh)
         for(int i=0; i < 3; ++i){
             int vertexIndex = triangles[faceIndex * 4 + i];
             vector<int>& normalIndicesOfVertex = vertexIndexToNormalIndicesMap[vertexIndex];
-            for(int j=0; j < normalIndicesOfVertex.size(); ++j){
+            for(unsigned int j=0; j < normalIndicesOfVertex.size(); ++j){
                 int index = normalIndicesOfVertex[j];
                 const SFVec3f& norg = normals[index];
                 const Vector3 n(norg[0], norg[1], norg[2]);
@@ -1226,7 +1225,7 @@ void TriangleMeshShaper::defaultTextureMappingElevationGrid(VrmlElevationGrid* g
     float xmax = grid->xSpacing * (grid->xDimension-1);
     float zmax = grid->zSpacing * (grid->zDimension-1);
     triangleMesh->texCoord = new VrmlTextureCoordinate();
-    for(int i=0; i<triangleMesh->coord->point.size(); i++){
+    for(unsigned int i=0; i<triangleMesh->coord->point.size(); i++){
        SFVec2f point;
        point[0] = (triangleMesh->coord->point[i][0])/xmax;
        point[1] = (triangleMesh->coord->point[i][2])/zmax;
@@ -1252,7 +1251,7 @@ int TriangleMeshShaper::faceofBox(SFVec3f* point)
 
 int TriangleMeshShaper::findPoint(MFVec2f& points, SFVec2f& target)
 {
-    for(int i=0; i<points.size(); i++){
+    for(unsigned int i=0; i<points.size(); i++){
         if((points[i][0]-target[0])*(points[i][0]-target[0]) +
             (points[i][1]-target[1])*(points[i][1]-target[1]) < 1.0e-9 )
             return i;
@@ -1352,7 +1351,7 @@ void TriangleMeshShaper::defaultTextureMappingCone(VrmlIndexedFaceSet* triangleM
     texPoint[0] = 0.5; texPoint[1] = 0.5;     //center of bottom index=0
     triangleMesh->texCoord->point.push_back(texPoint);
     int texIndex = 1;
-    for(int i=0; i<triangleMesh->coordIndex.size(); i++){
+    for(unsigned int i=0; i<triangleMesh->coordIndex.size(); i++){
         SFVec3f point[3];
         int top=-1;
         int center=-1;
@@ -1422,7 +1421,7 @@ void TriangleMeshShaper::defaultTextureMappingCylinder(VrmlIndexedFaceSet* trian
     texPoint[0] = 0.5; texPoint[1] = 0.5;     //center of top(bottom) index=0
     triangleMesh->texCoord->point.push_back(texPoint);
     int texIndex = 1;
-    for(int i=0; i<triangleMesh->coordIndex.size(); i++){
+    for(unsigned int i=0; i<triangleMesh->coordIndex.size(); i++){
         SFVec3f point[3];
         bool notside=true;
         int center=-1;
@@ -1489,7 +1488,7 @@ void TriangleMeshShaper::defaultTextureMappingSphere(VrmlIndexedFaceSet* triangl
     triangleMesh->texCoord = new VrmlTextureCoordinate();
     SFVec2f texPoint ;
     int texIndex = 0;
-    for(int i=0; i<triangleMesh->coordIndex.size(); i++){
+    for(unsigned int i=0; i<triangleMesh->coordIndex.size(); i++){
         SFVec3f point[3];
         bool over=false;
         double s[3]={0,0,0};
@@ -1529,7 +1528,7 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
     std::vector<double> t;
     double slen=0;
     s.push_back(0);
-    for(int i=1; i<extrusion->crossSection.size(); i++){
+    for(unsigned int i=1; i<extrusion->crossSection.size(); i++){
         double x=extrusion->crossSection[i][0]-extrusion->crossSection[i-1][0];
         double z=extrusion->crossSection[i][1]-extrusion->crossSection[i-1][1];
         slen += sqrt(x*x+z*z);
@@ -1537,17 +1536,17 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
     }
     double tlen=0;
     t.push_back(0);
-    for(int i=1; i<extrusion->spine.size(); i++){
+    for(unsigned int i=1; i<extrusion->spine.size(); i++){
         double x=extrusion->spine[i][0]-extrusion->spine[i-1][0];
         double y=extrusion->spine[i][1]-extrusion->spine[i-1][1];
         double z=extrusion->spine[i][2]-extrusion->spine[i-1][2];
         tlen += sqrt(x*x+y*y+z*z);
         t.push_back(tlen);
     }
-    for(int i=0; i<extrusion->spine.size(); i++){
+    for(unsigned int i=0; i<extrusion->spine.size(); i++){
         SFVec2f point;
         point[1] = t[i]/tlen;
-        for(int j=0; j<extrusion->crossSection.size(); j++){
+        for(unsigned int j=0; j<extrusion->crossSection.size(); j++){
             point[0] = s[j]/slen;
             triangleMesh->texCoord->point.push_back(point);
         }
@@ -1569,7 +1568,7 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
         double zmin, zmax;
         xmin = xmax = extrusion->crossSection[0][0];
         zmin = zmax = extrusion->crossSection[0][1];
-        for(int i=1; i<extrusion->crossSection.size(); i++){
+        for(unsigned int i=1; i<extrusion->crossSection.size(); i++){
             xmax = std::max(xmax,extrusion->crossSection[i][0]);
             xmin = std::min(xmin,extrusion->crossSection[i][0]);
             zmax = std::max(zmax,extrusion->crossSection[i][1]);
@@ -1597,7 +1596,7 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
         double zmax,zmin;
         xmin = xmax = extrusion->crossSection[0][0];
         zmin = zmax = extrusion->crossSection[0][1];
-        for(int i=1; i<extrusion->crossSection.size(); i++){
+        for(unsigned int i=1; i<extrusion->crossSection.size(); i++){
             xmax = std::max(xmax,extrusion->crossSection[i][0]);
             xmin = std::min(xmin,extrusion->crossSection[i][0]);
             zmax = std::max(zmax,extrusion->crossSection[i][1]);
@@ -1605,13 +1604,13 @@ void TriangleMeshShaper::defaultTextureMappingExtrusion(VrmlIndexedFaceSet* tria
         }
         double xsize = xmax-xmin;
         double zsize = zmax-zmin;
-        for(int i=0; i<extrusion->crossSection.size(); i++){
+        for(unsigned int i=0; i<extrusion->crossSection.size(); i++){
             SFVec2f point;
             point[0] = (extrusion->crossSection[i][0]-xmin)/xsize;
             point[1] = (extrusion->crossSection[i][1]-zmin)/zsize;
             triangleMesh->texCoord->point.push_back(point);
         }
-        for(int i=endofbegincap; i<triangleMesh->coordIndex.size(); i++){
+        for(unsigned int i=endofbegincap; i<triangleMesh->coordIndex.size(); i++){
             int k=triangleMesh->coordIndex[i];
             if(k!=-1)   
                 triangleMesh->texCoordIndex.push_back(triangleMesh->texCoord->point.size()+k-endofpoint);

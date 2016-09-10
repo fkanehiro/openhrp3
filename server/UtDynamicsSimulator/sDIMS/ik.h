@@ -28,7 +28,6 @@ class IKHandle;
 
 #define MAX_CONDITION_NUMBER 100.0
 
-static const char* marker_top_name = "markers";
 static const char joint_name_separator = '_';
 
 /*!
