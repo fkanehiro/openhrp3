@@ -416,7 +416,7 @@ void World::setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::Li
 	}
 	if(index < 0) return;
 	CharacterInfo& cinfo = characters[index];
-	int n_joints = cinfo.n_joints, n_links = cinfo.links.size();
+	int n_links = cinfo.links.size();
 	for(int i=0; i<n_links; i++)
 	{
 		if(cinfo.jointIDs[i] >= 0)

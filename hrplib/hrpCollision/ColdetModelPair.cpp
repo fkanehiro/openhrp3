@@ -218,7 +218,6 @@ bool ColdetModelPair::detectSphereSphereCollisions(bool detectAllContacts) {
 			result = true;
 
 			float x = (pow(D.Magnitude(), 2) + pow(radiusA, 2) - pow(radiusB, 2)) / (2 * D.Magnitude());
-			float R = sqrt(pow(radiusA, 2) - pow(x, 2));
 			
 			IceMaths::Point n = D / D.Magnitude();
 			
@@ -682,18 +681,15 @@ int ColdetModelPair::calculateCentroidIntersection(float &cx, float &cy, float &
 
 			numInter = calculateIntersection(x_int, y_int, radius, vx[i], vy[i], vx[(i + 1) % vx.size()], vy[(i + 1) % vx.size()]);
 			
-			if (numInter)
-				for (k = 0; k < numInter; k++) {
-					p.x = x_int[k];
-					p.y = y_int[k];
-					p.angle = atan2(y_int[k], x_int[k]);					
-					if (p.angle < 0) p.angle += TWOPI;
-					p.type = inter;
-					p.code = i + 1;
-					point.push_back(p);
-				}
-			
-			numInter = 0;
+			for (k = 0; k < numInter; k++) {
+			        p.x = x_int[k];
+				p.y = y_int[k];
+				p.angle = atan2(y_int[k], x_int[k]);
+				if (p.angle < 0) p.angle += TWOPI;
+				p.type = inter;
+				p.code = i + 1;
+				point.push_back(p);
+			}
 		}
 		
 		j[0] = 0;

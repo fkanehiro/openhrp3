@@ -766,10 +766,8 @@ class ColladaReader : public daeErrorHandler
         domInstance_rigid_bodyRef irigidbody;
         domRigid_bodyRef rigidbody;
         domInstance_rigid_constraintRef irigidconstraint;
-        bool bFoundBinding = false;
         FOREACH(itlinkbinding, bindings.listLinkBindings) {
             if( !!pdomnode->getID() && !!itlinkbinding->node->getID() && strcmp(pdomnode->getID(),itlinkbinding->node->getID()) == 0 ) {
-                bFoundBinding = true;
                 irigidbody = itlinkbinding->irigidbody;
                 rigidbody = itlinkbinding->rigidbody;
             }
@@ -997,11 +995,9 @@ class ColladaReader : public daeErrorHandler
                 domKinematics_axis_infoRef kinematics_axis_info;
                 domMotion_axis_infoRef motion_axis_info;
                 for(std::list<JointAxisBinding>::const_iterator itaxisbinding = listAxisBindings.begin(); itaxisbinding != listAxisBindings.end(); ++itaxisbinding) {
-                    bool bfound = false;
                     if (vdomaxes[ic] == itaxisbinding->pkinematicaxis) {
                         kinematics_axis_info = itaxisbinding->kinematics_axis_info;
                         motion_axis_info = itaxisbinding->motion_axis_info;
-                        bfound = true;
                         break;
                     }
                 }

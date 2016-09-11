@@ -122,38 +122,6 @@ static bool checkInlineFileUpdateTime(POA_OpenHRP::BodyInfo* bodyInfo)
     throw ModelLoader::ModelLoaderException("checkInlineFileUpdateTime invalid pointer");
 }
 
-static bool getParam(POA_OpenHRP::BodyInfo* bodyInfo, std::string param)
-{
-    BodyInfo_impl* pBodyInfo_impl = dynamic_cast<BodyInfo_impl*>(bodyInfo);
-    if( !!pBodyInfo_impl ) {
-        return pBodyInfo_impl->getParam(param);
-    }
-#ifdef OPENHRP_COLLADA_FOUND
-    BodyInfoCollada_impl* pBodyInfoCollada_impl = dynamic_cast<BodyInfoCollada_impl*>(bodyInfo);
-    if( !!pBodyInfoCollada_impl ) {
-        return pBodyInfoCollada_impl->getParam(param);
-    }
-#endif
-    throw ModelLoader::ModelLoaderException("getParam(param) invalid pointer");
-}
-
-static void setParam(POA_OpenHRP::BodyInfo* bodyInfo, std::string param, bool value)
-{
-    BodyInfo_impl* pBodyInfo_impl = dynamic_cast<BodyInfo_impl*>(bodyInfo);
-    if( !!pBodyInfo_impl ) {
-        pBodyInfo_impl->setParam(param,value);
-        return;
-    }
-#ifdef OPENHRP_COLLADA_FOUND
-    BodyInfoCollada_impl* pBodyInfoCollada_impl = dynamic_cast<BodyInfoCollada_impl*>(bodyInfo);
-    if( !!pBodyInfoCollada_impl ) {
-        pBodyInfoCollada_impl->setParam(param,value);
-        return;
-    }
-#endif
-    throw ModelLoader::ModelLoaderException("setParam(param,value) invalid pointer");
-}
-
 static void setParam(POA_OpenHRP::BodyInfo* bodyInfo, std::string param, int value)
 {
     BodyInfo_impl* pBodyInfo_impl = dynamic_cast<BodyInfo_impl*>(bodyInfo);

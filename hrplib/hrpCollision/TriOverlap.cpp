@@ -169,24 +169,6 @@ static inline double calc_depth(
 
 
 static double calc_depth(
-    const Vector3& ip,
-    const Vector3& pt1,
-    const Vector3& pt2,
-    const Vector3& n)
-{
-    double d1 = fabs((ip - pt1).dot(n));
-    double d2 = fabs((ip - pt2).dot(n));
-    double depth = (d1 < d2) ? d1 : d2;
-
-    if(HIRUKAWA_DEBUG){
-        cout << "calc_depth 2 = " << depth << endl;
-    }
-    
-    return depth;
-} 
-
-
-static double calc_depth(
     const Vector3& ip1,
     const Vector3& ip2,
     const Vector3& pt1,

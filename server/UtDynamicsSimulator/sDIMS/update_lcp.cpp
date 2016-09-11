@@ -788,7 +788,7 @@ int pSubChain::calc_contact_force(double timestep)
 				for(int i=0; i<n_active_contacts; i++)
 				{
 					static fVec g2_i(n_coefs);
-					int i3 = i*3, iN = i*n_coefs;
+					int iN = i*n_coefs;
 					g2_i.get_subvec(iN, g2);
 					fk[active2all[i]].mul(Ck, g2_i);
 #ifdef VERBOSE

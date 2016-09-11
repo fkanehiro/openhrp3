@@ -682,7 +682,7 @@ dpScheduleNode* dpScheduleNode::find_available_parent(int target_depth, int& chi
 	dpScheduleNode* s, *ret = 0;
 	for(s=this; s; s=(dpScheduleNode*)s->parent)
 	{
-		if(ret = find_available_parent_sub(s, target_depth, this, child_id))
+	        if((ret = find_available_parent_sub(s, target_depth, this, child_id)))
 			return ret;
 	}
 	return 0;
