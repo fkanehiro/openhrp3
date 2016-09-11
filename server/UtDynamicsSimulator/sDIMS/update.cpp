@@ -1063,6 +1063,8 @@ void pSubChain::calc_acc_body()
 			da6(4) -= last_joint->rel_ang_acc(1);
 			da6(5) -= last_joint->rel_ang_acc(2);
 			break;
+		default:
+		        break;
 		}
 	}
 	static fVec f(6);

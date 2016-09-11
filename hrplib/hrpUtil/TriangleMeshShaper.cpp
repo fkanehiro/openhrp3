@@ -1158,11 +1158,11 @@ void TriangleMeshShaper::defaultTextureMapping(VrmlShape* shapeNode)
         }
     }
     if(originalGeometry){
-        if(VrmlBox* box = dynamic_cast<VrmlBox*>(originalGeometry)){    //Box
+        if(dynamic_cast<VrmlBox*>(originalGeometry)){    //Box
             defaultTextureMappingBox(triangleMesh);
-        }else if(VrmlCone* cone = dynamic_cast<VrmlCone*>(originalGeometry)){  //cone
+        }else if(dynamic_cast<VrmlCone*>(originalGeometry)){  //cone
             defaultTextureMappingCone(triangleMesh);
-        }else if(VrmlCylinder* cylinder = dynamic_cast<VrmlCylinder*>(originalGeometry)){   //Cylinder
+        }else if(dynamic_cast<VrmlCylinder*>(originalGeometry)){   //Cylinder
             defaultTextureMappingCylinder(triangleMesh);
         }else if(VrmlSphere* sphere = dynamic_cast<VrmlSphere*>(originalGeometry)){     //sphere
             defaultTextureMappingSphere(triangleMesh, sphere->radius);

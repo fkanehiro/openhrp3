@@ -566,7 +566,6 @@ int LCP::SolvePivot2(fVec& g, fVec& a, double _max_error, int _max_nodes, int* n
 	if(n_nodes) *n_nodes = 0;
 	// index mapping
 	std::vector<int> z2g, w2g, z2a, w2a;
-	int yr2g = -1, yr2a = -1, ys2g = -1, ys2a = -1;
 	z2g.resize(n_vars+1);
 	z2a.resize(n_vars+1);
 	w2g.resize(n_vars);

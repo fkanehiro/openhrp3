@@ -280,7 +280,6 @@ void DynamicsSimulator_impl::registerIntersectionCheckPair(
 		const char *linkName2,
 		const double tolerance)
 {
-	const double epsilon = 0.0;
 //	logfile << "registerCollisionCheckPair" << endl;
 
 	std::string emptyString = "";
@@ -744,7 +743,6 @@ void DynamicsSimulator_impl::getCharacterSensorState(const char* characterName, 
 {
 //	logfile << "getCharacterSensorState(" << characterName << ")" << endl;
 	int index = -1;
-	pSim* chain = world.Chain();
 	int n_char = world.numCharacter();
 	for(int i=0; i<n_char; i++)
 	{
@@ -773,7 +771,6 @@ void DynamicsSimulator_impl::getCharacterSensorState(const char* characterName, 
 void DynamicsSimulator_impl::_setupCharacterData()
 {
 	int nchar = world.numCharacter();
-	pSim* chain = world.Chain();
 
 	allCharacterPositions->length(nchar);
 	allCharacterSensorStates->length(nchar);
