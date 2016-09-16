@@ -296,7 +296,7 @@ class ColladaReader : public daeErrorHandler
 	      }
               segmentInfo->name = _veclinknames[i].c_str();
 	      segmentInfo->shapeIndices.length(probot->links_[i].shapeIndices.length());
-	      for(int j = 0; j < probot->links_[i].shapeIndices.length(); j++ ) {
+	      for(unsigned int j = 0; j < probot->links_[i].shapeIndices.length(); j++ ) {
 		segmentInfo->shapeIndices[j] = j;
 	      }
 	      segmentInfo->mass = probot->links_[i].mass;
@@ -526,7 +526,6 @@ class ColladaReader : public daeErrorHandler
     /// \brief append the kinematics model to the kinbody
     bool ExtractKinematicsModel(BodyInfoCollada_impl* pkinbody, domKinematics_modelRef kmodel, domNodeRef pnode, domPhysics_modelRef pmodel, const KinematicsSceneBindings bindings)
     {
-        const std::list<JointAxisBinding>& listAxisBindings = bindings.listAxisBindings;
         vector<domJointRef> vdomjoints;
         if (!pkinbody) {
             _ResetRobotCache();
@@ -767,10 +766,8 @@ class ColladaReader : public daeErrorHandler
         domInstance_rigid_bodyRef irigidbody;
         domRigid_bodyRef rigidbody;
         domInstance_rigid_constraintRef irigidconstraint;
-        bool bFoundBinding = false;
         FOREACH(itlinkbinding, bindings.listLinkBindings) {
             if( !!pdomnode->getID() && !!itlinkbinding->node->getID() && strcmp(pdomnode->getID(),itlinkbinding->node->getID()) == 0 ) {
-                bFoundBinding = true;
                 irigidbody = itlinkbinding->irigidbody;
                 rigidbody = itlinkbinding->rigidbody;
             }
@@ -998,11 +995,9 @@ class ColladaReader : public daeErrorHandler
                 domKinematics_axis_infoRef kinematics_axis_info;
                 domMotion_axis_infoRef motion_axis_info;
                 for(std::list<JointAxisBinding>::const_iterator itaxisbinding = listAxisBindings.begin(); itaxisbinding != listAxisBindings.end(); ++itaxisbinding) {
-                    bool bfound = false;
                     if (vdomaxes[ic] == itaxisbinding->pkinematicaxis) {
                         kinematics_axis_info = itaxisbinding->kinematics_axis_info;
                         motion_axis_info = itaxisbinding->motion_axis_info;
-                        bfound = true;
                         break;
                     }
                 }
@@ -1231,7 +1226,7 @@ class ColladaReader : public daeErrorHandler
         tmnodegeom[3] = x; tmnodegeom[7] = y; tmnodegeom[11] = z;
 
         // change only the transformations of the newly found geometries.
-        for(int i = nGeomBefore; i < plink->shapeIndices.length(); ++i) {
+        for(unsigned int i = nGeomBefore; i < plink->shapeIndices.length(); ++i) {
             memcpy(plink->shapeIndices[i].transformMatrix,tmnodegeom,sizeof(tmnodegeom));
             plink->shapeIndices[i].inlinedShapeTransformMatrixIndex = -1;
         }
@@ -1443,7 +1438,7 @@ class ColladaReader : public daeErrorHandler
 	    // compute face normals
 	    std::vector<Vector3> faceNormals(itriangle/3);
 	    std::vector<std::vector<int> > vertexFaceMapping(itriangle);
-	    for(size_t i=0; i < itriangle/3; ++i) {
+	    for(int i=0; i < itriangle/3; ++i) {
 		int vIndex1 = shape.triangles[i*3+0];
 		int vIndex2 = shape.triangles[i*3+1];
 		int vIndex3 = shape.triangles[i*3+2];
@@ -1471,7 +1466,7 @@ class ColladaReader : public daeErrorHandler
 	    ainfo.normalPerVertex = 1;
 	    ainfo.normals.length(itriangle*3); // number_of_tris*3*3
 	    double creaseAngle = M_PI/4;
-	    for (size_t i=0; i<itriangle/3; i++){ // each triangle
+	    for (int i=0; i<itriangle/3; i++){ // each triangle
 		const Vector3 &currentFaceNormal = faceNormals[i];
 		for (int vertex=0; vertex<3; vertex++){ // each vertex
 		    bool normalIsFaceNormal = true;
@@ -1497,7 +1492,7 @@ class ColladaReader : public daeErrorHandler
 	    }
         }
 
-        if( itriangle != 3*triRef->getCount() ) {
+        if( itriangle != 3*(int)triRef->getCount() ) {
             COLLADALOG_WARN("triangles declares wrong count!");
         }
         return true;
@@ -2124,7 +2119,6 @@ class ColladaReader : public daeErrorHandler
 	    daeElement *max_acceleration = domsensor->getChild("max_acceleration");
 	    if ( !! max_angular_velocity ) {
 		istringstream ins(max_angular_velocity->getCharData());
-		float f0,f1,f2,f3,f4,f5;
 		ins >> psensor.specValues[0] >> psensor.specValues[1] >> psensor.specValues[2];
 		psensor.type = CORBA::string_dup( "RateGyro" );
 	    } else if ( !! max_acceleration ) {
@@ -3405,7 +3399,7 @@ void BodyInfoCollada_impl::changetoBoundingBox(unsigned int* inputData){
     std::vector<Vector3> boxSizeMap;
     std::vector<Vector3> boundingBoxData;
     
-    for(int i=0; i<links_.length(); i++){
+    for(unsigned int i=0; i<links_.length(); i++){
         int _depth;
         if( AABBdataType_ == OpenHRP::ModelLoader::AABB_NUM )
             _depth = linkColdetModels[i]->numofBBtoDepth(inputData[i]);
@@ -3423,10 +3417,10 @@ void BodyInfoCollada_impl::changetoBoundingBox(unsigned int* inputData){
                 sensor.shapeIndices.length(0);
             }
 
-            for(int j=0; j<boundingBoxData.size()/2; j++){
+            for(unsigned int j=0; j<boundingBoxData.size()/2; j++){
 
                 bool flg=false;
-                int k=0;
+                unsigned int k=0;
                 for( ; k<boxSizeMap.size(); k++)
                     if((boxSizeMap[k] - boundingBoxData[j*2+1]).norm() < EPS)
                         break;
@@ -3438,10 +3432,10 @@ void BodyInfoCollada_impl::changetoBoundingBox(unsigned int* inputData){
                 }
 
                 if(flg){
-                    int l=0;
+                    unsigned int l=0;
                     for( ; l<tsiMap.size(); l++){
                         Vector3 p(tsiMap[l].transformMatrix[3],tsiMap[l].transformMatrix[7],tsiMap[l].transformMatrix[11]);
-                        if((p - boundingBoxData[j*2]).norm() < EPS && tsiMap[l].shapeIndex == k)
+                        if((p - boundingBoxData[j*2]).norm() < EPS && tsiMap[l].shapeIndex == (int)k)
                             break;
                     }
                     if( l==tsiMap.size() )

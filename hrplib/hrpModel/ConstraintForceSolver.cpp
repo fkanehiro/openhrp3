@@ -258,7 +258,7 @@ namespace hrp
         dvector solution;
 
         // random number generator
-        variate_generator<mt19937, uniform_real<> > randomAngle;
+        variate_generator<boost::mt19937, uniform_real<> > randomAngle;
 
         // for special version of gauss sidel iterative solver
         std::vector<int> frictionIndexToContactIndex;
@@ -376,7 +376,7 @@ namespace hrp
 
 CFSImpl::CFSImpl(WorldBase& world) :
     world(world),
-    randomAngle(mt19937(), uniform_real<>(0.0, 2.0 * PI))
+    randomAngle(boost::mt19937(), uniform_real<>(0.0, 2.0 * PI))
 {
     maxNumGaussSeidelIteration = DEFAULT_MAX_NUM_GAUSS_SEIDEL_ITERATION;
     numGaussSeidelInitialIteration = DEFAULT_NUM_GAUSS_SEIDEL_INITIAL_ITERATION;
@@ -498,7 +498,7 @@ void CFSImpl::initBody(BodyPtr body, BodyData& bodyData)
 
     LinkDataArray& linksData = bodyData.linksData;
     const LinkTraverse& traverse = body->linkTraverse();
-    for(int j=0; j < traverse.numLinks(); ++j){
+    for(unsigned int j=0; j < traverse.numLinks(); ++j){
         Link* link = traverse[j];
         linksData[link->index].link = link;
         linksData[link->index].parentIndex = link->parent ? link->parent->index : -1;
@@ -511,7 +511,7 @@ void CFSImpl::initExtraJoints(int bodyIndex)
 {
     BodyPtr body = world.body(bodyIndex);
     int numExtraJoints = body->extraJoints.size();
-    for(size_t j=0; j < numExtraJoints; ++j){
+    for(int j=0; j < numExtraJoints; ++j){
 
         Body::ExtraJoint& bodyExtraJoint = body->extraJoints[j];
         ExtraJointLinkPairPtr linkPair;
@@ -781,7 +781,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
                 pCollisionPoints = 0;
             } else {
                 int npoints = 0;
-                for(int i = 0; i < cdata.size(); i++) {
+                for(unsigned int i = 0; i < cdata.size(); i++) {
                     for(int j = 0; j < cdata[i].num_of_i_points; j++){
                         if(cdata[i].i_point_new[j]) npoints++;
                     }
@@ -792,7 +792,7 @@ void CFSImpl::setConstraintPoints(CollisionSequence& collisions)
                 } else {
                     pCollisionPoints->length(npoints);
                     int idx = 0;
-                    for (int i = 0; i < cdata.size(); i++) {
+                    for (unsigned int i = 0; i < cdata.size(); i++) {
                         collision_data& cd = cdata[i];
                         for(int j=0; j < cd.num_of_i_points; j++){
                             if (cd.i_point_new[j]){

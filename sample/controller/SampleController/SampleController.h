@@ -20,6 +20,7 @@
 #define SAMPLECONTROLLER_H
 #define DOF (29)
 
+#include <rtm/idl/BasicDataType.hh>
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
 #include <rtm/CorbaPort.h>

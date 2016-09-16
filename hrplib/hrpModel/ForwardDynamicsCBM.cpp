@@ -512,10 +512,10 @@ void ForwardDynamicsMM::calcMassMatrix()
     }
 
 	// subtract the constant term
-	for(size_t i=0; i < M11.cols(); ++i){
+	for(int i=0; i < M11.cols(); ++i){
             M11.col(i) -= b1;
 	}
-	for(size_t i=0; i < M12.cols(); ++i){
+	for(int i=0; i < M12.cols(); ++i){
             M12.col(i) -= b1;
 	}
 
@@ -641,7 +641,7 @@ void ForwardDynamicsMM::initializeAccelSolver()
 
 		b1 += M12*ddqGiven;
         
-        for(int i=1; i < body->numLinks(); ++i){
+        for(unsigned int i=1; i < body->numLinks(); ++i){
 		    Link* link = body->link(i);
 		    uorg  [i] = link->u;
 	    }
@@ -654,7 +654,7 @@ void ForwardDynamicsMM::initializeAccelSolver()
 	    for(size_t i=0; i < torqueModeJoints.size(); ++i){
 		    d1(i + unknown_rootDof, 0) = torqueModeJoints[i]->u;
         }
-        for(int i=1; i < body->numLinks(); ++i){
+        for(unsigned int i=1; i < body->numLinks(); ++i){
 		    Link* link = body->link(i);
 		    link->u = uorg  [i];
 	    }
@@ -670,7 +670,7 @@ void ForwardDynamicsMM::solveUnknownAccels(Link* link, const Vector3& fext, cons
     Vector3 tauextorg = link->tauext;
     link->fext = fext;
     link->tauext = tauext;
-    for(int i=1; i < body->numLinks(); ++i){
+    for(unsigned int i=1; i < body->numLinks(); ++i){
 		Link* link = body->link(i);
 		uorg  [i] = link->u;
 	}
@@ -683,7 +683,7 @@ void ForwardDynamicsMM::solveUnknownAccels(Link* link, const Vector3& fext, cons
 	for(size_t i=0; i < torqueModeJoints.size(); ++i){
 		d1(i + unknown_rootDof, 0) = torqueModeJoints[i]->u;
     }
-    for(int i=1; i < body->numLinks(); ++i){
+    for(unsigned int i=1; i < body->numLinks(); ++i){
 		Link* link = body->link(i);
 		link->u = uorg  [i];
 	}

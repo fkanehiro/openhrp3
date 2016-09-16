@@ -416,7 +416,7 @@ void World::setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::Li
 	}
 	if(index < 0) return;
 	CharacterInfo& cinfo = characters[index];
-	int n_joints = cinfo.n_joints, n_links = cinfo.links.size();
+	int n_links = cinfo.links.size();
 	for(int i=0; i<n_links; i++)
 	{
 		if(cinfo.jointIDs[i] >= 0)
@@ -428,7 +428,7 @@ void World::setAllCharacterData(const char* name, OpenHRP::DynamicsSimulator::Li
 
 void World::_set_all_character_data_sub(Joint* cur, int index, OpenHRP::DynamicsSimulator::LinkDataType type, const OpenHRP::DblSequence& wdata)
 {
-	if(index < wdata.length() &&
+	if(index < (int)wdata.length() &&
 	   (cur->j_type == ::JROTATE || cur->j_type == ::JSLIDE))
 	{
 //		logfile << "set[" << index << "]: " << cur->name << ": " << wdata[index] << endl;

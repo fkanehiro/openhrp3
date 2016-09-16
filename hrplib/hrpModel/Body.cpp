@@ -59,7 +59,7 @@ Body::~Body()
     delete rootLink_;
 
     // delete sensors
-    for(int sensorType =0; sensorType < numSensorTypes(); ++sensorType){
+    for(unsigned int sensorType =0; sensorType < numSensorTypes(); ++sensorType){
         int n = numSensors(sensorType);
         for(int i=0; i < n; ++i){
             Sensor* s = sensor(sensorType, i);
@@ -96,8 +96,8 @@ Body::Body()
 
 
 Body::Body(const Body& org)
-    : modelName_(org.modelName_),
-      name_(org.name_),
+    : name_(org.name_),
+      modelName_(org.modelName_),
       allSensors(Sensor::NUM_SENSOR_TYPES)
 {
     initialize();
@@ -110,14 +110,14 @@ Body::Body(const Body& org)
     // copy sensors
     std::map<Link*, int> linkToIndexMap;
 
-    for(int i=0; i < org.linkTraverse_.numLinks(); ++i){
+    for(unsigned int i=0; i < org.linkTraverse_.numLinks(); ++i){
         Link* lnk = org.linkTraverse_[i];
         linkToIndexMap[lnk] = i;
     }
 
     int n = org.numSensorTypes();
     for(int sensorType = 0; sensorType < n; ++sensorType){
-        for(int i=0; i < org.numSensors(sensorType); ++i){
+        for(unsigned int i=0; i < org.numSensors(sensorType); ++i){
             Sensor* orgSensor = org.sensor(sensorType, i);
 	    if (orgSensor){
 	        int linkIndex = linkToIndexMap[orgSensor->link];
@@ -398,7 +398,7 @@ void Body::calcMassMatrix(dmatrix& out_M)
     }
 
     // subtract the constant term
-    for(size_t i = 0; i < out_M.cols(); ++i){
+    for(int i = 0; i < out_M.cols(); ++i){
         out_M.col(i) -= b1;
     }
 
@@ -619,8 +619,8 @@ void Body::addSensor(Sensor* sensor, int sensorType, int id ){
 
 void Body::clearSensorValues()
 {
-    for(int i=0; i < numSensorTypes(); ++i){
-        for(int j=0; j < numSensors(i); ++j){
+    for(unsigned int i=0; i < numSensorTypes(); ++i){
+        for(unsigned int j=0; j < numSensors(i); ++j){
             if(sensor(i,j))
                 sensor(i, j)->clear();
         }
@@ -821,7 +821,7 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
 
         std::vector<double> qorg(numJoints());
 		
-        for(int i=0; i < numJoints(); ++i){
+        for(unsigned int i=0; i < numJoints(); ++i){
             qorg[i] = joint(i)->q;
         }
 
@@ -853,7 +853,7 @@ bool CustomizedJointPath::calcInverseKinematics(const Vector3& end_p, const Matr
                 solved = true;
             } else {
                 solved = false;
-                for(int i=0; i < numJoints(); ++i){
+                for(unsigned int i=0; i < numJoints(); ++i){
                     joint(i)->q = qorg[i];
                 }
                 calcForwardKinematics();
@@ -898,7 +898,7 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
         }
         
         // assuming there is no branch between base and root
-        for (int i=1; i<jp->numJoints(); i++){
+        for (unsigned int i=1; i<jp->numJoints(); i++){
             l = jp->joint(i);
             l->subm = l->parent->m + l->parent->subm;
             l->submwc = l->parent->m*l->parent->wc + l->parent->submwc;
@@ -913,10 +913,10 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
     // compute Jacobian
     std::vector<int> sgn(numJoints(), 1);
     if (jp) {
-        for (int i=0; i<jp->numJoints(); i++) sgn[jp->joint(i)->jointId] = -1;
+        for (unsigned int i=0; i<jp->numJoints(); i++) sgn[jp->joint(i)->jointId] = -1;
     }
     
-    for (int i=0; i<numJoints(); i++){
+    for (unsigned int i=0; i<numJoints(); i++){
         Link *j = joint(i);
         switch(j->jointType){
         case Link::ROTATIONAL_JOINT:
@@ -985,7 +985,7 @@ void Body::calcAngularMomentumJacobian(Link *base, dmatrix &H)
         }
         
         // assuming there is no branch between base and root
-        for (int i=1; i<jp->numJoints(); i++){
+        for (unsigned int i=1; i<jp->numJoints(); i++){
             l = jp->joint(i);
             l->subm = l->parent->m + l->parent->subm;
             l->submwc = l->parent->m*l->parent->wc + l->parent->submwc;
@@ -1000,10 +1000,10 @@ void Body::calcAngularMomentumJacobian(Link *base, dmatrix &H)
     // compute Jacobian
     std::vector<int> sgn(numJoints(), 1);
     if (jp) {
-        for (int i=0; i<jp->numJoints(); i++) sgn[jp->joint(i)->jointId] = -1;
+        for (unsigned int i=0; i<jp->numJoints(); i++) sgn[jp->joint(i)->jointId] = -1;
     }
     
-    for (int i=0; i<numJoints(); i++){
+    for (unsigned int i=0; i<numJoints(); i++){
         Link *j = joint(i);
         switch(j->jointType){
         case Link::ROTATIONAL_JOINT:

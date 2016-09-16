@@ -508,7 +508,6 @@ void ModelLoaderHelper::addLinkVerticesAndTriangles
     
     const ShapeInfo& shapeInfo = shapes[shapeIndex];
     int vertexIndexBase = vertexIndex;
-    int triangleIndexBase = triangleIndex;
     const FloatSequence& vertices = shapeInfo.vertices;
     const int numVertices = vertices.length() / 3;
     for(int j=0; j < numVertices; ++j){

@@ -233,7 +233,7 @@ bool WorldBase::LinkPairKey::operator<(const LinkPairKey& pair2) const
 
 void WorldBase::updateRangeSensors()
 {
-    for (int bodyIndex = 0; bodyIndex<numBodies(); bodyIndex++){
+    for (unsigned int bodyIndex = 0; bodyIndex<numBodies(); bodyIndex++){
         BodyPtr bodyptr = body(bodyIndex);
         int n = bodyptr->numSensors(Sensor::RANGE);
         for(int i=0; i < n; ++i){
@@ -260,9 +260,9 @@ void WorldBase::updateRangeSensor(RangeSensor *sensor)
             v[0] = -sin(th); v[2] = -cos(th); 
             dir = R*v;
             double D, minD=0;
-            for (int bodyIndex=0; bodyIndex<numBodies(); bodyIndex++){
+            for (unsigned int bodyIndex=0; bodyIndex<numBodies(); bodyIndex++){
                 BodyPtr bodyptr = body(bodyIndex);
-                for (int linkIndex=0; linkIndex<bodyptr->numLinks(); linkIndex++){
+                for (unsigned int linkIndex=0; linkIndex<bodyptr->numLinks(); linkIndex++){
                     Link *link = bodyptr->link(linkIndex); 
                     if (link->coldetModel){
                         D = link->coldetModel->computeDistanceWithRay(p.data(), dir.data());

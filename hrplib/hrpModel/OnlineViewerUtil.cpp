@@ -13,7 +13,7 @@ void  setupCharacterPosition(CharacterPosition &characterPosition, BodyPtr body)
 
 void  updateCharacterPosition(CharacterPosition &characterPosition, BodyPtr body) 
 {
-    for(int j=0; j < body->numLinks(); ++j) {
+    for(unsigned int j=0; j < body->numLinks(); ++j) {
         LinkPosition &linkPosition = characterPosition.linkPositions[j];
         Link* link = body->link(j);
 
@@ -25,7 +25,7 @@ void  updateCharacterPosition(CharacterPosition &characterPosition, BodyPtr body
 void getWorldState(WorldState& state, WorldBase& world)
 {
     state.time = world.currentTime();
-    for (int i=0; i<world.numBodies(); i++){
+    for (unsigned int i=0; i<world.numBodies(); i++){
         updateCharacterPosition(state.characterPositions[i], world.body(i));
     }
 }
@@ -33,7 +33,7 @@ void getWorldState(WorldState& state, WorldBase& world)
 void initWorldState(WorldState& state,  WorldBase& world)
 {
     state.characterPositions.length(world.numBodies());
-    for (int i=0; i<world.numBodies(); i++){
+    for (unsigned int i=0; i<world.numBodies(); i++){
         setupCharacterPosition(state.characterPositions[i], world.body(i));
     }
 }

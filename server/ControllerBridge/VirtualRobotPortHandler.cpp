@@ -121,7 +121,7 @@ LinkDataOutPortHandler::LinkDataOutPortHandler(PortInfo& info) :
 void LinkDataOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 {
     size_t n;
-    CORBA::ULong m;
+    CORBA::ULong m=0;
     n = linkName.size();
     for(size_t i=0, k=0; i<n; i++){
         DblSequence_var data = controller->getLinkDataFromSimulator(linkName[i], linkDataType);       
@@ -153,9 +153,7 @@ AbsTransformOutPortHandler::AbsTransformOutPortHandler(PortInfo& info) :
 
 void AbsTransformOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 {
-    CORBA::ULong m;
     DblSequence_var data = controller->getLinkDataFromSimulator(linkName[0], linkDataType);       
-    m = data->length();
     value.data.position.x = data[0];
     value.data.position.y = data[1];
     value.data.position.z = data[2];
@@ -189,7 +187,7 @@ SensorDataOutPortHandler::SensorDataOutPortHandler(PortInfo& info) :
 void SensorDataOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 {
     size_t n;
-    CORBA::ULong m;
+    CORBA::ULong m=0;
     n = sensorName.size();
     for(size_t i=0, k=0; i<n; i++){
         DblSequence_var data = controller->getSensorDataFromSimulator(sensorName[i]);    
@@ -222,13 +220,9 @@ GyroSensorOutPortHandler::GyroSensorOutPortHandler(PortInfo& info) :
 void GyroSensorOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 {
     size_t n;
-    CORBA::ULong m;
     n = sensorName.size();
-    for(size_t i=0, k=0; i<n; i++){
+    for(size_t i=0; i<n; i++){
         DblSequence_var data = controller->getSensorDataFromSimulator(sensorName[i]);    
-        if(!i){
-            m = data->length();
-        }
 	value.data.avx = data[0];
 	value.data.avy = data[1];
 	value.data.avz = data[2];
@@ -255,13 +249,9 @@ AccelerationSensorOutPortHandler::AccelerationSensorOutPortHandler(PortInfo& inf
 void AccelerationSensorOutPortHandler::inputDataFromSimulator(Controller_impl* controller)
 {
     size_t n;
-    CORBA::ULong m;
     n = sensorName.size();
-    for(size_t i=0, k=0; i<n; i++){
+    for(size_t i=0; i<n; i++){
         DblSequence_var data = controller->getSensorDataFromSimulator(sensorName[i]);    
-        if(!i){
-            m = data->length();
-        }
 	value.data.ax = data[0];
 	value.data.ay = data[1];
 	value.data.az = data[2];

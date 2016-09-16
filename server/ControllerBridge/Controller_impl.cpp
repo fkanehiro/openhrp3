@@ -33,8 +33,8 @@ namespace {
 
 
 Controller_impl::Controller_impl(RTC::Manager* rtcManager, BridgeConf* bridgeConf)
-    :   rtcManager(rtcManager),
-        bridgeConf(bridgeConf),
+    :   bridgeConf(bridgeConf),
+        rtcManager(rtcManager),
         modelName(""),
         bRestart(false)
 {

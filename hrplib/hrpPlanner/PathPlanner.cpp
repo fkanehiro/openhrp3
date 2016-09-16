@@ -220,7 +220,7 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
         if (is_nil(cxT)) {
             std::cerr << "name serivce not found" << std::endl;
         }else{
-            std::cout << "NameService OK." << std::endl;
+            std::cerr << "NameService OK." << std::endl;
         }
 
         if (!USE_INTERNAL_COLLISION_DETECTOR){
@@ -231,7 +231,7 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
             if (CORBA::is_nil(cdFactory)) {
                 std::cerr << "not found" << std::endl;
             }else{
-                std::cout << "OK." << std::endl;
+                std::cerr << "OK." << std::endl;
             }
             try{
                 collisionDetector_ = cdFactory->create();
@@ -248,7 +248,7 @@ void PathPlanner::initPlanner(const std::string &nameServer) {
         if (CORBA::is_nil(modelLoader_)) {
             std::cerr << "not found" << std::endl;
         }else{
-            std::cout << "OK." << std::endl;
+            std::cerr << "OK." << std::endl;
         }
 
         if (debug_) {
@@ -341,7 +341,7 @@ void computeBoundingBox(BodyPtr body, double min[3], double max[3])
     Link *l, *root=body->rootLink();
     Matrix33 Rt = root->R.transpose();
     float x, y, z;
-    for (int i=0; i<body->numLinks(); i++){
+    for (unsigned int i=0; i<body->numLinks(); i++){
         l = body->link(i);
         for (int j=0; j<l->coldetModel->getNumVertices(); j++){
             l->coldetModel->getVertex(j, x, y, z);
@@ -358,7 +358,7 @@ void computeBoundingBox(BodyPtr body, double min[3], double max[3])
             }
         }
     }
-    std::cout << "bounding box of " << body->name() << ": ("
+    std::cerr << "bounding box of " << body->name() << ": ("
               << min[0] << ", " << min[1] << ", " << min[2] << ") - ("
               << max[0] << ", " << max[1] << ", " << max[2] << ")" 
               << std::endl;
@@ -418,7 +418,7 @@ BodyPtr PathPlanner::registerCharacter(const char* name, OpenHRP::BodyInfo_ptr c
     if(loadBodyFromBodyInfo(body, cInfo, USE_INTERNAL_COLLISION_DETECTOR)){
         body->setName(name);
         if(debug_){
-            //std::cout << "Loaded Model:\n" << *body << std::endl;
+            //std::cerr << "Loaded Model:\n" << *body << std::endl;
         }
 
         if (bboxMode_ && USE_INTERNAL_COLLISION_DETECTOR){
@@ -493,7 +493,7 @@ void PathPlanner::registerIntersectionCheckPair(const char* charName1,
                                                 const char* linkName2,
                                                 CORBA::Double tolerance) {
     if (debug_){
-        std::cout << "PathPlanner::registerIntersectionCheckPair("
+        std::cerr << "PathPlanner::registerIntersectionCheckPair("
                   << charName1 << ", " << linkName1 << ", " << charName2 
                   << ", " << linkName2
                   << ", " << tolerance << ")" << std::endl;
@@ -605,7 +605,7 @@ bool PathPlanner::checkCollision (const Configuration &pos) {
 void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
 {
     if(debug_){
-        std::cout << "DynamicsSimulator_impl::getWorldState()\n";
+        std::cerr << "DynamicsSimulator_impl::getWorldState()\n";
     }
 
     _updateCharacterPositions();
@@ -616,7 +616,7 @@ void PathPlanner::getWorldState(OpenHRP::WorldState_out wstate)
     wstate->characterPositions = allCharacterPositions_;
 
     if(debug_){
-        std::cout << "getWorldState - exit" << std::endl;
+        std::cerr << "getWorldState - exit" << std::endl;
     }
 }
 
@@ -642,9 +642,9 @@ bool PathPlanner::defaultCheckCollision()
 
     if (USE_INTERNAL_COLLISION_DETECTOR){
         Link *l;
-            for (int j=0; j<model_->numLinks(); j++){
+            for (unsigned int j=0; j<model_->numLinks(); j++){
                 l = model_->link(j);
-                l->coldetModel->setPosition(l->R, l->p);
+                l->coldetModel->setPosition(l->attitude(), l->p);
             }
     }else{
         _updateCharacterPositions();
@@ -662,13 +662,15 @@ bool PathPlanner::defaultCheckCollision()
                 }
             } else{
                 if (checkPairs_[i].detectIntersection()) {
+                    collidingPair_.first  = checkPairs_[i].model(0)->name();
+                    collidingPair_.second = checkPairs_[i].model(1)->name();
                     timeCollisionCheck_.end();
                     return true;
                 }
             } 
         } 
         if (pointCloud_.size() > 0){
-            for (int i=0; i<model_->numLinks(); i++){
+            for (unsigned int i=0; i<model_->numLinks(); i++){
                 Link *l = model_->link(i);
                 if (l->coldetModel->checkCollisionWithPointCloud(pointCloud_,
                                                                  radius_)){
@@ -702,13 +704,14 @@ void PathPlanner::registerOptimizer(const std::string &optimizerName, OptimizerN
     optimizerFactory_.insert(OptimizerFactoryValueType(optimizerName, std::make_pair(newFunc, deleteFunc)));
 }
 bool PathPlanner::checkCollision(const std::vector<Configuration> &path) {
-    unsigned int checked = 0;
+    unsigned int checked = 1;
     unsigned int div = 2;
 
     std::vector<bool> isVisited;
-    for (unsigned int i=0; i<path.size(); i++) {
+    for (unsigned int i=0; i<path.size()-1; i++) {
         isVisited.push_back(false);
     }
+    isVisited.push_back(true); // the last Configuration is not checked
 
  
     while (checked < (path.size()-1) || path.size()/div > 0) {
@@ -725,37 +728,37 @@ bool PathPlanner::checkCollision(const std::vector<Configuration> &path) {
         div++;
     }
     if (checked != path.size()-1) {
-        std::cout << "checkCollision() : there are unchecked configurations."
+        std::cerr << "checkCollision() : there are unchecked configurations."
                   << " path.size() = " << path.size() << ", checked = " 
                   << checked << std::endl;
     }
-    return checkCollision(path[0]);
+    return false; // the first Configuration is not checked
 }
 bool PathPlanner::calcPath()
 {
     path_.clear();
     BodyPtr body;
     Link *l;
-    for (int i=0; i<world_->numBodies(); i++){
+    for (unsigned int i=0; i<world_->numBodies(); i++){
         body = world_->body(i);
         body->calcForwardKinematics();
-        for (int j=0; j<body->numLinks(); j++){
+        for (unsigned int j=0; j<body->numLinks(); j++){
             l = body->link(j);
-            l->coldetModel->setPosition(l->R, l->p);
+            l->coldetModel->setPosition(l->attitude(), l->p);
         }
     }
-    std::cout << "The number of collision check pairs = " << checkPairs_.size() << std::endl;
+    std::cerr << "The number of collision check pairs = " << checkPairs_.size() << std::endl;
     if (!algorithm_->preparePlanning()){
-        std::cout << "preparePlanning() failed" << std::endl;
+        std::cerr << "preparePlanning() failed" << std::endl;
         return false;
     }
 
     if (algorithm_->tryDirectConnection()){
         path_ = algorithm_->getPath();
-        std::cout << "connected directly" << std::endl;
+        std::cerr << "connected directly" << std::endl;
         return true;
     }
-    std::cout << "failed direct connection" << std::endl;
+    std::cerr << "failed direct connection" << std::endl;
 
     if (algorithm_->calcPath()){
         path_ = algorithm_->getPath();
@@ -799,7 +802,7 @@ std::vector<Configuration> PathPlanner::getPath()
 void PathPlanner::_setupCharacterData()
 {
     if(debug_){
-        std::cout << "PathPlanner::_setupCharacterData()\n";
+        std::cerr << "PathPlanner::_setupCharacterData()\n";
     }
 
     int n = world_->numBodies();
@@ -815,12 +818,12 @@ void PathPlanner::_setupCharacterData()
         linkPositions.length(numLinks);
 
         if(debug_){
-            std::cout << "character[" << i << "], nlinks = " << numLinks << "\n";
+            std::cerr << "character[" << i << "], nlinks = " << numLinks << "\n";
         }
     }
 
     if(debug_){
-        std::cout << "_setupCharacterData() - exit" << std::endl;;
+        std::cerr << "_setupCharacterData() - exit" << std::endl;;
     }
 }
 
@@ -828,7 +831,7 @@ void PathPlanner::_setupCharacterData()
 void PathPlanner::_updateCharacterPositions()
 {
     if(debug_){
-        std::cout << "PathPlanner::_updateCharacterPositions()\n";
+        std::cerr << "PathPlanner::_updateCharacterPositions()\n";
     }
 
     int n = world_->numBodies();
@@ -842,7 +845,7 @@ void PathPlanner::_updateCharacterPositions()
             OpenHRP::CharacterPosition& characterPosition = allCharacterPositions_[i];
 			
             if(debug_){
-                std::cout << "character[" << i << "], nlinks = " << numLinks << "\n";
+                std::cerr << "character[" << i << "], nlinks = " << numLinks << "\n";
             }
 			
             for(int j=0; j < numLinks; ++j) {
@@ -855,7 +858,7 @@ void PathPlanner::_updateCharacterPositions()
     }
 
     if(debug_){
-        std::cout << "_updateCharacterData() - exit" << std::endl;
+        std::cerr << "_updateCharacterData() - exit" << std::endl;
     }
 }
 

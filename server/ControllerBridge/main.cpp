@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 	RTC::Manager* rtcManager;
 
     try {
-        unsigned int i;
+        int i;
         int rtc_argc = 1;
         char** rtc_argv = (char **)malloc(sizeof(char *)*argc);
         rtc_argv[0] = argv[0];

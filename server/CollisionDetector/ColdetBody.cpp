@@ -34,7 +34,7 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
         short shapeIndex;
         double R[9], p[3];
         unsigned int nshape = shapeIndices.length();
-	    for(int i=0; i < shapeIndices.length(); i++){
+	    for(unsigned int i=0; i < shapeIndices.length(); i++){
             shapeIndex = shapeIndices[i].shapeIndex;
             const DblArray12 &tform = shapeIndices[i].transformMatrix;
             R[0] = tform[0]; R[1] = tform[1]; R[2] = tform[2]; p[0] = tform[3];
@@ -78,7 +78,8 @@ ColdetBody::ColdetBody(BodyInfo_ptr bodyInfo)
         }
 
         linkColdetModels[linkIndex] = coldetModel;
-        linkNameToColdetModelMap.insert(make_pair(linkInfo.name, coldetModel));
+        linkNameToColdetModelMap.insert(make_pair(std::string (linkInfo.name),
+                                                  coldetModel));
 
         cout << linkInfo.name << " has "<< totalNumTriangles << " triangles." << endl;
     }

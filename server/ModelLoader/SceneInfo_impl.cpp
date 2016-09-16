@@ -72,8 +72,6 @@ void SceneInfo_impl::load(const std::string& url)
     filename = url2;
     url_ = CORBA::string_dup(url2.c_str());
 
-    bool result = false;
-
     try {
         VrmlParser parser;
         parser.load(filename);

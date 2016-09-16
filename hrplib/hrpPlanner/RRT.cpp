@@ -9,7 +9,7 @@ using namespace PathEngine;
 static bool debug=false;
 //static bool debug=true;
 
-RRT::RRT(PathPlanner* plan) : Algorithm(plan)
+RRT::RRT(PathPlanner* plan) : Algorithm(plan), extraConnectionCheckFunc_(NULL)
 {
     // set default properties
     properties_["max-trials"] = "10000";
@@ -17,9 +17,13 @@ RRT::RRT(PathPlanner* plan) : Algorithm(plan)
 
     Tstart_ = Ta_ = roadmap_;
     Tgoal_  = Tb_ = RoadmapPtr(new Roadmap(planner_));
+    TlastExtended_ = RoadmapPtr();
 
     extendFromStart_ = true;
     extendFromGoal_ = false;
+
+    ignoreCollisionAtStart_ = false;
+    ignoreCollisionAtGoal_ = false;
 }
 
 RRT::~RRT() 
@@ -29,6 +33,7 @@ RRT::~RRT()
 int RRT::extend(RoadmapPtr tree, Configuration& qRand, bool reverse) {
     if (debug) std::cout << "RRT::extend("<< qRand << ", " << reverse << ")" 
                          << std::endl;
+    TlastExtended_ = tree;
 
     RoadmapNodePtr minNode;
     double min;
@@ -53,6 +58,8 @@ int RRT::extend(RoadmapPtr tree, Configuration& qRand, bool reverse) {
                 getchar();
             }
         }
+
+        if (planner_->checkCollision(qRand)) return Trapped;
 
         if (reverse){
             if (mobility->isReachable(qRand, minNode->position())){
@@ -130,7 +137,9 @@ void RRT::extractPath(std::vector<Configuration>& o_path) {
     }
 
     if (extendFromGoal_){
-        node = goalMidNode;
+        // note: If trees are extend from both of start and goal,
+        //       goalMidNode == startMidNode.
+        node = extendFromStart_ ? goalMidNode->child(0) : goalMidNode;
         do {
             o_path.push_back(node->position());
             node = node->child(0);
@@ -149,7 +158,11 @@ bool RRT::extendOneStep()
         
         if (extend(Ta_, qNew, Tb_ == Tstart_) != Trapped) {
             if (connect(Tb_, qNew, Ta_ == Tstart_) == Reached) {
-                return true;
+                if (extraConnectionCheckFunc_){
+                    return extraConnectionCheckFunc_(Tstart_->lastAddedNode()->position());
+                }else{
+                    return true;
+                }
             }
         }
         swapTrees();
@@ -224,4 +237,9 @@ void RRT::setForwardTree(RoadmapPtr tree) {
 
 void RRT::setBackwardTree(RoadmapPtr tree) { 
     Tgoal_ = Tb_ = tree;
+}
+
+void RRT::setExtraConnectionCheckFunc(extraConnectionCheckFunc i_func)
+{
+    extraConnectionCheckFunc_ = i_func;
 }

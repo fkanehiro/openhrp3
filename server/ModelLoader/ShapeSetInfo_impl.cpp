@@ -177,7 +177,7 @@ void ShapeSetInfo_impl::traverseShapeNodes
             if( whichChoice >= 0 && whichChoice < switchNode->countChildren() )
                 traverseShapeNodes(switchNode->getChild(whichChoice), *pT, io_shapeIndices, inlinedShapeM, &url_);
         }else{
-            for(size_t i=0; i < groupNode->countChildren(); ++i){
+            for(int i=0; i < groupNode->countChildren(); ++i){
                 traverseShapeNodes(groupNode->getChild(i), *pT, io_shapeIndices, inlinedShapeM, &url_);
             }
         }

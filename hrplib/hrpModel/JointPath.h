@@ -39,7 +39,7 @@ namespace hrp {
             return joints.empty();
         }
 		
-        inline int numJoints() const {
+        inline unsigned int numJoints() const {
             return joints.size();
         }
 		

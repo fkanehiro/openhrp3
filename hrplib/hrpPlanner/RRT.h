@@ -17,6 +17,12 @@ namespace PathEngine {
    */
   class RRT
     : public Algorithm {
+  public:
+    /**
+     * スタートからのツリーとゴールからのツリーが接続できたかの追加チェックを行うユーザ関数。通常のチェックで接続できたとみなされるスタート側のコンフィギュレーションとゴール側のコンフィギュレーションを引数にとり、接続可能である場合にはtrueを、それ以外の場合はfalseを返す。
+     */
+    typedef boost::function1<bool, const Configuration &> extraConnectionCheckFunc;
+
   private:
     /**
      * extend()の結果
@@ -36,6 +42,11 @@ namespace PathEngine {
      * @brief RRT-connect において、終了位置からのツリー
      */
     RoadmapPtr Tgoal_;
+
+    /**
+     * @brief a tree extened in the last phase
+     */
+    RoadmapPtr TlastExtended_;
 
     /**
      * @brief ツリーの交換のために用いる変数。どちらか一方がTstart_をもう一方がTgoal_を指す
@@ -81,6 +92,11 @@ namespace PathEngine {
      * ゴールからツリーをのばすか否か
      */
     bool extendFromGoal_;
+
+    /**
+     * スタートからのツリーとゴールからのツリーが接続できたかの追加チェックを行うユーザ関数
+     */
+    extraConnectionCheckFunc extraConnectionCheckFunc_;
 
   public:
     /**
@@ -140,6 +156,12 @@ namespace PathEngine {
     RoadmapPtr getBackwardTree() { return Tgoal_; }
 
     /**
+     * @brief get a tree extened in the last phase
+     * @return a tree extened in the last phase
+     */
+    RoadmapPtr getLastExtendedTree() { return TlastExtended_; }
+
+    /**
      * @brief ゴールからのツリーを設定する
      * @param tree ゴールからのツリー
      */
@@ -156,6 +178,12 @@ namespace PathEngine {
      * @param e サンプリングしたコンフィギュレーションに向かって伸ばす距離
      */
     void epsilon(double e) { eps_ = e; }
+
+    /**
+     * @brief スタートからのツリーとゴールからのツリーが接続できたかの追加チェックを行うユーザ関数を設定する
+     * @param i_func ユーザ関数
+     */
+    void setExtraConnectionCheckFunc(extraConnectionCheckFunc i_func);
   };
 };
 

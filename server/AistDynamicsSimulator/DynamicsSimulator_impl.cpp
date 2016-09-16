@@ -347,8 +347,6 @@ void DynamicsSimulator_impl::registerIntersectionCheckPair
     const double tolerance
     )
 {
-    const double epsilon = 0.0;
-
     if(debugMode){
         cout << "DynamicsSimulator_impl::registerIntersectionCheckPair("
              << charName1 << ", " << linkName1 << ", "
@@ -942,7 +940,7 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
         return;
     }
 
-    int n = wdata.length();
+    unsigned int n = wdata.length();
     if(n > body->numJoints()){
         n = body->numJoints();
     }
@@ -950,28 +948,28 @@ void DynamicsSimulator_impl::setCharacterAllLinkData
     switch(type) {
 
     case OpenHRP::DynamicsSimulator::JOINT_VALUE:
-        for(int i=0; i < n; ++i){
+        for(unsigned int i=0; i < n; ++i){
             if(body->joint(i)->jointType != Link::FIXED_JOINT)
                 body->joint(i)->q = wdata[i];
         }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_VELOCITY:
-        for(int i=0; i < n; ++i){
+        for(unsigned int i=0; i < n; ++i){
             if(body->joint(i)->jointType != Link::FIXED_JOINT)
                 body->joint(i)->dq = wdata[i];
         }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_ACCELERATION:
-        for(int i=0; i < n; ++i){
+        for(unsigned int i=0; i < n; ++i){
             if(body->joint(i)->jointType != Link::FIXED_JOINT)
                 body->joint(i)->ddq = wdata[i];
         }
         break;
 
     case OpenHRP::DynamicsSimulator::JOINT_TORQUE:
-        for(int i=0; i < n; ++i){
+        for(unsigned int i=0; i < n; ++i){
             if(body->joint(i)->jointType != Link::FIXED_JOINT 
                || body->joint(i)->isCrawler)
                 body->joint(i)->u = wdata[i];
@@ -1044,7 +1042,7 @@ void DynamicsSimulator_impl::setCharacterAllJointModes
         return;
     }
 
-    for(int i=1; i < body->numLinks(); ++i){
+    for(unsigned int i=1; i < body->numLinks(); ++i){
         body->link(i)->isHighGainMode = isHighGainMode;
     }
 
@@ -1129,7 +1127,7 @@ void DynamicsSimulator_impl::calcCharacterForwardKinematics
 
 void DynamicsSimulator_impl::calcWorldForwardKinematics()
 {
-    for(int i=0; i < world.numBodies(); ++i){
+    for(unsigned int i=0; i < world.numBodies(); ++i){
         world.body(i)->calcForwardKinematics(true, true);
     }
 

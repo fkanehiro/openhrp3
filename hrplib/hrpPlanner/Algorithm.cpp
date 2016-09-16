@@ -88,16 +88,22 @@ bool Algorithm::preparePlanning()
       std::cerr << "start configuration is invalid" << std::endl;
       return false;
   }
-  if (planner_->checkCollision(start_)){
-      std::cerr << "start configuration is not collision-free" << std::endl;
+  if (!ignoreCollisionAtStart_ && planner_->checkCollision(start_)){
+      const std::pair<std::string, std::string> &pair
+	  = planner_->collidingPair();
+      std::cerr << "start configuration is not collision-free("
+		<< pair.first << "<->" << pair.second << ")" << std::endl;
       return false;
   }
   if (!cspace->isValid(goal_)){
       std::cerr << "goal configuration is invalid" << std::endl;
       return false;
   }
-  if (planner_->checkCollision(goal_)){
-      std::cerr << "goal configuration is not collision-free" << std::endl;
+  if (!ignoreCollisionAtGoal_ && planner_->checkCollision(goal_)){
+      const std::pair<std::string, std::string> &pair
+	  = planner_->collidingPair();
+      std::cerr << "goal configuration is not collision-free("
+		<< pair.first << "<->" << pair.second << ")" << std::endl;
       return false;
   }
 #if 0
