@@ -2,8 +2,8 @@
 Changelog for package openhrp3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.9 (2017-02-17)
+------------------
 
 * supports OpenRTM-aist 1.2.0 (`c04e9293 <https://github.com/fkanehiro/openhrp3/commit/c04e92930af318d6566213dd173c34331eb18898>`_)
 * supports trunk version of OpenRTM-aist (`#104 <https://github.com/fkanehiro/openhrp3/issues/104>`_)
