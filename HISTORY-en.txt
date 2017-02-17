@@ -1,5 +1,78 @@
 OpenHRP3 Updates History (Release Notes)
 
+Ver.3.1.9
+=========================
+・ supports OpenRTM-aist 1.1.2, 1.2.0, trunk
+
+・ supports ARM64
+
+・ supports Ubuntu 16.04
+
+・ supports Boost 1.34.0
+
+・ Support clang
+
+・ layout python stub to right place
+
+・ Fix many compile warning
+
+・ hrplib/hrpModel : changes return type of World::numBodies(),numXXX() from int to unsigned
+
+・ hrplib/hrpModel : supports slide joints (Link:SLIDE_JOINT) in calcCMJacobian()
+
+・ hrplib/hrpModel : fixes a bug in calcInverseKinematics
+
+・ hrplib/hrpModel : fixes bugs when loading PROTO Surface
+
+・ hrplib/hrpPlanner : enables to add an extra connection check between trees
+
+・ hrplib/hrpPlanner : Algorithm::ignoreCollisionAtStart() and Algorithm::ignoreCollisionAtGoal()
+
+・ hrplib/hrpPlanner : Fix bugs, uses attitude() instead of R
+
+・ hrplib/hrpCollision : modifies CreateSSV() to prevent Zero Div
+
+・ hrplib/hrpCollision : fix detection of triangle
+
+・ hrplib/hrpUtil : TriangleMeshShaper.cpp: checks values to prevent NaN
+
+・ hrplib/hrpUtil : ModelNodeSet.h,BodyInfo_impl.cpp: uses aligned allocator
+
+・ hrplib/hrpUtil : Add angular momentum jacobian
+
+・ hrplib/hrpUtil : Eigen3d.cpp,testEigen3d.cpp: add the correction of floating point error
+
+・ hrplib/hrpUtil : Add google test for Eigen3d.cpp
+
+・ server/ModelLoader : ColladaWriter.h: check that a base link and an effector links exist
+
+・ server/ModelLoader : exportCollada.cpp help message for adding information of manipulator to collada file
+
+・ server/ModelLoader : BodyInfo_impl.cpp: set default mass properties
+
+・ server/ModelLoader : projectGenerator.cpp: Add outport for root link actual pos and rot
+
+・ server/ModelLoader : projectGenerator.cpp: Add integration method (EULER, RUNGE_KUTTA..) argument and update readme
+
+・ server/ModelLoader : projectGenerator.cpp: projectGenerator.cpp: generating default outport:dq in project file by projectGenerator
+
+・ server/ModelLoader : ModelLoader_impl.cpp: fix ModelLoader to enable the compile without collada
+
+・ server/ModelLoader : ModelLoader_impl.cpp: support PROJECT_DIR in ModelLoader
+
+・ server/ModelLoader : ColladaWriter.h: fix for reducing CORBA communication on 32bit machine on models with many shapes
+
+・ server/ModelLoader : README.md: add README.md with options and an example for projectGenerator
+
+・ sample : Add hand bush for sample1_bush.wrl. Currently do not fix indent to check diff. Update bush parameters
+
+・ sample : sample_special_joint_robot.wrl: Add sample robot to check special joints, 6dof+ leg, toe foot etc..
+
+・ sample : sample_4leg_robot*.wrl: Add 4leg robot
+
+・ sample : sample1_bush.wrl, example/customizer:: Add sample1 model with rubber bush and bush customizer
+
+
 Ver.3.1.8
 =========================
 ・ sample/model/sample1.wrl rotate imu mount coordinate for debug
