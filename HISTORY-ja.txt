@@ -1,5 +1,78 @@
 ﻿OpenHRP3 改版リスト (リリースノート)
 
+Ver.3.1.9
+=========================
+・ OpenRTM-aist 1.1.2, 1.2.0, trunk 対応しました
+
+・ ARM64 対応しました
+
+・ Ubuntu 16.04 対応しました
+
+・ Boost 1.34.0 対応しました
+
+・ clang  対応しました
+
+・ python stub のレイアウトを変更しました
+
+・ コンパイル時のワーニングを無くしました
+
+・ hrplib/hrpModel : World::numBodies(),numXXX() の返り値を int から unsigned int に変更しました
+
+・ hrplib/hrpModel : calcCMJacobian() で　Link:SLIDE_JOINT　をサポートしました
+
+・ hrplib/hrpModel : calcInverseKinematics のバグを修正しました
+
+・ hrplib/hrpModel : PROTO Surfaceのあるモデルが読み込めないバグの修正しました
+
+・ hrplib/hrpPlanner : ツリーの間に接続を追加できるように変更しました
+
+・ hrplib/hrpPlanner : Algorithm::ignoreCollisionAtStart() Algorithm::ignoreCollisionAtGoal() を追加しました．
+
+・ hrplib/hrpPlanner : バグの修正．R の代わりに attitude() を利用するようにしました
+
+・ hrplib/hrpCollision : CreateSSV() を変更しゼロ除算が起こらないようにしました
+
+・ hrplib/hrpCollision : 隣接する三角形の判断を修正
+
+・ hrplib/hrpUtil : TriangleMeshShaper.cpp: NaN にならないように値をチェックするようにしました
+
+・ hrplib/hrpUtil : ModelNodeSet.h,BodyInfo_impl.cpp: aligned allocator を利用するようにしました．
+
+・ hrplib/hrpUtil : 角運動量ヤコビアンを計算する関数calcAngularMomentum(), 運動量ヤコビアンと角運動量ヤコビアンを使って重心周りの運動量と角運動量を計算する関数calcTotalMomentumFromJacobian() を追加しました
+
+・ hrplib/hrpUtil : Eigen3d.cpp,testEigen3d.cpp: 浮動小数点エラーを修正しました
+
+・ hrplib/hrpUtil : google test で Eigen3d.cpp をテストしました．
+
+・ server/ModelLoader : ColladaWriter.h: base link と effector links が存在することを確認するようにしました
+
+・ server/ModelLoader : exportCollada.cpp manipulator を collada ファイルに追加すある時のヘルプ情報を追加しました
+
+・ server/ModelLoader : BodyInfo_impl.cpp: デフォルトの重量プロパティをセットするようにしました．
+
+・ server/ModelLoader : projectGenerator.cpp: ルートリンクの実際の位置姿勢を出力するポートを追加しました
+
+・ server/ModelLoader : projectGenerator.cpp: integration method (EULER, RUNGE_KUTTAなど)を設定できるようにする引数を追加しました
+
+・ server/ModelLoader : projectGenerator.cpp: projectGenerator.cpp: outport:dq をプロジェクトファイルに出力するようにしました．
+
+・ server/ModelLoader : ModelLoader_impl.cpp: ModelLoader を collada 無しでもコンパイルできるようにしました
+
+・ server/ModelLoader : ModelLoader_impl.cpp: ModelLoader 内で PROJECT_DIR を展開するようにしました
+
+・ server/ModelLoader : ColladaWriter.h: 32bitOSでshapeが多いときにcolladaの書き出し時にsegfaultするので、shapeへのアクセスを減らしました
+
+・ server/ModelLoader : README.md: README.md に projectGenerator のオプションや例を追科しました
+
+・ sample : sample1_bush.wrl に手のBushを追加しました
+
+・ sample : sample_special_joint_robot.wrl:  脚が６自由度以上だったり、つま先がついていたり、特殊な関節のテスト用のサンプルロボットを追加しました。
+
+・ sample : sample_4leg_robot*.wrl: ４脚ロボットのモデルを追加しました
+
+・ sample : sample1_bush.wrl, example/customizer:: sample1 モデルにBushとBush Customizerを追加しました
+
+
 Ver.3.1.8
 =========================
 ・ sample/model/sample1.wrl　でimuの座標系を変更しました．
