@@ -7,7 +7,6 @@
    <p>The package version number is synchronized to that of mainstream, based on <a href = "http://code.google.com/p/rtm-ros-robotics/issues/detail?id=165#c5">this decision</a>.</p>
   </description>
   <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
-  <maintainer email="iisaito@kinugarage.com">Isao Isaac Saito</maintainer>
   <author>AIST</author>
   <author>General Robotix Inc.</author>
   <author>Nakamura Lab of Dept. of Mechano Informatics at University of Tokyo</author>
