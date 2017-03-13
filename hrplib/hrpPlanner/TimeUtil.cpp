@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <stdint.h>
 #include "TimeUtil.h"
 
 tick_t get_tick()
