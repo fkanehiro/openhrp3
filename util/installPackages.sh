@@ -8,7 +8,18 @@ if [ "$arg" = "" ]; then
   exit 1
 fi
 
-sudo ${0%/*}/pkg_install_ubuntu.sh
+case $(lsb_release -is) in
+    Debian)
+	sudo ${0%/*}/pkg_install_debian.sh
+        ;;
+    Ubuntu)
+	sudo ${0%/*}/pkg_install_ubuntu.sh
+        ;;
+    *)
+        echo 1>&2 "error: unknown distribution: $(lsb_release -is)"
+        exit 1
+        ;;
+esac
 
 pkgnames=`apt-cache pkgnames`
 for package in `sed -e '/^#/D' $arg | xargs`
