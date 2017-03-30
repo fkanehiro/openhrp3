@@ -39,7 +39,7 @@ do
   fi
 done
 
-sudo apt-get --force-yes install $ok_pkgs
+sudo apt-get -y --force-yes install $ok_pkgs
 if [ $? -eq 0 ]; then
   sudo update-java-alternatives -s java-6-openjdk
 
