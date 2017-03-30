@@ -129,17 +129,7 @@ create_srclist () {
 update_source_list () {
     rtmsite=`grep $reposerver /etc/apt/sources.list`
     if test "x$rtmsite" = "x" ; then
-	echo $msg4
-	echo $msg5
-	echo "  " $openrtm_repo
-	read -p "$msg6" kick_shell
-
-	if test "x$kick_shell" = "xn" ; then
-	    echo $msg7
-	    exit 0
-	else
-	    echo $openrtm_repo >> /etc/apt/sources.list
-	fi
+	echo $openrtm_repo >> /etc/apt/sources.list
     fi
 }
 
