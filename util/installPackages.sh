@@ -8,7 +8,18 @@ if [ "$arg" = "" ]; then
   exit 1
 fi
 
-sudo ${0%/*}/pkg_install_ubuntu.sh
+case $(lsb_release -is) in
+    Debian)
+	sudo ${0%/*}/pkg_install_debian.sh
+        ;;
+    Ubuntu)
+	sudo ${0%/*}/pkg_install_ubuntu.sh
+        ;;
+    *)
+        echo 1>&2 "error: unknown distribution: $(lsb_release -is)"
+        exit 1
+        ;;
+esac
 
 pkgnames=`apt-cache pkgnames`
 for package in `sed -e '/^#/D' $arg | xargs`
@@ -28,7 +39,7 @@ do
   fi
 done
 
-sudo apt-get --force-yes install $ok_pkgs
+sudo apt-get -y --force-yes install $ok_pkgs
 if [ $? -eq 0 ]; then
   sudo update-java-alternatives -s java-6-openjdk
 
