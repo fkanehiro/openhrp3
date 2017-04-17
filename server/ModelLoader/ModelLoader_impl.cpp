@@ -230,12 +230,31 @@ POA_OpenHRP::BodyInfo* ModelLoader_impl::loadBodyInfoFromModelFile(const string 
 {
     cout << "loading " << url << endl;
     POA_OpenHRP::BodyInfo* bodyInfo;
+    string resolved_url = url;
+    if(resolved_url.find("$(CURRENT_DIR)") != string::npos){
+      if(resolved_url.find_last_of("/") != string::npos){
+        resolved_url.replace(resolved_url.find("$(CURRENT_DIR)"),string("$(CURRENT_DIR)").length(), 
+                     resolved_url.substr(0, resolved_url.find_last_of("/")));
+      }else{
+        resolved_url.replace(resolved_url.find("$(CURRENT_DIR)"),string("$(CURRENT_DIR)").length() + 1, ""); 
+      }
+      if(resolved_url[0] != '/'){
+        char buf[1024];
+        resolved_url = string(getcwd(buf, 1024))+"/"+resolved_url;
+      }
+    }
+    if(resolved_url.find("$(PROJECT_DIR)") != string::npos){
+      string shdir = OPENHRP_SHARE_DIR;
+      string pjdir = shdir + "/sample/project";
+      resolved_url.replace(resolved_url.find("$(PROJECT_DIR)"),string("$(PROJECT_DIR)").length(), pjdir);
+    }
+
     try {
 #ifdef OPENHRP_COLLADA_FOUND
-        if( IsColladaFile(url) ) {
+        if( IsColladaFile(resolved_url) ) {
             BodyInfoCollada_impl* p = new BodyInfoCollada_impl(poa);
             p->setParam("readImage", option.readImage);
-            p->loadModelFile(url);
+            p->loadModelFile(resolved_url);
             bodyInfo = p;
         }
         else
@@ -243,7 +262,7 @@ POA_OpenHRP::BodyInfo* ModelLoader_impl::loadBodyInfoFromModelFile(const string 
         {
             BodyInfo_impl* p = new BodyInfo_impl(poa);
             p->setParam("readImage", option.readImage);
-            p->loadModelFile(url);
+            p->loadModelFile(resolved_url);
             bodyInfo = p;
         }
     }
@@ -264,9 +283,9 @@ POA_OpenHRP::BodyInfo* ModelLoader_impl::loadBodyInfoFromModelFile(const string 
 #endif
 
     //poa->activate_object(bodyInfo);
-    urlToBodyInfoMap[url] = bodyInfo;
+    urlToBodyInfoMap[resolved_url] = bodyInfo;
 
-    string filename(deleteURLScheme(url));
+    string filename(deleteURLScheme(resolved_url));
     struct stat statbuff;
     time_t mtime = 0;
 
