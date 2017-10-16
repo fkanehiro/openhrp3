@@ -125,7 +125,7 @@ void JointPath::onJointPathUpdated()
 }
 
 
-void JointPath::calcJacobian(dmatrix& out_J) const
+void JointPath::calcJacobian(dmatrix& out_J, const Vector3& local_p) const
 {
     const int n = joints.size();
     out_J.resize(6, n);
@@ -143,7 +143,7 @@ void JointPath::calcJacobian(dmatrix& out_J) const
             case Link::ROTATIONAL_JOINT:
             {
                 Vector3 omega(link->R * link->a);
-                Vector3 arm(targetLink->p - link->p);
+                Vector3 arm(targetLink->p + targetLink->R * local_p - link->p);
                 if(!isJointDownward(i)){
                     omega *= -1.0;
                 } 

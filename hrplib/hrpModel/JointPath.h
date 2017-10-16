@@ -63,7 +63,7 @@ namespace hrp {
             linkPath.calcForwardKinematics(calcVelocity, calcAcceleration);
         }
 		
-        void calcJacobian(dmatrix& out_J) const;
+        void calcJacobian(dmatrix& out_J, const Vector3& local_p = Vector3::Zero()) const;
 		
         inline dmatrix Jacobian() const {
             dmatrix J;
