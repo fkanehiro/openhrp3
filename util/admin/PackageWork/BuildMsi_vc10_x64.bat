@@ -188,7 +188,7 @@ goto :EOF
 cd %SRC_DIR%
 call "C:\Program Files (x86)\CMake 2.8\bin\cmake" -G "Visual Studio 10 Win64" -DCMAKE_INSTALL_PREFIX:PATH="%SDK_INSTALL_DIR%"
 if errorlevel 1 set IS_ERROR=1
-copy hrplib\hrpModel\config.h ..\pack_src\OpenHRP\include\OpenHRP-3.1\hrpModel\config.h
+copy hrplib\hrpModel\config.h ..\pack_src\OpenHRP\include\OpenHRP-3.2\hrpModel\config.h
 cd %BASE_DIR%
 copy %SRC_DIR%\GrxUIonEclipse-project-0.9.8\grxui_x64.product  %SRC_DIR%\GrxUIonEclipse-project-0.9.8\grxui.product
 copy %SRC_INITIALIZER_ORIGIN% %SRC_INITIALIZER_TMP%

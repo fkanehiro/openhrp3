@@ -60,8 +60,8 @@ public class Activator extends AbstractUIPlugin implements IWorkbenchListener, I
     private static Activator   plugin;
     private static final String  LINUX_HOME_DIR   = System.getenv("HOME") + File.separator ;
     private static final String  WIN_HOME_DIR     = System.getenv("APPDATA") + File.separator;
-    private static final String  LINUX_TMP_DIR   = LINUX_HOME_DIR + ".OpenHRP-3.1" + File.separator;
-    private static final String  WIN_TMP_DIR     = WIN_HOME_DIR + "OpenHRP-3.1" + File.separator;
+    private static final String  LINUX_TMP_DIR   = LINUX_HOME_DIR + ".OpenHRP-3.2" + File.separator;
+    private static final String  WIN_TMP_DIR     = WIN_HOME_DIR + "OpenHRP-3.2" + File.separator;
     private static final File HOME_DIR = initHomeDir();
     private static final File TMP_DIR = initTempDir();
     public GrxPluginManager    manager_;
