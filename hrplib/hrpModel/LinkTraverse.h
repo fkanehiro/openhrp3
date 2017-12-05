@@ -80,10 +80,17 @@ namespace hrp {
 	
         void calcForwardKinematics(bool calcVelocity = false, bool calcAcceleration = false) const;
 
+        double calcTotalMass();
+
+        inline double totalMass() const {
+            return totalMass_;
+        }
+      
       protected:
         
         std::vector<Link*> links;
         int numUpwardConnections;
+        double totalMass_;
 
       private:
         

@@ -203,6 +203,18 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
 }
 
 
+double LinkTraverse::calcTotalMass()
+{
+  totalMass_ = 0.0;
+
+  for(int i = 0; i < numLinks(); ++i) {
+    totalMass_ += links[i]->m;
+  }
+
+  return totalMass_;
+}
+
+
 std::ostream& operator<<(std::ostream& os, LinkTraverse& traverse)
 {
     int n = traverse.numLinks();
