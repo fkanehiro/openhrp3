@@ -1023,9 +1023,9 @@ public:
         domFx_common_color_or_textureRef pambient = daeSafeCast<domFx_common_color_or_texture>(pphong->add(COLLADA_ELEMENT_AMBIENT));
         domFx_common_color_or_texture::domColorRef pambientcolor = daeSafeCast<domFx_common_color_or_texture::domColor>(pambient->add(COLLADA_ELEMENT_COLOR));
         pambientcolor->getValue().setCount(4);
-        pambientcolor->getValue()[0] = material.ambientIntensity;
-        pambientcolor->getValue()[1] = material.ambientIntensity;
-        pambientcolor->getValue()[2] = material.ambientIntensity;
+        pambientcolor->getValue()[0] = material.diffuseColor[0];
+        pambientcolor->getValue()[1] = material.diffuseColor[1];
+        pambientcolor->getValue()[2] = material.diffuseColor[2];
         pambientcolor->getValue()[3] = 1;
 
         domFx_common_color_or_textureRef pdiffuse = daeSafeCast<domFx_common_color_or_texture>(pphong->add(COLLADA_ELEMENT_DIFFUSE));
