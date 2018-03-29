@@ -3,6 +3,10 @@
 
 using namespace hrp;
 
+#if __cplusplus >= 201103L
+using std::isnan;
+#endif
+
 TEST(Eigen3d, omegaFromRot)
 {
     Matrix33 m;
