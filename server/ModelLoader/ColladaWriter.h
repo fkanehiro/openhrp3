@@ -580,7 +580,11 @@ public:
 	kmout->mapjointnames[std::string(links[0].name)] = 1000;
         for(size_t ilink = 0; ilink < vdomjoints.size(); ++ilink) {
             LinkInfo& linkInfo = links[ilink];
-            kmout->maplinknames[std::string(linkInfo.segments[0].name)] = ilink;
+            if (!linkInfo.segments.length()){
+              std::cerr << "Collada Warning: segment node for " << ilink << "th joint is not defined" << std::endl;
+            }else{
+              kmout->maplinknames[std::string(linkInfo.segments[0].name)] = ilink;
+            }
             string jointType(CORBA::String_var(linkInfo.jointType));
             daeString colladaelement;
             int dof = 1;
