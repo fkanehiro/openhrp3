@@ -581,7 +581,7 @@ public:
         for(size_t ilink = 0; ilink < vdomjoints.size(); ++ilink) {
             LinkInfo& linkInfo = links[ilink];
             if (!linkInfo.segments.length()){
-              std::cerr << "segment node for " << ilink << "th joint is not defined" << std::endl;
+              std::cerr << "Collada Warning: segment node for " << ilink << "th joint is not defined" << std::endl;
             }else{
               kmout->maplinknames[std::string(linkInfo.segments[0].name)] = ilink;
             }
