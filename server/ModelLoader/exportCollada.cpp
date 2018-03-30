@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 	} 
       else
 	{
-	  std::cerr << "Usage: " << argv[0] 
+	  std::cerr << "Usage: " << argv[0] << " "
 		    << "-i <inFileName> " << "-o <outFileName> "
 		    << "-a <manipulator_name>,<frame_origin>,<frame_tip>,<px>,<py>,<pz>,<rotX>,<rotY>,<rotZ>,<rotTheta[rad]>,<gripper_joint>,<closing_direction>...\n see http://openrave.org/docs/latest_stable/collada_robot_extensions/"
 		    << std::endl;
