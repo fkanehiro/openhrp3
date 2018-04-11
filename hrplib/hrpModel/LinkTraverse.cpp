@@ -11,7 +11,7 @@
 /** 
     \file
     \brief Implementations of the LinkTraverse class
-    \author Shin'ichiro Nakaoka
+    \author Shin'ichiro Nakaoka, Rafael Cisneros
 */
   
 

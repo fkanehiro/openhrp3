@@ -9,7 +9,7 @@
 
 /** \file
     \brief The header file of the LinkPath and JointPath classes
-    \author Shin'ichiro Nakaoka
+    \author Shin'ichiro Nakaoka, Rafael Cisneros
 */
 
 #ifndef HRPMODEL_JOINT_PATH_H_INCLUDED
@@ -70,6 +70,8 @@ namespace hrp {
             calcJacobian(J);
             return J;
         }
+
+        void calcJacobianDot(dmatrix& out_dJ, const Vector3& local_p = Vector3::Zero()) const;
 
         // InverseKinematics Interface
         virtual void setMaxIKError(double e);

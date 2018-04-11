@@ -11,7 +11,7 @@
 /**
    \file
    \brief The header file of the LinkTraverse class
-   \author Shin'ichiro Nakaoka
+   \author Shin'ichiro Nakaoka, Rafael Cisneros
 */
 
 #ifndef HRPMODEL_LINK_TRAVERSE_H_INCLUDED
