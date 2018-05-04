@@ -28,10 +28,8 @@ python-yaml
 # omniORB
 libcos4-dev
 libomnievents-dev
-libomniorb4-1
 libomniorb4-dev
-libomnithread3-dev
-libomnithread3c2
+libomnithread4-dev
 omnievents
 omniidl
 omniidl-python
@@ -45,7 +43,7 @@ python-tk
 #liblapack3gf
 liblapack-dev
 libatlas-base-dev
-libatlas-dev
+#libatlas-dev
 #libblas3gf
 libblas-dev
 f2c
@@ -68,7 +66,7 @@ libboost-thread-dev
 # etc
 zlib1g-dev
 libjpeg62-dev
-libpng12-dev
+libpng-dev
 uuid-dev
 
 # openrtm
@@ -79,7 +77,7 @@ openrtm-aist-dev
 libeigen3-dev
 
 #collada
-collada-dom-dev
+libcollada-dom-dev
 
 # for hrpsys
 # libncurses5-dev
