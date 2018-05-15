@@ -1,0 +1,84 @@
+# package list for ubuntu 16.04
+
+# java
+openjdk-8-jdk
+openjdk-8-jre
+jython
+libreadline-java
+java-common
+
+# japanese font
+#ttf-kochi-gothic
+#ttf-kochi-mincho
+
+# compiler & build tools
+gcc
+g++
+make
+build-essential
+cmake
+cmake-qt-gui
+cmake-curses-gui
+doxygen
+graphviz
+pkg-config
+python-yaml
+
+
+# omniORB
+libcos4-dev
+libomnievents-dev
+libomniorb4-dev
+libomnithread4-dev
+omnievents
+omniidl
+omniidl-python
+omniorb
+omniorb-idl
+omniorb-nameserver
+python-omniorb
+python-tk
+
+# math 
+#liblapack3gf
+liblapack-dev
+libatlas-base-dev
+#libatlas-dev
+#libblas3gf
+libblas-dev
+f2c
+libf2c2
+libf2c2-dev
+libgfortran3
+libgfortran3-dbg
+
+# boost
+libboost-dev
+libboost-filesystem-dev 
+libboost-program-options-dev 
+libboost-regex-dev
+libboost-signals-dev
+libboost-thread-dev
+
+# eclipse3.4.2
+#xulrunner-1.9.2
+
+# etc
+zlib1g-dev
+libjpeg62-dev
+libpng-dev
+uuid-dev
+
+# openrtm
+openrtm-aist-dev
+
+
+#eigen3
+libeigen3-dev
+
+#collada
+libcollada-dom-dev
+
+# for hrpsys
+# libncurses5-dev
+# libreadline5-dev
