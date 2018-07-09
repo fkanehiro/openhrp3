@@ -83,6 +83,7 @@ namespace hrp {
 	bool isInsideTriangle(float x, float y, const std::vector<float> &vx, const std::vector<float> &vy);
 
 	int calculateIntersection(std::vector<float> &x, std::vector<float> &y, float radius, float x1, float y1, float x2, float y2);
+        ColdetModelPair& operator=(const ColdetModelPair& cmp);
 
       private:
         std::vector<collision_data>& detectCollisionsSub(bool detectAllContacts);
