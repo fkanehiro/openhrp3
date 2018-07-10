@@ -967,3 +967,10 @@ int ColdetModelPair::calculateIntersection(std::vector<float> &x, std::vector<fl
 
 	return t.size();
 }
+
+ColdetModelPair& ColdetModelPair::operator=(const ColdetModelPair& org)
+{
+    collisionPairInserter = new CollisionPairInserter;
+    set(org.models[0], org.models[1]);
+    tolerance_ = org.tolerance_;
+}
