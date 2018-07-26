@@ -253,6 +253,7 @@ bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_
 {
     static const int MAX_IK_ITERATION = 50;
     static const double LAMBDA = 0.9;
+    static const double JOINT_LIMIT_MARGIN = 0.05;
     
     if(joints.empty()){
         if(linkPath.empty()){
@@ -316,6 +317,11 @@ bool JointPath::calcInverseKinematics(const Vector3& end_p, const Matrix33& end_
 		
         for(int j=0; j < n; ++j){
             joints[j]->q += LAMBDA * dq(j);
+            if (joints[j]->q > joints[j]->ulimit){
+              joints[j]->q = joints[j]->ulimit - JOINT_LIMIT_MARGIN;
+            }else if(joints[j]->q < joints[j]->llimit){
+              joints[j]->q = joints[j]->llimit + JOINT_LIMIT_MARGIN;
+            }
         }
 
         calcForwardKinematics();
