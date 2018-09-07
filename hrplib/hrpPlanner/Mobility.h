@@ -7,35 +7,7 @@
 #include "Configuration.h"
 
 namespace PathEngine {
-
   class PathPlanner;
-  class Mobility;
-
-  /**
-   * @brief 移動アルゴリズム生成関数
-   */
-  typedef Mobility* (*MobilityNewFunc)(PathPlanner* planner);
-
-  /**
-   * @brief 移動アルゴリズム解放関数
-   */
-  typedef void (*MobilityDeleteFunc)(Mobility* mobility);
-
-  /**
-   * @brief 移動アルゴリズム生成関数生成テンプレート
-   */
-  template <class _New>
-  Mobility* MobilityCreate(PathPlanner* planner) {
-    return new _New(planner);
-  }
-
-  /**
-   * @brief 移動アルゴリズム解放関数生成テンプレート
-   */
-  template <class _Delete>
-  void MobilityDelete(Mobility* mobility) {
-    delete mobility;
-  }
   
   /**
    * @brief 移動アルゴリズム実装用抽象クラス
@@ -122,5 +94,31 @@ namespace PathEngine {
      */
     static double interpolationDistance_;
   };
+
+  /**
+   * @brief 移動アルゴリズム生成関数
+   */
+  typedef Mobility* (*MobilityNewFunc)(PathPlanner* planner);
+
+  /**
+   * @brief 移動アルゴリズム解放関数
+   */
+  typedef void (*MobilityDeleteFunc)(Mobility* mobility);
+
+  /**
+   * @brief 移動アルゴリズム生成関数生成テンプレート
+   */
+  template <class _New>
+  Mobility* MobilityCreate(PathPlanner* planner) {
+    return new _New(planner);
+  }
+
+  /**
+   * @brief 移動アルゴリズム解放関数生成テンプレート
+   */
+  template <class _Delete>
+  void MobilityDelete(Mobility* mobility) {
+    delete mobility;
+  }
 };
 #endif // __MOBILITY_H__
