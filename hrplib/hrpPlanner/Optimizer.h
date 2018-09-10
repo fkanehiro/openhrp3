@@ -7,28 +7,7 @@
 #include "Configuration.h"
 
 namespace PathEngine {
-  class Optimizer;
   class PathPlanner;
-
-  /**
-   * 経路最適化アルゴリズム生成関数
-   */
-  typedef Optimizer* (*OptimizerNewFunc)(PathPlanner* planner);
-
-  /**
-   * 経路最適化アルゴリズム削除関数
-   */
-  typedef void (*OptimizerDeleteFunc)(Optimizer* optimizer);
-
-  template <class _New>
-  Optimizer* OptimizerCreate(PathPlanner* planner) {
-    return new _New(planner);
-  }
-
-  template <class _Delete>
-  void OptimizerDelete(Optimizer* optimizer) {
-    delete optimizer;
-  }
 
   /**
    * @brief 経路最適化アルゴリズム実装用の抽象クラス
@@ -57,6 +36,26 @@ namespace PathEngine {
   protected:
     PathPlanner *planner_;
   };
+
+  /**
+   * 経路最適化アルゴリズム生成関数
+   */
+  typedef Optimizer* (*OptimizerNewFunc)(PathPlanner* planner);
+
+  /**
+   * 経路最適化アルゴリズム削除関数
+   */
+  typedef void (*OptimizerDeleteFunc)(Optimizer* optimizer);
+
+  template <class _New>
+  Optimizer* OptimizerCreate(PathPlanner* planner) {
+    return new _New(planner);
+  }
+
+  template <class _Delete>
+  void OptimizerDelete(Optimizer* optimizer) {
+    delete optimizer;
+  }
 };
 
 #endif

@@ -12,27 +12,6 @@
 
 namespace PathEngine {
     class PathPlanner;
-    class Algorithm;
-
-    /**
-     * 経路計画アルゴリズム生成関数
-     */
-    typedef Algorithm* (*AlgorithmNewFunc)(PathPlanner* planner);
-
-    /**
-     * 経路計画アルゴリズム削除関数
-     */
-    typedef void (*AlgorithmDeleteFunc)(Algorithm* algorithm);
-
-    template <class _New>
-    Algorithm* AlgorithmCreate(PathPlanner* planner) {
-        return new _New(planner);
-    }
-
-    template <class _Delete>
-    void AlgorithmDelete(Algorithm* algorithm) {
-        delete algorithm;
-    }
 
     /**
      * @brief 経路計画アルゴリズム基底クラス
@@ -201,6 +180,26 @@ namespace PathEngine {
 	 */
         void ignoreCollisionAtStart(bool b) { ignoreCollisionAtStart_ = b; }
     };
+
+    /**
+     * 経路計画アルゴリズム生成関数
+     */
+    typedef Algorithm* (*AlgorithmNewFunc)(PathPlanner* planner);
+
+    /**
+     * 経路計画アルゴリズム削除関数
+     */
+    typedef void (*AlgorithmDeleteFunc)(Algorithm* algorithm);
+
+    template <class _New>
+    Algorithm* AlgorithmCreate(PathPlanner* planner) {
+        return new _New(planner);
+    }
+
+    template <class _Delete>
+    void AlgorithmDelete(Algorithm* algorithm) {
+        delete algorithm;
+    }
 };
 
 #endif // __ALGORITHM_H__
