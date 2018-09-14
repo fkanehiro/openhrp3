@@ -527,9 +527,10 @@ void ModelNodeSetImpl::extractChildNodes
             }
 
             if(doTraverseChildren){
-                MFNode& childNodes = protoInstance->fields["children"].mfNode();
-                if(&childNodes)
+                if (protoInstance->fields.count("children")){
+                    MFNode& childNodes = protoInstance->fields["children"].mfNode();
                     extractChildNodes(jointNodeSet, childNodes, acceptableChildProtoIds, T);
+                }
             }
 
             messageIndent -= 2;
