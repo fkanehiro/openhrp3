@@ -85,6 +85,9 @@ namespace hrp {
 	int calculateIntersection(std::vector<float> &x, std::vector<float> &y, float radius, float x1, float y1, float x2, float y2);
         ColdetModelPair& operator=(const ColdetModelPair& cmp);
 
+        void enableNormalVectorCorrection(bool flag) {
+            collisionPairInserter->normalVectorCorrection = flag;
+        }
       private:
         std::vector<collision_data>& detectCollisionsSub(bool detectAllContacts);
         bool detectMeshMeshCollisions(bool detectAllContacts);
