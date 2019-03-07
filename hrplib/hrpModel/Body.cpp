@@ -449,6 +449,10 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
             sw.setZero();
             sv.setZero();
         }
+
+	ptr->vo = parent->vo + sv * ptr->dq;  // Added by Rafa
+	ptr->w  = parent->w  + sw * ptr->dq;  // Added by Rafa
+
         dsv = parent->w.cross(sv) + parent->vo.cross(sw);
         dsw = parent->w.cross(sw);
 
@@ -458,9 +462,9 @@ void Body::calcInverseDynamics(Link* ptr, Vector3& out_f, Vector3& out_tau)
         ptr->sw = sw;
         ptr->sv = sv;
     }
-	
-    Vector3  c,P,L;
-    Matrix33 I,c_hat;
+
+    Vector3  c, P, L;
+    Matrix33 I, c_hat;
 
     c = ptr->R * ptr->c + ptr->p;
     I.noalias() = ptr->R * ptr->I * ptr->R.transpose();
@@ -925,9 +929,9 @@ void Body::calcCMJacobian(Link *base, dmatrix &J)
         }
 	case Link::SLIDE_JOINT:
 	{
-	  Vector3 dp((j->subm/totalMass_)*sgn[j->jointId]*j->R*j->d);
-	  J.col(j->jointId) = dp;
-	  break;
+	    Vector3 dp((j->subm/totalMass_)*sgn[j->jointId]*j->R*j->d);
+	    J.col(j->jointId) = dp;
+	    break;
 	}
         default:
             std::cerr << "calcCMJacobian() : unsupported jointType("
