@@ -635,7 +635,8 @@ static int find_collision_info(
     const Vector3& m1,
     Vector3& ip3,
     Vector3& ip4,
-    collision_data *col_p)
+    collision_data *col_p,
+    bool test_normal=true)
 {
     Vector3 ip1;
     find_intersection_pt(ip1, q1, q2, nq0, nq1);
@@ -643,8 +644,9 @@ static int find_collision_info(
     find_intersection_pt(ip2, p1, p2, mp0, mp1);
 
     double dp;
-    if(get_normal_vector_test(col_p->n_vector, ef11, ip2, ip1, p3, q3, n1, m1, p1, p2, q1, q2) &&
-       find_common_perpendicular(p1, p2, q1, q2, ip1, ip2, n1, m1, col_p->n_vector, dp)){
+    if(!test_normal
+       || (get_normal_vector_test(col_p->n_vector, ef11, ip2, ip1, p3, q3, n1, m1, p1, p2, q1, q2) &&
+           find_common_perpendicular(p1, p2, q1, q2, ip1, ip2, n1, m1, col_p->n_vector, dp))){
 
         ip3 = ip1; ip4 = ip2;
         col_p->num_of_i_points = 2;
@@ -892,6 +894,7 @@ int tri_tri_overlap(
     }
     else if(num==2)
         {
+            bool nvc = collisionPairInserter->normalVectorCorrection;
             if(edf1==INTERSECT && edf2==INTERSECT){
                 if(HIRUKAWA_DEBUG) cout << "f1 f2" << endl;
                 col_p->c_type = FV;
@@ -910,21 +913,21 @@ int tri_tri_overlap(
                 if(HIRUKAWA_DEBUG) cout << "e1 f1" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q1,q2,q3,nq[0],nq[1],ef11,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(ede2==INTERSECT && edf1==INTERSECT){
                 if(HIRUKAWA_DEBUG) cout << "e2 f1" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q1,q2,q3,nq[0],nq[1],ef21,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(ede3==INTERSECT && edf1==INTERSECT){
                 if(HIRUKAWA_DEBUG) cout << "e3 f1" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q1,q2,q3,nq[0],nq[1],ef31,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(edf2==INTERSECT && edf3==INTERSECT){
@@ -938,42 +941,42 @@ int tri_tri_overlap(
                 if(HIRUKAWA_DEBUG) cout << "e1 f2" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q2,q3,q1,nq[1],nq[2],ef12,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(ede2==INTERSECT && edf2==INTERSECT){
                 if(HIRUKAWA_DEBUG) cout << "e2 f2" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q2,q3,q1,nq[1],nq[2],ef22,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(ede3==INTERSECT && edf2==INTERSECT){
                 if(HIRUKAWA_DEBUG) cout << "e3 f2" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q2,q3,q1,nq[1],nq[2],ef32,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(ede1==INTERSECT && edf3==INTERSECT){
                 if(HIRUKAWA_DEBUG) cout << "e1 f3" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p1,p2,p3,mp[0],mp[1],q3,q1,q2,nq[2],nq[0],ef13,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(ede2==INTERSECT && edf3==INTERSECT){
                 if(HIRUKAWA_DEBUG) cout << "e2 f3" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p2,p3,p1,mp[1],mp[2],q3,q1,q2,nq[2],nq[0],ef23,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(ede3==INTERSECT && edf3==INTERSECT){
                 if(HIRUKAWA_DEBUG) cout << "e3 f3" << endl;
                 col_p->c_type = EE;
                 if(!find_collision_info(p3,p1,p2,mp[2],mp[0],q3,q1,q2,nq[2],nq[0],ef33,
-                                        n1,m1,ip3,ip4,col_p))
+                                        n1,m1,ip3,ip4,col_p,nvc))
                     return 0;
             }
             else if(ede1==INTERSECT && ede2==INTERSECT){
