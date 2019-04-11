@@ -42,6 +42,7 @@ namespace hrp {
                   Opcode::MeshInterface* mesh1,
                   Opcode::MeshInterface* mesh2);
 
+
       private:
 
         class tri
