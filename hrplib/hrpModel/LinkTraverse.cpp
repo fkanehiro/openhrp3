@@ -11,7 +11,7 @@
 /** 
     \file
     \brief Implementations of the LinkTraverse class
-    \author Shin'ichiro Nakaoka
+    \author Shin'ichiro Nakaoka, Rafael Cisneros
 */
   
 
@@ -200,6 +200,18 @@ void LinkTraverse::calcForwardKinematics(bool calcVelocity, bool calcAcceleratio
             break;
         }
     }
+}
+
+
+double LinkTraverse::calcTotalMass()
+{
+  totalMass_ = 0.0;
+
+  for(int i = 0; i < numLinks(); ++i) {
+    totalMass_ += links[i]->m;
+  }
+
+  return totalMass_;
 }
 
 

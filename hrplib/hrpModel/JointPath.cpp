@@ -10,7 +10,7 @@
 /**
    \file
    \brief Implementations of the LinkPath class
-   \author Shin'ichiro Nakaoka
+   \author Shin'ichiro Nakaoka, Rafael Cisneros
 */
   
 #include "JointPath.h"
@@ -164,6 +164,58 @@ void JointPath::calcJacobian(dmatrix& out_J, const Vector3& local_p) const
 				
             default:
                 out_J.col(i).setZero();
+            }
+        }
+    }
+}
+
+
+void JointPath::calcJacobianDot(dmatrix& out_dJ, const Vector3& local_p) const
+{
+    const int n = joints.size();
+    out_dJ.resize(6, n);
+
+    if (n > 0) {
+
+        Link* targetLink = linkPath.endLink();
+
+        for (int i=0; i < n; ++i) {
+
+            Link* link = joints[i];
+
+            switch (link->jointType) {
+              
+            case Link::ROTATIONAL_JOINT:
+            {
+                Vector3 omega(link->R * link->a);
+                Vector3 arm(targetLink->p + targetLink->R * local_p - link->p);
+
+                Vector3 omegaDot(hat(link->w) * link->R * link->a);
+                Vector3 armDot(targetLink->v + hat(targetLink->w) * targetLink->R * local_p - link->v);
+
+                if (!isJointDownward(i)) {
+                    omega *= -1.0;
+                    omegaDot *= -1.0;
+                }
+
+                Vector3 ddp(omegaDot.cross(arm) + omega.cross(armDot));
+
+                out_dJ.col(i) << ddp, omegaDot;
+            }
+            break;
+
+            case Link::SLIDE_JOINT:
+            {
+                Vector3 ddp(hat(link->w) * link->R * link->d);
+                if (!isJointDownward(i)) {
+                    ddp *= -1.0;
+                }
+                out_dJ.col(i) << ddp, Vector3::Zero();  
+            }
+            break;
+
+            default:
+                out_dJ.col(i).setZero();
             }
         }
     }

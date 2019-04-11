@@ -11,7 +11,7 @@
 /**
    \file
    \brief The header file of the LinkTraverse class
-   \author Shin'ichiro Nakaoka
+   \author Shin'ichiro Nakaoka, Rafael Cisneros
 */
 
 #ifndef HRPMODEL_LINK_TRAVERSE_H_INCLUDED
@@ -80,10 +80,17 @@ namespace hrp {
 	
         void calcForwardKinematics(bool calcVelocity = false, bool calcAcceleration = false) const;
 
+        double calcTotalMass();
+
+        inline double totalMass() const {
+            return totalMass_;
+        }
+      
       protected:
         
         std::vector<Link*> links;
         int numUpwardConnections;
+        double totalMass_;
 
       private:
         
