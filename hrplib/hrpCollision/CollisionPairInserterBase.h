@@ -27,6 +27,7 @@ namespace hrp {
     class CollisionPairInserterBase
     {
       public:
+        CollisionPairInserterBase() : normalVectorCorrection(true) {}
         virtual ~CollisionPairInserterBase(){}
         /**
            @brief clear collision information
@@ -112,6 +113,9 @@ namespace hrp {
         std::vector<collision_data> cdContact; ///< collision information
         
         ColdetModelSharedDataSet *models[2];
+
+        /// flag to enable/disable normal vector correction
+        bool normalVectorCorrection;
     };
 }
 #endif
