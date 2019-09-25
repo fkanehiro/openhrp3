@@ -19,11 +19,9 @@ using namespace boost;
 using namespace hrp;
 
 
-// Replacement for 'strtod()' function in Visual C++
-// This is neccessary because the implementation of VC++6.0 uses 'strlen()' in the function,
-// so that it becomes too slow for a string buffer which has long length.
-#ifdef _MSC_VER
-static double mystrtod(const char* nptr, char** endptr)
+// Replacement for 'strtod()' function
+// This is necessary for a locale-free version
+static inline double mystrtod(const char* nptr, char** endptr)
 {
     const char* org = nptr;
     bool valid = false;
@@ -83,11 +81,6 @@ static double mystrtod(const char* nptr, char** endptr)
     }
     return sign * value;
 }
-#else
-static inline double mystrtod(const char* nptr, char** endptr) {
-    return strtod(nptr, endptr);
-}
-#endif
 
 
 std::string EasyScanner::Exception::getFullMessage()
