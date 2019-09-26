@@ -34,6 +34,26 @@ static inline double mystrtod(const char* nptr, char** endptr)
         sign = -1.0;
         nptr++;
     }
+    if(*nptr == 'n' || *nptr == 'N')
+    {
+      nptr++;
+      if(*nptr == 'a' || *nptr == 'A')
+      {
+        nptr++;
+        if(*nptr == 'n' || *nptr == 'N')
+        {
+          nptr++;
+          *endptr = (char *)nptr;
+          return NAN;
+        }
+      }
+      else
+      {
+        valid = false;
+        *endptr = (char *)org;
+        return 0;
+      }
+    }
     if(isdigit((unsigned char)*nptr)){
         valid = true;
         do {
