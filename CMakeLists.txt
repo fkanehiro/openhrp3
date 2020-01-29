@@ -101,7 +101,7 @@ endif()
 
 # check boost
 set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_MULTITHREADED ON)
+set(Boost_NO_BOOST_CMAKE 1)
 set(Boost_ADDITIONAL_VERSIONS "1.42" "1.42.0" "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0" "1.46" "1.46.0" "1.46.1" "1.47" "1.47.0" "1.48" "1.48.0" "1.49.0" "1.50.0")
 
 #if(NOT Boost_INCLUDE_DIR AND NOT Boost_LIBRARY_DIRS)
