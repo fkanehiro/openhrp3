@@ -46,7 +46,7 @@ if( COLLADA_DOM_FOUND )
       ${Boost_SIGNALS_LIBRARY}
       ${Boost_SYSTEM_LIBRARY} )
   else(WIN32)
-    set(extralibraries  ${COLLADA_DOM_LIBRARIES} boost_system boost_thread)
+    set(extralibraries  ${COLLADA_DOM_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY})
   endif(WIN32)
 else( COLLADA_DOM_FOUND )
   set(extralibraries)
