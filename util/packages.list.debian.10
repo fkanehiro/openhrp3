@@ -1,8 +1,8 @@
 # package list for debian 10
 
 # java
-openjdk-7-jdk
-openjdk-7-jre
+openjdk-11-jdk
+openjdk-11-jre
 jython
 libreadline-java
 java-common
@@ -28,10 +28,10 @@ python-yaml
 # omniORB
 libcos4-dev
 libomnievents-dev
-libomniorb4-1
+libomniorb4-2
 libomniorb4-dev
-libomnithread3-dev
-libomnithread3c2
+libomnithread4-dev
+libomnithread4
 omnievents
 omniidl
 omniidl-python
@@ -42,11 +42,11 @@ python-omniorb
 python-tk
 
 # math 
-liblapack3gf
+liblapack3
 liblapack-dev
 libatlas-base-dev
-libatlas-dev
-libblas3gf
+#libatlas-dev
+libblas3
 libblas-dev
 f2c
 libf2c2
@@ -68,7 +68,7 @@ libboost-thread-dev
 # etc
 zlib1g-dev
 libjpeg-dev
-libpng12-dev
+libpng-dev
 uuid-dev
 
 # openrtm
