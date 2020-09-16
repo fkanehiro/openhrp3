@@ -50,7 +50,11 @@ endforeach()
 
 set(target hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION})
 
-add_library(${target} STATIC ${idl_cpp_files} ${idl_py_files})
+if (COMPILE_PYTHON_STUFF)
+  add_library(${target} STATIC ${idl_cpp_files} ${idl_py_files})
+else()
+  add_library(${target} STATIC ${idl_cpp_files})
+endif()
 
 if(UNIX)
   set_target_properties(${target} PROPERTIES COMPILE_FLAGS -fPIC)
@@ -82,8 +86,10 @@ execute_process(
   OUTPUT_VARIABLE python_version
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-install(FILES ${idl_py_files} DESTINATION lib/python${python_version}/dist-packages)
-set(module_py_files ${CMAKE_CURRENT_BINARY_DIR}/OpenHRP/__init__.py)
-install(FILES ${module_py_files} DESTINATION lib/python${python_version}/dist-packages/OpenHRP)
-set(module_poa_py_files ${CMAKE_CURRENT_BINARY_DIR}/OpenHRP__POA/__init__.py)
-install(FILES ${module_poa_py_files} DESTINATION lib/python${python_version}/dist-packages/OpenHRP__POA)
+if (COMPILE_PYTHON_STUFF)
+  install(FILES ${idl_py_files} DESTINATION lib/python${python_version}/dist-packages)
+  set(module_py_files ${CMAKE_CURRENT_BINARY_DIR}/OpenHRP/__init__.py)
+  install(FILES ${module_py_files} DESTINATION lib/python${python_version}/dist-packages/OpenHRP)
+  set(module_poa_py_files ${CMAKE_CURRENT_BINARY_DIR}/OpenHRP__POA/__init__.py)
+  install(FILES ${module_poa_py_files} DESTINATION lib/python${python_version}/dist-packages/OpenHRP__POA)
+endif()

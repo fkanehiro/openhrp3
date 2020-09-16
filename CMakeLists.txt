@@ -361,6 +361,7 @@ else(COMPILE_JAVA_STUFF)
   message(STATUS "Not support Java")
 endif(COMPILE_JAVA_STUFF)
 
+option(COMPILE_PYTHON_STUFF "Compile python stuff" ON)
 
 # jython
 if(COMPILE_JAVA_STUFF)
