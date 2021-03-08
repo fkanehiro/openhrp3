@@ -244,6 +244,7 @@ public:
             return false;
         }
         _WriteBindingsInstance_kinematics_scene(_scene.kiscene,bodyInfo,iasout->vaxissids,iasout->vkinematicsbindings);
+        return true;
     }
 
     /// \brief Write kinematic body in a given scene
