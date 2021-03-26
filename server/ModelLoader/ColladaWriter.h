@@ -1156,7 +1156,7 @@ public:
         double max_speed = plink.uvlimit.length()/2*M_PI > 0 ? plink.uvlimit[0] : 0;
         domactuator->add("max_speed")->setCharData(str(boost::format("%f")%max_speed));
         domactuator->add("no_load_speed")->setCharData(str(boost::format("%f")%max_speed));
-        double max_torque = (plink.climit.length() > 0 ? plink.climit[0] : 0)*plink.gearRatio*plink.torqueConst;
+        double max_torque = std::abs((plink.climit.length() > 0 ? plink.climit[0] : 0)*plink.gearRatio*plink.torqueConst);
         domactuator->add("nominal_torque")->setCharData(str(boost::format("%f")%max_torque));
         domactuator->add("nominal_voltage")->setCharData("0");
         domactuator->add("rotor_inertia")->setCharData(str(boost::format("%f")%(plink.rotorInertia)));
