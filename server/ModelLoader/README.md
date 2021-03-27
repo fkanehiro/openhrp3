@@ -40,7 +40,7 @@ input files shold be VRML or COLLADA files.
 #### example
 
 ```bash
-openhrp-project-generator `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/sample1.wrl `rospack find openhrp3`/share/OpenHRP-3.1/sample/model/longfloor.wrl --use-highgain-mode false --output /tmp/SampleRobot_for_torquecontrol.xml --timeStep 0.001 --dt 0.002
+openhrp-project-generator `rospack find openhrp3`/share/OpenHRP-3.2/sample/model/sample1.wrl `rospack find openhrp3`/share/OpenHRP-3.2/sample/model/longfloor.wrl --use-highgain-mode false --output /tmp/SampleRobot_for_torquecontrol.xml --timeStep 0.001 --dt 0.002
 ```
 
 ## NOTE

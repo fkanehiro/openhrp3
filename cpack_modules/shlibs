@@ -1,6 +1,6 @@
-libhrpCollision-3.1 0 openhrp3.1
-libhrpModel-3.1 0 openhrp3.1
-libhrpPlanner-3.1 0 openhrp3.1
-libhrpRTM-3.1 0 openhrp3.1
-libhrpUtil-3.1 0 openhrp3.1
-libsDIMS 0 openhrp3.1
+libhrpCollision-${OPENHRP_LIBRARY_VERSION} 0 openhrp${OPENHRP_LIBRARY_VERSION}
+libhrpModel-${OPENHRP_LIBRARY_VERSION} 0 openhrp${OPENHRP_LIBRARY_VERSION}
+libhrpPlanner-${OPENHRP_LIBRARY_VERSION} 0 openhrp${OPENHRP_LIBRARY_VERSION}
+libhrpRTM-${OPENHRP_LIBRARY_VERSION} 0 openhrp${OPENHRP_LIBRARY_VERSION}
+libhrpUtil-${OPENHRP_LIBRARY_VERSION} 0 openhrp${OPENHRP_LIBRARY_VERSION}
+libsDIMS 0 openhrp${OPENHRP_LIBRARY_VERSION}

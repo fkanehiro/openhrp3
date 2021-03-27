@@ -189,7 +189,7 @@ goto :EOF
 cd %SRC_DIR%
 call cmake -G "Visual Studio 9 2008" -DCMAKE_INSTALL_PREFIX:PATH="%SDK_INSTALL_DIR%"
 if errorlevel 1 set IS_ERROR=1
-copy hrplib\hrpModel\config.h ..\pack_src\OpenHRP\include\OpenHRP-3.1\hrpModel\config.h
+copy hrplib\hrpModel\config.h ..\pack_src\OpenHRP\include\OpenHRP-3.2\hrpModel\config.h
 cd %BASE_DIR%
 copy %SRC_INITIALIZER_ORIGIN% %SRC_INITIALIZER_TMP%
 copy %SRC_INITIALIZER_WINRCP% %SRC_INITIALIZER_ORIGIN%

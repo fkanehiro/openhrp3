@@ -38,11 +38,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		if (osname.equals("Linux") || osname.equals("Mac OS X")){
 			store.setDefault(PreferenceConstants.BIN_SFX, ".sh");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
-					"$(HOME)/.OpenHRP-3.1/omninames-log");
+					"$(HOME)/.OpenHRP-3.2/omninames-log");
 		}else if(osname.contains("Windows")){
 			store.setDefault(PreferenceConstants.BIN_SFX, ".bat");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.LOGGIR,
-					"\"$(APPDATA)/OpenHRP-3.1/omninames-log\"");
+					"\"$(APPDATA)/OpenHRP-3.2/omninames-log\"");
 			store.setDefault(PreferenceConstants.PROCESS+"."+PreferenceConstants.NAMESERVER+"."+PreferenceConstants.COM+0,
 					"\"$(OMNI_ROOT)/bin/x86_win32/omniNames\"");
 		}else{

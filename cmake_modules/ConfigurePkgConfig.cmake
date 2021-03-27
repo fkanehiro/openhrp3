@@ -1,7 +1,7 @@
 #  @author Takafumi Tawara
 
 if(PKG_CONFIG_FOUND)
-  set(PACKAGE_NAME "OpenHRP3.1")
+  set(PACKAGE_NAME "OpenHRP${OPENHRP_LIBRARY_VERSION}")
   set(OPENHRP_URL "http://www.openrtp.jp/openhrp3/")
   set(PKG_CONF_REQUIRES "")
   set(PKG_CONF_LINK_DEPEND_OPTS "''")
@@ -91,6 +91,6 @@ if(PKG_CONFIG_FOUND)
        PKG_CONF_CXXFLAG_OPTIONS ${PKG_CONF_CXXFLAG_OPTIONS})
   endif()
   
-  configure_file(openhrp3.1.pc.in openhrp3.1.pc @ONLY)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openhrp3.1.pc DESTINATION lib/pkgconfig)
+  configure_file(openhrp${OPENHRP_LIBRARY_VERSION}.pc.in openhrp${OPENHRP_LIBRARY_VERSION}.pc @ONLY)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openhrp${OPENHRP_LIBRARY_VERSION}.pc DESTINATION lib/pkgconfig)
 endif(PKG_CONFIG_FOUND)

@@ -2,6 +2,21 @@
 Changelog for package openhrp3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.2.0 (2017-10-27)
+-----------
+* openhrp3.1.pc.in: fix path order in openhrp3.1.pc.in (`#129 <https://github.com/fkanehiro/openhrp3/issues/129>`_) 
+* JointPath.*: add local_p arg for calcJacobian (`#127 <https://github.com/fkanehiro/openhrp3/issues/127>`_)
+  * fix local_p coordinate
+  * add local_p arg for calcJacobian  
+* .travis.yml: Update Travis for trusty/indigo (`#128 <https://github.com/fkanehiro/openhrp3/issues/128>`_)
+* add a package list for debian7
+* add RTM repository without asking user
+* install packages without asking user
+* support debian8
+* add stdint.hto use uint64_t on arm, close (`#123 <https://github.com/fkanehiro/openhrp3/issues/123>`_)(`#124 <https://github.com/fkanehiro/openhrp3/issues/124>`_)
+* Update maintainer (`#122 <https://github.com/fkanehiro/openhrp3/issues/122>`_)
+* Contributors: Fumio KANEHIRO, Isaac I.Y. Saito, Kei Okada, Yasuhiro Ishiguro
+
 3.1.9 (2017-02-17)
 ------------------
 
