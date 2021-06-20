@@ -630,6 +630,7 @@ int main (int argc, char** argv)
       std::fstream s(conf_file.c_str(), std::ios::out);
   
       s << "model: file://" << filenames[0] << std::endl;
+      s << "exec_cxt.periodic.rate: " << static_cast<size_t>(1/atof(dt.c_str())+0.5) << std::endl; // rounding to specify integer rate value
       s << "dt: " << dt << std::endl;
       s << conf_file_option << std::endl;
       std::cerr << "Writing conf files to ....... " << conf_file << std::endl;
