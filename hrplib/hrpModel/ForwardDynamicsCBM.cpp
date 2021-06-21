@@ -695,6 +695,8 @@ void ForwardDynamicsMM::solveUnknownAccels(Link* link, const Vector3& fext, cons
 
 void ForwardDynamicsMM::solveUnknownAccels(const Vector3& fext, const Vector3& tauext)
 {
+    if(isNoUnknownAccelMode){ return ; }
+
     if(unknown_rootDof){
         c1.head(3)      = fext;
         c1.segment(3,3) = tauext;
