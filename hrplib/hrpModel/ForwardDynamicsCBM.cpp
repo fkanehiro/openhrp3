@@ -707,7 +707,10 @@ void ForwardDynamicsMM::solveUnknownAccels(const Vector3& fext, const Vector3& t
         c1 -= d1;
 	c1 -= b1.col(0);
 
-        dvector a(M11.colPivHouseholderQr().solve(c1));
+        dvector a;
+        if(c1.size()!=0) {
+            a = M11.colPivHouseholderQr().solve(c1);
+        }
 
 	if(unknown_rootDof){
 		Link* root = body->rootLink();
