@@ -42,7 +42,7 @@ def findModelLoader():
         obj = rootnc.resolve([CosNaming.NameComponent('ModelLoader', '')])
         return obj._narrow(ModelLoader_idl._0_OpenHRP__POA.ModelLoader)
     except:
-        print "Could not find ModelLoader", sys.exc_info()[0]
+        print("Could not find ModelLoader", sys.exc_info()[0])
         exit
 
 def equal(a, b, tol = 1e-4):
@@ -76,7 +76,7 @@ class TestModelLoaderBase(unittest.TestCase):
         s = '\033[0m' if ok else '\033[91m'
         e = '\033[0m'
         str = s+"{0:70} {1}".format(fmt, ok)+e
-        print str
+        print(str)
         self.assertTrue(ok,str)
 
     def loadFiles(self, wrl_file, dae_file):
@@ -92,10 +92,10 @@ class TestModelLoaderBase(unittest.TestCase):
     def checkModels(self, wrl_file, dae_file):
         self.loadFiles(wrl_file, dae_file)
         ret = True
-        print "%16s %16s"%(wrl_file, dae_file)
+        print("%16s %16s"%(wrl_file, dae_file))
         for (wrl_l, dae_l) in zip(self.wrl_links, self.dae_links) :
             # 'centerOfMass', 'childIndices', 'climit', 'encoderPulse', 'gearRatio', 'hwcs', 'inertia', 'inlinedShapeTransformMatrices', 'jointAxis', 'jointId', 'jointType', 'jointValue', 'lights', 'llimit', 'lvlimit', 'mass', 'name', 'parentIndex', 'rotation', 'rotorInertia', 'rotorResistor', 'segments', 'sensors', 'shapeIndices', 'specFiles', 'torqueConst', 'translation', 'ulimit', 'uvlimit'
-            print ";; %s %d,%d"%(dae_l.name, dae_l.jointId, dae_l.parentIndex);
+            print(";; %s %d,%d"%(dae_l.name, dae_l.jointId, dae_l.parentIndex));
             name_ok             = wrl_l.name == dae_l.name
             translation_ok      = equal(wrl_l.translation, dae_l.translation)
             rotation_ok         = equal(norm(wrl_l.rotation), norm(dae_l.rotation))
@@ -140,7 +140,7 @@ class TestModelLoaderBase(unittest.TestCase):
                 self.print_ok("  shape  {0:24}  {1:24}".format(wrl_s.shapeIndices, dae_s.shapeIndices), shapeIndices_ok)
 
         if not ret:
-            print "===========\n== ERROR == {0} and {1} differs\n===========".format(wrl_file, dae_file)
+            print("===========\n== ERROR == {0} and {1} differs\n===========".format(wrl_file, dae_file))
             return ret
 
 class TestModelLoader(TestModelLoaderBase):

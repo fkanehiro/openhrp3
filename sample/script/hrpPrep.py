@@ -59,7 +59,7 @@ def doNarrow4Python(corbaClass, corbaObject):
         #print 'narrowed result is', tmp
         return tmp
     except:
-        print 'narrow exception:', corbaObject, 'to', corbaClass
+        print('narrow exception:', corbaObject, 'to', corbaClass)
 
     return None
 
@@ -69,8 +69,8 @@ def getORBPython(argv):
 
 
 def getPluginObject2NarrowPython(name):
-    print name
-    print 'getPluginObject2NarrowPython('+name+')'
+    print(name)
+    print('getPluginObject2NarrowPython('+name+')')
     try:
         exec('from _GlobalIDL import '+name+' as localImport')
         return localImport
@@ -84,7 +84,7 @@ doNarrow = None
 
 try: # platform is Jython
     import java.lang.System as System
-    print 'platform is probably Jython'
+    print('platform is probably Jython')
     import org.omg.CORBA as CORBA
     
     from org.omg.CosNaming import NameComponent
@@ -120,7 +120,7 @@ try: # platform is Jython
     getPluginObject2Narrow = getPluginObject2NarrowJython
 
 except ImportError: # platform is not Jython
-    print 'platform is probably CPython'
+    print('platform is probably CPython')
     import omniORB.CORBA as CORBA
     import CosNaming
     import _GlobalIDL as IDLBase

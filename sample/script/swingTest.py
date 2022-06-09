@@ -1,7 +1,7 @@
 from javax.swing import *
 
 def act(evt):
-  print "punch!!!"
+  print("punch!!!")
 
 f = JFrame()
 c = f.getContentPane()

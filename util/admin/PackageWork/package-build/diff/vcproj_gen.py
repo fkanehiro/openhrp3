@@ -151,7 +151,7 @@ class vcproj_gen(gen_base.gen_base):
 			fd = self.check_overwrite(fname)
 			if fd != None:
 				fd.write(t)
-				print "  File \"" + fname + "\" was generated."
+				print("  File \"" + fname + "\" was generated.")
 				fd.close()
 			# Create vcproj for DLL
 			y = vcprojtool.YamlConfig("RTCDLL", v["proj_ver"],
@@ -162,7 +162,7 @@ class vcproj_gen(gen_base.gen_base):
 			fd = self.check_overwrite(fname)
 			if fd != None:
 				fd.write(t)
-				print "  File \"" + fname + "\" was generated."
+				print("  File \"" + fname + "\" was generated.")
 				fd.close()
 		return
 
@@ -180,7 +180,7 @@ class vcproj_gen(gen_base.gen_base):
 				yamltxt = slntool.get_slnyaml(None,  flist)
 				sln = slntool.gen_solution(key, yamltxt)
 				fd.write(sln)
-				print "  File \"" + fname + "\" was generated."
+				print("  File \"" + fname + "\" was generated.")
 				fd.close()
 		return
 
@@ -190,7 +190,7 @@ class vcproj_gen(gen_base.gen_base):
 		if fd != None:
 			o = copyprops.replace("\r\n","\n").replace("\n", "\r\n")
 			fd.write(o)
-			print "  File \"" + fname + "\" was generated."
+			print("  File \"" + fname + "\" was generated.")
 			fd.close()
 
 	def print_userprops(self):
@@ -199,7 +199,7 @@ class vcproj_gen(gen_base.gen_base):
 		if fd != None:
 			o = userprops.replace("\r\n","\n").replace("\n", "\r\n")
 			fd.write(o)
-			print "  File \"" + fname + "\" was generated."
+			print("  File \"" + fname + "\" was generated.")
 			fd.close()
 
 	def print_all(self):

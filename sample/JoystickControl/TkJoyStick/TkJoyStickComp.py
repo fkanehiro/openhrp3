@@ -85,7 +85,7 @@ class TkJoyStick(OpenRTM_aist.DataFlowComponentBase):
 		_v = self._k * math.hypot(x, y)
 		_vl = _v * math.cos(_th - (math.pi/4.0))
 		_vr = _v * math.sin(_th - (math.pi/4.0))
-		print x, y, _vl, _vr
+		print(x, y, _vl, _vr)
 		return [_vl, _vr]
 
 	def set_pos(self, pos, pol):

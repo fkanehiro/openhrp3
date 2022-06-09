@@ -21,7 +21,7 @@ class HRPCommon:
         count = 0
         for pn,vn,pc in plist:
             if self.Initialise and 1<<count:
-                print 'initialise ', pn, ' as ', vn
+                print('initialise ', pn, ' as ', vn)
 
     #
     # pCORBA: plugin corba name
@@ -32,7 +32,7 @@ class HRPCommon:
         p = hrp.findPlugin(pCORBA)
 
         if p == None:
-            print 'load and create'
+            print('load and create')
             self.MotionSys.load(pFile)
             p = self.MotionSys.create(pFile, pCORBA, '')
 
@@ -46,5 +46,5 @@ class HRPCommon:
             return narrowedP
 
         else:
-            print 'plugin '+pCORBA+' does not exist'
+            print('plugin '+pCORBA+' does not exist')
             return None

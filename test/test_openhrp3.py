@@ -79,15 +79,15 @@ class TestCompile(unittest.TestCase):
     def test_compile_pkg_config(self):
         global PID
         cmd = "%s pkg-config openhrp3.1 --cflags --libs"%(self.PKG_CONFIG_PATH)
-        print "`"+cmd+"` =",check_output(cmd, shell=True, stderr=STDOUT)
+        print("`"+cmd+"` =",check_output(cmd, shell=True, stderr=STDOUT))
         ret = call("g++ -o openhrp3-sample-pkg-config /tmp/%d-openhrp3-sample.cpp `%s`"%(PID,cmd), shell=True)
         self.assertTrue(ret==0)
 
     def _test_compile_move_ankle(self):
         cmd1 = "pkg-config openhrp3.1 --cflags --libs"
         cmd2 = "pkg-config openhrp3.1 --variable=idl_dir"
-        print "`"+cmd1+"` =",check_output(cmd1, shell=True, stderr=STDOUT)
-        print "`"+cmd2+"` =",check_output(cmd2, shell=True, stderr=STDOUT)
+        print("`"+cmd1+"` =",check_output(cmd1, shell=True, stderr=STDOUT))
+        print("`"+cmd2+"` =",check_output(cmd2, shell=True, stderr=STDOUT))
         ret = call("g++ -o move_ankle `%s`/../sample/example/move_ankle/move_ankle.cpp `%s`"%(cmd2,cmd1), shell=True)
         self.assertTrue(ret==0)
 
@@ -95,43 +95,43 @@ class TestCompile(unittest.TestCase):
         cmd = "%s pkg-config openhrp3.1 --variable=idl_dir"%(self.PKG_CONFIG_PATH)
         fname = "OpenHRP/OpenHRPCommon.idl"
         # check if idl file exists
-        print "`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname)
+        print("`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname))
         self.assertTrue(os.path.exists(os.path.join(check_output(cmd, shell=True).rstrip(), fname)))
 
     def test_sample_pa10(self):
         cmd = "%s pkg-config openhrp3.1 --variable=idl_dir"%(self.PKG_CONFIG_PATH)
         fname = "../sample/model/PA10/pa10.main.wrl"
         # check if model file exists
-        print "`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname)
+        print("`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname))
         self.assertTrue(os.path.exists(os.path.join(check_output(cmd, shell=True).rstrip(), fname)))
 
         cmd = "%s pkg-config openhrp3.1 --variable=prefix"%(self.PKG_CONFIG_PATH)
         fname = "share/OpenHRP-3.1/sample/model/PA10/pa10.main.wrl"
         # check if model file exists
-        print "`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname)
+        print("`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname))
         self.assertTrue(os.path.exists(os.path.join(check_output(cmd, shell=True).rstrip(), fname)))
 
     def test_sample_samplerobot(self):
         cmd = "%s pkg-config openhrp3.1 --variable=idl_dir"%(self.PKG_CONFIG_PATH)
         fname = "../sample/model/sample1.wrl"
         # check if model file exists
-        print "`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname)
+        print("`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname))
         self.assertTrue(os.path.exists(os.path.join(check_output(cmd, shell=True).rstrip(), fname)), "cmd = %r, fname = %r"%(cmd, fname))
         #
         # check if walk data file exists
         fname = "../sample/controller/SampleController/etc/Sample.pos"
-        print "`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname)
+        print("`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname))
         self.assertTrue(os.path.exists(os.path.join(check_output(cmd, shell=True).rstrip(), fname)), "cmd = %r, fname = %r"%(cmd, fname))
 
         cmd = "%s pkg-config openhrp3.1 --variable=prefix"%(self.PKG_CONFIG_PATH)
         fname = "share/OpenHRP-3.1/sample/model/sample1.wrl"
         # check if model file exists
-        print "`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname)
+        print("`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname))
         self.assertTrue(os.path.exists(os.path.join(check_output(cmd, shell=True).rstrip(), fname)), "cmd = %r, fname = %r"%(cmd, fname))
         #
         # check if walk data file exists
         fname = "share/OpenHRP-3.1/sample/controller/SampleController/etc/Sample.pos"
-        print "`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname)
+        print("`"+cmd+"`"+fname+" = "+os.path.join(check_output(cmd, shell=True).rstrip(), fname))
         self.assertTrue(os.path.exists(os.path.join(check_output(cmd, shell=True).rstrip(), fname)), "cmd = %r, fname = %r"%(cmd, fname))
 
 #unittest.main()
