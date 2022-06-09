@@ -449,7 +449,7 @@ def CreateBasicInfo(opts):
 	for opt, arg in opts:
 		if opt.find("--module-") == 0:
 			var = opt.replace("--module-","")
-			if prof.has_key(mapping[var]):
+			if mapping[var] in prof:
 				prof[mapping[var]] = arg
 	# set creationDate
 	cDate = time.localtime()
@@ -713,7 +713,7 @@ def PickupIDLFiles(dict):
 			if sif["direction"] == "Provided":
 				svcidls[sif["idlFile"]] = ""
 			elif sif["direction"] == "Required":
-				if not svcidls.has_key(sif["idlFile"]):
+				if sif["idlFile"] not in svcidls:
 					cnsidls[sif["idlFile"]] = ""
 	dict["service_idl"] = []
 	dict["consumer_idl"] = []
@@ -791,14 +791,14 @@ class BackendLoader:
 		for opt in args:
 			if opt.find('-b') == 0:
 				backend_name = opt.replace("-b", "")
-				if self.backends.has_key(backend_name):
+				if backend_name in self.backends:
 					self.opts.append(backend_name)
 				else:
 					print("No such backend: ", backend_name)
 					sys.exit(-1)
 			elif opt.find('--backend=') == 0:
 				backend_name = opt.replace("--backend=", "")
-				if self.backends.has_key(backend_name):
+				if backend_name in self.backends:
 					self.opts.append(backend_name)
 				else:
 					print("No such backend: ", backend_name)
@@ -922,7 +922,7 @@ def main():
 	CreateId(data)
 	PickupIDLFiles(data)
 
-	if not data.has_key('fname'):
+	if 'fname' not in data:
 		data['fname'] = data['basicInfo']['name']
 	backends.generate_code(data, opts)
 

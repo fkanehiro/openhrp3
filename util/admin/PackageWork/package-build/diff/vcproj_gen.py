@@ -105,9 +105,9 @@ class vcproj_gen(gen_base.gen_base):
 		nlist = ["stub_basename"]
 		for sidl in self.data["consumer_idl"]:
 			for l in slist:
-				l += [(sidl[key] + ".cpp") for key in nlist if sidl.has_key(key)]
+				l += [(sidl[key] + ".cpp") for key in nlist if key in sidl]
 			for l in hlist:
-				l += [(sidl[key] + ".h") for key in nlist if sidl.has_key(key)]
+				l += [(sidl[key] + ".h") for key in nlist if key in sidl]
 		
 
 	def check_overwrite(self, fname, wmode="wb"):
