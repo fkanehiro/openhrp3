@@ -23,8 +23,9 @@ apt-get install dpkg -y # for https://github.com/ros/rosdistro/issues/19481
 # install: # Use this to install any prerequisites or dependencies necessary to run your build
 apt-get install -qq -y f2c libopencv-dev libf2c2 libf2c2-dev doxygen cmake libeigen3-dev libjpeg-dev git jython libatlas-base-dev libboost-all-dev libpng-dev
 apt-get install -qq -y collada-dom-dev || apt-get install -qq -y libcollada-dom2.4-dp-dev # libcollada-dom2.4 for melodic
-apt-get install -qq -y ros-$ROS_DISTRO-openrtm-aist ros-$ROS_DISTRO-mk ros-$ROS_DISTRO-rosbuild ros-$ROS_DISTRO-rostest ros-$ROS_DISTRO-roslang python-rosdep
+apt-get install -qq -y ros-$ROS_DISTRO-openrtm-aist ros-$ROS_DISTRO-mk ros-$ROS_DISTRO-rosbuild ros-$ROS_DISTRO-rostest ros-$ROS_DISTRO-roslang
 apt-get install -qq -y ros-$ROS_DISTRO-openrtm-aist-python || echo "try without openrtm-aist-python"
+apt-get install -qq -y python-rosdep || apt-get install -qq -y python3-rosdep
 cd $CI_SOURCE_PATH
 # before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
 source /opt/ros/$ROS_DISTRO/setup.bash
