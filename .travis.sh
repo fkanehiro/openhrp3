@@ -32,6 +32,7 @@ export ROS_PARALLEL_JOBS="-j2 -l2"
 mkdir -p ~/ws/src
 ln -sf ${CI_SOURCE_PATH} ~/ws/src/${REPOSITORY_NAME}
 git clone http://github.com/fkanehiro/hrpsys-base ~/ws/src/hrpsys
+patch -d ~/ws/src/hrpsys -p1 < ${CI_SOURCE_PATH}/.github/workflows/trusty-hrpsys-util.patch
 sed -i "s@if(ENABLE_DOXYGEN)@if(0)@" ~/ws/src/hrpsys/CMakeLists.txt # disable doc generation
 cd ~/ws
 rosdep init
