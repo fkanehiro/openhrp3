@@ -35,7 +35,7 @@ git clone http://github.com/fkanehiro/hrpsys-base ~/ws/src/hrpsys
 sed -i "s@if(ENABLE_DOXYGEN)@if(0)@" ~/ws/src/hrpsys/CMakeLists.txt # disable doc generation
 cd ~/ws
 rosdep init
-rosdep update
+rosdep update --include-eol-distros
 rosdep install -r -q -n --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y || echo "use libpng-dev in package.xml"
 catkin_make_isolated
 source devel_isolated/setup.bash
