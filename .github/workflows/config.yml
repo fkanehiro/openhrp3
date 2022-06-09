@@ -1,0 +1,35 @@
+on:
+  push:
+    branches:
+      # - master
+  pull_request:
+
+env:
+  DISPLAY: '0:0'
+
+jobs:
+  linuxs:
+    runs-on: ubuntu-latest
+#    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ROS_DISTRO: melodic
+            CONTAINER: ubuntu:18.04
+          - ROS_DISTRO: noetic
+            CONTAINER: ubuntu:20.04
+
+    container: ${{ matrix.CONTAINER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run test
+        shell: bash
+        run: |
+          set -x
+          export ROS_DISTRO=${{ matrix.ROS_DISTRO }}
+          ls -al
+          . ./.travis.sh
