@@ -41,6 +41,8 @@ rosdep init
 rosdep update --include-eol-distros
 rosdep install -r -q -n --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y || echo "use libpng-dev in package.xml"
 catkin_make_isolated
+
+if [[ "$ROS_DISTRO" ==  "noetic" ]]; then exit 0; fi
 source devel_isolated/setup.bash
 export ROS_PACKAGE_PATH=`pwd`/devel_isolated:$ROS_PACKAGE_PATH
 export EXIT_STATUS=0; [ "`find devel_isolated/openhrp3/share/openhrp3 -iname '*.test'`" == "" ] && echo "[openhrp3] No tests ware found!!!"  || find devel_isolated/openhrp3/share/openhrp3 -iname "*.test" -print0 | xargs -0 -n1 rostest || export EXIT_STATUS=$?; [ $EXIT_STATUS == 0 ]
