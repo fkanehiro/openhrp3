@@ -1,0 +1,43 @@
+on:
+  push:
+    branches:
+      # - master
+  pull_request:
+
+env:
+  DISPLAY: '0:0'
+
+jobs:
+  linuxs:
+    runs-on: ubuntu-latest
+#    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ROS_DISTRO: indigo
+            CONTAINER: ubuntu:14.04
+          - ROS_DISTRO: kinetic
+            CONTAINER: ubuntu:16.04
+          - ROS_DISTRO: melodic
+            CONTAINER: ubuntu:18.04
+          - ROS_DISTRO: noetic
+            CONTAINER: ubuntu:20.04
+
+    container: ${{ matrix.CONTAINER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: remove esm repos
+        if: ${{ matrix.CONTAINER == 'ubuntu:14.04' }}
+        run: sudo rm /etc/apt/sources.list.d/ubuntu-esm-infra-trusty.list ## fix Err https://esm.ubuntu.com trusty-infra-security/main amd64 Packages, gnutls_handshake() failed: Handshake failed
+
+      - name: Run test
+        shell: bash
+        run: |
+          set -x
+          export ROS_DISTRO=${{ matrix.ROS_DISTRO }}
+          ls -al
+          . ./.travis.sh

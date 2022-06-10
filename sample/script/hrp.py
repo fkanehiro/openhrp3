@@ -47,7 +47,7 @@ def findReceiver(objname, rnc=None):
 		obj = findObject(objname, rnc)
 		return CommandReceiverHelper.narrow(obj)
 	except:
-		print "exception in findReceiver("+objname+")"
+		print("exception in findReceiver("+objname+")")
 
 def findPlugin(name, rnc=None):
 	try:
@@ -61,27 +61,27 @@ def findPluginManager(name, rnc=None):
 		obj = findObject(name, rnc)
 		return PluginManagerHelper.narrow(obj)
 	except:
-		print "exception in findPluginManager"
+		print("exception in findPluginManager")
 
 def findWalkPlugin(name, rnc=None):
 	try:
 		obj = findObject(name, rnc)
 		return walkpluginHelper.narrow(obj)
 	except:
-		print "exception in findWalkPlugin"
+		print("exception in findWalkPlugin")
 
 def findSeqPlugin(name, rnc=None):
 	try:
 		obj = findObject(name, rnc)
 		return SequencePlayerHelper.narrow(obj)
 	except:
-		print "exception in findSeqPlugin"
+		print("exception in findSeqPlugin")
 
 def findLogPlugin(name, rnc=None):
 	try:
 		return LoggerPluginHelper.narrow(findObject(name, rnc))
 	except:
-		print "exception in findLogPlugin"
+		print("exception in findLogPlugin")
 
 def findDynamicsPlugin(name, rnc=None):
 	try:
@@ -105,7 +105,7 @@ def findStabilizerPlugin(name, rnc=None):
 	try:
 		return findPlugin(name, rnc)
 	except:
-		print "exception in findStabilizerPlugin"
+		print("exception in findStabilizerPlugin")
 		return None
 
 def findIoControlPlugin(name, rnc=None):

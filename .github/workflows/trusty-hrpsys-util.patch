@@ -1,0 +1,31 @@
+diff --git a/util/simulator/CMakeLists.txt b/util/simulator/CMakeLists.txt
+index beb53389..2fb81821 100644
+--- a/util/simulator/CMakeLists.txt
++++ b/util/simulator/CMakeLists.txt
+@@ -32,12 +32,20 @@ add_library(hrpsysext SHARED
+   PyShape.cpp
+   )
+ 
+-find_package(Boost REQUIRED COMPONENTS python)
+-target_link_libraries(hrpsysext
+-  Boost::python
+-  hrpsysUtil
+-  ${PYTHON_LIBRARIES}
+-  )
++find_package(Boost COMPONENTS python)
++if(Boost_python_FOUND)  # Boost::python released since 1.67 https://www.boost.org/doc/libs/1_71_0/libs/python/doc/html/rn.html
++  target_link_libraries(hrpsysext
++    Boost::python
++    hrpsysUtil
++    ${PYTHON_LIBRARIES}
++    )
++else()
++  target_link_libraries(hrpsysext
++    boost_python
++    hrpsysUtil
++    ${PYTHON_LIBRARIES}
++    )
++endif()
+ 
+ set_target_properties(hrpsysext PROPERTIES PREFIX "")
+ set_target_properties(hrpsysext PROPERTIES SUFFIX ".so")

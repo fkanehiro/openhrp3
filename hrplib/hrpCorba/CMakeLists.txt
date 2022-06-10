@@ -82,7 +82,7 @@ set(given_headers ORBwrap.h)
 
 install(FILES ${given_headers} ${idl_h_files} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCorba)
 execute_process(
-  COMMAND python -c "import sys; print '%s.%s'%(sys.version_info[0:2])"
+  COMMAND python -c "import sys; print('%s.%s'%(sys.version_info[0:2]))"
   OUTPUT_VARIABLE python_version
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 

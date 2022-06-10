@@ -11,7 +11,7 @@ class MyRunnable(Runnable):
 item  = uimanager.getSelectedItem(GrxWorldStateItem, None)
 n = item.getLogSize()
 if n > 0:
-	print "now auto playing..."
+	print("now auto playing...")
 
 	c = 0
 	while 1:

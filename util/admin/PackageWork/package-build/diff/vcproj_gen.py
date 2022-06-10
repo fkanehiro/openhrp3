@@ -105,9 +105,9 @@ class vcproj_gen(gen_base.gen_base):
 		nlist = ["stub_basename"]
 		for sidl in self.data["consumer_idl"]:
 			for l in slist:
-				l += [(sidl[key] + ".cpp") for key in nlist if sidl.has_key(key)]
+				l += [(sidl[key] + ".cpp") for key in nlist if key in sidl]
 			for l in hlist:
-				l += [(sidl[key] + ".h") for key in nlist if sidl.has_key(key)]
+				l += [(sidl[key] + ".h") for key in nlist if key in sidl]
 		
 
 	def check_overwrite(self, fname, wmode="wb"):
@@ -151,7 +151,7 @@ class vcproj_gen(gen_base.gen_base):
 			fd = self.check_overwrite(fname)
 			if fd != None:
 				fd.write(t)
-				print "  File \"" + fname + "\" was generated."
+				print("  File \"" + fname + "\" was generated.")
 				fd.close()
 			# Create vcproj for DLL
 			y = vcprojtool.YamlConfig("RTCDLL", v["proj_ver"],
@@ -162,7 +162,7 @@ class vcproj_gen(gen_base.gen_base):
 			fd = self.check_overwrite(fname)
 			if fd != None:
 				fd.write(t)
-				print "  File \"" + fname + "\" was generated."
+				print("  File \"" + fname + "\" was generated.")
 				fd.close()
 		return
 
@@ -180,7 +180,7 @@ class vcproj_gen(gen_base.gen_base):
 				yamltxt = slntool.get_slnyaml(None,  flist)
 				sln = slntool.gen_solution(key, yamltxt)
 				fd.write(sln)
-				print "  File \"" + fname + "\" was generated."
+				print("  File \"" + fname + "\" was generated.")
 				fd.close()
 		return
 
@@ -190,7 +190,7 @@ class vcproj_gen(gen_base.gen_base):
 		if fd != None:
 			o = copyprops.replace("\r\n","\n").replace("\n", "\r\n")
 			fd.write(o)
-			print "  File \"" + fname + "\" was generated."
+			print("  File \"" + fname + "\" was generated.")
 			fd.close()
 
 	def print_userprops(self):
@@ -199,7 +199,7 @@ class vcproj_gen(gen_base.gen_base):
 		if fd != None:
 			o = userprops.replace("\r\n","\n").replace("\n", "\r\n")
 			fd.write(o)
-			print "  File \"" + fname + "\" was generated."
+			print("  File \"" + fname + "\" was generated.")
 			fd.close()
 
 	def print_all(self):

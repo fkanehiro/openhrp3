@@ -533,7 +533,7 @@ def test ():
 
     while 1:
         m.update()
-        print m.get_pos()
+        print(m.get_pos())
 
 
 if  __name__ == '__main__': test()

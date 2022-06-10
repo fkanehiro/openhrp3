@@ -239,7 +239,7 @@ def usage_short():
 	"""
 	Help message
 	"""
-	print """
+	print("""
 Usage: rtc-template [OPTIONS]
 
 Options:
@@ -265,12 +265,12 @@ Options:
     [--consumer-idl[=IDL_file]]           IDL file name for consumer
     [--idl-include=[path]]                Search path for IDL compile
 
-"""
+""")
 def usage_long():
 	"""
 	Help message
 	"""
-	print """
+	print("""
     --output[=output_file]:
         Specify base name of output file. If 'XXX' is specified,
         C++ source codes XXX.cpp, XXX.h, XXXComp.cpp Makefile.XXX is generated.
@@ -375,7 +375,7 @@ Example:
     --consumer=YourSvcPort:yourservice0:YourService \\
     --service-idl=MyService.idl --consumer-idl=YourService.idl
 
-"""
+""")
 	return
 
 def usage():
@@ -449,7 +449,7 @@ def CreateBasicInfo(opts):
 	for opt, arg in opts:
 		if opt.find("--module-") == 0:
 			var = opt.replace("--module-","")
-			if prof.has_key(mapping[var]):
+			if mapping[var] in prof:
 				prof[mapping[var]] = arg
 	# set creationDate
 	cDate = time.localtime()
@@ -679,8 +679,8 @@ def CreateServicePorts(opts):
 			tmp["instanceName"] = name
 			idlfname = FindIdlFile(opts, type)
 			if idlfname == None:
-				print "Error:"
-				print "IDL file not found for a interface: ", type
+				print("Error:")
+				print("IDL file not found for a interface: ", type)
 				sys.exit(1)
 			tmp["idlFile"] = idlfname
 			port["serviceInterface"].append(tmp)
@@ -696,7 +696,7 @@ def FindIdlFile(opts, ifname):
 			fname = arg
 			fd = open(fname, "r")
 			if fd == None:
-				print "IDL file not found: ", arg
+				print("IDL file not found: ", arg)
 				sys.exit(1)
 			t = fd.read()
 			if None != re.compile(_re_text).search(t):
@@ -713,7 +713,7 @@ def PickupIDLFiles(dict):
 			if sif["direction"] == "Provided":
 				svcidls[sif["idlFile"]] = ""
 			elif sif["direction"] == "Required":
-				if not svcidls.has_key(sif["idlFile"]):
+				if sif["idlFile"] not in svcidls:
 					cnsidls[sif["idlFile"]] = ""
 	dict["service_idl"] = []
 	dict["consumer_idl"] = []
@@ -791,17 +791,17 @@ class BackendLoader:
 		for opt in args:
 			if opt.find('-b') == 0:
 				backend_name = opt.replace("-b", "")
-				if self.backends.has_key(backend_name):
+				if backend_name in self.backends:
 					self.opts.append(backend_name)
 				else:
-					print "No such backend: ", backend_name
+					print("No such backend: ", backend_name)
 					sys.exit(-1)
 			elif opt.find('--backend=') == 0:
 				backend_name = opt.replace("--backend=", "")
-				if self.backends.has_key(backend_name):
+				if backend_name in self.backends:
 					self.opts.append(backend_name)
 				else:
-					print "No such backend: ", backend_name
+					print("No such backend: ", backend_name)
 					sys.exit(-1)
 		return self.opts
 
@@ -814,28 +814,28 @@ class BackendLoader:
 
 
 	def usage_available(self):
-		print "The following backends are available."
+		print("The following backends are available.")
 		space = 10
 		for key in self.backends:
 			desc = self.backends[key].mod.description()			
-			print "    -b" + key + ("." * (space - len(key))) + desc
-		print """
+			print("    -b" + key + ("." * (space - len(key))) + desc)
+		print("""
 Backend [xxx] specific help can be available by the following options.
     -bxxx --help|-h or --backend=xxx --help|-h
-	"""
+	""")
 		return
 
 
 	def usage(self):
 		for be in self.opts:
-			print self.backends[be].mod.usage()			
-			print ""
+			print(self.backends[be].mod.usage())			
+			print("")
 		return
 
 	def usage_short(self):
 		for be in self.opts:
-			print self.backends[be].mod.usage_short()
-			print ""
+			print(self.backends[be].mod.usage_short())
+			print("")
 		return
 
 
@@ -870,7 +870,7 @@ def main():
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "b:ho:v", opt_args_fmt)
 	except getopt.GetoptError:
-		print "Error: Invalid option.", getopt.GetoptError
+		print("Error: Invalid option.", getopt.GetoptError)
 		usage_short()
 		backends.usage_available()
 		sys.exit(-1)
@@ -922,7 +922,7 @@ def main():
 	CreateId(data)
 	PickupIDLFiles(data)
 
-	if not data.has_key('fname'):
+	if 'fname' not in data:
 		data['fname'] = data['basicInfo']['name']
 	backends.generate_code(data, opts)
 

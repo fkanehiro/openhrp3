@@ -2,6 +2,106 @@
 Changelog for package openhrp3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.1.10 (2022-06-10)
+-------------------
+
+* hrplib/hrpModel
+
+  * [hrplib/hrpModel/ForwardDynamicsCBM.cpp] check equation num in solveUnknownAccels (`#155 <https://github.com/fkanehiro/openhrp3/issues/155>`_)
+  * [hrplib/hrpModel] Calculation of the mass of a portion of the kinematic chain (`#142 <https://github.com/fkanehiro/openhrp3/issues/142>`_)
+
+    * Add calcTotalMass to LinkTraverse
+    * Added calcJacobianDot to JointPath
+    * Calculation of the spatial velocity
+
+  * [hrplib/hrpModel/ModelNodeSet.cpp] change the way to check existence of children field (`#139 <https://github.com/fkanehiro/openhrp3/issues/139>`_)
+  * [hrpModel/JointPath.cpp] try to enforce joint limits in calcInverseKinetatics() (`#137 <https://github.com/fkanehiro/openhrp3/issues/137>`_)
+  * [hrplib/hrpModel/JointPath.cpp] add local_p arg for calcJacobian (`#127 <https://github.com/fkanehiro/openhrp3/issues/127>`_)
+
+    * fix local_p coordinate
+    * add local_p arg for calcJacobian
+
+* hrplib/hrpPlanner
+
+  * [hrplib/hrpPlanner] fix warnings(-Wdelete-incomplete) (`#138 <https://github.com/fkanehiro/openhrp3/issues/138>`_)
+  * [hrplib/hrpPlanner/TimeUtil.cpp] add stdint.h to use uint64_t on arm, close `#123 <https://github.com/fkanehiro/openhrp3/issues/123>`_ (`#124 <https://github.com/fkanehiro/openhrp3/issues/124>`_)
+
+* hrplib/hrpCollision
+
+  * [hrplib/hrpCollision] enable to bypass normal vector correction (`#141 <https://github.com/fkanehiro/openhrp3/issues/141>`_)
+  * [hrpCollision] add ColdetModelPair::operator=() (`#136 <https://github.com/fkanehiro/openhrp3/issues/136>`_)
+
+
+* hrplib/hrpUtil
+
+  * [hrplib/hrpUtil/EasyScanner.cpp] Always use locale-free variant of strtod (`#144 <https://github.com/fkanehiro/openhrp3/issues/144>`_)
+  * [hrplib/hrpUtil/testEigen3d.cpp] Fix C++11 support (`#134 <https://github.com/fkanehiro/openhrp3/issues/134>`_)
+
+* server/ModelLoader
+
+  * [server/ModelLoader/projectGenerator.cpp] write peridoic.rate to conf file (`#156 <https://github.com/fkanehiro/openhrp3/issues/156>`_)
+  * [server/ModelLoader/ColladaWriter.h] Apply abs when computing max_torque (`#153 <https://github.com/fkanehiro/openhrp3/issues/153>`_)
+  * [server/ModelLoader/ColladaWriter.h] Fix missing return statement (`#152 <https://github.com/fkanehiro/openhrp3/issues/152>`_)
+  * [server/ModelLoader] Check if segment node is defined (`#135 <https://github.com/fkanehiro/openhrp3/issues/135>`_)
+  * [server/ModelLoader/ColladaWriter.h] Changed ambientcolor (`#133 <https://github.com/fkanehiro/openhrp3/issues/133>`_)
+
+* sample
+
+  * [sample/model/sample1_bush.wrl] add comma (`#154 <https://github.com/fkanehiro/openhrp3/issues/154>`_)
+
+* CMake
+
+  * [CMakeLists.txt, hrplib/hrpCorba/CMakeLists.txt] add an option COMPILE_PYTHON_STUFF
+  * [CMakeLists.txt, cmake_modules/FindOpenRTM.cmake] enable to compile with OpenRTM 1.2.2
+  * [CMakeLists.txt, server/ModelLoader/CMakeLists.txt] support newer boost (`#146 <https://github.com/fkanehiro/openhrp3/issues/146>`_)
+
+* [openhrp3.1.pc.in] fix path order in openhrp3.1.pc.in (`#129 <https://github.com/fkanehiro/openhrp3/issues/129>`_)
+
+* installPackages
+
+  * [util]
+
+    * add packages.list.ubuntu.20.04
+    * add packages.list.debian.9
+    * add packages.list.debian.10
+    * update package list
+    * add packages.list.ubuntu.18.04
+
+  * [uril] add a package list for debian7
+  * [util/pkg_install_debian.sh] add RTM repository without asking user
+  * [uril] install packages without asking user
+
+* Enable GithubAction tests (`#155 <https://github.com/fkanehiro/openhrp3/issues/155>`_)
+
+  * noetic does not run test because of missing python3 omniorb
+  * [test/test_openhrp3.py] fix python3 error on mixing binary and string
+    ```
+    raise TypeError("Can't mix strings and bytes in path components") from None
+    ```
+  * install python3-rosdep if python-rosdep failed
+  * try without openrtm-aist-python
+  * remove esm repos
+
+  * compile example and JoysticControl in newer openrtm than 1.1.0
+    * [sample/controller/CMakeLists.txt] add sample/controller/{SamplePD,SampleHG,SampleLF} when >= OPENRTM_VERSION100  (`#150 <https://github.com/fkanehiro/openhrp3/issues/150>`_)
+    * CMake < 3.7 compatibility, see https://github.com/glfw/glfw/issues/1584
+    * [sample/CMakeLists.txt] [sample] compile example and JoysticControl in newer openrtm than 1.1.0
+
+  * hrplib/hrpCorba/CMakeLists.txt: fix for Python3
+  * patch trusty-hrpsys-util.patch, https://github.com/fkanehiro/hrpsys-base/pull/1308 fails on 14.04
+  * add indigo/kinetic, run rosdep update with --include-eol-distros
+  * fix for python3: 2to3 -w -f has_key .
+  * fix for python3: 2to3 -w -f print .
+  * add .github/workflows/config.yml
+
+* TravisCI
+
+  * add .travis.yml and create .travis.sh (`#149 <https://github.com/fkanehiro/openhrp3/issues/149>`_)
+  * [.travis.yml] update dpkg to install rosdistro in trusty (`#143 <https://github.com/fkanehiro/openhrp3/issues/143>`_)
+  * .travis.yml : update to trusty/indigo (`#128 <https://github.com/fkanehiro/openhrp3/issues/128>`_)
+
+* Contributors: Fumio Kanehiro, Iori Kumagai, Jun Inoue, Kei Okada, Mitsuharu Morisawa, Naoki Hiraoka, Pierre Gergondet, Rafael Cisneros, Iori Yanokura, Yasuhiro Ishiguro, Kunio Kojima
+
 3.1.9 (2017-02-17)
 ------------------
 
