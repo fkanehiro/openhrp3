@@ -2,8 +2,8 @@
 Changelog for package openhrp3
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.10 (2022-06-10)
+-------------------
 
 * hrplib/hrpModel
 
