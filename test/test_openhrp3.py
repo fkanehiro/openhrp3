@@ -16,7 +16,10 @@ int main (int argc, char** argv)
   return 0;
 }
 """
-from subprocess import call, check_output, Popen, PIPE, STDOUT
+from subprocess import call, Popen, PIPE, STDOUT
+
+from subprocess import check_output as _check_output
+def check_output(*args, **kwargs): return _check_output(*args, **kwargs).decode('ascii')
 
 ## A sample python unit test
 class TestCompile(unittest.TestCase):
