@@ -19,6 +19,7 @@ foreach(name ${IDL_FILE_BASENAMES})
   set(idl_py_files ${idl_py_files} ${CMAKE_CURRENT_BINARY_DIR}/${name}_idl.py)
 endforeach()
 
+set(idl_py_depends)
 foreach(idl_basename ${IDL_FILE_BASENAMES})
   set(idl_file ${OPENHRP_IDL_DIR}/OpenHRP/${idl_basename}.idl)
   if(UNIX)
@@ -30,7 +31,7 @@ foreach(idl_basename ${IDL_FILE_BASENAMES})
     add_custom_command(
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${idl_basename}_idl.py
       COMMAND omniidl ${idl_flags_py} ${idl_file}
-      DEPENDS ${idl_files}
+      DEPENDS ${idl_files} ${idl_py_depends}
       )
   elseif(WIN32)
     add_custom_command(
@@ -43,9 +44,10 @@ foreach(idl_basename ${IDL_FILE_BASENAMES})
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${idl_basename}_idl.py
       COMMAND set PATH= "${OMNIORB_DIR}/bin/x86_win32"\;%PATH%
       COMMAND omniidl ${idl_flags_py} ${idl_file}
-      DEPENDS ${idl_files}
+      DEPENDS ${idl_files} ${idl_py_depends}
       )
   endif()
+  set(idl_py_depends ${idl_py_depends} ${CMAKE_CURRENT_BINARY_DIR}/${idl_basename}_idl.py)
 endforeach()
 
 set(target hrpCorbaStubSkel-${OPENHRP_LIBRARY_VERSION})
