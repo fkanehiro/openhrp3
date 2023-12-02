@@ -82,6 +82,13 @@ install(TARGETS ${target}
 
 set(given_headers ORBwrap.h)
 
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/OpenHRP/__init__.py
+  COMMAND sed -i -e "'s@import omniORB$$@import omniORB; from OpenRTM_aist.RTM_IDL import SDOPackage_idl@'" ${CMAKE_CURRENT_BINARY_DIR}/OpenHRP/__init__.py
+  DEPENDS ${idl_py_files}
+  )
+add_custom_target(fix_openhrp_idl ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/OpenHRP/__init__.py)
+
 install(FILES ${given_headers} ${idl_h_files} DESTINATION ${RELATIVE_HEADERS_INSTALL_PATH}/hrpCorba)
 execute_process(
   COMMAND python -c "import sys; print('%s.%s'%(sys.version_info[0:2]))"
