@@ -1,8 +1,10 @@
 on:
   push:
     branches:
-      # - master
+      - '**'
   pull_request:
+    branches:
+      - '**'
 
 env:
   DISPLAY: '0:0'
@@ -10,34 +12,51 @@ env:
 jobs:
   linuxs:
     runs-on: ubuntu-latest
-#    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - ROS_DISTRO: indigo
-            CONTAINER: ubuntu:14.04
-          - ROS_DISTRO: kinetic
-            CONTAINER: ubuntu:16.04
-          - ROS_DISTRO: melodic
-            CONTAINER: ubuntu:18.04
-          - ROS_DISTRO: noetic
-            CONTAINER: ubuntu:20.04
-
-    container: ${{ matrix.CONTAINER }}
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        build-type: [RelWithDebInfo]
+        compiler: [gcc, clang]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: jrl-umi3218/github-actions/install-dependencies@master
+        with:
+          ubuntu: |
+            apt: f2c libopencv-dev libf2c2 libf2c2-dev doxygen cmake libeigen3-dev libjpeg-dev jython libatlas-base-dev libboost-all-dev libpng-dev omniorb libomniorb4-dev libcollada-dom-dev
 
-      - name: remove esm repos
-        if: ${{ matrix.CONTAINER == 'ubuntu:14.04' }}
-        run: sudo rm /etc/apt/sources.list.d/ubuntu-esm-infra-trusty.list ## fix Err https://esm.ubuntu.com trusty-infra-security/main amd64 Packages, gnutls_handshake() failed: Handshake failed
+      - name: Install openrtm2
+        run: |
+          set -e 
+          set -x
+          bash <(curl -s https://raw.githubusercontent.com/OpenRTM/OpenRTM-aist/master/scripts/openrtm2_install_ubuntu.sh)
+          sudo sed -i "s/dl rt Threads::Threads/-ldl -lrt/g" /usr/bin/rtm2-config
+          sudo sed -i "s/-lrtmCamera -lrtmManipulator//g" /usr/bin/rtm2-config
+      - name: Checkout project
+        uses: actions/checkout@v4
 
-      - name: Run test
+      - name: Build project
+        uses: jrl-umi3218/github-actions/build-cmake-project@master
+        with:
+          compiler: ${{ matrix.compiler }}
+          build-type: ${{ matrix.build-type }}
+
+      - name: Start OmniNames
         shell: bash
         run: |
           set -x
-          export ROS_DISTRO=${{ matrix.ROS_DISTRO }}
-          ls -al
-          . ./.travis.sh
+          chmod +x $GITHUB_WORKSPACE/test/start_omninames.sh
+          $GITHUB_WORKSPACE/test/start_omninames.sh 
+ 
+      # - name: Run unit tests for modelloader
+      #   run: |
+      #     set -x
+      #     openhrp-model-loader -ORBInitRef NameService=corbaloc:iiop:localhost:2809/NameService &
+      #     cd $GITHUB_WORKSPACE/test
+      #     python -m unittest test_modelloader.py
+      
+      - name: Run unit tests for openhrp3
+        run: |
+          cd $GITHUB_WORKSPACE/test
+          python -m unittest test_openhrp3.py

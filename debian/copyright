@@ -1,0 +1,67 @@
+Format: http://dep.debian.net/deps/dep5
+Upstream-Name: openhrp3
+Source: http://www.openrtp.jp/openhrp3/en/index.html
+
+Files: *
+Copyright: 2008-2012 The National Institute of Advanced Industrial Science and Technology (AIST)
+           2008-2012 University of Tokyo
+           2008-2012 General Robotix, Inc
+
+License: Eclipse Public License
+ This software(OpenHRP3) is distributed under "Eclipse Public License" (EPL) 
+ v1.0, and you are allowed to use OpenHRP3, only if you agree with these 
+ license conditions. Further, it is considered that you agreed with our 
+ license conditions whenever you download, use or distribute this software.
+ .
+ Please visit Eclipse Foundation website for more details abour "Eclipse 
+ Public License" v1.0.(FAQ of EPL can be viewed at,
+ http://www.eclipse.org/legal/eplfaq.php#EPLVERSION)
+ .
+ In case any other uses of this software, such as building a derivative 
+ binary package and distributing for proprietary use, please consult National 
+ Institute of Advanced Industrial Science and Technology (AIST) in advance. 
+ .
+ Moreover this package includes following softwares.You are requested to 
+ agree with each of those software licenses, before you proceed.
+ (These licenses are available to use, without having conflicts with the 
+ above-mentioned EPL that applied to the source package of OpenHRP3.）
+ .
+ .
+ - Java Media Framewark
+   Software and license text is available at GrxUIonEclipse-project-0.9.8/jmf-2_1_1e-alljava.
+ .
+ - Opcode
+   Applied for some files at hrplib/hrpCollision/Opcode.
+ .
+ - zlib
+   Software and license text is available at hrplib/hrpUtil/zlib123.
+ .
+ - JPEG
+   Software and license text is available at hrplib/hrpUtil/Jpeg-6b.
+ .
+ - libpng
+   Software and license text is available at hrplib/hrpUtil/lping1232.
+
+# If you want to use GPL v2 or later for the /debian/* files use 
+# the following clauses, or change it to suit. Delete these two lines
+Files: debian/*
+Copyright: 2012 k-okada <k-okada@jsk.t.u-tokyo.ac.jp>
+License: GPL-2+
+ This package is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>
+ .
+ On Debian systems, the complete text of the GNU General
+ Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
+
+# Please also look if there are files or directories which have a
+# different copyright/license attached and list them here.

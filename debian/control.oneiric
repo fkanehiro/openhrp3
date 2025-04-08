@@ -1,0 +1,19 @@
+Source: openhrp
+Section: science
+Priority: extra
+Maintainer: Fumio KANEHIRO <f-kanehiro@aist.go.jp>
+Build-Depends: debhelper (>= 7.5), cmake(>= 2.4.0), pkg-config (>= 0.22), openrtm2 (>= 1.0.0), openrtm2-dev (>= 1.0.0), jython (>= 2.2.0), libboost-all-dev (>= 1.40.0), liblapack-dev (>= 3.2.1), libeigen3-dev (>= 3.0.1), libjpeg62-dev, libpng12-dev (>= 1.2.42), openjdk-6-jdk, doxygen (>=1.6.3), graphviz, libxml2-dev (>= 2.7.6), libf2c2-dev, libgl1-mesa-dev, libxext-dev, libomniorb4-dev, omniidl, omniorb-idl, omniidl-python3, python3-omniorb, uuid-dev
+Standards-Version: 3.9.2
+Homepage: http://www.openrtp.jp/openhrp3/en/index.html
+#Vcs-Git: git://git.debian.org/collab-maint/openhrp3.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/openhrp3.git;a=summary
+
+Package: openhrp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Open Architecture Human-centered Robotics Platform version 3
+  OpenHRP3 is an integrated software platform for robot simulations and
+  software developments. It allows the users to inspect an original robot
+  model and control program by dynamics simulation. In addition, OpenHRP3
+  provides various software components and calculation libraries that can
+  be used for robotics related software developments. 

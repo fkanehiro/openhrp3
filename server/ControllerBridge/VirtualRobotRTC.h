@@ -16,12 +16,12 @@
 #ifndef OPENHRP_CONTROLLER_BRIDGE_VIRTUAL_ROBOT_RTC_H_INCLUDED
 #define OPENHRP_CONTROLLER_BRIDGE_VIRTUAL_ROBOT_RTC_H_INCLUDED
 
+#include "VirtualRobotPortHandler.h"
+
 #include <set>
 #include <string>
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
-
-#include "VirtualRobotPortHandler.h"
 
 class Controller_impl;
 

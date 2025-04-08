@@ -20,13 +20,13 @@
 #define SAMPLEPD_H
 #define DOF (29)
 
+#include <rtm/idl/BasicDataTypeSkel.h>
 #include <rtm/idl/BasicDataType.hh>
 #include <rtm/Manager.h>
 #include <rtm/DataFlowComponentBase.h>
 #include <rtm/CorbaPort.h>
 #include <rtm/DataInPort.h>
 #include <rtm/DataOutPort.h>
-#include <rtm/idl/BasicDataTypeSkel.h>
 
 #include <vector>
 

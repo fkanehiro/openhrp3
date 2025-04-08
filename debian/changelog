@@ -1,0 +1,148 @@
+openhrp (3.2.0-1ubuntu2) unstable; urgency=medium
+
+  * Rebuild to propagate OpenRTM flags removal
+
+ -- Thomas Duvinage <thomas.duvinage@aist.go.jp>  Sun, 6 Apr 2025 23:20:12 +0800
+
+openhrp (3.1.9-1ubuntu2) unstable; urgency=medium
+
+  * Rebuild to propagate OpenRTM flags removal
+
+ -- Pierre Gergondet <pierre.gergondet+ppa@gmail.com>  Mon, 30 Dec 2019 12:45:34 +0800
+
+openhrp (3.1.9-1ubuntu1) unstable; urgency=medium
+
+  * Bump upstream version
+
+ -- Pierre Gergondet <pierre.gergondet+ppa@gmail.com>  Tue, 24 Dec 2019 15:07:27 +0800
+
+openhrp (3.1.6-1~ppa1p) precise; urgency=low
+
+  * initial release of 3.1.6
+  * disable collada support
+
+ -- Fumio Kanehiro <f-kanehiro@aist.go.jp>  Mon, 27 Mar 2017 09:10:36 +0900
+
+openhrp (3.1.5-1~ppa1p) precise; urgency=low
+
+  * initial release of 3.1.5
+
+ -- Fumio Kanehiro <f-kanehiro@aist.go.jp>  Sat, 29 Dec 2012 15:03:36 +0900
+
+openhrp (3.1.4-1~ppa14~lucid) lucid; urgency=low
+
+  * supports GCC4.7+boost(r2535)
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Mon, 29 Oct 2012 17:12:15 +0900
+
+openhrp (3.1.4-1~ppa13~lucid) lucid; urgency=low
+
+  * adds a file for ubuntu12.10(r2534)
+  * makes PathPlanner::world_ a pointer in order to share the world between planners(r2533)
+  * fixes a bug in RRT::extractPath()(r2532)
+  * splits a class Configuration into two classes, Configuration and ConfigurationSpace(r2531)
+  * adds several APIs to RRT for developing customized planners(r2530)
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Mon, 29 Oct 2012 09:01:57 +0900
+
+openhrp (3.1.4-1~ppa12~lucid) lucid; urgency=low
+
+  * supports quantal
+  * fixes an issue in restarting controllers(r2529)
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Thu, 18 Oct 2012 13:32:55 +0900
+
+openhrp (3.1.4-1~ppa11~lucid) lucid; urgency=low
+
+  * adds tlimit field to Joint node(r2528)
+  * supports boost(>=1.50)(r2527)
+  * shows an error dialog if server is not running or OnlineViewer::load() fails(r2525)
+  * fixes column width issue of RobtStateView(r2521)
+  * enables to set a tolerance to ColdetLinkPair(r2520)
+  * adds registerExtraJoint() to DynamicsSimulator.idl(r2512)
+
+ -- Fumio Kanehiro <f-kanehiro@aist.go.jp>  Mon, 01 Oct 2012 21:22:03 +0900
+
+openhrp (3.1.4-1~ppa10~lucid) lucid; urgency=low
+
+  * updates plugin files(r2509)
+  * updates model editor function to support closed link structures(r2508)
+  * doesn't install unnecessary files(r2507)
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Wed, 05 Sep 2012 13:57:01 +0900
+
+openhrp (3.1.4-1~ppa9~lucid) lucid; urgency=low
+
+  * backports constraints solver from choreonoid(r2506)
+  * removes unused codes(r2505)
+
+ -- Fumio Kanehiro <f-kanehiro@aist.go.jp>  Mon, 27 Aug 2012 20:17:48 +0900
+
+openhrp (3.1.4-1~ppa8~lucid) lucid; urgency=low
+
+  * changes return type of ColdetModel::name()(r2504)
+  * removes debug messages(r2503)
+  * makes initNeighbor and setNeighborTriangle private(r2502)
+
+ -- Fumio Kanehiro <f-kanehiro@aist.go.jp>  Sun, 26 Aug 2012 11:02:00 +0900
+
+openhrp (3.1.4-1~ppa7~lucid) lucid; urgency=low
+
+  * supports closed link(r2499-r2501)
+  * adds date to cpack package version(r2498)
+  * updates requires packages on ubuntu12(r2497)
+  * fixes a bug start simulation buttion is disabled when it is canceled(r2496)
+  * fixes a bug in ColladaWriter(r2495)
+  * fixes a bug in the scheduler example(r2492)
+  * generates java class files for 1.6(r2483)
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Mon, 13 Aug 2012 09:14:21 +0900
+
+openhrp (3.1.4-1~ppa6~lucid) lucid; urgency=low
+
+  * Renames some of data types of ControllerBridge to restore compatibility
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Wed, 11 Jul 2012 10:38:48 +0900
+
+openhrp (3.1.4-1~ppa5~lucid) lucid; urgency=low
+
+  * Switches from boost::intrusive_ptr to boost::shared_ptr
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Tue, 10 Jul 2012 18:42:04 +0900
+
+openhrp (3.1.4-1~ppa4~lucid) lucid; urgency=low
+
+  * Includes pre-compiled GrxUI plugin
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Thu, 05 Jul 2012 09:45:38 +0900
+
+openhrp (3.1.4-1~ppa3~lucid) lucid; urgency=low
+
+  * Supports lights
+
+ -- Fumio Kanehiro <f-kanehiro@aist.go.jp>  Sat, 30 Jun 2012 18:38:08 +0900
+
+openhrp (3.1.4-1~ppa2~lucid) lucid; urgency=low
+
+  * Update dependencies
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Fri, 29 Jun 2012 16:35:40 +0900
+
+openhrp (3.1.4-1~ppa1~lucid) lucid; urgency=low
+
+  * Updates cmake options
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Fri, 29 Jun 2012 15:39:12 +0900
+
+openhrp (3.1.3-1~ppa33~lucid) lucid; urgency=low
+
+  * Enables simplified crawler simulation
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Sun, 24 Jun 2012 23:07:28 +0900
+
+openhrp (3.1.3-1~ppa32~lucid) unstable; urgency=low
+
+  * Initial release
+  * Changes data type for ABS_TRANSFORM to RTC::TimedPose3D
+
+ -- Fumio KANEHIRO <f-kanehiro@aist.go.jp>  Wed, 20 Jun 2012 23:29:38 +0900

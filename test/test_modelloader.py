@@ -3,11 +3,6 @@
 PKG = 'openhrp3'
 NAME = 'modelloader-test'
 
-try: # catkin does not requires load_manifest
-    import openhrp3
-except:
-    import roslib; roslib.load_manifest("openhrp3")
-
 #import OpenRTM_aist.RTM_IDL # for catkin
 
 from omniORB import CORBA, any, cdrUnmarshal, cdrMarshal
@@ -18,9 +13,7 @@ import sys, os, socket, subprocess
 import OpenRTM_aist
 from OpenHRP import *
 
-import rospkg
 import unittest
-import rostest
 
 rootrc = None
 # set custom port for modelloader-test.launch
@@ -33,7 +26,7 @@ def initCORBA():
     #os.environ['ORBInitRef'] = 'NameService=corbaloc:iiop:{0}:{1}/NameService'.format(nshost,nsport)
     orb = CORBA.ORB_init(sys.argv, CORBA.ORB_ID)
 
-    nameserver = orb.resolve_initial_references("NameService");
+    nameserver = orb.resolve_initial_references("NameService")
     rootnc = nameserver._narrow(CosNaming.NamingContext)
 
 def findModelLoader():
@@ -81,7 +74,7 @@ class TestModelLoaderBase(unittest.TestCase):
 
     def loadFiles(self, wrl_file, dae_file):
         """ Override this method for loading model files from another directory """
-        openhrp3_prefix=subprocess.check_output('pkg-config openhrp3.1 --variable=prefix', shell=True).rstrip()
+        openhrp3_prefix=subprocess.check_output('pkg-config openhrp3.1 --variable=prefix', shell=True, text=True).rstrip()
         self.wrl_url = openhrp3_prefix+"/share/OpenHRP-3.1/sample/model/"+wrl_file
         self.dae_url = openhrp3_prefix+"/share/OpenHRP-3.1/sample/model/"+dae_file
         self.wrl_binfo = self.ml.getBodyInfo(self.wrl_url)
@@ -155,4 +148,4 @@ class TestModelLoader(TestModelLoaderBase):
     #    self.checkModels("sample3dof.wrl","sample3dof.dae")
 
 if __name__ == '__main__':
-    rostest.run(PKG, NAME, TestModelLoader, sys.argv)
+    unittest.main()

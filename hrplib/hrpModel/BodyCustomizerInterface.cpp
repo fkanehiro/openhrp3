@@ -175,7 +175,8 @@ int hrp::loadBodyCustomizers(const std::string pathString, BodyInterface* bodyIn
         }
     }
 #elif (BOOST_VERSION >= 105000)
-    boost::filesystem::path pluginPath(pathString, (void *)boost::filesystem::native);
+    boost::filesystem::path pluginPath(pathString);
+    pluginPath.make_preferred();
 	
     if(boost::filesystem::exists(pluginPath)){
 

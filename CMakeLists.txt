@@ -10,7 +10,7 @@
 # @author Shin'ichiro Nakaoka
 
 
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.10)
 
 if( NOT WIN32)
   if(COMMAND cmake_policy)
@@ -118,7 +118,7 @@ set(Boost_ADDITIONAL_VERSIONS "1.42" "1.42.0" "1.43" "1.43.0" "1.44" "1.44.0" "1
     endif()
     find_package(Boost 1.35.0 REQUIRED )
   elseif(UNIX)
-    find_package(Boost 1.68.0 QUIET)
+    find_package(Boost 1.68.0)
     if(Boost_FOUND)
       find_package(Boost 1.68.0 REQUIRED COMPONENTS filesystem system regex program_options thread)
     else()
@@ -309,7 +309,7 @@ if(UNIX)
     set(OPENRTM_IDL_DIR "${OPENRTM_DIR}/include/rtm/idl")
   endif()
 elseif(WIN32)
-  if(OPENRTM_VERSION STREQUAL OPENRTM_VERSION042)
+  if(OPENRTM_VERSION STREQUAL OPENRTM_VERSION042) 
     set(OPENRTM_IDL_DIR "${OPENHRP_RTM_IDL_DIR}")
   else()
     set(OPENRTM_IDL_DIR "${OPENRTM_DIR}/rtm/idl")
